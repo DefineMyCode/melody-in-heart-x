@@ -1,0 +1,36 @@
+# Gradle / Android build output
+.gradle/
+.kotlin/
+/build/
+**/build/
+/captures/
+**/captures/
+.externalNativeBuild/
+**/.externalNativeBuild/
+.cxx/
+**/.cxx/
+
+# Local machine and IDE state
+local.properties
+*.iml
+.idea/
+.vscode/
+.DS_Store
+.workbuddy/
+
+# Generated packages and reports
+*.apk
+*.aab
+*.ap_
+*.aar
+*.dex
+*.class
+*.hprof
+app/release/
+
+# Local secrets and scratch files
+key/
+tmp/
+*.log
+log.txt
+build_output.txt

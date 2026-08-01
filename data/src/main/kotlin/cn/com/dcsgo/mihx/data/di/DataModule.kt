@@ -20,7 +20,7 @@ object DataModule {
         context,
         MelodyDatabase::class.java,
         MelodyDatabase.DATABASE_NAME,
-    ).fallbackToDestructiveMigration().build()
+    ).fallbackToDestructiveMigration(false).build()
 
     @Provides
     fun provideMelodyDao(db: MelodyDatabase) = db.melodyDao()

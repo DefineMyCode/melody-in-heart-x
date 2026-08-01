@@ -26,6 +26,11 @@ interface PlayerQueueFacade {
     val currentQueueIndex: StateFlow<Int>
 
     fun setQueue(songs: List<Song>, mode: PlayMode = PlayMode.SEQUENTIAL, currentIndex: Int = 0)
+
+    /** Replaces the queue with a pre-built [PlayQueue] (e.g. restored from a snapshot), preserving
+     * its play order / repeats / mode / current index (plan P4-7). */
+    fun setQueue(playQueue: PlayQueue)
+
     fun addSongAsNext(songs: List<Song>)
     fun addSongsToTail(songs: List<Song>, allowDuplicates: Boolean)
     fun switchPlayMode(mode: PlayMode)
@@ -52,6 +57,11 @@ class PlayerQueueFacadeImpl @Inject constructor(
         )
         _queue.value = initial
         queueController.applyQueue(initial)
+    }
+
+    override fun setQueue(playQueue: PlayQueue) {
+        _queue.value = playQueue
+        queueController.applyQueue(playQueue)
     }
 
     override fun addSongAsNext(songs: List<Song>) {

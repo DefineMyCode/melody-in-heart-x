@@ -56,6 +56,7 @@ class PlaybackController @Inject constructor(
     // (the controller is built asynchronously after the session token is published).
     private var pendingItems: List<MediaItem>? = null
     private var pendingSeekIndex: Int? = null
+    private var pendingSeekPositionMs: Long? = null
 
     private var controller: MediaController? = null
     private var connectJob: Job? = null
@@ -125,6 +126,8 @@ class PlaybackController @Inject constructor(
         pendingItems = null
         pendingSeekIndex?.let { mediaController.seekToDefaultPosition(it) }
         pendingSeekIndex = null
+        pendingSeekPositionMs?.let { mediaController.seekTo(it) }
+        pendingSeekPositionMs = null
         _snapshot.value = _snapshot.value.copy(
             isPlaying = mediaController.isPlaying,
             currentMediaId = mediaController.currentMediaItem?.mediaId,
@@ -141,6 +144,16 @@ class PlaybackController @Inject constructor(
     }
 
     fun currentPosition(): Long = controller?.currentPosition ?: 0L
+
+    /**
+     * Resumes at [positionMs] inside the current item. Used by P4-7 restore so the resume position
+     * survives a cold-start connect: if the MediaController is not ready yet, the seek is buffered
+     * and flushed in [onControllerReady] (after the item-index seek, so the position wins).
+     */
+    fun resumeFrom(positionMs: Long) {
+        pendingSeekPositionMs = positionMs
+        controller?.seekTo(positionMs)
+    }
 
     fun setMediaItems(items: List<MediaItem>) {
         pendingItems = items

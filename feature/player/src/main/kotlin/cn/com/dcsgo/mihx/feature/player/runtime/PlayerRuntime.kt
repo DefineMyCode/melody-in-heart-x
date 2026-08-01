@@ -4,6 +4,8 @@ import cn.com.dcsgo.mihx.core.model.PlayMode
 import cn.com.dcsgo.mihx.core.model.PlayQueue
 import cn.com.dcsgo.mihx.core.model.Song
 import cn.com.dcsgo.mihx.domain.playback.ControllerPlaybackSnapshot
+import cn.com.dcsgo.mihx.domain.queue.QueueRestore
+import cn.com.dcsgo.mihx.domain.repository.PlaybackStateRepository
 import cn.com.dcsgo.mihx.feature.player.PlayerQueueFacade
 import cn.com.dcsgo.mihx.feature.player.PlayerTransportFacade
 import cn.com.dcsgo.mihx.feature.player.source.TempMediaStoreSource
@@ -26,11 +28,15 @@ class PlayerRuntime @Inject constructor(
     private val source: TempMediaStoreSource,
     private val controller: PlaybackController,
     private val ticker: PlayerPlaybackProgressTicker,
+    private val playbackStateRepository: PlaybackStateRepository,
 ) {
 
     val snapshot: StateFlow<ControllerPlaybackSnapshot> = controller.snapshot
     val queue: StateFlow<PlayQueue> = queueFacade.queue
     val currentQueueIndex: StateFlow<Int> = queueFacade.currentQueueIndex
+
+    /** Once a snapshot has been restored we never restore again within this process lifetime. */
+    private var restored = false
 
     fun start() {
         facade.connect()
@@ -39,10 +45,19 @@ class PlayerRuntime @Inject constructor(
     /**
      * Loads the temp library into the queue. Must be invoked after the media-read permission is
      * granted (plan P3-7): on API 33+ [TempMediaStoreSource] returns nothing until
-     * [android.Manifest.permission.READ_MEDIA_AUDIO] is granted.
+     * [android.Manifest.permission.READ_MEDIA_AUDIO] is granted. If a persisted snapshot exists it
+     * is restored (queue order / mode / current item / position) in a paused state (plan P4-6/7).
      */
-    fun loadLibrary() {
-        queueFacade.setQueue(source.loadSongs())
+    suspend fun loadLibrary() {
+        val library = source.loadSongs()
+        val snapshot = playbackStateRepository.loadSnapshot()
+        if (snapshot != null && !restored) {
+            restored = true
+            queueFacade.setQueue(QueueRestore.restore(library, snapshot))
+            controller.resumeFrom(snapshot.positionMs)
+        } else {
+            queueFacade.setQueue(library)
+        }
     }
 
     /** Emits the current position every 500ms while playing. */

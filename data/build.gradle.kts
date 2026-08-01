@@ -29,4 +29,6 @@ dependencies {
     implementation(libs.hiltAndroid)
 
     testImplementation(libs.androidxTestJUnit)
+    testImplementation(libs.robolectric)
+    testImplementation(libs.androidxTestCore)
 }

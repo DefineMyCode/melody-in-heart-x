@@ -8,12 +8,18 @@ import androidx.media3.session.DefaultMediaNotificationProvider
 import androidx.media3.session.MediaSession
 import androidx.media3.session.MediaSessionService
 import cn.com.dcsgo.mihx.core.common.log.AppLogger
+import cn.com.dcsgo.mihx.domain.repository.PlaybackStateRepository
+import cn.com.dcsgo.mihx.player.PlaybackStateBuffer
 import cn.com.dcsgo.mihx.player.PlayerFactory
 import cn.com.dcsgo.mihx.player.SessionTokenProvider
 import cn.com.dcsgo.mihx.player.bluetooth.BluetoothAudioQualityManager
 import cn.com.dcsgo.mihx.player.bluetooth.BluetoothPlaybackMonitor
 import cn.com.dcsgo.mihx.player.bluetooth.BluetoothStateManager
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 /**
@@ -46,6 +52,14 @@ class AppMediaSessionService : MediaSessionService() {
     @Inject
     lateinit var bluetoothAudioQualityManager: BluetoothAudioQualityManager
 
+    @Inject
+    lateinit var playbackStateBuffer: PlaybackStateBuffer
+
+    @Inject
+    lateinit var playbackStateRepository: PlaybackStateRepository
+
+    private val saveScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+
     private var player: ExoPlayer? = null
     private var mediaSession: MediaSession? = null
     private var bluetoothPlaybackMonitor: BluetoothPlaybackMonitor? = null
@@ -71,7 +85,9 @@ class AppMediaSessionService : MediaSessionService() {
     override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaSession? = mediaSession
 
     override fun onTaskRemoved(rootIntent: Intent?) {
-        // P1-3: capture last played item + position. Phase 4 forwards this to PlaybackStateRepository.
+        // P4-5: best-effort fallback save of the latest in-memory snapshot before the system
+        // likely reclaims the process. Regular throttled saves cover the normal case.
+        saveSnapshotFallback()
         player?.let { p ->
             val lastMediaId = p.currentMediaItem?.mediaId
             val lastPositionMs = p.currentPosition
@@ -81,6 +97,7 @@ class AppMediaSessionService : MediaSessionService() {
     }
 
     override fun onDestroy() {
+        saveSnapshotFallback()
         bluetoothPlaybackMonitor?.stop()
         bluetoothPlaybackMonitor = null
         bluetoothStateManager.stop()
@@ -92,6 +109,11 @@ class AppMediaSessionService : MediaSessionService() {
         mediaSession = null
         player = null
         super.onDestroy()
+    }
+
+    private fun saveSnapshotFallback() {
+        val snap = playbackStateBuffer.current.value ?: return
+        saveScope.launch { runCatching { playbackStateRepository.saveSnapshot(snap) } }
     }
 
     private fun sessionActivityIntent(): PendingIntent {

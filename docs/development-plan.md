@@ -274,15 +274,15 @@ P0 ──> P1 ──> P2 ──┬──> P3 ──┐
 
 **任务清单**
 
-- [ ] **P3-1 Media3 默认媒体通知**：使用 `MediaSessionService` 默认通知生命周期，展示封面 / 标题 / 艺术家 + 上一首 / 暂停 / 下一首三按钮；**不编写任何 `NotificationCompat`**（门禁 A7）。
-- [ ] **P3-2 元数据补全**：确认 `SongMediaItemMapper` 输出的 `MediaMetadata` 含 `artworkUri`（或 `artworkData`），保证锁屏封面正确显示。
-- [ ] **P3-3 耳机线控**：经 `MediaSession` / `MediaController` 接入播放/暂停/上一首/下一首媒体按键；**不新增广播接收器**；验证有线耳机单击 / 双击 / 三击。
-- [ ] **P3-4 `BluetoothStateManager`**：监听蓝牙连接/断开（`BluetoothProfile` 状态 + `ACTION_ACL_DISCONNECTED`），对外暴露连接态 `Flow`。
-- [ ] **P3-5 `BluetoothPlaybackMonitor`**：`ACTION_AUDIO_BECOMING_NOISY` 类事件 → 自动暂停；与 `PlayerFactory` 的 `setHandleAudioBecomingNoisy(true)` 形成双保险，避免重复暂停。
-- [ ] **P3-6 `BluetoothAudioQualityManager`**：读取当前蓝牙音频编码 / 采样能力，暴露给设置页与播放页信息展示。
-- [ ] **P3-7 `PermissionCoordinator`（`:app`）**：`POST_NOTIFICATIONS`、`BLUETOOTH_CONNECT`、`READ_MEDIA_AUDIO` **按需申请**（触发点才申请，启动不强制弹窗）；提供拒绝文案与降级路径（无通知权限仍可后台播放，仅无通知展示；无蓝牙权限仅关闭蓝牙相关能力）。
+- [x] **P3-1 Media3 默认媒体通知**：使用 `MediaSessionService` 默认通知生命周期，展示封面 / 标题 / 艺术家 + 上一首 / 暂停 / 下一首三按钮；**不编写任何 `NotificationCompat`**（门禁 A7）。
+- [x] **P3-2 元数据补全**：确认 `SongMediaItemMapper` 输出的 `MediaMetadata` 含 `artworkUri`（或 `artworkData`），保证锁屏封面正确显示。
+- [x] **P3-3 耳机线控**：经 `MediaSession` / `MediaController` 接入播放/暂停/上一首/下一首媒体按键；**不新增广播接收器**；验证有线耳机单击 / 双击 / 三击。
+- [x] **P3-4 `BluetoothStateManager`**：监听蓝牙连接/断开（`BluetoothProfile` 状态 + `ACTION_ACL_DISCONNECTED`），对外暴露连接态 `Flow`。
+- [x] **P3-5 `BluetoothPlaybackMonitor`**：`ACTION_AUDIO_BECOMING_NOISY` 类事件 → 自动暂停；与 `PlayerFactory` 的 `setHandleAudioBecomingNoisy(true)` 形成双保险，避免重复暂停。
+- [x] **P3-6 `BluetoothAudioQualityManager`**：读取当前音频输出路由（LE Audio / A2DP / SCO / USB / 有线 / 扬声器）及其上报的采样率、声道数，暴露给设置页与播放页信息展示。**范围修正**：蓝牙编解码器（SBC/AAC/aptX/LDAC）对第三方应用不可读——`BluetoothA2dp.getCodecStatus()` 与 `ACTION_CODEC_CONFIG_CHANGED` 均为隐藏 `@SystemApi`，且该广播以 `BLUETOOTH_PRIVILEGED` 发送，普通应用拿不到；改用 `AudioManager` + `AudioDeviceCallback` 的公开路由信息替代。
+- [x] **P3-7 `PermissionCoordinator`（`:app`）**：`POST_NOTIFICATIONS`、`BLUETOOTH_CONNECT`、`READ_MEDIA_AUDIO` **按需申请**（触发点才申请，启动不强制弹窗）；提供拒绝文案与降级路径（无通知权限仍可后台播放，仅无通知展示；无蓝牙权限仅关闭蓝牙相关能力）。
 - [ ] **P3-8 `ToastHost` + `ToastController`（`:core:ui`）**：顶部 Toast，多条堆积、2 秒自动消失、可手动关闭；全局替代 Snackbar；接入导入完成 / 复制成功 / 删除确认 / 权限被拒等场景。
-- [ ] **P3-9 音频焦点**：`setAudioAttributes(attrs, handleAudioFocus = true)`；被打断后按系统语义恢复。
+- [x] **P3-9 音频焦点**：`setAudioAttributes(attrs, handleAudioFocus = true)`；被打断后按系统语义恢复。
 - [ ] **P3-10 一致性回归**：对 P2 的三端一致性做完整回归（App / 通知 / 锁屏 / 耳机各触发一次 上一首 / 下一首 / 添加到下一首）。
 
 **验收标准**（对应 §9 功能第 3 项）

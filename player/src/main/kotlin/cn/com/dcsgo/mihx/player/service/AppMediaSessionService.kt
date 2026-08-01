@@ -10,6 +10,9 @@ import androidx.media3.session.MediaSessionService
 import cn.com.dcsgo.mihx.core.common.log.AppLogger
 import cn.com.dcsgo.mihx.player.PlayerFactory
 import cn.com.dcsgo.mihx.player.SessionTokenProvider
+import cn.com.dcsgo.mihx.player.bluetooth.BluetoothAudioQualityManager
+import cn.com.dcsgo.mihx.player.bluetooth.BluetoothPlaybackMonitor
+import cn.com.dcsgo.mihx.player.bluetooth.BluetoothStateManager
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
@@ -37,8 +40,15 @@ class AppMediaSessionService : MediaSessionService() {
     @Inject
     lateinit var sessionTokenProvider: SessionTokenProvider
 
+    @Inject
+    lateinit var bluetoothStateManager: BluetoothStateManager
+
+    @Inject
+    lateinit var bluetoothAudioQualityManager: BluetoothAudioQualityManager
+
     private var player: ExoPlayer? = null
     private var mediaSession: MediaSession? = null
+    private var bluetoothPlaybackMonitor: BluetoothPlaybackMonitor? = null
 
     override fun onCreate() {
         super.onCreate()
@@ -52,6 +62,10 @@ class AppMediaSessionService : MediaSessionService() {
             .setSessionActivity(sessionActivityIntent())
             .build()
         sessionTokenProvider.publish(checkNotNull(mediaSession).token)
+        // P3-4/5/6: observe Bluetooth state + auto-pause on audio-route loss + expose codec info.
+        bluetoothStateManager.start()
+        bluetoothAudioQualityManager.start()
+        bluetoothPlaybackMonitor = BluetoothPlaybackMonitor(this, checkNotNull(player)).apply { start() }
     }
 
     override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaSession? = mediaSession
@@ -67,6 +81,10 @@ class AppMediaSessionService : MediaSessionService() {
     }
 
     override fun onDestroy() {
+        bluetoothPlaybackMonitor?.stop()
+        bluetoothPlaybackMonitor = null
+        bluetoothStateManager.stop()
+        bluetoothAudioQualityManager.stop()
         mediaSession?.run {
             player?.release()
             release()

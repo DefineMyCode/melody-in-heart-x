@@ -1,6 +1,6 @@
 package cn.com.dcsgo.mihx.player.mapper
 
-import android.net.Uri
+import androidx.core.net.toUri
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import cn.com.dcsgo.mihx.core.model.Song
@@ -18,9 +18,9 @@ class SongMediaItemMapper @Inject constructor() {
             .setArtist(song.artist)
             .setAlbumTitle(song.album)
             .apply {
-                if (song.albumArtUri != null) {
-                    setArtworkUri(Uri.parse(song.albumArtUri))
-                }
+                // ?.let rather than an if-null check: albumArtUri is a val declared in another
+                // module (:core:model), so Kotlin cannot smart-cast it to non-null here.
+                song.albumArtUri?.let { setArtworkUri(it.toUri()) }
             }
             .build()
         return MediaItem.Builder()

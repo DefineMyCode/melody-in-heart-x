@@ -27,6 +27,9 @@ dependencies {
     api(libs.media3Common)
     api(libs.media3UiCompose)
     implementation(libs.jellyfinFfmpeg)
+    // Explicit: androidx.core.net.toUri is used by SongMediaItemMapper. :core:common depends on
+    // core-ktx with 'implementation', so it is not transitively available here.
+    implementation(libs.coreKtx)
     implementation(libs.kotlinxCoroutinesAndroid)
     implementation(libs.hiltAndroid)
 }

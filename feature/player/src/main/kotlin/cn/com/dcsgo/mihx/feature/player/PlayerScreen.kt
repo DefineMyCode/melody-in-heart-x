@@ -3,6 +3,10 @@
 
 package cn.com.dcsgo.mihx.feature.player
 
+import android.content.pm.PackageManager
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -27,12 +31,14 @@ import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import cn.com.dcsgo.mihx.feature.player.component.QueuePanel
@@ -42,6 +48,21 @@ fun PlayerScreen(viewModel: PlayerViewModel) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     // 500ms progress tick; collected while the screen is at least STARTED (plan P1-7).
     val tick by viewModel.progressFlow().collectAsStateWithLifecycle(0L)
+
+    // P3-7: load the library only after the media-read permission is granted (API 33+ needs
+    // READ_MEDIA_AUDIO at runtime, otherwise TempMediaStoreSource returns nothing).
+    val context = LocalContext.current
+    val mediaPermissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+        if (granted) viewModel.loadLibrary()
+    }
+    LaunchedEffect(Unit) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            val granted = context.checkSelfPermission(android.Manifest.permission.READ_MEDIA_AUDIO) == PackageManager.PERMISSION_GRANTED
+            if (granted) viewModel.loadLibrary() else mediaPermissionLauncher.launch(android.Manifest.permission.READ_MEDIA_AUDIO)
+        } else {
+            viewModel.loadLibrary()
+        }
+    }
 
     var showQueue by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState()

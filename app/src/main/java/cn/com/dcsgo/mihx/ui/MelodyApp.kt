@@ -9,6 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import cn.com.dcsgo.mihx.core.ui.theme.MelodyTheme
 import cn.com.dcsgo.mihx.navigation.MelodyNavHost
+import cn.com.dcsgo.mihx.permission.PermissionHost
 
 @Composable
 fun MelodyApp() {
@@ -18,6 +19,8 @@ fun MelodyApp() {
             color = MaterialTheme.colorScheme.background,
         ) {
             MelodyNavHost()
+            // P3-7: single host that fulfils on-demand permission requests from :app-level screens.
+            PermissionHost()
         }
     }
 }

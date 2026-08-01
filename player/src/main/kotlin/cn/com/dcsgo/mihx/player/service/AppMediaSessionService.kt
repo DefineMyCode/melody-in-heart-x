@@ -4,6 +4,7 @@ import android.app.PendingIntent
 import android.content.Intent
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.session.DefaultMediaNotificationProvider
 import androidx.media3.session.MediaSession
 import androidx.media3.session.MediaSessionService
 import cn.com.dcsgo.mihx.core.common.log.AppLogger
@@ -41,6 +42,11 @@ class AppMediaSessionService : MediaSessionService() {
 
     override fun onCreate() {
         super.onCreate()
+        // P3-1: provide Media3's default media notification. Media3 promotes this service to the
+        // foreground and posts the notification automatically as soon as the playlist is non-empty
+        // (i.e. on first play). Without it the service would never call startForeground(), which is
+        // what triggered ForegroundServiceDidNotStartInTimeException when connected cold.
+        setMediaNotificationProvider(DefaultMediaNotificationProvider(applicationContext))
         player = playerFactory.create(this)
         mediaSession = MediaSession.Builder(this, checkNotNull(player))
             .setSessionActivity(sessionActivityIntent())

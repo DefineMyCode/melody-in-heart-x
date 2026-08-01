@@ -16,6 +16,7 @@ dependencies {
     implementation(project(":player"))
 
     implementation(platform(libs.composeBom))
+    implementation(libs.activityCompose)
     implementation(libs.composeMaterial3)
     implementation(libs.composeUi)
     implementation(libs.composeFoundation)

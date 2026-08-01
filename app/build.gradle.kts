@@ -53,4 +53,5 @@ dependencies {
     implementation(libs.lifecycleRuntimeCompose)
     implementation(libs.coreKtx)
     implementation(libs.coreSplashscreen)
+    implementation(libs.kotlinxCoroutinesAndroid)
 }

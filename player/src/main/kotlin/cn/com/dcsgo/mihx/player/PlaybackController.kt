@@ -91,7 +91,13 @@ class PlaybackController @Inject constructor(
      */
     @OptIn(UnstableApi::class)
     private fun startSessionService() {
-        context.startForegroundService(Intent(context, AppMediaSessionService::class.java))
+        // Launch the session service with a plain startService (NOT startForegroundService):
+        // Android requires startForeground() within 5s of startForegroundService, but Media3 only
+        // promotes the service to foreground once playback actually begins (driven by the
+        // MediaNotification.Provider set in AppMediaSessionService). Using startForegroundService
+        // here caused ForegroundServiceDidNotStartInTimeException on cold connect. Media3 lifts the
+        // service to foreground automatically when the playlist is non-empty (see P3-1).
+        context.startService(Intent(context, AppMediaSessionService::class.java))
     }
 
     private fun buildController(token: SessionToken) {
@@ -117,7 +123,7 @@ class PlaybackController @Inject constructor(
             mediaController.prepare()
         }
         pendingItems = null
-        pendingSeekIndex?.let { mediaController.seekTo(it.toLong()) }
+        pendingSeekIndex?.let { mediaController.seekToDefaultPosition(it) }
         pendingSeekIndex = null
         _snapshot.value = _snapshot.value.copy(
             isPlaying = mediaController.isPlaying,
@@ -167,10 +173,18 @@ class PlaybackController @Inject constructor(
         controller?.seekToPreviousMediaItem()
     }
 
-    /** Seeks to a media-item index (window-local). Used by the queue panel "tap to play". */
+    /**
+     * Seeks to a media-item index (window-local). Used by the queue panel "tap to play".
+     *
+     * IMPORTANT: this is NOT [seekTo] — [androidx.media3.common.Player.seekTo] takes a *position in
+     * milliseconds* within the current item, whereas jumping to a different item requires
+     * [androidx.media3.common.Player.seekToDefaultPosition]. Passing the item index into `seekTo`
+     * silently seeks to `index` ms inside the *current* item (restarting it from ~0), which is the
+     * historical "tap a queue song but the current song replays" bug.
+     */
     fun seekToMediaItem(index: Int) {
         pendingSeekIndex = index
-        controller?.seekTo(index.toLong())
+        controller?.seekToDefaultPosition(index)
     }
 
     fun release() {

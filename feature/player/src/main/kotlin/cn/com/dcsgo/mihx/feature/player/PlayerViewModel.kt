@@ -68,6 +68,9 @@ class PlayerViewModel @Inject constructor(
     fun onNext() = runtime.seekToNext()
     fun onPrevious() = runtime.seekToPrevious()
 
+    /** Loads the library into the queue; call after the media-read permission is granted. */
+    fun loadLibrary() = runtime.loadLibrary()
+
     fun onJumpTo(index: Int) = runtime.jumpTo(index)
     fun onRemoveAt(index: Int) = runtime.removeAt(index)
     fun onSwitchMode(mode: PlayMode) = runtime.switchPlayMode(mode)

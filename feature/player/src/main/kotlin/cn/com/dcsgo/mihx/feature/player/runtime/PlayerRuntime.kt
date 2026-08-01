@@ -34,6 +34,14 @@ class PlayerRuntime @Inject constructor(
 
     fun start() {
         facade.connect()
+    }
+
+    /**
+     * Loads the temp library into the queue. Must be invoked after the media-read permission is
+     * granted (plan P3-7): on API 33+ [TempMediaStoreSource] returns nothing until
+     * [android.Manifest.permission.READ_MEDIA_AUDIO] is granted.
+     */
+    fun loadLibrary() {
         queueFacade.setQueue(source.loadSongs())
     }
 

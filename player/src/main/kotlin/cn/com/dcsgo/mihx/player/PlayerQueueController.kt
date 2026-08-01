@@ -64,7 +64,9 @@ class PlayerQueueController @Inject constructor(
         val cache = synchronizer.current()
         val size = cache?.mediaIds?.size ?: 0
         if (cache != null && index >= cache.startIndex && index < cache.startIndex + size) {
+            // Target is already inside the live window: a pure media-item switch, no re-buffer.
             controller.seekToMediaItem(index - cache.startIndex)
+            controller.play()
             return
         }
         val clamped = index.coerceIn(0, (playQueue.songs.size - 1).coerceAtLeast(0))
@@ -75,5 +77,6 @@ class PlayerQueueController @Inject constructor(
         controller.setMediaItems(plan.mediaItems.map { mapper.toMediaItem(it.song) })
         controller.seekToMediaItem(plan.currentIndex)
         windowStart.value = plan.windowStartIndex
+        controller.play()
     }
 }

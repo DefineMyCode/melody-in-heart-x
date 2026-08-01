@@ -2,6 +2,7 @@ package cn.com.dcsgo.mihx.feature.player
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import cn.com.dcsgo.mihx.core.model.PlayMode
 import cn.com.dcsgo.mihx.domain.playback.ControllerPlaybackStateSynchronizer
 import cn.com.dcsgo.mihx.feature.player.runtime.PlayerRuntime
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -37,6 +38,12 @@ class PlayerViewModel @Inject constructor(
                 }
             }
         }
+        viewModelScope.launch {
+            runtime.queue.collect { q -> _uiState.update { it.copy(queue = q) } }
+        }
+        viewModelScope.launch {
+            runtime.currentQueueIndex.collect { i -> _uiState.update { it.copy(highlightIndex = i) } }
+        }
         runtime.start()
     }
 
@@ -60,4 +67,8 @@ class PlayerViewModel @Inject constructor(
 
     fun onNext() = runtime.seekToNext()
     fun onPrevious() = runtime.seekToPrevious()
+
+    fun onJumpTo(index: Int) = runtime.jumpTo(index)
+    fun onRemoveAt(index: Int) = runtime.removeAt(index)
+    fun onSwitchMode(mode: PlayMode) = runtime.switchPlayMode(mode)
 }

@@ -30,4 +30,15 @@ data class PlayQueue(
             }
         }
     }
+
+    /**
+     * Projects [playOrderIds] back into the ordered [Song] list (play order). For REVERSE/RANDOM
+     * modes this differs from [songs] insertion order. Builds the id->song map with a plain loop
+     * (never [associateBy]/[distinct]/[toSet]) to stay inside architecture gate A5.
+     */
+    fun orderedSongs(): List<Song> {
+        val byId = mutableMapOf<Long, Song>()
+        for (s in songs) byId[s.id] = s
+        return playOrderIds.mapNotNull { byId[it] }
+    }
 }

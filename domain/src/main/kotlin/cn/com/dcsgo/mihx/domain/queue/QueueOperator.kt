@@ -102,4 +102,13 @@ class QueueOperator @Inject constructor(
         }
         return queue.copy(songs = newSongs, playOrderIds = newOrderIds, currentIndex = newCurrentIndex)
     }
+
+    /**
+     * Moves the play cursor to [index] without reordering or deduping (gate A5). Used when the user
+     * taps a queue item to play it — the kernel re-centers its window on this index.
+     */
+    fun jumpTo(queue: PlayQueue, index: Int): PlayQueue {
+        val clamped = index.coerceIn(0, queue.playOrderIds.lastIndex.coerceAtLeast(0))
+        return queue.copy(currentIndex = clamped)
+    }
 }

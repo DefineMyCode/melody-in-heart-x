@@ -1,7 +1,12 @@
 package cn.com.dcsgo.mihx.feature.player.runtime
 
+import cn.com.dcsgo.mihx.core.model.PlayMode
+import cn.com.dcsgo.mihx.core.model.PlayQueue
+import cn.com.dcsgo.mihx.core.model.Song
 import cn.com.dcsgo.mihx.domain.playback.ControllerPlaybackSnapshot
+import cn.com.dcsgo.mihx.feature.player.PlayerQueueFacade
 import cn.com.dcsgo.mihx.feature.player.PlayerTransportFacade
+import cn.com.dcsgo.mihx.feature.player.source.TempMediaStoreSource
 import cn.com.dcsgo.mihx.player.PlaybackController
 import cn.com.dcsgo.mihx.player.PlayerPlaybackProgressTicker
 import kotlinx.coroutines.flow.Flow
@@ -10,20 +15,26 @@ import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
 /**
- * Hosts the playback logic for the 播放 screen (plan P1-9): connects the controller, loads the
- * temp library, and exposes the snapshot plus a 500ms progress flow to the ViewModel.
+ * Hosts the playback logic for the 播放 screen (plan P1-9 / P2-9): connects the controller, loads
+ * the temp library, and exposes the snapshot plus a 500ms progress flow to the ViewModel. Also
+ * surfaces the queue contract ([PlayerQueueFacade]) so the queue panel can display, highlight,
+ * reorder and jump — all in domain types, no Media3 leakage.
  */
 class PlayerRuntime @Inject constructor(
     private val facade: PlayerTransportFacade,
+    private val queueFacade: PlayerQueueFacade,
+    private val source: TempMediaStoreSource,
     private val controller: PlaybackController,
     private val ticker: PlayerPlaybackProgressTicker,
 ) {
 
     val snapshot: StateFlow<ControllerPlaybackSnapshot> = controller.snapshot
+    val queue: StateFlow<PlayQueue> = queueFacade.queue
+    val currentQueueIndex: StateFlow<Int> = queueFacade.currentQueueIndex
 
     fun start() {
         facade.connect()
-        facade.loadTempLibrary()
+        queueFacade.setQueue(source.loadSongs())
     }
 
     /** Emits the current position every 500ms while playing. */
@@ -35,4 +46,12 @@ class PlayerRuntime @Inject constructor(
     fun seekTo(positionMs: Long) = facade.seekTo(positionMs)
     fun seekToNext() = facade.seekToNext()
     fun seekToPrevious() = facade.seekToPrevious()
+
+    // Queue contract (plan P2-8 / P2-9).
+    fun jumpTo(index: Int) = queueFacade.jumpTo(index)
+    fun switchPlayMode(mode: PlayMode) = queueFacade.switchPlayMode(mode)
+    fun removeAt(queueIndex: Int) = queueFacade.removeAt(queueIndex)
+    fun addSongAsNext(songs: List<Song>) = queueFacade.addSongAsNext(songs)
+    fun addSongsToTail(songs: List<Song>, allowDuplicates: Boolean) =
+        queueFacade.addSongsToTail(songs, allowDuplicates)
 }

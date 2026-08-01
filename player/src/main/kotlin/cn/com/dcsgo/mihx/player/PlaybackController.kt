@@ -47,11 +47,22 @@ class PlaybackController @Inject constructor(
     private val _snapshot = MutableStateFlow(IDLE_SNAPSHOT)
     val snapshot: StateFlow<ControllerPlaybackSnapshot> = _snapshot.asStateFlow()
 
+    private val _currentIndex = MutableStateFlow(0)
+
+    /** Current media-item index inside the transport (window-local). Drives queue highlight. */
+    val currentIndex: StateFlow<Int> = _currentIndex.asStateFlow()
+
+    // Items/seek issued before the MediaController is ready are buffered and flushed on connect
+    // (the controller is built asynchronously after the session token is published).
+    private var pendingItems: List<MediaItem>? = null
+    private var pendingSeekIndex: Int? = null
+
     private var controller: MediaController? = null
     private var connectJob: Job? = null
 
     private val playerListener = object : Player.Listener {
         override fun onEvents(player: Player, events: Player.Events) {
+            _currentIndex.value = player.currentMediaItemIndex
             _snapshot.value = _snapshot.value.copy(
                 isPlaying = player.isPlaying,
                 currentMediaId = player.currentMediaItem?.mediaId,
@@ -100,6 +111,14 @@ class PlaybackController @Inject constructor(
     private fun onControllerReady(mediaController: MediaController) {
         controller = mediaController
         mediaController.addListener(playerListener)
+        _currentIndex.value = mediaController.currentMediaItemIndex
+        pendingItems?.let {
+            mediaController.setMediaItems(it)
+            mediaController.prepare()
+        }
+        pendingItems = null
+        pendingSeekIndex?.let { mediaController.seekTo(it.toLong()) }
+        pendingSeekIndex = null
         _snapshot.value = _snapshot.value.copy(
             isPlaying = mediaController.isPlaying,
             currentMediaId = mediaController.currentMediaItem?.mediaId,
@@ -118,6 +137,7 @@ class PlaybackController @Inject constructor(
     fun currentPosition(): Long = controller?.currentPosition ?: 0L
 
     fun setMediaItems(items: List<MediaItem>) {
+        pendingItems = items
         controller?.setMediaItems(items)
         controller?.prepare()
     }
@@ -147,10 +167,18 @@ class PlaybackController @Inject constructor(
         controller?.seekToPreviousMediaItem()
     }
 
+    /** Seeks to a media-item index (window-local). Used by the queue panel "tap to play". */
+    fun seekToMediaItem(index: Int) {
+        pendingSeekIndex = index
+        controller?.seekTo(index.toLong())
+    }
+
     fun release() {
         controller?.removeListener(playerListener)
         controller?.release()
         controller = null
+        pendingItems = null
+        pendingSeekIndex = null
         connectJob?.cancel()
         connectJob = null
     }

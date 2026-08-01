@@ -22,11 +22,15 @@ import javax.inject.Singleton
 interface PlayerQueueFacade {
     val queue: StateFlow<PlayQueue>
 
+    /** Authoritative current queue index (window-start + transport index) for highlight. */
+    val currentQueueIndex: StateFlow<Int>
+
     fun setQueue(songs: List<Song>, mode: PlayMode = PlayMode.SEQUENTIAL, currentIndex: Int = 0)
     fun addSongAsNext(songs: List<Song>)
     fun addSongsToTail(songs: List<Song>, allowDuplicates: Boolean)
     fun switchPlayMode(mode: PlayMode)
     fun removeAt(queueIndex: Int)
+    fun jumpTo(index: Int)
 }
 
 @Singleton
@@ -37,6 +41,7 @@ class PlayerQueueFacadeImpl @Inject constructor(
 
     private val _queue = MutableStateFlow(PlayQueue(emptyList(), 0, PlayMode.SEQUENTIAL, emptyList()))
     override val queue: StateFlow<PlayQueue> = _queue.asStateFlow()
+    override val currentQueueIndex: StateFlow<Int> = queueController.currentQueueIndex
 
     override fun setQueue(songs: List<Song>, mode: PlayMode, currentIndex: Int) {
         val initial = PlayQueue(
@@ -71,5 +76,11 @@ class PlayerQueueFacadeImpl @Inject constructor(
         val updated = operator.removeAt(_queue.value, queueIndex)
         _queue.value = updated
         queueController.applyQueue(updated)
+    }
+
+    override fun jumpTo(index: Int) {
+        val updated = operator.jumpTo(_queue.value, index)
+        _queue.value = updated
+        queueController.seekToQueueIndex(updated, index)
     }
 }

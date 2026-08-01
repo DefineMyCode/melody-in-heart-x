@@ -1,0 +1,16 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 4
+
+[*.{kt,kts}]
+# Compose screen / route composables use PascalCase (Android / Now-in-Android convention).
+# ktlint 1.x honors this rule property to exempt @Composable functions from function-naming.
+# (Note: `disabled_rules` / `ktlint_disabled_rules` are OBSOLETE in ktlint 0.49+ and ignored.)
+ktlint_function-naming_ignore_when_annotated_with = ["Composable"]
+ktlint_code_style = intellij_idea

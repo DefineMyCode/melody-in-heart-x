@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<full-backup-content>
+    <!-- Exclude local playback state, URI permissions, Room, DataStore, artwork cache -->
+    <exclude domain="file" path="playback_state" />
+    <exclude domain="file" path="datastore" />
+    <exclude domain="database" path="melody" />
+    <exclude domain="file" path="artwork" />
+    <exclude domain="sharedpref" path="cn.com.dcsgo.mihx_preferences" />
+</full-backup-content>

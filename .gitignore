@@ -34,3 +34,4 @@ tmp/
 *.log
 log.txt
 build_output.txt
+gradle/wrapper/gradle-wrapper.jar

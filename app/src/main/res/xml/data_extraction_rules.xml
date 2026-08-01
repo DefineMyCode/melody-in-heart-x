@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<data-extraction-rules>
+    <cloud-backup>
+        <exclude domain="file" path="playback_state" />
+        <exclude domain="file" path="datastore" />
+        <exclude domain="database" path="melody" />
+        <exclude domain="file" path="artwork" />
+    </cloud-backup>
+    <device-transfer>
+        <exclude domain="file" path="playback_state" />
+        <exclude domain="file" path="datastore" />
+        <exclude domain="database" path="melody" />
+        <exclude domain="file" path="artwork" />
+    </device-transfer>
+</data-extraction-rules>

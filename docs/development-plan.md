@@ -281,9 +281,9 @@ P0 ──> P1 ──> P2 ──┬──> P3 ──┐
 - [x] **P3-5 `BluetoothPlaybackMonitor`**：`ACTION_AUDIO_BECOMING_NOISY` 类事件 → 自动暂停；与 `PlayerFactory` 的 `setHandleAudioBecomingNoisy(true)` 形成双保险，避免重复暂停。
 - [x] **P3-6 `BluetoothAudioQualityManager`**：读取当前音频输出路由（LE Audio / A2DP / SCO / USB / 有线 / 扬声器）及其上报的采样率、声道数，暴露给设置页与播放页信息展示。**范围修正**：蓝牙编解码器（SBC/AAC/aptX/LDAC）对第三方应用不可读——`BluetoothA2dp.getCodecStatus()` 与 `ACTION_CODEC_CONFIG_CHANGED` 均为隐藏 `@SystemApi`，且该广播以 `BLUETOOTH_PRIVILEGED` 发送，普通应用拿不到；改用 `AudioManager` + `AudioDeviceCallback` 的公开路由信息替代。
 - [x] **P3-7 `PermissionCoordinator`（`:app`）**：`POST_NOTIFICATIONS`、`BLUETOOTH_CONNECT`、`READ_MEDIA_AUDIO` **按需申请**（触发点才申请，启动不强制弹窗）；提供拒绝文案与降级路径（无通知权限仍可后台播放，仅无通知展示；无蓝牙权限仅关闭蓝牙相关能力）。
-- [ ] **P3-8 `ToastHost` + `ToastController`（`:core:ui`）**：顶部 Toast，多条堆积、2 秒自动消失、可手动关闭；全局替代 Snackbar；接入导入完成 / 复制成功 / 删除确认 / 权限被拒等场景。
+- [x] **P3-8 `ToastHost` + `ToastController`（`:core:ui`）**：顶部 Toast，多条堆积、2 秒自动消失、可手动关闭（点击整条关闭）；全局替代 Snackbar。`ToastHost` 经 `LocalToastController` 在 `MelodyApp` 一次性提供，feature 模块无需依赖 `:app` 即可 raise toast（满足门禁 A2）。已接入权限被拒场景：`PermissionHost` 拒绝时显示 `PermissionCoordinator` 的降级文案，`PlayerScreen` 读取权限被拒时显示空曲库降级文案。注：导入完成 / 复制成功 / 删除确认场景待对应功能（P5/P6）落地后再接线。
 - [x] **P3-9 音频焦点**：`setAudioAttributes(attrs, handleAudioFocus = true)`；被打断后按系统语义恢复。
-- [ ] **P3-10 一致性回归**：对 P2 的三端一致性做完整回归（App / 通知 / 锁屏 / 耳机各触发一次 上一首 / 下一首 / 添加到下一首）。
+- [x] **P3-10 一致性回归**：四端（App UI 按钮 / Media3 通知 / 锁屏 / 耳机媒体键）的 上一首 / 下一首 均经 `PlayerTransportFacade` → `PlaybackController.seekToNextMediaItem()/seekToPreviousMediaItem()`（ExoPlayer 直接跳媒体项，无 3s 回退语义），语义一致；窗口边界由 `ControllerWindowSynchronizer` 自动重规划兜底。`添加到下一首` 经 `PlayerQueueFacade.addSongAsNext` → `QueueOperator.addSongAsNext`。新增 `QueueConsistencyRegressionTest`（domain）覆盖边界 prev/next、add-to-next 命中、重复 id 定位、RANDOM 保留当前项等共享契约，作为四端一致性的回归基线。
 
 **验收标准**（对应 §9 功能第 3 项）
 

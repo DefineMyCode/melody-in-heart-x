@@ -13,6 +13,7 @@ dependencies {
     implementation(project(":core:common"))
     implementation(project(":core:ui"))
     implementation(project(":domain"))
+    implementation(project(":player"))
 
     implementation(platform(libs.composeBom))
     implementation(libs.composeMaterial3)
@@ -20,6 +21,7 @@ dependencies {
     implementation(libs.composeFoundation)
     implementation(libs.composeRuntime)
     implementation(libs.composeUiToolingPreview)
+    implementation(libs.composeMaterialIconsExtended)
     implementation(libs.navigationCompose)
     implementation(libs.lifecycleViewmodelCompose)
     implementation(libs.lifecycleRuntimeCompose)

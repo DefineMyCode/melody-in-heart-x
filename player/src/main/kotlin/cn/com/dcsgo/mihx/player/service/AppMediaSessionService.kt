@@ -2,43 +2,50 @@ package cn.com.dcsgo.mihx.player.service
 
 import android.app.PendingIntent
 import android.content.Intent
-import androidx.media3.common.AudioAttributes
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.session.MediaSession
 import androidx.media3.session.MediaSessionService
+import cn.com.dcsgo.mihx.core.common.log.AppLogger
+import cn.com.dcsgo.mihx.player.PlayerFactory
+import cn.com.dcsgo.mihx.player.SessionTokenProvider
+import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 /**
- * Foreground media playback service backed by Media3.
+ * Foreground media playback service backed by Media3 (plan P1-3).
  *
- * This implementation is the Phase 0 seed of [docs/development-plan.md] P1-3: it satisfies
- * the `<service>` declaration in `app`'s manifest so the build's `MissingClass` lint gate is
- * green. The real playback kernel (PlayerFactory, PlaybackController, injected deps) lands in
- * Phase 1.
+ * Holds the app-wide [ExoPlayer] (built via [PlayerFactory]) and exposes it through a
+ * [MediaSession]. The session token is published to [SessionTokenProvider] so the
+ * [cn.com.dcsgo.mihx.player.PlaybackController] can attach a
+ * [androidx.media3.session.MediaController].
  *
- * Notes for Phase 1:
- *  - Add `@AndroidEntryPoint` and inject the `PlayerFactory` / `PlaybackController` once they
- *    exist. The player is built inline here only to keep Phase 0 dependency-light.
- *  - `setSessionActivity` uses an *implicit* launcher `PendingIntent` on purpose: `:player`
- *    must not depend on `:app`, so referencing `MainActivity` directly would couple the modules.
+ * Notes:
+ *  - `setSessionActivity` uses an *implicit* launcher `PendingIntent`: `:player` must not
+ *    depend on `:app`, so referencing `MainActivity` directly would couple the modules.
  *  - `onTaskRemoved` / `onDestroy` read the last `mediaId` + `currentPosition` (P1-3); the
  *    `PlaybackStateRepository` persistence hook is wired in Phase 4.
  */
+@AndroidEntryPoint
 @UnstableApi
 class AppMediaSessionService : MediaSessionService() {
+
+    @Inject
+    lateinit var playerFactory: PlayerFactory
+
+    @Inject
+    lateinit var sessionTokenProvider: SessionTokenProvider
 
     private var player: ExoPlayer? = null
     private var mediaSession: MediaSession? = null
 
     override fun onCreate() {
         super.onCreate()
-        player = ExoPlayer.Builder(this)
-            // handleAudioBecomingNoisy = true: system pauses playback when audio output becomes noisy.
-            .setAudioAttributes(AudioAttributes.DEFAULT, true)
-            .build()
+        player = playerFactory.create(this)
         mediaSession = MediaSession.Builder(this, checkNotNull(player))
             .setSessionActivity(sessionActivityIntent())
             .build()
+        sessionTokenProvider.publish(checkNotNull(mediaSession).token)
     }
 
     override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaSession? = mediaSession
@@ -48,14 +55,14 @@ class AppMediaSessionService : MediaSessionService() {
         player?.let { p ->
             val lastMediaId = p.currentMediaItem?.mediaId
             val lastPositionMs = p.currentPosition
-            // TODO(P4): PlaybackStateRepository.save(lastMediaId, lastPositionMs)
+            AppLogger.d(TAG, "onTaskRemoved lastMediaId=$lastMediaId posMs=$lastPositionMs")
         }
         super.onTaskRemoved(rootIntent)
     }
 
     override fun onDestroy() {
         mediaSession?.run {
-            player.release()
+            player?.release()
             release()
         }
         mediaSession = null
@@ -74,5 +81,9 @@ class AppMediaSessionService : MediaSessionService() {
             launchIntent,
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
         )
+    }
+
+    companion object {
+        private const val TAG = "AppMediaSessionService"
     }
 }

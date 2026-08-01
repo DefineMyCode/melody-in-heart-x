@@ -1,9 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Full-backup content rules (plan P4-8 / P0-9). Excludes local-only state that must not roam
+     across devices or restores: the Room database, the two DataStores (playback snapshot +
+     settings), and any persisted URI grants. The cover/artwork cache lives under cacheDir,
+     which Android never backs up, so no explicit exclude is needed. -->
 <full-backup-content>
-    <!-- Exclude local playback state, URI permissions, Room, DataStore, artwork cache -->
-    <exclude domain="file" path="playback_state" />
-    <exclude domain="file" path="datastore" />
+    <!-- Room database (MelodyDatabase). -->
     <exclude domain="database" path="melody" />
-    <exclude domain="file" path="artwork" />
-    <exclude domain="sharedpref" path="cn.com.dcsgo.mihx_preferences" />
+    <exclude domain="database" path="melody-wal" />
+    <exclude domain="database" path="melody-shm" />
+    <!-- Preferences DataStores (playback_state + player_settings). -->
+    <exclude domain="file" path="datastore" />
+    <!-- Persisted MediaStore URI grants, if any. -->
+    <exclude domain="sharedpref" path="androidx.core.content.FileProvider" />
 </full-backup-content>

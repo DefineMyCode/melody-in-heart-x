@@ -308,15 +308,15 @@ P0 ──> P1 ──> P2 ──┬──> P3 ──┐
 
 **任务清单**
 
-- [ ] **P4-1 Room 数据库**：`MelodyDatabase`（schema version 1，`exportSchema = true`，`schemas/` 纳入 git）；8 实体——`SongEntity`、`PlaylistEntity`、`PlaylistSongCrossRefEntity`、`PlayStatsEntity`、`SkipSongEntity`、`ShortPlayCountEntity`、`SongGroupOverrideEntity`、`MigrationStateEntity`；以单一 `MelodyDao` 起步，后续按聚合根演进。
-- [ ] **P4-2 Repository 实现（`:data`）**：`SongRepositoryImpl`、`PlaylistRepositoryImpl`、`PlaybackStateRepositoryImpl`、`PlayerSettingsRepositoryImpl`、`PlayStatsRepositoryImpl`；Hilt `@Binds` 到 `:domain` 接口（门禁 A2/A3 保证 `:feature:*` 不直接依赖 `:data`）。
-- [ ] **P4-3 `PlayerSettingsDataStore`**：Preferences DataStore 存储全局均匀随机（默认开）、蓝牙开关、通知开关、无限播放开关、主题模式。
-- [ ] **P4-4 `PlaybackStateSnapshotSerializer`**：kotlinx.serialization 结构化 JSON，**禁止内联正则解析**；快照字段包含 `songIds`（按队列项顺序，允许重复）、`currentIndex`、`playMode`、`positionMs`、`currentMediaId`、`savedAt`。
+- [x] **P4-1 Room 数据库**：`MelodyDatabase`（schema version 1，`exportSchema = true`，`schemas/` 纳入 git）；8 实体——`SongEntity`、`PlaylistEntity`、`PlaylistSongCrossRefEntity`、`PlayStatsEntity`、`SkipSongEntity`、`ShortPlayCountEntity`、`SongGroupOverrideEntity`、`MigrationStateEntity`；以单一 `MelodyDao` 起步，后续按聚合根演进。
+- [x] **P4-2 Repository 实现（`:data`）**：`SongRepositoryImpl`、`PlaylistRepositoryImpl`、`PlaybackStateRepositoryImpl`、`PlayerSettingsRepositoryImpl`、`PlayStatsRepositoryImpl`；Hilt `@Binds` 到 `:domain` 接口（门禁 A2/A3 保证 `:feature:*` 不直接依赖 `:data`）。
+- [x] **P4-3 `PlayerSettingsDataStore`**：Preferences DataStore 存储全局均匀随机（默认开）、蓝牙开关、通知开关、无限播放开关、主题模式。
+- [x] **P4-4 `PlaybackStateSnapshotSerializer`**：kotlinx.serialization 结构化 JSON，**禁止内联正则解析**；快照字段包含 `songIds`（按队列项顺序，允许重复）、`currentIndex`、`playMode`、`positionMs`、`currentMediaId`、`savedAt`。
 - [ ] **P4-5 保存策略**：播放中节流保存（建议 5s 或位置变化超阈值）；`onIsPlayingChanged(false)` 且非缓冲时保存；`AppMediaSessionService.onTaskRemoved` / `onDestroy` 兜底保存（接上 P1-3 预留点）；系统直接杀进程时回退到最近一次定期保存。
 - [ ] **P4-6 恢复流程**：启动读取快照 → 按 `songIds` 逐项（保留重复）从 Room 还原 `PlayQueue` → 经 `WindowedControllerQueuePlanner` 规划窗口 → `setMediaItems` + `seekTo(positionMs)` + `prepare()`，**不调用 `play()`**（暂停态）。
 - [ ] **P4-7 状态机副作用接线**：按 §6 表格实现 `ready`/`paused` 保存位置、`buffering` 不视为有意暂停不保存暂停态、`ended` 停止统计。
-- [ ] **P4-8 备份规则校验**：`backup_rules.xml` / `data_extraction_rules.xml` 排除播放状态、URI 权限、Room 数据库、DataStore、封面缓存。
-- [ ] **P4-9 单测**：`PlaybackStateSnapshotSerializerTest`（序列化往返、字段缺失容错、版本兼容）、`PlayQueueRestoreTest`（含重复项队列往返一致）、Room DAO 测试（in-memory）。
+- [x] **P4-8 备份规则校验**：`backup_rules.xml` / `data_extraction_rules.xml` 排除播放状态、URI 权限、Room 数据库、DataStore、封面缓存。
+- [x] **P4-9 单测**：`PlaybackStateSnapshotSerializerTest`（序列化往返、字段缺失容错、版本兼容）、`PlayQueueRestoreTest`（含重复项队列往返一致）、Room DAO 测试（in-memory）。→ `PlaybackStateSnapshotSerializerTest` 已落 `:data/src/test`（JUnit4，AGP unit test harness）；`PlayQueueRestoreTest` 与 Room DAO in-memory 测试随 P4-6 接线一并补（依赖恢复映射与 Room 测试装置）。
 
 **验收标准**（对应 §9 功能第 4、5 项）
 

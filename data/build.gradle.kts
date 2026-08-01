@@ -27,4 +27,6 @@ dependencies {
     implementation(libs.kotlinxSerializationJson)
     implementation(libs.kotlinxCoroutinesAndroid)
     implementation(libs.hiltAndroid)
+
+    testImplementation(libs.androidxTestJUnit)
 }

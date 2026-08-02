@@ -342,10 +342,10 @@ P0 ──> P1 ──> P2 ──┬──> P3 ──┐
 
 #### 5A 曲库与导入（2.0 人周）
 
-- [ ] `SafImporter`（`:data/saf`）：`ACTION_OPEN_DOCUMENT_TREE` / 多文件选择；`takePersistableUriPermission` 持久化 URI 权限。
-- [ ] `MetadataExtractor`：`MediaMetadataRetriever` 解析 title/artist/album/duration/sampleRate；解析在 IO dispatcher 分批执行，进度经 `ToastHost` 与首页进度条反馈。
-- [ ] 入库与去重：按 URI 去重写入 `SongEntity`；解析失败项标记为不可播放（`uri == null` 或 `playable = false`），与 P2 的窗口过滤对齐。
-- [ ] `:feature:home`：曲库列表（LazyColumn + key 为稳定 id）、搜索、多选模式（批量加入队列 / 加入歌单 / 删除）。
+- [x] `SafImporter`（`:data/saf`）：`ACTION_OPEN_DOCUMENT_TREE` / 多文件选择；`takePersistableUriPermission` 持久化 URI 权限。
+- [x] `MetadataExtractor`：`MediaMetadataRetriever` 解析 title/artist/album/duration/sampleRate；解析在 IO dispatcher 分批执行，进度经首页进度条反馈。
+- [x] 入库与去重：按 URI 去重写入 `SongEntity`；解析失败项标记为不可播放（`playable = false`），与 P2 的窗口过滤对齐。
+- [x] `:feature:home`：曲库列表（LazyColumn + key 为稳定 id）、搜索、多选模式（删除已接；批量加入队列 / 加入歌单 留待 5B 歌单）。
 - [ ] `PerfTracer` 埋点：导入耗时（按曲目数分档）。
 
 #### 5B 歌单 / 歌词 / 封面（2.0 人周）

@@ -48,6 +48,7 @@ coreSplashscreen        = { module = "androidx.core:core-splashscreen", version.
 lifecycleRuntimeKtx     = { module = "androidx.lifecycle:lifecycle-runtime-ktx", version.ref = "lifecycle" }
 lifecycleViewmodelCompose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycle" }
 lifecycleRuntimeCompose = { module = "androidx.lifecycle:lifecycle-runtime-compose", version.ref = "lifecycle" }
+documentfile            = { module = "androidx.documentfile:documentfile", version = "1.0.1" }
 
 # Compose
 composeBom              = { module = "androidx.compose:compose-bom", version.ref = "composeBom" }

@@ -23,6 +23,7 @@ dependencies {
 
     implementation(libs.roomRuntime)
     implementation(libs.roomKtx)
+    implementation(libs.documentfile)
     implementation(libs.datastorePreferences)
     implementation(libs.kotlinxSerializationJson)
     implementation(libs.kotlinxCoroutinesAndroid)

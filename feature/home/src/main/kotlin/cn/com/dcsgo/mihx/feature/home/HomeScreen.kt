@@ -2,19 +2,130 @@
 
 package cn.com.dcsgo.mihx.feature.home
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Folder
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import cn.com.dcsgo.mihx.core.model.Song
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(viewModel: HomeViewModel) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Text(text = "首页曲库")
+
+    val folderLauncher = rememberLauncherForActivityResult(
+        androidx.activity.result.contract.ActivityResultContracts.OpenDocumentTree(),
+    ) { uri -> uri?.let { viewModel.importTree(it.toString()) } }
+
+    val filesLauncher = rememberLauncherForActivityResult(OpenAudioDocuments()) { uris ->
+        if (uris.isNotEmpty()) viewModel.importFiles(uris.map { it.toString() })
+    }
+
+    val filtered = remember(state.songs, state.query) {
+        if (state.query.isBlank()) {
+            state.songs
+        } else {
+            val q = state.query.lowercase()
+            state.songs.filter { it.title.lowercase().contains(q) || it.artist.lowercase().contains(q) }
+        }
+    }
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("曲库") },
+                actions = {
+                    if (state.selectedIds.isNotEmpty()) {
+                        IconButton(onClick = viewModel::deleteSelected) {
+                            Icon(Icons.Filled.Delete, contentDescription = "删除选中")
+                        }
+                    }
+                    IconButton(onClick = { filesLauncher.launch(Unit) }) {
+                        Icon(Icons.Filled.Add, contentDescription = "导入文件")
+                    }
+                },
+            )
+        },
+        floatingActionButton = {
+            FloatingActionButton(onClick = { folderLauncher.launch(null) }) {
+                Icon(Icons.Filled.Folder, contentDescription = "导入文件夹")
+            }
+        },
+    ) { padding ->
+        Column(modifier = Modifier.fillMaxSize().padding(padding)) {
+            OutlinedTextField(
+                value = state.query,
+                onValueChange = viewModel::onQueryChange,
+                placeholder = { Text("搜索曲名 / 艺人") },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth().padding(8.dp),
+            )
+            if (state.isImporting) {
+                val progress = state.importProgress
+                val fraction = if (progress == null || progress.total == 0) 0f else progress.done.toFloat() / progress.total
+                LinearProgressIndicator(progress = { fraction }, modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp))
+            }
+            if (filtered.isEmpty()) {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text(if (state.songs.isEmpty()) "曲库为空，点击右下角导入音乐文件夹" else "无匹配结果")
+                }
+            } else {
+                LazyColumn(modifier = Modifier.fillMaxSize()) {
+                    items(filtered, key = { it.id }) { song ->
+                        SongRow(
+                            song = song,
+                            selected = song.id in state.selectedIds,
+                            onClick = { viewModel.toggleSelect(song.id) },
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun SongRow(song: Song, selected: Boolean, onClick: () -> Unit) {
+    Row(
+        modifier = Modifier.fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Checkbox(checked = selected, onCheckedChange = { onClick() })
+        Spacer(Modifier.width(8.dp))
+        Column(modifier = Modifier.weight(1f)) {
+            Text(song.title.ifBlank { "未知标题" })
+            Text(song.artist.ifBlank { "未知艺人" })
+        }
     }
 }

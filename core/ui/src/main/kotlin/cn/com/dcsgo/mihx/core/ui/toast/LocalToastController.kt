@@ -7,7 +7,7 @@ import androidx.compose.runtime.compositionLocalOf
  * `cn.com.dcsgo.mihx.ui.MelodyApp`); any composable in the hierarchy can call
  * `LocalToastController.current.show(...)` to surface a top toast, replacing Snackbar usage.
  *
- * This keeps the toast plumbing in [:core:ui] so feature modules (which must not depend on [:app],
+ * This keeps the toast plumbing in the core:ui module so feature modules (which must not depend on the app module,
  * gate A2) can still raise toasts without reaching into app-level code.
  */
 val LocalToastController = compositionLocalOf<ToastController> {

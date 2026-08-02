@@ -12,6 +12,7 @@ import cn.com.dcsgo.mihx.data.database.entity.ShortPlayCountEntity
 import cn.com.dcsgo.mihx.data.database.entity.SkipSongEntity
 import cn.com.dcsgo.mihx.data.database.entity.SongEntity
 import cn.com.dcsgo.mihx.data.database.entity.SongGroupOverrideEntity
+import kotlinx.coroutines.flow.Flow
 
 /**
  * Single aggregate DAO (Phase 4 evolves per aggregate root).
@@ -33,6 +34,18 @@ interface MelodyDao {
 
     @Query("SELECT * FROM songs WHERE id IN (:ids)")
     suspend fun getSongsByIds(ids: List<Long>): List<SongEntity>
+
+    @Query("SELECT * FROM songs ORDER BY title COLLATE NOCASE")
+    fun observeSongs(): Flow<List<SongEntity>>
+
+    @Query("SELECT * FROM songs WHERE uri = :uri LIMIT 1")
+    suspend fun getSongByUri(uri: String): SongEntity?
+
+    @Query("DELETE FROM songs WHERE id = :id")
+    suspend fun deleteSong(id: Long)
+
+    @Query("DELETE FROM songs WHERE id IN (:ids)")
+    suspend fun deleteSongs(ids: List<Long>)
 
     // ---- Playlists ----
     @Insert(onConflict = OnConflictStrategy.REPLACE)

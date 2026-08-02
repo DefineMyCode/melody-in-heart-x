@@ -4,7 +4,6 @@ import android.content.Context
 import android.content.Intent
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
-import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
 import cn.com.dcsgo.mihx.core.common.log.AppLogger
@@ -86,11 +85,11 @@ class PlaybackController @Inject constructor(
     }
 
     /**
-     * Launches [AppMediaSessionService]. Kept private so the [UnstableApi] opt-in requirement does
+     * Launches [AppMediaSessionService]. Kept private so the unstable-API opt-in requirement does
      * not leak into [connect]'s public signature — [connect] is consumed by :feature:player and must
-     * stay opt-in-free.
+     * stay opt-in-free. (The project handles Media3 unstable-API opt-in at the lint level via
+     * lint.xml, so no Kotlin @OptIn is needed here.)
      */
-    @OptIn(UnstableApi::class)
     private fun startSessionService() {
         // Launch the session service with a plain startService (NOT startForegroundService):
         // Android requires startForeground() within 5s of startForegroundService, but Media3 only

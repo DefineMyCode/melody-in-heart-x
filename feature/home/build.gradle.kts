@@ -16,6 +16,7 @@ dependencies {
 
     implementation(platform(libs.composeBom))
     implementation(libs.composeMaterial3)
+    implementation(libs.composeMaterialIconsExtended)
     implementation(libs.composeUi)
     implementation(libs.composeFoundation)
     implementation(libs.composeRuntime)

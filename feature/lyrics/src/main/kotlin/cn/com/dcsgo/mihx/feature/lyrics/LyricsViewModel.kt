@@ -33,12 +33,20 @@ class LyricsViewModel @Inject constructor(
                 _uiState.value = LyricsUiState(
                     songId = songId,
                     lyrics = lyrics,
-                    activeIndex = lyrics?.indexAt(positionMs) ?: -1,
+                    // Unsynced lyrics (e.g. plain embedded text) have no time axis, so we do not
+                    // highlight or auto-scroll to a line.
+                    activeIndex = if (lyrics != null && lyrics.lines.any { it.timeMs > 0 }) {
+                        lyrics.indexAt(positionMs)
+                    } else {
+                        -1
+                    },
                 )
             }
         }
     }
 
-    /** Seek playback to the tapped lyric line. */
-    fun onLineClick(line: LyricLine) = facade.seekTo(line.timeMs)
+    /** Seek playback to the tapped lyric line (only meaningful for synced lines). */
+    fun onLineClick(line: LyricLine) {
+        if (line.timeMs > 0) facade.seekTo(line.timeMs)
+    }
 }

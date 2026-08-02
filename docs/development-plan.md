@@ -351,7 +351,7 @@ P0 ──> P1 ──> P2 ──┬──> P3 ──┐
 #### 5B 歌单 / 歌词 / 封面（2.0 人周）
 
 - [x] `:feature:playlist`：歌单 CRUD、歌单详情、歌曲增删与排序；基于 `PlaylistEntity` + `PlaylistSongCrossRefEntity` 多对多。
-- [ ] `EmbeddedLyricsReader`：读取内嵌歌词（ID3 `USLT` / Vorbis `LYRICS`）。外部 `.lrc` 已覆盖（见下），内嵌读取留待下一回合。
+- [x] `EmbeddedLyricsReader`（`:data/lyrics`）：读取内嵌歌词（MP3 ID3v2 `USLT` / FLAC Vorbis `LYRICS`，仅读文件头部）；`LyricsRepositoryImpl` 优先外部 `.lrc`，回退内嵌。`LyricsViewModel` 对非同步歌词（无时间戳，`timeMs` 全 0）不做高亮/自动滚动、`onLineClick` 不误 seek。
 - [x] `LrcParser`：解析外部 `.lrc`（同名同目录优先），输出 `Lyrics` / `LyricLine` 时间轴。
 - [x] `LyricsView`（`:core:ui`）+ `:feature:lyrics`：逐行高亮、自动滚动、点击行 seek（经 `PlaybackController` 实时进度联动）。
 - [x] `ArtworkStore`（`:data/artwork`）：封面提取与磁盘缓存（受限尺寸），Coil 加载；缓存目录纳入备份排除。

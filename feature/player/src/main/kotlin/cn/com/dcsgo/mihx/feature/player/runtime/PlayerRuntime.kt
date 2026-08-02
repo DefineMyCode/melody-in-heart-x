@@ -6,9 +6,9 @@ import cn.com.dcsgo.mihx.core.model.Song
 import cn.com.dcsgo.mihx.domain.playback.ControllerPlaybackSnapshot
 import cn.com.dcsgo.mihx.domain.queue.QueueRestore
 import cn.com.dcsgo.mihx.domain.repository.PlaybackStateRepository
+import cn.com.dcsgo.mihx.domain.repository.SongRepository
 import cn.com.dcsgo.mihx.feature.player.PlayerQueueFacade
 import cn.com.dcsgo.mihx.feature.player.PlayerTransportFacade
-import cn.com.dcsgo.mihx.feature.player.source.TempMediaStoreSource
 import cn.com.dcsgo.mihx.player.PlaybackController
 import cn.com.dcsgo.mihx.player.PlayerPlaybackProgressTicker
 import kotlinx.coroutines.flow.Flow
@@ -18,14 +18,14 @@ import javax.inject.Inject
 
 /**
  * Hosts the playback logic for the 播放 screen (plan P1-9 / P2-9): connects the controller, loads
- * the temp library, and exposes the snapshot plus a 500ms progress flow to the ViewModel. Also
+ * the library, and exposes the snapshot plus a 500ms progress flow to the ViewModel. Also
  * surfaces the queue contract ([PlayerQueueFacade]) so the queue panel can display, highlight,
  * reorder and jump — all in domain types, no Media3 leakage.
  */
 class PlayerRuntime @Inject constructor(
     private val facade: PlayerTransportFacade,
     private val queueFacade: PlayerQueueFacade,
-    private val source: TempMediaStoreSource,
+    private val songRepository: SongRepository,
     private val controller: PlaybackController,
     private val ticker: PlayerPlaybackProgressTicker,
     private val playbackStateRepository: PlaybackStateRepository,
@@ -43,13 +43,13 @@ class PlayerRuntime @Inject constructor(
     }
 
     /**
-     * Loads the temp library into the queue. Must be invoked after the media-read permission is
-     * granted (plan P3-7): on API 33+ [TempMediaStoreSource] returns nothing until
-     * [android.Manifest.permission.READ_MEDIA_AUDIO] is granted. If a persisted snapshot exists it
-     * is restored (queue order / mode / current item / position) in a paused state (plan P4-6/7).
+     * Loads the library from Room into the queue. The library now comes from the SAF import
+     * pipeline (plan P5-A) persisted in Room, so no [android.Manifest.permission.READ_MEDIA_AUDIO]
+     * gate is required here. If a persisted snapshot exists it is restored (queue order / mode /
+     * current item / position) in a paused state (plan P4-6/7).
      */
     suspend fun loadLibrary() {
-        val library = source.loadSongs()
+        val library = songRepository.getAll()
         val snapshot = playbackStateRepository.loadSnapshot()
         if (snapshot != null && !restored) {
             restored = true

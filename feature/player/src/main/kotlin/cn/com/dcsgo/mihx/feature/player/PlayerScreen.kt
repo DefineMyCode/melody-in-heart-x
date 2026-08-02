@@ -3,10 +3,6 @@
 
 package cn.com.dcsgo.mihx.feature.player
 
-import android.content.pm.PackageManager
-import android.os.Build
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -38,10 +34,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import cn.com.dcsgo.mihx.core.ui.toast.LocalToastController
 import cn.com.dcsgo.mihx.feature.player.component.QueuePanel
 
 @Composable
@@ -50,27 +44,10 @@ fun PlayerScreen(viewModel: PlayerViewModel) {
     // 500ms progress tick; collected while the screen is at least STARTED (plan P1-7).
     val tick by viewModel.progressFlow().collectAsStateWithLifecycle(0L)
 
-    // P3-7: load the library only after the media-read permission is granted (API 33+ needs
-    // READ_MEDIA_AUDIO at runtime, otherwise TempMediaStoreSource returns nothing).
-    val context = LocalContext.current
-    // `LocalToastController.current` must be read in composable scope; hoist it here so the
-    // non-composable permission callback lambda can call the plain `show(...)` function.
-    val toastController = LocalToastController.current
-    val mediaPermissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
-        if (granted) {
-            viewModel.loadLibrary()
-        } else {
-            // P3-8: surface a degraded copy instead of failing silently with an empty library.
-            toastController.show("未授权读取音乐，曲库为空；可在系统设置中授予“读取音乐”权限")
-        }
-    }
+    // P5-A: the library is loaded from Room (populated by the SAF import pipeline), so no media-read
+    // permission gate is required here. The home screen prompts the user to import when empty.
     LaunchedEffect(Unit) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            val granted = context.checkSelfPermission(android.Manifest.permission.READ_MEDIA_AUDIO) == PackageManager.PERMISSION_GRANTED
-            if (granted) viewModel.loadLibrary() else mediaPermissionLauncher.launch(android.Manifest.permission.READ_MEDIA_AUDIO)
-        } else {
-            viewModel.loadLibrary()
-        }
+        viewModel.loadLibrary()
     }
 
     var showQueue by remember { mutableStateOf(false) }

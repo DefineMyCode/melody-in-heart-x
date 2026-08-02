@@ -16,8 +16,9 @@ class MainActivity : ComponentActivity() {
     lateinit var settingsRepository: PlayerSettingsRepository
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        // Launch goes straight into the app — no custom SplashScreen. Android 12+ renders the
-        // system default splash over Theme.Melody's windowBackground (pure black in dark mode).
+        // P5-UI: transparent system bars; the status/navigation bar ICON color is driven from
+        // Compose (MelodyApp SideEffect) so it follows the APP theme (ThemeMode), not the system
+        // night mode — SystemBarStyle.auto can't see the in-app theme override.
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         setContent {

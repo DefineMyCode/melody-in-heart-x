@@ -37,6 +37,7 @@ dependencies {
     implementation(libs.activityCompose)
     implementation(libs.composeMaterial3)
     implementation(libs.composeMaterial3AdaptiveNavSuite)
+    implementation(libs.composeMaterialIconsExtended)
     implementation(libs.composeUi)
     implementation(libs.composeUiToolingPreview)
     implementation(libs.composeFoundation)

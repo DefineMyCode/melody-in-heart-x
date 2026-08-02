@@ -12,12 +12,12 @@ import androidx.compose.material3.ListItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import cn.com.dcsgo.mihx.core.ui.component.MelodyTopAppBar
 import cn.com.dcsgo.mihx.core.ui.component.SectionHeader
 import cn.com.dcsgo.mihx.domain.repository.ThemeMode
 
@@ -32,7 +32,11 @@ fun SettingsScreen(viewModel: SettingsViewModel) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     Scaffold(
         modifier = Modifier.fillMaxSize(),
-        topBar = { TopAppBar(title = { Text("设置") }) },
+        topBar = {
+            MelodyTopAppBar(
+                title = { Text("设置") },
+            )
+        },
     ) { padding ->
         LazyColumn(
             modifier = Modifier

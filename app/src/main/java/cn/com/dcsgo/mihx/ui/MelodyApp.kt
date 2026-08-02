@@ -2,6 +2,7 @@
 
 package cn.com.dcsgo.mihx.ui
 
+import android.app.Activity
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -9,10 +10,13 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalView
+import androidx.core.view.WindowCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import cn.com.dcsgo.mihx.core.ui.theme.MelodyTheme
 import cn.com.dcsgo.mihx.core.ui.toast.LocalToastController
@@ -35,6 +39,20 @@ fun MelodyApp(settings: PlayerSettingsRepository) {
         ThemeMode.SYSTEM -> isSystemInDarkTheme()
         ThemeMode.LIGHT -> false
         ThemeMode.DARK -> true
+    }
+
+    // P5-UI: status/navigation bar ICON color follows the APP theme (not the system night mode).
+    // Dark theme -> light icons (readable on the black bars); light theme -> dark icons. This is
+    // driven from Compose so switching 主题 in 设置 takes effect immediately.
+    val view = LocalView.current
+    if (!view.isInEditMode) {
+        SideEffect {
+            val window = (view.context as? Activity)?.window ?: return@SideEffect
+            WindowCompat.getInsetsController(window, view).apply {
+                isAppearanceLightStatusBars = !darkTheme
+                isAppearanceLightNavigationBars = !darkTheme
+            }
+        }
     }
 
     MelodyTheme(darkTheme = darkTheme, dynamicColor = dynamicColor) {

@@ -29,7 +29,6 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -40,6 +39,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import cn.com.dcsgo.mihx.core.ui.component.EmptyState
+import cn.com.dcsgo.mihx.core.ui.component.MelodyTopAppBar
 import cn.com.dcsgo.mihx.core.ui.component.SongRow
 
 @Composable
@@ -74,7 +74,11 @@ fun PlaylistScreen(viewModel: PlaylistViewModel) {
 @Composable
 private fun PlaylistListScreen(state: PlaylistUiState, viewModel: PlaylistViewModel) {
     Scaffold(
-        topBar = { TopAppBar(title = { Text("歌单") }) },
+        topBar = {
+            MelodyTopAppBar(
+                title = { Text("歌单") },
+            )
+        },
         floatingActionButton = {
             FloatingActionButton(onClick = viewModel::onCreateClick) {
                 Icon(Icons.Filled.Add, contentDescription = "新建歌单")
@@ -140,7 +144,7 @@ private fun PlaylistItemRow(
 private fun PlaylistDetailScreen(state: PlaylistUiState, viewModel: PlaylistViewModel) {
     Scaffold(
         topBar = {
-            TopAppBar(
+            MelodyTopAppBar(
                 title = { Text(state.selectedPlaylist?.name ?: "歌单") },
                 navigationIcon = {
                     IconButton(onClick = viewModel::onBack) {

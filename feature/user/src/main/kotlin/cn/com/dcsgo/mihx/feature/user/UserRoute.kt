@@ -9,14 +9,14 @@ import androidx.navigation.compose.composable
 
 /** Top-level route composable registered by the app nav host. */
 @Composable
-fun UserRoute() {
+fun UserRoute(onOpenSettings: () -> Unit = {}) {
     val viewModel: UserViewModel = hiltViewModel()
-    UserScreen(viewModel = viewModel)
+    UserScreen(viewModel = viewModel, onOpenSettings = onOpenSettings)
 }
 
 /** Nav-graph extension (alternative registration style). */
-fun NavGraphBuilder.userRoute() {
+fun NavGraphBuilder.userRoute(onOpenSettings: () -> Unit = {}) {
     composable("user") {
-        UserRoute()
+        UserRoute(onOpenSettings = onOpenSettings)
     }
 }

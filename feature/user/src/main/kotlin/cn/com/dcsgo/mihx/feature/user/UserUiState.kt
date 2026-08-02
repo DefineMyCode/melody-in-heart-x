@@ -7,6 +7,7 @@ data class StatRowUi(
     val songId: Long,
     val title: String,
     val artist: String,
+    val albumArtUri: String?,
     val playCount: Long,
     val skipCount: Int,
     val shortPlayCount: Int,

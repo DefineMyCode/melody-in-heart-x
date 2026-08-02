@@ -96,6 +96,7 @@ class UserViewModel @Inject constructor(
             songId = songId,
             title = song?.title ?: "未知曲目",
             artist = song?.artist.orEmpty(),
+            albumArtUri = song?.albumArtUri,
             playCount = playCount,
             skipCount = skipCount,
             shortPlayCount = shortPlayCount,

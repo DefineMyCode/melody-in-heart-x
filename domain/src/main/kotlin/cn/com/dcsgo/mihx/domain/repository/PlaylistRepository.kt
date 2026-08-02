@@ -1,12 +1,16 @@
 package cn.com.dcsgo.mihx.domain.repository
 
 import cn.com.dcsgo.mihx.core.model.Playlist
+import cn.com.dcsgo.mihx.core.model.PlaylistWithCover
 import cn.com.dcsgo.mihx.core.model.Song
 import kotlinx.coroutines.flow.Flow
 
 interface PlaylistRepository {
     /** Live playlist list stream. */
     fun observeAll(): Flow<List<Playlist>>
+
+    /** Live playlist list with each playlist's most-recently-added song cover (null when empty). */
+    fun observeAllWithCover(): Flow<List<PlaylistWithCover>>
 
     suspend fun getById(id: Long): Playlist?
 

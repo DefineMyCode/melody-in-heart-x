@@ -14,9 +14,19 @@ import javax.inject.Inject
 @HiltViewModel
 class LyricsViewModel @Inject constructor(
     private val facade: LyricsFacade,
+    private val displaySettings: LyricsDisplaySettings,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(LyricsUiState())
     val uiState: StateFlow<LyricsUiState> = _uiState.asStateFlow()
+
+    /** Live lyric font-size scale (process-wide, survives page re-entry). */
+    val fontScale: StateFlow<Float> = displaySettings.fontScale
+
+    fun enlargeFont() = displaySettings.enlarge()
+
+    fun shrinkFont() = displaySettings.shrink()
+
+    fun resetFont() = displaySettings.reset()
 
     init {
         viewModelScope.launch {
@@ -45,8 +55,23 @@ class LyricsViewModel @Inject constructor(
         }
     }
 
-    /** Seek playback to the tapped lyric line (only meaningful for synced lines). */
+    /**
+     * Seeks playback to the tapped lyric line (only meaningful for synced lines). Globally
+     * debounced: any line tap within [CLICK_DEBOUNCE_MS] of a previous one is dropped, so a burst
+     * of mis-taps (nav transition overlaps, double-taps landing on the lyrics list) cannot thrash
+     * the playback position.
+     */
     fun onLineClick(line: LyricLine) {
-        if (line.timeMs > 0) facade.seekTo(line.timeMs)
+        if (line.timeMs <= 0) return
+        val now = System.currentTimeMillis()
+        if (now - lastClickAt < CLICK_DEBOUNCE_MS) return
+        lastClickAt = now
+        facade.seekTo(line.timeMs)
+    }
+
+    private var lastClickAt = 0L
+
+    private companion object {
+        const val CLICK_DEBOUNCE_MS = 600L
     }
 }

@@ -1,6 +1,7 @@
 package cn.com.dcsgo.mihx.data.repository
 
 import cn.com.dcsgo.mihx.core.model.Playlist
+import cn.com.dcsgo.mihx.core.model.PlaylistWithCover
 import cn.com.dcsgo.mihx.core.model.Song
 import cn.com.dcsgo.mihx.data.database.dao.MelodyDao
 import cn.com.dcsgo.mihx.data.database.entity.PlaylistEntity
@@ -17,6 +18,11 @@ class PlaylistRepositoryImpl @Inject constructor(
 
     override fun observeAll(): Flow<List<Playlist>> =
         dao.observePlaylists().map { list -> list.map { Playlist(id = it.id, name = it.name, createdAt = it.createdAt) } }
+
+    override fun observeAllWithCover(): Flow<List<PlaylistWithCover>> =
+        dao.observePlaylistsWithCover().map { list ->
+            list.map { PlaylistWithCover(id = it.id, name = it.name, coverUri = it.coverUri) }
+        }
 
     override suspend fun getById(id: Long): Playlist? =
         dao.getPlaylistById(id)?.let { Playlist(id = it.id, name = it.name, createdAt = it.createdAt) }

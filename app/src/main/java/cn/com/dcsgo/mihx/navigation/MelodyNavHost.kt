@@ -2,13 +2,15 @@
 
 package cn.com.dcsgo.mihx.navigation
 
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.LibraryMusic
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PlayCircle
+import androidx.compose.material.icons.filled.PlaylistPlay
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
@@ -36,9 +38,9 @@ private data class NavItem(
     val icon: ImageVector,
 )
 
-/** Only three tabs per user request: 曲库 / 播放 / 我的. 歌词 enters from Player, 设置 from 我的. */
+/** Three tabs: 歌单 / 播放 / 我的. 曲库(Home) enters from the playlist screen, 歌词 from Player. */
 private val navItems = listOf(
-    NavItem(MelodyDestination.HOME, "曲库", Icons.Filled.LibraryMusic),
+    NavItem(MelodyDestination.PLAYLIST, "歌单", Icons.Filled.PlaylistPlay),
     NavItem(MelodyDestination.PLAYER, "播放", Icons.Filled.PlayCircle),
     NavItem(MelodyDestination.USER, "我的", Icons.Filled.Person),
 )
@@ -47,7 +49,7 @@ private val navItems = listOf(
 fun MelodyNavHost(
     navController: NavHostController = rememberNavController(),
 ) {
-    var currentDestination by remember { mutableStateOf(MelodyDestination.HOME) }
+    var currentDestination by remember { mutableStateOf(MelodyDestination.PLAYLIST) }
 
     NavigationSuiteScaffold(
         navigationSuiteItems = {
@@ -57,7 +59,7 @@ fun MelodyNavHost(
                     onClick = {
                         currentDestination = item.destination
                         navController.navigate(item.destination) {
-                            popUpTo(MelodyDestination.HOME) { saveState = true }
+                            popUpTo(MelodyDestination.PLAYLIST) { saveState = true }
                             launchSingleTop = true
                             restoreState = true
                         }
@@ -70,22 +72,39 @@ fun MelodyNavHost(
     ) {
         androidx.navigation.compose.NavHost(
             navController = navController,
-            startDestination = MelodyDestination.HOME,
+            startDestination = MelodyDestination.PLAYLIST,
+            // 所有动画已全局禁用：页面切换无淡入淡出（Navigation Compose 默认 700ms fade）。
+            enterTransition = { EnterTransition.None },
+            exitTransition = { ExitTransition.None },
+            popEnterTransition = { EnterTransition.None },
+            popExitTransition = { ExitTransition.None },
             // P5-UI: keep page content below the status bar. NavigationSuiteScaffold's default
             // contentWindowInsets only covers Horizontal+Bottom, so screens without their own
             // TopAppBar inset handling (e.g. PlayerScreen) would bleed into the status bar.
             modifier = Modifier.windowInsetsPadding(WindowInsets.statusBars),
         ) {
             composable(MelodyDestination.HOME) { HomeRoute() }
-            composable(MelodyDestination.PLAYLIST) { PlaylistRoute() }
+            composable(MelodyDestination.PLAYLIST) {
+                PlaylistRoute(onOpenLibrary = { navController.navigate(MelodyDestination.HOME) })
+            }
             composable(MelodyDestination.PLAYER) {
-                PlayerRoute(onOpenLyrics = { navController.navigate(MelodyDestination.LYRICS) })
+                PlayerRoute(
+                    onOpenLyrics = {
+                        // launchSingleTop: 快速连点封面不会压入多个歌词页实例——否则返回一次后
+                        // 仍在歌词页（用户误以为已回播放页），点到歌词行会误触发 seek 改进度。
+                        navController.navigate(MelodyDestination.LYRICS) { launchSingleTop = true }
+                    },
+                )
             }
             composable(MelodyDestination.LYRICS) {
                 LyricsRoute(onBack = { navController.navigateUp() })
             }
             composable(MelodyDestination.USER) {
-                UserRoute(onOpenSettings = { navController.navigate(MelodyDestination.SETTINGS) })
+                UserRoute(
+                    onOpenSettings = {
+                        navController.navigate(MelodyDestination.SETTINGS) { launchSingleTop = true }
+                    },
+                )
             }
             composable(MelodyDestination.SETTINGS) { SettingsRoute() }
         }

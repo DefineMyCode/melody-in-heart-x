@@ -41,6 +41,17 @@ class HomeViewModel @Inject constructor(
         s.copy(selectedIds = selected)
     }
 
+    /**
+     * Selects every song in [visibleIds] (the current query-filtered list, or the whole library
+     * when the search box is empty). Tapping again while all of them are already selected clears
+     * the selection (select-all / deselect-all toggle).
+     */
+    fun toggleSelectAll(visibleIds: List<Long>) = _uiState.update { s ->
+        val ids = visibleIds.toSet()
+        val allSelected = ids.isNotEmpty() && s.selectedIds.containsAll(ids)
+        s.copy(selectedIds = if (allSelected) emptySet() else ids)
+    }
+
     fun clearSelection() = _uiState.update { it.copy(selectedIds = emptySet()) }
 
     fun importTree(treeUri: String) = runImport { onProgress -> facade.importTree(treeUri, onProgress) }

@@ -25,6 +25,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import cn.com.dcsgo.mihx.core.ui.component.AlbumArtThumb
 import cn.com.dcsgo.mihx.core.ui.component.MelodyTopAppBar
 import cn.com.dcsgo.mihx.core.ui.component.SectionHeader
 
@@ -85,6 +86,7 @@ fun UserScreen(viewModel: UserViewModel, onOpenSettings: () -> Unit = {}) {
                         title = row.title,
                         subtitle = "${row.playCount} 次播放",
                         artist = row.artist,
+                        albumArtUri = row.albumArtUri,
                     )
                 }
             }
@@ -95,6 +97,7 @@ fun UserScreen(viewModel: UserViewModel, onOpenSettings: () -> Unit = {}) {
                         title = row.title,
                         subtitle = "跳过 ${row.skipCount} 次 · 秒切 ${row.shortPlayCount} 次",
                         artist = row.artist,
+                        albumArtUri = row.albumArtUri,
                     )
                 }
             }
@@ -109,8 +112,9 @@ fun UserScreen(viewModel: UserViewModel, onOpenSettings: () -> Unit = {}) {
 }
 
 @Composable
-private fun StatsRow(title: String, subtitle: String, artist: String) {
+private fun StatsRow(title: String, subtitle: String, artist: String, albumArtUri: String?) {
     ListItem(
+        leadingContent = { AlbumArtThumb(uri = albumArtUri) },
         headlineContent = { Text(title) },
         supportingContent = { Text(if (artist.isBlank()) subtitle else "$artist · $subtitle") },
     )

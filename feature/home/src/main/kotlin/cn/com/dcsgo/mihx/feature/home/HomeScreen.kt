@@ -60,12 +60,20 @@ fun HomeScreen(viewModel: HomeViewModel) {
             state.songs.filter { it.title.lowercase().contains(q) || it.artist.lowercase().contains(q) }
         }
     }
+    // Select-all state: every song in the visible (query-filtered, or whole-library) list is checked.
+    val isAllSelected = filtered.isNotEmpty() && state.selectedIds.containsAll(filtered.map { it.id })
 
     Scaffold(
         topBar = {
             MelodyTopAppBar(
-                title = { Text("曲库") },
+                title = { Text("本地歌曲管理") },
                 actions = {
+                    // Select-all / deselect-all for the visible list (hidden when the library is empty).
+                    if (state.songs.isNotEmpty()) {
+                        TextButton(onClick = { viewModel.toggleSelectAll(filtered.map { it.id }) }) {
+                            Text(if (isAllSelected) "取消全选" else "全选")
+                        }
+                    }
                     if (state.selectedIds.isNotEmpty()) {
                         IconButton(onClick = viewModel::openAddToPlaylistDialog) {
                             Icon(Icons.AutoMirrored.Filled.PlaylistAdd, contentDescription = "加入歌单")
@@ -114,7 +122,7 @@ fun HomeScreen(viewModel: HomeViewModel) {
                             song = song,
                             selected = song.id in state.selectedIds,
                             selectable = true,
-                            showCover = false,
+                            showCover = true,
                             onClick = { viewModel.toggleSelect(song.id) },
                         )
                     }

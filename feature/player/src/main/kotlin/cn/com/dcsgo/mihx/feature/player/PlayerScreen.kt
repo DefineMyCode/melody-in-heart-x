@@ -3,6 +3,8 @@
 
 package cn.com.dcsgo.mihx.feature.player
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -38,6 +40,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -61,6 +64,17 @@ fun PlayerScreen(viewModel: PlayerViewModel, onOpenLyrics: () -> Unit = {}) {
     var showQueue by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState()
 
+    // 封面点击节流：快速连点只响应一次，避免第二下落在导航过渡中已渲染的歌词页
+    // 歌词行上（那是误触 seek 的来源）。
+    var lastCoverClick by remember { mutableStateOf(0L) }
+    val openLyricsThrottled = {
+        val now = System.currentTimeMillis()
+        if (now - lastCoverClick >= COVER_CLICK_THROTTLE_MS) {
+            lastCoverClick = now
+            onOpenLyrics()
+        }
+    }
+
     Box(modifier = Modifier.fillMaxSize()) {
         Column(
             modifier = Modifier.fillMaxSize().padding(24.dp),
@@ -70,13 +84,34 @@ fun PlayerScreen(viewModel: PlayerViewModel, onOpenLyrics: () -> Unit = {}) {
             val currentSong = remember(state.queue, state.highlightIndex) {
                 state.queue.orderedSongs().getOrNull(state.highlightIndex)
             }
-            AsyncImage(
-                model = currentSong?.albumArtUri,
-                contentDescription = null,
-                // UI 设计定稿：大封面 16dp 圆角（对齐 Shapes.large）。
-                modifier = Modifier.size(200.dp).clip(RoundedCornerShape(16.dp)),
-                contentScale = ContentScale.Crop,
-            )
+            Box(modifier = Modifier.size(280.dp)) {
+                AsyncImage(
+                    model = currentSong?.albumArtUri,
+                    contentDescription = "点击查看歌词",
+                    // UI 设计定稿：大封面 280dp + 16dp 圆角；整张封面就是歌词入口（替代原 FAB）。
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clip(RoundedCornerShape(16.dp))
+                        .clickable { openLyricsThrottled() },
+                    contentScale = ContentScale.Crop,
+                )
+                // 底部"点击查看歌词"提示 pill，让封面的可点击语义显式可见。
+                Row(
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .padding(bottom = 10.dp)
+                        .background(Color.Black.copy(alpha = 0.55f), RoundedCornerShape(12.dp))
+                        .padding(horizontal = 10.dp, vertical = 5.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                ) {
+                    Text(
+                        "点击查看歌词",
+                        color = Color.White,
+                        style = MaterialTheme.typography.labelSmall,
+                    )
+                }
+            }
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
                     text = currentSong?.title?.ifBlank { "未知标题" } ?: "无曲目",
@@ -117,18 +152,31 @@ fun PlayerScreen(viewModel: PlayerViewModel, onOpenLyrics: () -> Unit = {}) {
             }
             Row(verticalAlignment = Alignment.CenterVertically) {
                 IconButton(onClick = viewModel::onPrevious) {
-                    Icon(Icons.Filled.SkipPrevious, contentDescription = "上一首")
+                    Icon(
+                        Icons.Filled.SkipPrevious,
+                        contentDescription = "上一首",
+                        modifier = Modifier.size(32.dp),
+                    )
                 }
                 Spacer(Modifier.width(16.dp))
-                IconButton(onClick = viewModel::onPlayPause) {
+                // 播放/暂停是主操作：按钮与图标都显著大于其他控制（UI 设计定稿）。
+                IconButton(
+                    onClick = viewModel::onPlayPause,
+                    modifier = Modifier.size(72.dp),
+                ) {
                     Icon(
                         if (state.isPlaying) Icons.Filled.Pause else Icons.Filled.PlayArrow,
                         contentDescription = "播放/暂停",
+                        modifier = Modifier.size(48.dp),
                     )
                 }
                 Spacer(Modifier.width(16.dp))
                 IconButton(onClick = viewModel::onNext) {
-                    Icon(Icons.Filled.SkipNext, contentDescription = "下一首")
+                    Icon(
+                        Icons.Filled.SkipNext,
+                        contentDescription = "下一首",
+                        modifier = Modifier.size(32.dp),
+                    )
                 }
             }
         }
@@ -138,13 +186,6 @@ fun PlayerScreen(viewModel: PlayerViewModel, onOpenLyrics: () -> Unit = {}) {
             modifier = Modifier.align(Alignment.BottomEnd).padding(16.dp),
         ) {
             Icon(Icons.AutoMirrored.Filled.QueueMusic, contentDescription = "播放队列")
-        }
-
-        FloatingActionButton(
-            onClick = onOpenLyrics,
-            modifier = Modifier.align(Alignment.BottomStart).padding(16.dp),
-        ) {
-            Icon(Icons.Filled.Lyrics, contentDescription = "歌词")
         }
     }
 
@@ -172,3 +213,6 @@ private fun formatPlaybackTime(ms: Long): String {
     val seconds = totalSeconds % 60
     return "%02d:%02d".format(minutes, seconds)
 }
+
+/** Debounce window for the cover-to-lyrics entry (rapid double-taps are dropped). */
+private const val COVER_CLICK_THROTTLE_MS: Long = 600

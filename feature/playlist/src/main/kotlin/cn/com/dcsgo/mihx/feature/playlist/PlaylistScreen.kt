@@ -3,11 +3,14 @@
 
 package cn.com.dcsgo.mihx.feature.playlist
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -15,6 +18,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.MoreVert
@@ -38,18 +42,19 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import cn.com.dcsgo.mihx.core.ui.component.AlbumArtThumb
 import cn.com.dcsgo.mihx.core.ui.component.EmptyState
 import cn.com.dcsgo.mihx.core.ui.component.MelodyTopAppBar
 import cn.com.dcsgo.mihx.core.ui.component.SongRow
 
 @Composable
-fun PlaylistScreen(viewModel: PlaylistViewModel) {
+fun PlaylistScreen(viewModel: PlaylistViewModel, onOpenLibrary: () -> Unit = {}) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val selectedId = state.selectedPlaylistId
     if (selectedId != null) {
         PlaylistDetailScreen(state = state, viewModel = viewModel)
     } else {
-        PlaylistListScreen(state = state, viewModel = viewModel)
+        PlaylistListScreen(state = state, viewModel = viewModel, onOpenLibrary = onOpenLibrary)
     }
 
     when (val dialog = state.dialog) {
@@ -61,6 +66,7 @@ fun PlaylistScreen(viewModel: PlaylistViewModel) {
                 onConfirm = viewModel::onCreateConfirm,
                 onDismiss = viewModel::onDialogDismiss,
             )
+
         is PlaylistDialog.Rename ->
             PlaylistNameDialog(
                 title = "重命名歌单",
@@ -72,11 +78,21 @@ fun PlaylistScreen(viewModel: PlaylistViewModel) {
 }
 
 @Composable
-private fun PlaylistListScreen(state: PlaylistUiState, viewModel: PlaylistViewModel) {
+private fun PlaylistListScreen(
+    state: PlaylistUiState,
+    viewModel: PlaylistViewModel,
+    onOpenLibrary: () -> Unit = {},
+) {
     Scaffold(
         topBar = {
             MelodyTopAppBar(
                 title = { Text("歌单") },
+                // 本地歌曲管理入口：歌单不在底部导航了，从这里进入本地歌曲页（底部导航第一 tab 是歌单）。
+                actions = {
+                    TextButton(onClick = onOpenLibrary) {
+                        Text("本地歌曲管理")
+                    }
+                },
             )
         },
         floatingActionButton = {
@@ -88,13 +104,16 @@ private fun PlaylistListScreen(state: PlaylistUiState, viewModel: PlaylistViewMo
         if (state.playlists.isEmpty()) {
             EmptyState("还没有歌单，点击右下角新建", Modifier.padding(padding))
         } else {
-            LazyColumn(modifier = Modifier.fillMaxSize().padding(padding)) {
+            LazyColumn(modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)) {
                 items(state.playlists, key = { it.id }) { playlist ->
                     PlaylistItemRow(
                         name = playlist.name,
+                        coverUri = playlist.coverUri,
                         onClick = { viewModel.onOpenPlaylist(playlist.id) },
                         onRename = { viewModel.onRenameClick(playlist.id) },
-                        onDelete = { viewModel.onDeleteClick(playlist.id) },
+                        onDelete = { viewModel.deletePlaylist(playlist.id) },
                     )
                 }
             }
@@ -105,6 +124,7 @@ private fun PlaylistListScreen(state: PlaylistUiState, viewModel: PlaylistViewMo
 @Composable
 private fun PlaylistItemRow(
     name: String,
+    coverUri: String?,
     onClick: () -> Unit,
     onRename: () -> Unit,
     onDelete: () -> Unit,
@@ -114,13 +134,18 @@ private fun PlaylistItemRow(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
-            .padding(horizontal = 16.dp, vertical = 14.dp),
+            .padding(horizontal = 16.dp, vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
+        // 歌单封面：最新添加歌曲的封面；空歌单/无封面显示默认音符图标。
+        AlbumArtThumb(uri = coverUri)
+        Spacer(Modifier.width(12.dp))
         Text(text = name, modifier = Modifier.weight(1f))
         IconButton(onClick = { menuExpanded = true }) {
             Icon(Icons.Filled.MoreVert, contentDescription = "更多")
         }
+        // 弹窗在 MoreVert 按钮附近（DropdownMenu 默认锚定锚点下方），点击菜单项后菜单自动关闭：
+        // 重命名 → 居中输入弹窗；删除 → 直接删除。
         DropdownMenu(expanded = menuExpanded, onDismissRequest = { menuExpanded = false }) {
             DropdownMenuItem(
                 text = { Text("重命名") },
@@ -142,6 +167,12 @@ private fun PlaylistItemRow(
 
 @Composable
 private fun PlaylistDetailScreen(state: PlaylistUiState, viewModel: PlaylistViewModel) {
+    // The nav graph has no dedicated detail destination — detail is a ViewModel state on the
+    // PLAYLIST route. Without this, the system back gesture/button would navigateUp past the
+    // single PLAYLIST entry and exit to the home screen. Intercept and run the same back step
+    // as the toolbar navigationIcon.
+    BackHandler(onBack = viewModel::onBack)
+
     Scaffold(
         topBar = {
             MelodyTopAppBar(
@@ -157,7 +188,9 @@ private fun PlaylistDetailScreen(state: PlaylistUiState, viewModel: PlaylistView
         if (state.detailSongs.isEmpty()) {
             EmptyState("歌单为空", Modifier.padding(padding))
         } else {
-            LazyColumn(modifier = Modifier.fillMaxSize().padding(padding)) {
+            LazyColumn(modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)) {
                 // No stable key: playlists may contain the same song twice, so song.id would
                 // collide inside the LazyColumn ("Key N was already used" crash). Position indexing
                 // is safe here since SongRow carries no per-item state.
@@ -166,13 +199,24 @@ private fun PlaylistDetailScreen(state: PlaylistUiState, viewModel: PlaylistView
                         modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        SongRow(song = song, modifier = Modifier.weight(1f), onClick = { viewModel.onPlaySong(index) })
-                        IconButton(onClick = { viewModel.onMove(index, (index - 1).coerceAtLeast(0)) }) {
+                        SongRow(
+                            song = song,
+                            modifier = Modifier.weight(1f),
+                            onClick = { viewModel.onPlaySong(index) })
+                        IconButton(onClick = {
+                            viewModel.onMove(
+                                index,
+                                (index - 1).coerceAtLeast(0)
+                            )
+                        }) {
                             Icon(Icons.Filled.KeyboardArrowUp, contentDescription = "上移")
                         }
                         IconButton(
                             onClick = {
-                                viewModel.onMove(index, (index + 1).coerceAtMost(state.detailSongs.lastIndex))
+                                viewModel.onMove(
+                                    index,
+                                    (index + 1).coerceAtMost(state.detailSongs.lastIndex)
+                                )
                             },
                         ) {
                             Icon(Icons.Filled.KeyboardArrowDown, contentDescription = "下移")

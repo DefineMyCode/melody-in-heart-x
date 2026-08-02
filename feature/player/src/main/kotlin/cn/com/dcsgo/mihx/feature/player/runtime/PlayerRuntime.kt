@@ -47,9 +47,18 @@ class PlayerRuntime @Inject constructor(
      * pipeline (plan P5-A) persisted in Room, so no [android.Manifest.permission.READ_MEDIA_AUDIO]
      * gate is required here. If a persisted snapshot exists it is restored (queue order / mode /
      * current item / position) in a paused state (plan P4-6/7).
+     *
+     * Idempotent bootstrap: if a queue is already set (playlist/home tap-to-play, a restored
+     * snapshot, or a previous load) the transport is left untouched. The player screen re-runs
+     * this from [androidx.compose.runtime.LaunchedEffect] on every nav re-entry, and without this
+     * guard the whole library would replace the current queue and restart from its first song.
      */
     suspend fun loadLibrary() {
+        if (queueFacade.queue.value.songs.isNotEmpty()) return
         val library = songRepository.getAll()
+        // Empty library: nothing to play. Do not push an empty queue into the window planner /
+        // transport (it would plan a window with currentIndex = -1 and crash the seek).
+        if (library.isEmpty()) return
         val snapshot = playbackStateRepository.loadSnapshot()
         if (snapshot != null && !restored) {
             restored = true

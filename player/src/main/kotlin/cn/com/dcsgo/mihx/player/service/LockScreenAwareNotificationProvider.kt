@@ -5,6 +5,7 @@ import android.os.Bundle
 import androidx.media3.session.CommandButton
 import androidx.media3.session.MediaNotification
 import androidx.media3.session.MediaSession
+import cn.com.dcsgo.mihx.core.common.log.AppLogger
 import com.google.common.collect.ImmutableList
 
 /**
@@ -34,9 +35,17 @@ class LockScreenAwareNotificationProvider(
     ): MediaNotification {
         val original = delegate.createNotification(session, mediaButtons, actionFactory, callback)
         original.notification.visibility = Notification.VISIBILITY_PUBLIC
+        AppLogger.d(
+            TAG,
+            "Notification created: id=${original.notificationId} channel=${original.notification?.channelId} visibility=PUBLIC mediaItems=${session.player?.mediaItemCount}",
+        )
         return MediaNotification(original.notificationId, original.notification)
     }
 
     override fun handleCustomCommand(session: MediaSession, action: String, extras: Bundle): Boolean =
         delegate.handleCustomCommand(session, action, extras)
+
+    companion object {
+        private const val TAG = "LockScreenNotifProvider"
+    }
 }

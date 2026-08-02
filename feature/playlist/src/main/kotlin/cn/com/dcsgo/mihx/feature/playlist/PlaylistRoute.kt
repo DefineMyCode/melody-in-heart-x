@@ -9,9 +9,9 @@ import androidx.navigation.compose.composable
 
 /** Top-level route composable registered by the app nav host. */
 @Composable
-fun PlaylistRoute() {
+fun PlaylistRoute(onOpenLibrary: () -> Unit = {}) {
     val viewModel: PlaylistViewModel = hiltViewModel()
-    PlaylistScreen(viewModel = viewModel)
+    PlaylistScreen(viewModel = viewModel, onOpenLibrary = onOpenLibrary)
 }
 
 /** Nav-graph extension (alternative registration style). */

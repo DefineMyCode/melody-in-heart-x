@@ -40,6 +40,11 @@ class DefaultPlayerFactory @Inject constructor() : PlayerFactory {
             // handleAudioFocus = true: the system manages audio focus. ExoPlayer also pauses
             // automatically on ACTION_AUDIO_BECOMING_NOISY for USAGE_MEDIA (plan P3-5 double-safety).
             .setAudioAttributes(audioAttributes, true)
+            // P5-UI: keep a partial WakeLock while audio is playing so the system / OEM skins
+            // don't suspend the foreground service when the screen is off for a long time.
+            // WAKE_MODE_NETWORK is the standard choice for streaming-style playback; paired with
+            // FOREGROUND_SERVICE_MEDIA_PLAYBACK this makes the service much harder to reclaim.
+            .setWakeMode(C.WAKE_MODE_NETWORK)
             .build()
     }
 

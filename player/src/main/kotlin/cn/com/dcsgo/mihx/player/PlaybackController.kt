@@ -75,12 +75,25 @@ class PlaybackController @Inject constructor(
         }
     }
 
-    /** Starts the session service (publishes a token) and attaches a [MediaController]. Idempotent. */
+    /**
+     * Starts the session service (publishes a token) and attaches a [MediaController]. Idempotent.
+     *
+     * Health-check: the previous guard `if (connectJob != null) return` only protected against
+     * double-launching the connect coroutine, but never checked whether the existing
+     * [MediaController] was still connected. When the system reclaimed the session service in the
+     * background (low-memory or OEM kills) the old controller was released silently; subsequent
+     * [play]/[seekTo]/[seekToNextMediaItem] calls became no-ops and the UI looked frozen. Now we
+     * reconnect whenever the current controller is gone or disconnected.
+     */
     fun connect() {
-        if (connectJob != null) return
+        if (controller?.isConnected == true) return
+        connectJob?.cancel()
+        connectJob = null
+        AppLogger.d(TAG, "connect(): starting AppMediaSessionService and waiting for token...")
         startSessionService()
         connectJob = scope.launch {
             val token = tokenProvider.token.filterNotNull().first()
+            AppLogger.d(TAG, "connect(): token received, building MediaController")
             buildController(token)
         }
     }
@@ -119,9 +132,13 @@ class PlaybackController @Inject constructor(
         controller = mediaController
         mediaController.addListener(playerListener)
         _currentIndex.value = mediaController.currentMediaItemIndex
+        AppLogger.d(TAG, "onControllerReady: connected, mediaItemCount=${mediaController.mediaItemCount}")
+        var hadPendingItems = false
         pendingItems?.let {
+            AppLogger.d(TAG, "onControllerReady: flushing ${it.size} pending items")
             mediaController.setMediaItems(it)
             mediaController.prepare()
+            hadPendingItems = it.isNotEmpty()
         }
         pendingItems = null
         pendingSeekIndex?.let { mediaController.seekToDefaultPosition(it) }
@@ -131,6 +148,12 @@ class PlaybackController @Inject constructor(
         if (pendingPlay) {
             mediaController.play()
             pendingPlay = false
+        }
+        // 关键修复：如果 flush 了 pending items，重新触发 startService → onStartCommand，
+        // 让 Media3 在 player 有内容时创建媒体通知并 startForeground。
+        if (hadPendingItems) {
+            AppLogger.d(TAG, "onControllerReady: re-triggering startService for notification creation")
+            context.startService(Intent(context, AppMediaSessionService::class.java))
         }
         _snapshot.value = _snapshot.value.copy(
             isPlaying = mediaController.isPlaying,
@@ -163,11 +186,20 @@ class PlaybackController @Inject constructor(
         pendingItems = items
         controller?.setMediaItems(items)
         controller?.prepare()
+        // 关键修复：onStartCommand 在 player 没有 media items 时被调用，Media3 不会创建
+        // 通知。设置 media items 后重新触发 startService → onStartCommand，让 Media3 在
+        // player 有内容时创建媒体通知并 startForeground（锁屏控件 + 前台保活的前提）。
+        if (controller != null && items.isNotEmpty()) {
+            AppLogger.d(TAG, "setMediaItems: re-triggering startService for notification creation")
+            context.startService(Intent(context, AppMediaSessionService::class.java))
+        }
     }
 
     /** Maps domain [Song]s to Media3 items and queues them (keeps Media3 types inside the kernel). */
     fun setSongs(songs: List<Song>) {
-        setMediaItems(songs.map { mapper.toMediaItem(it) })
+        val items = songs.map { mapper.toMediaItem(it) }
+        AppLogger.d(TAG, "setSongs: mapping ${songs.size} songs to MediaItems")
+        setMediaItems(items)
     }
 
     fun play() {

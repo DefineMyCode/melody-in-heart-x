@@ -60,6 +60,9 @@ class PlayerQueueController @Inject constructor(
      * existing window (used by [seekToQueueIndex] for in-window jumps).
      */
     fun applyQueue(playQueue: PlayQueue) {
+        // Empty queue guard: the window planner would yield a window with currentIndex = -1,
+        // and seekToMediaItem(-1) crashes the transport. Leave the transport untouched instead.
+        if (playQueue.songs.isEmpty()) return
         synchronizer.forceReplan()
         val resolution = synchronizer.resolve(playQueue)
         val plan = resolution.plan ?: return
@@ -82,6 +85,8 @@ class PlayerQueueController @Inject constructor(
      * "tap to play".
      */
     fun seekToQueueIndex(playQueue: PlayQueue, index: Int) {
+        // Empty queue guard: nothing to jump to; the planner would yield currentIndex = -1.
+        if (playQueue.songs.isEmpty()) return
         val cache = synchronizer.current()
         val size = cache?.mediaIds?.size ?: 0
         if (cache != null && index >= cache.startIndex && index < cache.startIndex + size) {

@@ -8,6 +8,7 @@ import cn.com.dcsgo.mihx.data.database.entity.MigrationStateEntity
 import cn.com.dcsgo.mihx.data.database.entity.PlayCountRow
 import cn.com.dcsgo.mihx.data.database.entity.PlayStatsEntity
 import cn.com.dcsgo.mihx.data.database.entity.PlayStatsView
+import cn.com.dcsgo.mihx.data.database.entity.PlaylistCoverRow
 import cn.com.dcsgo.mihx.data.database.entity.PlaylistEntity
 import cn.com.dcsgo.mihx.data.database.entity.PlaylistSongCrossRefEntity
 import cn.com.dcsgo.mihx.data.database.entity.ShortPlayCountEntity
@@ -68,6 +69,23 @@ interface MelodyDao {
     @Query("SELECT * FROM playlists ORDER BY createdAt DESC, id DESC")
     fun observePlaylists(): Flow<List<PlaylistEntity>>
 
+    /**
+     * Playlists plus the album-art of the most recently added song in each (position DESC — the
+     * cross-ref position tracks insertion order; re-adding a song updates its position).
+     */
+    @Query(
+        """
+        SELECT p.id AS id, p.name AS name,
+               (SELECT s.albumArtUri FROM playlist_songs ps
+                JOIN songs s ON s.id = ps.songId
+                WHERE ps.playlistId = p.id
+                ORDER BY ps.position DESC LIMIT 1) AS coverUri
+        FROM playlists p
+        ORDER BY p.createdAt DESC, p.id DESC
+        """,
+    )
+    fun observePlaylistsWithCover(): Flow<List<PlaylistCoverRow>>
+
     @Query("DELETE FROM playlists WHERE id = :id")
     suspend fun deletePlaylist(id: Long)
 
@@ -92,7 +110,7 @@ interface MelodyDao {
         SELECT s.* FROM playlist_songs ps
         INNER JOIN songs s ON ps.songId = s.id
         WHERE ps.playlistId = :playlistId
-        ORDER BY ps.position ASC
+        ORDER BY ps.position DESC
         """,
     )
     suspend fun getPlaylistSongEntities(playlistId: Long): List<SongEntity>

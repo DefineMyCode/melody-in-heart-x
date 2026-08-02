@@ -2,7 +2,6 @@
 
 package cn.com.dcsgo.mihx.core.ui.toast
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -33,12 +32,12 @@ fun ToastHost(controller: ToastController, modifier: Modifier = Modifier) {
                 delay(message.durationMs)
                 controller.dismiss(message.id)
             }
-            AnimatedVisibility(visible = true) {
-                Surface(
-                    shadowElevation = 4.dp,
-                    // P3-8: tap anywhere on the toast to dismiss it manually.
-                    modifier = Modifier.clickable { controller.dismiss(message.id) },
-                ) {
+            // No enter/exit animation (all animations disabled project-wide).
+            Surface(
+                shadowElevation = 4.dp,
+                // P3-8: tap anywhere on the toast to dismiss it manually.
+                modifier = Modifier.clickable { controller.dismiss(message.id) },
+            ) {
                     Row(
                         modifier = Modifier.fillMaxWidth().padding(12.dp),
                         verticalAlignment = Alignment.CenterVertically,
@@ -51,7 +50,6 @@ fun ToastHost(controller: ToastController, modifier: Modifier = Modifier) {
                         Text(text = "✕")
                     }
                 }
-            }
         }
     }
 }

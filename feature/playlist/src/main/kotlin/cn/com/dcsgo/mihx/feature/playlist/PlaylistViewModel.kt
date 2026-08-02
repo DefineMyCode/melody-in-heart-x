@@ -2,6 +2,7 @@ package cn.com.dcsgo.mihx.feature.playlist
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import cn.com.dcsgo.mihx.core.model.Playlist
 import cn.com.dcsgo.mihx.feature.player.PlayerQueueFacade
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -30,7 +31,13 @@ class PlaylistViewModel @Inject constructor(
 
     fun onOpenPlaylist(id: Long) {
         val playlist = _uiState.value.playlists.find { it.id == id } ?: return
-        _uiState.update { it.copy(selectedPlaylistId = id, selectedPlaylist = playlist, isLoading = true) }
+        _uiState.update {
+            it.copy(
+                selectedPlaylistId = id,
+                selectedPlaylist = Playlist(id = playlist.id, name = playlist.name),
+                isLoading = true,
+            )
+        }
         viewModelScope.launch {
             val songs = facade.getSongs(id)
             _uiState.update { it.copy(detailSongs = songs, isLoading = false) }
@@ -43,12 +50,14 @@ class PlaylistViewModel @Inject constructor(
 
     fun onCreateClick() = _uiState.update { it.copy(dialog = PlaylistDialog.Create) }
 
+    /** Opens the rename dialog for the playlist (the row's edit menu fires this). */
     fun onRenameClick(id: Long) {
         val name = _uiState.value.playlists.find { it.id == id }?.name ?: ""
         _uiState.update { it.copy(dialog = PlaylistDialog.Rename(id, name)) }
     }
 
-    fun onDeleteClick(id: Long) {
+    /** Deletes a playlist directly (no confirmation — the row edit menu acts as the confirm step). */
+    fun deletePlaylist(id: Long) {
         viewModelScope.launch { facade.deletePlaylist(id) }
     }
 

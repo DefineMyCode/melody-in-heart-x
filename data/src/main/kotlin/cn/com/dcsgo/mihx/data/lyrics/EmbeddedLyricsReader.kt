@@ -32,7 +32,10 @@ class EmbeddedLyricsReader @Inject constructor(
     @ApplicationContext private val context: Context,
 ) {
     private companion object {
-        const val MAX_BYTES = 4 * 1024 * 1024
+        // Only the metadata region is needed; 512KB covers virtually all ID3v2 tags / Vorbis
+        // comment blocks while keeping the SAF read (8KB chunks over the content bridge) snappy.
+        // The process-wide cache in LyricsRepositoryImpl makes this happen at most once per song.
+        const val MAX_BYTES = 512 * 1024
     }
 
     suspend fun read(song: Song): Lyrics? = withContext(Dispatchers.IO) {

@@ -7,8 +7,10 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
@@ -26,6 +28,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import cn.com.dcsgo.mihx.core.model.PlayMode
 import cn.com.dcsgo.mihx.core.model.Song
+import cn.com.dcsgo.mihx.core.ui.component.AlbumArtThumb
 
 /**
  * Queue panel (plan P2-9): renders the full play-order [songs], highlights the item at
@@ -79,6 +82,8 @@ fun QueuePanel(
                         .padding(horizontal = 12.dp, vertical = 10.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
+                    AlbumArtThumb(uri = song.albumArtUri, size = 40.dp)
+                    Spacer(Modifier.width(10.dp))
                     Text(
                         text = "${index + 1}",
                         style = MaterialTheme.typography.labelMedium,

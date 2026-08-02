@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Paths exposed by the album-art FileProvider (plan 5B). Only the artwork cache directory is
+     shared, keyed by song id. -->
+<paths>
+    <cache-path name="artwork" path="artwork" />
+</paths>

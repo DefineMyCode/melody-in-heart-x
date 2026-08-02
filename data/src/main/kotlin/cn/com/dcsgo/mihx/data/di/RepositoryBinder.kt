@@ -1,6 +1,8 @@
 package cn.com.dcsgo.mihx.data.di
 
 import cn.com.dcsgo.mihx.data.LibraryImporterImpl
+import cn.com.dcsgo.mihx.data.artwork.ArtworkStore
+import cn.com.dcsgo.mihx.data.artwork.ArtworkStoreImpl
 import cn.com.dcsgo.mihx.data.repository.LyricsRepositoryImpl
 import cn.com.dcsgo.mihx.data.repository.PlayStatsRepositoryImpl
 import cn.com.dcsgo.mihx.data.repository.PlaybackStateRepositoryImpl
@@ -36,6 +38,10 @@ abstract class RepositoryBinder {
     @Binds
     @Singleton
     abstract fun bindLibraryImporter(impl: LibraryImporterImpl): LibraryImporter
+
+    @Binds
+    @Singleton
+    abstract fun bindArtworkStore(impl: ArtworkStoreImpl): ArtworkStore
 
     @Binds
     @Singleton

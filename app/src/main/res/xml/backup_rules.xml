@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Full-backup content rules (plan P4-8 / P0-9). Excludes local-only state that must not roam
      across devices or restores: the Room database, the two DataStores (playback snapshot +
-     settings), and any persisted URI grants. The cover/artwork cache lives under cacheDir,
-     which Android never backs up, so no explicit exclude is needed. -->
+     settings), and any persisted URI grants. The album-art cache lives in the app cache dir,
+     which Android never backs up by default, so no explicit exclude is needed (and the cache
+     domain is not a valid exclude target for FullBackupContent). -->
 <full-backup-content>
     <!-- Room database (MelodyDatabase). -->
     <exclude domain="database" path="melody" />

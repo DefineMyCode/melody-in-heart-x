@@ -26,6 +26,9 @@ interface MelodyDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsertSong(song: SongEntity): Long
 
+    @Query("UPDATE songs SET albumArtUri = :uri WHERE id = :songId")
+    suspend fun updateAlbumArtUri(songId: Long, uri: String)
+
     @Query("SELECT * FROM songs")
     suspend fun getAllSongs(): List<SongEntity>
 

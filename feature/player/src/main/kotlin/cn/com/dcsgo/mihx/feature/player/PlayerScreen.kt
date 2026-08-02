@@ -11,7 +11,9 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.QueueMusic
 import androidx.compose.material.icons.filled.Pause
@@ -34,9 +36,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import cn.com.dcsgo.mihx.feature.player.component.QueuePanel
+import coil.compose.AsyncImage
 
 @Composable
 fun PlayerScreen(viewModel: PlayerViewModel) {
@@ -59,7 +64,16 @@ fun PlayerScreen(viewModel: PlayerViewModel) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
         ) {
-            Text(text = "当前: ${state.currentMediaId ?: "无曲目"}")
+            val currentSong = remember(state.queue, state.highlightIndex) {
+                state.queue.orderedSongs().getOrNull(state.highlightIndex)
+            }
+            AsyncImage(
+                model = currentSong?.albumArtUri,
+                contentDescription = null,
+                modifier = Modifier.size(200.dp).clip(RoundedCornerShape(12.dp)),
+                contentScale = ContentScale.Crop,
+            )
+            Text(text = "当前: ${currentSong?.title ?: "无曲目"}")
             Slider(
                 value = if (state.isDragging) state.sliderPositionMs.toFloat() else tick.toFloat(),
                 valueRange = 0f..(if (state.durationMs > 0) state.durationMs.toFloat() else 1f),

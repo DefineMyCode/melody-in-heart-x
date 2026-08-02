@@ -354,7 +354,7 @@ P0 ──> P1 ──> P2 ──┬──> P3 ──┐
 - [ ] `EmbeddedLyricsReader`：读取内嵌歌词（ID3 `USLT` / Vorbis `LYRICS`）。外部 `.lrc` 已覆盖（见下），内嵌读取留待下一回合。
 - [x] `LrcParser`：解析外部 `.lrc`（同名同目录优先），输出 `Lyrics` / `LyricLine` 时间轴。
 - [x] `LyricsView`（`:core:ui`）+ `:feature:lyrics`：逐行高亮、自动滚动、点击行 seek（经 `PlaybackController` 实时进度联动）。
-- [ ] `ArtworkStore`（`:data/artwork`）：封面提取与磁盘缓存（受限尺寸），Coil 加载；缓存目录纳入备份排除。
+- [x] `ArtworkStore`（`:data/artwork`）：封面提取与磁盘缓存（受限尺寸），Coil 加载；缓存目录纳入备份排除。
 
 #### 5C 策略、统计与设置（2.0 人周）
 

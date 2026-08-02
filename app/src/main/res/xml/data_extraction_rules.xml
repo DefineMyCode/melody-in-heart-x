@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Device-to-device / cloud extraction rules (plan P4-8 / P0-9). Mirrors backup_rules.xml: the
      Room database, DataStores and URI grants are local-only and must not be transferred to
-     another device. The artwork cache lives under cacheDir, which Android never extracts. -->
+     another device. The album-art cache lives in the app cache dir, which is never transferred
+     by default, so no explicit exclude is needed (and the cache domain is not a valid exclude
+     target for FullBackupContent). -->
 <data-extraction-rules>
     <cloud-backup>
         <exclude domain="database" path="melody" />

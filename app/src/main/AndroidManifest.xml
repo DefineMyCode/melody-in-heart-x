@@ -40,6 +40,19 @@
                 <action android:name="androidx.media3.session.MediaSessionService" />
             </intent-filter>
         </service>
+
+        <!-- Serves cached album art (cacheDir/artwork) to Coil (in-app) and Media3 (lock-screen /
+             notification) cross-process. Authority must match ARTWORK_FILE_PROVIDER_AUTHORITY in
+             data/artwork/ArtworkStore.kt. Plan 5B. -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="cn.com.dcsgo.mihx.artworkprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/artwork_file_paths" />
+        </provider>
     </application>
 
 </manifest>

@@ -23,6 +23,7 @@ dependencies {
     implementation(libs.composeRuntime)
     implementation(libs.composeUiToolingPreview)
     implementation(libs.composeMaterialIconsExtended)
+    implementation(libs.coilCompose)
     implementation(libs.navigationCompose)
     implementation(libs.lifecycleViewmodelCompose)
     implementation(libs.lifecycleRuntimeCompose)

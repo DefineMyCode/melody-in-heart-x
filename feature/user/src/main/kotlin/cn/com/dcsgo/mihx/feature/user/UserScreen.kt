@@ -22,6 +22,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import cn.com.dcsgo.mihx.core.ui.component.SectionHeader
 
 /**
  * 我的 screen (plan P5-C5/C6): listening statistics (total time, top tracks, skips) and
@@ -91,16 +92,6 @@ fun UserScreen(viewModel: UserViewModel) {
             }
         }
     }
-}
-
-@Composable
-private fun SectionHeader(title: String) {
-    Text(
-        text = title,
-        style = MaterialTheme.typography.titleSmall,
-        color = MaterialTheme.colorScheme.primary,
-        modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 4.dp),
-    )
 }
 
 @Composable

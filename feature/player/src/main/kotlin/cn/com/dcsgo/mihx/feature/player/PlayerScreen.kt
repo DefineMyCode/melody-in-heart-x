@@ -25,8 +25,8 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -39,8 +39,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import cn.com.dcsgo.mihx.core.ui.component.SeekSlider
 import cn.com.dcsgo.mihx.feature.player.component.QueuePanel
 import coil.compose.AsyncImage
 
@@ -71,11 +73,26 @@ fun PlayerScreen(viewModel: PlayerViewModel, onOpenLyrics: () -> Unit = {}) {
             AsyncImage(
                 model = currentSong?.albumArtUri,
                 contentDescription = null,
-                modifier = Modifier.size(200.dp).clip(RoundedCornerShape(12.dp)),
+                // UI 设计定稿：大封面 16dp 圆角（对齐 Shapes.large）。
+                modifier = Modifier.size(200.dp).clip(RoundedCornerShape(16.dp)),
                 contentScale = ContentScale.Crop,
             )
-            Text(text = "当前: ${currentSong?.title ?: "无曲目"}")
-            Slider(
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(
+                    text = currentSong?.title?.ifBlank { "未知标题" } ?: "无曲目",
+                    style = MaterialTheme.typography.titleLarge,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                Text(
+                    text = currentSong?.artist?.ifBlank { "未知艺人" }.orEmpty(),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+            SeekSlider(
                 value = if (state.isDragging) state.sliderPositionMs.toFloat() else tick.toFloat(),
                 valueRange = 0f..(if (state.durationMs > 0) state.durationMs.toFloat() else 1f),
                 onValueChange = { viewModel.onSeekDrag(it.toLong()) },

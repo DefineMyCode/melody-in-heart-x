@@ -30,7 +30,7 @@ fun MelodyApp(settings: PlayerSettingsRepository) {
     val themeMode by settings.observeThemeMode()
         .collectAsStateWithLifecycle(initialValue = ThemeMode.SYSTEM)
     val dynamicColor by settings.observeDynamicColorEnabled()
-        .collectAsStateWithLifecycle(initialValue = true)
+        .collectAsStateWithLifecycle(initialValue = false)
     val darkTheme = when (themeMode) {
         ThemeMode.SYSTEM -> isSystemInDarkTheme()
         ThemeMode.LIGHT -> false

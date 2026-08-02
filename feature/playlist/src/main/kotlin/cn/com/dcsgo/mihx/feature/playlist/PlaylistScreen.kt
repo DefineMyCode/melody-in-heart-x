@@ -4,7 +4,6 @@
 package cn.com.dcsgo.mihx.feature.playlist
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -40,6 +39,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import cn.com.dcsgo.mihx.core.ui.component.EmptyState
 import cn.com.dcsgo.mihx.core.ui.component.SongRow
 
 @Composable
@@ -82,9 +82,7 @@ private fun PlaylistListScreen(state: PlaylistUiState, viewModel: PlaylistViewMo
         },
     ) { padding ->
         if (state.playlists.isEmpty()) {
-            Box(modifier = Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
-                Text("还没有歌单，点击右下角新建")
-            }
+            EmptyState("还没有歌单，点击右下角新建", Modifier.padding(padding))
         } else {
             LazyColumn(modifier = Modifier.fillMaxSize().padding(padding)) {
                 items(state.playlists, key = { it.id }) { playlist ->
@@ -153,9 +151,7 @@ private fun PlaylistDetailScreen(state: PlaylistUiState, viewModel: PlaylistView
         },
     ) { padding ->
         if (state.detailSongs.isEmpty()) {
-            Box(modifier = Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
-                Text("歌单为空")
-            }
+            EmptyState("歌单为空", Modifier.padding(padding))
         } else {
             LazyColumn(modifier = Modifier.fillMaxSize().padding(padding)) {
                 // No stable key: playlists may contain the same song twice, so song.id would

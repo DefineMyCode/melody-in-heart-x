@@ -67,14 +67,14 @@ class PlayerSettingsRepositoryImpl @Inject constructor(
         ds.data.map { toThemeMode(it[PlayerSettingsDataStore.THEME_MODE]) }
 
     override suspend fun isDynamicColorEnabled(): Boolean =
-        read(PlayerSettingsDataStore.DYNAMIC_COLOR, true)
+        read(PlayerSettingsDataStore.DYNAMIC_COLOR, false)
 
     override suspend fun setDynamicColorEnabled(enabled: Boolean) {
         ds.edit { it[PlayerSettingsDataStore.DYNAMIC_COLOR] = enabled }
     }
 
     override fun observeDynamicColorEnabled(): Flow<Boolean> =
-        observe(PlayerSettingsDataStore.DYNAMIC_COLOR, true)
+        observe(PlayerSettingsDataStore.DYNAMIC_COLOR, false)
 
     private suspend fun read(key: Preferences.Key<Boolean>, default: Boolean): Boolean =
         ds.data.first()[key] ?: default

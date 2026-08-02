@@ -1,83 +1,42 @@
 package cn.com.dcsgo.mihx.player.service
 
 import android.app.Notification
-import android.content.Context
-import androidx.core.app.NotificationCompat
+import android.os.Bundle
 import androidx.media3.session.CommandButton
-import androidx.media3.session.DefaultMediaNotificationProvider
 import androidx.media3.session.MediaNotification
 import androidx.media3.session.MediaSession
-import androidx.media3.session.MediaSessionService
+import com.google.common.collect.ImmutableList
 
 /**
- * Custom [MediaSessionService.MediaNotificationProvider] that ensures media playback
- * controls are visible on the **lock screen** in addition to the notification shade.
+ * Wraps the default media notification provider and forces the produced notification to be publicly
+ * visible on the lock screen.
  *
- * The stock [DefaultMediaNotificationProvider] does not guarantee
- * [NotificationCompat.VISIBILITY_PUBLIC], which causes some OEM skins (and stock Android
- * under certain DND / lock-screen policies) to suppress the media card on the lock screen
- * while still showing it in the expanded quick-settings panel.
+ * The stock provider leaves the notification visibility at the platform default, so some OEM skins
+ * (and stock Android under certain lock-screen policies) suppress the media card on the lock screen
+ * while still showing it in the expanded notification shade. Flipping the visibility to
+ * [Notification.VISIBILITY_PUBLIC] makes the system render the controls on the lock screen too.
  *
- * This implementation delegates actual notification building to
- * [DefaultMediaNotificationProvider] and then rebuilds the notification with
- * [NotificationCompat.VISIBILITY_PUBLIC] while preserving all Media3 extras (including
- * [androidx.media.app.MediaStyle]) via [extras.putAll].
+ * Implementation note: per architecture gate A7 the :player module must not use the AndroidX compat
+ * notification builder. We therefore do NOT rebuild the notification — we only mutate the framework
+ * [Notification.visibility] field on the already-built [MediaNotification.notification] (a public,
+ * writable field), which preserves every original field (MediaStyle, actions, artwork, session
+ * token) and only changes the visibility flag.
  */
 class LockScreenAwareNotificationProvider(
-    context: Context,
-) : MediaSessionService.MediaNotificationProvider {
-
-    private val delegate = DefaultMediaNotificationProvider(context)
+    private val delegate: MediaNotification.Provider,
+) : MediaNotification.Provider {
 
     override fun createNotification(
-        mediaSession: MediaSession,
-        customLayout: MediaSession.MediaLayout?,
-        actionButtons: List<CommandButton>,
-        smallIconResId: Int,
+        session: MediaSession,
+        mediaButtons: ImmutableList<CommandButton>,
+        actionFactory: MediaNotification.ActionFactory,
+        callback: MediaNotification.Provider.Callback,
     ): MediaNotification {
-        val result = delegate.createNotification(
-            mediaSession,
-            customLayout,
-            actionButtons,
-            smallIconResId,
-        )
-        val original = result.notification
-
-        // Rebuild with VISIBILITY_PUBLIC, carrying over all critical fields and the full
-        // extras bundle (which contains MediaStyle, media session token, artwork URI, etc.).
-        val patched = NotificationCompat.Builder(
-            original.context,
-            original.channelId ?: DEFAULT_CHANNEL_ID,
-        )
-            .setSmallIcon(original.smallIcon)
-            .apply {
-                // Preserve every extra that DefaultMediaNotificationProvider set.
-                extras.putAll(original.extras)
-                setContentTitle(extras.getCharSequence(Notification.EXTRA_TITLE))
-                setContentText(extras.getCharSequence(Notification.EXTRA_TEXT))
-                setSubText(extras.getCharSequence(Notification.EXTRA_SUB_TEXT))
-                setWhen(original.`when`)
-                setShowWhen(true)
-                setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-                setContentIntent(original.contentIntent)
-                setDeleteIntent(original.deleteIntent)
-                setOngoing((original.flags and Notification.FLAG_ONGOING_EVENT) != 0)
-                // Restore all action buttons (play / pause / next / prev).
-                for (action in original.actions) {
-                    @Suppress("DEPRECATION")
-                    addAction(action)
-                }
-            }
-            .build()
-            .also {
-                it.flags =
-                    it.flags or (original.flags and Notification.FLAG_FOREGROUND_SERVICE)
-            }
-
-        return MediaNotification(result.id, patched)
+        val original = delegate.createNotification(session, mediaButtons, actionFactory, callback)
+        original.notification.visibility = Notification.VISIBILITY_PUBLIC
+        return MediaNotification(original.notificationId, original.notification)
     }
 
-    companion object {
-        private const val DEFAULT_CHANNEL_ID = "mihx_playback"
-    }
+    override fun handleCustomCommand(session: MediaSession, action: String, extras: Bundle): Boolean =
+        delegate.handleCustomCommand(session, action, extras)
 }

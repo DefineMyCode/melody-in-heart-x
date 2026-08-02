@@ -2,6 +2,7 @@ package cn.com.dcsgo.mihx.feature.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import cn.com.dcsgo.mihx.feature.playlist.PlaylistFacade
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -13,6 +14,7 @@ import javax.inject.Inject
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val facade: HomeFacade,
+    private val playlistFacade: PlaylistFacade,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HomeUiState())
@@ -21,6 +23,11 @@ class HomeViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             facade.library().collect { songs -> _uiState.update { it.copy(songs = songs) } }
+        }
+        viewModelScope.launch {
+            playlistFacade.observePlaylists().collect { playlists ->
+                _uiState.update { it.copy(playlists = playlists) }
+            }
         }
     }
 
@@ -43,6 +50,23 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             facade.deleteSongs(ids)
             _uiState.update { it.copy(selectedIds = emptySet()) }
+        }
+    }
+
+    fun openAddToPlaylistDialog() {
+        if (_uiState.value.selectedIds.isNotEmpty()) {
+            _uiState.update { it.copy(showAddToPlaylistDialog = true) }
+        }
+    }
+
+    fun dismissAddToPlaylistDialog() = _uiState.update { it.copy(showAddToPlaylistDialog = false) }
+
+    fun addSelectedToPlaylist(playlistId: Long) {
+        val ids = _uiState.value.selectedIds.toList()
+        if (ids.isEmpty()) return
+        viewModelScope.launch {
+            ids.forEach { playlistFacade.addSong(playlistId, it) }
+            _uiState.update { it.copy(selectedIds = emptySet(), showAddToPlaylistDialog = false) }
         }
     }
 

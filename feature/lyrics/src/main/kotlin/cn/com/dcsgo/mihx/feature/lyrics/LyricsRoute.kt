@@ -9,14 +9,14 @@ import androidx.navigation.compose.composable
 
 /** Top-level route composable registered by the app nav host. */
 @Composable
-fun LyricsRoute() {
+fun LyricsRoute(onBack: () -> Unit = {}) {
     val viewModel: LyricsViewModel = hiltViewModel()
-    LyricsScreen(viewModel = viewModel)
+    LyricsScreen(viewModel = viewModel, onBack = onBack)
 }
 
 /** Nav-graph extension (alternative registration style). */
-fun NavGraphBuilder.lyricsRoute() {
+fun NavGraphBuilder.lyricsRoute(onBack: () -> Unit = {}) {
     composable("lyrics") {
-        LyricsRoute()
+        LyricsRoute(onBack = onBack)
     }
 }

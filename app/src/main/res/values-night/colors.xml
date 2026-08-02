@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Monochrome neutral launch color (dark). window_background pinned to pure black per user
+         request: the system default splash and the first frame both render black in dark mode. -->
+    <color name="window_background">#000000</color>
+</resources>

@@ -16,6 +16,8 @@ class MainActivity : ComponentActivity() {
     lateinit var settingsRepository: PlayerSettingsRepository
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        // Launch goes straight into the app — no custom SplashScreen. Android 12+ renders the
+        // system default splash over Theme.Melody's windowBackground (pure black in dark mode).
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         setContent {

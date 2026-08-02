@@ -42,6 +42,15 @@ private val LightInverseOnSurface = Color(0xFFF1F0EF)
 private val LightInversePrimary = Color(0xFFE0E0E0)
 private val LightOutline = Color(0xFF767575)
 private val LightOutlineVariant = Color(0xFFC4C4C4)
+// Pure neutral surfaceContainer* — replaces Material3 defaults so NavigationBar / surfaces never
+// carry a purple tonal tint (our primary is near-black #1D1B20, no chromatic surface elevation).
+private val LightSurfaceContainerLowest = Color(0xFFFFFFFF)
+private val LightSurfaceContainerLow = Color(0xFFF7F7F7)
+private val LightSurfaceContainer = Color(0xFFF1F1F1)
+private val LightSurfaceContainerHigh = Color(0xFFEBEBEB)
+private val LightSurfaceContainerHighest = Color(0xFFE3E3E3)
+private val LightSurfaceBright = Color(0xFFFFFFFF)
+private val LightSurfaceDim = Color(0xFFD9D9D9)
 
 private val DarkPrimary = Color(0xFFE0E0E0)
 private val DarkOnPrimary = Color(0xFF1D1B20)
@@ -71,6 +80,13 @@ private val DarkInverseOnSurface = Color(0xFF1D1B20)
 private val DarkInversePrimary = Color(0xFF1D1B20)
 private val DarkOutline = Color(0xFF909493)
 private val DarkOutlineVariant = Color(0xFF444746)
+private val DarkSurfaceContainerLowest = Color(0xFF09090A)
+private val DarkSurfaceContainerLow = Color(0xFF161617)
+private val DarkSurfaceContainer = Color(0xFF1A1A1B)
+private val DarkSurfaceContainerHigh = Color(0xFF242425)
+private val DarkSurfaceContainerHighest = Color(0xFF2F2F30)
+private val DarkSurfaceBright = Color(0xFF343435)
+private val DarkSurfaceDim = Color(0xFF0E0E0F)
 
 val DarkColorScheme = darkColorScheme(
     primary = DarkPrimary,
@@ -101,6 +117,13 @@ val DarkColorScheme = darkColorScheme(
     inversePrimary = DarkInversePrimary,
     outline = DarkOutline,
     outlineVariant = DarkOutlineVariant,
+    surfaceContainerLowest = DarkSurfaceContainerLowest,
+    surfaceContainerLow = DarkSurfaceContainerLow,
+    surfaceContainer = DarkSurfaceContainer,
+    surfaceContainerHigh = DarkSurfaceContainerHigh,
+    surfaceContainerHighest = DarkSurfaceContainerHighest,
+    surfaceBright = DarkSurfaceBright,
+    surfaceDim = DarkSurfaceDim,
 )
 
 val LightColorScheme = lightColorScheme(
@@ -132,4 +155,11 @@ val LightColorScheme = lightColorScheme(
     inversePrimary = LightInversePrimary,
     outline = LightOutline,
     outlineVariant = LightOutlineVariant,
+    surfaceContainerLowest = LightSurfaceContainerLowest,
+    surfaceContainerLow = LightSurfaceContainerLow,
+    surfaceContainer = LightSurfaceContainer,
+    surfaceContainerHigh = LightSurfaceContainerHigh,
+    surfaceContainerHighest = LightSurfaceContainerHighest,
+    surfaceBright = LightSurfaceBright,
+    surfaceDim = LightSurfaceDim,
 )

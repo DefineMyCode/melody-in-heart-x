@@ -99,6 +99,22 @@ fun PlayerScreen(viewModel: PlayerViewModel, onOpenLyrics: () -> Unit = {}) {
                 onValueChangeFinished = viewModel::onSeekDragEnded,
                 modifier = Modifier.fillMaxWidth(),
             )
+            // 时间标签：拖拽中显示拖动位置，否则显示实时进度（UI 设计定稿 labelSmall）。
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                Text(
+                    text = formatPlaybackTime(if (state.isDragging) state.sliderPositionMs else tick),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Text(
+                    text = formatPlaybackTime(state.durationMs),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
             Row(verticalAlignment = Alignment.CenterVertically) {
                 IconButton(onClick = viewModel::onPrevious) {
                     Icon(Icons.Filled.SkipPrevious, contentDescription = "上一首")
@@ -148,4 +164,11 @@ fun PlayerScreen(viewModel: PlayerViewModel, onOpenLyrics: () -> Unit = {}) {
             )
         }
     }
+}
+
+private fun formatPlaybackTime(ms: Long): String {
+    val totalSeconds = (ms / 1000).coerceAtLeast(0)
+    val minutes = totalSeconds / 60
+    val seconds = totalSeconds % 60
+    return "%02d:%02d".format(minutes, seconds)
 }

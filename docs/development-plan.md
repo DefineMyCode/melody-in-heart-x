@@ -1,7 +1,7 @@
 # Melody in Heart — 项目开发计划（Phase 0–6 全量路线）
 
 > 输入依据：`d:\Devs\Codes\Android\melody-in-heart-x\technical-proposal.md`
-> 当前仓库状态：空工程（仅 `LICENSE` / `.gitignore` / `technical-proposal.md`）
+> 当前仓库状态：P0–P5 全部完成，P6 部分（JVM 单测 + Macrobenchmark 已落，Compose 仪表化测试与兼容性矩阵验证待补）
 > 开发环境：Windows（构建命令统一使用 `gradlew.bat`），目标平台 Android
 > 包名约束：`applicationId` / 根包 = `cn.com.dcsgo.mihx`，所有模块代码包名统一挂在其下（见第 2、3 节）。
 > **执行交付物**：本计划经批准后，将写入仓库 `docs/development-plan.md` 作为正式文档，并从 **Phase 0 脚手架** 开始落地（搭建 14 模块 Gradle 工程 + 质量门禁）。
@@ -161,16 +161,16 @@ P0 ──> P1 ──> P2 ──┬──> P3 ──┐
 
 **任务清单**
 
-- [ ] **P0-1 版本矩阵锁定**：确定 AGP 8.13.x / Gradle 8.14.x / Kotlin 2.0.21 / KSP 对齐版本 / Compose BOM / Media3 1.9.x / Jellyfin FFmpeg 实际可用版本，写入 `gradle/libs.versions.toml`。
-- [ ] **P0-2 Wrapper 与根配置**：`gradlew.bat` 初始化；`gradle.properties`（`org.gradle.jvmargs=-Xmx4g`、`android.useAndroidX=true`、`android.nonTransitiveRClass=true`、`org.gradle.caching=true`、`org.gradle.configuration-cache=true`）。
-- [ ] **P0-3 `settings.gradle.kts`**：`includeBuild("build-logic")` + 声明全部 14 个模块（`:app`、`:core:model`、`:core:common`、`:core:ui`、`:domain`、`:data`、`:player`、`:feature:home`、`:feature:playlist`、`:feature:user`、`:feature:lyrics`、`:feature:player`、`:feature:settings`、`:benchmark`）。
-- [ ] **P0-4 约定插件**：`build-logic` 实现 `mihx.android.application` / `mihx.android.library` / `mihx.android.library.compose` / `mihx.jvm.library` / `mihx.hilt` / `mihx.room`，统一 minSdk 33 / compileSdk 36 / jvmTarget 17。
-- [ ] **P0-5 各模块 `build.gradle.kts` + `namespace`**：按第 2 节包路径逐一落地；`:core:model`、`:domain` 使用 `mihx.jvm.library`（纯 Kotlin，加速单测）。
-- [ ] **P0-6 `:app` 骨架**：`MelodyApplication`(@HiltAndroidApp)、`MainActivity`(@AndroidEntryPoint + `enableEdgeToEdge`)、`MelodyApp` 使用 `NavigationSuiteScaffold`、`MelodyNavHost` 注册 6 条 feature 路由（各 feature 先给占位 `*Route`/`*Screen`）。
-- [ ] **P0-7 `:core:ui` / `:core:common` 最小实现**：`MelodyTheme`（Material3 + 动态取色）、`AppLogger`、`AppDispatchers` + `@Dispatcher` Qualifier、`PerfTracer` 空实现。
-- [ ] **P0-8 门禁落地**：实现 `verifyProductArchitecture`（规则 A1/A2/A6/A7 先行，A3/A4/A5 随对应阶段补齐）；接入 Spotless；`check.dependsOn(...)`。
-- [ ] **P0-9 release 与备份配置**：`release` buildType 开启 `isMinifyEnabled` + `isShrinkResources`；`backup_rules.xml` / `data_extraction_rules.xml` 排除播放状态、URI 权限、Room、DataStore、封面缓存。
-- [ ] **P0-10 CI 脚本占位**：`gradlew.bat check` + `gradlew.bat :app:assembleRelease`。
+- [x] **P0-1 版本矩阵锁定**：确定 AGP 8.13.x / Gradle 8.14.x / Kotlin 2.0.21 / KSP 对齐版本 / Compose BOM / Media3 1.9.x / Jellyfin FFmpeg 实际可用版本，写入 `gradle/libs.versions.toml`。
+- [x] **P0-2 Wrapper 与根配置**：`gradlew.bat` 初始化；`gradle.properties`（`org.gradle.jvmargs=-Xmx4g`、`android.useAndroidX=true`、`android.nonTransitiveRClass=true`、`org.gradle.caching=true`、`org.gradle.configuration-cache=true`）。
+- [x] **P0-3 `settings.gradle.kts`**：`includeBuild("build-logic")` + 声明全部 14 个模块（`:app`、`:core:model`、`:core:common`、`:core:ui`、`:domain`、`:data`、`:player`、`:feature:home`、`:feature:playlist`、`:feature:user`、`:feature:lyrics`、`:feature:player`、`:feature:settings`、`:benchmark`）。
+- [x] **P0-4 约定插件**：`build-logic` 实现 `mihx.android.application` / `mihx.android.library` / `mihx.android.library.compose` / `mihx.jvm.library` / `mihx.hilt` / `mihx.room`，统一 minSdk 33 / compileSdk 36 / jvmTarget 17。
+- [x] **P0-5 各模块 `build.gradle.kts` + `namespace`**：按第 2 节包路径逐一落地；`:core:model`、`:domain` 使用 `mihx.jvm.library`（纯 Kotlin，加速单测）。
+- [x] **P0-6 `:app` 骨架**：`MelodyApplication`(@HiltAndroidApp)、`MainActivity`(@AndroidEntryPoint + `enableEdgeToEdge`)、`MelodyApp` 使用 `NavigationSuiteScaffold`、`MelodyNavHost` 注册 6 条 feature 路由（各 feature 先给占位 `*Route`/`*Screen`）。
+- [x] **P0-7 `:core:ui` / `:core:common` 最小实现**：`MelodyTheme`（Material3 + 动态取色）、`AppLogger`、`AppDispatchers` + `@Dispatcher` Qualifier、`PerfTracer` 空实现。
+- [x] **P0-8 门禁落地**：实现 `verifyProductArchitecture`（规则 A1/A2/A6/A7 先行，A3/A4/A5 随对应阶段补齐）；接入 Spotless；`check.dependsOn(...)`。
+- [x] **P0-9 release 与备份配置**：`release` buildType 开启 `isMinifyEnabled` + `isShrinkResources`；`backup_rules.xml` / `data_extraction_rules.xml` 排除播放状态、URI 权限、Room、DataStore、封面缓存。
+- [x] **P0-10 CI 脚本占位**：`gradlew.bat check` + `gradlew.bat :app:assembleRelease`。
 
 **验收标准**（对应 §9 兼容与质量）
 
@@ -196,17 +196,17 @@ P0 ──> P1 ──> P2 ──┬──> P3 ──┐
 
 **任务清单**
 
-- [ ] **P1-1 `:player` 依赖接入**：`media3-exoplayer`、`media3-session`、`media3-common` + `jellyfin-ffmpeg`。
-- [ ] **P1-2 `PlayerFactory`**：`DefaultRenderersFactory(context).setExtensionRendererMode(EXTENSION_RENDERER_MODE_PREFER)`；配置 `AudioAttributes(USAGE_MEDIA, CONTENT_TYPE_MUSIC)` 与 `setHandleAudioBecomingNoisy(true)`；**不显式引用 `FfmpegAudioRenderer`**。
-- [ ] **P1-3 `AppMediaSessionService`**：继承 `MediaSessionService`，`@AndroidEntryPoint`；`onCreate` 构建 `ExoPlayer` + `MediaSession`（`setSessionActivity` 指向 `MainActivity`）；`onGetSession` 返回会话；`onTaskRemoved` / `onDestroy` 中直接从 ExoPlayer 读取最后 `mediaId` 与 `currentPosition`（P1 先落日志 + 预留 `PlaybackStateRepository` 接口调用点，P4 接实现）。
-- [ ] **P1-4 Manifest 声明**：`FOREGROUND_SERVICE`、`FOREGROUND_SERVICE_MEDIA_PLAYBACK`、`READ_MEDIA_AUDIO`；`<service>` 带 `android:foregroundServiceType="mediaPlayback"` 与 `androidx.media3.session.MediaSessionService` intent-filter。
-- [ ] **P1-5 `PlaybackController`**：连接 `MediaController`（`MediaController.Builder` + `ListenableFuture`），注册 `Player.Listener`，将回调转为 `ControllerPlaybackSnapshot`（`StateFlow`）；对外暴露 `play/pause/seekTo/seekToPreviousMediaItem/seekToNextMediaItem/setQueue`；连接失败仅输出脱敏日志并暴露可恢复动作。
-- [ ] **P1-6 状态同步链路（`:domain`）**：定义 `ControllerPlaybackSnapshot`、`PlayerUiState`、`PlaybackState`（`idle/preparing/ready/playing/paused/buffering/ended/error`）；实现 `ControllerPlaybackStateSynchronizer` 作为**唯一**映射点；时长仅接受非负快照。
-- [ ] **P1-7 `PlayerPlaybackProgressTicker`**：默认 500ms；仅在 `isPlaying == true` 且前台可见时 tick；生命周期感知（`repeatOnLifecycle`）。
-- [ ] **P1-8 `SongMediaItemMapper`**：`MediaItem.mediaId = Song.id.toString()`；填充 `MediaMetadata`（title/artist/album/artworkUri），为 P3 通知展示打底。
-- [ ] **P1-9 `:feature:player` 最小闭环**：`PlayerRoute`/`PlayerScreen`/`PlayerViewModel`（薄门面）+ `PlayerRuntime` 骨架 + `PlayerTransportFacade`；Slider 拖动使用本地 UI 状态即时反馈，松手才 `seek`。
-- [ ] **P1-10 临时曲源**：`MediaStore` 读取一批本地音频作为 P1 调试源（正式 SAF 导入在 P5）。
-- [ ] **P1-11 FFmpeg 生效验证**：日志打印实际选中的 audio renderer 类名，验证扩展渲染器被优先加载；准备 mp3/flac/wav/m4a/ogg/aac/opus/wma 与高采样率样本各一。
+- [x] **P1-1 `:player` 依赖接入**：`media3-exoplayer`、`media3-session`、`media3-common` + `jellyfin-ffmpeg`。
+- [x] **P1-2 `PlayerFactory`**：`DefaultRenderersFactory(context).setExtensionRendererMode(EXTENSION_RENDERER_MODE_PREFER)`；配置 `AudioAttributes(USAGE_MEDIA, CONTENT_TYPE_MUSIC)` 与 `setHandleAudioBecomingNoisy(true)`；**不显式引用 `FfmpegAudioRenderer`**。
+- [x] **P1-3 `AppMediaSessionService`**：继承 `MediaSessionService`，`@AndroidEntryPoint`；`onCreate` 构建 `ExoPlayer` + `MediaSession`（`setSessionActivity` 指向 `MainActivity`）；`onGetSession` 返回会话；`onTaskRemoved` / `onDestroy` 中直接从 ExoPlayer 读取最后 `mediaId` 与 `currentPosition`（P1 先落日志 + 预留 `PlaybackStateRepository` 接口调用点，P4 接实现）。
+- [x] **P1-4 Manifest 声明**：`FOREGROUND_SERVICE`、`FOREGROUND_SERVICE_MEDIA_PLAYBACK`、`READ_MEDIA_AUDIO`；`<service>` 带 `android:foregroundServiceType="mediaPlayback"` 与 `androidx.media3.session.MediaSessionService` intent-filter。
+- [x] **P1-5 `PlaybackController`**：连接 `MediaController`（`MediaController.Builder` + `ListenableFuture`），注册 `Player.Listener`，将回调转为 `ControllerPlaybackSnapshot`（`StateFlow`）；对外暴露 `play/pause/seekTo/seekToPreviousMediaItem/seekToNextMediaItem/setQueue`；连接失败仅输出脱敏日志并暴露可恢复动作。
+- [x] **P1-6 状态同步链路（`:domain`）**：定义 `ControllerPlaybackSnapshot`、`PlayerUiState`、`PlaybackState`（`idle/preparing/ready/playing/paused/buffering/ended/error`）；实现 `ControllerPlaybackStateSynchronizer` 作为**唯一**映射点；时长仅接受非负快照。
+- [x] **P1-7 `PlayerPlaybackProgressTicker`**：默认 500ms；仅在 `isPlaying == true` 且前台可见时 tick；生命周期感知（`repeatOnLifecycle`）。
+- [x] **P1-8 `SongMediaItemMapper`**：`MediaItem.mediaId = Song.id.toString()`；填充 `MediaMetadata`（title/artist/album/artworkUri），为 P3 通知展示打底。
+- [x] **P1-9 `:feature:player` 最小闭环**：`PlayerRoute`/`PlayerScreen`/`PlayerViewModel`（薄门面）+ `PlayerRuntime` 骨架 + `PlayerTransportFacade`；Slider 拖动使用本地 UI 状态即时反馈，松手才 `seek`。
+- [x] **P1-10 临时曲源**：`MediaStore` 读取一批本地音频作为 P1 调试源（正式 SAF 导入在 P5）。
+- [x] **P1-11 FFmpeg 生效验证**：日志打印实际选中的 audio renderer 类名，验证扩展渲染器被优先加载；准备 mp3/flac/wav/m4a/ogg/aac/opus/wma 与高采样率样本各一。
 
 **验收标准**（对应 §9 功能第 1 项）
 
@@ -232,22 +232,22 @@ P0 ──> P1 ──> P2 ──┬──> P3 ──┐
 
 **任务清单**
 
-- [ ] **P2-1 `PlayQueue`（`:core:model`）**：`songs: List<Song>`、`currentIndex: Int`、`playMode: PlayMode`、`playOrderIds: List<Long>`；实现 `currentPlayOrderIndices()`——按 ID 出现次数还原为队列项索引，**严禁 `distinct()` / `associateBy(id)`**；`PlayQueue` 不持有上一首/下一首导航逻辑。
-- [ ] **P2-2 `PlayMode` 枚举**：`SEQUENTIAL` / `REVERSE` / `RANDOM`。
-- [ ] **P2-3 `:domain` 队列策略层**：`ControllerQueuePlannerPort`（接口）、`ControllerQueuePlan`（数据）、`PlaybackWindowState`、`QueueManager.PlayOrderBuilder`、`RandomQueuePlanner`、`UniformRandomPlanner`（权重 = 原始播放次数，播放次数通过可注入 provider 提供，P2 用 stub，P5 接真实统计）。
-- [ ] **P2-4 `ControllerQueuePlanner`（`:player/window`）**：按播放模式将完整业务队列展开为完整可播放顺序。
-- [ ] **P2-5 `PlaybackWindowPlanner`**：截取当前项**前 20 首 + 后 50 首**（窗口 ≤ 71 项），过滤不可播放项（默认 `uri != null`）。
-- [ ] **P2-6 `ControllerWindowSynchronizer`**：缓存最近 `PlaybackWindowState`；窗口失效或显式 `force` 时重新生成 `ControllerQueuePlan`；接近窗口边缘（剩余项 < 阈值，建议 10）时触发重规划。
-- [ ] **P2-7 `WindowedControllerQueuePlanner`**：实现 `ControllerQueuePlannerPort`；读取 `PlayQueue.currentPlayOrderIndices()` → 按索引映射回 `Song`（**保留重复项**）→ 计算窗口内 `startIndex`；请求项不可播放时优先取其后可播放项，否则回退前一可播放项。
-- [ ] **P2-8 队列操作契约（`PlayerQueueFacade`）**：
+- [x] **P2-1 `PlayQueue`（`:core:model`）**：`songs: List<Song>`、`currentIndex: Int`、`playMode: PlayMode`、`playOrderIds: List<Long>`；实现 `currentPlayOrderIndices()`——按 ID 出现次数还原为队列项索引，**严禁 `distinct()` / `associateBy(id)`**；`PlayQueue` 不持有上一首/下一首导航逻辑。
+- [x] **P2-2 `PlayMode` 枚举**：`SEQUENTIAL` / `REVERSE` / `RANDOM`。
+- [x] **P2-3 `:domain` 队列策略层**：`ControllerQueuePlannerPort`（接口）、`ControllerQueuePlan`（数据）、`PlaybackWindowState`、`QueueManager.PlayOrderBuilder`、`RandomQueuePlanner`、`UniformRandomPlanner`（权重 = 原始播放次数，播放次数通过可注入 provider 提供，P2 用 stub，P5 接真实统计）。
+- [x] **P2-4 `ControllerQueuePlanner`（`:player/window`）**：按播放模式将完整业务队列展开为完整可播放顺序。
+- [x] **P2-5 `PlaybackWindowPlanner`**：截取当前项**前 20 首 + 后 50 首**（窗口 ≤ 71 项），过滤不可播放项（默认 `uri != null`）。
+- [x] **P2-6 `ControllerWindowSynchronizer`**：缓存最近 `PlaybackWindowState`；窗口失效或显式 `force` 时重新生成 `ControllerQueuePlan`；接近窗口边缘（剩余项 < 阈值，建议 10）时触发重规划。
+- [x] **P2-7 `WindowedControllerQueuePlanner`**：实现 `ControllerQueuePlannerPort`；读取 `PlayQueue.currentPlayOrderIndices()` → 按索引映射回 `Song`（**保留重复项**）→ 计算窗口内 `startIndex`；请求项不可播放时优先取其后可播放项，否则回退前一可播放项。
+- [x] **P2-8 队列操作契约（`PlayerQueueFacade`）**：
   - `addSongAsNext(...)`：更新业务队列与 `playOrderIds` → 同步 Controller；批量按歌曲 ID 去重并整体移动到当前项之后，当前项作锚点；下一首由 `seekToNextMediaItem()` 决定。
   - `addSongsToTail(...)`：单首去重；批量允许重复追加。
   - `switchPlayMode(mode)`：重建 `playOrderIds`（RANDOM 走 `UniformRandomPlanner`）→ 经 Planner 重建 Controller 队列，保留当前项。
   - `removeAt(queueIndex)`：队列面板**按队列索引**移除具体一项。
-- [ ] **P2-9 UI 接线**：`PlayerRuntime` + `PlayerGraph` + `PlayerStateCoordinator` 串联 `PlaybackController` ↔ `ControllerQueuePlannerPort` ↔ `ControllerPlaybackStateSynchronizer`；`QueuePanel` 展示完整 `songs`，按队列索引高亮与移除。
-- [ ] **P2-10 单测 `ControllerQueuePlannerTest`**（纯 JVM，6 类用例）：顺序 / 倒序 / 添加到下一首 / 切换模式 / 不可播放跳过 / 重复项；另加 `PlayQueueTest`（`currentPlayOrderIndices` 重复项还原）、`PlaybackWindowPlannerTest`（边界：队首、队尾、窗口不足 71、全不可播放）。
-- [ ] **P2-11 门禁 A5 启用**：队列相关源文件禁止按 `Song.id` 去重写法。
-- [ ] **P2-12 性能埋点**：`PerfTracer` 记录「队列同步耗时」「切歌耗时」，构造 1000 首数据集实测。
+- [x] **P2-9 UI 接线**：`PlayerRuntime` + `PlayerGraph` + `PlayerStateCoordinator` 串联 `PlaybackController` ↔ `ControllerQueuePlannerPort` ↔ `ControllerPlaybackStateSynchronizer`；`QueuePanel` 展示完整 `songs`，按队列索引高亮与移除。
+- [x] **P2-10 单测 `ControllerQueuePlannerTest`**（纯 JVM，6 类用例）：顺序 / 倒序 / 添加到下一首 / 切换模式 / 不可播放跳过 / 重复项；另加 `PlayQueueTest`（`currentPlayOrderIndices` 重复项还原）、`PlaybackWindowPlannerTest`（边界：队首、队尾、窗口不足 71、全不可播放）。
+- [x] **P2-11 门禁 A5 启用**：队列相关源文件禁止按 `Song.id` 去重写法。
+- [x] **P2-12 性能埋点**：`PerfTracer` 记录「队列同步耗时」「切歌耗时」，构造 1000 首数据集实测。
 
 **验收标准**（对应 §9 功能第 2、5 项与性能第 2 项）
 
@@ -402,10 +402,10 @@ P0 ──> P1 ──> P2 ──┬──> P3 ──┐
   - `PlaybackStateSnapshotSerializerTest`、`LrcParserTest`（本轮补 10 例：时间戳/多时间戳/元数据忽略/排序/进位/小数位/冒号毫秒）、`SongVersionResolverTest`
   - Repository 层测试（`MelodyDaoTest`，Robolectric + Room in-memory，P4-9）
 - [ ] **P6-2 Compose 仪表化测试**：`PlayerScreen` 传输控制（play/pause/seek/prev/next）、`QueuePanel` 重复项高亮与按索引移除、`ToastHost` 堆积与自动消失、`HomeScreen` 多选。
-- [ ] **P6-3 `:benchmark` Macrobenchmark**：`ColdStartBenchmark`（`StartupMode.COLD`，iterations ≥ 5，`compilationMode` 覆盖 `None` 与 `Partial`）；可选 `BaselineProfileGenerator` 生成基线配置文件以逼近 < 1.5s 目标。
-- [ ] **P6-4 性能埋点与基线报告**：`PerfTracer` 输出四项指标——冷启动、导入耗时、切歌耗时、队列同步耗时；构造 1000 首标准数据集脚本，记录基线数据表。
-- [ ] **P6-5 Release 校验**：R8 + `shrinkResources` 打包；补齐 ProGuard keep 规则（Media3、FFmpeg 扩展渲染器反射类、Hilt、Room、kotlinx.serialization）；release 包全功能冒烟。
-- [ ] **P6-6 门禁固化**：`check` = `spotlessCheck` + `verifyProductArchitecture`（A1–A7 全启用）+ 全量 JVM 单测；CI 流水线跑 `gradlew.bat check` 与 `assembleRelease`。
+- [x] **P6-3 `:benchmark` Macrobenchmark**：`ColdStartBenchmark`（`StartupMode.COLD`，iterations ≥ 5，`compilationMode` 覆盖 `None` 与 `Partial`）；可选 `BaselineProfileGenerator` 生成基线配置文件以逼近 < 1.5s 目标。
+- [x] **P6-4 性能埋点与基线报告**：`PerfTracer` 输出四项指标——冷启动、导入耗时、切歌耗时、队列同步耗时；构造 1000 首标准数据集脚本，记录基线数据表。
+- [x] **P6-5 Release 校验**：R8 + `shrinkResources` 打包；补齐 ProGuard keep 规则（Media3、FFmpeg 扩展渲染器反射类、Hilt、Room、kotlinx.serialization）；release 包全功能冒烟。
+- [x] **P6-6 门禁固化**：`check` = `spotlessCheck` + `verifyProductArchitecture`（A1–A7 全启用）+ 全量 JVM 单测；CI 流水线跑 `gradlew.bat check` 与 `assembleRelease`。
 - [ ] **P6-7 兼容性矩阵验证**：API 33（minSdk 下限）与 API 36 各跑一遍全部功能验收项。
 
 **验收标准**（对应 §9 性能与兼容质量全部条目）

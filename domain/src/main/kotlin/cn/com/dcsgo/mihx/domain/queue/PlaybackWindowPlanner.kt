@@ -23,7 +23,7 @@ class PlaybackWindowPlanner(
         isPlayable: (Song) -> Boolean = { it.uri != null },
     ): PlaybackWindow {
         if (fullOrder.isEmpty()) {
-            return PlaybackWindow(emptyList(), -1, 0, 0)
+            return PlaybackWindow(emptyList(), -1, 0, 0, 0)
         }
         val safeCurrent = snapToPlayable(
             fullOrder,
@@ -40,6 +40,7 @@ class PlaybackWindowPlanner(
             items = finalItems,
             currentIndexInWindow = currentPosInWindow,
             startIndexInFullOrder = windowStart,
+            endIndexExclusiveInFullOrder = windowEnd + 1,
             currentIndexInFullOrder = safeCurrent,
         )
     }
@@ -64,9 +65,16 @@ class PlaybackWindowPlanner(
     }
 }
 
+/**
+ * [startIndexInFullOrder] until [endIndexExclusiveInFullOrder] is the half-open slice of the
+ * *unfiltered* full order this window was cut from; [items] are the playable survivors of that
+ * slice. Keeping the raw range lets the synchronizer diff two consecutive windows by pure index
+ * arithmetic instead of matching (possibly repeated) song ids.
+ */
 data class PlaybackWindow(
     val items: List<Song>,
     val currentIndexInWindow: Int,
     val startIndexInFullOrder: Int,
+    val endIndexExclusiveInFullOrder: Int,
     val currentIndexInFullOrder: Int,
 )

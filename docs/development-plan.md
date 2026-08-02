@@ -358,13 +358,13 @@ P0 ──> P1 ──> P2 ──┬──> P3 ──┐
 
 #### 5C 策略、统计与设置（2.0 人周）
 
-- [ ] `PlayDurationTracker`（`:player/stats`）：`playing` 时启动、`paused`/`ended` 时停止，写入 `PlayStatsEntity`。
-- [ ] 秒切检测：`SkipSongEntity` + `ShortPlayCountEntity`；播放时长低于阈值判定为秒切并计数。
-- [ ] 同名多版本管理：`Song.titleOverride` + 派生 `groupKey = titleOverride ?: title`；`SongVersionResolver`（`:domain/version`）按 `sampleRate` 选优；`SongGroupOverrideEntity` 存用户覆盖；`:feature:user` 提供版本管理 UI。
-- [ ] 无限播放：接近队尾时，从尚未覆盖的本地可播放歌曲中补一批到队尾（走 `RandomQueuePlanner` 补队列），尽量循环覆盖全库。
-- [ ] 全局均匀随机：`UniformRandomPlanner` 接入真实播放次数作为权重（默认开启），关闭时退化为 `shuffled()`；重建随机顺序必须走 `QueueManager.PlayOrderBuilder` / `UniformRandomPlanner`，**`PlayQueue` 不直接依赖仓库**。
-- [ ] `:feature:settings`：均匀随机 / 无限播放 / 蓝牙 / 通知 / 主题（动态取色、深浅色）开关，绑定 `PlayerSettingsDataStore`。
-- [ ] `:feature:user`：播放统计页（总时长、Top 曲目、秒切列表）。
+- [x] `PlayDurationTracker`（`:player/stats`）：挂在服务侧 `ExoPlayer` 上（UI 退出后统计仍累加），`playing` 时累计、`paused`/切曲/`ended` 时结算，写入 `PlayStatsEntity`（新增 `totalPlayedMs`，DB 升 v2）。时长算术落在纯 Kotlin 的 `PlaybackDurationAccumulator`（`:domain/stats`，10 条 JVM 单测）。
+- [x] 秒切检测：转场 reason 非 `AUTO`/`REPEAT` 即判定用户主动切走 → `SkipSongEntity`；其中播放时长 < 30s 再计 `ShortPlayCountEntity`（秒切）。
+- [x] 同名多版本管理：`Song.titleOverride` + 派生 `groupKey = titleOverride ?: title`；`SongVersionResolver`（`:domain/version`，纯函数）按 `preferredSongId` > `sampleRate` 最高 > 首个 选优（6 条 JVM 单测）；`SongGroupOverrideEntity`（v1 已建表）存用户覆盖，`SongGroupOverrideRepository`（domain 接口 + data Impl + `RepositoryBinder` @Binds，DAO 补 `observeGroupOverrides`/`deleteGroupOverride`）；`:feature:user` 提供版本管理 UI（按 `groupKey` 分组展示各版本与采样率，RadioButton 选中有效首选，点击切换/再点取消覆盖回自动选优）。
+- [x] 无限播放：接近队尾时（剩余 ≤ 10 首），从尚未覆盖的本地可播放歌曲中补一批到队尾（`InfiniteQueueExtender` 走 `RandomQueuePlanner` 打乱；全库覆盖后循环补），尽量循环覆盖全库。配套补上**播放漂移窗口滑动**：`ControllerWindowSynchronizer.resolveDrift` 输出 `WindowSlide`（None / Incremental 增删 / Rebuild），`PlayerQueueController.slideWindow` 用 `addMediaItems`/`removeMediaItems` 就地滑动（绝不重建、当前歌曲不中断）；`PlayerQueueFacadeImpl` 监听 `currentQueueIndex` 提交实时播放位置并触发补队列（补队列只更新业务队列、不动传输层，避免当前歌从头重播）。
+- [x] 全局均匀随机：`PlayerQueueFacadeImpl` 镜像 `PlayStatsRepository.observeStats()` 的播放次数与 `observeUniformRandomEnabled()` 开关，`switchPlayMode(RANDOM)` 传真实权重（默认开启）；关闭时传空权重 → `DefaultUniformRandomPlanner` 自然退化为纯 `shuffled()`。**`PlayQueue` 不直接依赖仓库**（权重经门面镜像注入）。
+- [x] `:feature:settings`：均匀随机 / 无限播放 / 蓝牙 / 通知 / 主题（动态取色、深浅色）开关，绑定 `PlayerSettingsDataStore`。`SettingsFacade`（interface + `SettingsFacadeImpl` + `SettingsFeatureModule` @Binds）薄封装 `PlayerSettingsRepository`，`SettingsViewModel` 六个开关各自 collect Flow 进 `SettingsUiState`；`SettingsScreen` 用 `ListItem+Switch` 与 `FilterChip`（跟随系统/浅色/深色）。开关全部**真实生效**：均匀随机/无限播放已由 `PlayerQueueFacadeImpl` 观察（C2/C3）；蓝牙/通知在 `AppMediaSessionService.onCreate` 读开关后条件启动 `BluetoothPlaybackMonitor` / `setMediaNotificationProvider`；主题经 `MainActivity` 注入仓库 → `MelodyApp` collect `ThemeMode`+dynamicColor 后驱动 `MelodyTheme`（SYSTEM 回退系统值）。
+- [x] `:feature:user`：播放统计页（总时长、Top 曲目、秒切列表）。`UserFacade`（interface + Impl + `UserFeatureModule` @Binds）组合 `SongRepository.observeAll()` + `PlayStatsRepository.observeStats()` + `SongGroupOverrideRepository.observeOverrides()`；`UserViewModel` 用 `combine` 一次成型：总收听时长 = `sumOf(totalPlayedMs)`、Top 曲目按 playCount 降序取 10、秒切列表按 skipCount 排序（含 shortPlayCount）；`UserScreen` 用 Card 统计卡 + 列表行展示。
 
 **验收标准**
 

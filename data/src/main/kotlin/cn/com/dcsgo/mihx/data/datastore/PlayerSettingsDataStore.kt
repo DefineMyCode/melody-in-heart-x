@@ -30,5 +30,6 @@ class PlayerSettingsDataStore @Inject constructor(
         val NOTIFICATION = booleanPreferencesKey("notification_enabled")
         val INFINITE_PLAY = booleanPreferencesKey("infinite_play_enabled")
         val THEME_MODE = stringPreferencesKey("theme_mode")
+        val DYNAMIC_COLOR = booleanPreferencesKey("dynamic_color_enabled")
     }
 }

@@ -8,6 +8,7 @@ import cn.com.dcsgo.mihx.data.repository.PlayStatsRepositoryImpl
 import cn.com.dcsgo.mihx.data.repository.PlaybackStateRepositoryImpl
 import cn.com.dcsgo.mihx.data.repository.PlayerSettingsRepositoryImpl
 import cn.com.dcsgo.mihx.data.repository.PlaylistRepositoryImpl
+import cn.com.dcsgo.mihx.data.repository.SongGroupOverrideRepositoryImpl
 import cn.com.dcsgo.mihx.data.repository.SongRepositoryImpl
 import cn.com.dcsgo.mihx.domain.repository.LibraryImporter
 import cn.com.dcsgo.mihx.domain.repository.LyricsRepository
@@ -15,6 +16,7 @@ import cn.com.dcsgo.mihx.domain.repository.PlayStatsRepository
 import cn.com.dcsgo.mihx.domain.repository.PlaybackStateRepository
 import cn.com.dcsgo.mihx.domain.repository.PlayerSettingsRepository
 import cn.com.dcsgo.mihx.domain.repository.PlaylistRepository
+import cn.com.dcsgo.mihx.domain.repository.SongGroupOverrideRepository
 import cn.com.dcsgo.mihx.domain.repository.SongRepository
 import dagger.Binds
 import dagger.Module
@@ -58,6 +60,12 @@ abstract class RepositoryBinder {
     @Binds
     @Singleton
     abstract fun bindPlayerSettingsRepository(impl: PlayerSettingsRepositoryImpl): PlayerSettingsRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindSongGroupOverrideRepository(
+        impl: SongGroupOverrideRepositoryImpl,
+    ): SongGroupOverrideRepository
 
     @Binds
     @Singleton

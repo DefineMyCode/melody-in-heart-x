@@ -23,6 +23,7 @@ class WindowedControllerQueuePlanner @Inject constructor(
             },
             currentIndex = window.currentIndexInWindow,
             windowStartIndex = window.startIndexInFullOrder,
+            windowEndIndexExclusive = window.endIndexExclusiveInFullOrder,
         )
     }
 }

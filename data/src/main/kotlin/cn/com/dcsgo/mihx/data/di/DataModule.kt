@@ -3,6 +3,7 @@ package cn.com.dcsgo.mihx.data.di
 import android.content.Context
 import androidx.room.Room
 import cn.com.dcsgo.mihx.data.database.MelodyDatabase
+import cn.com.dcsgo.mihx.data.database.MelodyDatabaseMigrations
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -20,7 +21,9 @@ object DataModule {
         context,
         MelodyDatabase::class.java,
         MelodyDatabase.DATABASE_NAME,
-    ).fallbackToDestructiveMigration(false).build()
+    ).addMigrations(MelodyDatabaseMigrations.MIGRATION_1_2)
+        .fallbackToDestructiveMigration(false)
+        .build()
 
     @Provides
     fun provideMelodyDao(db: MelodyDatabase) = db.melodyDao()

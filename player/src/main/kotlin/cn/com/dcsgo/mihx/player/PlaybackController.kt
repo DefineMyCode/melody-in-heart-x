@@ -192,6 +192,24 @@ class PlaybackController @Inject constructor(
         controller?.seekToPreviousMediaItem()
     }
 
+    /** Appends [items] to the end of the transport queue (window slide, plan P5-C3). */
+    fun addMediaItems(items: List<MediaItem>) {
+        controller?.addMediaItems(items)
+    }
+
+    /** Inserts [items] at transport index [index] (window slide, plan P5-C3). */
+    fun addMediaItems(index: Int, items: List<MediaItem>) {
+        controller?.addMediaItems(index, items)
+    }
+
+    /** Removes the transport items in [fromIndex, toIndex) (window slide, plan P5-C3). */
+    fun removeMediaItems(fromIndex: Int, toIndex: Int) {
+        controller?.removeMediaItems(fromIndex, toIndex)
+    }
+
+    /** Current transport playlist size (window slide, plan P5-C3). */
+    fun mediaItemCount(): Int = controller?.mediaItemCount ?: 0
+
     /**
      * Seeks to a media-item index (window-local). Used by the queue panel "tap to play".
      *

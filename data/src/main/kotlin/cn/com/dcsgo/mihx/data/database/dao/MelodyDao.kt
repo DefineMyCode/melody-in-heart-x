@@ -5,7 +5,9 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import cn.com.dcsgo.mihx.data.database.entity.MigrationStateEntity
+import cn.com.dcsgo.mihx.data.database.entity.PlayCountRow
 import cn.com.dcsgo.mihx.data.database.entity.PlayStatsEntity
+import cn.com.dcsgo.mihx.data.database.entity.PlayStatsView
 import cn.com.dcsgo.mihx.data.database.entity.PlaylistEntity
 import cn.com.dcsgo.mihx.data.database.entity.PlaylistSongCrossRefEntity
 import cn.com.dcsgo.mihx.data.database.entity.ShortPlayCountEntity
@@ -102,6 +104,43 @@ interface MelodyDao {
     @Query("SELECT * FROM play_stats WHERE songId = :songId")
     suspend fun getPlayStats(songId: Long): PlayStatsEntity?
 
+    @Query("SELECT songId, playCount FROM play_stats")
+    suspend fun getPlayCounts(): List<PlayCountRow>
+
+    @Query("SELECT IFNULL(SUM(totalPlayedMs), 0) FROM play_stats")
+    suspend fun getTotalPlayedMs(): Long
+
+    /** Play stats joined with skip / short-play counters (P5-C stats screen + skip list). */
+    @Query(
+        """
+        SELECT p.songId AS songId,
+               p.playCount AS playCount,
+               p.totalPlayedMs AS totalPlayedMs,
+               p.lastPlayedAt AS lastPlayedAt,
+               IFNULL(sk.skipCount, 0) AS skipCount,
+               IFNULL(sp.shortPlayCount, 0) AS shortPlayCount
+        FROM play_stats p
+        LEFT JOIN skip_songs sk ON sk.songId = p.songId
+        LEFT JOIN short_play_counts sp ON sp.songId = p.songId
+        """,
+    )
+    suspend fun getPlayStatsList(): List<PlayStatsView>
+
+    @Query(
+        """
+        SELECT p.songId AS songId,
+               p.playCount AS playCount,
+               p.totalPlayedMs AS totalPlayedMs,
+               p.lastPlayedAt AS lastPlayedAt,
+               IFNULL(sk.skipCount, 0) AS skipCount,
+               IFNULL(sp.shortPlayCount, 0) AS shortPlayCount
+        FROM play_stats p
+        LEFT JOIN skip_songs sk ON sk.songId = p.songId
+        LEFT JOIN short_play_counts sp ON sp.songId = p.songId
+        """,
+    )
+    fun observePlayStatsList(): Flow<List<PlayStatsView>>
+
     // ---- Skip tracking ----
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsertSkipSong(entity: SkipSongEntity)
@@ -122,6 +161,15 @@ interface MelodyDao {
 
     @Query("SELECT * FROM song_group_overrides WHERE groupKey = :groupKey")
     suspend fun getGroupOverride(groupKey: String): SongGroupOverrideEntity?
+
+    @Query("SELECT * FROM song_group_overrides")
+    suspend fun getAllGroupOverrides(): List<SongGroupOverrideEntity>
+
+    @Query("SELECT * FROM song_group_overrides")
+    fun observeGroupOverrides(): Flow<List<SongGroupOverrideEntity>>
+
+    @Query("DELETE FROM song_group_overrides WHERE groupKey = :groupKey")
+    suspend fun deleteGroupOverride(groupKey: String)
 
     // ---- Migration scratch space ----
     @Insert(onConflict = OnConflictStrategy.REPLACE)

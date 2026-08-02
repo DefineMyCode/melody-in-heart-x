@@ -14,12 +14,14 @@ import androidx.media3.session.MediaSession
 import androidx.media3.session.MediaSessionService
 import cn.com.dcsgo.mihx.core.common.log.AppLogger
 import cn.com.dcsgo.mihx.domain.repository.PlaybackStateRepository
+import cn.com.dcsgo.mihx.domain.repository.PlayerSettingsRepository
 import cn.com.dcsgo.mihx.player.PlaybackStateBuffer
 import cn.com.dcsgo.mihx.player.PlayerFactory
 import cn.com.dcsgo.mihx.player.SessionTokenProvider
 import cn.com.dcsgo.mihx.player.bluetooth.BluetoothAudioQualityManager
 import cn.com.dcsgo.mihx.player.bluetooth.BluetoothPlaybackMonitor
 import cn.com.dcsgo.mihx.player.bluetooth.BluetoothStateManager
+import cn.com.dcsgo.mihx.player.stats.PlayDurationTracker
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -63,6 +65,12 @@ class AppMediaSessionService : MediaSessionService() {
     @Inject
     lateinit var playbackStateRepository: PlaybackStateRepository
 
+    @Inject
+    lateinit var playDurationTracker: PlayDurationTracker
+
+    @Inject
+    lateinit var settingsRepository: PlayerSettingsRepository
+
     private val saveScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     private var player: ExoPlayer? = null
@@ -80,11 +88,23 @@ class AppMediaSessionService : MediaSessionService() {
         // lock screen. DefaultMediaNotificationProvider reuses this channel via its DEFAULT_CHANNEL_ID
         // because ensureNotificationChannel() skips creation when the channel already exists.
         createMediaNotificationChannel()
-        // P3-1: provide a lock-screen-aware media notification provider.
-        // DefaultMediaNotificationProvider builds the notification but does not guarantee
-        // VISIBILITY_PUBLIC, so some devices suppress the media card on the lock screen
-        // while still showing it in the notification shade / quick-settings panel.
-        setMediaNotificationProvider(LockScreenAwareNotificationProvider(DefaultMediaNotificationProvider(this)))
+        // P5-C4: the 通知栏控制 toggle gates the media notification. When disabled we never call
+        // setMediaNotificationProvider, so Media3 shows no notification (and no lock-screen card).
+        // The read is async (Preferences DataStore); the app-wide default is ON.
+        val settingsScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
+        settingsScope.launch {
+            if (settingsRepository.isNotificationEnabled()) {
+                // P3-1: provide a lock-screen-aware media notification provider.
+                // DefaultMediaNotificationProvider builds the notification but does not guarantee
+                // VISIBILITY_PUBLIC, so some devices suppress the media card on the lock screen
+                // while still showing it in the notification shade / quick-settings panel.
+                setMediaNotificationProvider(
+                    LockScreenAwareNotificationProvider(
+                        DefaultMediaNotificationProvider(this@AppMediaSessionService),
+                    ),
+                )
+            }
+        }
         player = playerFactory.create(this)
         mediaSession = MediaSession.Builder(this, checkNotNull(player))
             .setSessionActivity(sessionActivityIntent())
@@ -93,7 +113,17 @@ class AppMediaSessionService : MediaSessionService() {
         // P3-4/5/6: observe Bluetooth state + auto-pause on audio-route loss + expose codec info.
         bluetoothStateManager.start()
         bluetoothAudioQualityManager.start()
-        bluetoothPlaybackMonitor = BluetoothPlaybackMonitor(this, checkNotNull(player)).apply { start() }
+        // P5-C4: the 蓝牙控制 toggle gates the auto-pause-on-route-loss monitor; when disabled the
+        // monitor never registers, so a Bluetooth disconnect keeps playback running.
+        settingsScope.launch {
+            if (settingsRepository.isBluetoothEnabled()) {
+                bluetoothPlaybackMonitor = BluetoothPlaybackMonitor(this@AppMediaSessionService, checkNotNull(player))
+                    .apply { start() }
+            }
+        }
+        // P5-C: accrue listening time / skip signals on the service-side player so statistics keep
+        // updating even when the UI process-side controller is gone.
+        playDurationTracker.attach(checkNotNull(player))
     }
 
     override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaSession? = mediaSession
@@ -112,6 +142,7 @@ class AppMediaSessionService : MediaSessionService() {
 
     override fun onDestroy() {
         saveSnapshotFallback()
+        playDurationTracker.detach()
         bluetoothPlaybackMonitor?.stop()
         bluetoothPlaybackMonitor = null
         bluetoothStateManager.stop()

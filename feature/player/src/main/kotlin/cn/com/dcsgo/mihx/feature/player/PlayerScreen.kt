@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.QueueMusic
+import androidx.compose.material.icons.filled.Lyrics
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.SkipNext
@@ -44,7 +45,7 @@ import cn.com.dcsgo.mihx.feature.player.component.QueuePanel
 import coil.compose.AsyncImage
 
 @Composable
-fun PlayerScreen(viewModel: PlayerViewModel) {
+fun PlayerScreen(viewModel: PlayerViewModel, onOpenLyrics: () -> Unit = {}) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     // 500ms progress tick; collected while the screen is at least STARTED (plan P1-7).
     val tick by viewModel.progressFlow().collectAsStateWithLifecycle(0L)
@@ -104,6 +105,13 @@ fun PlayerScreen(viewModel: PlayerViewModel) {
             modifier = Modifier.align(Alignment.BottomEnd).padding(16.dp),
         ) {
             Icon(Icons.AutoMirrored.Filled.QueueMusic, contentDescription = "播放队列")
+        }
+
+        FloatingActionButton(
+            onClick = onOpenLyrics,
+            modifier = Modifier.align(Alignment.BottomStart).padding(16.dp),
+        ) {
+            Icon(Icons.Filled.Lyrics, contentDescription = "歌词")
         }
     }
 

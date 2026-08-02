@@ -36,6 +36,12 @@ interface PlayerQueueFacade {
     fun switchPlayMode(mode: PlayMode)
     fun removeAt(queueIndex: Int)
     fun jumpTo(index: Int)
+
+    /** Starts the Media3 session so playback can begin (idempotent). */
+    fun connect()
+
+    /** Begins playback (buffered across a cold connect by the transport). */
+    fun play()
 }
 
 @Singleton
@@ -93,4 +99,8 @@ class PlayerQueueFacadeImpl @Inject constructor(
         _queue.value = updated
         queueController.seekToQueueIndex(updated, index)
     }
+
+    override fun connect() = queueController.connect()
+
+    override fun play() = queueController.play()
 }

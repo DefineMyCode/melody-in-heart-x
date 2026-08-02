@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
@@ -157,13 +158,12 @@ private fun PlaylistDetailScreen(state: PlaylistUiState, viewModel: PlaylistView
             }
         } else {
             LazyColumn(modifier = Modifier.fillMaxSize().padding(padding)) {
-                items(state.detailSongs, key = { it.id }) { song ->
-                    val index = state.detailSongs.indexOf(song)
+                itemsIndexed(state.detailSongs, key = { _, song -> song.id }) { index, song ->
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        SongRow(song = song, modifier = Modifier.weight(1f), onClick = {})
+                        SongRow(song = song, modifier = Modifier.weight(1f), onClick = { viewModel.onPlaySong(index) })
                         IconButton(onClick = { viewModel.onMove(index, (index - 1).coerceAtLeast(0)) }) {
                             Icon(Icons.Filled.KeyboardArrowUp, contentDescription = "上移")
                         }

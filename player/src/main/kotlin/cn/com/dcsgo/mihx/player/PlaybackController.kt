@@ -56,6 +56,7 @@ class PlaybackController @Inject constructor(
     private var pendingItems: List<MediaItem>? = null
     private var pendingSeekIndex: Int? = null
     private var pendingSeekPositionMs: Long? = null
+    private var pendingPlay = false
 
     private var controller: MediaController? = null
     private var connectJob: Job? = null
@@ -127,6 +128,10 @@ class PlaybackController @Inject constructor(
         pendingSeekIndex = null
         pendingSeekPositionMs?.let { mediaController.seekTo(it) }
         pendingSeekPositionMs = null
+        if (pendingPlay) {
+            mediaController.play()
+            pendingPlay = false
+        }
         _snapshot.value = _snapshot.value.copy(
             isPlaying = mediaController.isPlaying,
             currentMediaId = mediaController.currentMediaItem?.mediaId,
@@ -166,7 +171,9 @@ class PlaybackController @Inject constructor(
     }
 
     fun play() {
+        pendingPlay = true
         controller?.play()
+        if (controller != null) pendingPlay = false
     }
 
     fun pause() {
@@ -205,6 +212,7 @@ class PlaybackController @Inject constructor(
         controller = null
         pendingItems = null
         pendingSeekIndex = null
+        pendingPlay = false
         connectJob?.cancel()
         connectJob = null
     }

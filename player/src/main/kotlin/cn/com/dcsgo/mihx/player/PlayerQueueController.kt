@@ -54,6 +54,12 @@ class PlayerQueueController @Inject constructor(
         windowStart.value = plan.windowStartIndex
     }
 
+    /** Starts the Media3 session (idempotent) so playback can begin even before the player screen. */
+    fun connect() = controller.connect()
+
+    /** Begins playback; the play intent is buffered across a cold connect by [PlaybackController]. */
+    fun play() = controller.play()
+
     /**
      * Jumps to business-queue [index] without a full [applyQueue] when the target is already inside
      * the live window (a pure [PlaybackController.seekToMediaItem], no re-buffer). Otherwise it

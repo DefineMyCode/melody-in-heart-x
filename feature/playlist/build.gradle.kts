@@ -13,6 +13,7 @@ dependencies {
     implementation(project(":core:common"))
     implementation(project(":core:ui"))
     implementation(project(":domain"))
+    implementation(project(":feature:player"))
 
     implementation(platform(libs.composeBom))
     implementation(libs.composeMaterial3)

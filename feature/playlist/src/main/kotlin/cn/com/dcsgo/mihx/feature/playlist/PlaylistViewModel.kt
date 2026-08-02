@@ -2,6 +2,7 @@ package cn.com.dcsgo.mihx.feature.playlist
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import cn.com.dcsgo.mihx.feature.player.PlayerQueueFacade
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -13,6 +14,7 @@ import javax.inject.Inject
 @HiltViewModel
 class PlaylistViewModel @Inject constructor(
     private val facade: PlaylistFacade,
+    private val playerQueueFacade: PlayerQueueFacade,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(PlaylistUiState())
@@ -77,6 +79,16 @@ class PlaylistViewModel @Inject constructor(
             facade.removeSong(playlistId, songId)
             _uiState.update { it.copy(detailSongs = facade.getSongs(playlistId)) }
         }
+    }
+
+    /** Plays the playlist from [index]: sets the queue, seeks to the tapped song, and starts playback.
+     * The session is connected first so this works even before the player screen has been opened. */
+    fun onPlaySong(index: Int) {
+        val songs = _uiState.value.detailSongs
+        if (index !in songs.indices) return
+        playerQueueFacade.connect()
+        playerQueueFacade.setQueue(songs, currentIndex = index)
+        playerQueueFacade.play()
     }
 
     /** Moves a song within the current playlist and persists the new manual order. */

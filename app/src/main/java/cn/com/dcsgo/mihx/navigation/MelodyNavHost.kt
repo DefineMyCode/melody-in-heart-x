@@ -50,7 +50,9 @@ fun MelodyNavHost(
         ) {
             composable(MelodyDestination.HOME) { HomeRoute() }
             composable(MelodyDestination.PLAYLIST) { PlaylistRoute() }
-            composable(MelodyDestination.PLAYER) { PlayerRoute() }
+            composable(MelodyDestination.PLAYER) {
+                PlayerRoute(onOpenLyrics = { navController.navigate(MelodyDestination.LYRICS) })
+            }
             composable(MelodyDestination.LYRICS) { LyricsRoute() }
             composable(MelodyDestination.USER) { UserRoute() }
             composable(MelodyDestination.SETTINGS) { SettingsRoute() }

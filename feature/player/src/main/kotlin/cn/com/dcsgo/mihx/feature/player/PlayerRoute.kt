@@ -9,9 +9,9 @@ import androidx.navigation.compose.composable
 
 /** Top-level route composable registered by the app nav host. */
 @Composable
-fun PlayerRoute() {
+fun PlayerRoute(onOpenLyrics: () -> Unit = {}) {
     val viewModel: PlayerViewModel = hiltViewModel()
-    PlayerScreen(viewModel = viewModel)
+    PlayerScreen(viewModel = viewModel, onOpenLyrics = onOpenLyrics)
 }
 
 /** Nav-graph extension (alternative registration style). */

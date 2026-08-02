@@ -1,16 +1,23 @@
 package cn.com.dcsgo.mihx.core.common.perf
 
-/** Performance tracer stub. Phase 6 wires real reporting. */
+import cn.com.dcsgo.mihx.core.common.log.AppLogger
+
+/**
+ * Performance tracer (plan P5-A / P6-4). [record] logs a metric sample under a bucket label so
+ * callers can correlate timings by workload size (e.g. import duration bucketed by track count).
+ * Phase 6 replaces the log sink with the baseline-report collector.
+ */
 object PerfTracer {
     inline fun <T> trace(label: String, block: () -> T): T {
         val start = System.nanoTime()
         return block().also {
-            val elapsedMs = (System.nanoTime() - start) / 1_000_000
-            // Phase 6: report elapsedMs under [label].
+            record(label, (System.nanoTime() - start) / 1_000_000)
         }
     }
 
     fun record(label: String, valueMs: Long) {
-        // Phase 6: record a metric sample.
+        AppLogger.d(TAG, "perf $label=${valueMs}ms")
     }
+
+    private const val TAG = "PerfTracer"
 }

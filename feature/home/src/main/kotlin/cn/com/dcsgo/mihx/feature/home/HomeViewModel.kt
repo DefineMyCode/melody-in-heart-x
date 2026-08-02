@@ -2,6 +2,8 @@ package cn.com.dcsgo.mihx.feature.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import cn.com.dcsgo.mihx.core.common.perf.PerfTracer
+import cn.com.dcsgo.mihx.feature.player.PlayerQueueFacade
 import cn.com.dcsgo.mihx.feature.playlist.PlaylistFacade
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,6 +17,7 @@ import javax.inject.Inject
 class HomeViewModel @Inject constructor(
     private val facade: HomeFacade,
     private val playlistFacade: PlaylistFacade,
+    private val playerQueueFacade: PlayerQueueFacade,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HomeUiState())
@@ -70,14 +73,38 @@ class HomeViewModel @Inject constructor(
         }
     }
 
+    /** Appends the selected songs to the play queue tail (plan P5-A leftover). */
+    fun addSelectedToQueue() {
+        val state = _uiState.value
+        if (state.selectedIds.isEmpty()) return
+        val songs = state.songs.filter { it.id in state.selectedIds }
+        if (songs.isEmpty()) return
+        playerQueueFacade.addSongsToTail(songs, allowDuplicates = true)
+        _uiState.update { it.copy(selectedIds = emptySet()) }
+    }
+
     private fun runImport(block: suspend (suspend (Int, Int) -> Unit) -> Unit) {
         viewModelScope.launch {
             _uiState.update { it.copy(isImporting = true, importProgress = ImportProgress(0, 0)) }
             val onProgress: suspend (Int, Int) -> Unit = { done, total ->
                 _uiState.update { it.copy(importProgress = ImportProgress(done, total)) }
             }
+            val before = _uiState.value.songs.size
+            val start = System.nanoTime()
             block(onProgress)
+            val elapsedMs = (System.nanoTime() - start) / 1_000_000
+            // P5-A: import duration bucketed by the number of songs actually added.
+            val imported = _uiState.value.songs.size - before
+            PerfTracer.record(importBucketLabel(imported), elapsedMs)
             _uiState.update { it.copy(isImporting = false, importProgress = null) }
         }
+    }
+
+    private fun importBucketLabel(count: Int): String = when {
+        count <= 0 -> "import"
+        count <= 50 -> "import_1_50"
+        count <= 200 -> "import_51_200"
+        count <= 500 -> "import_201_500"
+        else -> "import_501_plus"
     }
 }

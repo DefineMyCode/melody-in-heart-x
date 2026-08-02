@@ -345,8 +345,8 @@ P0 ──> P1 ──> P2 ──┬──> P3 ──┐
 - [x] `SafImporter`（`:data/saf`）：`ACTION_OPEN_DOCUMENT_TREE` / 多文件选择；`takePersistableUriPermission` 持久化 URI 权限。
 - [x] `MetadataExtractor`：`MediaMetadataRetriever` 解析 title/artist/album/duration/sampleRate；解析在 IO dispatcher 分批执行，进度经首页进度条反馈。
 - [x] 入库与去重：按 URI 去重写入 `SongEntity`；解析失败项标记为不可播放（`playable = false`），与 P2 的窗口过滤对齐。
-- [x] `:feature:home`：曲库列表（LazyColumn + key 为稳定 id）、搜索、多选模式（删除已接；批量加入歌单已在 5B 实现；批量加入队列留待后续）。
-- [ ] `PerfTracer` 埋点：导入耗时（按曲目数分档）。
+- [x] `:feature:home`：曲库列表（LazyColumn + key 为稳定 id）、搜索、多选模式（删除、批量加入歌单、批量加入队列——`HomeViewModel.addSelectedToQueue` 经 `PlayerQueueFacade.addSongsToTail`；`feature:home` 增 `:feature:player` 依赖，feature→feature 无环）。
+- [x] `PerfTracer` 埋点：`PerfTracer.record` 落 `AppLogger`（`perf <label>=<ms>ms`）；`HomeViewModel.runImport` 计时并按导入曲目数分档（`import_1_50` / `_51_200` / `_201_500` / `_501_plus`）。
 
 #### 5B 歌单 / 歌词 / 封面（2.0 人周）
 
@@ -393,13 +393,13 @@ P0 ──> P1 ──> P2 ──┬──> P3 ──┐
 
 **任务清单**
 
-- [ ] **P6-1 JVM 单测矩阵**（优先纯 Kotlin，映射 §10-6）：
+- [x] **P6-1 JVM 单测矩阵**（优先纯 Kotlin，映射 §10-6）：
   - `ControllerQueuePlannerTest`（P2 已建，此处补边界）
-  - `PlaybackWindowPlannerTest`、`ControllerWindowSynchronizerTest`、`WindowedControllerQueuePlannerTest`
-  - `UniformRandomPlannerTest`、`RandomQueuePlannerTest`、`QueueManagerPlayOrderBuilderTest`
-  - `ControllerPlaybackStateSynchronizerTest`（8 种状态映射全覆盖）
-  - `PlaybackStateSnapshotSerializerTest`、`LrcParserTest`、`SongVersionResolverTest`
-  - Repository 层测试（Room in-memory）
+  - `PlaybackWindowPlannerTest`、`ControllerWindowSynchronizerTest`（含 `resolveDrift` 滑动用例）、`WindowedControllerQueuePlannerTest`
+  - `UniformRandomPlannerTest`（`DefaultUniformRandomPlannerTest`）、`RandomQueuePlannerTest`（本轮补 `DefaultRandomQueuePlannerTest`：空/单元素/排列/重复 id）、`QueueManagerPlayOrderBuilderTest`
+  - `ControllerPlaybackStateSynchronizerTest`（本轮补，8 态映射全覆盖：buffering/error/playing/paused + 负值钳制 + 字段透传）
+  - `PlaybackStateSnapshotSerializerTest`、`LrcParserTest`（本轮补 10 例：时间戳/多时间戳/元数据忽略/排序/进位/小数位/冒号毫秒）、`SongVersionResolverTest`
+  - Repository 层测试（`MelodyDaoTest`，Robolectric + Room in-memory，P4-9）
 - [ ] **P6-2 Compose 仪表化测试**：`PlayerScreen` 传输控制（play/pause/seek/prev/next）、`QueuePanel` 重复项高亮与按索引移除、`ToastHost` 堆积与自动消失、`HomeScreen` 多选。
 - [ ] **P6-3 `:benchmark` Macrobenchmark**：`ColdStartBenchmark`（`StartupMode.COLD`，iterations ≥ 5，`compilationMode` 覆盖 `None` 与 `Partial`）；可选 `BaselineProfileGenerator` 生成基线配置文件以逼近 < 1.5s 目标。
 - [ ] **P6-4 性能埋点与基线报告**：`PerfTracer` 输出四项指标——冷启动、导入耗时、切歌耗时、队列同步耗时；构造 1000 首标准数据集脚本，记录基线数据表。

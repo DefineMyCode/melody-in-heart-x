@@ -19,6 +19,7 @@ import androidx.compose.material.icons.automirrored.filled.PlaylistAdd
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Folder
+import androidx.compose.material.icons.filled.QueueMusic
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -70,6 +71,9 @@ fun HomeScreen(viewModel: HomeViewModel) {
                     if (state.selectedIds.isNotEmpty()) {
                         IconButton(onClick = viewModel::openAddToPlaylistDialog) {
                             Icon(Icons.AutoMirrored.Filled.PlaylistAdd, contentDescription = "加入歌单")
+                        }
+                        IconButton(onClick = viewModel::addSelectedToQueue) {
+                            Icon(Icons.Filled.QueueMusic, contentDescription = "加入队列")
                         }
                         IconButton(onClick = viewModel::deleteSelected) {
                             Icon(Icons.Filled.Delete, contentDescription = "删除选中")

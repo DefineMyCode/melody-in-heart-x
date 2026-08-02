@@ -54,11 +54,43 @@ interface MelodyDao {
     @Query("SELECT * FROM playlists ORDER BY createdAt DESC, id DESC")
     suspend fun getPlaylists(): List<PlaylistEntity>
 
+    @Query("SELECT * FROM playlists WHERE id = :id")
+    suspend fun getPlaylistById(id: Long): PlaylistEntity?
+
+    @Query("UPDATE playlists SET name = :name WHERE id = :id")
+    suspend fun renamePlaylist(id: Long, name: String)
+
+    @Query("SELECT * FROM playlists ORDER BY createdAt DESC, id DESC")
+    fun observePlaylists(): Flow<List<PlaylistEntity>>
+
+    @Query("DELETE FROM playlists WHERE id = :id")
+    suspend fun deletePlaylist(id: Long)
+
+    @Query("DELETE FROM playlist_songs WHERE playlistId = :playlistId")
+    suspend fun deletePlaylistSongs(playlistId: Long)
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsertPlaylistSong(ref: PlaylistSongCrossRefEntity)
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun upsertPlaylistSongs(refs: List<PlaylistSongCrossRefEntity>)
+
     @Query("SELECT * FROM playlist_songs WHERE playlistId = :playlistId ORDER BY position ASC")
     suspend fun getPlaylistSongs(playlistId: Long): List<PlaylistSongCrossRefEntity>
+
+    @Query("DELETE FROM playlist_songs WHERE playlistId = :playlistId AND songId = :songId")
+    suspend fun deletePlaylistSong(playlistId: Long, songId: Long)
+
+    /** Ordered song entities of a playlist (joined through the cross-reference table). */
+    @Query(
+        """
+        SELECT s.* FROM playlist_songs ps
+        INNER JOIN songs s ON ps.songId = s.id
+        WHERE ps.playlistId = :playlistId
+        ORDER BY ps.position ASC
+        """,
+    )
+    suspend fun getPlaylistSongEntities(playlistId: Long): List<SongEntity>
 
     // ---- Play stats ----
     @Insert(onConflict = OnConflictStrategy.REPLACE)

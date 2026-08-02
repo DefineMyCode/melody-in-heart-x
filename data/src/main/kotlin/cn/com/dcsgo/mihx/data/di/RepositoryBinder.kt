@@ -1,12 +1,14 @@
 package cn.com.dcsgo.mihx.data.di
 
 import cn.com.dcsgo.mihx.data.LibraryImporterImpl
+import cn.com.dcsgo.mihx.data.repository.LyricsRepositoryImpl
 import cn.com.dcsgo.mihx.data.repository.PlayStatsRepositoryImpl
 import cn.com.dcsgo.mihx.data.repository.PlaybackStateRepositoryImpl
 import cn.com.dcsgo.mihx.data.repository.PlayerSettingsRepositoryImpl
 import cn.com.dcsgo.mihx.data.repository.PlaylistRepositoryImpl
 import cn.com.dcsgo.mihx.data.repository.SongRepositoryImpl
 import cn.com.dcsgo.mihx.domain.repository.LibraryImporter
+import cn.com.dcsgo.mihx.domain.repository.LyricsRepository
 import cn.com.dcsgo.mihx.domain.repository.PlayStatsRepository
 import cn.com.dcsgo.mihx.domain.repository.PlaybackStateRepository
 import cn.com.dcsgo.mihx.domain.repository.PlayerSettingsRepository
@@ -38,6 +40,10 @@ abstract class RepositoryBinder {
     @Binds
     @Singleton
     abstract fun bindPlaylistRepository(impl: PlaylistRepositoryImpl): PlaylistRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindLyricsRepository(impl: LyricsRepositoryImpl): LyricsRepository
 
     @Binds
     @Singleton

@@ -21,6 +21,7 @@ dependencies {
     implementation(project(":core:common"))
     implementation(project(":domain"))
 
+    implementation(libs.coreKtx)
     implementation(libs.roomRuntime)
     implementation(libs.roomKtx)
     implementation(libs.documentfile)

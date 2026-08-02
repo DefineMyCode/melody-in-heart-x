@@ -62,7 +62,10 @@ fun UserScreen(viewModel: UserViewModel) {
             }
             if (state.topSongs.isNotEmpty()) {
                 item { SectionHeader("Top 曲目") }
-                items(state.topSongs, key = { it.songId }) { row ->
+                // Key must be unique across the WHOLE LazyColumn, not just this list: the same song
+                // can appear in both topSongs and skippedSongs, so the songId alone would collide
+                // ("Key N was already used" crash). Prefix per list.
+                items(state.topSongs, key = { "top_${it.songId}" }) { row ->
                     StatsRow(
                         title = row.title,
                         subtitle = "${row.playCount} 次播放",
@@ -72,7 +75,7 @@ fun UserScreen(viewModel: UserViewModel) {
             }
             if (state.skippedSongs.isNotEmpty()) {
                 item { SectionHeader("秒切记录") }
-                items(state.skippedSongs, key = { it.songId }) { row ->
+                items(state.skippedSongs, key = { "skip_${it.songId}" }) { row ->
                     StatsRow(
                         title = row.title,
                         subtitle = "跳过 ${row.skipCount} 次 · 秒切 ${row.shortPlayCount} 次",

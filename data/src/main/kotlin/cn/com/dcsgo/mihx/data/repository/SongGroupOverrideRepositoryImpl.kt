@@ -33,5 +33,5 @@ class SongGroupOverrideRepositoryImpl @Inject constructor(
 
     override fun observeOverrides(): Flow<Map<String, Long>> =
         dao.observeGroupOverrides()
-            .map { rows -> rows.associate { it.groupKey to it.preferredSongId } } 
+            .map { rows -> rows.associate { it.groupKey to it.preferredSongId } }
 }

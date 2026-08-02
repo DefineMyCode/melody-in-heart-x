@@ -158,7 +158,10 @@ private fun PlaylistDetailScreen(state: PlaylistUiState, viewModel: PlaylistView
             }
         } else {
             LazyColumn(modifier = Modifier.fillMaxSize().padding(padding)) {
-                itemsIndexed(state.detailSongs, key = { _, song -> song.id }) { index, song ->
+                // No stable key: playlists may contain the same song twice, so song.id would
+                // collide inside the LazyColumn ("Key N was already used" crash). Position indexing
+                // is safe here since SongRow carries no per-item state.
+                itemsIndexed(state.detailSongs) { index, song ->
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically,

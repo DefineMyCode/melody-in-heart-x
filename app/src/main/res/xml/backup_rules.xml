@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<full-backup-content>
+    <exclude domain="sharedpref" path="music_player_prefs.xml" />
+    <exclude domain="sharedpref" path="play_stats_prefs.xml" />
+    <exclude domain="sharedpref" path="quick_skip_songs_prefs.xml" />
+    <exclude domain="database" path="melody.db" />
+    <exclude domain="database" path="melody.db-journal" />
+    <exclude domain="database" path="melody.db-shm" />
+    <exclude domain="database" path="melody.db-wal" />
+    <exclude domain="file" path="datastore/player_settings.preferences_pb" />
+    <exclude domain="file" path="datastore/playback_state.preferences_pb" />
+    <exclude domain="file" path="album_art_cache/" />
+    <exclude domain="file" path="album_art/" />
+    <exclude domain="file" path="cache/album_art/" />
+</full-backup-content>

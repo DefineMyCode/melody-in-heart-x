@@ -1,0 +1,519 @@
+package cn.com.dcsgo.mihx.feature.playlist
+
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.QueueMusic
+import androidx.compose.material.icons.filled.MyLocation
+import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.launch
+import coil.compose.AsyncImage
+import cn.com.dcsgo.mihx.core.model.Playlist
+import cn.com.dcsgo.mihx.core.model.Song
+
+@Composable
+fun PlaylistScreen(
+    playlists: List<Playlist>,
+    songs: List<Song>,
+    selectedPlaylist: Playlist?,
+    currentSong: Song? = null,
+    isPlaying: Boolean = false,
+    onPlaylistClick: (Playlist) -> Unit,
+    onSongClick: (Song) -> Unit,
+    onBackClick: () -> Unit,
+    onCreatePlaylist: (String) -> Unit,
+    onDeletePlaylist: (Playlist) -> Unit,
+    onRenamePlaylist: (Playlist, String) -> Unit,
+    onAddSongToPlaylist: (Song, Playlist) -> Unit,
+    onRemoveSongFromPlaylist: (Song, Playlist) -> Unit,
+    // 播放队列相关回调
+    onPlayAllInPlaylist: (Playlist, List<Song>) -> Unit = { _, _ -> },
+    onPlayAllFromEndInPlaylist: (Playlist, List<Song>) -> Unit = { _, _ -> },
+    onAddAllToQueueInPlaylist: (Playlist, List<Song>) -> Unit = { _, _ -> },
+    onAddAllToNextPlayInPlaylist: (Playlist, List<Song>) -> Unit = { _, _ -> },
+    onAddSongToQueue: (Song) -> Unit = {},
+    onAddSongToNextPlay: (Song) -> Unit = {},
+) {
+    // ── Dialog 状态 ──
+    var showCreateDialog by remember { mutableStateOf(false) }
+    var showDeleteConfirm by remember { mutableStateOf<Playlist?>(null) }
+    var showRenameDialog by remember { mutableStateOf<Playlist?>(null) }
+    var showAddToPlaylistDialog by remember { mutableStateOf<Song?>(null) }
+    var showRemoveConfirm by remember { mutableStateOf<Pair<Song, Playlist>?>(null) }
+
+    // ── Dialog 渲染 ──
+    if (showCreateDialog) {
+        CreatePlaylistDialog(
+            existingNames = playlists.map { it.name },
+            onDismiss = { showCreateDialog = false },
+            onConfirm = { name ->
+                onCreatePlaylist(name)
+                showCreateDialog = false
+            }
+        )
+    }
+
+    showDeleteConfirm?.let { playlist ->
+        DeletePlaylistDialog(
+            playlistName = playlist.name,
+            onDismiss = { showDeleteConfirm = null },
+            onConfirm = {
+                onDeletePlaylist(playlist)
+                showDeleteConfirm = null
+                onBackClick()
+            }
+        )
+    }
+
+    showRenameDialog?.let { playlist ->
+        RenamePlaylistDialog(
+            currentName = playlist.name,
+            existingNames = playlists.map { it.name },
+            onDismiss = { showRenameDialog = null },
+            onConfirm = { newName ->
+                onRenamePlaylist(playlist, newName)
+                showRenameDialog = null
+            }
+        )
+    }
+
+    showAddToPlaylistDialog?.let { song ->
+        AddToPlaylistDialog(
+            song = song,
+            playlists = playlists,
+            onDismiss = { showAddToPlaylistDialog = null },
+            onSelectPlaylist = { playlist ->
+                onAddSongToPlaylist(song, playlist)
+                showAddToPlaylistDialog = null
+            }
+        )
+    }
+
+    showRemoveConfirm?.let { (song, playlist) ->
+        RemoveSongConfirmDialog(
+            songTitle = song.title,
+            playlistName = playlist.name,
+            onDismiss = { showRemoveConfirm = null },
+            onConfirm = {
+                onRemoveSongFromPlaylist(song, playlist)
+                showRemoveConfirm = null
+            }
+        )
+    }
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.surface),
+    ) {
+        // ── 歌单详情页的滚动状态（必须在 Box 层级声明，FAB 也要用） ──
+        val detailListState = rememberLazyListState()
+        val detailScope = rememberCoroutineScope()
+        val currentSongInDetail by remember(currentSong, selectedPlaylist) {
+            derivedStateOf {
+                currentSong?.let { cs ->
+                    songs.indexOfFirst { it.id == cs.id }.takeIf { it >= 0 }
+                }
+            }
+        }
+
+        Column(modifier = Modifier.fillMaxSize()) {
+            // 顶部栏
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                if (selectedPlaylist != null) {
+                    IconButton(onClick = onBackClick) {
+                        Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "返回")
+                    }
+                    Text(
+                        text = selectedPlaylist.name,
+                        style = MaterialTheme.typography.headlineMedium,
+                        fontWeight = FontWeight.Bold,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f)
+                    )
+                } else {
+                    Text(
+                        text = "我的歌单",
+                        style = MaterialTheme.typography.headlineMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+
+            if (selectedPlaylist != null) {
+                // ── 歌单详情页 ──
+                PlaylistDetailView(
+                    selectedPlaylist = selectedPlaylist,
+                    songs = songs,
+                    currentSong = currentSong,
+                    isPlaying = isPlaying,
+                    onSongClick = onSongClick,
+                    onShowAddToPlaylist = { showAddToPlaylistDialog = it },
+                    onShowRemoveConfirm = { song -> showRemoveConfirm = song to selectedPlaylist },
+                    onPlayAll = { onPlayAllInPlaylist(selectedPlaylist, songs) },
+                    onPlayAllFromEnd = { onPlayAllFromEndInPlaylist(selectedPlaylist, songs) },
+                    onAddAllToQueue = { onAddAllToQueueInPlaylist(selectedPlaylist, songs) },
+                    onAddAllToNextPlay = { onAddAllToNextPlayInPlaylist(selectedPlaylist, songs) },
+                    onAddSongToQueue = onAddSongToQueue,
+                    onAddSongToNextPlay = onAddSongToNextPlay,
+                    listState = detailListState,
+                )
+            } else {
+                // ── 歌单列表页 ──
+                PlaylistListView(
+                    playlists = playlists,
+                    songs = songs,
+                    currentSong = currentSong,
+                    isPlaying = isPlaying,
+                    onPlaylistClick = onPlaylistClick,
+                    onSongClick = onSongClick,
+                    onShowAddToPlaylist = { showAddToPlaylistDialog = it },
+                    onDelete = { showDeleteConfirm = it },
+                    onRename = { showRenameDialog = it }
+                )
+            }
+        }
+
+        // ── FAB ──
+        if (selectedPlaylist == null) {
+            // 歌单列表页：创建歌单
+            FloatingActionButton(
+                onClick = { showCreateDialog = true },
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(end = 16.dp, bottom = 16.dp),
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary
+            ) {
+                Icon(imageVector = Icons.Default.Add, contentDescription = "创建歌单")
+            }
+        } else {
+            // 歌单详情页：快速定位当前播放
+            AnimatedVisibility(
+                visible = currentSongInDetail != null,
+                enter = slideInVertically(initialOffsetY = { it }),
+                exit = slideOutVertically(targetOffsetY = { it }),
+                modifier = Modifier
+                    .align(Alignment.BottomStart)
+                    .padding(start = 16.dp, bottom = 16.dp)
+            ) {
+                FloatingActionButton(
+                    onClick = {
+                        currentSongInDetail?.let { index ->
+                            detailScope.launch {
+                                detailListState.animateScrollToItem(index)
+                            }
+                        }
+                    },
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.MyLocation,
+                        contentDescription = "定位到当前播放"
+                    )
+                }
+            }
+        }
+    }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 歌单详情页
+// ─────────────────────────────────────────────────────────────────────────────
+
+@Composable
+private fun PlaylistDetailView(
+    selectedPlaylist: Playlist,
+    songs: List<Song>,
+    currentSong: Song?,
+    isPlaying: Boolean,
+    onSongClick: (Song) -> Unit,
+    onShowAddToPlaylist: (Song) -> Unit,
+    onShowRemoveConfirm: (Song) -> Unit,
+    onPlayAll: () -> Unit,
+    onPlayAllFromEnd: () -> Unit,
+    onAddAllToQueue: () -> Unit,
+    onAddAllToNextPlay: () -> Unit,
+    onAddSongToQueue: (Song) -> Unit,
+    onAddSongToNextPlay: (Song) -> Unit,
+    listState: LazyListState,
+) {
+    Column(modifier = Modifier.fillMaxSize()) {
+        Spacer(modifier = Modifier.height(8.dp))
+        // 歌单封面 + 信息
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(120.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(MaterialTheme.colorScheme.primaryContainer)
+            ) {
+                val firstSong = songs.firstOrNull()
+                if (firstSong?.albumArtUri != null) {
+                    AsyncImage(
+                        model = firstSong.albumArtUri,
+                        contentDescription = "专辑封面",
+                        modifier = Modifier.size(120.dp),
+                        contentScale = ContentScale.Crop
+                    )
+                } else {
+                    Icon(
+                        imageVector = Icons.Default.PlayArrow,
+                        contentDescription = null,
+                        modifier = Modifier.size(48.dp).align(Alignment.Center),
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.width(16.dp))
+            Column {
+                Text(
+                    text = selectedPlaylist.name,
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = if (songs.isEmpty()) "暂无歌曲" else "${songs.size} 首歌曲",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // ── 播放按钮区 ──
+        if (songs.isNotEmpty()) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    FilledTonalButton(
+                        onClick = onPlayAll,
+                        modifier = Modifier.weight(1f),
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.vertical_align_bottom_24),
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(text = "从头播放 (${songs.size})")
+                    }
+                    FilledTonalButton(
+                        onClick = onPlayAllFromEnd,
+                        modifier = Modifier.weight(1f),
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.vertical_align_top_24),
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(text = "从尾播放 (${songs.size})")
+                    }
+                }
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    FilledTonalButton(
+                        onClick = onAddAllToQueue,
+                        modifier = Modifier.weight(1f),
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.music_note_add_24),
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(text = "加入队尾 (${songs.size})")
+                    }
+                    FilledTonalButton(
+                        onClick = onAddAllToNextPlay,
+                        modifier = Modifier.weight(1f),
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.skip_next_24),
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(text = "下一首播放 (${songs.size})")
+                    }
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        if (songs.isEmpty()) {
+            EmptyPlaylistDetailHint()
+        } else {
+            Text(
+                text = "歌曲列表",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Medium,
+                modifier = Modifier.padding(start = 16.dp, bottom = 8.dp)
+            )
+            LazyColumn(
+                state = listState,
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(horizontal = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                items(songs, key = { "detail_${it.id}" }) { song ->
+                    SongItem(
+                        song = song,
+                        isCurrentPlaying = isPlaying && currentSong?.id == song.id,
+                        onSongClick = onSongClick,
+                        onShowAddToPlaylist = onShowAddToPlaylist,
+                        showRemoveButton = true,
+                        onRemoveClick = { onShowRemoveConfirm(song) },
+                        onAddToQueue = { onAddSongToQueue(song) },
+                        onAddToNextPlay = { onAddSongToNextPlay(song) },
+                    )
+                }
+            }
+        }
+    }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 歌单列表页
+// ─────────────────────────────────────────────────────────────────────────────
+
+@Composable
+private fun PlaylistListView(
+    playlists: List<Playlist>,
+    songs: List<Song>,
+    currentSong: Song?,
+    isPlaying: Boolean,
+    onPlaylistClick: (Playlist) -> Unit,
+    onSongClick: (Song) -> Unit,
+    onShowAddToPlaylist: (Song) -> Unit,
+    onDelete: (Playlist) -> Unit,
+    onRename: (Playlist) -> Unit,
+) {
+    if (songs.isEmpty() && playlists.isEmpty()) {
+        EmptyLibraryHint()
+    } else {
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = androidx.compose.foundation.layout.PaddingValues(
+                start = 16.dp, end = 16.dp, bottom = 80.dp
+            ),
+            verticalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            // 最近添加
+            item(key = "recent_added_header") {
+                Text(
+                    text = "最近添加",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier.padding(top = 8.dp, bottom = 4.dp)
+                )
+            }
+            if (songs.isEmpty()) {
+                item(key = "recent_added_empty") { EmptySectionHint("还没有音乐，先去「我的」导入文件吧~") }
+            } else {
+                items(songs.take(5), key = { "song_${it.id}" }) { song ->
+                    SongItem(
+                        song = song,
+                        isCurrentPlaying = isPlaying && currentSong?.id == song.id,
+                        onSongClick = onSongClick,
+                        onShowAddToPlaylist = onShowAddToPlaylist
+                    )
+                }
+            }
+
+            // 歌单分区
+            item(key = "playlist_header") {
+                Spacer(modifier = Modifier.height(20.dp))
+                Text(
+                    text = "歌单",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier.padding(bottom = 4.dp)
+                )
+            }
+            if (playlists.isEmpty()) {
+                item(key = "playlist_empty") { EmptySectionHint("您还没有歌单，点击右下角 + 创建~") }
+            } else {
+                items(playlists, key = { "playlist_${it.id}" }) { playlist ->
+                    PlaylistItem(
+                        playlist = playlist,
+                        songs = songs,
+                        onPlaylistClick = onPlaylistClick,
+                        onDelete = { onDelete(playlist) },
+                        onRename = { onRename(playlist) }
+                    )
+                }
+            }
+        }
+    }
+}

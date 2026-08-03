@@ -99,6 +99,7 @@ fun AppNavHost(
                     onStartInfinitePlay = playerViewModel::startInfinitePlay,
                     onStopInfinitePlay = playerViewModel::stopInfinitePlay,
                 ),
+                loadSongInfo = loadSongInfo,
                 showToast = showToast,
             )
         }

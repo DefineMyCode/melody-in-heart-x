@@ -14,10 +14,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -27,9 +29,11 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -42,6 +46,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import cn.com.dcsgo.mihx.core.model.PlayQueue
 import cn.com.dcsgo.mihx.core.model.Song
+import kotlinx.coroutines.launch
 
 /**
  * 播放队列底部抽屉面板
@@ -73,6 +78,20 @@ fun PlayQueueSheet(
     if (!isShown) return
 
     var showClearConfirm by remember { mutableStateOf(false) }
+    val listState = rememberLazyListState()
+    val coroutineScope = rememberCoroutineScope()
+    val sheetState = rememberModalBottomSheetState()
+    val currentIndex = playQueue.currentIndex
+
+    // 一键跳转到当前播放歌曲：先完全展开抽屉，再滚动到目标项
+    fun scrollToCurrentSong() {
+        if (currentIndex >= 0 && playQueue.songs.isNotEmpty()) {
+            coroutineScope.launch {
+                sheetState.expand()
+                listState.animateScrollToItem(currentIndex.coerceAtMost(playQueue.songs.lastIndex))
+            }
+        }
+    }
 
     // 清空确认弹窗
     if (showClearConfirm) {
@@ -94,6 +113,7 @@ fun PlayQueueSheet(
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
+        sheetState = sheetState,
         containerColor = MaterialTheme.colorScheme.surface
     ) {
         Column(
@@ -115,6 +135,16 @@ fun PlayQueueSheet(
                     fontWeight = FontWeight.Bold
                 )
                 Row(verticalAlignment = Alignment.CenterVertically) {
+                    // 一键定位到当前播放歌曲（队列非空且有播放索引时显示）
+                    if (!playQueue.isEmpty && currentIndex >= 0) {
+                        IconButton(onClick = { scrollToCurrentSong() }) {
+                            Icon(
+                                imageVector = Icons.Default.MyLocation,
+                                contentDescription = "定位到当前播放",
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
                     // 清空按钮（队列非空时显示）
                     if (!playQueue.isEmpty) {
                         IconButton(onClick = { showClearConfirm = true }) {
@@ -150,6 +180,7 @@ fun PlayQueueSheet(
             } else {
                 // 队列列表
                 LazyColumn(
+                    state = listState,
                     modifier = Modifier.fillMaxWidth(),
                     contentPadding = PaddingValues(vertical = 8.dp),
                     verticalArrangement = Arrangement.spacedBy(0.dp)

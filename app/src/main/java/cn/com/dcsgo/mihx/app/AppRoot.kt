@@ -123,6 +123,8 @@ fun AppRoot(
                 currentDestination = currentDestination,
                 currentSong = uiState.currentSong,
                 isPlaying = uiState.isPlaying,
+                currentPositionMs = uiState.currentPositionMs,
+                durationMs = uiState.durationMs,
                 onDestinationSelected = { destination ->
                     navController.navigate(destination.route) {
                         popUpTo(navController.graph.findStartDestination().id) {

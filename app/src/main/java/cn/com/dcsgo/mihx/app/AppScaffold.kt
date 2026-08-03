@@ -21,6 +21,8 @@ fun AppScaffold(
     currentDestination: AppDestinations,
     currentSong: Song?,
     isPlaying: Boolean,
+    currentPositionMs: Long,
+    durationMs: Long,
     onDestinationSelected: (AppDestinations) -> Unit,
     onPlayPauseClick: () -> Unit,
     onPreviousClick: () -> Unit,
@@ -61,6 +63,8 @@ fun AppScaffold(
                 MusicPlayerBottomBar(
                     isPlaying = isPlaying,
                     currentSong = currentSong,
+                    currentPositionMs = currentPositionMs,
+                    durationMs = durationMs,
                     onPlayPauseClick = onPlayPauseClick,
                     onPreviousClick = onPreviousClick,
                     onNextClick = onNextClick,

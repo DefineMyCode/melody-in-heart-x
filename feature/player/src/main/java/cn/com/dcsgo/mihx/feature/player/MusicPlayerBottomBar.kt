@@ -1,5 +1,6 @@
 package cn.com.dcsgo.mihx.feature.player
 
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -8,6 +9,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
@@ -24,7 +26,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -49,6 +55,8 @@ import cn.com.dcsgo.mihx.core.model.Song
 fun MusicPlayerBottomBar(
     currentSong: Song,
     isPlaying: Boolean,
+    currentPositionMs: Long = 0L,
+    durationMs: Long = 0L,
     onPlayPauseClick: () -> Unit,
     onPreviousClick: () -> Unit,
     onNextClick: () -> Unit,
@@ -123,27 +131,71 @@ fun MusicPlayerBottomBar(
                 )
             }
 
-            // 播放/暂停按钮
+            // 播放/暂停按钮（外圈进度圆弧）
+            val progressTrackColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.35f)
+            val progressColor = MaterialTheme.colorScheme.primary
             Box(
-                modifier = Modifier
-                    .size(48.dp)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.primary),
+                modifier = Modifier.size(64.dp),
                 contentAlignment = Alignment.Center
             ) {
-                IconButton(onClick = onPlayPauseClick) {
-                    if (isPlaying) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.pause_24),
-                            contentDescription = "暂停",
-                            tint = MaterialTheme.colorScheme.onPrimary
-                        )
+                // 进度圆弧（64dp 环，包围 48dp 按钮）
+                Canvas(modifier = Modifier.fillMaxSize()) {
+                    val stroke = 3.dp.toPx()
+                    val arcSize = androidx.compose.ui.geometry.Size(
+                        width = size.width - stroke,
+                        height = size.height - stroke,
+                    )
+                    val topLeft = androidx.compose.ui.geometry.Offset(stroke / 2, stroke / 2)
+                    // 底环
+                    drawArc(
+                        color = progressTrackColor,
+                        startAngle = 0f,
+                        sweepAngle = 360f,
+                        useCenter = false,
+                        topLeft = topLeft,
+                        size = arcSize,
+                        style = Stroke(width = stroke, cap = StrokeCap.Round),
+                    )
+                    // 进度弧（从 12 点方向顺时针）
+                    val progress = if (durationMs > 0) {
+                        (currentPositionMs.toFloat() / durationMs).coerceIn(0f, 1f)
                     } else {
-                        Icon(
-                            imageVector = Icons.Default.PlayArrow,
-                            contentDescription = "播放",
-                            tint = MaterialTheme.colorScheme.onPrimary
+                        0f
+                    }
+                    if (progress > 0f) {
+                        drawArc(
+                            color = progressColor,
+                            startAngle = -90f,
+                            sweepAngle = 360f * progress,
+                            useCenter = false,
+                            topLeft = topLeft,
+                            size = arcSize,
+                            style = Stroke(width = stroke, cap = StrokeCap.Round),
                         )
+                    }
+                }
+                // 按钮本体
+                Box(
+                    modifier = Modifier
+                        .size(48.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.primary),
+                    contentAlignment = Alignment.Center
+                ) {
+                    IconButton(onClick = onPlayPauseClick) {
+                        if (isPlaying) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.pause_24),
+                                contentDescription = "暂停",
+                                tint = MaterialTheme.colorScheme.onPrimary
+                            )
+                        } else {
+                            Icon(
+                                imageVector = Icons.Default.PlayArrow,
+                                contentDescription = "播放",
+                                tint = MaterialTheme.colorScheme.onPrimary
+                            )
+                        }
                     }
                 }
             }

@@ -73,6 +73,8 @@ fun HomeScreen(
     onTogglePlayMode: () -> Unit,
     onSwitchVersion: (Song) -> Unit = {},
     onTextCopied: (String) -> Unit = {},
+    onArtistClick: (String) -> Unit = {},
+    onAlbumClick: (String, String) -> Unit = { _, _ -> },
     onLuckyPlayClick: () -> Unit = {},
     onInfinitePlayClick: () -> Unit = {},
 ) {
@@ -117,6 +119,8 @@ fun HomeScreen(
                         playMode = playMode,
                         isInfinitePlay = isInfinitePlay,
                         sameNameSongs = sameNameSongs,
+                        onArtistClick = onArtistClick,
+                        onAlbumClick = onAlbumClick,
                         onPlayPauseClick = onPlayPauseClick,
                         onPreviousClick = onPreviousClick,
                         onNextClick = onNextClick,
@@ -291,6 +295,8 @@ private fun SongInfoSection(
     playMode: PlayMode,
     isInfinitePlay: Boolean,
     sameNameSongs: List<Song>,
+    onArtistClick: (String) -> Unit,
+    onAlbumClick: (String, String) -> Unit,
     onPlayPauseClick: () -> Unit,
     onPreviousClick: () -> Unit,
     onNextClick: () -> Unit,
@@ -319,19 +325,21 @@ private fun SongInfoSection(
 
         Spacer(modifier = Modifier.height(4.dp))
 
-        // 艺术家名（带复制按钮）
+        // 艺术家名（带复制按钮，可点击跳转歌手详情）
         CopyableText(
             text = currentSong.artist,
             isTitle = false,
+            onClick = { onArtistClick(currentSong.artist) },
             onCopied = onTextCopied
         )
 
-        // 专辑名（带复制按钮）
+        // 专辑名（带复制按钮，可点击跳转专辑详情）
         if (albumName != null) {
             Spacer(modifier = Modifier.height(4.dp))
             CopyableText(
                 text = albumName,
                 isTitle = false,
+                onClick = { onAlbumClick(albumName, currentSong.artist) },
                 onCopied = onTextCopied
             )
         }
@@ -422,7 +430,8 @@ private fun SongInfoSection(
                 Icon(
                     painter = painterResource(id = R.drawable.skip_previous_24),
                     contentDescription = "上一首",
-                    modifier = Modifier.size(32.dp)
+                    modifier = Modifier.size(32.dp),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
 
@@ -458,7 +467,8 @@ private fun SongInfoSection(
                 Icon(
                     painter = painterResource(id = R.drawable.skip_next_24),
                     contentDescription = "下一首",
-                    modifier = Modifier.size(32.dp)
+                    modifier = Modifier.size(32.dp),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
 

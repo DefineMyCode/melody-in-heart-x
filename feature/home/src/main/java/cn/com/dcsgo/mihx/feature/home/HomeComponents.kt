@@ -47,12 +47,14 @@ private const val HI_RES_THRESHOLD_HZ = 88200
  *
  * @param text        要显示的文字
  * @param isTitle     是否为歌曲名（影响字体大小和粗细）
+ * @param onClick     点击文字的回调（可空，用于跳转歌手/专辑详情等）
  * @param onCopied    复制成功后的回调（可用于触发 Toast）
  */
 @Composable
 fun CopyableText(
     text: String,
     isTitle: Boolean = false,
+    onClick: (() -> Unit)? = null,
     onCopied: (String) -> Unit = {}
 ) {
     val context = LocalContext.current
@@ -80,7 +82,11 @@ fun CopyableText(
             textAlign = TextAlign.Center,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.weight(1f)
+            modifier = Modifier
+                .weight(1f)
+                .then(
+                    if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier
+                )
         )
         Spacer(modifier = Modifier.width(4.dp))
         // 复制按钮：点击复制文字到剪贴板

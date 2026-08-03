@@ -25,6 +25,8 @@ data class HomeRouteActions(
     val onTogglePlayMode: () -> String,
     val onSwitchVersion: (Song) -> Unit,
     val onShowLyrics: () -> Unit,
+    val onArtistClick: (String) -> Unit = {},
+    val onAlbumClick: (String, String) -> Unit = { _, _ -> },
     val onLuckyPlayClick: () -> Unit,
     val onStartInfinitePlay: () -> Unit,
     val onStopInfinitePlay: () -> Unit,
@@ -61,6 +63,8 @@ fun HomeRoute(
             showToast("已切换到 ${song.sampleRateDisplay} 版本")
         },
         onTextCopied = { text -> showToast("已复制: $text") },
+        onArtistClick = actions.onArtistClick,
+        onAlbumClick = actions.onAlbumClick,
         onLuckyPlayClick = {
             actions.onLuckyPlayClick()
             showToast("已生成随机队列，开始播放~")

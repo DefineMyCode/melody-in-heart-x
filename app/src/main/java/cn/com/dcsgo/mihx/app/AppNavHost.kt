@@ -101,6 +101,12 @@ fun AppNavHost(
                     },
                     onSwitchVersion = playerViewModel::switchToVersion,
                     onShowLyrics = { navController.navigate(AppRoutes.LYRICS) },
+                    onArtistClick = { artistName ->
+                        navController.navigate(AppRoutes.artistDetail(artistName))
+                    },
+                    onAlbumClick = { albumName, artistName ->
+                        navController.navigate(AppRoutes.albumDetail(albumName, artistName))
+                    },
                     onLuckyPlayClick = playerViewModel::playRandomQueue,
                     onStartInfinitePlay = playerViewModel::startInfinitePlay,
                     onStopInfinitePlay = playerViewModel::stopInfinitePlay,

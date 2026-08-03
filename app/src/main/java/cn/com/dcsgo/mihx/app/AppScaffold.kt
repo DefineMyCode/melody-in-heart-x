@@ -26,7 +26,6 @@ fun AppScaffold(
     onPreviousClick: () -> Unit,
     onNextClick: () -> Unit,
     onNavigateToHome: () -> Unit,
-    topBar: @Composable () -> Unit,
     content: @Composable () -> Unit,
 ) {
     NavigationSuiteScaffold(
@@ -51,7 +50,6 @@ fun AppScaffold(
                 .fillMaxSize()
                 .statusBarsPadding(),
         ) {
-            topBar()
             Box(
                 modifier = Modifier
                     .weight(1f)

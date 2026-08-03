@@ -42,7 +42,7 @@ import kotlinx.coroutines.delay
  * 顶部 Toast 通知系统
  *
  * 特性：
- * - 多条通知同时显示，向下堆积
+ * - 仅显示最新一条通知，新通知会替换旧通知
  * - 自动消失（默认 2 秒）
  * - 可手动关闭
  * - 通过 [rememberToastHost] 创建实例并可在任意位置触发
@@ -73,10 +73,13 @@ class ToastHostState {
     /**
      * 显示一条 Toast 通知
      *
+     * 仅保留最新一条，新通知会替换当前显示中的旧通知。
+     *
      * @param message  通知文本
      */
     fun showToast(message: String) {
         val id = ++idCounter
+        _entries.clear()
         _entries.add(ToastEntry(id = id, message = message))
     }
 
@@ -95,24 +98,22 @@ fun rememberToastHost(): ToastHostState = remember { ToastHostState() }
  * Toast 通知容器
  *
  * 放置在 UI 顶层（如 Scaffold 外层），会从顶部弹出通知。
- * 最多同时显示 [maxVisible] 条。
+ * 仅显示最新一条通知。
  *
  * @param toastHost    Toast 状态管理
  * @param modifier     修饰符
- * @param maxVisible   最多同时显示的条数
  */
 @Composable
 fun ToastHost(
     toastHost: ToastHostState,
     modifier: Modifier = Modifier,
-    maxVisible: Int = 5,
 ) {
     Box(
         modifier = modifier.fillMaxWidth(),
         contentAlignment = Alignment.TopCenter
     ) {
-        // 取最新的 maxVisible 条，最旧的在顶部
-        val visibleEntries = toastHost.entries.takeLast(maxVisible).reversed()
+        // 仅显示最新一条
+        val visibleEntries = toastHost.entries.takeLast(1)
 
         Column(
             modifier = Modifier

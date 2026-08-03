@@ -214,11 +214,7 @@ fun PlaylistScreen(
                 PlaylistListView(
                     playlists = playlists,
                     songs = songs,
-                    currentSong = currentSong,
-                    isPlaying = isPlaying,
                     onPlaylistClick = onPlaylistClick,
-                    onSongClick = onSongClick,
-                    onShowAddToPlaylist = { showAddToPlaylistDialog = it },
                     onDelete = { showDeleteConfirm = it },
                     onRename = { showRenameDialog = it }
                 )
@@ -451,11 +447,7 @@ private fun PlaylistDetailView(
 private fun PlaylistListView(
     playlists: List<Playlist>,
     songs: List<Song>,
-    currentSong: Song?,
-    isPlaying: Boolean,
     onPlaylistClick: (Playlist) -> Unit,
-    onSongClick: (Song) -> Unit,
-    onShowAddToPlaylist: (Song) -> Unit,
     onDelete: (Playlist) -> Unit,
     onRename: (Playlist) -> Unit,
 ) {
@@ -469,28 +461,6 @@ private fun PlaylistListView(
             ),
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
-            // 最近添加
-            item(key = "recent_added_header") {
-                Text(
-                    text = "最近添加",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    modifier = Modifier.padding(top = 8.dp, bottom = 4.dp)
-                )
-            }
-            if (songs.isEmpty()) {
-                item(key = "recent_added_empty") { EmptySectionHint("还没有音乐，先去「我的」导入文件吧~") }
-            } else {
-                items(songs.take(5), key = { "song_${it.id}" }) { song ->
-                    SongItem(
-                        song = song,
-                        isCurrentPlaying = isPlaying && currentSong?.id == song.id,
-                        onSongClick = onSongClick,
-                        onShowAddToPlaylist = onShowAddToPlaylist
-                    )
-                }
-            }
-
             // 歌单分区
             item(key = "playlist_header") {
                 Spacer(modifier = Modifier.height(20.dp))

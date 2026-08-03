@@ -1,19 +1,15 @@
 package cn.com.dcsgo.mihx.app
 
+import android.app.Activity
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -22,13 +18,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import cn.com.dcsgo.mihx.R
+import androidx.core.view.WindowCompat
 import cn.com.dcsgo.mihx.app.permissions.rememberPermissionCoordinator
 import cn.com.dcsgo.mihx.app.player.PlayerQueueSheetHost
 import cn.com.dcsgo.mihx.app.theme.SettingsViewModel
@@ -106,6 +102,7 @@ fun AppRoot(
     }
 
     MusicplayerTheme(darkTheme = isDarkTheme) {
+        SyncSystemBarsAppearance(isDarkTheme)
         Box(modifier = Modifier.fillMaxSize()) {
             AppScaffold(
                 currentDestination = currentDestination,
@@ -131,14 +128,6 @@ fun AppRoot(
                         launchSingleTop = true
                         restoreState = true
                     }
-                },
-                topBar = {
-                    ThemeToggleButton(
-                        isDarkTheme = isDarkTheme,
-                        onToggle = {
-                            settingsViewModel.setDarkTheme(!isDarkTheme)
-                        },
-                    )
                 },
             ) {
                 AppNavHost(
@@ -182,6 +171,18 @@ fun AppRoot(
 }
 
 @Composable
+private fun SyncSystemBarsAppearance(darkTheme: Boolean) {
+    val view = LocalView.current
+    val context = LocalContext.current
+    if (!view.isInEditMode) {
+        SideEffect {
+            val window = (context as Activity).window
+            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !darkTheme
+        }
+    }
+}
+
+@Composable
 private fun LoadingSplash() {
     Box(
         modifier = Modifier
@@ -194,32 +195,5 @@ private fun LoadingSplash() {
             color = Color.White.copy(alpha = 0.6f),
             style = MaterialTheme.typography.bodyMedium,
         )
-    }
-}
-
-@Composable
-private fun ThemeToggleButton(
-    isDarkTheme: Boolean,
-    onToggle: () -> Unit,
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 4.dp),
-        horizontalArrangement = Arrangement.End,
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        IconButton(onClick = onToggle) {
-            Icon(
-                painter = painterResource(
-                    if (isDarkTheme) {
-                        R.drawable.light_24
-                    } else {
-                        R.drawable.moon_stars_24
-                    },
-                ),
-                contentDescription = "切换主题",
-            )
-        }
     }
 }

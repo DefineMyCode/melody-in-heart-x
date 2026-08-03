@@ -85,8 +85,6 @@ class PlaylistScreenComposeTest {
             }
         }
 
-        composeRule.onNodeWithText("最近添加").assertIsDisplayed()
-        composeRule.onNodeWithText("晴天").assertIsDisplayed()
         composeRule.onNodeWithText("歌单").assertIsDisplayed()
         composeRule.onNodeWithText("通勤歌单").assertIsDisplayed()
         composeRule.onNodeWithText("1 首歌曲").assertIsDisplayed()

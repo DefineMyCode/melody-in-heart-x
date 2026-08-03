@@ -5,6 +5,7 @@ import android.content.SharedPreferences
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.Preferences
+import cn.com.dcsgo.mihx.core.model.ThemeMode
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
@@ -24,9 +25,17 @@ class PlayerSettingsRepository(
         ),
     )
 
-    override val darkTheme: Flow<Boolean> = settingsStore.data.map { preferences ->
-        preferences[PlayerSettingsKeys.DARK_THEME]
-            ?: legacyPrefs.getBoolean(PlayerSettingsKeys.LEGACY_DARK_THEME, false)
+    override val themeMode: Flow<ThemeMode> = settingsStore.data.map { preferences ->
+        val stored = preferences[PlayerSettingsKeys.THEME_MODE]
+        if (stored != null) {
+            ThemeMode.entries.firstOrNull { it.name == stored } ?: ThemeMode.SYSTEM
+        } else if (preferences[PlayerSettingsKeys.DARK_THEME] != null) {
+            if (preferences[PlayerSettingsKeys.DARK_THEME] == true) ThemeMode.DARK else ThemeMode.LIGHT
+        } else if (legacyPrefs.contains(PlayerSettingsKeys.LEGACY_DARK_THEME)) {
+            if (legacyPrefs.getBoolean(PlayerSettingsKeys.LEGACY_DARK_THEME, false)) ThemeMode.DARK else ThemeMode.LIGHT
+        } else {
+            ThemeMode.SYSTEM
+        }
     }
 
     override val globalUniformRandomEnabled: Flow<Boolean> = settingsStore.data.map { preferences ->
@@ -80,9 +89,9 @@ class PlayerSettingsRepository(
         }
     }
 
-    override suspend fun setDarkTheme(enabled: Boolean) {
+    override suspend fun setThemeMode(mode: ThemeMode) {
         settingsStore.edit { preferences ->
-            preferences[PlayerSettingsKeys.DARK_THEME] = enabled
+            preferences[PlayerSettingsKeys.THEME_MODE] = mode.name
         }
         legacyPrefs.edit()
             .remove(PlayerSettingsKeys.LEGACY_DARK_THEME)

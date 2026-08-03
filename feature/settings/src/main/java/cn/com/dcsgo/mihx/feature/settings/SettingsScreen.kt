@@ -1,5 +1,8 @@
 package cn.com.dcsgo.mihx.feature.settings
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -8,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -23,16 +27,19 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import cn.com.dcsgo.mihx.core.model.ThemeMode
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
     onBack: () -> Unit,
-    darkThemeEnabled: Boolean,
-    onDarkThemeEnabledChange: (Boolean) -> Unit,
+    themeMode: ThemeMode,
+    onThemeModeChange: (ThemeMode) -> Unit,
     globalUniformRandomEnabled: Boolean,
     onGlobalUniformRandomEnabledChange: (Boolean) -> Unit,
     onRequestBluetoothPermission: () -> Unit,
@@ -66,12 +73,9 @@ fun SettingsScreen(
                     .fillMaxWidth()
                     .padding(horizontal = 20.dp, vertical = 16.dp),
             ) {
-                SettingsSwitchRow(
-                    title = "深色主题",
-                    description = "使用深色外观",
-                    checked = darkThemeEnabled,
-                    onCheckedChange = onDarkThemeEnabledChange,
-                    switchContentDescription = "深色主题开关",
+                SettingsThemeSelector(
+                    themeMode = themeMode,
+                    onThemeModeChange = onThemeModeChange,
                 )
                 SettingsSwitchRow(
                     title = "全局均匀随机",
@@ -96,6 +100,70 @@ fun SettingsScreen(
                 )
             }
         }
+    }
+}
+
+@Composable
+private fun SettingsThemeSelector(
+    themeMode: ThemeMode,
+    onThemeModeChange: (ThemeMode) -> Unit,
+) {
+    Column(modifier = Modifier.padding(vertical = 12.dp)) {
+        Text(
+            text = "主题",
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onSurface,
+        )
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            ThemeMode.entries.forEach { mode ->
+                ThemeModeChip(
+                    mode = mode,
+                    selected = mode == themeMode,
+                    modifier = Modifier.weight(1f),
+                    onClick = { onThemeModeChange(mode) },
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun ThemeModeChip(
+    mode: ThemeMode,
+    selected: Boolean,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit,
+) {
+    val containerColor = if (selected) {
+        MaterialTheme.colorScheme.primaryContainer
+    } else {
+        MaterialTheme.colorScheme.surfaceVariant
+    }
+    val contentColor = if (selected) {
+        MaterialTheme.colorScheme.onPrimaryContainer
+    } else {
+        MaterialTheme.colorScheme.onSurfaceVariant
+    }
+    Row(
+        modifier = modifier
+            .clip(RoundedCornerShape(12.dp))
+            .background(containerColor)
+            .clickable(onClick = onClick)
+            .padding(vertical = 10.dp),
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = mode.label,
+            style = MaterialTheme.typography.bodyMedium,
+            color = contentColor,
+            fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
+        )
     }
 }
 

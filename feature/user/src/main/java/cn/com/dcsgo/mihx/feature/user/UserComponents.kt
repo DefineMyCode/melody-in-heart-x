@@ -68,7 +68,7 @@ fun UserInfoSection(
     Box(modifier = Modifier.fillMaxWidth()) {
         IconButton(
             onClick = onSettingsClick,
-            modifier = Modifier.align(Alignment.TopStart)
+            modifier = Modifier.align(Alignment.TopEnd)
         ) {
             Icon(
                 painter = painterResource(R.drawable.settings_24),

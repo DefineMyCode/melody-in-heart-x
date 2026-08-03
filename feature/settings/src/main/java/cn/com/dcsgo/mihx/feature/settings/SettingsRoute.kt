@@ -1,15 +1,16 @@
 package cn.com.dcsgo.mihx.feature.settings
 
 import androidx.compose.runtime.Composable
+import cn.com.dcsgo.mihx.core.model.ThemeMode
 
 data class SettingsRouteState(
-    val darkThemeEnabled: Boolean,
+    val themeMode: ThemeMode,
     val globalUniformRandomEnabled: Boolean,
 )
 
 data class SettingsRouteActions(
     val onBack: () -> Unit,
-    val onDarkThemeEnabledChange: (Boolean) -> Unit,
+    val onThemeModeChange: (ThemeMode) -> Unit,
     val onGlobalUniformRandomEnabledChange: (Boolean) -> Unit,
     val onRequestBluetoothPermission: () -> Unit,
     val onRequestNotificationPermission: () -> Unit,
@@ -22,8 +23,8 @@ fun SettingsRoute(
 ) {
     SettingsScreen(
         onBack = actions.onBack,
-        darkThemeEnabled = state.darkThemeEnabled,
-        onDarkThemeEnabledChange = actions.onDarkThemeEnabledChange,
+        themeMode = state.themeMode,
+        onThemeModeChange = actions.onThemeModeChange,
         globalUniformRandomEnabled = state.globalUniformRandomEnabled,
         onGlobalUniformRandomEnabledChange = actions.onGlobalUniformRandomEnabledChange,
         onRequestBluetoothPermission = actions.onRequestBluetoothPermission,

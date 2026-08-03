@@ -2,6 +2,7 @@ package cn.com.dcsgo.mihx.data.repository
 
 import android.content.SharedPreferences
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
+import cn.com.dcsgo.mihx.core.model.ThemeMode
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -17,7 +18,7 @@ import java.io.File
 class PlayerSettingsRepositoryTest {
 
     @Test
-    fun darkThemeFallsBackToLegacyThenWritesDataStoreAndClearsLegacyKey() = runBlocking {
+    fun themeModeFallsBackToLegacyDarkThemeThenWritesDataStoreAndClearsLegacyKey() = runBlocking {
         val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
         val file = tempDataStoreFile()
         val store = PreferenceDataStoreFactory.create(
@@ -30,13 +31,32 @@ class PlayerSettingsRepositoryTest {
         val repository = PlayerSettingsRepository(store, legacyPrefs)
 
         try {
-            assertTrue(repository.darkTheme.first())
+            assertEquals(ThemeMode.DARK, repository.themeMode.first())
 
-            repository.setDarkTheme(false)
+            repository.setThemeMode(ThemeMode.LIGHT)
 
-            assertFalse(repository.darkTheme.first())
-            assertEquals(false, store.data.first()[PlayerSettingsKeys.DARK_THEME])
+            assertEquals(ThemeMode.LIGHT, repository.themeMode.first())
+            assertEquals("LIGHT", store.data.first()[PlayerSettingsKeys.THEME_MODE])
             assertFalse(legacyPrefs.contains(PlayerSettingsKeys.LEGACY_DARK_THEME))
+        } finally {
+            scope.cancel()
+            file.delete()
+        }
+    }
+
+    @Test
+    fun themeModeDefaultsToSystemWhenNoStoredPreferenceExists() = runBlocking {
+        val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+        val file = tempDataStoreFile()
+        val store = PreferenceDataStoreFactory.create(
+            scope = scope,
+            produceFile = { file },
+        )
+        val legacyPrefs = FakeSharedPreferences()
+        val repository = PlayerSettingsRepository(store, legacyPrefs)
+
+        try {
+            assertEquals(ThemeMode.SYSTEM, repository.themeMode.first())
         } finally {
             scope.cancel()
             file.delete()

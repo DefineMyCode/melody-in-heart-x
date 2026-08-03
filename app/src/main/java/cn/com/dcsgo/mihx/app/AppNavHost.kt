@@ -12,6 +12,7 @@ import cn.com.dcsgo.mihx.core.model.PlayMode
 import cn.com.dcsgo.mihx.core.model.Playlist
 import cn.com.dcsgo.mihx.core.model.Song
 import cn.com.dcsgo.mihx.core.model.SongInfo
+import cn.com.dcsgo.mihx.core.model.ThemeMode
 import cn.com.dcsgo.mihx.feature.home.HomeRoute
 import cn.com.dcsgo.mihx.feature.home.HomeRouteActions
 import cn.com.dcsgo.mihx.feature.home.HomeRouteState
@@ -47,8 +48,8 @@ fun AppNavHost(
     playerViewModel: PlayerViewModel,
     permissionCoordinator: PermissionCoordinator,
     onShowQueue: () -> Unit,
-    darkThemeEnabled: Boolean,
-    onDarkThemeEnabledChange: (Boolean) -> Unit,
+    themeMode: ThemeMode,
+    onThemeModeChange: (ThemeMode) -> Unit,
     loadLyrics: suspend (Song) -> Lyrics,
     loadSongInfo: suspend (Song) -> SongInfo?,
     showToast: (String) -> Unit,
@@ -215,14 +216,20 @@ fun AppNavHost(
         composable(AppRoutes.SETTINGS) {
             SettingsRoute(
                 state = SettingsRouteState(
-                    darkThemeEnabled = darkThemeEnabled,
+                    themeMode = themeMode,
                     globalUniformRandomEnabled = uiState.globalUniformRandomEnabled,
                 ),
                 actions = SettingsRouteActions(
                     onBack = navController::navigateUp,
-                    onDarkThemeEnabledChange = { enabled ->
-                        onDarkThemeEnabledChange(enabled)
-                        showToast(if (enabled) "已开启深色主题" else "已关闭深色主题")
+                    onThemeModeChange = { mode ->
+                        onThemeModeChange(mode)
+                        showToast(
+                            when (mode) {
+                                ThemeMode.SYSTEM -> "已切换为跟随系统主题"
+                                ThemeMode.LIGHT -> "已切换为浅色主题"
+                                ThemeMode.DARK -> "已切换为深色主题"
+                            },
+                        )
                     },
                     onGlobalUniformRandomEnabledChange = { enabled ->
                         playerViewModel.setGlobalUniformRandomEnabled(enabled)

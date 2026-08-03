@@ -3,6 +3,7 @@ package cn.com.dcsgo.mihx.app
 import android.app.Activity
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
@@ -28,6 +29,7 @@ import androidx.core.view.WindowCompat
 import cn.com.dcsgo.mihx.app.permissions.rememberPermissionCoordinator
 import cn.com.dcsgo.mihx.app.player.PlayerQueueSheetHost
 import cn.com.dcsgo.mihx.app.theme.SettingsViewModel
+import cn.com.dcsgo.mihx.core.model.ThemeMode
 import cn.com.dcsgo.mihx.domain.model.DeleteSongResult
 import cn.com.dcsgo.mihx.feature.player.PlayerViewModel
 import cn.com.dcsgo.mihx.navigation.AppDestinations
@@ -48,7 +50,13 @@ fun AppRoot(
     val backStackEntry by navController.currentBackStackEntryAsState()
     val activeRoute = backStackEntry?.destination?.route
     var currentDestination by remember { mutableStateOf(AppDestinations.HOME) }
-    val isDarkTheme by settingsViewModel.darkTheme.collectAsState()
+    val themeMode by settingsViewModel.themeMode.collectAsState()
+    val systemDarkTheme = isSystemInDarkTheme()
+    val isDarkTheme = when (themeMode) {
+        ThemeMode.SYSTEM -> systemDarkTheme
+        ThemeMode.LIGHT -> false
+        ThemeMode.DARK -> true
+    }
     var showQueueSheet by remember { mutableStateOf(false) }
     val uiState by playerViewModel.uiState.collectAsState()
 
@@ -103,7 +111,11 @@ fun AppRoot(
 
     MusicplayerTheme(darkTheme = isDarkTheme) {
         SyncSystemBarsAppearance(isDarkTheme)
-        Box(modifier = Modifier.fillMaxSize()) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background),
+        ) {
             AppScaffold(
                 currentDestination = currentDestination,
                 currentSong = uiState.currentSong,
@@ -136,8 +148,8 @@ fun AppRoot(
                     playerViewModel = playerViewModel,
                     permissionCoordinator = permissionCoordinator,
                     onShowQueue = { showQueueSheet = true },
-                    darkThemeEnabled = isDarkTheme,
-                    onDarkThemeEnabledChange = settingsViewModel::setDarkTheme,
+                    themeMode = themeMode,
+                    onThemeModeChange = settingsViewModel::setThemeMode,
                     loadLyrics = mediaMetadataViewModel::lyricsFor,
                     loadSongInfo = mediaMetadataViewModel::songInfo,
                     showToast = toastHost::showToast,

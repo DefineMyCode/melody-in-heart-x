@@ -14,6 +14,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -34,10 +35,8 @@ fun SettingsScreen(
     onDarkThemeEnabledChange: (Boolean) -> Unit,
     globalUniformRandomEnabled: Boolean,
     onGlobalUniformRandomEnabledChange: (Boolean) -> Unit,
-    bluetoothPlaybackMonitoringEnabled: Boolean,
-    onBluetoothPlaybackMonitoringEnabledChange: (Boolean) -> Unit,
-    playbackNotificationEnabled: Boolean,
-    onPlaybackNotificationEnabledChange: (Boolean) -> Unit,
+    onRequestBluetoothPermission: () -> Unit,
+    onRequestNotificationPermission: () -> Unit,
 ) {
     Scaffold(
         topBar = {
@@ -81,19 +80,19 @@ fun SettingsScreen(
                     onCheckedChange = onGlobalUniformRandomEnabledChange,
                     switchContentDescription = "全局均匀随机开关",
                 )
-                SettingsSwitchRow(
+                SettingsActionButton(
                     title = "蓝牙播放监听",
-                    description = "连接耳机或车载音频时识别播放状态",
-                    checked = bluetoothPlaybackMonitoringEnabled,
-                    onCheckedChange = onBluetoothPlaybackMonitoringEnabledChange,
-                    switchContentDescription = "蓝牙播放监听开关",
+                    description = "连接蓝牙耳机或车载音频时，断开连接会自动暂停播放",
+                    actionText = "申请蓝牙权限",
+                    onClick = onRequestBluetoothPermission,
+                    actionContentDescription = "申请蓝牙权限",
                 )
-                SettingsSwitchRow(
+                SettingsActionButton(
                     title = "播放通知控制",
                     description = "在通知栏显示后台播放控制",
-                    checked = playbackNotificationEnabled,
-                    onCheckedChange = onPlaybackNotificationEnabledChange,
-                    switchContentDescription = "播放通知控制开关",
+                    actionText = "申请通知权限",
+                    onClick = onRequestNotificationPermission,
+                    actionContentDescription = "申请通知权限",
                 )
             }
         }
@@ -134,5 +133,43 @@ private fun SettingsSwitchRow(
                 contentDescription = switchContentDescription
             },
         )
+    }
+}
+
+@Composable
+private fun SettingsActionButton(
+    title: String,
+    description: String,
+    actionText: String,
+    onClick: () -> Unit,
+    actionContentDescription: String,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+            Text(
+                text = description,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        Spacer(modifier = Modifier.width(16.dp))
+        OutlinedButton(
+            onClick = onClick,
+            modifier = Modifier.semantics {
+                contentDescription = actionContentDescription
+            },
+        ) {
+            Text(text = actionText)
+        }
     }
 }

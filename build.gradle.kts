@@ -336,7 +336,7 @@ tasks.register("verifyProductArchitecture") {
             fail("Bluetooth playback monitoring must be user-triggered from settings, not initialized during app startup.")
         }
         val settingsScreen = file("feature/settings/src/main/java/cn/com/dcsgo/mihx/feature/settings/SettingsScreen.kt").readText()
-        if (!settingsScreen.contains("bluetoothPlaybackMonitoringEnabled") || !settingsScreen.contains("蓝牙播放监听")) {
+        if (!settingsScreen.contains("蓝牙播放监听") || !settingsScreen.contains("申请蓝牙权限")) {
             fail("Settings must expose a user-triggered Bluetooth playback monitoring control.")
         }
         val playerSettingsRepository = file("domain/src/main/java/cn/com/dcsgo/mihx/domain/repository/PlayerSettingsRepository.kt").readText()

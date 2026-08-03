@@ -217,8 +217,6 @@ fun AppNavHost(
                 state = SettingsRouteState(
                     darkThemeEnabled = darkThemeEnabled,
                     globalUniformRandomEnabled = uiState.globalUniformRandomEnabled,
-                    bluetoothPlaybackMonitoringEnabled = uiState.bluetoothPlaybackMonitoringEnabled,
-                    playbackNotificationEnabled = uiState.playbackNotificationEnabled,
                 ),
                 actions = SettingsRouteActions(
                     onBack = navController::navigateUp,
@@ -230,26 +228,16 @@ fun AppNavHost(
                         playerViewModel.setGlobalUniformRandomEnabled(enabled)
                         showToast(if (enabled) "已开启全局均匀随机" else "已关闭全局均匀随机")
                     },
-                    onBluetoothPlaybackMonitoringEnabledChange = { enabled ->
-                        if (enabled) {
-                            permissionCoordinator.requestBluetoothConnectPermission {
-                                playerViewModel.initializeBluetoothPlayback()
-                                showToast("已开启蓝牙播放监听")
-                            }
-                        } else {
-                            playerViewModel.releaseBluetoothPlayback()
-                            showToast("已关闭蓝牙播放监听")
+                    onRequestBluetoothPermission = {
+                        permissionCoordinator.requestBluetoothConnectPermission {
+                            playerViewModel.initializeBluetoothPlayback()
+                            showToast("已开启蓝牙播放监听")
                         }
                     },
-                    onPlaybackNotificationEnabledChange = { enabled ->
-                        if (enabled) {
-                            permissionCoordinator.requestNotificationPermission {
-                                playerViewModel.setPlaybackNotificationEnabled(true)
-                                showToast("已开启播放通知控制")
-                            }
-                        } else {
-                            playerViewModel.setPlaybackNotificationEnabled(false)
-                            showToast("已关闭播放通知控制")
+                    onRequestNotificationPermission = {
+                        permissionCoordinator.requestNotificationPermission {
+                            playerViewModel.setPlaybackNotificationEnabled(true)
+                            showToast("已开启播放通知控制")
                         }
                     },
                 ),

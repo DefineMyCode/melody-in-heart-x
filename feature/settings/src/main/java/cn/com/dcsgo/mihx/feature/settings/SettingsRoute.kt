@@ -5,16 +5,14 @@ import androidx.compose.runtime.Composable
 data class SettingsRouteState(
     val darkThemeEnabled: Boolean,
     val globalUniformRandomEnabled: Boolean,
-    val bluetoothPlaybackMonitoringEnabled: Boolean,
-    val playbackNotificationEnabled: Boolean,
 )
 
 data class SettingsRouteActions(
     val onBack: () -> Unit,
     val onDarkThemeEnabledChange: (Boolean) -> Unit,
     val onGlobalUniformRandomEnabledChange: (Boolean) -> Unit,
-    val onBluetoothPlaybackMonitoringEnabledChange: (Boolean) -> Unit,
-    val onPlaybackNotificationEnabledChange: (Boolean) -> Unit,
+    val onRequestBluetoothPermission: () -> Unit,
+    val onRequestNotificationPermission: () -> Unit,
 )
 
 @Composable
@@ -28,9 +26,7 @@ fun SettingsRoute(
         onDarkThemeEnabledChange = actions.onDarkThemeEnabledChange,
         globalUniformRandomEnabled = state.globalUniformRandomEnabled,
         onGlobalUniformRandomEnabledChange = actions.onGlobalUniformRandomEnabledChange,
-        bluetoothPlaybackMonitoringEnabled = state.bluetoothPlaybackMonitoringEnabled,
-        onBluetoothPlaybackMonitoringEnabledChange = actions.onBluetoothPlaybackMonitoringEnabledChange,
-        playbackNotificationEnabled = state.playbackNotificationEnabled,
-        onPlaybackNotificationEnabledChange = actions.onPlaybackNotificationEnabledChange,
+        onRequestBluetoothPermission = actions.onRequestBluetoothPermission,
+        onRequestNotificationPermission = actions.onRequestNotificationPermission,
     )
 }

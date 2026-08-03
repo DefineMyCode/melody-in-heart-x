@@ -169,7 +169,8 @@ fun LocalMusicManagementView(
     val listState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
 
-    // 计算当前播放歌曲在列表中的索引（header 占 3 个 item，搜索框再占 1 个）
+    // 计算当前播放歌曲在列表中的索引
+    // key 的顺序：file_mgmt(0), local_header(1), [search_box(2)], song_0, song_1, ...
     val currentSongIndexInList by remember(currentSong, displaySongs, isSearching) {
         derivedStateOf {
             if (currentSong == null) -1
@@ -177,7 +178,7 @@ fun LocalMusicManagementView(
                 val posInDisplay = displaySongs.indexOfFirst { it.id == currentSong.id }
                 if (posInDisplay < 0) -1
                 else {
-                    val headerCount = if (isSearching) 4 else 3
+                    val headerCount = if (isSearching) 3 else 2
                     headerCount + posInDisplay
                 }
             }

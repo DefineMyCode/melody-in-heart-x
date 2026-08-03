@@ -23,6 +23,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -268,33 +269,64 @@ fun ArtistListView(
 @Composable
 fun AlbumListView(
     albums: List<AlbumEntry>,
+    hideSingleSongAlbums: Boolean,
+    onHideSingleSongAlbumsChange: (Boolean) -> Unit,
     onAlbumClick: (String, String) -> Unit,
 ) {
-    if (albums.isEmpty()) {
-        EmptySectionHint("暂无专辑")
-    } else {
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 80.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp),
+    val visibleAlbums = if (hideSingleSongAlbums) albums.filter { it.songCount > 1 } else albums
+
+    Column(modifier = Modifier.fillMaxSize()) {
+        // 隐藏仅有一首歌曲的专辑开关
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 16.dp, end = 16.dp, top = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
-            item(key = "album_header") {
-                Spacer(modifier = Modifier.height(20.dp))
-                Text(
-                    text = "专辑 (${albums.size})",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    modifier = Modifier.padding(bottom = 4.dp),
-                )
+            Text(
+                text = "隐藏仅有一首歌曲的专辑",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.weight(1f),
+            )
+            Switch(
+                checked = hideSingleSongAlbums,
+                onCheckedChange = onHideSingleSongAlbumsChange,
+            )
+        }
+        if (visibleAlbums.isEmpty()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(top = 32.dp),
+                contentAlignment = Alignment.TopCenter,
+            ) {
+                EmptySectionHint("暂无专辑")
             }
-            items(albums, key = { "album_${it.artistName}_${it.name}" }) { album ->
-                AlbumItem(
-                    albumName = album.name,
-                    artistName = album.artistName,
-                    songCount = album.songCount,
-                    coverUri = album.coverUri,
-                    onClick = { onAlbumClick(album.name, album.artistName) },
-                )
+        } else {
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 80.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+            ) {
+                item(key = "album_header") {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        text = "专辑 (${visibleAlbums.size})",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        modifier = Modifier.padding(bottom = 4.dp),
+                    )
+                }
+                items(visibleAlbums, key = { "album_${it.artistName}_${it.name}" }) { album ->
+                    AlbumItem(
+                        albumName = album.name,
+                        artistName = album.artistName,
+                        songCount = album.songCount,
+                        coverUri = album.coverUri,
+                        onClick = { onAlbumClick(album.name, album.artistName) },
+                    )
+                }
             }
         }
     }

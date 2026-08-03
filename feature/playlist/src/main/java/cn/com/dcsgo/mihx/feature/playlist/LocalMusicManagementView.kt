@@ -19,6 +19,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -320,32 +321,59 @@ fun LocalMusicManagementView(
             }
         }
 
-        // ── 快速定位 FAB ──
-        AnimatedVisibility(
-            visible = canLocate,
-            enter = slideInVertically(initialOffsetY = { it }),
-            exit = slideOutVertically(targetOffsetY = { it }),
+        // ── 底部悬浮按钮（回到顶部 + 快速定位） ──
+        Column(
             modifier = Modifier
                 .align(Alignment.BottomStart)
                 .padding(
                     start = 16.dp,
                     bottom = if (isSelectMode && selectedIds.value.isNotEmpty()) 88.dp else 16.dp
-                )
+                ),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            FloatingActionButton(
-                onClick = {
-                    locateHighlight.trigger(currentSong?.id)
-                    coroutineScope.launch {
-                        listState.animateScrollToItem(currentSongIndexInList)
-                    }
-                },
-                containerColor = MaterialTheme.colorScheme.primaryContainer,
-                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+            // 回到顶部 FAB
+            AnimatedVisibility(
+                visible = localSongs.isNotEmpty(),
+                enter = slideInVertically(initialOffsetY = { it }),
+                exit = slideOutVertically(targetOffsetY = { it }),
             ) {
-                Icon(
-                    imageVector = Icons.Default.MyLocation,
-                    contentDescription = "定位到当前播放"
-                )
+                FloatingActionButton(
+                    onClick = {
+                        coroutineScope.launch {
+                            listState.animateScrollToItem(0)
+                        }
+                    },
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.KeyboardArrowUp,
+                        contentDescription = "回到顶部"
+                    )
+                }
+            }
+
+            // 快速定位 FAB
+            AnimatedVisibility(
+                visible = canLocate,
+                enter = slideInVertically(initialOffsetY = { it }),
+                exit = slideOutVertically(targetOffsetY = { it }),
+            ) {
+                FloatingActionButton(
+                    onClick = {
+                        locateHighlight.trigger(currentSong?.id)
+                        coroutineScope.launch {
+                            listState.animateScrollToItem(currentSongIndexInList)
+                        }
+                    },
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.MyLocation,
+                        contentDescription = "定位到当前播放"
+                    )
+                }
             }
         }
 

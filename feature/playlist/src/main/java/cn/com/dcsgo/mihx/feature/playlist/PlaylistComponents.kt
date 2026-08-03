@@ -74,7 +74,7 @@ fun EmptyLibraryHint() {
         )
         Spacer(modifier = Modifier.height(8.dp))
         Text(
-            text = "去「我的」页面导入本地音乐文件，\n导入后就可以在这里看到啦~",
+            text = "点击右上角「本地音乐」导入本地音乐文件，\n导入后就可以在这里看到啦~",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center

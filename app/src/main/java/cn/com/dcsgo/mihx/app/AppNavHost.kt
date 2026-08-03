@@ -123,7 +123,8 @@ fun AppNavHost(
         composable(AppRoutes.PLAYLIST) {
             PlaylistRoute(
                 state = playlistRouteState(uiState, playerViewModel, selectedPlaylist = null),
-                actions = playlistRouteActions(navController, playerViewModel),
+                actions = playlistRouteActions(navController, playerViewModel, permissionCoordinator, deleteSongWithToast),
+                loadSongInfo = loadSongInfo,
                 showToast = showToast,
             )
         }
@@ -136,26 +137,20 @@ fun AppNavHost(
             val selectedPlaylist = uiState.playlists.firstOrNull { playlist -> playlist.id == playlistId }
             PlaylistRoute(
                 state = playlistRouteState(uiState, playerViewModel, selectedPlaylist),
-                actions = playlistRouteActions(navController, playerViewModel),
+                actions = playlistRouteActions(navController, playerViewModel, permissionCoordinator, deleteSongWithToast),
+                loadSongInfo = loadSongInfo,
                 showToast = showToast,
             )
         }
 
         composable(AppRoutes.USER) {
             UserRoute(
-                state = userRouteState(uiState, playerViewModel),
+                state = userRouteState(),
                 actions = userRouteActions(
-                    playerViewModel = playerViewModel,
-                    permissionCoordinator = permissionCoordinator,
-                    onShowVersionManagement = { navController.navigate(AppRoutes.VERSION_MANAGEMENT) },
-                    onShowQuickSkipSongs = { navController.navigate(AppRoutes.QUICK_SKIP_SONGS) },
-                    onShowSettings = { navController.navigate(AppRoutes.SETTINGS) },
+                    navController = navController,
                     onShowRawPlayStats = { navController.navigate(AppRoutes.RAW_PLAY_STATS) },
                     onShowEffectivePlayStats = { navController.navigate(AppRoutes.EFFECTIVE_PLAY_STATS) },
-                    deleteSongWithToast = deleteSongWithToast,
                 ),
-                loadSongInfo = loadSongInfo,
-                showToast = showToast,
             )
         }
 
@@ -291,11 +286,16 @@ private fun playlistRouteState(
     },
     currentSong = uiState.currentSong,
     isPlaying = uiState.isPlaying,
+    isImporting = uiState.isImporting,
+    importProgress = uiState.importProgress,
+    importTotal = uiState.importTotal,
 )
 
 private fun playlistRouteActions(
     navController: NavHostController,
     playerViewModel: PlayerViewModel,
+    permissionCoordinator: PermissionCoordinator,
+    deleteSongWithToast: (Int) -> Unit,
 ): PlaylistRouteActions = PlaylistRouteActions(
     onPlaylistClick = { playlist -> navController.navigate(AppRoutes.playlistDetail(playlist.id)) },
     onSongClick = playerViewModel::playSongFromContext,
@@ -305,6 +305,14 @@ private fun playlistRouteActions(
     onRenamePlaylist = { playlist, newName -> playerViewModel.renamePlaylist(playlist.id, newName) },
     onAddSongToPlaylist = { song, playlist -> playerViewModel.addSongToPlaylist(playlist.id, song.id) },
     onRemoveSongFromPlaylist = { song, playlist -> playerViewModel.removeSongFromPlaylist(playlist.id, song.id) },
+    onAddFolderClick = permissionCoordinator::requestAudioFolderAccess,
+    onAddSongsToPlaylist = { songs, playlist ->
+        songs.count { song -> playerViewModel.addSongToPlaylist(playlist.id, song.id) }
+    },
+    onDeleteSong = { song -> deleteSongWithToast(song.id) },
+    onCreatePlaylistWithResult = playerViewModel::createPlaylist,
+    onShowVersionManagement = { navController.navigate(AppRoutes.VERSION_MANAGEMENT) },
+    onShowQuickSkipSongs = { navController.navigate(AppRoutes.QUICK_SKIP_SONGS) },
     onPlayAllInPlaylist = { playlistSongs ->
         playerViewModel.setPlayQueue(
             playlistSongs,
@@ -325,18 +333,7 @@ private fun playlistRouteActions(
     onAddSongToNextPlay = playerViewModel::addSongToNextPlay,
 )
 
-private fun userRouteState(
-    uiState: PlayerUiState,
-    playerViewModel: PlayerViewModel,
-): UserRouteState = UserRouteState(
-    songs = playerViewModel.getGroupedSongs(uiState.songs).flatten(),
-    playlists = uiState.playlists,
-    currentSong = uiState.currentSong,
-    isPlaying = uiState.isPlaying,
-    isImporting = uiState.isImporting,
-    importProgress = uiState.importProgress,
-    importTotal = uiState.importTotal,
-)
+private fun userRouteState(): UserRouteState = UserRouteState()
 
 private data class RankedStatsContent(
     val songs: List<Song>,
@@ -390,25 +387,11 @@ private fun rankedStatsContent(
 }
 
 private fun userRouteActions(
-    playerViewModel: PlayerViewModel,
-    permissionCoordinator: PermissionCoordinator,
-    onShowVersionManagement: () -> Unit,
-    onShowQuickSkipSongs: () -> Unit,
-    onShowSettings: () -> Unit,
+    navController: NavHostController,
     onShowRawPlayStats: () -> Unit,
     onShowEffectivePlayStats: () -> Unit,
-    deleteSongWithToast: (Int) -> Unit,
 ): UserRouteActions = UserRouteActions(
-    onAddFolderClick = permissionCoordinator::requestAudioFolderAccess,
-    onSongClick = playerViewModel::playSongFromContext,
-    onAddSongsToPlaylist = { songs, playlist ->
-        songs.count { song -> playerViewModel.addSongToPlaylist(playlist.id, song.id) }
-    },
-    onDeleteSong = { song -> deleteSongWithToast(song.id) },
-    onCreatePlaylist = playerViewModel::createPlaylist,
-    onShowVersionManagement = onShowVersionManagement,
-    onShowQuickSkipSongs = onShowQuickSkipSongs,
-    onShowSettings = onShowSettings,
+    onShowSettings = { navController.navigate(AppRoutes.SETTINGS) },
     onShowRawPlayStats = onShowRawPlayStats,
     onShowEffectivePlayStats = onShowEffectivePlayStats,
 )

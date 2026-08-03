@@ -1,4 +1,4 @@
-package cn.com.dcsgo.mihx.feature.user
+package cn.com.dcsgo.mihx.feature.playlist
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -21,6 +21,7 @@ import androidx.compose.material.icons.filled.AddCircleOutline
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -43,26 +44,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
 import cn.com.dcsgo.mihx.core.model.Playlist
 import cn.com.dcsgo.mihx.core.model.Song
 import cn.com.dcsgo.mihx.core.model.SongInfo
+import coil.compose.AsyncImage
 
 // ─────────────────────────────────────────────────────────────────
 // 批量添加到歌单 Dialog
 // ─────────────────────────────────────────────────────────────────
 
-/**
- * 批量添加歌曲到歌单的对话框
- *
- * 支持选择已有歌单，也支持直接在弹窗内新建歌单并立即添加。
- *
- * @param songs 要添加的歌曲列表
- * @param playlists 当前所有歌单
- * @param onDismiss 关闭回调
- * @param onSelectPlaylist 选择歌单后的回调
- * @param onCreatePlaylist 创建新歌单的回调，返回新建的 Playlist 或 null（失败时）
- */
 @Composable
 fun BatchAddToPlaylistDialog(
     songs: List<Song>,
@@ -74,7 +64,6 @@ fun BatchAddToPlaylistDialog(
     var showCreateInput by remember { mutableStateOf(false) }
     var newPlaylistName by remember { mutableStateOf("") }
 
-    // 当 playlists 从空变为非空时，自动收起新建输入
     LaunchedEffect(playlists.isEmpty()) {
         if (playlists.isNotEmpty()) showCreateInput = false
     }
@@ -106,7 +95,6 @@ fun BatchAddToPlaylistDialog(
                         verticalArrangement = Arrangement.spacedBy(2.dp)
                     ) {
                         items(playlists, key = { "batch_dlg_${it.id}" }) { playlist ->
-                            // 计算有多少首歌已经在歌单中
                             val alreadyInCount = songs.count { it.id in playlist.songIds }
                             val allAlreadyIn = alreadyInCount == songs.size
 
@@ -166,7 +154,6 @@ fun BatchAddToPlaylistDialog(
                     }
                 }
 
-                // 新建歌单区域
                 PlaylistCreateInlineSection(
                     showCreateInput = showCreateInput,
                     newPlaylistName = newPlaylistName,
@@ -201,15 +188,6 @@ fun BatchAddToPlaylistDialog(
 // 单首歌曲添加到歌单 Dialog
 // ─────────────────────────────────────────────────────────────────
 
-/**
- * 单首歌曲添加到歌单的对话框
- *
- * @param song 要添加的歌曲
- * @param playlists 当前所有歌单
- * @param onDismiss 关闭回调
- * @param onSelectPlaylist 选择歌单后的回调
- * @param onCreatePlaylist 创建新歌单的回调
- */
 @Composable
 fun SingleSongAddToPlaylistDialog(
     song: Song,
@@ -335,13 +313,6 @@ fun SingleSongAddToPlaylistDialog(
 // 歌曲信息 Dialog
 // ─────────────────────────────────────────────────────────────────
 
-/**
- * 歌曲详细信息对话框
- *
- * @param song 歌曲数据
- * @param songInfo 从元数据提取的详细信息
- * @param onDismiss 关闭回调
- */
 @Composable
 fun SongInfoDialog(
     song: Song,
@@ -361,7 +332,6 @@ fun SongInfoDialog(
                 modifier = Modifier.fillMaxWidth(),
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
-                // 封面 + 标题 + 艺术家
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.padding(bottom = 8.dp)
@@ -410,7 +380,6 @@ fun SongInfoDialog(
 
                 HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
-                // 详细信息列表
                 InfoRow(label = "专辑", value = songInfo.album)
                 InfoRow(label = "时长", value = songInfo.duration)
                 InfoRow(label = "格式", value = songInfo.format)
@@ -427,9 +396,6 @@ fun SongInfoDialog(
     )
 }
 
-/**
- * 信息行组件——标签 + 值
- */
 @Composable
 private fun InfoRow(label: String, value: String, isPath: Boolean = false) {
     Row(
@@ -458,13 +424,6 @@ private fun InfoRow(label: String, value: String, isPath: Boolean = false) {
 // 删除歌曲确认 Dialog
 // ─────────────────────────────────────────────────────────────────
 
-/**
- * 删除歌曲的确认对话框
- *
- * @param song 要删除的歌曲
- * @param onDismiss 关闭回调
- * @param onConfirm 确认删除回调
- */
 @Composable
 fun DeleteSongConfirmDialog(
     song: Song,
@@ -496,7 +455,7 @@ fun DeleteSongConfirmDialog(
         confirmButton = {
             FilledTonalButton(
                 onClick = onConfirm,
-                colors = androidx.compose.material3.ButtonDefaults.filledTonalButtonColors(
+                colors = ButtonDefaults.filledTonalButtonColors(
                     containerColor = MaterialTheme.colorScheme.errorContainer,
                     contentColor = MaterialTheme.colorScheme.onErrorContainer
                 )
@@ -514,11 +473,6 @@ fun DeleteSongConfirmDialog(
 // 共享的内联新建歌单区域
 // ─────────────────────────────────────────────────────────────────
 
-/**
- * 内联新建歌单的输入区域
- *
- * 在添加到歌单对话框底部使用，支持展开/收起。
- */
 @Composable
 private fun PlaylistCreateInlineSection(
     showCreateInput: Boolean,

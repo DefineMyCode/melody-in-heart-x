@@ -34,6 +34,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
@@ -41,6 +42,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -50,10 +52,12 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.activity.compose.BackHandler
 import kotlinx.coroutines.launch
 import coil.compose.AsyncImage
 import cn.com.dcsgo.mihx.core.model.Playlist
 import cn.com.dcsgo.mihx.core.model.Song
+import cn.com.dcsgo.mihx.core.model.SongInfo
 
 @Composable
 fun PlaylistScreen(
@@ -70,6 +74,17 @@ fun PlaylistScreen(
     onRenamePlaylist: (Playlist, String) -> Unit,
     onAddSongToPlaylist: (Song, Playlist) -> Unit,
     onRemoveSongFromPlaylist: (Song, Playlist) -> Unit,
+    // 本地音乐管理相关
+    isImporting: Boolean = false,
+    importProgress: Int = 0,
+    importTotal: Int = 0,
+    onAddFolderClick: () -> Unit = {},
+    onAddSongsToPlaylist: (List<Song>, Playlist) -> Unit = { _, _ -> },
+    onDeleteSong: (Song) -> Unit = {},
+    onCreatePlaylistWithResult: (String) -> Playlist? = { null },
+    onShowVersionManagement: () -> Unit = {},
+    onShowQuickSkipSongs: () -> Unit = {},
+    loadSongInfo: suspend (Song) -> SongInfo? = { null },
     // 播放队列相关回调
     onPlayAllInPlaylist: (Playlist, List<Song>) -> Unit = { _, _ -> },
     onPlayAllFromEndInPlaylist: (Playlist, List<Song>) -> Unit = { _, _ -> },
@@ -78,6 +93,15 @@ fun PlaylistScreen(
     onAddSongToQueue: (Song) -> Unit = {},
     onAddSongToNextPlay: (Song) -> Unit = {},
 ) {
+    // ── 本地音乐视图切换 ──
+    // 用 rememberSaveable 保存，进入多版本管理/秒切歌单等子页面返回后仍停留在本地音乐视图
+    var showLocalMusic by rememberSaveable { mutableStateOf(false) }
+
+    // 本地音乐视图内按系统返回键时，先退出本地音乐回到歌单管理页面
+    BackHandler(enabled = showLocalMusic) {
+        showLocalMusic = false
+    }
+
     // ── Dialog 状态 ──
     var showCreateDialog by remember { mutableStateOf(false) }
     var showDeleteConfirm by remember { mutableStateOf<Playlist?>(null) }
@@ -184,10 +208,18 @@ fun PlaylistScreen(
                     )
                 } else {
                     Text(
-                        text = "我的歌单",
+                        text = if (showLocalMusic) "本地音乐" else "我的歌单",
                         style = MaterialTheme.typography.headlineMedium,
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.weight(1f)
                     )
+                    // 本地音乐管理入口（文字按钮）
+                    TextButton(onClick = { showLocalMusic = !showLocalMusic }) {
+                        Text(
+                            text = if (showLocalMusic) "我的歌单" else "本地音乐",
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
                 }
             }
 
@@ -209,6 +241,25 @@ fun PlaylistScreen(
                     onAddSongToNextPlay = onAddSongToNextPlay,
                     listState = detailListState,
                 )
+            } else if (showLocalMusic) {
+                // ── 本地音乐管理页 ──
+                LocalMusicManagementView(
+                    songs = songs,
+                    playlists = playlists,
+                    currentSong = currentSong,
+                    isPlaying = isPlaying,
+                    isImporting = isImporting,
+                    importProgress = importProgress,
+                    importTotal = importTotal,
+                    onAddFolderClick = onAddFolderClick,
+                    onSongClick = onSongClick,
+                    onAddSongsToPlaylist = onAddSongsToPlaylist,
+                    onDeleteSong = onDeleteSong,
+                    onCreatePlaylist = onCreatePlaylistWithResult,
+                    onShowVersionManagement = onShowVersionManagement,
+                    onShowQuickSkipSongs = onShowQuickSkipSongs,
+                    loadSongInfo = loadSongInfo,
+                )
             } else {
                 // ── 歌单列表页 ──
                 PlaylistListView(
@@ -222,7 +273,7 @@ fun PlaylistScreen(
         }
 
         // ── FAB ──
-        if (selectedPlaylist == null) {
+        if (selectedPlaylist == null && !showLocalMusic) {
             // 歌单列表页：创建歌单
             FloatingActionButton(
                 onClick = { showCreateDialog = true },
@@ -234,7 +285,7 @@ fun PlaylistScreen(
             ) {
                 Icon(imageVector = Icons.Default.Add, contentDescription = "创建歌单")
             }
-        } else {
+        } else if (selectedPlaylist != null) {
             // 歌单详情页：快速定位当前播放
             AnimatedVisibility(
                 visible = currentSongInDetail != null,

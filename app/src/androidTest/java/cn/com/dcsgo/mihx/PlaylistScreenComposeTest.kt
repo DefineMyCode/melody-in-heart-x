@@ -44,8 +44,9 @@ class PlaylistScreenComposeTest {
         }
 
         composeRule.onNodeWithText("我的歌单").assertIsDisplayed()
+        composeRule.onNodeWithText("本地音乐").assertIsDisplayed()
         composeRule.onNodeWithText("还没有任何音乐").assertIsDisplayed()
-        composeRule.onNodeWithText("去「我的」页面导入本地音乐文件，\n导入后就可以在这里看到啦~")
+        composeRule.onNodeWithText("点击右上角「本地音乐」导入本地音乐文件，\n导入后就可以在这里看到啦~")
             .assertIsDisplayed()
 
         composeRule.onNodeWithContentDescription("创建歌单").performClick()

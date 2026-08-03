@@ -21,6 +21,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -28,6 +29,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -74,7 +76,7 @@ fun HomeScreen(
     onSwitchVersion: (Song) -> Unit = {},
     onTextCopied: (String) -> Unit = {},
     onArtistClick: (String) -> Unit = {},
-    onAlbumClick: (String, String) -> Unit = { _, _ -> },
+    onAlbumClick: (String) -> Unit = {},
     onLuckyPlayClick: () -> Unit = {},
     onInfinitePlayClick: () -> Unit = {},
 ) {
@@ -296,7 +298,7 @@ private fun SongInfoSection(
     isInfinitePlay: Boolean,
     sameNameSongs: List<Song>,
     onArtistClick: (String) -> Unit,
-    onAlbumClick: (String, String) -> Unit,
+    onAlbumClick: (String) -> Unit,
     onPlayPauseClick: () -> Unit,
     onPreviousClick: () -> Unit,
     onNextClick: () -> Unit,
@@ -311,6 +313,10 @@ private fun SongInfoSection(
 ) {
     // 专辑名直接来自 Song 模型（导入时已记录）
     val albumName = currentSong.album.takeIf { it.isNotBlank() }
+    // 拆分后的歌手列表
+    val artists = currentSong.parsedArtists
+    // 是否弹出多歌手选择
+    var showArtistPicker by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier.fillMaxWidth(),
@@ -325,11 +331,17 @@ private fun SongInfoSection(
 
         Spacer(modifier = Modifier.height(4.dp))
 
-        // 艺术家名（带复制按钮，可点击跳转歌手详情）
+        // 艺术家名（带复制按钮，可点击跳转歌手详情；多歌手时先选择）
         CopyableText(
             text = currentSong.artist,
             isTitle = false,
-            onClick = { onArtistClick(currentSong.artist) },
+            onClick = {
+                if (artists.size > 1) {
+                    showArtistPicker = true
+                } else {
+                    artists.firstOrNull()?.let(onArtistClick)
+                }
+            },
             onCopied = onTextCopied
         )
 
@@ -339,7 +351,7 @@ private fun SongInfoSection(
             CopyableText(
                 text = albumName,
                 isTitle = false,
-                onClick = { onAlbumClick(albumName, currentSong.artist) },
+                onClick = { onAlbumClick(albumName) },
                 onCopied = onTextCopied
             )
         }
@@ -514,5 +526,37 @@ private fun SongInfoSection(
                 )
             )
         }
+    }
+
+    // 多歌手选择弹窗：点击歌手时选择要跳转的歌手
+    if (showArtistPicker) {
+        AlertDialog(
+            onDismissRequest = { showArtistPicker = false },
+            title = { Text("选择歌手") },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    artists.forEach { artist ->
+                        TextButton(
+                            onClick = {
+                                showArtistPicker = false
+                                onArtistClick(artist)
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(
+                                text = artist,
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = MaterialTheme.colorScheme.primary,
+                                fontWeight = FontWeight.Medium
+                            )
+                        }
+                    }
+                }
+            },
+            confirmButton = {},
+            dismissButton = {
+                TextButton(onClick = { showArtistPicker = false }) { Text("取消") }
+            }
+        )
     }
 }

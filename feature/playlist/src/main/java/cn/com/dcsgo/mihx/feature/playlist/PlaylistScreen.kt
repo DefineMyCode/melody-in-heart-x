@@ -73,7 +73,7 @@ fun PlaylistScreen(
     onSongClick: (Song) -> Unit,
     onLocalSongClick: (Song) -> Unit = {},
     onArtistClick: (String) -> Unit = {},
-    onAlbumClick: (String, String) -> Unit = { _, _ -> },
+    onAlbumClick: (String) -> Unit = {},
     onBackClick: () -> Unit,
     onCreatePlaylist: (String) -> Unit,
     onDeletePlaylist: (Playlist) -> Unit,
@@ -313,7 +313,7 @@ fun PlaylistScreen(
                             albums = deriveAlbums(songs).filter { album ->
                                 librarySearchQuery.isBlank() ||
                                     album.name.contains(librarySearchQuery, ignoreCase = true) ||
-                                    album.artistName.contains(librarySearchQuery, ignoreCase = true)
+                                    album.artistNames.any { it.contains(librarySearchQuery, ignoreCase = true) }
                             },
                             // 有搜索内容时隐藏开关
                             hideSingleSongAlbums = librarySearchQuery.isBlank() && hideSingleSongAlbums,

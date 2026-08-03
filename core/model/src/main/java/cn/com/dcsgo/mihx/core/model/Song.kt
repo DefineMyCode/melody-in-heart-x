@@ -32,6 +32,20 @@ data class Song(
         get() = if (sampleRate > 0) "${sampleRate / 1000}kHz" else ""
 
     /**
+     * 拆分后的歌手列表。
+     *
+     * 歌曲文件中的歌手属性可能包含多个歌手，通过 `/` 分隔（`/` 两边可能带空格）。
+     * 例如 "A / B" → ["A", "B"]。无 `/` 时返回原始歌手。
+     * 用于曲库歌手/专辑聚合与歌手详情关联，保证歌手为不可再拆的最小单位。
+     */
+    val parsedArtists: List<String>
+        get() = artist
+            .split('/')
+            .map { it.trim() }
+            .filter { it.isNotEmpty() }
+            .ifEmpty { listOf(artist.trim()) }
+
+    /**
      * 分组键：同名歌曲共享同一个 groupKey。
      * 优先使用用户设置的 titleOverride（允许手动调整归属分组），
      * 否则回退到原始标题。

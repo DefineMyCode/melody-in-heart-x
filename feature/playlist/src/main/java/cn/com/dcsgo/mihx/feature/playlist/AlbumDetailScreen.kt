@@ -39,23 +39,25 @@ import cn.com.dcsgo.mihx.core.model.Song
  *
  * 展示两部分内容：
  * 1. 该专辑关联的歌曲
- * 2. 该专辑歌手关联的其他专辑
+ * 2. 该专辑歌手关联的其他专辑（与专辑共享任一歌手的其他专辑）
  */
 @Composable
 fun AlbumDetailScreen(
     albumName: String,
-    artistName: String,
     songs: List<Song>,
     currentSong: Song? = null,
     isPlaying: Boolean = false,
     onBack: () -> Unit,
     onSongClick: (Song) -> Unit,
-    onAlbumClick: (String, String) -> Unit = { _, _ -> },
+    onAlbumClick: (String) -> Unit = {},
 ) {
-    val albumSongs = songs.filter { it.album == albumName && it.artist == artistName }
-    // 该歌手的其他专辑
+    // 该专辑的所有歌曲（不限定单个歌手）
+    val albumSongs = songs.filter { it.album == albumName }
+    // 该专辑关联的所有歌手（拆分后的最小单位）
+    val albumArtists = albumSongs.flatMap { it.parsedArtists }.distinct()
+    // 与专辑共享任一歌手的其他专辑
     val otherAlbums = deriveAlbums(songs)
-        .filter { it.artistName == artistName && it.name != albumName }
+        .filter { it.name != albumName && it.artistNames.any { artist -> artist in albumArtists } }
     var selectedSection by rememberSaveable { mutableStateOf(0) }
 
     Column(modifier = Modifier.fillMaxSize()) {
@@ -79,7 +81,7 @@ fun AlbumDetailScreen(
                     overflow = TextOverflow.Ellipsis
                 )
                 Text(
-                    text = artistName,
+                    text = albumArtists.joinToString("、"),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 1,
@@ -128,11 +130,11 @@ fun AlbumDetailScreen(
                         EmptySectionHint("该歌手暂无其他专辑")
                     }
                 } else {
-                    items(otherAlbums, key = { "album_other_${it.artistName}_${it.name}" }) { album ->
+                    items(otherAlbums, key = { "album_other_${it.name}" }) { album ->
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clickable { onAlbumClick(album.name, album.artistName) }
+                                .clickable { onAlbumClick(album.name) }
                                 .padding(vertical = 8.dp, horizontal = 4.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
@@ -175,7 +177,6 @@ fun AlbumDetailScreen(
 
 data class AlbumDetailRouteState(
     val albumName: String,
-    val artistName: String,
     val songs: List<Song>,
     val currentSong: Song?,
     val isPlaying: Boolean,
@@ -184,7 +185,7 @@ data class AlbumDetailRouteState(
 data class AlbumDetailRouteActions(
     val onBack: () -> Unit,
     val onSongClick: (Song, List<Song>) -> Unit,
-    val onAlbumClick: (String, String) -> Unit = { _, _ -> },
+    val onAlbumClick: (String) -> Unit = {},
 )
 
 @Composable
@@ -194,15 +195,12 @@ fun AlbumDetailRoute(
 ) {
     AlbumDetailScreen(
         albumName = state.albumName,
-        artistName = state.artistName,
         songs = state.songs,
         currentSong = state.currentSong,
         isPlaying = state.isPlaying,
         onBack = actions.onBack,
         onSongClick = { song ->
-            val context = state.songs.filter {
-                it.album == state.albumName && it.artist == state.artistName
-            }
+            val context = state.songs.filter { it.album == state.albumName }
             actions.onSongClick(song, context)
         },
         onAlbumClick = actions.onAlbumClick,

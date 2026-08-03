@@ -26,7 +26,7 @@ data class HomeRouteActions(
     val onSwitchVersion: (Song) -> Unit,
     val onShowLyrics: () -> Unit,
     val onArtistClick: (String) -> Unit = {},
-    val onAlbumClick: (String, String) -> Unit = { _, _ -> },
+    val onAlbumClick: (String) -> Unit = {},
     val onLuckyPlayClick: () -> Unit,
     val onStartInfinitePlay: () -> Unit,
     val onStopInfinitePlay: () -> Unit,

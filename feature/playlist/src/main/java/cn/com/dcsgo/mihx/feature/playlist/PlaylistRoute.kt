@@ -22,7 +22,7 @@ data class PlaylistRouteActions(
     val onSongClick: (Song, List<Song>) -> Unit,
     val onLocalSongClick: (Song) -> Unit,
     val onArtistClick: (String) -> Unit = {},
-    val onAlbumClick: (String, String) -> Unit = { _, _ -> },
+    val onAlbumClick: (String) -> Unit = {},
     val onBackClick: () -> Unit,
     val onCreatePlaylist: (String) -> Unit,
     val onDeletePlaylist: (Playlist) -> Unit,

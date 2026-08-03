@@ -33,7 +33,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import cn.com.dcsgo.mihx.core.model.Song
 
-/** 单个歌手聚合数据 */
+/** 单个歌手聚合数据（歌手为不可再拆分的最小单位） */
 data class ArtistEntry(
     val name: String,
     val songCount: Int,
@@ -41,18 +41,23 @@ data class ArtistEntry(
     val coverUri: android.net.Uri?,
 )
 
-/** 单个专辑聚合数据 */
+/** 单个专辑聚合数据（专辑可与多个歌手关联） */
 data class AlbumEntry(
     val name: String,
-    val artistName: String,
+    val artistNames: List<String>,
     val songCount: Int,
     val coverUri: android.net.Uri?,
 )
 
-/** 从歌曲列表聚合出歌手列表（按歌手名排序） */
+/** 从歌曲列表聚合出歌手列表（按歌手名排序，歌手为拆分后的最小单位） */
 fun deriveArtists(songs: List<Song>): List<ArtistEntry> {
-    return songs
-        .groupBy { it.artist }
+    val byArtist = mutableMapOf<String, MutableList<Song>>()
+    songs.forEach { song ->
+        song.parsedArtists.forEach { artistName ->
+            byArtist.getOrPut(artistName) { mutableListOf() }.add(song)
+        }
+    }
+    return byArtist
         .map { (name, list) ->
             ArtistEntry(
                 name = name,
@@ -68,11 +73,11 @@ fun deriveArtists(songs: List<Song>): List<ArtistEntry> {
 fun deriveAlbums(songs: List<Song>): List<AlbumEntry> {
     return songs
         .filter { it.album.isNotBlank() }
-        .groupBy { it.album to it.artist }
-        .map { (key, list) ->
+        .groupBy { it.album }
+        .map { (name, list) ->
             AlbumEntry(
-                name = key.first,
-                artistName = key.second,
+                name = name,
+                artistNames = list.flatMap { it.parsedArtists }.distinct(),
                 songCount = list.size,
                 coverUri = list.firstNotNullOfOrNull { it.albumArtUri },
             )
@@ -271,7 +276,7 @@ fun AlbumListView(
     albums: List<AlbumEntry>,
     hideSingleSongAlbums: Boolean,
     onHideSingleSongAlbumsChange: (Boolean) -> Unit,
-    onAlbumClick: (String, String) -> Unit,
+    onAlbumClick: (String) -> Unit,
 ) {
     val visibleAlbums = if (hideSingleSongAlbums) albums.filter { it.songCount > 1 } else albums
 
@@ -318,13 +323,13 @@ fun AlbumListView(
                         modifier = Modifier.padding(bottom = 4.dp),
                     )
                 }
-                items(visibleAlbums, key = { "album_${it.artistName}_${it.name}" }) { album ->
+                items(visibleAlbums, key = { "album_${it.name}" }) { album ->
                     AlbumItem(
                         albumName = album.name,
-                        artistName = album.artistName,
+                        artistName = album.artistNames.joinToString("、"),
                         songCount = album.songCount,
                         coverUri = album.coverUri,
-                        onClick = { onAlbumClick(album.name, album.artistName) },
+                        onClick = { onAlbumClick(album.name) },
                     )
                 }
             }

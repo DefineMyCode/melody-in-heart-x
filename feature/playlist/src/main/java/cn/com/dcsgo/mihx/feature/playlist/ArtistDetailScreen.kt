@@ -50,9 +50,10 @@ fun ArtistDetailScreen(
     isPlaying: Boolean = false,
     onBack: () -> Unit,
     onSongClick: (Song) -> Unit,
-    onAlbumClick: (String, String) -> Unit = { _, _ -> },
+    onAlbumClick: (String) -> Unit = {},
 ) {
-    val artistSongs = songs.filter { it.artist == artistName }
+    // 该歌手的所有歌曲（歌手为拆分后的最小单位，歌曲属于任一拆分歌手即关联）
+    val artistSongs = songs.filter { artistName in it.parsedArtists }
     val albums = deriveAlbums(artistSongs)
     var selectedSection by rememberSaveable { mutableStateOf(0) }
 
@@ -124,11 +125,11 @@ fun ArtistDetailScreen(
                         EmptySectionHint("该歌手暂无专辑")
                     }
                 } else {
-                    items(albums, key = { "artist_album_${it.artistName}_${it.name}" }) { album ->
+                    items(albums, key = { "artist_album_${it.name}" }) { album ->
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clickable { onAlbumClick(album.name, album.artistName) }
+                                .clickable { onAlbumClick(album.name) }
                                 .padding(vertical = 8.dp, horizontal = 4.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
@@ -179,7 +180,7 @@ data class ArtistDetailRouteState(
 data class ArtistDetailRouteActions(
     val onBack: () -> Unit,
     val onSongClick: (Song, List<Song>) -> Unit,
-    val onAlbumClick: (String, String) -> Unit = { _, _ -> },
+    val onAlbumClick: (String) -> Unit = {},
 )
 
 @Composable
@@ -193,7 +194,10 @@ fun ArtistDetailRoute(
         currentSong = state.currentSong,
         isPlaying = state.isPlaying,
         onBack = actions.onBack,
-        onSongClick = { song -> actions.onSongClick(song, state.songs.filter { it.artist == state.artistName }) },
+        onSongClick = { song ->
+            val context = state.songs.filter { state.artistName in it.parsedArtists }
+            actions.onSongClick(song, context)
+        },
         onAlbumClick = actions.onAlbumClick,
     )
 }

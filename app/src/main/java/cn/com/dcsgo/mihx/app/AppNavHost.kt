@@ -104,8 +104,8 @@ fun AppNavHost(
                     onArtistClick = { artistName ->
                         navController.navigate(AppRoutes.artistDetail(artistName))
                     },
-                    onAlbumClick = { albumName, artistName ->
-                        navController.navigate(AppRoutes.albumDetail(albumName, artistName))
+                    onAlbumClick = { albumName ->
+                        navController.navigate(AppRoutes.albumDetail(albumName))
                     },
                     onLuckyPlayClick = playerViewModel::playRandomQueue,
                     onStartInfinitePlay = playerViewModel::startInfinitePlay,
@@ -173,8 +173,8 @@ fun AppNavHost(
                         val startIndex = contextSongs.indexOfFirst { it.id == song.id }.coerceAtLeast(0)
                         playerViewModel.setPlayQueue(contextSongs, startIndex, PlayMode.SEQUENTIAL)
                     },
-                    onAlbumClick = { albumName, albumArtist ->
-                        navController.navigate(AppRoutes.albumDetail(albumName, albumArtist))
+                    onAlbumClick = { albumName ->
+                        navController.navigate(AppRoutes.albumDetail(albumName))
                     },
                 ),
             )
@@ -182,17 +182,12 @@ fun AppNavHost(
 
         composable(
             route = AppRoutes.ALBUM_DETAIL,
-            arguments = listOf(
-                navArgument(AppRoutes.ALBUM_NAME) { type = NavType.StringType },
-                navArgument(AppRoutes.ALBUM_ARTIST) { type = NavType.StringType },
-            ),
+            arguments = listOf(navArgument(AppRoutes.ALBUM_NAME) { type = NavType.StringType }),
         ) { backStackEntry ->
             val albumName = backStackEntry.arguments?.getString(AppRoutes.ALBUM_NAME).orEmpty()
-            val albumArtist = backStackEntry.arguments?.getString(AppRoutes.ALBUM_ARTIST).orEmpty()
             AlbumDetailRoute(
                 state = AlbumDetailRouteState(
                     albumName = albumName,
-                    artistName = albumArtist,
                     songs = playerViewModel.getGroupedSongs(uiState.songs).flatten(),
                     currentSong = uiState.currentSong,
                     isPlaying = uiState.isPlaying,
@@ -203,8 +198,8 @@ fun AppNavHost(
                         val startIndex = contextSongs.indexOfFirst { it.id == song.id }.coerceAtLeast(0)
                         playerViewModel.setPlayQueue(contextSongs, startIndex, PlayMode.SEQUENTIAL)
                     },
-                    onAlbumClick = { albumName, albumArtist ->
-                        navController.navigate(AppRoutes.albumDetail(albumName, albumArtist))
+                    onAlbumClick = { albumName ->
+                        navController.navigate(AppRoutes.albumDetail(albumName))
                     },
                 ),
             )
@@ -379,8 +374,8 @@ private fun playlistRouteActions(
         playerViewModel.setPlayQueue(listOf(song), 0, PlayMode.SEQUENTIAL)
     },
     onArtistClick = { artistName -> navController.navigate(AppRoutes.artistDetail(artistName)) },
-    onAlbumClick = { albumName, artistName ->
-        navController.navigate(AppRoutes.albumDetail(albumName, artistName))
+    onAlbumClick = { albumName ->
+        navController.navigate(AppRoutes.albumDetail(albumName))
     },
     onBackClick = navController::navigateUp,
     onCreatePlaylist = playerViewModel::createPlaylist,

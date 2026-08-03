@@ -17,18 +17,26 @@ private const val TAG = "AudioMetadataExtractor"
  */
 object AudioMetadataExtractor {
 
+    /** 导入时提取的基础元数据 */
+    data class ExtractedMetadata(
+        val title: String,
+        val artist: String,
+        val album: String,
+        val sampleRate: Int,
+    )
+
     /**
      * 从音频文件提取元数据
      * @param ctx Application context
      * @param uri 音频文件的 URI
      * @param fallbackTitle 如果没有获取到标题，使用此默认值
-     * @return Triple<标题, 艺术家, 采样率>
+     * @return [ExtractedMetadata] 标题、艺术家、专辑、采样率
      */
     fun extractMetadata(
         ctx: Context,
         uri: Uri,
         fallbackTitle: String
-    ): Triple<String, String, Int> {
+    ): ExtractedMetadata {
         var retriever: MediaMetadataRetriever? = null
         try {
             retriever = MediaMetadataRetriever()
@@ -44,14 +52,21 @@ object AudioMetadataExtractor {
                     ?.takeIf { it.isNotBlank() }
                     ?: "未知艺术家"
 
+            val album = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ALBUM)
+                ?.takeIf { it.isNotBlank() }
+                ?: ""
+
             val sampleRate = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_SAMPLERATE)
                 ?.toIntOrNull() ?: 0
 
-            AppLog.debug(TAG, "extractMetadata: title=$title, artist=$artist, sampleRate=$sampleRate")
-            return Triple(title, artist, sampleRate)
+            AppLog.debug(
+                TAG,
+                "extractMetadata: title=$title, artist=$artist, album=$album, sampleRate=$sampleRate"
+            )
+            return ExtractedMetadata(title = title, artist = artist, album = album, sampleRate = sampleRate)
         } catch (e: Exception) {
             AppLog.warning(TAG, "extractMetadata failed for $uri: ${e.message}")
-            return Triple(fallbackTitle, "未知艺术家", 0)
+            return ExtractedMetadata(title = fallbackTitle, artist = "未知艺术家", album = "", sampleRate = 0)
         } finally {
             try { retriever?.release() } catch (_: Exception) {}
         }

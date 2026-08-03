@@ -23,7 +23,7 @@ import cn.com.dcsgo.mihx.data.local.entity.SongGroupOverrideEntity
         SongGroupOverrideEntity::class,
         MigrationStateEntity::class,
     ],
-    version = 3,
+    version = 4,
     exportSchema = true,
 )
 abstract class MelodyDatabase : RoomDatabase() {

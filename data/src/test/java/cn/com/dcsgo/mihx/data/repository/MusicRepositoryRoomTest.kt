@@ -118,6 +118,7 @@ class MusicRepositoryRoomTest {
         assertEquals(null, songsById.getValue(1).titleOverride)
         assertEquals("Concert Version", songsById.getValue(2).titleOverride)
         assertEquals("Concert Version", songsById.getValue(2).groupKey)
+        assertEquals("Album 1", songsById.getValue(1).album)
     }
 
     private class FakeMelodyDao : MelodyDao {
@@ -216,6 +217,7 @@ class MusicRepositoryRoomTest {
             id = id,
             title = "Song $id",
             artist = "Artist",
+            album = "Album $id",
             sampleRate = 44_100,
             uri = null,
             displayName = "song-$id.mp3",

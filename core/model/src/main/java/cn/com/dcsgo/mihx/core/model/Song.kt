@@ -8,6 +8,7 @@ import android.net.Uri
  * @property id            唯一标识符（自增，用于歌单关联和播放队列引用）
  * @property title         歌曲标题（取自元数据）
  * @property artist        艺术家名称
+ * @property album         专辑名称（取自音频元数据，导入时记录）
  * @property sampleRate    采样率（Hz），用于区分同名歌曲的不同版本
  * @property uri           音频文件的 SAF URI（非本地导入的歌曲为 null）
  * @property albumArtUri   专辑封面 URI（缓存文件，null 表示无封面）
@@ -19,6 +20,7 @@ data class Song(
     val id: Int,
     val title: String,
     val artist: String,
+    val album: String = "",
     val sampleRate: Int = 0,
     val uri: Uri? = null,
     val albumArtUri: Uri? = null,

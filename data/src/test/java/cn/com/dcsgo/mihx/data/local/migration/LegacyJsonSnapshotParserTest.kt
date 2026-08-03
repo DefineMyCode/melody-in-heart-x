@@ -16,6 +16,7 @@ class LegacyJsonSnapshotParserTest {
                     "id": 7,
                     "title": "Bloom",
                     "artist": "Singer",
+                    "album": "Sunglow",
                     "sampleRate": 48000,
                     "uri": "content://song/7",
                     "albumArtUri": "content://art/7",
@@ -35,6 +36,8 @@ class LegacyJsonSnapshotParserTest {
 
         assertEquals(1, snapshot.songs.size)
         assertEquals("Bloom", snapshot.songs.single().title)
+        assertEquals("Singer", snapshot.songs.single().artist)
+        assertEquals("Sunglow", snapshot.songs.single().album)
         assertEquals("content://art/7", snapshot.songs.single().albumArtCacheUri)
         assertEquals(1, snapshot.songGroupOverrides.size)
         assertEquals("Bloom Group", snapshot.songGroupOverrides.single().titleOverride)

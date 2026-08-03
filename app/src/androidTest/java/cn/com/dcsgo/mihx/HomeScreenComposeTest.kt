@@ -52,6 +52,7 @@ class HomeScreenComposeTest {
                         id = 42,
                         title = "夜曲",
                         artist = "周杰伦",
+                        album = "十一月的萧邦",
                         sampleRate = 96_000,
                     ),
                     isPlaying = true,
@@ -73,6 +74,7 @@ class HomeScreenComposeTest {
 
         composeRule.onNodeWithText("夜曲").assertIsDisplayed()
         composeRule.onNodeWithText("周杰伦").assertIsDisplayed()
+        composeRule.onNodeWithText("十一月的萧邦").assertIsDisplayed()
         composeRule.onNodeWithText("Hi-Res").assertIsDisplayed()
         composeRule.onNodeWithContentDescription("播放队列").assertIsDisplayed()
         composeRule.onNodeWithContentDescription("上一首").assertIsDisplayed()

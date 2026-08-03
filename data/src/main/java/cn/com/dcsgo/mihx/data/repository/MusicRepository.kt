@@ -142,8 +142,9 @@ class MusicRepository(
                     val lrcUriString = if (obj.has("lrcUri")) obj.getString("lrcUri") else null
                     val lrcUri = lrcUriString?.let { Uri.parse(it) }
                     val titleOverride = if (obj.has("titleOverride")) obj.optString("titleOverride", "").ifEmpty { null } else null
+                    val album = if (obj.has("album")) obj.optString("album", "") else ""
 
-                    songs.add(Song(id = id, title = title, artist = artist, sampleRate = sampleRate, uri = uri, albumArtUri = albumArtUri, lrcUri = lrcUri, titleOverride = titleOverride))
+                    songs.add(Song(id = id, title = title, artist = artist, album = album, sampleRate = sampleRate, uri = uri, albumArtUri = albumArtUri, lrcUri = lrcUri, titleOverride = titleOverride))
                     if (id >= nextId) nextId = id + 1
                 }
             }
@@ -172,6 +173,7 @@ class MusicRepository(
             obj.put("id", song.id)
             obj.put("title", song.title)
             obj.put("artist", song.artist)
+            obj.put("album", song.album)
             obj.put("sampleRate", song.sampleRate)
             obj.put("uri", song.uri.toString())
             song.albumArtUri?.let { obj.put("albumArtUri", it.toString()) }
@@ -395,8 +397,8 @@ class MusicRepository(
                     val displayName = docFile.name ?: "未知"
                     val fallbackTitle = AudioFileUtils.stripAudioExtension(displayName)
 
-                    // 从音频元数据提取标题、艺术家和采样率
-                    val (title, artist, sampleRate) = AudioMetadataExtractor.extractMetadata(ctx, fileUri, fallbackTitle)
+                    // 从音频元数据提取标题、艺术家、专辑和采样率
+                    val metadata = AudioMetadataExtractor.extractMetadata(ctx, fileUri, fallbackTitle)
 
                     val songId: Int
                     val albumArtUri: Uri?
@@ -407,9 +409,10 @@ class MusicRepository(
 
                     val song = Song(
                         id = songId,
-                        title = title,
-                        artist = artist,
-                        sampleRate = sampleRate,
+                        title = metadata.title,
+                        artist = metadata.artist,
+                        album = metadata.album,
+                        sampleRate = metadata.sampleRate,
                         uri = fileUri,
                         albumArtUri = albumArtUri,
                         lrcUri = lrcFilesByKey[audioFile.matchKey],

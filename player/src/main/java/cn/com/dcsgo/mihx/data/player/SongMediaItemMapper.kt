@@ -24,6 +24,9 @@ object SongMediaItemMapper {
             .setTitle(song.title)
             .setArtist(song.artist)
 
+        if (song.album.isNotBlank()) {
+            builder.setAlbumTitle(song.album)
+        }
         song.albumArtUri?.let { builder.setArtworkUri(it) }
 
         return builder.build()

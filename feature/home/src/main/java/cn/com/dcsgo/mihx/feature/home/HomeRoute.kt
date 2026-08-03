@@ -3,7 +3,6 @@ package cn.com.dcsgo.mihx.feature.home
 import androidx.compose.runtime.Composable
 import cn.com.dcsgo.mihx.core.model.PlayMode
 import cn.com.dcsgo.mihx.core.model.Song
-import cn.com.dcsgo.mihx.core.model.SongInfo
 
 data class HomeRouteState(
     val currentSong: Song?,
@@ -35,7 +34,6 @@ data class HomeRouteActions(
 fun HomeRoute(
     state: HomeRouteState,
     actions: HomeRouteActions,
-    loadSongInfo: suspend (Song) -> SongInfo?,
     showToast: (String) -> Unit,
 ) {
     HomeScreen(
@@ -46,7 +44,6 @@ fun HomeRoute(
         playMode = state.playMode,
         isInfinitePlay = state.isInfinitePlay,
         sameNameSongs = state.sameNameSongs,
-        loadSongInfo = loadSongInfo,
         onPlayPauseClick = actions.onPlayPauseClick,
         onPreviousClick = actions.onPreviousClick,
         onNextClick = actions.onNextClick,

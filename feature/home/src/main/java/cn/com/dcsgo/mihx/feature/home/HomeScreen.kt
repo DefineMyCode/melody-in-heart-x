@@ -29,7 +29,6 @@ import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -47,7 +46,6 @@ import coil.compose.AsyncImage
 import cn.com.dcsgo.mihx.core.common.time.formatDurationTime
 import cn.com.dcsgo.mihx.core.model.PlayMode
 import cn.com.dcsgo.mihx.core.model.Song
-import cn.com.dcsgo.mihx.core.model.SongInfo
 
 /**
  * 首页（播放器主界面）
@@ -64,7 +62,6 @@ fun HomeScreen(
     playMode: PlayMode,
     isInfinitePlay: Boolean = false,
     sameNameSongs: List<Song> = emptyList(),
-    loadSongInfo: suspend (Song) -> SongInfo? = { null },
     onPlayPauseClick: () -> Unit,
     onPreviousClick: () -> Unit,
     onNextClick: () -> Unit,
@@ -120,7 +117,6 @@ fun HomeScreen(
                         playMode = playMode,
                         isInfinitePlay = isInfinitePlay,
                         sameNameSongs = sameNameSongs,
-                        loadSongInfo = loadSongInfo,
                         onPlayPauseClick = onPlayPauseClick,
                         onPreviousClick = onPreviousClick,
                         onNextClick = onNextClick,
@@ -202,7 +198,7 @@ private fun EmptyHomeHint() {
         )
         Spacer(modifier = Modifier.height(12.dp))
         Text(
-            text = "前往「我的」页面，\n添加本地音乐文件或导入文件夹吧~",
+            text = "前往「曲库」页面，\n添加本地音乐文件或添加歌曲到播放队列吧~",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center
@@ -295,7 +291,6 @@ private fun SongInfoSection(
     playMode: PlayMode,
     isInfinitePlay: Boolean,
     sameNameSongs: List<Song>,
-    loadSongInfo: suspend (Song) -> SongInfo?,
     onPlayPauseClick: () -> Unit,
     onPreviousClick: () -> Unit,
     onNextClick: () -> Unit,
@@ -308,11 +303,8 @@ private fun SongInfoSection(
     onTextCopied: (String) -> Unit,
     onInfinitePlayClick: () -> Unit,
 ) {
-    // 异步加载专辑信息（当前歌曲变化时重新加载）
-    var albumName by remember(currentSong.id) { mutableStateOf<String?>(null) }
-    LaunchedEffect(currentSong.id) {
-        albumName = currentSong.let { loadSongInfo(it) }?.album?.takeIf { it.isNotBlank() }
-    }
+    // 专辑名直接来自 Song 模型（导入时已记录）
+    val albumName = currentSong.album.takeIf { it.isNotBlank() }
 
     Column(
         modifier = Modifier.fillMaxWidth(),
@@ -338,7 +330,7 @@ private fun SongInfoSection(
         if (albumName != null) {
             Spacer(modifier = Modifier.height(4.dp))
             CopyableText(
-                text = albumName!!,
+                text = albumName,
                 isTitle = false,
                 onCopied = onTextCopied
             )

@@ -54,6 +54,7 @@ class LegacyJsonSnapshotParser {
                 id = songId,
                 title = obj.optString("title", "未知歌曲").ifBlank { "未知歌曲" },
                 artist = obj.optString("artist", "未知艺术家"),
+                album = obj.optString("album"),
                 sampleRate = obj.optInt("sampleRate", 0),
                 uri = uri,
                 displayName = null,

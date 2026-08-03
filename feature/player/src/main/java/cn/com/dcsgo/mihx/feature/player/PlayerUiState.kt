@@ -1,5 +1,7 @@
 package cn.com.dcsgo.mihx.feature.player
 
+import cn.com.dcsgo.mihx.core.model.AlbumEntry
+import cn.com.dcsgo.mihx.core.model.ArtistEntry
 import cn.com.dcsgo.mihx.core.model.PlayMode
 import cn.com.dcsgo.mihx.core.model.PlayQueue
 import cn.com.dcsgo.mihx.core.model.Playlist
@@ -22,6 +24,10 @@ data class PlayerUiState(
     val durationMs: Long = 0L,
     /** 所有歌曲列表（本地导入的） */
     val songs: List<Song> = emptyList(),
+    /** 曲库歌手目录（从持久化 artists 表查询） */
+    val libraryArtists: List<ArtistEntry> = emptyList(),
+    /** 曲库专辑目录（从持久化 albums 表查询） */
+    val libraryAlbums: List<AlbumEntry> = emptyList(),
     /** 所有歌单列表 */
     val playlists: List<Playlist> = emptyList(),
     /** 错误提示信息，null 表示无错误 */

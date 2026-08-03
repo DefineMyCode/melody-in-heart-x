@@ -1,12 +1,18 @@
 package cn.com.dcsgo.mihx.data.repository
 
+import cn.com.dcsgo.mihx.data.local.dao.AlbumArtistNameRow
+import cn.com.dcsgo.mihx.data.local.dao.AlbumCatalogRow
+import cn.com.dcsgo.mihx.data.local.dao.ArtistCatalogRow
 import cn.com.dcsgo.mihx.data.local.dao.MelodyDao
+import cn.com.dcsgo.mihx.data.local.entity.AlbumEntity
+import cn.com.dcsgo.mihx.data.local.entity.ArtistEntity
 import cn.com.dcsgo.mihx.data.local.entity.MigrationStateEntity
 import cn.com.dcsgo.mihx.data.local.entity.PlayStatsEntity
 import cn.com.dcsgo.mihx.data.local.entity.PlaylistEntity
 import cn.com.dcsgo.mihx.data.local.entity.PlaylistSongCrossRef
 import cn.com.dcsgo.mihx.data.local.entity.QuickSkipSongEntity
 import cn.com.dcsgo.mihx.data.local.entity.QuickSkipShortPlayEntity
+import cn.com.dcsgo.mihx.data.local.entity.SongArtistCrossRef
 import cn.com.dcsgo.mihx.data.local.entity.SongEntity
 import cn.com.dcsgo.mihx.data.local.entity.SongGroupOverrideEntity
 import org.junit.Assert.assertEquals
@@ -73,6 +79,9 @@ class QuickSkipSongsRepositoryRoomTest {
         val quickSkipSongs = mutableListOf<QuickSkipSongEntity>()
         val quickSkipShortPlayCounts = mutableListOf<QuickSkipShortPlayEntity>()
         val migrationStates = mutableListOf<MigrationStateEntity>()
+        val artists = mutableListOf<ArtistEntity>()
+        val albums = mutableListOf<AlbumEntity>()
+        val songArtistRefs = mutableListOf<SongArtistCrossRef>()
 
         override suspend fun songs(): List<SongEntity> = songs
         override suspend fun playlists(): List<PlaylistEntity> = playlists
@@ -85,6 +94,17 @@ class QuickSkipSongsRepositoryRoomTest {
             quickSkipSongs.firstOrNull { it.songId == songId }
         override suspend fun quickSkipShortPlay(songId: Int): QuickSkipShortPlayEntity? =
             quickSkipShortPlayCounts.firstOrNull { it.songId == songId }
+        override suspend fun artists(): List<ArtistEntity> = artists.sortedBy { it.name }
+        override suspend fun albums(): List<AlbumEntity> = albums.sortedBy { it.name }
+        override suspend fun songArtistRefs(): List<SongArtistCrossRef> = songArtistRefs
+        override suspend fun artistIdsForSong(songId: Int): List<Int> =
+            songArtistRefs.filter { it.songId == songId }.map { it.artistId }
+
+        override suspend fun artistCatalog(): List<ArtistCatalogRow> = emptyList()
+
+        override suspend fun albumCatalog(): List<AlbumCatalogRow> = emptyList()
+
+        override suspend fun albumArtistNames(): List<AlbumArtistNameRow> = emptyList()
 
         override suspend fun upsertSongs(songs: List<SongEntity>) {
             this.songs.upsertItems(songs) { it.id }
@@ -122,6 +142,30 @@ class QuickSkipSongsRepositoryRoomTest {
             songGroupOverrides.upsertItems(overrides) { it.songId }
         }
 
+        override suspend fun insertArtists(artists: List<ArtistEntity>) {
+            artists.forEach { artist ->
+                if (this.artists.none { it.name == artist.name }) {
+                    this.artists += artist.copy(artistId = this.artists.size + 1)
+                }
+            }
+        }
+
+        override suspend fun insertAlbums(albums: List<AlbumEntity>) {
+            albums.forEach { album ->
+                if (this.albums.none { it.name == album.name }) {
+                    this.albums += album.copy(albumId = this.albums.size + 1)
+                }
+            }
+        }
+
+        override suspend fun insertSongArtistRefs(refs: List<SongArtistCrossRef>) {
+            refs.forEach { ref ->
+                if (songArtistRefs.none { it.songId == ref.songId && it.artistId == ref.artistId }) {
+                    songArtistRefs += ref
+                }
+            }
+        }
+
         override suspend fun deleteAllSongs() {
             songs.clear()
         }
@@ -144,6 +188,28 @@ class QuickSkipSongsRepositoryRoomTest {
 
         override suspend fun deleteQuickSkipShortPlay(songId: Int) {
             quickSkipShortPlayCounts.removeIf { it.songId == songId }
+        }
+
+        override suspend fun deleteAllSongArtistRefs() {
+            songArtistRefs.clear()
+        }
+
+        override suspend fun deleteAllArtists() {
+            artists.clear()
+        }
+
+        override suspend fun deleteAllAlbums() {
+            albums.clear()
+        }
+
+        override suspend fun deleteOrphanArtists() {
+            val usedIds = songArtistRefs.map { it.artistId }.toSet()
+            artists.removeIf { it.artistId !in usedIds }
+        }
+
+        override suspend fun deleteOrphanAlbums() {
+            val usedIds = songs.mapNotNull { it.albumId }.toSet()
+            albums.removeIf { it.albumId !in usedIds }
         }
 
         override suspend fun migrationState(name: String): MigrationStateEntity? =

@@ -1,5 +1,7 @@
 package cn.com.dcsgo.mihx.data.repository
 
+import cn.com.dcsgo.mihx.core.model.AlbumEntry
+import cn.com.dcsgo.mihx.core.model.ArtistEntry
 import cn.com.dcsgo.mihx.core.model.Song
 import cn.com.dcsgo.mihx.domain.model.DeleteSongResult
 import cn.com.dcsgo.mihx.domain.repository.SongRepository
@@ -15,6 +17,10 @@ class SongRepositoryAdapter @Inject constructor(
     override fun setSongsChangedListener(listener: (() -> Unit)?) {
         musicRepository.setSongsChangedListener(listener)
     }
+
+    override suspend fun loadLibraryArtists(): List<ArtistEntry> = musicRepository.loadLibraryArtists()
+
+    override suspend fun loadLibraryAlbums(): List<AlbumEntry> = musicRepository.loadLibraryAlbums()
 
     override fun updateSongTitleOverride(songId: Int, titleOverride: String?): Boolean =
         musicRepository.updateSongTitleOverride(songId, titleOverride)

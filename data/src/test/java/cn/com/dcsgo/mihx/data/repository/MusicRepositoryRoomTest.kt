@@ -1,12 +1,18 @@
 package cn.com.dcsgo.mihx.data.repository
 
+import cn.com.dcsgo.mihx.data.local.dao.AlbumArtistNameRow
+import cn.com.dcsgo.mihx.data.local.dao.AlbumCatalogRow
+import cn.com.dcsgo.mihx.data.local.dao.ArtistCatalogRow
 import cn.com.dcsgo.mihx.data.local.dao.MelodyDao
+import cn.com.dcsgo.mihx.data.local.entity.AlbumEntity
+import cn.com.dcsgo.mihx.data.local.entity.ArtistEntity
 import cn.com.dcsgo.mihx.data.local.entity.MigrationStateEntity
 import cn.com.dcsgo.mihx.data.local.entity.PlayStatsEntity
 import cn.com.dcsgo.mihx.data.local.entity.PlaylistEntity
 import cn.com.dcsgo.mihx.data.local.entity.PlaylistSongCrossRef
 import cn.com.dcsgo.mihx.data.local.entity.QuickSkipSongEntity
 import cn.com.dcsgo.mihx.data.local.entity.QuickSkipShortPlayEntity
+import cn.com.dcsgo.mihx.data.local.entity.SongArtistCrossRef
 import cn.com.dcsgo.mihx.data.local.entity.SongEntity
 import cn.com.dcsgo.mihx.data.local.entity.SongGroupOverrideEntity
 import kotlinx.coroutines.runBlocking
@@ -121,6 +127,51 @@ class MusicRepositoryRoomTest {
         assertEquals("Album 1", songsById.getValue(1).album)
     }
 
+    @Test
+    fun loadSongsSyncsArtistAndAlbumCatalog() = runBlocking {
+        val dao = FakeMelodyDao().apply {
+            songs += listOf(
+                SongEntity(
+                    id = 1, title = "Song 1", artist = "A / B", album = "Album X",
+                    sampleRate = 44_100, uri = null, displayName = null, mimeType = null,
+                    lastModified = null, size = null, sourceTreeUri = null,
+                    albumArtCacheUri = null, lrcUri = null, importedAt = 1L,
+                ),
+                SongEntity(
+                    id = 2, title = "Song 2", artist = "B", album = "Album X",
+                    sampleRate = 44_100, uri = null, displayName = null, mimeType = null,
+                    lastModified = null, size = null, sourceTreeUri = null,
+                    albumArtCacheUri = null, lrcUri = null, importedAt = 1L,
+                ),
+                SongEntity(
+                    id = 3, title = "Song 3", artist = "C", album = "Album Y",
+                    sampleRate = 44_100, uri = null, displayName = null, mimeType = null,
+                    lastModified = null, size = null, sourceTreeUri = null,
+                    albumArtCacheUri = null, lrcUri = null, importedAt = 1L,
+                ),
+            )
+        }
+        val repository = MusicRepository(melodyDao = dao)
+
+        repository.loadSongs()
+
+        // 歌手目录：A、B、C 三个原子歌手
+        assertEquals(setOf("A", "B", "C"), dao.artists.map { it.name }.toSet())
+        // 专辑目录：Album X、Album Y
+        assertEquals(setOf("Album X", "Album Y"), dao.albums.map { it.name }.toSet())
+        // 多对多关联：Song 1 → A,B；Song 2 → B；Song 3 → C
+        val refsBySong = dao.songArtistRefs.groupBy { it.songId }
+            .mapValues { (_, refs) -> refs.map { ref -> dao.artists.first { it.artistId == ref.artistId }.name }.toSet() }
+        assertEquals(setOf("A", "B"), refsBySong[1])
+        assertEquals(setOf("B"), refsBySong[2])
+        assertEquals(setOf("C"), refsBySong[3])
+        // 内存歌曲带上 artistIds 与 albumId
+        val songsById = repository.getSongs().associateBy { it.id }
+        assertEquals(setOf("A", "B"), songsById.getValue(1).artistIds.map { id -> dao.artists.first { it.artistId == id }.name }.toSet())
+        assertEquals(dao.albums.first { it.name == "Album X" }.albumId, songsById.getValue(1).albumId)
+        assertEquals(dao.albums.first { it.name == "Album Y" }.albumId, songsById.getValue(3).albumId)
+    }
+
     private class FakeMelodyDao : MelodyDao {
         val songs = mutableListOf<SongEntity>()
         val playlists = mutableListOf<PlaylistEntity>()
@@ -130,6 +181,9 @@ class MusicRepositoryRoomTest {
         val quickSkipSongs = mutableListOf<QuickSkipSongEntity>()
         val quickSkipShortPlayCounts = mutableListOf<QuickSkipShortPlayEntity>()
         val migrationStates = mutableListOf<MigrationStateEntity>()
+        val artists = mutableListOf<ArtistEntity>()
+        val albums = mutableListOf<AlbumEntity>()
+        val songArtistRefs = mutableListOf<SongArtistCrossRef>()
 
         override suspend fun songs(): List<SongEntity> = songs.sortedBy { it.id }
         override suspend fun playlists(): List<PlaylistEntity> = playlists.sortedBy { it.id }
@@ -143,6 +197,40 @@ class MusicRepositoryRoomTest {
             quickSkipSongs.firstOrNull { it.songId == songId }
         override suspend fun quickSkipShortPlay(songId: Int): QuickSkipShortPlayEntity? =
             quickSkipShortPlayCounts.firstOrNull { it.songId == songId }
+        override suspend fun artists(): List<ArtistEntity> = artists.sortedBy { it.name }
+        override suspend fun albums(): List<AlbumEntity> = albums.sortedBy { it.name }
+        override suspend fun songArtistRefs(): List<SongArtistCrossRef> = songArtistRefs
+        override suspend fun artistIdsForSong(songId: Int): List<Int> =
+            songArtistRefs.filter { it.songId == songId }.map { it.artistId }
+
+        override suspend fun artistCatalog(): List<ArtistCatalogRow> = artists.map { artist ->
+            val songIds = songArtistRefs.filter { it.artistId == artist.artistId }.map { it.songId }.toSet()
+            ArtistCatalogRow(
+                artistId = artist.artistId,
+                name = artist.name,
+                songCount = songIds.size,
+                albumCount = songs.filter { it.id in songIds }.mapNotNull { it.albumId }.distinct().size,
+                coverUri = songs.firstOrNull { it.id in songIds }?.albumArtCacheUri,
+            )
+        }
+
+        override suspend fun albumCatalog(): List<AlbumCatalogRow> = albums.map { album ->
+            val albumSongs = songs.filter { it.albumId == album.albumId }
+            AlbumCatalogRow(
+                albumId = album.albumId,
+                name = album.name,
+                songCount = albumSongs.size,
+                coverUri = albumSongs.firstNotNullOfOrNull { it.albumArtCacheUri },
+            )
+        }
+
+        override suspend fun albumArtistNames(): List<AlbumArtistNameRow> =
+            songs.filter { it.albumId != null }.flatMap { song ->
+                val artistNames = songArtistRefs
+                    .filter { it.songId == song.id }
+                    .mapNotNull { ref -> artists.firstOrNull { it.artistId == ref.artistId }?.name }
+                artistNames.map { name -> AlbumArtistNameRow(song.albumId!!, name) }
+            }.distinct()
 
         override suspend fun upsertSongs(songs: List<SongEntity>) {
             this.songs.upsertBy(songs) { it.id }
@@ -180,6 +268,36 @@ class MusicRepositoryRoomTest {
             songGroupOverrides.upsertBy(overrides) { it.songId }
         }
 
+        override suspend fun insertArtists(artists: List<ArtistEntity>) {
+            artists.forEach { artist ->
+                val existing = this.artists.firstOrNull { it.name == artist.name }
+                if (existing != null) {
+                    this.artists[this.artists.indexOf(existing)] = existing
+                } else {
+                    this.artists += artist.copy(artistId = this.artists.size + 1)
+                }
+            }
+        }
+
+        override suspend fun insertAlbums(albums: List<AlbumEntity>) {
+            albums.forEach { album ->
+                val existing = this.albums.firstOrNull { it.name == album.name }
+                if (existing != null) {
+                    this.albums[this.albums.indexOf(existing)] = existing
+                } else {
+                    this.albums += album.copy(albumId = this.albums.size + 1)
+                }
+            }
+        }
+
+        override suspend fun insertSongArtistRefs(refs: List<SongArtistCrossRef>) {
+            refs.forEach { ref ->
+                val key = ref.songId to ref.artistId
+                val existing = songArtistRefs.firstOrNull { it.songId == ref.songId && it.artistId == ref.artistId }
+                if (existing == null) songArtistRefs += ref
+            }
+        }
+
         override suspend fun deleteAllSongs() {
             songs.clear()
         }
@@ -202,6 +320,28 @@ class MusicRepositoryRoomTest {
 
         override suspend fun deleteQuickSkipShortPlay(songId: Int) {
             quickSkipShortPlayCounts.removeIf { it.songId == songId }
+        }
+
+        override suspend fun deleteAllSongArtistRefs() {
+            songArtistRefs.clear()
+        }
+
+        override suspend fun deleteAllArtists() {
+            artists.clear()
+        }
+
+        override suspend fun deleteAllAlbums() {
+            albums.clear()
+        }
+
+        override suspend fun deleteOrphanArtists() {
+            val usedIds = songArtistRefs.map { it.artistId }.toSet()
+            artists.removeIf { it.artistId !in usedIds }
+        }
+
+        override suspend fun deleteOrphanAlbums() {
+            val usedIds = songs.mapNotNull { it.albumId }.toSet()
+            albums.removeIf { it.albumId !in usedIds }
         }
 
         override suspend fun migrationState(name: String): MigrationStateEntity? =

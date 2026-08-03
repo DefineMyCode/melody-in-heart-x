@@ -32,6 +32,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import cn.com.dcsgo.mihx.core.model.LibraryCatalog
 import cn.com.dcsgo.mihx.core.model.Song
 
 /**
@@ -56,7 +57,7 @@ fun AlbumDetailScreen(
     // 该专辑关联的所有歌手（拆分后的最小单位）
     val albumArtists = albumSongs.flatMap { it.parsedArtists }.distinct()
     // 与专辑共享任一歌手的其他专辑
-    val otherAlbums = deriveAlbums(songs)
+    val otherAlbums = LibraryCatalog.deriveAlbums(songs)
         .filter { it.name != albumName && it.artistNames.any { artist -> artist in albumArtists } }
     var selectedSection by rememberSaveable { mutableStateOf(0) }
 

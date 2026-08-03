@@ -344,6 +344,8 @@ private fun playlistRouteState(
 ): PlaylistRouteState = PlaylistRouteState(
     playlists = uiState.playlists,
     librarySongs = playerViewModel.getGroupedSongs(uiState.songs).flatten(),
+    libraryArtists = uiState.libraryArtists,
+    libraryAlbums = uiState.libraryAlbums,
     selectedPlaylist = selectedPlaylist,
     selectedPlaylistSongs = selectedPlaylist?.let { playlist ->
         playerViewModel.getGroupedSongs(

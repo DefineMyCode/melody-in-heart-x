@@ -6,6 +6,9 @@ import android.net.Uri
 import androidx.documentfile.provider.DocumentFile
 import cn.com.dcsgo.mihx.core.common.AppLog
 import cn.com.dcsgo.mihx.core.common.PerformanceTrace
+import cn.com.dcsgo.mihx.core.model.AlbumEntry
+import cn.com.dcsgo.mihx.core.model.ArtistEntry
+import cn.com.dcsgo.mihx.core.model.LibraryCatalog
 import cn.com.dcsgo.mihx.core.model.Playlist
 import cn.com.dcsgo.mihx.core.model.Song
 import cn.com.dcsgo.mihx.data.local.dao.MelodyDao
@@ -242,6 +245,43 @@ class MusicRepository(
     fun getSongs(): List<Song> = lock.read { songs.toList() }
 
     fun observeSongsSnapshot(): List<Song> = getSongs()
+
+    /**
+     * 从持久化的 artists 表查询歌手目录（按歌手名排序）。
+     * 无 Room 时回退到内存歌曲派生。
+     */
+    suspend fun loadLibraryArtists(): List<ArtistEntry> {
+        val dao = melodyDao ?: return LibraryCatalog.deriveArtists(getSongs())
+        val rows = dao.artistCatalog()
+        return rows.map { row ->
+            ArtistEntry(
+                name = row.name,
+                songCount = row.songCount,
+                albumCount = row.albumCount,
+                coverUri = row.coverUri?.let(Uri::parse),
+            )
+        }
+    }
+
+    /**
+     * 从持久化的 albums 表查询专辑目录（按专辑名排序）。
+     * 无 Room 时回退到内存歌曲派生。
+     */
+    suspend fun loadLibraryAlbums(): List<AlbumEntry> {
+        val dao = melodyDao ?: return LibraryCatalog.deriveAlbums(getSongs())
+        val rows = dao.albumCatalog()
+        val albumArtistNames = dao.albumArtistNames()
+            .groupBy { it.albumId }
+            .mapValues { (_, names) -> names.map { it.artistName } }
+        return rows.map { row ->
+            AlbumEntry(
+                name = row.name,
+                artistNames = albumArtistNames[row.albumId].orEmpty(),
+                songCount = row.songCount,
+                coverUri = row.coverUri?.let(Uri::parse),
+            )
+        }
+    }
 
     /**
      * 按歌曲标题分组（同名歌曲归为一组）。

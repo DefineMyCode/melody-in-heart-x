@@ -143,12 +143,16 @@ internal class PlayerRuntime(
     private val libraryFacade = PlayerLibraryFacade(
         updateState = { transform -> _uiState.update(transform) },
         loadPersistedSongs = { songRepository.loadSongs() },
+        loadLibraryCatalog = {
+            songRepository.loadLibraryArtists() to songRepository.loadLibraryAlbums()
+        },
         refreshAllAlbumArt = { onFinished ->
             albumArtRepository.refreshAllAlbumArt()
             onFinished?.invoke()
         },
         snapshot = playlistManager::snapshot,
         setSongsChangedListener = songRepository::setSongsChangedListener,
+        catalogScope = scope,
     )
     private val importFacade = PlayerImportFacade(
         updateState = { transform -> _uiState.update(transform) },

@@ -25,7 +25,11 @@ data class Song(
     val uri: Uri? = null,
     val albumArtUri: Uri? = null,
     val lrcUri: Uri? = null,
-    val titleOverride: String? = null
+    val titleOverride: String? = null,
+    /** 专辑实体 ID（曲库持久化关联，未建立时为 null） */
+    val albumId: Int? = null,
+    /** 拆分后的歌手实体 ID 列表（曲库持久化关联） */
+    val artistIds: List<Int> = emptyList(),
 ) {
     /** 采样率格式化字符串，用于 UI 展示（如 "44kHz"） */
     val sampleRateDisplay: String

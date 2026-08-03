@@ -31,59 +31,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import cn.com.dcsgo.mihx.core.model.Song
-
-/** 单个歌手聚合数据（歌手为不可再拆分的最小单位） */
-data class ArtistEntry(
-    val name: String,
-    val songCount: Int,
-    val albumCount: Int,
-    val coverUri: android.net.Uri?,
-)
-
-/** 单个专辑聚合数据（专辑可与多个歌手关联） */
-data class AlbumEntry(
-    val name: String,
-    val artistNames: List<String>,
-    val songCount: Int,
-    val coverUri: android.net.Uri?,
-)
-
-/** 从歌曲列表聚合出歌手列表（按歌手名排序，歌手为拆分后的最小单位） */
-fun deriveArtists(songs: List<Song>): List<ArtistEntry> {
-    val byArtist = mutableMapOf<String, MutableList<Song>>()
-    songs.forEach { song ->
-        song.parsedArtists.forEach { artistName ->
-            byArtist.getOrPut(artistName) { mutableListOf() }.add(song)
-        }
-    }
-    return byArtist
-        .map { (name, list) ->
-            ArtistEntry(
-                name = name,
-                songCount = list.size,
-                albumCount = list.map { it.album }.filter { it.isNotBlank() }.distinct().size,
-                coverUri = list.firstNotNullOfOrNull { it.albumArtUri },
-            )
-        }
-        .sortedBy { it.name }
-}
-
-/** 从歌曲列表聚合出专辑列表（按专辑名排序，跳过空专辑名） */
-fun deriveAlbums(songs: List<Song>): List<AlbumEntry> {
-    return songs
-        .filter { it.album.isNotBlank() }
-        .groupBy { it.album }
-        .map { (name, list) ->
-            AlbumEntry(
-                name = name,
-                artistNames = list.flatMap { it.parsedArtists }.distinct(),
-                songCount = list.size,
-                coverUri = list.firstNotNullOfOrNull { it.albumArtUri },
-            )
-        }
-        .sortedBy { it.name }
-}
+import cn.com.dcsgo.mihx.core.model.AlbumEntry
+import cn.com.dcsgo.mihx.core.model.ArtistEntry
 
 /** 曲库顶部类目切换栏 */
 @Composable

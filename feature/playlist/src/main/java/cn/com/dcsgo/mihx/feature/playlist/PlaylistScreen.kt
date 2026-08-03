@@ -55,6 +55,8 @@ import androidx.compose.ui.unit.dp
 import androidx.activity.compose.BackHandler
 import kotlinx.coroutines.launch
 import coil.compose.AsyncImage
+import cn.com.dcsgo.mihx.core.model.AlbumEntry
+import cn.com.dcsgo.mihx.core.model.ArtistEntry
 import cn.com.dcsgo.mihx.core.model.Playlist
 import cn.com.dcsgo.mihx.core.model.Song
 import cn.com.dcsgo.mihx.core.model.SongInfo
@@ -66,6 +68,8 @@ import cn.com.dcsgo.mihx.ui.components.rememberLocateHighlightState
 fun PlaylistScreen(
     playlists: List<Playlist>,
     songs: List<Song>,
+    libraryArtists: List<ArtistEntry> = emptyList(),
+    libraryAlbums: List<AlbumEntry> = emptyList(),
     selectedPlaylist: Playlist?,
     currentSong: Song? = null,
     isPlaying: Boolean = false,
@@ -303,14 +307,14 @@ fun PlaylistScreen(
                             onRename = { showRenameDialog = it }
                         )
                         LibraryTab.ARTISTS -> ArtistListView(
-                            artists = deriveArtists(songs).filter { artist ->
+                            artists = libraryArtists.filter { artist ->
                                 librarySearchQuery.isBlank() ||
                                     artist.name.contains(librarySearchQuery, ignoreCase = true)
                             },
                             onArtistClick = onArtistClick,
                         )
                         LibraryTab.ALBUMS -> AlbumListView(
-                            albums = deriveAlbums(songs).filter { album ->
+                            albums = libraryAlbums.filter { album ->
                                 librarySearchQuery.isBlank() ||
                                     album.name.contains(librarySearchQuery, ignoreCase = true) ||
                                     album.artistNames.any { it.contains(librarySearchQuery, ignoreCase = true) }

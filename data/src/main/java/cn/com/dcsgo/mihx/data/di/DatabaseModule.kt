@@ -27,7 +27,7 @@ object DatabaseModule {
             context,
             MelodyDatabase::class.java,
             "melody.db",
-        ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4).build()
+        ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5).build()
     }
 
     @Provides
@@ -64,6 +64,35 @@ object DatabaseModule {
     private val MIGRATION_3_4 = object : Migration(3, 4) {
         override fun migrate(db: SupportSQLiteDatabase) {
             db.execSQL("ALTER TABLE `songs` ADD COLUMN `album` TEXT NOT NULL DEFAULT ''")
+        }
+    }
+
+    private val MIGRATION_4_5 = object : Migration(4, 5) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            // 歌手表
+            db.execSQL(
+                "CREATE TABLE IF NOT EXISTS `artists` (" +
+                    "`artistId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                    "`name` TEXT NOT NULL)"
+            )
+            db.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `index_artists_name` ON `artists` (`name`)")
+            // 专辑表
+            db.execSQL(
+                "CREATE TABLE IF NOT EXISTS `albums` (" +
+                    "`albumId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                    "`name` TEXT NOT NULL)"
+            )
+            db.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `index_albums_name` ON `albums` (`name`)")
+            // 歌曲-歌手多对多
+            db.execSQL(
+                "CREATE TABLE IF NOT EXISTS `song_artist_cross_ref` (" +
+                    "`songId` INTEGER NOT NULL, " +
+                    "`artistId` INTEGER NOT NULL, " +
+                    "PRIMARY KEY(`songId`, `artistId`))"
+            )
+            db.execSQL("CREATE INDEX IF NOT EXISTS `index_song_artist_cross_ref_artistId` ON `song_artist_cross_ref` (`artistId`)")
+            // 歌曲新增专辑外键
+            db.execSQL("ALTER TABLE `songs` ADD COLUMN `albumId` INTEGER")
         }
     }
 }

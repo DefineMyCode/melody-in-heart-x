@@ -37,8 +37,20 @@ class RoomMusicLibraryDataSource(
             )
         }
 
+        // 首次加载（或旧版本升级后）同步歌手/专辑目录，并将关联写回内存歌曲
+        dao.syncLibraryCatalog(restoredSongs)
+        val artistIdsBySong = dao.songArtistRefs().groupBy { it.songId }
+            .mapValues { (_, refs) -> refs.map { it.artistId } }
+        val albumIdBySongId = dao.songs().associate { it.id to it.albumId }
+        val catalogedSongs = restoredSongs.map { song ->
+            song.copy(
+                albumId = albumIdBySongId[song.id],
+                artistIds = artistIdsBySong[song.id].orEmpty(),
+            )
+        }
+
         return RestoredMusicLibrary(
-            songs = restoredSongs,
+            songs = catalogedSongs,
             playlists = restoredPlaylists,
         )
     }
@@ -48,6 +60,7 @@ class RoomMusicLibraryDataSource(
             songs = songs.map { it.toEntity(importedAt) },
             overrides = songs.mapNotNull { it.toOverrideEntity(importedAt) },
         )
+        dao.syncLibraryCatalog(songs)
     }
 
     suspend fun persistPlaylists(playlists: List<Playlist>, updatedAt: Long) {
@@ -71,6 +84,7 @@ private fun SongEntity.toSong(titleOverride: String?): Song = Song(
     title = title,
     artist = artist,
     album = album,
+    albumId = albumId,
     sampleRate = sampleRate,
     uri = uri?.let(Uri::parse),
     albumArtUri = albumArtCacheUri?.let(Uri::parse),
@@ -83,6 +97,7 @@ private fun Song.toEntity(importedAt: Long): SongEntity = SongEntity(
     title = title,
     artist = artist,
     album = album,
+    albumId = albumId,
     sampleRate = sampleRate,
     uri = uri?.toString(),
     displayName = null,

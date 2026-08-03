@@ -3,7 +3,10 @@ package cn.com.dcsgo.mihx.feature.player
 import cn.com.dcsgo.mihx.core.model.Playlist
 import cn.com.dcsgo.mihx.core.model.Song
 import cn.com.dcsgo.mihx.domain.playlist.PlaylistSnapshot
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -17,11 +20,16 @@ class PlayerLibraryFacadeTest {
     private var loaded = false
     private var refreshedAlbumArt = false
     private var listener: (() -> Unit)? = null
+    private val testScope = CoroutineScope(SupervisorJob() + Dispatchers.Unconfined)
     private val facade = PlayerLibraryFacade(
         updateState = { transform -> state = transform(state) },
         loadPersistedSongs = {
             assertTrue(state.isLoading)
             loaded = true
+        },
+        loadLibraryCatalog = {
+            emptyList<cn.com.dcsgo.mihx.core.model.ArtistEntry>() to
+                emptyList<cn.com.dcsgo.mihx.core.model.AlbumEntry>()
         },
         refreshAllAlbumArt = { onFinished ->
             refreshedAlbumArt = true
@@ -33,6 +41,7 @@ class PlayerLibraryFacadeTest {
         },
         snapshot = { snapshot },
         setSongsChangedListener = { callback -> listener = callback },
+        catalogScope = testScope,
         ioDispatcher = Dispatchers.Unconfined,
     )
 
@@ -58,6 +67,7 @@ class PlayerLibraryFacadeTest {
         assertTrue(refreshedAlbumArt)
         assertEquals(listOf(2), state.songs.map { it.id })
         assertEquals(listOf("Refreshed"), state.playlists.map { it.name })
+        testScope.cancel()
     }
 
     @Test
@@ -72,6 +82,7 @@ class PlayerLibraryFacadeTest {
 
         assertEquals(listOf(3), state.songs.map { it.id })
         assertEquals(listOf("Changed"), state.playlists.map { it.name })
+        testScope.cancel()
     }
 
     private fun songs(vararg ids: Int): List<Song> = ids.map { id ->

@@ -1,6 +1,8 @@
 package cn.com.dcsgo.mihx.feature.playlist
 
 import androidx.compose.runtime.Composable
+import cn.com.dcsgo.mihx.core.model.AlbumEntry
+import cn.com.dcsgo.mihx.core.model.ArtistEntry
 import cn.com.dcsgo.mihx.core.model.Playlist
 import cn.com.dcsgo.mihx.core.model.Song
 import cn.com.dcsgo.mihx.core.model.SongInfo
@@ -8,6 +10,8 @@ import cn.com.dcsgo.mihx.core.model.SongInfo
 data class PlaylistRouteState(
     val playlists: List<Playlist>,
     val librarySongs: List<Song>,
+    val libraryArtists: List<ArtistEntry>,
+    val libraryAlbums: List<AlbumEntry>,
     val selectedPlaylist: Playlist?,
     val selectedPlaylistSongs: List<Song>?,
     val currentSong: Song?,
@@ -56,6 +60,8 @@ fun PlaylistRoute(
     PlaylistScreen(
         playlists = state.playlists,
         songs = visibleSongs,
+        libraryArtists = state.libraryArtists,
+        libraryAlbums = state.libraryAlbums,
         selectedPlaylist = state.selectedPlaylist,
         currentSong = state.currentSong,
         isPlaying = state.isPlaying,

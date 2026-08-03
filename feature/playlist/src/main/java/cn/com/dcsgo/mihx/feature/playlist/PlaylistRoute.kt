@@ -20,6 +20,7 @@ data class PlaylistRouteState(
 data class PlaylistRouteActions(
     val onPlaylistClick: (Playlist) -> Unit,
     val onSongClick: (Song, List<Song>) -> Unit,
+    val onLocalSongClick: (Song) -> Unit,
     val onBackClick: () -> Unit,
     val onCreatePlaylist: (String) -> Unit,
     val onDeletePlaylist: (Playlist) -> Unit,
@@ -58,6 +59,7 @@ fun PlaylistRoute(
         isPlaying = state.isPlaying,
         onPlaylistClick = actions.onPlaylistClick,
         onSongClick = { song -> actions.onSongClick(song, visibleSongs) },
+        onLocalSongClick = actions.onLocalSongClick,
         onBackClick = actions.onBackClick,
         onCreatePlaylist = actions.onCreatePlaylist,
         onDeletePlaylist = actions.onDeletePlaylist,

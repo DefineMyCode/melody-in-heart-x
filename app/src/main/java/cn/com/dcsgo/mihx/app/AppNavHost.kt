@@ -164,7 +164,12 @@ fun AppNavHost(
                 ),
                 actions = VersionManagementRouteActions(
                     onBack = navController::navigateUp,
-                    onPlayVersion = { song -> playerViewModel.playSongFromContext(song, allSongs) },
+                    // 点击版本：将该歌曲所有版本按列表顺序入队，从点击的版本开始顺序播放（替换并清空原队列）
+                    onPlayVersion = { song ->
+                        val versions = playerViewModel.getSongsWithSameName(song, allSongs)
+                        val startIndex = versions.indexOfFirst { it.id == song.id }.coerceAtLeast(0)
+                        playerViewModel.setPlayQueue(versions, startIndex, PlayMode.SEQUENTIAL)
+                    },
                     onAddToQueue = playerViewModel::addToPlayQueue,
                     onDeleteSong = { song -> deleteSongWithToast(song.id) },
                     onDetachVersion = playerViewModel::detachSongFromGroup,
@@ -207,10 +212,9 @@ fun AppNavHost(
                 ),
                 actions = QuickSkipSongsRouteActions(
                     onBack = navController::navigateUp,
+                    // 点击秒切歌曲：清空队列，只播放这一首，停留在秒切歌曲页面
                     onSongClick = { song ->
-                        val allSongs = playerViewModel.getGroupedSongs(uiState.songs).flatten()
-                        playerViewModel.playSongFromContext(song, allSongs)
-                        navController.navigateUp()
+                        playerViewModel.setPlayQueue(listOf(song), 0, PlayMode.SEQUENTIAL)
                     },
                     onDeleteSong = { song -> deleteSongWithToast(song.id) },
                     onSyncToPlaylist = {
@@ -298,7 +302,15 @@ private fun playlistRouteActions(
     deleteSongWithToast: (Int) -> Unit,
 ): PlaylistRouteActions = PlaylistRouteActions(
     onPlaylistClick = { playlist -> navController.navigate(AppRoutes.playlistDetail(playlist.id)) },
-    onSongClick = playerViewModel::playSongFromContext,
+    // 点击歌单中的歌曲：将整个歌单按列表顺序入队，从点击的歌曲开始顺序播放（替换并清空原队列）
+    onSongClick = { song, contextSongs ->
+        val startIndex = contextSongs.indexOfFirst { it.id == song.id }.coerceAtLeast(0)
+        playerViewModel.setPlayQueue(contextSongs, startIndex, PlayMode.SEQUENTIAL)
+    },
+    // 点击本地音乐中的歌曲：清空队列，只播放这一首
+    onLocalSongClick = { song ->
+        playerViewModel.setPlayQueue(listOf(song), 0, PlayMode.SEQUENTIAL)
+    },
     onBackClick = navController::navigateUp,
     onCreatePlaylist = playerViewModel::createPlaylist,
     onDeletePlaylist = { playlist -> playerViewModel.deletePlaylist(playlist.id) },

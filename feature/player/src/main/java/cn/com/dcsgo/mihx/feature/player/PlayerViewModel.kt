@@ -230,6 +230,14 @@ class PlayerViewModel @Inject constructor(
         runtime.playRandomQueue()
     }
 
+    /**
+     * 关联播放：清空播放队列，仅保留当前歌曲，再追加其关联专辑歌曲与关联歌手的所有歌曲（去重随机）。
+     * @return 实际追加的关联歌曲数量
+     */
+    fun playRelatedSongs(currentSong: Song): Int {
+        return runtime.playRelatedSongs(currentSong)
+    }
+
     /** Starts infinite random playback. */
     fun startInfinitePlay() {
         runtime.startInfinitePlay()

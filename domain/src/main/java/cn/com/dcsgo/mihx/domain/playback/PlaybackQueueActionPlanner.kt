@@ -37,6 +37,7 @@ class PlaybackQueueActionPlanner(
         songs: List<Song>,
         startIndex: Int,
         mode: PlayMode?,
+        exitInfinitePlay: Boolean = true,
     ): Plan? {
         if (songs.isEmpty()) return null
         val currentMode = mode ?: currentQueue.playMode
@@ -44,7 +45,7 @@ class PlaybackQueueActionPlanner(
         return Plan(
             queue = newQueue,
             playbackAction = PlaybackAction.PlayQueueIndex(startIndex),
-            exitInfinitePlay = true,
+            exitInfinitePlay = exitInfinitePlay,
         )
     }
 

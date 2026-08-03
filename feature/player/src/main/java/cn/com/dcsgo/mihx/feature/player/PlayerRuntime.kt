@@ -362,8 +362,51 @@ internal class PlayerRuntime(
         return versionFacade.getSongsWithSameName(song, songs)
     }
 
-    fun setPlayQueue(songs: List<Song>, startIndex: Int = 0, mode: PlayMode? = null) {
-        queueFacade.setPlayQueue(songs, startIndex, mode)
+    fun setPlayQueue(
+        songs: List<Song>,
+        startIndex: Int = 0,
+        mode: PlayMode? = null,
+        exitInfinitePlay: Boolean = true,
+    ) {
+        queueFacade.setPlayQueue(songs, startIndex, mode, exitInfinitePlay)
+    }
+
+    /**
+     * 关联播放：清空播放队列，仅保留当前歌曲，再把其关联的专辑歌曲 + 关联歌手的所有歌曲，
+     * 去重后随机追加到队列。不改变无限随机播放状态。
+     *
+     * @return 实际追加的关联歌曲数量
+     */
+    fun playRelatedSongs(currentSong: Song): Int {
+        val allSongs = _uiState.value.songs
+        val related = allSongs
+            .filter { it.id != currentSong.id }
+            .filter { song ->
+                val sameAlbum = currentSong.album.isNotBlank() && song.album == currentSong.album
+                val sharedArtist = song.parsedArtists.any { artist -> artist in currentSong.parsedArtists }
+                sameAlbum || sharedArtist
+            }
+            .distinctBy { it.id }
+            .shuffled()
+
+        setPlayQueue(
+            songs = listOf(currentSong) + related,
+            startIndex = 0,
+            mode = PlayMode.SEQUENTIAL,
+            // 不退出无限随机播放
+            exitInfinitePlay = false,
+        )
+        // 若处于无限随机播放，同步新队列的已播放记录，保证后续补充从队列外歌曲开始
+        if (_uiState.value.isInfinitePlay) {
+            _uiState.update {
+                it.copy(
+                    infinitePlayedSongIds = (listOf(currentSong) + related)
+                        .map { song -> song.id }
+                        .toSet(),
+                )
+            }
+        }
+        return related.size
     }
 
     fun addToPlayQueue(song: Song): Boolean {

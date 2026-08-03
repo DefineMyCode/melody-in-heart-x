@@ -16,12 +16,18 @@ class PlayerQueueFacade(
     private val log: (String) -> Unit,
     private val planner: PlaybackQueueActionPlanner = PlaybackQueueActionPlanner(),
 ) {
-    fun setPlayQueue(songs: List<Song>, startIndex: Int = 0, mode: PlayMode? = null) {
+    fun setPlayQueue(
+        songs: List<Song>,
+        startIndex: Int = 0,
+        mode: PlayMode? = null,
+        exitInfinitePlay: Boolean = true,
+    ) {
         val plan = planner.replaceQueue(
             currentQueue = state().playQueue,
             songs = songs,
             startIndex = startIndex,
             mode = mode,
+            exitInfinitePlay = exitInfinitePlay,
         ) ?: return
         applyPlan(plan)
     }

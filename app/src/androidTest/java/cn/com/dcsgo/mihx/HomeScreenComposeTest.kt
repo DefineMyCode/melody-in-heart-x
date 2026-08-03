@@ -81,6 +81,6 @@ class HomeScreenComposeTest {
         composeRule.onNodeWithContentDescription("暂停").assertIsDisplayed()
         composeRule.onNodeWithContentDescription("下一首").assertIsDisplayed()
         composeRule.onNodeWithContentDescription("播放模式: 顺序播放").assertIsDisplayed()
-        composeRule.onNodeWithText("无限播放").assertIsDisplayed()
+        composeRule.onNodeWithText("无限随机播放").assertIsDisplayed()
     }
 }

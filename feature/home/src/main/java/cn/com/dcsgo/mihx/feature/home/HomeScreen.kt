@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -79,6 +80,7 @@ fun HomeScreen(
     onAlbumClick: (String) -> Unit = {},
     onLuckyPlayClick: () -> Unit = {},
     onInfinitePlayClick: () -> Unit = {},
+    onRelatedPlayClick: () -> Unit = {},
 ) {
     if (currentSong == null) {
         // 空状态：没有任何音乐，仍显示 FAB
@@ -133,7 +135,8 @@ fun HomeScreen(
                         onTogglePlayMode = onTogglePlayMode,
                         onSwitchVersion = onSwitchVersion,
                         onTextCopied = onTextCopied,
-                        onInfinitePlayClick = onInfinitePlayClick
+                        onInfinitePlayClick = onInfinitePlayClick,
+                        onRelatedPlayClick = onRelatedPlayClick
                     )
                 }
             }
@@ -310,6 +313,7 @@ private fun SongInfoSection(
     onSwitchVersion: (Song) -> Unit,
     onTextCopied: (String) -> Unit,
     onInfinitePlayClick: () -> Unit,
+    onRelatedPlayClick: () -> Unit,
 ) {
     // 专辑名直接来自 Song 模型（导入时已记录）
     val albumName = currentSong.album.takeIf { it.isNotBlank() }
@@ -497,18 +501,18 @@ private fun SongInfoSection(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        // 无限播放按钮（位于播放控制栏下方）
+        // 无限随机播放 + 关联播放按钮（同一行）
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.Center
         ) {
-            // 无限播放按钮：使用FilledTonalButton样式
+            // 无限随机播放按钮：使用FilterChip样式
             androidx.compose.material3.FilterChip(
                 selected = isInfinitePlay,
                 onClick = onInfinitePlayClick,
                 label = {
                     Text(
-                        text = if (isInfinitePlay) "无限播放中" else "无限播放",
+                        text = if (isInfinitePlay) "无限随机播放中" else "无限随机播放",
                         style = MaterialTheme.typography.labelMedium
                     )
                 },
@@ -524,6 +528,18 @@ private fun SongInfoSection(
                     selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer,
                     selectedLeadingIconColor = MaterialTheme.colorScheme.onPrimaryContainer
                 )
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            // 关联播放按钮
+            androidx.compose.material3.FilterChip(
+                selected = false,
+                onClick = onRelatedPlayClick,
+                label = {
+                    Text(
+                        text = "关联播放",
+                        style = MaterialTheme.typography.labelMedium
+                    )
+                }
             )
         }
     }

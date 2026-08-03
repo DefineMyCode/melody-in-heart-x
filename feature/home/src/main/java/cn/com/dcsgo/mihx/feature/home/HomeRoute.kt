@@ -30,6 +30,7 @@ data class HomeRouteActions(
     val onLuckyPlayClick: () -> Unit,
     val onStartInfinitePlay: () -> Unit,
     val onStopInfinitePlay: () -> Unit,
+    val onRelatedPlayClick: (Song) -> Unit = {},
 )
 
 @Composable
@@ -72,11 +73,14 @@ fun HomeRoute(
         onInfinitePlayClick = {
             if (state.isInfinitePlay) {
                 actions.onStopInfinitePlay()
-                showToast("已退出无限播放模式")
+                showToast("已退出无限随机播放模式")
             } else {
                 actions.onStartInfinitePlay()
-                showToast("已开启无限播放模式，随机播放全部歌曲~")
+                showToast("已开启无限随机播放模式，随机播放全部歌曲~")
             }
+        },
+        onRelatedPlayClick = {
+            state.currentSong?.let { song -> actions.onRelatedPlayClick(song) }
         },
     )
 }

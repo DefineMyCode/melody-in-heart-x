@@ -110,6 +110,14 @@ fun AppNavHost(
                     onLuckyPlayClick = playerViewModel::playRandomQueue,
                     onStartInfinitePlay = playerViewModel::startInfinitePlay,
                     onStopInfinitePlay = playerViewModel::stopInfinitePlay,
+                    onRelatedPlayClick = { song ->
+                        val added = playerViewModel.playRelatedSongs(song)
+                        if (added > 0) {
+                            showToast("已关联 $added 首歌曲")
+                        } else {
+                            showToast("未检索到关联歌曲")
+                        }
+                    },
                 ),
                 showToast = showToast,
             )

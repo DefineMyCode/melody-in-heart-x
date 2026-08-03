@@ -58,6 +58,9 @@ import coil.compose.AsyncImage
 import cn.com.dcsgo.mihx.core.model.Playlist
 import cn.com.dcsgo.mihx.core.model.Song
 import cn.com.dcsgo.mihx.core.model.SongInfo
+import cn.com.dcsgo.mihx.ui.components.LocateHighlightState
+import cn.com.dcsgo.mihx.ui.components.locateHighlightFlash
+import cn.com.dcsgo.mihx.ui.components.rememberLocateHighlightState
 
 @Composable
 fun PlaylistScreen(
@@ -177,6 +180,7 @@ fun PlaylistScreen(
         // ── 歌单详情页的滚动状态（必须在 Box 层级声明，FAB 也要用） ──
         val detailListState = rememberLazyListState()
         val detailScope = rememberCoroutineScope()
+        val detailLocateHighlight = rememberLocateHighlightState()
         val currentSongInDetail by remember(currentSong, selectedPlaylist) {
             derivedStateOf {
                 currentSong?.let { cs ->
@@ -240,6 +244,7 @@ fun PlaylistScreen(
                     onAddSongToQueue = onAddSongToQueue,
                     onAddSongToNextPlay = onAddSongToNextPlay,
                     listState = detailListState,
+                    locateHighlight = detailLocateHighlight,
                 )
             } else if (showLocalMusic) {
                 // ── 本地音乐管理页 ──
@@ -297,6 +302,7 @@ fun PlaylistScreen(
             ) {
                 FloatingActionButton(
                     onClick = {
+                        detailLocateHighlight.trigger(currentSong?.id)
                         currentSongInDetail?.let { index ->
                             detailScope.launch {
                                 detailListState.animateScrollToItem(index)
@@ -336,6 +342,7 @@ private fun PlaylistDetailView(
     onAddSongToQueue: (Song) -> Unit,
     onAddSongToNextPlay: (Song) -> Unit,
     listState: LazyListState,
+    locateHighlight: LocateHighlightState,
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
         Spacer(modifier = Modifier.height(8.dp))
@@ -477,6 +484,7 @@ private fun PlaylistDetailView(
                     SongItem(
                         song = song,
                         isCurrentPlaying = isPlaying && currentSong?.id == song.id,
+                        modifier = Modifier.locateHighlightFlash(song.id, locateHighlight),
                         onSongClick = onSongClick,
                         onShowAddToPlaylist = onShowAddToPlaylist,
                         showRemoveButton = true,

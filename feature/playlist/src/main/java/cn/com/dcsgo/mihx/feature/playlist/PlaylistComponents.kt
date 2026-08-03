@@ -147,6 +147,7 @@ fun EmptySectionHint(message: String) {
 fun SongItem(
     song: Song,
     isCurrentPlaying: Boolean = false,
+    modifier: Modifier = Modifier,
     onSongClick: (Song) -> Unit,
     onShowAddToPlaylist: ((Song) -> Unit)? = null,
     showRemoveButton: Boolean = false,
@@ -155,7 +156,7 @@ fun SongItem(
     onAddToNextPlay: (() -> Unit)? = null,
 ) {
     Row(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .clickable { onSongClick(song) }
             .padding(vertical = 10.dp, horizontal = 4.dp),

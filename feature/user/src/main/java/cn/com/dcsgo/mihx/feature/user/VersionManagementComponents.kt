@@ -138,6 +138,7 @@ fun VersionGroupRow(
     currentSong: Song?,
     isPlaying: Boolean,
     forceExpanded: Boolean = false,
+    modifier: Modifier = Modifier,
     onPlayVersion: (Song) -> Unit,
     onAddToQueue: (Song) -> Unit,
     onDeleteVersion: (Song) -> Unit,
@@ -163,7 +164,7 @@ fun VersionGroupRow(
     )
 
     Surface(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth(),
         color = headerBg,
         shape = RoundedCornerShape(12.dp)
     ) {

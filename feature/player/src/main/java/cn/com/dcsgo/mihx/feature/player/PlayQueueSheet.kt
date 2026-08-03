@@ -46,6 +46,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import cn.com.dcsgo.mihx.core.model.PlayQueue
 import cn.com.dcsgo.mihx.core.model.Song
+import cn.com.dcsgo.mihx.ui.components.locateHighlightFlash
+import cn.com.dcsgo.mihx.ui.components.rememberLocateHighlightState
 import kotlinx.coroutines.launch
 
 /**
@@ -82,10 +84,12 @@ fun PlayQueueSheet(
     val coroutineScope = rememberCoroutineScope()
     val sheetState = rememberModalBottomSheetState()
     val currentIndex = playQueue.currentIndex
+    val locateHighlight = rememberLocateHighlightState()
 
     // 一键跳转到当前播放歌曲：先完全展开抽屉，再滚动到目标项
     fun scrollToCurrentSong() {
         if (currentIndex >= 0 && playQueue.songs.isNotEmpty()) {
+            locateHighlight.trigger(currentSongId)
             coroutineScope.launch {
                 sheetState.expand()
                 listState.animateScrollToItem(currentIndex.coerceAtMost(playQueue.songs.lastIndex))
@@ -191,6 +195,7 @@ fun PlayQueueSheet(
                             song = song,
                             index = index,
                             isCurrentPlaying = isCurrentPlaying,
+                            modifier = Modifier.locateHighlightFlash(song.id, locateHighlight),
                             onItemClick = { onSongClick(index) },
                             onRemoveClick = { onRemoveSong(index) }
                         )
@@ -212,11 +217,12 @@ private fun QueueSongItem(
     song: Song,
     index: Int,
     isCurrentPlaying: Boolean = false,
+    modifier: Modifier = Modifier,
     onItemClick: () -> Unit = {},
     onRemoveClick: () -> Unit = {}
 ) {
     Row(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(8.dp))
             .clickable(onClick = onItemClick)

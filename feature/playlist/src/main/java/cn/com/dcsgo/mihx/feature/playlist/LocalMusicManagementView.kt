@@ -41,6 +41,8 @@ import androidx.compose.ui.unit.dp
 import cn.com.dcsgo.mihx.core.model.Playlist
 import cn.com.dcsgo.mihx.core.model.Song
 import cn.com.dcsgo.mihx.core.model.SongInfo
+import cn.com.dcsgo.mihx.ui.components.locateHighlightFlash
+import cn.com.dcsgo.mihx.ui.components.rememberLocateHighlightState
 import kotlinx.coroutines.launch
 
 /**
@@ -168,6 +170,7 @@ fun LocalMusicManagementView(
     // ── 滚动状态 ──
     val listState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
+    val locateHighlight = rememberLocateHighlightState()
 
     // 计算当前播放歌曲在列表中的索引
     // key 的顺序：file_mgmt(0), local_header(1), [search_box(2)], song_0, song_1, ...
@@ -296,6 +299,7 @@ fun LocalMusicManagementView(
                         isCurrentPlaying = isPlaying && currentSong?.id == song.id,
                         isSelectMode = isSelectMode,
                         isSelected = isSelected,
+                        modifier = Modifier.locateHighlightFlash(song.id, locateHighlight),
                         onClick = {
                             if (isSelectMode) {
                                 val newSet = if (isSelected) {
@@ -330,6 +334,7 @@ fun LocalMusicManagementView(
         ) {
             FloatingActionButton(
                 onClick = {
+                    locateHighlight.trigger(currentSong?.id)
                     coroutineScope.launch {
                         listState.animateScrollToItem(currentSongIndexInList)
                     }

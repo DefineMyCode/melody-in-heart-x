@@ -212,6 +212,7 @@ fun LocalSongItem(
     isCurrentPlaying: Boolean = false,
     isSelectMode: Boolean = false,
     isSelected: Boolean = false,
+    modifier: Modifier = Modifier,
     onClick: () -> Unit,
     onShowInfo: (Song) -> Unit = {},
     onAddToPlaylist: (Song) -> Unit = {},
@@ -221,7 +222,7 @@ fun LocalSongItem(
     var showMenu by remember { mutableStateOf(false) }
 
     Row(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
             .padding(vertical = 8.dp),

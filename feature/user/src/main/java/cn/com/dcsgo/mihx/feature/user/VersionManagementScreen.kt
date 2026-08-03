@@ -55,6 +55,8 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import cn.com.dcsgo.mihx.core.model.Song
+import cn.com.dcsgo.mihx.ui.components.locateHighlightFlash
+import cn.com.dcsgo.mihx.ui.components.rememberLocateHighlightState
 import kotlinx.coroutines.launch
 
 // ─────────────────────────────────────────────────────────────────
@@ -146,6 +148,7 @@ fun VersionManagementScreen(
 
     // ── 强制展开的分组 key（用于快速定位后展开对应分组）
     var locateGroupKey by remember { mutableStateOf<String?>(null) }
+    val locateHighlight = rememberLocateHighlightState()
 
     // ── LazyColumn 滚动状态
     val listState = rememberLazyListState()
@@ -222,6 +225,7 @@ fun VersionManagementScreen(
                         // 展开并定位到当前播放的分组
                         val group = displayGroups.getOrNull(currentGroupIndex)
                         locateGroupKey = group?.groupKey
+                        locateHighlight.trigger(group?.groupKey)
                         coroutineScope.launch {
                             listState.animateScrollToItem(currentGroupIndex)
                         }
@@ -323,6 +327,7 @@ fun VersionManagementScreen(
                             currentSong = currentSong,
                             isPlaying = isPlaying,
                             forceExpanded = forceExpanded,
+                            modifier = Modifier.locateHighlightFlash(group.groupKey, locateHighlight),
                             onPlayVersion = onPlayVersion,
                             onAddToQueue = onAddToQueue,
                             onDeleteVersion = { songToDelete = it },

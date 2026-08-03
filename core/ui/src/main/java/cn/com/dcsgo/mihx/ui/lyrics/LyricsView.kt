@@ -25,6 +25,8 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.MusicNote
+import androidx.compose.material.icons.filled.TextDecrease
+import androidx.compose.material.icons.filled.TextIncrease
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -38,6 +40,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -69,7 +73,9 @@ fun LyricsView(
     isPlaying: Boolean,
     onBackClick: () -> Unit,
     onSeekTo: ((Long) -> Unit)? = null,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    fontScale: Float = DEFAULT_FONT_SCALE,
+    onFontScaleChange: (Float) -> Unit = {},
 ) {
     val listState = rememberLazyListState()
 
@@ -87,8 +93,8 @@ fun LyricsView(
     // 当当前行索引变化时，自动滚动到该行
     LaunchedEffect(currentLineIndex) {
         if (currentLineIndex >= 0 && lyrics.lines.isNotEmpty()) {
-            // 让当前行大致居中
-            val targetIndex = (currentLineIndex - 2).coerceAtLeast(0)
+            // 让当前行大致居中，仅保留前一行在屏幕上
+            val targetIndex = currentLineIndex.coerceAtLeast(0)
             listState.animateScrollToItem(
                 index = targetIndex,
                 scrollOffset = 0
@@ -179,8 +185,40 @@ fun LyricsView(
                                 overflow = TextOverflow.Ellipsis
                             )
                         }
-                        // 右侧占位，让歌曲信息居中
-                        Spacer(modifier = Modifier.width(48.dp))
+                        // 字号调节按钮
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            IconButton(
+                                onClick = { onFontScaleChange((fontScale - FONT_SCALE_STEP).coerceAtLeast(MIN_FONT_SCALE)) }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.TextDecrease,
+                                    contentDescription = "减小字号",
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+                            IconButton(
+                                onClick = { onFontScaleChange(DEFAULT_FONT_SCALE) }
+                            ) {
+                                Text(
+                                    text = "A",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.semantics { contentDescription = "恢复默认字号" }
+                                )
+                            }
+                            IconButton(
+                                onClick = { onFontScaleChange((fontScale + FONT_SCALE_STEP).coerceAtMost(MAX_FONT_SCALE)) }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.TextIncrease,
+                                    contentDescription = "加大字号",
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+                        }
                     }
                 }
 
@@ -212,6 +250,7 @@ fun LyricsView(
                                 isCurrentLine = index == currentLineIndex,
                                 isPastLine = index < currentLineIndex,
                                 isNearCurrent = hasTimestamps && (index == currentLineIndex - 1),
+                                fontScale = fontScale,
                                 onClick = {
                                     if (hasTimestamps && onSeekTo != null && line.timeMs > 0) {
                                         onSeekTo(line.timeMs)
@@ -275,6 +314,7 @@ private fun LyricLineItem(
     isCurrentLine: Boolean,
     isPastLine: Boolean,
     isNearCurrent: Boolean = false,
+    fontScale: Float = DEFAULT_FONT_SCALE,
     onClick: (() -> Unit)? = null
 ) {
     // 不透明度动画
@@ -288,12 +328,12 @@ private fun LyricLineItem(
         label = "lyric_alpha"
     )
 
-    // 字号动画
+    // 字号动画（乘以缩放倍率）
     val fontSize by animateFloatAsState(
         targetValue = when {
-            isCurrentLine -> 22f
-            isNearCurrent -> 18f
-            else -> 16f
+            isCurrentLine -> 22f * fontScale
+            isNearCurrent -> 18f * fontScale
+            else -> 16f * fontScale
         },
         animationSpec = tween(durationMillis = 400),
         label = "lyric_size"
@@ -332,3 +372,8 @@ private fun LyricLineItem(
         overflow = TextOverflow.Ellipsis
     )
 }
+
+private const val DEFAULT_FONT_SCALE = 1f
+private const val MIN_FONT_SCALE = 0.7f
+private const val MAX_FONT_SCALE = 1.8f
+private const val FONT_SCALE_STEP = 0.1f

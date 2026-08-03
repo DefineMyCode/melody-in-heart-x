@@ -13,11 +13,13 @@ data class LyricsRouteState(
     val currentSong: Song?,
     val currentPositionMs: Long,
     val isPlaying: Boolean,
+    val fontScale: Float = 1f,
 )
 
 data class LyricsRouteActions(
     val onBackClick: () -> Unit,
     val onSeekTo: (Long) -> Unit,
+    val onFontScaleChange: (Float) -> Unit = {},
 )
 
 @Composable
@@ -37,6 +39,8 @@ fun LyricsRoute(
         lyrics = lyrics,
         currentPositionMs = state.currentPositionMs,
         isPlaying = state.isPlaying,
+        fontScale = state.fontScale,
+        onFontScaleChange = actions.onFontScaleChange,
         onBackClick = actions.onBackClick,
         onSeekTo = actions.onSeekTo,
     )

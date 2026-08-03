@@ -64,6 +64,30 @@ class PlayerSettingsRepositoryTest {
     }
 
     @Test
+    fun lyricFontScaleDefaultsToOneAndPersistsToDataStore() = runBlocking {
+        val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+        val file = tempDataStoreFile()
+        val store = PreferenceDataStoreFactory.create(
+            scope = scope,
+            produceFile = { file },
+        )
+        val legacyPrefs = FakeSharedPreferences()
+        val repository = PlayerSettingsRepository(store, legacyPrefs)
+
+        try {
+            assertEquals(1f, repository.lyricFontScale.first())
+
+            repository.setLyricFontScale(1.4f)
+
+            assertEquals(1.4f, repository.lyricFontScale.first())
+            assertEquals(1.4f, store.data.first()[PlayerSettingsKeys.LYRIC_FONT_SCALE])
+        } finally {
+            scope.cancel()
+            file.delete()
+        }
+    }
+
+    @Test
     fun globalUniformRandomFallsBackToLegacyThenWritesDataStoreAndClearsLegacyKey() = runBlocking {
         val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
         val file = tempDataStoreFile()

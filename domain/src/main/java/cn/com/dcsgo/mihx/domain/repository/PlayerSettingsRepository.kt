@@ -8,6 +8,7 @@ interface PlayerSettingsRepository {
     val globalUniformRandomEnabled: Flow<Boolean>
     val bluetoothPlaybackMonitoringEnabled: Flow<Boolean>
     val playbackNotificationEnabled: Flow<Boolean>
+    val lyricFontScale: Flow<Float>
 
     fun currentGlobalUniformRandomEnabled(): Boolean
     fun currentBluetoothPlaybackMonitoringEnabled(): Boolean
@@ -19,4 +20,5 @@ interface PlayerSettingsRepository {
     suspend fun setGlobalUniformRandomEnabled(enabled: Boolean)
     suspend fun setBluetoothPlaybackMonitoringEnabled(enabled: Boolean)
     suspend fun setPlaybackNotificationEnabled(enabled: Boolean)
+    suspend fun setLyricFontScale(scale: Float)
 }

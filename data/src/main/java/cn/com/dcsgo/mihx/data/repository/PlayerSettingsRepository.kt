@@ -53,6 +53,10 @@ class PlayerSettingsRepository(
             ?: legacyPrefs.getBoolean(PlayerSettingsKeys.LEGACY_PLAYBACK_NOTIFICATION_ENABLED, false)
     }
 
+    override val lyricFontScale: Flow<Float> = settingsStore.data.map { preferences ->
+        preferences[PlayerSettingsKeys.LYRIC_FONT_SCALE] ?: 1f
+    }
+
     override fun currentGlobalUniformRandomEnabled(): Boolean {
         return runBlocking(Dispatchers.IO) {
             globalUniformRandomEnabled.first()
@@ -123,5 +127,11 @@ class PlayerSettingsRepository(
         legacyPrefs.edit()
             .remove(PlayerSettingsKeys.LEGACY_PLAYBACK_NOTIFICATION_ENABLED)
             .apply()
+    }
+
+    override suspend fun setLyricFontScale(scale: Float) {
+        settingsStore.edit { preferences ->
+            preferences[PlayerSettingsKeys.LYRIC_FONT_SCALE] = scale
+        }
     }
 }

@@ -11,6 +11,8 @@ fun LyricsScreen(
     lyrics: Lyrics,
     currentPositionMs: Long,
     isPlaying: Boolean,
+    fontScale: Float = 1f,
+    onFontScaleChange: (Float) -> Unit = {},
     onBackClick: () -> Unit,
     onSeekTo: (Long) -> Unit,
 ) {
@@ -22,5 +24,7 @@ fun LyricsScreen(
         isPlaying = isPlaying,
         onBackClick = onBackClick,
         onSeekTo = onSeekTo,
+        fontScale = fontScale,
+        onFontScaleChange = onFontScaleChange,
     )
 }

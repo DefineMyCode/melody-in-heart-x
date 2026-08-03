@@ -51,6 +51,7 @@ fun AppRoot(
     val activeRoute = backStackEntry?.destination?.route
     var currentDestination by remember { mutableStateOf(AppDestinations.HOME) }
     val themeMode by settingsViewModel.themeMode.collectAsState()
+    val lyricFontScale by settingsViewModel.lyricFontScale.collectAsState()
     val systemDarkTheme = isSystemInDarkTheme()
     val isDarkTheme = when (themeMode) {
         ThemeMode.SYSTEM -> systemDarkTheme
@@ -150,6 +151,8 @@ fun AppRoot(
                     onShowQueue = { showQueueSheet = true },
                     themeMode = themeMode,
                     onThemeModeChange = settingsViewModel::setThemeMode,
+                    lyricFontScale = lyricFontScale,
+                    onLyricFontScaleChange = settingsViewModel::setLyricFontScale,
                     loadLyrics = mediaMetadataViewModel::lyricsFor,
                     loadSongInfo = mediaMetadataViewModel::songInfo,
                     showToast = toastHost::showToast,

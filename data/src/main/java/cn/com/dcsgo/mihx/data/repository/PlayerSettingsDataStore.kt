@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
+import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 
@@ -25,4 +26,5 @@ object PlayerSettingsKeys {
     val GLOBAL_UNIFORM_RANDOM_ENABLED = booleanPreferencesKey(LEGACY_GLOBAL_UNIFORM_RANDOM_ENABLED)
     val BLUETOOTH_PLAYBACK_MONITORING_ENABLED = booleanPreferencesKey(LEGACY_BLUETOOTH_PLAYBACK_MONITORING_ENABLED)
     val PLAYBACK_NOTIFICATION_ENABLED = booleanPreferencesKey(LEGACY_PLAYBACK_NOTIFICATION_ENABLED)
+    val LYRIC_FONT_SCALE = floatPreferencesKey("lyric_font_scale")
 }

@@ -52,6 +52,8 @@ fun AppNavHost(
     onShowQueue: () -> Unit,
     themeMode: ThemeMode,
     onThemeModeChange: (ThemeMode) -> Unit,
+    lyricFontScale: Float,
+    onLyricFontScaleChange: (Float) -> Unit,
     loadLyrics: suspend (Song) -> Lyrics,
     loadSongInfo: suspend (Song) -> SongInfo?,
     showToast: (String) -> Unit,
@@ -104,10 +106,12 @@ fun AppNavHost(
                     currentSong = uiState.currentSong,
                     currentPositionMs = uiState.currentPositionMs,
                     isPlaying = uiState.isPlaying,
+                    fontScale = lyricFontScale,
                 ),
                 actions = LyricsRouteActions(
                     onBackClick = navController::navigateUp,
                     onSeekTo = playerViewModel::seekTo,
+                    onFontScaleChange = onLyricFontScaleChange,
                 ),
                 loadLyrics = loadLyrics,
             )

@@ -6,6 +6,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.Preferences
 import cn.com.dcsgo.mihx.core.model.ThemeMode
+import cn.com.dcsgo.mihx.core.model.ThemeVariant
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
@@ -36,6 +37,11 @@ class PlayerSettingsRepository(
         } else {
             ThemeMode.SYSTEM
         }
+    }
+
+    override val themeVariant: Flow<ThemeVariant> = settingsStore.data.map { preferences ->
+        val stored = preferences[PlayerSettingsKeys.THEME_VARIANT]
+        ThemeVariant.entries.firstOrNull { it.name == stored } ?: ThemeVariant.MONO
     }
 
     override val globalUniformRandomEnabled: Flow<Boolean> = settingsStore.data.map { preferences ->
@@ -100,6 +106,12 @@ class PlayerSettingsRepository(
         legacyPrefs.edit()
             .remove(PlayerSettingsKeys.LEGACY_DARK_THEME)
             .apply()
+    }
+
+    override suspend fun setThemeVariant(variant: ThemeVariant) {
+        settingsStore.edit { preferences ->
+            preferences[PlayerSettingsKeys.THEME_VARIANT] = variant.name
+        }
     }
 
     override suspend fun setGlobalUniformRandomEnabled(enabled: Boolean) {

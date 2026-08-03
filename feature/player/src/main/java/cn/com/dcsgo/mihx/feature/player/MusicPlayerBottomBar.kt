@@ -136,13 +136,13 @@ fun MusicPlayerBottomBar(
                         Icon(
                             painter = painterResource(id = R.drawable.pause_24),
                             contentDescription = "暂停",
-                            tint = Color.White
+                            tint = MaterialTheme.colorScheme.onPrimary
                         )
                     } else {
                         Icon(
                             imageVector = Icons.Default.PlayArrow,
                             contentDescription = "播放",
-                            tint = Color.White
+                            tint = MaterialTheme.colorScheme.onPrimary
                         )
                     }
                 }

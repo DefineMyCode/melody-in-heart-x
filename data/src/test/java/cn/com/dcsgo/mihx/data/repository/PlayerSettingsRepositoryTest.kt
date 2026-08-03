@@ -3,6 +3,7 @@ package cn.com.dcsgo.mihx.data.repository
 import android.content.SharedPreferences
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import cn.com.dcsgo.mihx.core.model.ThemeMode
+import cn.com.dcsgo.mihx.core.model.ThemeVariant
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -57,6 +58,30 @@ class PlayerSettingsRepositoryTest {
 
         try {
             assertEquals(ThemeMode.SYSTEM, repository.themeMode.first())
+        } finally {
+            scope.cancel()
+            file.delete()
+        }
+    }
+
+    @Test
+    fun themeVariantDefaultsToMonoAndPersistsToDataStore() = runBlocking {
+        val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+        val file = tempDataStoreFile()
+        val store = PreferenceDataStoreFactory.create(
+            scope = scope,
+            produceFile = { file },
+        )
+        val legacyPrefs = FakeSharedPreferences()
+        val repository = PlayerSettingsRepository(store, legacyPrefs)
+
+        try {
+            assertEquals(ThemeVariant.MONO, repository.themeVariant.first())
+
+            repository.setThemeVariant(ThemeVariant.VERMILION)
+
+            assertEquals(ThemeVariant.VERMILION, repository.themeVariant.first())
+            assertEquals("VERMILION", store.data.first()[PlayerSettingsKeys.THEME_VARIANT])
         } finally {
             scope.cancel()
             file.delete()

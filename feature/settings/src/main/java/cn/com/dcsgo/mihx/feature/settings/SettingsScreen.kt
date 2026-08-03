@@ -1,6 +1,7 @@
 package cn.com.dcsgo.mihx.feature.settings
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -9,11 +10,14 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -28,11 +32,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import cn.com.dcsgo.mihx.core.model.ThemeMode
+import cn.com.dcsgo.mihx.core.model.ThemeVariant
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -40,6 +46,8 @@ fun SettingsScreen(
     onBack: () -> Unit,
     themeMode: ThemeMode,
     onThemeModeChange: (ThemeMode) -> Unit,
+    themeVariant: ThemeVariant,
+    onThemeVariantChange: (ThemeVariant) -> Unit,
     globalUniformRandomEnabled: Boolean,
     onGlobalUniformRandomEnabledChange: (Boolean) -> Unit,
     onRequestBluetoothPermission: () -> Unit,
@@ -76,6 +84,8 @@ fun SettingsScreen(
                 SettingsThemeSelector(
                     themeMode = themeMode,
                     onThemeModeChange = onThemeModeChange,
+                    themeVariant = themeVariant,
+                    onThemeVariantChange = onThemeVariantChange,
                 )
                 SettingsSwitchRow(
                     title = "全局均匀随机",
@@ -107,6 +117,8 @@ fun SettingsScreen(
 private fun SettingsThemeSelector(
     themeMode: ThemeMode,
     onThemeModeChange: (ThemeMode) -> Unit,
+    themeVariant: ThemeVariant,
+    onThemeVariantChange: (ThemeVariant) -> Unit,
 ) {
     Column(modifier = Modifier.padding(vertical = 12.dp)) {
         Text(
@@ -128,6 +140,102 @@ private fun SettingsThemeSelector(
                     onClick = { onThemeModeChange(mode) },
                 )
             }
+        }
+        Text(
+            text = "主题色",
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.padding(top = 18.dp),
+        )
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            ThemeVariant.entries.forEach { variant ->
+                ThemeVariantCard(
+                    variant = variant,
+                    selected = variant == themeVariant,
+                    modifier = Modifier.weight(1f),
+                    onClick = { onThemeVariantChange(variant) },
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun ThemeVariantCard(
+    variant: ThemeVariant,
+    selected: Boolean,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit,
+) {
+    val swatchColors = when (variant) {
+        ThemeVariant.MONO -> listOf(
+            Color(0xFF000000),
+            Color(0xFFD0D0D0),
+            Color(0xFFF4F4F4),
+        )
+        ThemeVariant.VERMILION -> listOf(
+            Color(0xFF000000),
+            Color(0xFFC04F42),
+            Color(0xFFFAF5F2),
+        )
+    }
+    val containerColor = if (selected) {
+        MaterialTheme.colorScheme.primaryContainer
+    } else {
+        MaterialTheme.colorScheme.surfaceVariant
+    }
+    val contentColor = if (selected) {
+        MaterialTheme.colorScheme.onPrimaryContainer
+    } else {
+        MaterialTheme.colorScheme.onSurfaceVariant
+    }
+    Column(
+        modifier = modifier
+            .clip(RoundedCornerShape(12.dp))
+            .background(containerColor)
+            .border(
+                width = if (selected) 1.dp else 0.dp,
+                color = MaterialTheme.colorScheme.primary,
+                shape = RoundedCornerShape(12.dp),
+            )
+            .clickable(onClick = onClick)
+            .padding(10.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            swatchColors.forEach { color ->
+                Box(
+                    modifier = Modifier
+                        .size(18.dp)
+                        .clip(RoundedCornerShape(5.dp))
+                        .background(color),
+                )
+            }
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(
+            text = variant.label,
+            style = MaterialTheme.typography.bodyMedium,
+            color = contentColor,
+            fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
+        )
+        if (selected) {
+            Icon(
+                imageVector = Icons.Default.Check,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier
+                    .padding(top = 4.dp)
+                    .size(16.dp),
+            )
         }
     }
 }

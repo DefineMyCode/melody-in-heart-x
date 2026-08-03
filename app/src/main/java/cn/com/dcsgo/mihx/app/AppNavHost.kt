@@ -15,6 +15,7 @@ import cn.com.dcsgo.mihx.core.model.Playlist
 import cn.com.dcsgo.mihx.core.model.Song
 import cn.com.dcsgo.mihx.core.model.SongInfo
 import cn.com.dcsgo.mihx.core.model.ThemeMode
+import cn.com.dcsgo.mihx.core.model.ThemeVariant
 import cn.com.dcsgo.mihx.feature.home.HomeRoute
 import cn.com.dcsgo.mihx.feature.home.HomeRouteActions
 import cn.com.dcsgo.mihx.feature.home.HomeRouteState
@@ -52,6 +53,8 @@ fun AppNavHost(
     onShowQueue: () -> Unit,
     themeMode: ThemeMode,
     onThemeModeChange: (ThemeMode) -> Unit,
+    themeVariant: ThemeVariant,
+    onThemeVariantChange: (ThemeVariant) -> Unit,
     lyricFontScale: Float,
     onLyricFontScaleChange: (Float) -> Unit,
     loadLyrics: suspend (Song) -> Lyrics,
@@ -227,6 +230,7 @@ fun AppNavHost(
             SettingsRoute(
                 state = SettingsRouteState(
                     themeMode = themeMode,
+                    themeVariant = themeVariant,
                     globalUniformRandomEnabled = uiState.globalUniformRandomEnabled,
                 ),
                 actions = SettingsRouteActions(
@@ -238,6 +242,15 @@ fun AppNavHost(
                                 ThemeMode.SYSTEM -> "已切换为跟随系统主题"
                                 ThemeMode.LIGHT -> "已切换为浅色主题"
                                 ThemeMode.DARK -> "已切换为深色主题"
+                            },
+                        )
+                    },
+                    onThemeVariantChange = { variant ->
+                        onThemeVariantChange(variant)
+                        showToast(
+                            when (variant) {
+                                ThemeVariant.MONO -> "已切换为墨色主题"
+                                ThemeVariant.VERMILION -> "已切换为朱砂 · 心有乐章主题"
                             },
                         )
                     },

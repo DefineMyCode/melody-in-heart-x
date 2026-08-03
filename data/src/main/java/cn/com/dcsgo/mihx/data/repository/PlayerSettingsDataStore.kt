@@ -22,6 +22,7 @@ object PlayerSettingsKeys {
     const val LEGACY_PLAYBACK_NOTIFICATION_ENABLED = "playback_notification_enabled"
 
     val THEME_MODE = stringPreferencesKey("theme_mode")
+    val THEME_VARIANT = stringPreferencesKey("theme_variant")
     val DARK_THEME = booleanPreferencesKey(LEGACY_DARK_THEME)
     val GLOBAL_UNIFORM_RANDOM_ENABLED = booleanPreferencesKey(LEGACY_GLOBAL_UNIFORM_RANDOM_ENABLED)
     val BLUETOOTH_PLAYBACK_MONITORING_ENABLED = booleanPreferencesKey(LEGACY_BLUETOOTH_PLAYBACK_MONITORING_ENABLED)

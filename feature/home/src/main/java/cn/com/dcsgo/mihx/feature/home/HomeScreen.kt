@@ -427,14 +427,14 @@ private fun SongInfoSection(
                             painter = painterResource(id = R.drawable.pause_24),
                             contentDescription = "暂停",
                             modifier = Modifier.size(32.dp),
-                            tint = Color.White
+                            tint = MaterialTheme.colorScheme.onPrimary
                         )
                     } else {
                         Icon(
                             imageVector = Icons.Default.PlayArrow,
                             contentDescription = "播放",
                             modifier = Modifier.size(32.dp),
-                            tint = Color.White
+                            tint = MaterialTheme.colorScheme.onPrimary
                         )
                     }
                 }

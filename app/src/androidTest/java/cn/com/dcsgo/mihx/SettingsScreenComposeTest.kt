@@ -7,6 +7,7 @@ import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import cn.com.dcsgo.mihx.core.model.ThemeMode
+import cn.com.dcsgo.mihx.core.model.ThemeVariant
 import cn.com.dcsgo.mihx.feature.settings.SettingsScreen
 import cn.com.dcsgo.mihx.ui.theme.MusicplayerTheme
 import org.junit.Assert.assertEquals
@@ -20,6 +21,7 @@ class SettingsScreenComposeTest {
     @Test
     fun settingsScreenShowsThemeAndRandomToggles() {
         val themeModeChanges = mutableListOf<ThemeMode>()
+        val themeVariantChanges = mutableListOf<ThemeVariant>()
         val uniformRandomChanges = mutableListOf<Boolean>()
         var bluetoothPermissionRequests = 0
         var notificationPermissionRequests = 0
@@ -31,6 +33,8 @@ class SettingsScreenComposeTest {
                     onBack = { backCount += 1 },
                     themeMode = ThemeMode.SYSTEM,
                     onThemeModeChange = { themeModeChanges += it },
+                    themeVariant = ThemeVariant.MONO,
+                    onThemeVariantChange = { themeVariantChanges += it },
                     globalUniformRandomEnabled = true,
                     onGlobalUniformRandomEnabledChange = { uniformRandomChanges += it },
                     onRequestBluetoothPermission = { bluetoothPermissionRequests += 1 },
@@ -44,6 +48,9 @@ class SettingsScreenComposeTest {
         composeRule.onNodeWithText("跟随系统").assertIsDisplayed()
         composeRule.onNodeWithText("浅色").assertIsDisplayed()
         composeRule.onNodeWithText("深色").assertIsDisplayed()
+        composeRule.onNodeWithText("主题色").assertIsDisplayed()
+        composeRule.onNodeWithText("墨色").assertIsDisplayed()
+        composeRule.onNodeWithText("朱砂 · 心有乐章").assertIsDisplayed()
         composeRule.onNodeWithText("全局均匀随机").assertIsDisplayed()
         composeRule.onNodeWithText("随机时优先选择原始播放次数较少的歌曲").assertIsDisplayed()
         composeRule.onNodeWithText("蓝牙播放监听").assertIsDisplayed()
@@ -52,6 +59,7 @@ class SettingsScreenComposeTest {
         composeRule.onNodeWithText("在通知栏显示后台播放控制").assertIsDisplayed()
 
         composeRule.onNodeWithText("浅色").performClick()
+        composeRule.onNodeWithText("朱砂 · 心有乐章").performClick()
         composeRule.onNodeWithContentDescription("全局均匀随机开关")
             .assertIsOn()
             .performClick()
@@ -60,6 +68,7 @@ class SettingsScreenComposeTest {
         composeRule.onNodeWithContentDescription("返回").performClick()
 
         assertEquals(listOf(ThemeMode.LIGHT), themeModeChanges)
+        assertEquals(listOf(ThemeVariant.VERMILION), themeVariantChanges)
         assertEquals(listOf(false), uniformRandomChanges)
         assertEquals(1, bluetoothPermissionRequests)
         assertEquals(1, notificationPermissionRequests)

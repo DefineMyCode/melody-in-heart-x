@@ -30,6 +30,7 @@ import cn.com.dcsgo.mihx.app.permissions.rememberPermissionCoordinator
 import cn.com.dcsgo.mihx.app.player.PlayerQueueSheetHost
 import cn.com.dcsgo.mihx.app.theme.SettingsViewModel
 import cn.com.dcsgo.mihx.core.model.ThemeMode
+import cn.com.dcsgo.mihx.core.model.ThemeVariant
 import cn.com.dcsgo.mihx.domain.model.DeleteSongResult
 import cn.com.dcsgo.mihx.feature.player.PlayerViewModel
 import cn.com.dcsgo.mihx.navigation.AppDestinations
@@ -51,6 +52,7 @@ fun AppRoot(
     val activeRoute = backStackEntry?.destination?.route
     var currentDestination by remember { mutableStateOf(AppDestinations.HOME) }
     val themeMode by settingsViewModel.themeMode.collectAsState()
+    val themeVariant by settingsViewModel.themeVariant.collectAsState()
     val lyricFontScale by settingsViewModel.lyricFontScale.collectAsState()
     val systemDarkTheme = isSystemInDarkTheme()
     val isDarkTheme = when (themeMode) {
@@ -110,7 +112,7 @@ fun AppRoot(
         }
     }
 
-    MusicplayerTheme(darkTheme = isDarkTheme) {
+    MusicplayerTheme(darkTheme = isDarkTheme, variant = themeVariant) {
         SyncSystemBarsAppearance(isDarkTheme)
         Box(
             modifier = Modifier
@@ -151,6 +153,8 @@ fun AppRoot(
                     onShowQueue = { showQueueSheet = true },
                     themeMode = themeMode,
                     onThemeModeChange = settingsViewModel::setThemeMode,
+                    themeVariant = themeVariant,
+                    onThemeVariantChange = settingsViewModel::setThemeVariant,
                     lyricFontScale = lyricFontScale,
                     onLyricFontScaleChange = settingsViewModel::setLyricFontScale,
                     loadLyrics = mediaMetadataViewModel::lyricsFor,

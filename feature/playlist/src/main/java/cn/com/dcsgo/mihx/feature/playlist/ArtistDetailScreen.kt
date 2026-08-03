@@ -84,14 +84,35 @@ fun ArtistDetailScreen(
             }
         }
 
-        // 分段导航：专辑 / 歌曲
+        // 分段导航：歌曲 / 专辑
         SegmentedTabRow(
-            labels = listOf("专辑", "歌曲"),
+            labels = listOf("歌曲", "专辑"),
             selectedIndex = selectedSection,
             onTabSelected = { selectedSection = it },
         )
 
         if (selectedSection == 0) {
+            // ── 歌曲 ──
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 24.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                if (artistSongs.isEmpty()) {
+                    item(key = "artist_songs_empty") {
+                        EmptySectionHint("该歌手暂无歌曲")
+                    }
+                } else {
+                    items(artistSongs, key = { "artist_song_${it.id}" }) { song ->
+                        SongItem(
+                            song = song,
+                            isCurrentPlaying = isPlaying && currentSong?.id == song.id,
+                            onSongClick = onSongClick,
+                        )
+                    }
+                }
+            }
+        } else {
             // ── 专辑 ──
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
@@ -137,27 +158,6 @@ fun ArtistDetailScreen(
                                 tint = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
-                    }
-                }
-            }
-        } else {
-            // ── 歌曲 ──
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 24.dp),
-                verticalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
-                if (artistSongs.isEmpty()) {
-                    item(key = "artist_songs_empty") {
-                        EmptySectionHint("该歌手暂无歌曲")
-                    }
-                } else {
-                    items(artistSongs, key = { "artist_song_${it.id}" }) { song ->
-                        SongItem(
-                            song = song,
-                            isCurrentPlaying = isPlaying && currentSong?.id == song.id,
-                            onSongClick = onSongClick,
-                        )
                     }
                 }
             }

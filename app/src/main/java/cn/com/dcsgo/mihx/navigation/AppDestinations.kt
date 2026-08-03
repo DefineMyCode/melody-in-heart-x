@@ -16,7 +16,10 @@ enum class AppDestinations(
         fun fromRoute(route: String?): AppDestinations {
             return when {
                 route == USER.route -> USER
-                route == PLAYLIST.route || route?.startsWith("${PLAYLIST.route}/") == true -> PLAYLIST
+                route == PLAYLIST.route ||
+                    route?.startsWith("${PLAYLIST.route}/") == true ||
+                    route?.startsWith("artist/") == true ||
+                    route?.startsWith("album/") == true -> PLAYLIST
                 else -> HOME
             }
         }

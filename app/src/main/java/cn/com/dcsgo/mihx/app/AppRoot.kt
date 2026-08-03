@@ -72,7 +72,9 @@ fun AppRoot(
             activeRoute == AppRoutes.HOME ||
             activeRoute == AppRoutes.PLAYLIST ||
             activeRoute?.startsWith("${AppRoutes.PLAYLIST}/") == true ||
-            activeRoute == AppRoutes.USER
+            activeRoute == AppRoutes.USER ||
+            activeRoute?.startsWith("artist/") == true ||
+            activeRoute?.startsWith("album/") == true
         ) {
             currentDestination = AppDestinations.fromRoute(activeRoute)
         }

@@ -30,6 +30,12 @@ import cn.com.dcsgo.mihx.feature.lyrics.LyricsRouteActions
 import cn.com.dcsgo.mihx.feature.lyrics.LyricsRouteState
 import cn.com.dcsgo.mihx.feature.player.PlayerUiState
 import cn.com.dcsgo.mihx.feature.player.PlayerViewModel
+import cn.com.dcsgo.mihx.feature.playlist.AlbumDetailRoute
+import cn.com.dcsgo.mihx.feature.playlist.AlbumDetailRouteActions
+import cn.com.dcsgo.mihx.feature.playlist.AlbumDetailRouteState
+import cn.com.dcsgo.mihx.feature.playlist.ArtistDetailRoute
+import cn.com.dcsgo.mihx.feature.playlist.ArtistDetailRouteActions
+import cn.com.dcsgo.mihx.feature.playlist.ArtistDetailRouteState
 import cn.com.dcsgo.mihx.feature.playlist.PlaylistRoute
 import cn.com.dcsgo.mihx.feature.playlist.PlaylistRouteActions
 import cn.com.dcsgo.mihx.feature.playlist.PlaylistRouteState
@@ -140,6 +146,61 @@ fun AppNavHost(
                 actions = playlistRouteActions(navController, playerViewModel, permissionCoordinator, deleteSongWithToast),
                 loadSongInfo = loadSongInfo,
                 showToast = showToast,
+            )
+        }
+
+        composable(
+            route = AppRoutes.ARTIST_DETAIL,
+            arguments = listOf(navArgument(AppRoutes.ARTIST_NAME) { type = NavType.StringType }),
+        ) { backStackEntry ->
+            val artistName = backStackEntry.arguments?.getString(AppRoutes.ARTIST_NAME).orEmpty()
+            ArtistDetailRoute(
+                state = ArtistDetailRouteState(
+                    artistName = artistName,
+                    songs = playerViewModel.getGroupedSongs(uiState.songs).flatten(),
+                    currentSong = uiState.currentSong,
+                    isPlaying = uiState.isPlaying,
+                ),
+                actions = ArtistDetailRouteActions(
+                    onBack = navController::navigateUp,
+                    onSongClick = { song, contextSongs ->
+                        val startIndex = contextSongs.indexOfFirst { it.id == song.id }.coerceAtLeast(0)
+                        playerViewModel.setPlayQueue(contextSongs, startIndex, PlayMode.SEQUENTIAL)
+                    },
+                    onAlbumClick = { albumName, albumArtist ->
+                        navController.navigate(AppRoutes.albumDetail(albumName, albumArtist))
+                    },
+                ),
+            )
+        }
+
+        composable(
+            route = AppRoutes.ALBUM_DETAIL,
+            arguments = listOf(
+                navArgument(AppRoutes.ALBUM_NAME) { type = NavType.StringType },
+                navArgument(AppRoutes.ALBUM_ARTIST) { type = NavType.StringType },
+            ),
+        ) { backStackEntry ->
+            val albumName = backStackEntry.arguments?.getString(AppRoutes.ALBUM_NAME).orEmpty()
+            val albumArtist = backStackEntry.arguments?.getString(AppRoutes.ALBUM_ARTIST).orEmpty()
+            AlbumDetailRoute(
+                state = AlbumDetailRouteState(
+                    albumName = albumName,
+                    artistName = albumArtist,
+                    songs = playerViewModel.getGroupedSongs(uiState.songs).flatten(),
+                    currentSong = uiState.currentSong,
+                    isPlaying = uiState.isPlaying,
+                ),
+                actions = AlbumDetailRouteActions(
+                    onBack = navController::navigateUp,
+                    onSongClick = { song, contextSongs ->
+                        val startIndex = contextSongs.indexOfFirst { it.id == song.id }.coerceAtLeast(0)
+                        playerViewModel.setPlayQueue(contextSongs, startIndex, PlayMode.SEQUENTIAL)
+                    },
+                    onAlbumClick = { albumName, albumArtist ->
+                        navController.navigate(AppRoutes.albumDetail(albumName, albumArtist))
+                    },
+                ),
             )
         }
 
@@ -310,6 +371,10 @@ private fun playlistRouteActions(
     // 点击本地音乐中的歌曲：清空队列，只播放这一首
     onLocalSongClick = { song ->
         playerViewModel.setPlayQueue(listOf(song), 0, PlayMode.SEQUENTIAL)
+    },
+    onArtistClick = { artistName -> navController.navigate(AppRoutes.artistDetail(artistName)) },
+    onAlbumClick = { albumName, artistName ->
+        navController.navigate(AppRoutes.albumDetail(albumName, artistName))
     },
     onBackClick = navController::navigateUp,
     onCreatePlaylist = playerViewModel::createPlaylist,

@@ -72,6 +72,8 @@ fun PlaylistScreen(
     onPlaylistClick: (Playlist) -> Unit,
     onSongClick: (Song) -> Unit,
     onLocalSongClick: (Song) -> Unit = {},
+    onArtistClick: (String) -> Unit = {},
+    onAlbumClick: (String, String) -> Unit = { _, _ -> },
     onBackClick: () -> Unit,
     onCreatePlaylist: (String) -> Unit,
     onDeletePlaylist: (Playlist) -> Unit,
@@ -100,6 +102,14 @@ fun PlaylistScreen(
     // ── 本地音乐视图切换 ──
     // 用 rememberSaveable 保存，进入多版本管理/秒切歌单等子页面返回后仍停留在本地音乐视图
     var showLocalMusic by rememberSaveable { mutableStateOf(false) }
+
+    // ── 曲库类目切换 ──
+    var selectedLibraryTab by rememberSaveable {
+        mutableStateOf(LibraryTab.PLAYLISTS)
+    }
+
+    // ── 曲库搜索 ──
+    var librarySearchQuery by rememberSaveable { mutableStateOf("") }
 
     // 本地音乐视图内按系统返回键时，先退出本地音乐回到歌单管理页面
     BackHandler(enabled = showLocalMusic) {
@@ -213,7 +223,7 @@ fun PlaylistScreen(
                     )
                 } else {
                     Text(
-                        text = if (showLocalMusic) "本地音乐" else "我的歌单",
+                        text = if (showLocalMusic) "本地音乐" else "曲库",
                         style = MaterialTheme.typography.headlineMedium,
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.weight(1f)
@@ -221,7 +231,7 @@ fun PlaylistScreen(
                     // 本地音乐管理入口（文字按钮）
                     TextButton(onClick = { showLocalMusic = !showLocalMusic }) {
                         Text(
-                            text = if (showLocalMusic) "我的歌单" else "本地音乐",
+                            text = if (showLocalMusic) "曲库" else "本地音乐",
                             fontWeight = FontWeight.Medium
                         )
                     }
@@ -267,19 +277,50 @@ fun PlaylistScreen(
                     loadSongInfo = loadSongInfo,
                 )
             } else {
-                // ── 歌单列表页 ──
-                PlaylistListView(
-                    playlists = playlists,
-                    songs = songs,
-                    onPlaylistClick = onPlaylistClick,
-                    onDelete = { showDeleteConfirm = it },
-                    onRename = { showRenameDialog = it }
-                )
+                // ── 曲库页（歌单 / 歌手 / 专辑） ──
+                Column(modifier = Modifier.fillMaxSize()) {
+                    // 搜索框
+                    LibrarySearchField(
+                        query = librarySearchQuery,
+                        onQueryChange = { librarySearchQuery = it },
+                    )
+                    LibraryTabRow(
+                        selectedTab = selectedLibraryTab,
+                        onTabSelected = { selectedLibraryTab = it },
+                    )
+                    when (selectedLibraryTab) {
+                        LibraryTab.PLAYLISTS -> PlaylistListView(
+                            playlists = playlists.filter { playlist ->
+                                librarySearchQuery.isBlank() ||
+                                    playlist.name.contains(librarySearchQuery, ignoreCase = true)
+                            },
+                            songs = songs,
+                            onPlaylistClick = onPlaylistClick,
+                            onDelete = { showDeleteConfirm = it },
+                            onRename = { showRenameDialog = it }
+                        )
+                        LibraryTab.ARTISTS -> ArtistListView(
+                            artists = deriveArtists(songs).filter { artist ->
+                                librarySearchQuery.isBlank() ||
+                                    artist.name.contains(librarySearchQuery, ignoreCase = true)
+                            },
+                            onArtistClick = onArtistClick,
+                        )
+                        LibraryTab.ALBUMS -> AlbumListView(
+                            albums = deriveAlbums(songs).filter { album ->
+                                librarySearchQuery.isBlank() ||
+                                    album.name.contains(librarySearchQuery, ignoreCase = true) ||
+                                    album.artistName.contains(librarySearchQuery, ignoreCase = true)
+                            },
+                            onAlbumClick = onAlbumClick,
+                        )
+                    }
+                }
             }
         }
 
         // ── FAB ──
-        if (selectedPlaylist == null && !showLocalMusic) {
+        if (selectedPlaylist == null && !showLocalMusic && selectedLibraryTab == LibraryTab.PLAYLISTS) {
             // 歌单列表页：创建歌单
             FloatingActionButton(
                 onClick = { showCreateDialog = true },
@@ -521,18 +562,11 @@ private fun PlaylistListView(
             ),
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
-            // 歌单分区
-            item(key = "playlist_header") {
-                Spacer(modifier = Modifier.height(20.dp))
-                Text(
-                    text = "歌单",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    modifier = Modifier.padding(bottom = 4.dp)
-                )
-            }
             if (playlists.isEmpty()) {
-                item(key = "playlist_empty") { EmptySectionHint("您还没有歌单，点击右下角 + 创建~") }
+                item(key = "playlist_empty") {
+                    Spacer(modifier = Modifier.height(20.dp))
+                    EmptySectionHint("您还没有歌单，点击右下角 + 创建~")
+                }
             } else {
                 items(playlists, key = { "playlist_${it.id}" }) { playlist ->
                     PlaylistItem(

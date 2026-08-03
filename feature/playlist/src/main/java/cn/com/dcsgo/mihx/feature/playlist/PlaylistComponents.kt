@@ -22,6 +22,7 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.automirrored.filled.QueueMusic
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
@@ -44,6 +45,13 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import cn.com.dcsgo.mihx.core.model.Playlist
 import cn.com.dcsgo.mihx.core.model.Song
+
+/** 曲库页顶部类目 */
+enum class LibraryTab(val label: String) {
+    PLAYLISTS("歌单"),
+    ARTISTS("歌手"),
+    ALBUMS("专辑"),
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 空状态组件
@@ -359,6 +367,135 @@ fun PlaylistItem(
                     }
                 )
             }
+        }
+    }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 歌手列表项
+// ─────────────────────────────────────────────────────────────────────────────
+
+@Composable
+fun ArtistItem(
+    artistName: String,
+    songCount: Int,
+    albumCount: Int,
+    coverUri: android.net.Uri?,
+    onClick: () -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(vertical = 10.dp, horizontal = 4.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        LibraryCoverThumb(
+            uri = coverUri,
+            size = 64,
+            shape = RoundedCornerShape(8.dp),
+        )
+        Spacer(modifier = Modifier.width(16.dp))
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = artistName,
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.Medium,
+                maxLines = 1,
+                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+            )
+            Text(
+                text = "$albumCount 张专辑 · $songCount 首歌曲",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+        Icon(
+            imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 专辑列表项
+// ─────────────────────────────────────────────────────────────────────────────
+
+@Composable
+fun AlbumItem(
+    albumName: String,
+    artistName: String,
+    songCount: Int,
+    coverUri: android.net.Uri?,
+    onClick: () -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(vertical = 10.dp, horizontal = 4.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        LibraryCoverThumb(
+            uri = coverUri,
+            size = 64,
+            shape = RoundedCornerShape(8.dp),
+        )
+        Spacer(modifier = Modifier.width(16.dp))
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = albumName,
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.Medium,
+                maxLines = 1,
+                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+            )
+            Text(
+                text = "$artistName · $songCount 首歌曲",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+        Icon(
+            imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 通用封面缩略图（无封面时显示默认图标）
+// ─────────────────────────────────────────────────────────────────────────────
+
+@Composable
+internal fun LibraryCoverThumb(
+    uri: android.net.Uri?,
+    size: Int,
+    shape: RoundedCornerShape,
+) {
+    Box(
+        modifier = Modifier
+            .size(size.dp)
+            .clip(shape)
+            .background(MaterialTheme.colorScheme.primaryContainer),
+        contentAlignment = Alignment.Center
+    ) {
+        if (uri != null) {
+            AsyncImage(
+                model = uri,
+                contentDescription = null,
+                modifier = Modifier.size(size.dp),
+                contentScale = ContentScale.Crop,
+            )
+        } else {
+            Icon(
+                imageVector = Icons.Default.PlayArrow,
+                contentDescription = null,
+                modifier = Modifier.size((size * 0.45).dp),
+                tint = MaterialTheme.colorScheme.primary
+            )
         }
     }
 }

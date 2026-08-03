@@ -44,21 +44,21 @@ body[data-theme="vermilion-day"]{
   --bg0:#FAF5F2; --bg1:#FFFFFF; --bg2:#FBF4F0; --bg3:#F1E7E1; --bg4:#E9DAD2;
   --out1:#EFE0D9; --out2:#DFC4B9;
   --text1:#2B1A16; --text2:#6B534B; --text3:#A2877D;
-  --accent:#C23B2B; --on-accent:#FFFFFF; --accent2:#D98A2C; --on-accent2:#FFFFFF;
-  --grad:linear-gradient(90deg,#C23B2B,#D98A2C);
-  --cover1:#C23B2B; --cover2:#E08A2E; --cover-note:#FFFFFF;
-  --scrim:rgba(43,26,22,.45); --hover:rgba(194,59,43,.08);
-  --shadow:0 20px 44px -22px rgba(194,59,43,.35);
+  --accent:#A32E25; --on-accent:#FFFFFF; --accent2:#D4786C; --on-accent2:#FFFFFF;
+  --grad:linear-gradient(90deg,#A32E25,#D4786C);
+  --cover1:#B04A36; --cover2:#7E2218; --cover-note:#FFFFFF;
+  --scrim:rgba(43,26,22,.45); --hover:rgba(163,46,37,.10);
+  --shadow:0 20px 44px -22px rgba(163,46,37,.35);
 }
 
 body[data-theme="vermilion-night"]{
   --bg0:#000000; --bg1:#140B09; --bg2:#1D110E; --bg3:#251814; --bg4:#2E1D18;
   --out1:#2B1813; --out2:#3E241E;
   --text1:#EADAD5; --text2:#B79A92; --text3:#7F5E56;
-  --accent:#E85A4A; --on-accent:#170503; --accent2:#E8A24E; --on-accent2:#170503;
-  --grad:linear-gradient(90deg,#E85A4A,#E8A24E);
-  --cover1:#E85A4A; --cover2:#E8A24E; --cover-note:#1A0503;
-  --scrim:rgba(0,0,0,.6); --hover:rgba(232,90,74,.08);
+  --accent:#C04F42; --on-accent:#FFFFFF; --accent2:#8F3B32; --on-accent2:#FFFFFF;
+  --grad:linear-gradient(90deg,#C04F42,#7E3028);
+  --cover1:#B5493D; --cover2:#4A1610; --cover-note:#F2D9D2;
+  --scrim:rgba(0,0,0,.6); --hover:rgba(192,79,66,.12);
   --shadow:0 24px 50px -24px rgba(0,0,0,.9);
 }
 
@@ -454,8 +454,8 @@ footer .mono{font-family:var(--font-num)}
       <div class="theme-pills">
         <button class="pill" data-pill="mono-light"><span class="dot" style="background:#141414"></span>墨 · 浅</button>
         <button class="pill active" data-pill="mono-dark"><span class="dot" style="background:#D0D0D0"></span>墨 · 深 (OLED)</button>
-        <button class="pill" data-pill="vermilion-day"><span class="dot" style="background:#C23B2B"></span>朱砂 · 昼</button>
-        <button class="pill" data-pill="vermilion-night"><span class="dot" style="background:#E85A4A"></span>朱砂 · 夜</button>
+        <button class="pill" data-pill="vermilion-day"><span class="dot" style="background:#A32E25"></span>朱砂 · 昼</button>
+        <button class="pill" data-pill="vermilion-night"><span class="dot" style="background:#C04F42"></span>朱砂 · 夜</button>
       </div>
     </div>
   </header>
@@ -466,12 +466,12 @@ footer .mono{font-family:var(--font-num)}
     <h1 class="hero-title">心有乐章<span class="grad">，黑夜也发光</span><span class="en">Melody in Heart</span></h1>
     <p class="hero-sub">
       为「心有乐章」重新设计的界面规范：一套<strong>墨色（黑白灰）</strong>明暗双主题，深色模式做到 OLED 纯黑熄灭与近白可读；
-      再新增一套<strong>朱砂 · 心有乐章</strong>主题，从心跳的红与旋律的金中提取双色，昼夜皆宜。
+      再新增一套<strong>朱砂 · 心有乐章</strong>主题，从心跳中提炼的一抹朱砂红——低调沉稳、清爽克制，昼夜皆宜。
     </p>
     <div class="hero-facts">
       <span class="fact"><svg class="ic ic-fill"><use href="#i-note"/></svg>本地 · 无广告 · 离线优先</span>
       <span class="fact"><svg class="ic ic-fill"><use href="#i-sliders"/></svg>4 套主题 · 支持跟随系统</span>
-      <span class="fact"><svg class="ic ic-fill"><use href="#i-heart"/></svg>朱砂红 × 琥珀金</span>
+      <span class="fact"><svg class="ic ic-fill"><use href="#i-heart"/></svg>朱砂红 · 单色强调</span>
     </div>
 
     <div class="pillars">
@@ -489,9 +489,9 @@ footer .mono{font-family:var(--font-num)}
       </div>
       <div class="pillar">
         <div class="num">03 / 乐章</div>
-        <h3>朱砂 × 琥珀</h3>
-        <p>心跳的红 + 旋律的金。双色在纯黑与纯白上均有充足对比，白天克制、夜晚温暖，贯穿播放条与均衡器。</p>
-        <div class="sw">#C23B2B → #E85A4A</div>
+        <h3>朱砂 · 沉稳</h3>
+        <p>从心跳中提炼的一抹朱砂红。深色模式压低亮度、去掉琥珀金，清爽克制——只做点缀，不做主色。</p>
+        <div class="sw">昼 #A32E25 · 夜 #C04F42</div>
       </div>
     </div>
   </section>
@@ -795,7 +795,7 @@ footer .mono{font-family:var(--font-num)}
                   <div><div class="n">墨色</div><div class="s">黑白灰</div></div>
                 </div>
                 <div class="cp sel">
-                  <span class="sw" style="background:linear-gradient(135deg,#C23B2B 50%,#E8A24E 50%)"></span>
+                  <span class="sw" style="background:linear-gradient(135deg,#A32E25 50%,#C04F42 50%)"></span>
                   <div><div class="n">朱砂 · 心有乐章</div><div class="s">昼夜新主题</div></div>
                   <svg class="ic ck ic-fill"><use href="#i-check"/></svg>
                 </div>
@@ -894,7 +894,7 @@ footer .mono{font-family:var(--font-num)}
     <div class="tok"><div class="tok-swatch" style="background:var(--text2)"><span data-tok="text2"></span></div><div class="tok-body"><div class="tok-name">次级文字<code data-tok="text2"></code></div><div class="tok-use">艺术家、说明、辅助信息。与主文字层级清晰。</div><span class="tok-map">onSurfaceVariant</span></div></div>
     <div class="tok"><div class="tok-swatch" style="background:var(--text3)"><span data-tok="text3"></span></div><div class="tok-body"><div class="tok-name">弱化文字<code data-tok="text3"></code></div><div class="tok-use">时间、计数、占位。仅在需要大字号或装饰时使用。</div><span class="tok-map">onSurfaceVariant · 低对比</span></div></div>
     <div class="tok"><div class="tok-swatch" style="background:var(--accent)"><span data-tok="accent"></span></div><div class="tok-body"><div class="tok-name">强调 accent<code data-tok="accent"></code></div><div class="tok-use">播放键、进度、高亮、FAB。墨色下为黑白，朱砂下为红。</div><span class="tok-map">primary / onPrimary</span></div></div>
-    <div class="tok"><div class="tok-swatch" style="background:var(--accent2)"><span data-tok="accent2"></span></div><div class="tok-body"><div class="tok-name">次强调 accent2<code data-tok="accent2"></code></div><div class="tok-use">琥珀金。与朱砂组成「心跳 × 旋律」渐变，用于均衡器与进度。</div><span class="tok-map">tertiary</span></div></div>
+    <div class="tok"><div class="tok-swatch" style="background:var(--accent2)"><span data-tok="accent2"></span></div><div class="tok-body"><div class="tok-name">次强调 accent2<code data-tok="accent2"></code></div><div class="tok-use">朱砂同色系的浅色/深色过渡，仅用于渐变起止与柔和点缀，保持单色清爽。</div><span class="tok-map">tertiary</span></div></div>
   </div>
 
   <div class="oled-demo">
@@ -1034,7 +1034,7 @@ footer .mono{font-family:var(--font-num)}
     </div>
     <div class="principle">
       <h3><svg class="ic ic-stroke"><use href="#i-sliders"/></svg>昼夜两套色温</h3>
-      <p>朱砂 · 昼用深红 #C23B2B 压住白底；朱砂 · 夜用暖红 #E85A4A 点亮纯黑。同一情感，两种温度。</p>
+      <p>朱砂 · 昼用沉稳红 #A32E25 压住白底；朱砂 · 夜用压暗的暖红 #C04F42 点亮纯黑，不刺眼。同一情感，两种温度。</p>
     </div>
     <div class="principle">
       <h3><svg class="ic ic-fill"><use href="#i-queue"/></svg>信息克制，留白呼吸</h3>
@@ -1050,9 +1050,9 @@ footer .mono{font-family:var(--font-num)}
         <tr><td><code>#D0D0D0</code> / <code>#000</code></td><td>墨 · 深 · 正文</td><td>13.6:1</td><td class="ok">AA 通过</td></tr>
         <tr><td><code>#9A9A9A</code> / <code>#000</code></td><td>墨 · 深 · 次级文字</td><td>7.5:1</td><td class="ok">AA 通过</td></tr>
         <tr><td><code>#141414</code> / <code>#F4F4F4</code></td><td>墨 · 浅 · 正文</td><td>16.8:1</td><td class="ok">AAA 通过</td></tr>
-        <tr><td><code>#C23B2B</code> / <code>#FAF5F2</code></td><td>朱砂 · 昼 · 强调</td><td>4.9:1</td><td class="ok">AA 通过</td></tr>
-        <tr><td><code>#E85A4A</code> / <code>#000</code></td><td>朱砂 · 夜 · 强调</td><td>6.0:1</td><td class="ok">AA 通过</td></tr>
-        <tr><td><code>#FFFFFF</code> / <code>#C23B2B</code></td><td>朱砂 · 昼 · 按钮图文</td><td>5.3:1</td><td class="ok">AA 通过</td></tr>
+        <tr><td><code>#A32E25</code> / <code>#FAF5F2</code></td><td>朱砂 · 昼 · 强调</td><td>6.2:1</td><td class="ok">AA 通过</td></tr>
+        <tr><td><code>#C04F42</code> / <code>#000</code></td><td>朱砂 · 夜 · 强调</td><td>4.5:1</td><td class="ok">AA 通过</td></tr>
+        <tr><td><code>#FFFFFF</code> / <code>#A32E25</code></td><td>朱砂 · 昼 · 按钮图文</td><td>7.2:1</td><td class="ok">AA 通过</td></tr>
       </table>
     </div>
   </div>
@@ -1075,11 +1075,11 @@ footer .mono{font-family:var(--font-num)}
       <h3>心有乐章</h3>
       <div class="en">Melody in Heart</div>
       <p>
-        心是跳动的朱砂红，乐章是流动的琥珀金。纯黑是夜的底色，近白的暗是留给耳朵的温柔——
-        一首歌，从心脏出发，在屏幕上留下一道会呼吸的光。
+        心是跳动的朱砂红，乐章是一道沉稳的光。纯黑是夜的底色，近白的暗是留给耳朵的温柔——
+        一首歌，从心脏出发，在屏幕上留下一抹会呼吸的红。
       </p>
       <div class="drop">
-        主题色命名：<b>朱砂 · 心有乐章</b>（白天 <b>#C23B2B</b> → 夜晚 <b>#E85A4A</b>），次要强调琥珀 <b>#E8A24E</b>，用于均衡器与播放条渐变。
+        主题色命名：<b>朱砂 · 心有乐章</b>（白天 <b>#A32E25</b> / 夜晚 <b>#C04F42</b>）。单色强调、去琥珀金，深色模式压暗以护眼，贯穿均衡器与播放条渐变。
       </div>
     </div>
   </div>
@@ -1097,8 +1097,8 @@ footer .mono{font-family:var(--font-num)}
   var TOKENS = {
     'mono-light':     {bg0:'#F4F4F4',bg1:'#FFFFFF',bg2:'#FAFAFA',bg3:'#EFEFEF',bg4:'#E6E6E6',out1:'#E7E7E7',out2:'#CFCFCF',text1:'#141414',text2:'#575757',text3:'#989898',accent:'#161616',accent2:'#575757'},
     'mono-dark':      {bg0:'#000000',bg1:'#0A0A0A',bg2:'#121212',bg3:'#1B1B1B',bg4:'#252525',out1:'#1C1C1C',out2:'#2C2C2C',text1:'#D0D0D0',text2:'#9A9A9A',text3:'#6B6B6B',accent:'#E6E6E6',accent2:'#9A9A9A'},
-    'vermilion-day':  {bg0:'#FAF5F2',bg1:'#FFFFFF',bg2:'#FBF4F0',bg3:'#F1E7E1',bg4:'#E9DAD2',out1:'#EFE0D9',out2:'#DFC4B9',text1:'#2B1A16',text2:'#6B534B',text3:'#A2877D',accent:'#C23B2B',accent2:'#D98A2C'},
-    'vermilion-night':{bg0:'#000000',bg1:'#140B09',bg2:'#1D110E',bg3:'#251814',bg4:'#2E1D18',out1:'#2B1813',out2:'#3E241E',text1:'#EADAD5',text2:'#B79A92',text3:'#7F5E56',accent:'#E85A4A',accent2:'#E8A24E'}
+    'vermilion-day':  {bg0:'#FAF5F2',bg1:'#FFFFFF',bg2:'#FBF4F0',bg3:'#F1E7E1',bg4:'#E9DAD2',out1:'#EFE0D9',out2:'#DFC4B9',text1:'#2B1A16',text2:'#6B534B',text3:'#A2877D',accent:'#A32E25',accent2:'#D4786C'},
+    'vermilion-night':{bg0:'#000000',bg1:'#140B09',bg2:'#1D110E',bg3:'#251814',bg4:'#2E1D18',out1:'#2B1813',out2:'#3E241E',text1:'#EADAD5',text2:'#B79A92',text3:'#7F5E56',accent:'#C04F42',accent2:'#8F3B32'}
   };
   function paint(theme){
     document.body.dataset.theme = theme;

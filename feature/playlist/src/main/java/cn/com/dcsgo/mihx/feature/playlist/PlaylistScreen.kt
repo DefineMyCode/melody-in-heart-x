@@ -27,6 +27,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.QueueMusic
 import androidx.compose.material.icons.filled.MyLocation
@@ -141,6 +142,16 @@ fun PlaylistScreen(
     var showRenameDialog by remember { mutableStateOf<Playlist?>(null) }
     var showAddToPlaylistDialog by remember { mutableStateOf<Song?>(null) }
     var showRemoveConfirm by remember { mutableStateOf<Pair<Song, Playlist>?>(null) }
+    var songForInfo by remember { mutableStateOf<Song?>(null) }
+    var songInfo by remember { mutableStateOf<SongInfo?>(null) }
+
+    // ── 歌曲信息 Dialog：选定歌曲后异步加载元数据 ──
+    LaunchedEffect(songForInfo) {
+        val uri = songForInfo?.uri
+        if (uri != null) {
+            songInfo = songForInfo?.let { loadSongInfo(it) }
+        }
+    }
 
     // ── Dialog 渲染 ──
     if (showCreateDialog) {
@@ -199,6 +210,16 @@ fun PlaylistScreen(
                 onRemoveSongFromPlaylist(song, playlist)
                 showRemoveConfirm = null
             }
+        )
+    }
+
+    val infoSong = songForInfo
+    val currentSongInfo = songInfo
+    if (infoSong != null && currentSongInfo != null) {
+        SongInfoDialog(
+            song = infoSong,
+            songInfo = currentSongInfo,
+            onDismiss = { songForInfo = null; songInfo = null },
         )
     }
 
@@ -269,6 +290,7 @@ fun PlaylistScreen(
                     onSongClick = onSongClick,
                     onShowAddToPlaylist = { showAddToPlaylistDialog = it },
                     onShowRemoveConfirm = { song -> showRemoveConfirm = song to selectedPlaylist },
+                    onShowSongDetail = { song -> songForInfo = song },
                     onPlayAll = { onPlayAllInPlaylist(selectedPlaylist, songs) },
                     onPlayAllFromEnd = { onPlayAllFromEndInPlaylist(selectedPlaylist, songs) },
                     onAddAllToQueue = { onAddAllToQueueInPlaylist(selectedPlaylist, songs) },
@@ -408,6 +430,7 @@ private fun PlaylistDetailView(
     onSongClick: (Song) -> Unit,
     onShowAddToPlaylist: (Song) -> Unit,
     onShowRemoveConfirm: (Song) -> Unit,
+    onShowSongDetail: (Song) -> Unit,
     onPlayAll: () -> Unit,
     onPlayAllFromEnd: () -> Unit,
     onAddAllToQueue: () -> Unit,
@@ -639,6 +662,17 @@ private fun PlaylistDetailView(
                                     )
                                 },
                                 onClick = { onShowAddToPlaylist(song) },
+                            ),
+                            SongItemAction(
+                                label = "查看歌曲详情",
+                                leadingIcon = {
+                                    Icon(
+                                        imageVector = Icons.Default.Info,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(18.dp),
+                                    )
+                                },
+                                onClick = { onShowSongDetail(song) },
                             ),
                             SongItemAction(
                                 label = "移除",

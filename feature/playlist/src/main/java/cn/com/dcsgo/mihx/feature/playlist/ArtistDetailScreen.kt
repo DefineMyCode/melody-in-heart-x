@@ -12,19 +12,23 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -36,6 +40,7 @@ import androidx.compose.ui.unit.dp
 import cn.com.dcsgo.mihx.core.common.time.formatHoursMinutes
 import cn.com.dcsgo.mihx.core.model.LibraryCatalog
 import cn.com.dcsgo.mihx.core.model.Song
+import cn.com.dcsgo.mihx.core.model.SongInfo
 
 /**
  * 歌手详情页
@@ -53,12 +58,23 @@ fun ArtistDetailScreen(
     onBack: () -> Unit,
     onSongClick: (Song) -> Unit,
     onAlbumClick: (String) -> Unit = {},
+    loadSongInfo: suspend (Song) -> SongInfo? = { null },
 ) {
     // 该歌手的所有歌曲（歌手为拆分后的最小单位，歌曲属于任一拆分歌手即关联）
     val artistSongs = songs.filter { artistName in it.parsedArtists }
     val albums = LibraryCatalog.deriveAlbums(artistSongs)
     val totalDurationMs = artistSongs.sumOf { it.durationMs }
     var selectedSection by rememberSaveable { mutableStateOf(0) }
+
+    // 歌曲信息 Dialog：选定歌曲后异步加载元数据
+    var songForInfo by remember { mutableStateOf<Song?>(null) }
+    var songInfo by remember { mutableStateOf<SongInfo?>(null) }
+    LaunchedEffect(songForInfo) {
+        val uri = songForInfo?.uri
+        if (uri != null) {
+            songInfo = songForInfo?.let { loadSongInfo(it) }
+        }
+    }
 
     // 根容器必须不透明：返回过渡期间退出页绘制在目标页之上，透明会让目标页透出造成两页叠加
     Column(
@@ -119,6 +135,19 @@ fun ArtistDetailScreen(
                             isCurrentPlaying = isPlaying && currentSong?.id == song.id,
                             showDuration = true,
                             onSongClick = onSongClick,
+                            menuActions = listOf(
+                                SongItemAction(
+                                    label = "查看歌曲详情",
+                                    leadingIcon = {
+                                        Icon(
+                                            imageVector = Icons.Default.Info,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(18.dp),
+                                        )
+                                    },
+                                    onClick = { songForInfo = song },
+                                ),
+                            ),
                         )
                     }
                 }
@@ -174,6 +203,16 @@ fun ArtistDetailScreen(
             }
         }
     }
+
+    val infoSong = songForInfo
+    val currentSongInfo = songInfo
+    if (infoSong != null && currentSongInfo != null) {
+        SongInfoDialog(
+            song = infoSong,
+            songInfo = currentSongInfo,
+            onDismiss = { songForInfo = null; songInfo = null },
+        )
+    }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -197,6 +236,7 @@ data class ArtistDetailRouteActions(
 fun ArtistDetailRoute(
     state: ArtistDetailRouteState,
     actions: ArtistDetailRouteActions,
+    loadSongInfo: suspend (Song) -> SongInfo? = { null },
 ) {
     ArtistDetailScreen(
         artistName = state.artistName,
@@ -209,5 +249,6 @@ fun ArtistDetailRoute(
             actions.onSongClick(song, context)
         },
         onAlbumClick = actions.onAlbumClick,
+        loadSongInfo = loadSongInfo,
     )
 }

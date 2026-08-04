@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -18,13 +19,16 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -35,6 +39,7 @@ import androidx.compose.ui.unit.dp
 import cn.com.dcsgo.mihx.core.common.time.formatHoursMinutes
 import cn.com.dcsgo.mihx.core.model.LibraryCatalog
 import cn.com.dcsgo.mihx.core.model.Song
+import cn.com.dcsgo.mihx.core.model.SongInfo
 
 /**
  * 专辑详情页
@@ -52,6 +57,7 @@ fun AlbumDetailScreen(
     onBack: () -> Unit,
     onSongClick: (Song) -> Unit,
     onAlbumClick: (String) -> Unit = {},
+    loadSongInfo: suspend (Song) -> SongInfo? = { null },
 ) {
     // 该专辑的所有歌曲（不限定单个歌手）
     val albumSongs = songs.filter { it.album == albumName }
@@ -62,6 +68,16 @@ fun AlbumDetailScreen(
     val otherAlbums = LibraryCatalog.deriveAlbums(songs)
         .filter { it.name != albumName && it.artistNames.any { artist -> artist in albumArtists } }
     var selectedSection by rememberSaveable { mutableStateOf(0) }
+
+    // 歌曲信息 Dialog：选定歌曲后异步加载元数据
+    var songForInfo by remember { mutableStateOf<Song?>(null) }
+    var songInfo by remember { mutableStateOf<SongInfo?>(null) }
+    LaunchedEffect(songForInfo) {
+        val uri = songForInfo?.uri
+        if (uri != null) {
+            songInfo = songForInfo?.let { loadSongInfo(it) }
+        }
+    }
 
     // 根容器必须不透明：返回过渡期间退出页绘制在目标页之上，透明会让目标页透出造成两页叠加
     Column(
@@ -129,6 +145,19 @@ fun AlbumDetailScreen(
                             isCurrentPlaying = isPlaying && currentSong?.id == song.id,
                             showDuration = true,
                             onSongClick = onSongClick,
+                            menuActions = listOf(
+                                SongItemAction(
+                                    label = "查看歌曲详情",
+                                    leadingIcon = {
+                                        Icon(
+                                            imageVector = Icons.Default.Info,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(18.dp),
+                                        )
+                                    },
+                                    onClick = { songForInfo = song },
+                                ),
+                            ),
                         )
                     }
                 }
@@ -184,6 +213,16 @@ fun AlbumDetailScreen(
             }
         }
     }
+
+    val infoSong = songForInfo
+    val currentSongInfo = songInfo
+    if (infoSong != null && currentSongInfo != null) {
+        SongInfoDialog(
+            song = infoSong,
+            songInfo = currentSongInfo,
+            onDismiss = { songForInfo = null; songInfo = null },
+        )
+    }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -207,6 +246,7 @@ data class AlbumDetailRouteActions(
 fun AlbumDetailRoute(
     state: AlbumDetailRouteState,
     actions: AlbumDetailRouteActions,
+    loadSongInfo: suspend (Song) -> SongInfo? = { null },
 ) {
     AlbumDetailScreen(
         albumName = state.albumName,
@@ -219,5 +259,6 @@ fun AlbumDetailRoute(
             actions.onSongClick(song, context)
         },
         onAlbumClick = actions.onAlbumClick,
+        loadSongInfo = loadSongInfo,
     )
 }

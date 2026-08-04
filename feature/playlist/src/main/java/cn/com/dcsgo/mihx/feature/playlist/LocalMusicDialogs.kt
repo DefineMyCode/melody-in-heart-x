@@ -1,5 +1,9 @@
 package cn.com.dcsgo.mihx.feature.playlist
 
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -14,11 +18,15 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircleOutline
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
@@ -39,6 +47,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -319,6 +328,7 @@ fun SongInfoDialog(
     songInfo: SongInfo,
     onDismiss: () -> Unit,
 ) {
+    val context = LocalContext.current
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
@@ -329,7 +339,9 @@ fun SongInfoDialog(
         },
         text = {
             Column(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 Row(
@@ -389,7 +401,16 @@ fun SongInfoDialog(
                 InfoRow(label = "文件路径", value = songInfo.filePath, isPath = true)
             }
         },
-        confirmButton = {},
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    copyToClipboard(context, songInfo.filePath)
+                    Toast.makeText(context, "文件路径已复制", Toast.LENGTH_SHORT).show()
+                }
+            ) {
+                Text("复制文件路径")
+            }
+        },
         dismissButton = {
             TextButton(onClick = onDismiss) { Text("关闭") }
         }
@@ -398,10 +419,20 @@ fun SongInfoDialog(
 
 @Composable
 private fun InfoRow(label: String, value: String, isPath: Boolean = false) {
+    // 文件路径默认折叠为 3 行，点击可展开/收起查看完整路径
+    var expanded by remember { mutableStateOf(false) }
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp)
+            .then(
+                if (isPath) {
+                    Modifier.clickable { expanded = !expanded }
+                } else {
+                    Modifier
+                }
+            )
+            .padding(vertical = 4.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
             text = label,
@@ -413,11 +444,33 @@ private fun InfoRow(label: String, value: String, isPath: Boolean = false) {
             text = value,
             style = if (isPath) MaterialTheme.typography.labelSmall else MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurface,
-            maxLines = if (isPath) 3 else 1,
-            overflow = TextOverflow.Ellipsis,
+            maxLines = if (isPath && !expanded) 3 else Int.MAX_VALUE,
+            overflow = if (isPath && !expanded) TextOverflow.Ellipsis else TextOverflow.Clip,
             modifier = Modifier.weight(1f)
         )
+        if (isPath) {
+            Icon(
+                imageVector = if (expanded) {
+                    Icons.Filled.KeyboardArrowUp
+                } else {
+                    Icons.Filled.KeyboardArrowDown
+                },
+                contentDescription = if (expanded) "收起文件路径" else "展开文件路径",
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.size(16.dp),
+            )
+        }
     }
+}
+
+// ─────────────────────────────────────────────────────────────────
+// 复制文件路径
+// ─────────────────────────────────────────────────────────────────
+
+/** 将文本复制到系统剪贴板 */
+private fun copyToClipboard(context: Context, text: String) {
+    val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager
+    clipboard?.setPrimaryClip(ClipData.newPlainText("文件路径", text))
 }
 
 // ─────────────────────────────────────────────────────────────────

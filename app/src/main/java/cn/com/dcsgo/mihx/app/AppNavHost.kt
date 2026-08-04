@@ -204,6 +204,7 @@ fun AppNavHost(
                         navController.navigate(AppRoutes.albumDetail(albumName))
                     },
                 ),
+                loadSongInfo = loadSongInfo,
             )
         }
 
@@ -228,6 +229,7 @@ fun AppNavHost(
                         navController.navigate(AppRoutes.albumDetail(albumName))
                     },
                 ),
+                loadSongInfo = loadSongInfo,
             )
         }
 

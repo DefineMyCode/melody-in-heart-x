@@ -81,6 +81,12 @@ fun HomeScreen(
     onLuckyPlayClick: () -> Unit = {},
     onInfinitePlayClick: () -> Unit = {},
     onRelatedPlayClick: () -> Unit = {},
+    isSleepTimerActive: Boolean = false,
+    sleepTimerRemainingMs: Long = 0L,
+    sleepTimerPlayLastSong: Boolean = false,
+    sleepTimerPausePending: Boolean = false,
+    onSleepTimerStart: (Int, Boolean) -> Unit = { _, _ -> },
+    onSleepTimerCancel: () -> Unit = {},
 ) {
     if (currentSong == null) {
         // 空状态：没有任何音乐，仍显示 FAB
@@ -136,7 +142,13 @@ fun HomeScreen(
                         onSwitchVersion = onSwitchVersion,
                         onTextCopied = onTextCopied,
                         onInfinitePlayClick = onInfinitePlayClick,
-                        onRelatedPlayClick = onRelatedPlayClick
+                        onRelatedPlayClick = onRelatedPlayClick,
+                        isSleepTimerActive = isSleepTimerActive,
+                        sleepTimerRemainingMs = sleepTimerRemainingMs,
+                        sleepTimerPlayLastSong = sleepTimerPlayLastSong,
+                        sleepTimerPausePending = sleepTimerPausePending,
+                        onSleepTimerStart = onSleepTimerStart,
+                        onSleepTimerCancel = onSleepTimerCancel,
                     )
                 }
             }
@@ -314,6 +326,12 @@ private fun SongInfoSection(
     onTextCopied: (String) -> Unit,
     onInfinitePlayClick: () -> Unit,
     onRelatedPlayClick: () -> Unit,
+    isSleepTimerActive: Boolean,
+    sleepTimerRemainingMs: Long,
+    sleepTimerPlayLastSong: Boolean,
+    sleepTimerPausePending: Boolean,
+    onSleepTimerStart: (Int, Boolean) -> Unit,
+    onSleepTimerCancel: () -> Unit,
 ) {
     // 专辑名直接来自 Song 模型（导入时已记录）
     val albumName = currentSong.album.takeIf { it.isNotBlank() }
@@ -321,6 +339,8 @@ private fun SongInfoSection(
     val artists = currentSong.parsedArtists
     // 是否弹出多歌手选择
     var showArtistPicker by remember { mutableStateOf(false) }
+    // 是否弹出定时关闭设置弹窗
+    var showSleepTimerDialog by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier.fillMaxWidth(),
@@ -542,6 +562,33 @@ private fun SongInfoSection(
                 }
             )
         }
+
+        Spacer(modifier = Modifier.height(10.dp))
+
+        // 定时关闭入口（无限随机播放 / 关联播放的下一行）
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center
+        ) {
+            SleepTimerChip(
+                isActive = isSleepTimerActive,
+                remainingMs = sleepTimerRemainingMs,
+                pausePending = sleepTimerPausePending,
+                onClick = { showSleepTimerDialog = true }
+            )
+        }
+    }
+
+    // 定时关闭设置弹窗
+    if (showSleepTimerDialog) {
+        SleepTimerDialog(
+            isActive = isSleepTimerActive,
+            remainingMs = sleepTimerRemainingMs,
+            playLastSong = sleepTimerPlayLastSong,
+            onDismiss = { showSleepTimerDialog = false },
+            onStart = { minutes, playLast -> onSleepTimerStart(minutes, playLast) },
+            onCancel = onSleepTimerCancel,
+        )
     }
 
     // 多歌手选择弹窗：点击歌手时选择要跳转的歌手

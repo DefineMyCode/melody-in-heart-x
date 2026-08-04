@@ -24,4 +24,11 @@ interface PlayerSettingsRepository {
     suspend fun setBluetoothPlaybackMonitoringEnabled(enabled: Boolean)
     suspend fun setPlaybackNotificationEnabled(enabled: Boolean)
     suspend fun setLyricFontScale(scale: Float)
+
+    /** 定时关闭结束时间戳（epoch 毫秒，0 = 未设置） */
+    fun currentSleepTimerEndAtMs(): Long
+    /** 定时关闭是否「播完最后一曲」 */
+    fun currentSleepTimerPlayLastSong(): Boolean
+    fun setSleepTimerEndAtMsBlocking(endAtMs: Long)
+    fun setSleepTimerPlayLastSongBlocking(enabled: Boolean)
 }

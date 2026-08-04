@@ -12,6 +12,10 @@ data class HomeRouteState(
     val playMode: PlayMode,
     val isInfinitePlay: Boolean,
     val sameNameSongs: List<Song>,
+    val isSleepTimerActive: Boolean = false,
+    val sleepTimerRemainingMs: Long = 0L,
+    val sleepTimerPlayLastSong: Boolean = false,
+    val sleepTimerPausePending: Boolean = false,
 )
 
 data class HomeRouteActions(
@@ -31,6 +35,8 @@ data class HomeRouteActions(
     val onStartInfinitePlay: () -> Unit,
     val onStopInfinitePlay: () -> Unit,
     val onRelatedPlayClick: (Song) -> Unit = {},
+    val onSleepTimerStart: (Int, Boolean) -> Unit = { _, _ -> },
+    val onSleepTimerCancel: () -> Unit = {},
 )
 
 @Composable
@@ -47,6 +53,12 @@ fun HomeRoute(
         playMode = state.playMode,
         isInfinitePlay = state.isInfinitePlay,
         sameNameSongs = state.sameNameSongs,
+        isSleepTimerActive = state.isSleepTimerActive,
+        sleepTimerRemainingMs = state.sleepTimerRemainingMs,
+        sleepTimerPlayLastSong = state.sleepTimerPlayLastSong,
+        sleepTimerPausePending = state.sleepTimerPausePending,
+        onSleepTimerStart = actions.onSleepTimerStart,
+        onSleepTimerCancel = actions.onSleepTimerCancel,
         onPlayPauseClick = actions.onPlayPauseClick,
         onPreviousClick = actions.onPreviousClick,
         onNextClick = actions.onNextClick,

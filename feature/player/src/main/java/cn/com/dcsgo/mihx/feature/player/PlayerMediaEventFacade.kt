@@ -14,6 +14,7 @@ class PlayerMediaEventFacade(
     private val log: (String) -> Unit,
     private val refillThreshold: Int = DEFAULT_REFILL_THRESHOLD,
     private val playOrderBuilder: QueueManager.PlayOrderBuilder = QueueManager.defaultPlayOrderBuilder,
+    private val onSleepTimerSongEnded: () -> Unit = {},
 ) {
     fun handleMediaItemEnded(startedSongId: Int? = null) {
         stopPlaybackTracking()
@@ -29,6 +30,9 @@ class PlayerMediaEventFacade(
         }
 
         restorePlayModeAfterNextSong(startedSongId)
+
+        // 定时关闭「播完最后一曲」：当前歌曲已自然结束，暂停并收尾
+        onSleepTimerSongEnded()
     }
 
     fun handlePlaybackEnded() {

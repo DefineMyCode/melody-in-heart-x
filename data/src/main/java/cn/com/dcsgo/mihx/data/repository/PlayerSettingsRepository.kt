@@ -146,4 +146,36 @@ class PlayerSettingsRepository(
             preferences[PlayerSettingsKeys.LYRIC_FONT_SCALE] = scale
         }
     }
+
+    override fun currentSleepTimerEndAtMs(): Long {
+        return runBlocking(Dispatchers.IO) {
+            settingsStore.data.map { preferences ->
+                preferences[PlayerSettingsKeys.SLEEP_TIMER_END_AT_MS] ?: 0L
+            }.first()
+        }
+    }
+
+    override fun currentSleepTimerPlayLastSong(): Boolean {
+        return runBlocking(Dispatchers.IO) {
+            settingsStore.data.map { preferences ->
+                preferences[PlayerSettingsKeys.SLEEP_TIMER_PLAY_LAST_SONG] ?: false
+            }.first()
+        }
+    }
+
+    override fun setSleepTimerEndAtMsBlocking(endAtMs: Long) {
+        runBlocking(Dispatchers.IO) {
+            settingsStore.edit { preferences ->
+                preferences[PlayerSettingsKeys.SLEEP_TIMER_END_AT_MS] = endAtMs
+            }
+        }
+    }
+
+    override fun setSleepTimerPlayLastSongBlocking(enabled: Boolean) {
+        runBlocking(Dispatchers.IO) {
+            settingsStore.edit { preferences ->
+                preferences[PlayerSettingsKeys.SLEEP_TIMER_PLAY_LAST_SONG] = enabled
+            }
+        }
+    }
 }

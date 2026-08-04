@@ -248,6 +248,16 @@ class PlayerViewModel @Inject constructor(
         runtime.stopInfinitePlay()
     }
 
+    /** 开始定时关闭。 */
+    fun startSleepTimer(durationMinutes: Int, playLastSong: Boolean) {
+        runtime.startSleepTimer(durationMinutes, playLastSong)
+    }
+
+    /** 取消定时关闭。 */
+    fun cancelSleepTimer() {
+        runtime.cancelSleepTimer()
+    }
+
     /** Enables or disables global uniform random playback. */
     fun setGlobalUniformRandomEnabled(enabled: Boolean) {
         runtime.setGlobalUniformRandomEnabled(enabled)

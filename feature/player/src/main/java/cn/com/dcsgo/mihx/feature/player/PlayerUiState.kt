@@ -83,4 +83,17 @@ data class PlayerUiState(
      * 防止补充队列时把刚加入的"下一首"歌曲挤到后面。
      */
     val skipNextRefill: Boolean = false,
+
+    // ── 定时关闭 ──
+
+    /** 是否已设置定时关闭（倒计时进行中，或等待播完最后一曲） */
+    val isSleepTimerActive: Boolean = false,
+    /** 定时关闭结束时间戳（epoch 毫秒） */
+    val sleepTimerEndAtMs: Long = 0L,
+    /** 定时关闭剩余毫秒（倒计时展示用） */
+    val sleepTimerRemainingMs: Long = 0L,
+    /** 是否「播完最后一曲」再暂停 */
+    val sleepTimerPlayLastSong: Boolean = false,
+    /** 已到点、等待当前歌曲自然结束再暂停 */
+    val sleepTimerPausePending: Boolean = false,
 )

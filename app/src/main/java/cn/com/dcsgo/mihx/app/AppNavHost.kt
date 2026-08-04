@@ -92,6 +92,10 @@ fun AppNavHost(
                     playMode = uiState.playQueue.playMode,
                     isInfinitePlay = uiState.isInfinitePlay,
                     sameNameSongs = uiState.sameNameSongs,
+                    isSleepTimerActive = uiState.isSleepTimerActive,
+                    sleepTimerRemainingMs = uiState.sleepTimerRemainingMs,
+                    sleepTimerPlayLastSong = uiState.sleepTimerPlayLastSong,
+                    sleepTimerPausePending = uiState.sleepTimerPausePending,
                 ),
                 actions = HomeRouteActions(
                     onPlayPauseClick = playerViewModel::togglePlayPause,
@@ -123,6 +127,14 @@ fun AppNavHost(
                         } else {
                             showToast("未检索到关联歌曲")
                         }
+                    },
+                    onSleepTimerStart = { minutes, playLast ->
+                        playerViewModel.startSleepTimer(minutes, playLast)
+                        showToast("已设置定时关闭：${minutes}分钟后暂停播放")
+                    },
+                    onSleepTimerCancel = {
+                        playerViewModel.cancelSleepTimer()
+                        showToast("已取消定时关闭")
                     },
                 ),
                 showToast = showToast,

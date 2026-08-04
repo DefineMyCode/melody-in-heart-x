@@ -232,6 +232,13 @@ internal class PlayerRuntime(
         refillInfinitePlayQueue = { playbackBridgeFacade.refillInfinitePlayQueue() },
         log = { message -> AppLog.debug(TAG, message) },
     )
+    private val sleepTimerCoordinator = PlayerSleepTimerCoordinator(
+        scope = scope,
+        settings = playerSettingsRepository,
+        state = { _uiState.value },
+        updateState = { transform -> _uiState.update(transform) },
+        pausePlayback = { playbackBridgeFacade.pausePlayback() },
+    )
     private val mediaEventFacade = PlayerMediaEventFacade(
         state = { _uiState.value },
         updateState = { transform -> _uiState.update(transform) },
@@ -242,6 +249,7 @@ internal class PlayerRuntime(
         syncPlayerQueue = { queue -> playbackBridgeFacade.syncPlayerQueue(queue) },
         log = { message -> AppLog.debug(TAG, message) },
         playOrderBuilder = playOrderBuilder,
+        onSleepTimerSongEnded = sleepTimerCoordinator::onSongEnded,
     )
     private val versionFacade = PlayerVersionFacade(
         state = { _uiState.value },
@@ -323,6 +331,7 @@ internal class PlayerRuntime(
                 playbackNotificationEnabled = playbackNotificationEnabled,
             )
         }
+        sleepTimerCoordinator.restore()
         startupFacade.start()
         if (bluetoothPlaybackMonitoringEnabled) {
             bluetoothGraph.initialize()
@@ -542,6 +551,21 @@ internal class PlayerRuntime(
 
     fun stopInfinitePlay() {
         randomQueueFacade.stopInfinitePlay()
+    }
+
+    /**
+     * 开始定时关闭。
+     *
+     * @param durationMinutes 倒计时分钟数
+     * @param playLastSong    到点后是否播完当前歌曲再暂停
+     */
+    fun startSleepTimer(durationMinutes: Int, playLastSong: Boolean) {
+        sleepTimerCoordinator.start(durationMinutes, playLastSong)
+    }
+
+    /** 取消定时关闭 */
+    fun cancelSleepTimer() {
+        sleepTimerCoordinator.cancel()
     }
 
     fun setGlobalUniformRandomEnabled(enabled: Boolean) {

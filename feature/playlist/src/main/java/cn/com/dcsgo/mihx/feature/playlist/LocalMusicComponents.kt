@@ -16,41 +16,24 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AddCircleOutline
-import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.DoneAll
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import cn.com.dcsgo.mihx.core.model.Song
-import coil.compose.AsyncImage
 
 // ─────────────────────────────────────────────────────────────────
 // 文件管理区域
@@ -203,200 +186,6 @@ private fun FileManagementButton(
 }
 
 // ─────────────────────────────────────────────────────────────────
-// 本地歌曲列表项（支持多选模式）
-// ─────────────────────────────────────────────────────────────────
-
-@Composable
-fun LocalSongItem(
-    song: Song,
-    isCurrentPlaying: Boolean = false,
-    isSelectMode: Boolean = false,
-    isSelected: Boolean = false,
-    modifier: Modifier = Modifier,
-    onClick: () -> Unit,
-    onShowInfo: (Song) -> Unit = {},
-    onAddToPlaylist: (Song) -> Unit = {},
-    onDelete: (Song) -> Unit = {},
-) {
-    val cornerShape = remember { RoundedCornerShape(8.dp) }
-    var showMenu by remember { mutableStateOf(false) }
-
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .padding(vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        if (isSelectMode) {
-            Box(modifier = Modifier.size(32.dp), contentAlignment = Alignment.Center) {
-                if (isSelected) {
-                    Icon(
-                        imageVector = Icons.Default.CheckCircle,
-                        contentDescription = "已选中",
-                        modifier = Modifier.size(24.dp),
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                } else {
-                    Icon(
-                        imageVector = Icons.Default.AddCircleOutline,
-                        contentDescription = "未选中",
-                        modifier = Modifier.size(24.dp),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
-            Spacer(modifier = Modifier.width(8.dp))
-        }
-
-        SongAlbumArt(
-            song = song,
-            isCurrentPlaying = isCurrentPlaying,
-            cornerShape = cornerShape
-        )
-
-        Spacer(modifier = Modifier.width(12.dp))
-
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = song.title,
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = if (isCurrentPlaying) FontWeight.Bold else FontWeight.Medium,
-                color = if (isCurrentPlaying) MaterialTheme.colorScheme.primary
-                        else MaterialTheme.colorScheme.onSurface,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-            Text(
-                text = song.artist,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-        }
-
-        if (!isSelectMode) {
-            Box {
-                IconButton(
-                    onClick = { showMenu = true },
-                    modifier = Modifier.size(32.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.MoreVert,
-                        contentDescription = "更多",
-                        modifier = Modifier.size(20.dp),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-                DropdownMenu(
-                    expanded = showMenu,
-                    onDismissRequest = { showMenu = false }
-                ) {
-                    DropdownMenuItem(
-                        text = { Text("歌曲信息") },
-                        onClick = {
-                            showMenu = false
-                            onShowInfo(song)
-                        },
-                        leadingIcon = {
-                            Icon(
-                                imageVector = Icons.Default.Info,
-                                contentDescription = null,
-                                modifier = Modifier.size(20.dp)
-                            )
-                        }
-                    )
-                    DropdownMenuItem(
-                        text = { Text("添加到歌单") },
-                        onClick = {
-                            showMenu = false
-                            onAddToPlaylist(song)
-                        },
-                        leadingIcon = {
-                            Icon(
-                                painter = painterResource(R.drawable.list_alt_add_24),
-                                contentDescription = null,
-                                modifier = Modifier.size(20.dp)
-                            )
-                        }
-                    )
-                    DropdownMenuItem(
-                        text = {
-                            Text(
-                                "删除",
-                                color = MaterialTheme.colorScheme.error
-                            )
-                        },
-                        onClick = {
-                            showMenu = false
-                            onDelete(song)
-                        },
-                        leadingIcon = {
-                            Icon(
-                                imageVector = Icons.Default.Delete,
-                                contentDescription = null,
-                                modifier = Modifier.size(20.dp),
-                                tint = MaterialTheme.colorScheme.error
-                            )
-                        }
-                    )
-                }
-            }
-        }
-    }
-}
-
-// ─────────────────────────────────────────────────────────────────
-// 封面图组件
-// ─────────────────────────────────────────────────────────────────
-
-@Composable
-fun SongAlbumArt(
-    song: Song,
-    isCurrentPlaying: Boolean,
-    cornerShape: RoundedCornerShape,
-    size: Int = 48
-) {
-    Box(
-        modifier = Modifier
-            .size(size.dp)
-            .clip(cornerShape)
-            .background(
-                if (isCurrentPlaying) MaterialTheme.colorScheme.primary
-                else MaterialTheme.colorScheme.primaryContainer
-            ),
-        contentAlignment = Alignment.Center
-    ) {
-        if (song.albumArtUri != null) {
-            AsyncImage(
-                model = song.albumArtUri,
-                contentDescription = "专辑封面",
-                modifier = Modifier.size(size.dp),
-                contentScale = ContentScale.Crop,
-            )
-        } else {
-            val iconSize = (size * 0.46).toInt()
-            if (isCurrentPlaying) {
-                Icon(
-                    painter = painterResource(id = R.drawable.pause_24),
-                    contentDescription = "正在播放",
-                    modifier = Modifier.size(iconSize.dp),
-                    tint = MaterialTheme.colorScheme.onPrimary
-                )
-            } else {
-                Icon(
-                    imageVector = Icons.Default.PlayArrow,
-                    contentDescription = null,
-                    modifier = Modifier.size(iconSize.dp),
-                    tint = MaterialTheme.colorScheme.primary
-                )
-            }
-        }
-    }
-}
-
-// ─────────────────────────────────────────────────────────────────
 // 底部操作栏（添加到歌单 / 清除选择）
 // ─────────────────────────────────────────────────────────────────
 
@@ -467,100 +256,6 @@ fun EmptyMusicHint() {
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.outline
         )
-    }
-}
-
-// ─────────────────────────────────────────────────────────────────
-// 本地音乐标题栏（搜索 / 多选操作）
-// ─────────────────────────────────────────────────────────────────
-
-@Composable
-fun LocalMusicHeader(
-    localSongs: List<Song>,
-    displaySongs: List<Song>,
-    isSearching: Boolean,
-    isSelectMode: Boolean,
-    isAllSelected: Boolean,
-    selectedCount: Int,
-    onToggleSearch: () -> Unit,
-    onToggleSelectMode: () -> Unit,
-    onSelectAll: () -> Unit,
-) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(
-            text = "本地音乐",
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold
-        )
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(
-                text = if (isSearching)
-                    "${displaySongs.size} / ${localSongs.size}"
-                else "${localSongs.size} 首",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            Spacer(modifier = Modifier.width(4.dp))
-
-            if (localSongs.isNotEmpty()) {
-                IconButton(
-                    onClick = onToggleSelectMode,
-                    modifier = Modifier.size(32.dp)
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.list_alt_add_24),
-                        contentDescription = if (isSelectMode) "取消多选" else "多选",
-                        modifier = Modifier.size(20.dp),
-                        tint = if (isSelectMode) MaterialTheme.colorScheme.primary
-                        else MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
-
-            IconButton(
-                onClick = onToggleSearch,
-                modifier = Modifier.size(32.dp)
-            ) {
-                Icon(
-                    imageVector = if (isSearching) Icons.Default.Close else Icons.Default.Search,
-                    contentDescription = if (isSearching) "关闭搜索" else "搜索",
-                    modifier = Modifier.size(20.dp),
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        }
-    }
-
-    if (isSelectMode) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            TextButton(onClick = onSelectAll) {
-                Icon(
-                    imageVector = Icons.Default.DoneAll,
-                    contentDescription = null,
-                    modifier = Modifier.size(18.dp),
-                    tint = MaterialTheme.colorScheme.primary
-                )
-                Spacer(modifier = Modifier.width(4.dp))
-                Text(
-                    text = if (isAllSelected) "取消全选" else "全选",
-                    color = MaterialTheme.colorScheme.primary,
-                    fontWeight = FontWeight.Medium
-                )
-            }
-            Text(
-                text = "已选 $selectedCount 首",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
     }
 }
 

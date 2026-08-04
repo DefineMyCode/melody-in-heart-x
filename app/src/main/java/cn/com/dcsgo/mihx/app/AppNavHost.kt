@@ -192,6 +192,7 @@ fun AppNavHost(
                 state = ArtistDetailRouteState(
                     artistName = artistName,
                     songs = playerViewModel.getGroupedSongs(uiState.songs).flatten(),
+                    playlists = uiState.playlists,
                     currentSong = uiState.currentSong,
                     isPlaying = uiState.isPlaying,
                 ),
@@ -203,8 +204,16 @@ fun AppNavHost(
                     onAlbumClick = { albumName ->
                         navController.navigate(AppRoutes.albumDetail(albumName))
                     },
+                    onAddSongToPlaylist = { song, playlist ->
+                        playerViewModel.addSongToPlaylist(playlist.id, song.id)
+                    },
+                    onAddSongsToPlaylist = { songs, playlist ->
+                        songs.count { song -> playerViewModel.addSongToPlaylist(playlist.id, song.id) }
+                    },
+                    onCreatePlaylistWithResult = playerViewModel::createPlaylist,
                 ),
                 loadSongInfo = loadSongInfo,
+                showToast = showToast,
             )
         }
 
@@ -217,6 +226,7 @@ fun AppNavHost(
                 state = AlbumDetailRouteState(
                     albumName = albumName,
                     songs = playerViewModel.getGroupedSongs(uiState.songs).flatten(),
+                    playlists = uiState.playlists,
                     currentSong = uiState.currentSong,
                     isPlaying = uiState.isPlaying,
                 ),
@@ -228,8 +238,16 @@ fun AppNavHost(
                     onAlbumClick = { albumName ->
                         navController.navigate(AppRoutes.albumDetail(albumName))
                     },
+                    onAddSongToPlaylist = { song, playlist ->
+                        playerViewModel.addSongToPlaylist(playlist.id, song.id)
+                    },
+                    onAddSongsToPlaylist = { songs, playlist ->
+                        songs.count { song -> playerViewModel.addSongToPlaylist(playlist.id, song.id) }
+                    },
+                    onCreatePlaylistWithResult = playerViewModel::createPlaylist,
                 ),
                 loadSongInfo = loadSongInfo,
+                showToast = showToast,
             )
         }
 

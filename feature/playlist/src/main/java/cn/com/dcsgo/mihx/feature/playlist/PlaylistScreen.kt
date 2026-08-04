@@ -18,7 +18,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -40,7 +39,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -68,7 +66,6 @@ import cn.com.dcsgo.mihx.core.model.ArtistEntry
 import cn.com.dcsgo.mihx.core.model.Playlist
 import cn.com.dcsgo.mihx.core.model.Song
 import cn.com.dcsgo.mihx.core.model.SongInfo
-import cn.com.dcsgo.mihx.ui.components.LocateHighlightState
 import cn.com.dcsgo.mihx.ui.components.locateHighlightFlash
 import cn.com.dcsgo.mihx.ui.components.rememberLocateHighlightState
 import kotlin.math.roundToInt
@@ -190,14 +187,15 @@ fun PlaylistScreen(
     }
 
     showAddToPlaylistDialog?.let { song ->
-        AddToPlaylistDialog(
+        SingleSongAddToPlaylistDialog(
             song = song,
             playlists = playlists,
             onDismiss = { showAddToPlaylistDialog = null },
             onSelectPlaylist = { playlist ->
                 onAddSongToPlaylist(song, playlist)
                 showAddToPlaylistDialog = null
-            }
+            },
+            onCreatePlaylist = onCreatePlaylistWithResult,
         )
     }
 
@@ -228,18 +226,6 @@ fun PlaylistScreen(
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.surface),
     ) {
-        // ── 歌单详情页的滚动状态（必须在 Box 层级声明，FAB 也要用） ──
-        val detailListState = rememberLazyListState()
-        val detailScope = rememberCoroutineScope()
-        val detailLocateHighlight = rememberLocateHighlightState()
-        val currentSongInDetail by remember(currentSong, selectedPlaylist) {
-            derivedStateOf {
-                currentSong?.let { cs ->
-                    songs.indexOfFirst { it.id == cs.id }.takeIf { it >= 0 }
-                }
-            }
-        }
-
         Column(modifier = Modifier.fillMaxSize()) {
             // 顶部栏
             Row(
@@ -285,6 +271,7 @@ fun PlaylistScreen(
                 PlaylistDetailView(
                     selectedPlaylist = selectedPlaylist,
                     songs = songs,
+                    playlists = playlists,
                     currentSong = currentSong,
                     isPlaying = isPlaying,
                     onSongClick = onSongClick,
@@ -300,8 +287,8 @@ fun PlaylistScreen(
                     onReorderSongs = { orderedSongIds ->
                         selectedPlaylist?.let { onReorderPlaylist(it.id, orderedSongIds) }
                     },
-                    listState = detailListState,
-                    locateHighlight = detailLocateHighlight,
+                    onAddSongsToPlaylist = onAddSongsToPlaylist,
+                    onCreatePlaylistWithResult = onCreatePlaylistWithResult,
                 )
             } else if (showLocalMusic) {
                 // ── 本地音乐管理页 ──
@@ -384,35 +371,6 @@ fun PlaylistScreen(
             ) {
                 Icon(imageVector = Icons.Default.Add, contentDescription = "创建歌单")
             }
-        } else if (selectedPlaylist != null) {
-            // 歌单详情页：快速定位当前播放
-            AnimatedVisibility(
-                visible = currentSongInDetail != null,
-                enter = slideInVertically(initialOffsetY = { it }),
-                exit = slideOutVertically(targetOffsetY = { it }),
-                modifier = Modifier
-                    .align(Alignment.BottomStart)
-                    .padding(start = 16.dp, bottom = 16.dp)
-            ) {
-                FloatingActionButton(
-                    onClick = {
-                        detailLocateHighlight.trigger(currentSong?.id)
-                        currentSongInDetail?.let { index ->
-                            detailScope.launch {
-                                detailListState.animateScrollToItem(index)
-                            }
-                        }
-                    },
-                    // 对齐设计系统 §5.11：FAB 用 accent 底
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    contentColor = MaterialTheme.colorScheme.onPrimary
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.MyLocation,
-                        contentDescription = "定位到当前播放"
-                    )
-                }
-            }
         }
     }
 }
@@ -425,6 +383,7 @@ fun PlaylistScreen(
 private fun PlaylistDetailView(
     selectedPlaylist: Playlist,
     songs: List<Song>,
+    playlists: List<Playlist>,
     currentSong: Song?,
     isPlaying: Boolean,
     onSongClick: (Song) -> Unit,
@@ -438,8 +397,8 @@ private fun PlaylistDetailView(
     onAddSongToQueue: (Song) -> Unit,
     onAddSongToNextPlay: (Song) -> Unit,
     onReorderSongs: (List<Int>) -> Unit,
-    listState: LazyListState,
-    locateHighlight: LocateHighlightState,
+    onAddSongsToPlaylist: (List<Song>, Playlist) -> Unit,
+    onCreatePlaylistWithResult: (String) -> Playlist?,
 ) {
     // 歌曲条目按歌单顺序展示，长按拖拽排序，外部变化（移除等）时同步
     val songsById = remember(songs) { songs.associateBy { it.id } }
@@ -450,8 +409,32 @@ private fun PlaylistDetailView(
             orderedSongIds = songs.map { it.id }
         }
     }
-    val displayedSongs = orderedSongIds.mapNotNull { songsById[it] }
-    val lastIndex = displayedSongs.lastIndex
+    val orderedSongs = orderedSongIds.mapNotNull { songsById[it] }
+    val lastIndex = orderedSongs.lastIndex
+
+    // 多选 / 搜索状态
+    val selection = rememberSongSelectionController()
+    val displaySongs = selection.filterSongs(orderedSongs)
+    val selectedSongs = selection.selectedSongs(displaySongs)
+    val isAllSelected = selection.isAllSelected(displaySongs)
+
+    // 多选模式下系统返回键先退出多选
+    BackHandler(enabled = selection.isSelectMode) {
+        selection.exitSelectMode()
+    }
+
+    // ── 滚动 / 定位状态 ──
+    val listState = rememberLazyListState()
+    val locateHighlight = rememberLocateHighlightState()
+    val coroutineScope = rememberCoroutineScope()
+
+    // ── Dialog 状态 ──
+    var showBatchDialog by remember { mutableStateOf(false) }
+
+    // 定位 FAB 仅在未多选且当前播放歌曲在当前显示列表中时显示
+    val canLocate = !selection.isSelectMode && currentSong?.let { cs ->
+        displaySongs.any { it.id == cs.id }
+    } == true
 
     // 拖拽排序状态
     val itemHeightPx = with(LocalDensity.current) { 68.dp.toPx() }
@@ -469,228 +452,329 @@ private fun PlaylistDetailView(
         }
     }
 
-    Column(modifier = Modifier.fillMaxSize()) {
-        Spacer(modifier = Modifier.height(8.dp))
-        // 歌单信息
-        Row(
+    Box(modifier = Modifier.fillMaxSize()) {
+        Column(modifier = Modifier.fillMaxSize()) {
+            Spacer(modifier = Modifier.height(8.dp))
+            // 歌单信息
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column {
+                    Text(
+                        text = if (songs.isEmpty()) "暂无歌曲" else "${songs.size} 首歌曲 · 共 ${
+                            formatHoursMinutes(
+                                songs.sumOf { it.durationMs })}",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // ── 播放按钮区 ──
+            if (songs.isNotEmpty()) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        FilledTonalButton(
+                            onClick = onPlayAll,
+                            modifier = Modifier.weight(1f),
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.vertical_align_bottom_24),
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(text = "从头播放 (${songs.size})")
+                        }
+                        FilledTonalButton(
+                            onClick = onPlayAllFromEnd,
+                            modifier = Modifier.weight(1f),
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.vertical_align_top_24),
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(text = "从尾播放 (${songs.size})")
+                        }
+                    }
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        FilledTonalButton(
+                            onClick = onAddAllToQueue,
+                            modifier = Modifier.weight(1f),
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.music_note_add_24),
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(text = "加入队尾 (${songs.size})")
+                        }
+                        FilledTonalButton(
+                            onClick = onAddAllToNextPlay,
+                            modifier = Modifier.weight(1f),
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.skip_next_24),
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(text = "下一首播放 (${songs.size})")
+                        }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            if (songs.isEmpty()) {
+                EmptyPlaylistDetailHint()
+            } else {
+                SongListActionBar(
+                    title = "歌曲列表",
+                    totalCount = songs.size,
+                    displayCount = displaySongs.size,
+                    isSearching = selection.isSearching,
+                    isSelectMode = selection.isSelectMode,
+                    isAllSelected = isAllSelected,
+                    selectedCount = selection.selectedIds.size,
+                    canSelect = songs.isNotEmpty(),
+                    onToggleSearch = selection::toggleSearch,
+                    onToggleSelectMode = selection::toggleSelectMode,
+                    onSelectAll = { selection.setAllSelected(displaySongs) },
+                )
+
+                // 搜索框固定在列表上方（不作为 LazyColumn item），保证列表项索引 == 显示列表索引
+                if (selection.isSearching) {
+                    SongSearchField(
+                        query = selection.searchQuery,
+                        onQueryChange = selection::onSearchQueryChange,
+                        modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 8.dp),
+                    )
+                }
+
+                LazyColumn(
+                    state = listState,
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(horizontal = 16.dp),
+                    contentPadding = PaddingValues(
+                        bottom = if (selection.isSelectMode && selection.selectedIds.isNotEmpty()) 88.dp else 0.dp
+                    ),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    if (displaySongs.isEmpty()) {
+                        item(key = "playlist_search_empty") {
+                            SearchEmptyHint(searchQuery = selection.searchQuery)
+                        }
+                    } else {
+                        items(displaySongs, key = { it.id }) { song ->
+                            val index = orderedSongs.indexOfFirst { it.id == song.id }
+                            SongItem(
+                                song = song,
+                                isCurrentPlaying = isPlaying && currentSong?.id == song.id,
+                                showDuration = true,
+                                isSelectMode = selection.isSelectMode,
+                                isSelected = selection.isSelected(song.id),
+                                modifier = Modifier
+                                    .zIndex(if (index == dragIndex) 1f else 0f)
+                                    .graphicsLayer {
+                                        translationY = when {
+                                            index == dragIndex -> dragOffsetY
+                                            targetIndex > dragIndex && index in (dragIndex + 1)..targetIndex -> -itemHeightPx
+                                            targetIndex < dragIndex && index in targetIndex until dragIndex -> itemHeightPx
+                                            else -> 0f
+                                        }
+                                    }
+                                    .then(
+                                        // 搜索 / 多选状态下禁用长按拖拽排序
+                                        if (selection.isSelectMode || selection.isSearching) {
+                                            Modifier
+                                        } else {
+                                            Modifier.pointerInput(song.id, index) {
+                                                detectDragGesturesAfterLongPress(
+                                                    onDragStart = {
+                                                        dragIndex = index
+                                                        targetIndex = index
+                                                        dragOffsetY = 0f
+                                                    },
+                                                    onDragEnd = {
+                                                        if (dragIndex >= 0 && targetIndex >= 0 && dragIndex != targetIndex) {
+                                                            orderedSongIds = orderedSongIds.toMutableList().apply {
+                                                                add(targetIndex, removeAt(dragIndex))
+                                                            }
+                                                            onReorderSongs(orderedSongIds)
+                                                            pendingScrollIndex = targetIndex
+                                                        }
+                                                        dragIndex = -1
+                                                        targetIndex = -1
+                                                        dragOffsetY = 0f
+                                                    },
+                                                    onDragCancel = {
+                                                        dragIndex = -1
+                                                        targetIndex = -1
+                                                        dragOffsetY = 0f
+                                                    },
+                                                    onDrag = { change, dragAmount ->
+                                                        change.consume()
+                                                        dragOffsetY += dragAmount.y
+                                                        val deltaSlots = (dragOffsetY / itemHeightPx).roundToInt()
+                                                        targetIndex = (index + deltaSlots).coerceIn(0, lastIndex)
+                                                    },
+                                                )
+                                            }
+                                        }
+                                    )
+                                    .locateHighlightFlash(song.id, locateHighlight),
+                                onSongClick = {
+                                    if (selection.isSelectMode) {
+                                        selection.toggleSelected(song.id)
+                                    } else {
+                                        onSongClick(song)
+                                    }
+                                },
+                                menuActions = listOf(
+                                    SongItemAction(
+                                        label = "加入播放队列",
+                                        leadingIcon = {
+                                            Icon(
+                                                painter = painterResource(id = R.drawable.music_note_add_24),
+                                                contentDescription = null,
+                                                modifier = Modifier.size(18.dp),
+                                            )
+                                        },
+                                        onClick = { onAddSongToQueue(song) },
+                                    ),
+                                    SongItemAction(
+                                        label = "下一首播放",
+                                        leadingIcon = {
+                                            Icon(
+                                                painter = painterResource(id = R.drawable.ic_next),
+                                                contentDescription = null,
+                                                modifier = Modifier.size(18.dp),
+                                            )
+                                        },
+                                        onClick = { onAddSongToNextPlay(song) },
+                                    ),
+                                    SongItemAction(
+                                        label = "添加到歌单",
+                                        leadingIcon = {
+                                            Icon(
+                                                painter = painterResource(id = R.drawable.list_alt_add_24),
+                                                contentDescription = null,
+                                                modifier = Modifier.size(18.dp),
+                                            )
+                                        },
+                                        onClick = { onShowAddToPlaylist(song) },
+                                    ),
+                                    SongItemAction(
+                                        label = "查看歌曲详情",
+                                        leadingIcon = {
+                                            Icon(
+                                                imageVector = Icons.Default.Info,
+                                                contentDescription = null,
+                                                modifier = Modifier.size(18.dp),
+                                            )
+                                        },
+                                        onClick = { onShowSongDetail(song) },
+                                    ),
+                                    SongItemAction(
+                                        label = "移除",
+                                        destructive = true,
+                                        leadingIcon = {
+                                            Icon(
+                                                imageVector = Icons.Default.Close,
+                                                contentDescription = null,
+                                                modifier = Modifier.size(18.dp),
+                                                tint = MaterialTheme.colorScheme.error,
+                                            )
+                                        },
+                                        onClick = { onShowRemoveConfirm(song) },
+                                    ),
+                                ),
+                            )
+                        }
+                    }
+                }
+            }
+        }
+
+        // ── 定位当前播放 FAB ──
+        AnimatedVisibility(
+            visible = canLocate,
+            enter = slideInVertically(initialOffsetY = { it }),
+            exit = slideOutVertically(targetOffsetY = { it }),
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp),
-            verticalAlignment = Alignment.CenterVertically
+                .align(Alignment.BottomStart)
+                .padding(start = 16.dp, bottom = 16.dp)
         ) {
-            Column {
-                Text(
-                    text = if (songs.isEmpty()) "暂无歌曲" else "${songs.size} 首歌曲 · 共 ${
-                        formatHoursMinutes(
-                            songs.sumOf { it.durationMs })}",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+            FloatingActionButton(
+                onClick = {
+                    currentSong?.let { cs ->
+                        val index = displaySongs.indexOfFirst { it.id == cs.id }
+                        locateHighlight.trigger(cs.id)
+                        coroutineScope.launch {
+                            listState.animateScrollToItem(index)
+                        }
+                    }
+                },
+                // 对齐设计系统 §5.11：FAB 用 accent 底
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary
+            ) {
+                Icon(
+                    imageVector = Icons.Default.MyLocation,
+                    contentDescription = "定位到当前播放"
                 )
             }
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // ── 播放按钮区 ──
-        if (songs.isNotEmpty()) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    FilledTonalButton(
-                        onClick = onPlayAll,
-                        modifier = Modifier.weight(1f),
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.vertical_align_bottom_24),
-                            contentDescription = null,
-                            modifier = Modifier.size(18.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(text = "从头播放 (${songs.size})")
-                    }
-                    FilledTonalButton(
-                        onClick = onPlayAllFromEnd,
-                        modifier = Modifier.weight(1f),
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.vertical_align_top_24),
-                            contentDescription = null,
-                            modifier = Modifier.size(18.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(text = "从尾播放 (${songs.size})")
-                    }
-                }
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    FilledTonalButton(
-                        onClick = onAddAllToQueue,
-                        modifier = Modifier.weight(1f),
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.music_note_add_24),
-                            contentDescription = null,
-                            modifier = Modifier.size(18.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(text = "加入队尾 (${songs.size})")
-                    }
-                    FilledTonalButton(
-                        onClick = onAddAllToNextPlay,
-                        modifier = Modifier.weight(1f),
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.skip_next_24),
-                            contentDescription = null,
-                            modifier = Modifier.size(18.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(text = "下一首播放 (${songs.size})")
-                    }
-                }
-            }
+        // ── 底部多选操作栏 ──
+        AnimatedVisibility(
+            visible = selection.isSelectMode && selection.selectedIds.isNotEmpty(),
+            enter = slideInVertically(initialOffsetY = { it }),
+            exit = slideOutVertically(targetOffsetY = { it }),
+            modifier = Modifier.align(Alignment.BottomCenter)
+        ) {
+            SurfaceBar(
+                selectedCount = selection.selectedIds.size,
+                onAddToPlaylist = { showBatchDialog = true },
+                onClear = selection::exitSelectMode,
+            )
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
-
-        if (songs.isEmpty()) {
-            EmptyPlaylistDetailHint()
-        } else {
-            Text(
-                text = "歌曲列表",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Medium,
-                color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.padding(start = 16.dp, bottom = 8.dp)
+        // ── 批量添加到歌单 Dialog（排除当前歌单） ──
+        if (showBatchDialog && selectedSongs.isNotEmpty()) {
+            BatchAddToPlaylistDialog(
+                songs = selectedSongs,
+                playlists = playlists.filterNot { it.id == selectedPlaylist.id },
+                onDismiss = { showBatchDialog = false },
+                onSelectPlaylist = { playlist ->
+                    onAddSongsToPlaylist(selectedSongs, playlist)
+                    showBatchDialog = false
+                    selection.exitSelectMode()
+                },
+                onCreatePlaylist = onCreatePlaylistWithResult,
             )
-            LazyColumn(
-                state = listState,
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(horizontal = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
-                items(displayedSongs, key = { it.id }) { song ->
-                    val index = displayedSongs.indexOfFirst { it.id == song.id }
-                    SongItem(
-                        song = song,
-                        isCurrentPlaying = isPlaying && currentSong?.id == song.id,
-                        showDuration = true,
-                        modifier = Modifier
-                            .zIndex(if (index == dragIndex) 1f else 0f)
-                            .graphicsLayer {
-                                translationY = when {
-                                    index == dragIndex -> dragOffsetY
-                                    targetIndex > dragIndex && index in (dragIndex + 1)..targetIndex -> -itemHeightPx
-                                    targetIndex < dragIndex && index in targetIndex until dragIndex -> itemHeightPx
-                                    else -> 0f
-                                }
-                            }
-                            .pointerInput(song.id, index) {
-                                detectDragGesturesAfterLongPress(
-                                    onDragStart = {
-                                        dragIndex = index
-                                        targetIndex = index
-                                        dragOffsetY = 0f
-                                    },
-                                    onDragEnd = {
-                                        if (dragIndex >= 0 && targetIndex >= 0 && dragIndex != targetIndex) {
-                                            orderedSongIds = orderedSongIds.toMutableList().apply {
-                                                add(targetIndex, removeAt(dragIndex))
-                                            }
-                                            onReorderSongs(orderedSongIds)
-                                            pendingScrollIndex = targetIndex
-                                        }
-                                        dragIndex = -1
-                                        targetIndex = -1
-                                        dragOffsetY = 0f
-                                    },
-                                    onDragCancel = {
-                                        dragIndex = -1
-                                        targetIndex = -1
-                                        dragOffsetY = 0f
-                                    },
-                                    onDrag = { change, dragAmount ->
-                                        change.consume()
-                                        dragOffsetY += dragAmount.y
-                                        val deltaSlots = (dragOffsetY / itemHeightPx).roundToInt()
-                                        targetIndex = (index + deltaSlots).coerceIn(0, lastIndex)
-                                    },
-                                )
-                            }
-                            .locateHighlightFlash(song.id, locateHighlight),
-                        onSongClick = onSongClick,
-                        menuActions = listOf(
-                            SongItemAction(
-                                label = "加入播放队列",
-                                leadingIcon = {
-                                    Icon(
-                                        painter = painterResource(id = R.drawable.music_note_add_24),
-                                        contentDescription = null,
-                                        modifier = Modifier.size(18.dp),
-                                    )
-                                },
-                                onClick = { onAddSongToQueue(song) },
-                            ),
-                            SongItemAction(
-                                label = "下一首播放",
-                                leadingIcon = {
-                                    Icon(
-                                        painter = painterResource(id = R.drawable.ic_next),
-                                        contentDescription = null,
-                                        modifier = Modifier.size(18.dp),
-                                    )
-                                },
-                                onClick = { onAddSongToNextPlay(song) },
-                            ),
-                            SongItemAction(
-                                label = "添加到歌单",
-                                leadingIcon = {
-                                    Icon(
-                                        painter = painterResource(id = R.drawable.list_alt_add_24),
-                                        contentDescription = null,
-                                        modifier = Modifier.size(18.dp),
-                                    )
-                                },
-                                onClick = { onShowAddToPlaylist(song) },
-                            ),
-                            SongItemAction(
-                                label = "查看歌曲详情",
-                                leadingIcon = {
-                                    Icon(
-                                        imageVector = Icons.Default.Info,
-                                        contentDescription = null,
-                                        modifier = Modifier.size(18.dp),
-                                    )
-                                },
-                                onClick = { onShowSongDetail(song) },
-                            ),
-                            SongItemAction(
-                                label = "移除",
-                                destructive = true,
-                                leadingIcon = {
-                                    Icon(
-                                        imageVector = Icons.Default.Close,
-                                        contentDescription = null,
-                                        modifier = Modifier.size(18.dp),
-                                        tint = MaterialTheme.colorScheme.error,
-                                    )
-                                },
-                                onClick = { onShowRemoveConfirm(song) },
-                            ),
-                        ),
-                    )
-                }
-            }
         }
     }
 }

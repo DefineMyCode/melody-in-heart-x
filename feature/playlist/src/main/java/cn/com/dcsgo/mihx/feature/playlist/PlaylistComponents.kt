@@ -16,6 +16,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.AddCircleOutline
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Create
 import androidx.compose.material.icons.filled.Delete
@@ -157,7 +159,9 @@ data class SongItemAction(
  * @param song              歌曲数据
  * @param isCurrentPlaying  是否正在播放（影响封面和标题样式）
  * @param showDuration      是否展示歌曲时长
- * @param onSongClick       点击回调
+ * @param isSelectMode      是否处于多选模式（行首显示选中指示，隐藏「⋯」菜单）
+ * @param isSelected        是否已选中（仅多选模式下生效）
+ * @param onSongClick       点击回调（多选模式下由调用方传入选中切换逻辑）
  * @param menuActions       更多操作菜单项（非空则在条目末尾显示「⋯」菜单）
  */
 @Composable
@@ -166,6 +170,8 @@ fun SongItem(
     isCurrentPlaying: Boolean = false,
     modifier: Modifier = Modifier,
     showDuration: Boolean = false,
+    isSelectMode: Boolean = false,
+    isSelected: Boolean = false,
     onSongClick: (Song) -> Unit,
     menuActions: List<SongItemAction> = emptyList(),
 ) {
@@ -176,6 +182,27 @@ fun SongItem(
             .padding(vertical = 10.dp, horizontal = 4.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
+        // 多选模式：行首选中指示（与 LocalSongItem 一致）
+        if (isSelectMode) {
+            Box(modifier = Modifier.size(32.dp), contentAlignment = Alignment.Center) {
+                if (isSelected) {
+                    Icon(
+                        imageVector = Icons.Default.CheckCircle,
+                        contentDescription = "已选中",
+                        modifier = Modifier.size(24.dp),
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                } else {
+                    Icon(
+                        imageVector = Icons.Default.AddCircleOutline,
+                        contentDescription = "未选中",
+                        modifier = Modifier.size(24.dp),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.width(8.dp))
+        }
         // 封面 / 播放指示（对齐设计 §5.13：44dp 缩略图、10dp 圆角）
         Box(
             modifier = Modifier
@@ -240,8 +267,8 @@ fun SongItem(
             )
             Spacer(modifier = Modifier.width(8.dp))
         }
-        // 更多操作菜单（合并 移除 / 加入队列 / 下一首 / 加入歌单）
-        if (menuActions.isNotEmpty()) {
+        // 更多操作菜单（合并 移除 / 加入队列 / 下一首 / 加入歌单）；多选模式下隐藏
+        if (!isSelectMode && menuActions.isNotEmpty()) {
             var menuExpanded by remember { mutableStateOf(false) }
             Box {
                 IconButton(onClick = { menuExpanded = true }) {

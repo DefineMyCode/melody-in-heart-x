@@ -55,6 +55,7 @@ import androidx.compose.ui.unit.dp
 import androidx.activity.compose.BackHandler
 import kotlinx.coroutines.launch
 import coil.compose.AsyncImage
+import cn.com.dcsgo.mihx.core.common.time.formatHoursMinutes
 import cn.com.dcsgo.mihx.core.model.AlbumEntry
 import cn.com.dcsgo.mihx.core.model.ArtistEntry
 import cn.com.dcsgo.mihx.core.model.Playlist
@@ -413,7 +414,9 @@ private fun PlaylistDetailView(
         ) {
             Column {
                 Text(
-                    text = if (songs.isEmpty()) "暂无歌曲" else "${songs.size} 首歌曲",
+                    text = if (songs.isEmpty()) "暂无歌曲" else "${songs.size} 首歌曲 · 共 ${
+                        formatHoursMinutes(
+                            songs.sumOf { it.durationMs })}",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

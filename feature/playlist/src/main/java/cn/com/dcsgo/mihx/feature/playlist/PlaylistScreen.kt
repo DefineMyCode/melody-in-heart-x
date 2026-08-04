@@ -5,7 +5,6 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -45,21 +44,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.zIndex
 import androidx.activity.compose.BackHandler
 import kotlinx.coroutines.launch
-import coil.compose.AsyncImage
 import cn.com.dcsgo.mihx.core.common.time.formatHoursMinutes
 import cn.com.dcsgo.mihx.core.model.AlbumEntry
 import cn.com.dcsgo.mihx.core.model.ArtistEntry
@@ -68,7 +62,8 @@ import cn.com.dcsgo.mihx.core.model.Song
 import cn.com.dcsgo.mihx.core.model.SongInfo
 import cn.com.dcsgo.mihx.ui.components.locateHighlightFlash
 import cn.com.dcsgo.mihx.ui.components.rememberLocateHighlightState
-import kotlin.math.roundToInt
+import sh.calvin.reorderable.ReorderableItem
+import sh.calvin.reorderable.rememberReorderableLazyListState
 
 @Composable
 fun PlaylistScreen(
@@ -410,7 +405,6 @@ private fun PlaylistDetailView(
         }
     }
     val orderedSongs = orderedSongIds.mapNotNull { songsById[it] }
-    val lastIndex = orderedSongs.lastIndex
 
     // 多选 / 搜索状态
     val selection = rememberSongSelectionController()
@@ -436,20 +430,23 @@ private fun PlaylistDetailView(
         displaySongs.any { it.id == cs.id }
     } == true
 
-    // 拖拽排序状态
-    val itemHeightPx = with(LocalDensity.current) { 68.dp.toPx() }
-    var dragIndex by remember(selectedPlaylist.id) { mutableStateOf(-1) }
-    var targetIndex by remember(selectedPlaylist.id) { mutableStateOf(-1) }
-    var dragOffsetY by remember(selectedPlaylist.id) { mutableStateOf(0f) }
-    // 松手后需要滚动到的索引：重排后按数字索引锚定会导致拖到顶部时被顶出视口，需校正
-    var pendingScrollIndex by remember(selectedPlaylist.id) { mutableStateOf(-1) }
-    LaunchedEffect(pendingScrollIndex) {
-        if (pendingScrollIndex >= 0) {
-            if (pendingScrollIndex < listState.firstVisibleItemIndex) {
-                listState.animateScrollToItem(pendingScrollIndex)
-            }
-            pendingScrollIndex = -1
+    // 拖拽排序（sh.calvin.reorderable 库处理：长按拖拽、边缘自动滚动、条目移动动画等）
+    var reorderDirty by remember { mutableStateOf(false) }
+    val reorderableState = rememberReorderableLazyListState(listState) { from, to ->
+        orderedSongIds = orderedSongIds.toMutableList().apply {
+            add(to.index, removeAt(from.index))
         }
+        reorderDirty = true
+    }
+    // 拖拽结束（onMove 不再触发）时把最终排序持久化一次，避免每次 onMove 都写库
+    LaunchedEffect(Unit) {
+        snapshotFlow { reorderableState.isAnyItemDragging }
+            .collect { dragging ->
+                if (!dragging && reorderDirty) {
+                    reorderDirty = false
+                    onReorderSongs(orderedSongIds)
+                }
+            }
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -572,146 +569,109 @@ private fun PlaylistDetailView(
                     )
                 }
 
-                LazyColumn(
-                    state = listState,
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(horizontal = 16.dp),
-                    contentPadding = PaddingValues(
-                        bottom = if (selection.isSelectMode && selection.selectedIds.isNotEmpty()) 88.dp else 0.dp
-                    ),
-                    verticalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    if (displaySongs.isEmpty()) {
-                        item(key = "playlist_search_empty") {
-                            SearchEmptyHint(searchQuery = selection.searchQuery)
-                        }
-                    } else {
-                        items(displaySongs, key = { it.id }) { song ->
-                            val index = orderedSongs.indexOfFirst { it.id == song.id }
-                            SongItem(
-                                song = song,
-                                isCurrentPlaying = isPlaying && currentSong?.id == song.id,
-                                showDuration = true,
-                                isSelectMode = selection.isSelectMode,
-                                isSelected = selection.isSelected(song.id),
-                                modifier = Modifier
-                                    .zIndex(if (index == dragIndex) 1f else 0f)
-                                    .graphicsLayer {
-                                        translationY = when {
-                                            index == dragIndex -> dragOffsetY
-                                            targetIndex > dragIndex && index in (dragIndex + 1)..targetIndex -> -itemHeightPx
-                                            targetIndex < dragIndex && index in targetIndex until dragIndex -> itemHeightPx
-                                            else -> 0f
-                                        }
-                                    }
-                                    .then(
-                                        // 搜索 / 多选状态下禁用长按拖拽排序
-                                        if (selection.isSelectMode || selection.isSearching) {
-                                            Modifier
+                val dragEnabled = !selection.isSelectMode && !selection.isSearching
+                Box(modifier = Modifier.weight(1f)) {
+                    LazyColumn(
+                        state = listState,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(horizontal = 16.dp),
+                        contentPadding = PaddingValues(
+                            bottom = if (selection.isSelectMode && selection.selectedIds.isNotEmpty()) 88.dp else 0.dp
+                        ),
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        if (displaySongs.isEmpty()) {
+                            item(key = "playlist_search_empty") {
+                                SearchEmptyHint(searchQuery = selection.searchQuery)
+                            }
+                        } else {
+                            items(displaySongs, key = { it.id }) { song ->
+                                ReorderableItem(
+                                    reorderableState,
+                                    key = song.id,
+                                ) { isDragging ->
+                                    SongItem(
+                                        song = song,
+                                        isCurrentPlaying = isPlaying && currentSong?.id == song.id,
+                                        showDuration = true,
+                                        isSelectMode = selection.isSelectMode,
+                                        isSelected = selection.isSelected(song.id),
+                                        modifier = Modifier
+                                            .then(
+                                                if (dragEnabled) Modifier.longPressDraggableHandle() else Modifier
+                                            )
+                                            .shadow(if (isDragging) 8.dp else 0.dp, RoundedCornerShape(12.dp))
+                                            .locateHighlightFlash(song.id, locateHighlight),
+                                    onSongClick = {
+                                        if (selection.isSelectMode) {
+                                            selection.toggleSelected(song.id)
                                         } else {
-                                            Modifier.pointerInput(song.id, index) {
-                                                detectDragGesturesAfterLongPress(
-                                                    onDragStart = {
-                                                        dragIndex = index
-                                                        targetIndex = index
-                                                        dragOffsetY = 0f
-                                                    },
-                                                    onDragEnd = {
-                                                        if (dragIndex >= 0 && targetIndex >= 0 && dragIndex != targetIndex) {
-                                                            orderedSongIds = orderedSongIds.toMutableList().apply {
-                                                                add(targetIndex, removeAt(dragIndex))
-                                                            }
-                                                            onReorderSongs(orderedSongIds)
-                                                            pendingScrollIndex = targetIndex
-                                                        }
-                                                        dragIndex = -1
-                                                        targetIndex = -1
-                                                        dragOffsetY = 0f
-                                                    },
-                                                    onDragCancel = {
-                                                        dragIndex = -1
-                                                        targetIndex = -1
-                                                        dragOffsetY = 0f
-                                                    },
-                                                    onDrag = { change, dragAmount ->
-                                                        change.consume()
-                                                        dragOffsetY += dragAmount.y
-                                                        val deltaSlots = (dragOffsetY / itemHeightPx).roundToInt()
-                                                        targetIndex = (index + deltaSlots).coerceIn(0, lastIndex)
-                                                    },
-                                                )
-                                            }
+                                            onSongClick(song)
                                         }
-                                    )
-                                    .locateHighlightFlash(song.id, locateHighlight),
-                                onSongClick = {
-                                    if (selection.isSelectMode) {
-                                        selection.toggleSelected(song.id)
-                                    } else {
-                                        onSongClick(song)
-                                    }
-                                },
-                                menuActions = listOf(
-                                    SongItemAction(
-                                        label = "加入播放队列",
-                                        leadingIcon = {
-                                            Icon(
-                                                painter = painterResource(id = R.drawable.music_note_add_24),
-                                                contentDescription = null,
-                                                modifier = Modifier.size(18.dp),
-                                            )
-                                        },
-                                        onClick = { onAddSongToQueue(song) },
+                                    },
+                                    menuActions = listOf(
+                                        SongItemAction(
+                                            label = "加入播放队列",
+                                            leadingIcon = {
+                                                Icon(
+                                                    painter = painterResource(id = R.drawable.music_note_add_24),
+                                                    contentDescription = null,
+                                                    modifier = Modifier.size(18.dp),
+                                                )
+                                            },
+                                            onClick = { onAddSongToQueue(song) },
+                                        ),
+                                        SongItemAction(
+                                            label = "下一首播放",
+                                            leadingIcon = {
+                                                Icon(
+                                                    painter = painterResource(id = R.drawable.ic_next),
+                                                    contentDescription = null,
+                                                    modifier = Modifier.size(18.dp),
+                                                )
+                                            },
+                                            onClick = { onAddSongToNextPlay(song) },
+                                        ),
+                                        SongItemAction(
+                                            label = "添加到歌单",
+                                            leadingIcon = {
+                                                Icon(
+                                                    painter = painterResource(id = R.drawable.list_alt_add_24),
+                                                    contentDescription = null,
+                                                    modifier = Modifier.size(18.dp),
+                                                )
+                                            },
+                                            onClick = { onShowAddToPlaylist(song) },
+                                        ),
+                                        SongItemAction(
+                                            label = "查看歌曲详情",
+                                            leadingIcon = {
+                                                Icon(
+                                                    imageVector = Icons.Default.Info,
+                                                    contentDescription = null,
+                                                    modifier = Modifier.size(18.dp),
+                                                )
+                                            },
+                                            onClick = { onShowSongDetail(song) },
+                                        ),
+                                        SongItemAction(
+                                            label = "移除",
+                                            destructive = true,
+                                            leadingIcon = {
+                                                Icon(
+                                                    imageVector = Icons.Default.Close,
+                                                    contentDescription = null,
+                                                    modifier = Modifier.size(18.dp),
+                                                    tint = MaterialTheme.colorScheme.error,
+                                                )
+                                            },
+                                            onClick = { onShowRemoveConfirm(song) },
+                                        ),
                                     ),
-                                    SongItemAction(
-                                        label = "下一首播放",
-                                        leadingIcon = {
-                                            Icon(
-                                                painter = painterResource(id = R.drawable.ic_next),
-                                                contentDescription = null,
-                                                modifier = Modifier.size(18.dp),
-                                            )
-                                        },
-                                        onClick = { onAddSongToNextPlay(song) },
-                                    ),
-                                    SongItemAction(
-                                        label = "添加到歌单",
-                                        leadingIcon = {
-                                            Icon(
-                                                painter = painterResource(id = R.drawable.list_alt_add_24),
-                                                contentDescription = null,
-                                                modifier = Modifier.size(18.dp),
-                                            )
-                                        },
-                                        onClick = { onShowAddToPlaylist(song) },
-                                    ),
-                                    SongItemAction(
-                                        label = "查看歌曲详情",
-                                        leadingIcon = {
-                                            Icon(
-                                                imageVector = Icons.Default.Info,
-                                                contentDescription = null,
-                                                modifier = Modifier.size(18.dp),
-                                            )
-                                        },
-                                        onClick = { onShowSongDetail(song) },
-                                    ),
-                                    SongItemAction(
-                                        label = "移除",
-                                        destructive = true,
-                                        leadingIcon = {
-                                            Icon(
-                                                imageVector = Icons.Default.Close,
-                                                contentDescription = null,
-                                                modifier = Modifier.size(18.dp),
-                                                tint = MaterialTheme.colorScheme.error,
-                                            )
-                                        },
-                                        onClick = { onShowRemoveConfirm(song) },
-                                    ),
-                                ),
-                            )
+                                )
+                                }
+                            }
                         }
                     }
                 }

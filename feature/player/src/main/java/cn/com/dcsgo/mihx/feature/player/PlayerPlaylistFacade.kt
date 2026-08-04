@@ -41,6 +41,11 @@ class PlayerPlaylistFacade(
         refresh()
     }
 
+    fun reorderPlaylist(playlistId: Int, orderedSongIds: List<Int>) {
+        playlistManager.reorderPlaylist(playlistId, orderedSongIds)
+        refresh()
+    }
+
     fun isSongInPlaylist(playlistId: Int, songId: Int): Boolean {
         return playlistManager.isSongInPlaylist(playlistId, songId)
     }

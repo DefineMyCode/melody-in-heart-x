@@ -10,6 +10,7 @@ interface PlaylistActions {
     fun renamePlaylist(playlistId: Int, newName: String): Boolean
     fun addSongToPlaylist(playlistId: Int, songId: Int): Boolean
     fun removeSongFromPlaylist(playlistId: Int, songId: Int)
+    fun reorderPlaylist(playlistId: Int, orderedSongIds: List<Int>)
     fun isSongInPlaylist(playlistId: Int, songId: Int): Boolean
     fun snapshot(): PlaylistSnapshot
 }

@@ -33,6 +33,7 @@ data class PlaylistRouteActions(
     val onRenamePlaylist: (Playlist, String) -> Unit,
     val onAddSongToPlaylist: (Song, Playlist) -> Unit,
     val onRemoveSongFromPlaylist: (Song, Playlist) -> Unit,
+    val onReorderPlaylist: (Int, List<Int>) -> Unit = { _, _ -> },
     // 本地音乐管理
     val onAddFolderClick: () -> Unit,
     val onAddSongsToPlaylist: (List<Song>, Playlist) -> Int,
@@ -82,6 +83,7 @@ fun PlaylistRoute(
             actions.onRemoveSongFromPlaylist(song, playlist)
             showToast("已从「${playlist.name}」移除")
         },
+        onReorderPlaylist = actions.onReorderPlaylist,
         isImporting = state.isImporting,
         importProgress = state.importProgress,
         importTotal = state.importTotal,

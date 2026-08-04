@@ -32,6 +32,10 @@ class PlaylistManager(
         playlistRepository.removeSongFromPlaylist(playlistId, songId)
     }
 
+    override fun reorderPlaylist(playlistId: Int, orderedSongIds: List<Int>) {
+        playlistRepository.reorderPlaylist(playlistId, orderedSongIds)
+    }
+
     override fun isSongInPlaylist(playlistId: Int, songId: Int): Boolean {
         return playlistRepository.isSongInPlaylist(playlistId, songId)
     }
@@ -44,9 +48,10 @@ class PlaylistManager(
     }
 
     companion object {
+        /** 按歌单 songIds 顺序返回歌曲（缺失的 ID 跳过），保证歌单排序被 UI/播放尊重 */
         fun getSongsByPlaylist(playlist: Playlist, songs: List<Song>): List<Song> {
-            val songIds = playlist.songIds.toSet()
-            return songs.filter { it.id in songIds }
+            val songsById = songs.associateBy { it.id }
+            return playlist.songIds.mapNotNull { id -> songsById[id] }
         }
     }
 }

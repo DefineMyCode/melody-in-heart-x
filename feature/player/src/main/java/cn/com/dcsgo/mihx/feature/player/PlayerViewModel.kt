@@ -206,6 +206,11 @@ class PlayerViewModel @Inject constructor(
         runtime.removeSongFromPlaylist(playlistId, songId)
     }
 
+    /** Reorders songs within a playlist and persists the order. */
+    fun reorderPlaylist(playlistId: Int, orderedSongIds: List<Int>) {
+        runtime.reorderPlaylist(playlistId, orderedSongIds)
+    }
+
     /** Returns whether a song is in a playlist. */
     fun isSongInPlaylist(playlistId: Int, songId: Int): Boolean {
         return runtime.isSongInPlaylist(playlistId, songId)

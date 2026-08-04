@@ -37,6 +37,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -140,17 +141,22 @@ fun EmptySectionHint(message: String) {
 // 歌曲列表项（支持添加到歌单 / 添加到队列 / 移除）
 // ─────────────────────────────────────────────────────────────────────────────
 
+/** 歌曲条目「更多」菜单动作项 */
+data class SongItemAction(
+    val label: String,
+    val onClick: () -> Unit,
+    val destructive: Boolean = false,
+    val leadingIcon: (@Composable () -> Unit)? = null,
+)
+
 /**
  * 歌曲列表项组件
  *
  * @param song              歌曲数据
  * @param isCurrentPlaying  是否正在播放（影响封面和标题样式）
+ * @param showDuration      是否展示歌曲时长
  * @param onSongClick       点击回调
- * @param onShowAddToPlaylist 添加到歌单回调（非空则显示对应按钮）
- * @param showRemoveButton  是否显示移除按钮（歌单详情页）
- * @param onRemoveClick     移除按钮点击回调
- * @param onAddToQueue      加入播放队列回调（非空则显示对应按钮）
- * @param onAddToNextPlay   加入下一首播放回调（非空则显示对应按钮）
+ * @param menuActions       更多操作菜单项（非空则在条目末尾显示「⋯」菜单）
  */
 @Composable
 fun SongItem(
@@ -159,11 +165,7 @@ fun SongItem(
     modifier: Modifier = Modifier,
     showDuration: Boolean = false,
     onSongClick: (Song) -> Unit,
-    onShowAddToPlaylist: ((Song) -> Unit)? = null,
-    showRemoveButton: Boolean = false,
-    onRemoveClick: (() -> Unit)? = null,
-    onAddToQueue: (() -> Unit)? = null,
-    onAddToNextPlay: (() -> Unit)? = null,
+    menuActions: List<SongItemAction> = emptyList(),
 ) {
     Row(
         modifier = modifier
@@ -229,48 +231,41 @@ fun SongItem(
             )
             Spacer(modifier = Modifier.width(8.dp))
         }
-        // 移除按钮（歌单详情页显示）
-        if (showRemoveButton && onRemoveClick != null) {
-            IconButton(onClick = onRemoveClick) {
-                Icon(
-                    imageVector = Icons.Default.Close,
-                    contentDescription = "从歌单移除",
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.size(20.dp)
-                )
-            }
-        }
-        // 加入播放队列按钮
-        if (onAddToQueue != null) {
-            IconButton(onClick = onAddToQueue) {
-                Icon(
-                    painter = painterResource(id = R.drawable.music_note_add_24),
-                    contentDescription = "加入播放队列",
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.size(20.dp)
-                )
-            }
-        }
-        // 下一首播放按钮
-        if (onAddToNextPlay != null) {
-            IconButton(onClick = onAddToNextPlay) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_next),
-                    contentDescription = "下一首播放",
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.size(20.dp)
-                )
-            }
-        }
-        // 添加到歌单按钮
-        if (onShowAddToPlaylist != null) {
-            IconButton(onClick = { onShowAddToPlaylist(song) }) {
-                Icon(
-                    painter = painterResource(id = R.drawable.list_alt_add_24),
-                    contentDescription = "添加到歌单",
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.size(20.dp)
-                )
+        // 更多操作菜单（合并 移除 / 加入队列 / 下一首 / 加入歌单）
+        if (menuActions.isNotEmpty()) {
+            var menuExpanded by remember { mutableStateOf(false) }
+            Box {
+                IconButton(onClick = { menuExpanded = true }) {
+                    Icon(
+                        imageVector = Icons.Filled.MoreVert,
+                        contentDescription = "更多操作",
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                DropdownMenu(
+                    expanded = menuExpanded,
+                    onDismissRequest = { menuExpanded = false },
+                ) {
+                    menuActions.forEach { action ->
+                        DropdownMenuItem(
+                            text = {
+                                Text(
+                                    text = action.label,
+                                    color = if (action.destructive) {
+                                        MaterialTheme.colorScheme.error
+                                    } else {
+                                        Color.Unspecified
+                                    },
+                                )
+                            },
+                            onClick = {
+                                menuExpanded = false
+                                action.onClick()
+                            },
+                            leadingIcon = action.leadingIcon,
+                        )
+                    }
+                }
             }
         }
     }

@@ -581,6 +581,18 @@ class MusicRepository(
         true
     }
 
+    /** 调整歌单内歌曲顺序（持久化 sortOrder） */
+    fun reorderPlaylist(playlistId: Int, orderedSongIds: List<Int>): Boolean = lock.write {
+        val index = playlists.indexOfFirst { it.id == playlistId }
+        if (index < 0) return@write false
+        val playlist = playlists[index]
+        playlist.songIds.clear()
+        playlist.songIds.addAll(orderedSongIds)
+        persistPlaylists()
+        AppLog.info(TAG, "reorderPlaylist: id=$playlistId, count=${orderedSongIds.size}")
+        true
+    }
+
     /** 删除歌单（仅删除歌单本身，不删除歌曲） */
     fun deletePlaylist(playlistId: Int): Boolean = lock.write {
         val removed = playlists.removeIf { it.id == playlistId }

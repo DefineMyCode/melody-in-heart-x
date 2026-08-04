@@ -10,6 +10,7 @@ interface PlaylistRepository {
     fun renamePlaylist(playlistId: Int, newName: String): Boolean
     fun addSongToPlaylist(playlistId: Int, songId: Int): Boolean
     fun removeSongFromPlaylist(playlistId: Int, songId: Int): Boolean
+    fun reorderPlaylist(playlistId: Int, orderedSongIds: List<Int>): Boolean
     fun getSongsByPlaylistId(playlistId: Int): List<Song>
     fun isSongInPlaylist(playlistId: Int, songId: Int): Boolean
 }

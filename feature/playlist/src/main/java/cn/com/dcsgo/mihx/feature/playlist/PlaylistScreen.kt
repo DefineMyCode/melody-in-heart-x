@@ -5,6 +5,7 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -25,6 +26,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.QueueMusic
 import androidx.compose.material.icons.filled.MyLocation
@@ -47,11 +49,15 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import androidx.activity.compose.BackHandler
 import kotlinx.coroutines.launch
 import coil.compose.AsyncImage
@@ -64,6 +70,7 @@ import cn.com.dcsgo.mihx.core.model.SongInfo
 import cn.com.dcsgo.mihx.ui.components.LocateHighlightState
 import cn.com.dcsgo.mihx.ui.components.locateHighlightFlash
 import cn.com.dcsgo.mihx.ui.components.rememberLocateHighlightState
+import kotlin.math.roundToInt
 
 @Composable
 fun PlaylistScreen(
@@ -85,6 +92,7 @@ fun PlaylistScreen(
     onRenamePlaylist: (Playlist, String) -> Unit,
     onAddSongToPlaylist: (Song, Playlist) -> Unit,
     onRemoveSongFromPlaylist: (Song, Playlist) -> Unit,
+    onReorderPlaylist: (Int, List<Int>) -> Unit = { _, _ -> },
     // 本地音乐管理相关
     isImporting: Boolean = false,
     importProgress: Int = 0,
@@ -265,6 +273,9 @@ fun PlaylistScreen(
                     onAddAllToNextPlay = { onAddAllToNextPlayInPlaylist(selectedPlaylist, songs) },
                     onAddSongToQueue = onAddSongToQueue,
                     onAddSongToNextPlay = onAddSongToNextPlay,
+                    onReorderSongs = { orderedSongIds ->
+                        selectedPlaylist?.let { onReorderPlaylist(it.id, orderedSongIds) }
+                    },
                     listState = detailListState,
                     locateHighlight = detailLocateHighlight,
                 )
@@ -400,9 +411,38 @@ private fun PlaylistDetailView(
     onAddAllToNextPlay: () -> Unit,
     onAddSongToQueue: (Song) -> Unit,
     onAddSongToNextPlay: (Song) -> Unit,
+    onReorderSongs: (List<Int>) -> Unit,
     listState: LazyListState,
     locateHighlight: LocateHighlightState,
 ) {
+    // 歌曲条目按歌单顺序展示，长按拖拽排序，外部变化（移除等）时同步
+    val songsById = remember(songs) { songs.associateBy { it.id } }
+    val songIdSet = remember(songs) { songs.map { it.id }.toSet() }
+    var orderedSongIds by remember(selectedPlaylist.id) { mutableStateOf(songs.map { it.id }) }
+    LaunchedEffect(songIdSet) {
+        if (orderedSongIds.toSet() != songIdSet) {
+            orderedSongIds = songs.map { it.id }
+        }
+    }
+    val displayedSongs = orderedSongIds.mapNotNull { songsById[it] }
+    val lastIndex = displayedSongs.lastIndex
+
+    // 拖拽排序状态
+    val itemHeightPx = with(LocalDensity.current) { 68.dp.toPx() }
+    var dragIndex by remember(selectedPlaylist.id) { mutableStateOf(-1) }
+    var targetIndex by remember(selectedPlaylist.id) { mutableStateOf(-1) }
+    var dragOffsetY by remember(selectedPlaylist.id) { mutableStateOf(0f) }
+    // 松手后需要滚动到的索引：重排后按数字索引锚定会导致拖到顶部时被顶出视口，需校正
+    var pendingScrollIndex by remember(selectedPlaylist.id) { mutableStateOf(-1) }
+    LaunchedEffect(pendingScrollIndex) {
+        if (pendingScrollIndex >= 0) {
+            if (pendingScrollIndex < listState.firstVisibleItemIndex) {
+                listState.animateScrollToItem(pendingScrollIndex)
+            }
+            pendingScrollIndex = -1
+        }
+    }
+
     Column(modifier = Modifier.fillMaxSize()) {
         Spacer(modifier = Modifier.height(8.dp))
         // 歌单信息
@@ -512,17 +552,104 @@ private fun PlaylistDetailView(
                     .padding(horizontal = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
-                items(songs, key = { "detail_${it.id}" }) { song ->
+                items(displayedSongs, key = { it.id }) { song ->
+                    val index = displayedSongs.indexOfFirst { it.id == song.id }
                     SongItem(
                         song = song,
                         isCurrentPlaying = isPlaying && currentSong?.id == song.id,
-                        modifier = Modifier.locateHighlightFlash(song.id, locateHighlight),
+                        showDuration = true,
+                        modifier = Modifier
+                            .zIndex(if (index == dragIndex) 1f else 0f)
+                            .graphicsLayer {
+                                translationY = when {
+                                    index == dragIndex -> dragOffsetY
+                                    targetIndex > dragIndex && index in (dragIndex + 1)..targetIndex -> -itemHeightPx
+                                    targetIndex < dragIndex && index in targetIndex until dragIndex -> itemHeightPx
+                                    else -> 0f
+                                }
+                            }
+                            .pointerInput(song.id, index) {
+                                detectDragGesturesAfterLongPress(
+                                    onDragStart = {
+                                        dragIndex = index
+                                        targetIndex = index
+                                        dragOffsetY = 0f
+                                    },
+                                    onDragEnd = {
+                                        if (dragIndex >= 0 && targetIndex >= 0 && dragIndex != targetIndex) {
+                                            orderedSongIds = orderedSongIds.toMutableList().apply {
+                                                add(targetIndex, removeAt(dragIndex))
+                                            }
+                                            onReorderSongs(orderedSongIds)
+                                            pendingScrollIndex = targetIndex
+                                        }
+                                        dragIndex = -1
+                                        targetIndex = -1
+                                        dragOffsetY = 0f
+                                    },
+                                    onDragCancel = {
+                                        dragIndex = -1
+                                        targetIndex = -1
+                                        dragOffsetY = 0f
+                                    },
+                                    onDrag = { change, dragAmount ->
+                                        change.consume()
+                                        dragOffsetY += dragAmount.y
+                                        val deltaSlots = (dragOffsetY / itemHeightPx).roundToInt()
+                                        targetIndex = (index + deltaSlots).coerceIn(0, lastIndex)
+                                    },
+                                )
+                            }
+                            .locateHighlightFlash(song.id, locateHighlight),
                         onSongClick = onSongClick,
-                        onShowAddToPlaylist = onShowAddToPlaylist,
-                        showRemoveButton = true,
-                        onRemoveClick = { onShowRemoveConfirm(song) },
-                        onAddToQueue = { onAddSongToQueue(song) },
-                        onAddToNextPlay = { onAddSongToNextPlay(song) },
+                        menuActions = listOf(
+                            SongItemAction(
+                                label = "加入播放队列",
+                                leadingIcon = {
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.music_note_add_24),
+                                        contentDescription = null,
+                                        modifier = Modifier.size(18.dp),
+                                    )
+                                },
+                                onClick = { onAddSongToQueue(song) },
+                            ),
+                            SongItemAction(
+                                label = "下一首播放",
+                                leadingIcon = {
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.ic_next),
+                                        contentDescription = null,
+                                        modifier = Modifier.size(18.dp),
+                                    )
+                                },
+                                onClick = { onAddSongToNextPlay(song) },
+                            ),
+                            SongItemAction(
+                                label = "添加到歌单",
+                                leadingIcon = {
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.list_alt_add_24),
+                                        contentDescription = null,
+                                        modifier = Modifier.size(18.dp),
+                                    )
+                                },
+                                onClick = { onShowAddToPlaylist(song) },
+                            ),
+                            SongItemAction(
+                                label = "移除",
+                                destructive = true,
+                                leadingIcon = {
+                                    Icon(
+                                        imageVector = Icons.Default.Close,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(18.dp),
+                                        tint = MaterialTheme.colorScheme.error,
+                                    )
+                                },
+                                onClick = { onShowRemoveConfirm(song) },
+                            ),
+                        ),
                     )
                 }
             }

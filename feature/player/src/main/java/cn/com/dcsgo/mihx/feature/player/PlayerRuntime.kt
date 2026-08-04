@@ -521,6 +521,11 @@ internal class PlayerRuntime(
         playlistFacade.removeSongFromPlaylist(playlistId, songId)
     }
 
+    /** 调整歌单内歌曲顺序并持久化 */
+    fun reorderPlaylist(playlistId: Int, orderedSongIds: List<Int>) {
+        playlistFacade.reorderPlaylist(playlistId, orderedSongIds)
+    }
+
     fun isSongInPlaylist(playlistId: Int, songId: Int): Boolean {
         return playlistFacade.isSongInPlaylist(playlistId, songId)
     }

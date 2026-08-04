@@ -23,6 +23,9 @@ class PlaylistRepositoryAdapter @Inject constructor(
     override fun removeSongFromPlaylist(playlistId: Int, songId: Int): Boolean =
         musicRepository.removeSongFromPlaylist(playlistId, songId)
 
+    override fun reorderPlaylist(playlistId: Int, orderedSongIds: List<Int>): Boolean =
+        musicRepository.reorderPlaylist(playlistId, orderedSongIds)
+
     override fun getSongsByPlaylistId(playlistId: Int): List<Song> =
         musicRepository.getSongsByPlaylistId(playlistId)
 

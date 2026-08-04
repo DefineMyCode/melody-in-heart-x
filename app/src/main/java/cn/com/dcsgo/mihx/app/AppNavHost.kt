@@ -421,6 +421,7 @@ private fun playlistRouteActions(
     onRenamePlaylist = { playlist, newName -> playerViewModel.renamePlaylist(playlist.id, newName) },
     onAddSongToPlaylist = { song, playlist -> playerViewModel.addSongToPlaylist(playlist.id, song.id) },
     onRemoveSongFromPlaylist = { song, playlist -> playerViewModel.removeSongFromPlaylist(playlist.id, song.id) },
+    onReorderPlaylist = playerViewModel::reorderPlaylist,
     onAddFolderClick = permissionCoordinator::requestAudioFolderAccess,
     onAddSongsToPlaylist = { songs, playlist ->
         songs.count { song -> playerViewModel.addSongToPlaylist(playlist.id, song.id) }

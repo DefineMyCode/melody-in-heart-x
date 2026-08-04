@@ -8,7 +8,7 @@ import org.junit.Test
 class PlaylistManagerTest {
 
     @Test
-    fun getSongsByPlaylistKeepsLibraryOrderAndFiltersMissingIds() {
+    fun getSongsByPlaylistKeepsPlaylistOrderAndFiltersMissingIds() {
         val playlist = Playlist(
             id = 1,
             name = "Favorites",
@@ -19,7 +19,7 @@ class PlaylistManagerTest {
 
         val result = PlaylistManager.getSongsByPlaylist(playlist, songs)
 
-        assertEquals(listOf(1, 3), result.map { it.id })
+        assertEquals(listOf(3, 1), result.map { it.id })
     }
 
     private fun song(id: Int): Song {

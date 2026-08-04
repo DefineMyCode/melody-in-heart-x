@@ -63,7 +63,12 @@ fun AlbumDetailScreen(
         .filter { it.name != albumName && it.artistNames.any { artist -> artist in albumArtists } }
     var selectedSection by rememberSaveable { mutableStateOf(0) }
 
-    Column(modifier = Modifier.fillMaxSize()) {
+    // 根容器必须不透明：返回过渡期间退出页绘制在目标页之上，透明会让目标页透出造成两页叠加
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.surface),
+    ) {
         // 顶部栏
         Row(
             modifier = Modifier

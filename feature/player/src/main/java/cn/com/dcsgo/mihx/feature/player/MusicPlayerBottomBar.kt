@@ -1,6 +1,5 @@
 package cn.com.dcsgo.mihx.feature.player
 
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -8,8 +7,9 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -25,23 +25,20 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import cn.com.dcsgo.mihx.core.model.Song
 
 /**
- * 播放器底部栏
+ * 播放器底部栏（对齐 UI 设计系统 §5.10 迷你播放栏）
  *
- * 在非首页底部显示，展示当前播放歌曲信息和基础播放控制。
+ * 在非首页底部显示，展示当前播放歌曲信息和基础播放控制：
+ * 40dp 封面缩略图 + 歌名/艺术家 + 2.5dp 线性进度条 + 36dp 圆形播放按钮。
  *
  * @param currentSong        当前播放的歌曲
  * @param isPlaying          是否正在播放
@@ -61,110 +58,106 @@ fun MusicPlayerBottomBar(
     onNextClick: () -> Unit,
     onNavigateToHome: () -> Unit,
 ) {
-    Row(
+    Column(
         modifier = Modifier
             .fillMaxWidth()
             .navigationBarsPadding()
-            .background(MaterialTheme.colorScheme.surfaceContainer)
-            .padding(horizontal = 12.dp, vertical = 6.dp),
-        verticalAlignment = Alignment.CenterVertically
+            .background(MaterialTheme.colorScheme.surfaceContainerLowest)
     ) {
-        // 左侧：封面 + 歌曲信息（可点击跳转首页）
+        // 顶部 out1 分隔线
         Box(
             modifier = Modifier
-                .size(36.dp)
-                .clip(RoundedCornerShape(6.dp))
-                .background(MaterialTheme.colorScheme.primaryContainer)
-                .clickable(onClick = onNavigateToHome)
+                .fillMaxWidth()
+                .height(0.5.dp)
+                .background(MaterialTheme.colorScheme.outlineVariant)
+        )
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 12.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            if (currentSong.albumArtUri != null) {
-                AsyncImage(
-                    model = currentSong.albumArtUri,
-                    contentDescription = "专辑封面",
-                    modifier = Modifier.size(36.dp),
-                    contentScale = ContentScale.Crop
-                )
-            } else {
-                Icon(
-                    imageVector = Icons.Default.PlayArrow,
-                    contentDescription = if (isPlaying) "正在播放" else "已暂停",
-                    modifier = Modifier
-                        .size(16.dp)
-                        .align(Alignment.Center),
-                    tint = MaterialTheme.colorScheme.primary
-                )
+            // 左侧：封面（40dp，可点击跳转首页）
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(MaterialTheme.colorScheme.primaryContainer)
+                    .clickable(onClick = onNavigateToHome)
+            ) {
+                if (currentSong.albumArtUri != null) {
+                    AsyncImage(
+                        model = currentSong.albumArtUri,
+                        contentDescription = "专辑封面",
+                        modifier = Modifier.size(40.dp),
+                        contentScale = ContentScale.Crop
+                    )
+                } else {
+                    Icon(
+                        imageVector = Icons.Default.PlayArrow,
+                        contentDescription = if (isPlaying) "正在播放" else "已暂停",
+                        modifier = Modifier
+                            .size(16.dp)
+                            .align(Alignment.Center),
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
             }
-        }
-        Spacer(modifier = Modifier.width(10.dp))
-        Column(
-            modifier = Modifier
-                .weight(1f)
-                .clickable(onClick = onNavigateToHome)
-        ) {
-            Text(
-                text = currentSong.title,
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = FontWeight.Medium,
-                color = MaterialTheme.colorScheme.onSurface,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-            Text(
-                text = currentSong.artist,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-        }
-
-        // 右侧：播放/暂停按钮（外圈进度圆弧）
-        val progressTrackColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.35f)
-        val progressColor = MaterialTheme.colorScheme.primary
-        Box(
-            modifier = Modifier.size(40.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            // 进度圆弧（40dp 环，包围 30dp 按钮）
-            Canvas(modifier = Modifier.fillMaxSize()) {
-                val stroke = 2.5.dp.toPx()
-                val arcSize = androidx.compose.ui.geometry.Size(
-                    width = size.width - stroke,
-                    height = size.height - stroke,
+            Spacer(modifier = Modifier.width(12.dp))
+            // 中间：歌名 + 艺术家 + 线性进度条
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .clickable(onClick = onNavigateToHome)
+            ) {
+                Text(
+                    text = currentSong.title,
+                    style = MaterialTheme.typography.bodySmall,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 13.sp,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
-                val topLeft = androidx.compose.ui.geometry.Offset(stroke / 2, stroke / 2)
-                // 底环
-                drawArc(
-                    color = progressTrackColor,
-                    startAngle = 0f,
-                    sweepAngle = 360f,
-                    useCenter = false,
-                    topLeft = topLeft,
-                    size = arcSize,
-                    style = Stroke(width = stroke, cap = StrokeCap.Round),
-                )
-                // 进度弧（从 12 点方向顺时针）
+                if (currentSong.artist.isNotEmpty()) {
+                    Text(
+                        text = currentSong.artist,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+                // 2.5dp 线性进度条（track out1 / 已完成 primary）
                 val progress = if (durationMs > 0) {
                     (currentPositionMs.toFloat() / durationMs).coerceIn(0f, 1f)
                 } else {
                     0f
                 }
-                if (progress > 0f) {
-                    drawArc(
-                        color = progressColor,
-                        startAngle = -90f,
-                        sweepAngle = 360f * progress,
-                        useCenter = false,
-                        topLeft = topLeft,
-                        size = arcSize,
-                        style = Stroke(width = stroke, cap = StrokeCap.Round),
-                    )
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 5.dp)
+                        .height(2.5.dp)
+                        .clip(RoundedCornerShape(2.dp))
+                        .background(MaterialTheme.colorScheme.outlineVariant)
+                ) {
+                    if (progress > 0f) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth(progress)
+                                .fillMaxHeight()
+                                .clip(RoundedCornerShape(2.dp))
+                                .background(MaterialTheme.colorScheme.primary)
+                        )
+                    }
                 }
             }
-            // 按钮本体
+            Spacer(modifier = Modifier.width(12.dp))
+            // 右侧：36dp 圆形播放按钮
             Box(
                 modifier = Modifier
-                    .size(30.dp)
+                    .size(36.dp)
                     .clip(CircleShape)
                     .background(MaterialTheme.colorScheme.primary),
                 contentAlignment = Alignment.Center
@@ -174,14 +167,14 @@ fun MusicPlayerBottomBar(
                         Icon(
                             painter = painterResource(id = R.drawable.pause_24),
                             contentDescription = "暂停",
-                            modifier = Modifier.size(16.dp),
+                            modifier = Modifier.size(18.dp),
                             tint = MaterialTheme.colorScheme.onPrimary
                         )
                     } else {
                         Icon(
                             imageVector = Icons.Default.PlayArrow,
                             contentDescription = "播放",
-                            modifier = Modifier.size(16.dp),
+                            modifier = Modifier.size(18.dp),
                             tint = MaterialTheme.colorScheme.onPrimary
                         )
                     }

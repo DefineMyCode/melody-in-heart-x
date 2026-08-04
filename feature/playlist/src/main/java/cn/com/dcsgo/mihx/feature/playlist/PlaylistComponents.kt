@@ -40,6 +40,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -47,6 +48,7 @@ import coil.compose.AsyncImage
 import cn.com.dcsgo.mihx.core.common.time.formatDurationTime
 import cn.com.dcsgo.mihx.core.model.Playlist
 import cn.com.dcsgo.mihx.core.model.Song
+import cn.com.dcsgo.mihx.ui.components.EqualizerIndicator
 
 /** 曲库页顶部类目 */
 enum class LibraryTab(val label: String) {
@@ -174,11 +176,11 @@ fun SongItem(
             .padding(vertical = 10.dp, horizontal = 4.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // 封面 / 播放指示
+        // 封面 / 播放指示（对齐设计 §5.13：44dp 缩略图、10dp 圆角）
         Box(
             modifier = Modifier
-                .size(48.dp)
-                .clip(RoundedCornerShape(4.dp))
+                .size(44.dp)
+                .clip(RoundedCornerShape(10.dp))
                 .background(
                     if (isCurrentPlaying) MaterialTheme.colorScheme.primary
                     else MaterialTheme.colorScheme.primaryContainer
@@ -189,7 +191,7 @@ fun SongItem(
                 AsyncImage(
                     model = song.albumArtUri,
                     contentDescription = "专辑封面",
-                    modifier = Modifier.size(48.dp),
+                    modifier = Modifier.size(44.dp),
                     contentScale = ContentScale.Crop
                 )
             } else {
@@ -210,7 +212,7 @@ fun SongItem(
             Text(
                 text = song.title,
                 style = MaterialTheme.typography.bodyMedium,
-                fontWeight = if (isCurrentPlaying) FontWeight.Bold else FontWeight.Medium,
+                fontWeight = if (isCurrentPlaying) FontWeight.Bold else FontWeight.SemiBold,
                 color = if (isCurrentPlaying) MaterialTheme.colorScheme.primary
                 else MaterialTheme.colorScheme.onSurface,
                 maxLines = 1
@@ -222,11 +224,18 @@ fun SongItem(
                 maxLines = 1
             )
         }
-        // 歌曲时长（可选展示，用于歌手/专辑详情页）
+        // 播放中 EQ 动画指示器（对齐设计 §5.13）
+        if (isCurrentPlaying) {
+            EqualizerIndicator(modifier = Modifier.width(20.dp))
+            Spacer(modifier = Modifier.width(8.dp))
+        }
+        // 歌曲时长（可选展示，用于歌手/专辑详情页；等宽字体对齐设计 §3.1）
         if (showDuration && song.durationMs > 0L) {
             Text(
                 text = formatDurationTime(song.durationMs),
-                style = MaterialTheme.typography.labelSmall,
+                style = MaterialTheme.typography.labelSmall.copy(
+                    fontFamily = FontFamily.Monospace,
+                ),
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Spacer(modifier = Modifier.width(8.dp))

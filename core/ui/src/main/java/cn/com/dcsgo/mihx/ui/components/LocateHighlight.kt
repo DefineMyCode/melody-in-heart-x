@@ -56,7 +56,7 @@ fun rememberLocateHighlightState(): LocateHighlightState = remember { LocateHigh
 fun Modifier.locateHighlightFlash(
     id: Any?,
     state: LocateHighlightState,
-    cornerRadius: Dp = 12.dp,
+    cornerRadius: Dp = 8.dp,
 ): Modifier {
     val color = MaterialTheme.colorScheme.primary
     val animatable = remember(id) { Animatable(0f) }

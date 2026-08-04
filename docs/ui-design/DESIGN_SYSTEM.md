@@ -447,21 +447,36 @@ RoundedCornerShape(20.dp)  // --r-l  封面/弹窗
 RoundedCornerShape(26.dp)  // --r-xl Hero板块
 ```
 
-### 10.3 已实现的主题
+### 10.3 已实现的主题与系统
 
 项目中主题实现位于 `core:ui` 模块：
-- `MusicplayerTheme` — 顶层主题 Composable
-- `ThemeMode` — 跟随系统/浅色/深色 枚举
-- `ThemeVariant` — 墨色/朱砂 枚举
+- `MusicplayerTheme` — 顶层主题 Composable，支持 `darkTheme + variant` 双参
+- `Color.kt` — 4 套 `ThemePalette`（mono-light / mono-dark / vermilion-day / vermilion-night），色值与设计令牌逐项一致
+- `Theme.kt` — `paletteToColorScheme` 将令牌精确映射到 Material3 `ColorScheme`（primary=accent、surface=bg0、outlineVariant=out1 等）
+- `Shape.kt` — 圆角令牌 `UiShapes`（8 / 14 / 20 / 26dp）
+- `Type.kt` — 设计字体层级（Display 34/800、Title Large 22/700、Title Medium 16/600、Body 14/400、Label 11/600 等）
+- `ThemeMode` / `ThemeVariant` — 跟随系统/浅色/深色 × 墨色/朱砂
 - 设置页已实现完整主题切换 UI
 
-### 10.4 待对齐项
+### 10.4 对齐状态
 
-- [ ] 墨·深 背景色：当前项目 `surface` 非纯黑，需对齐 `#000000`
-- [ ] 朱砂主题：需实现 `vermilion-day` / `vermilion-night` 两套 `ColorScheme`
-- [ ] 文字三级色值需与设计令牌精确对齐
-- [ ] 封面光效：Compose 中用 `Brush.radialGradient` 模拟 `radial-gradient` 唱片光效
-- [ ] 大屏布局：已使用 `NavigationSuiteScaffold`，需验证自适应切换
+以下项已完成对齐：
+
+- [x] 墨·深 背景色：`surface`/`background` 均为 `#000000`（OLED 纯黑）
+- [x] 朱砂主题：`vermilion-day` / `vermilion-night` 两套 `ColorScheme` 已实现
+- [x] 文字三级色值：`text1/text2/text3` 与令牌精确对齐
+- [x] 封面光效：Compose 中以封面顶部高光渐变近似 `radial-gradient` 唱片光效
+- [x] 字体层级、圆角令牌（`Shape.kt`）、Toast 配色、歌词三态色
+- [x] 迷你播放栏：40dp 封面 / 线性进度条 / 36dp 播放按钮 / bg1 底
+- [x] 列表播放中 EQ 动画指示器（`EqualizerIndicator`）
+- [x] FAB：accent 底胶囊形（含文字）；设置分段/预设选中项 accent 底；卡片 bg1 + out1 边框
+
+保留的刻意差异（非缺陷）：
+
+- 底部/侧边导航保持原始实现：纯文字、无图标，仅 3 个目的地（曲库/播放/我的），设置仍从「我的」页进入
+- 大屏导航用手写 `BoxWithConstraints`（≥600dp 切左侧文字导航），未用 `NavigationSuiteScaffold`
+- 首页为全屏播放器，不再叠加迷你播放栏（避免重复显示播放控制）
+- 设置页保留行式布局（主题/开关/动作行），未整体卡片化；搜索框保留 M3 `OutlinedTextField`
 
 ---
 

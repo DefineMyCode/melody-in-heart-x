@@ -317,36 +317,36 @@ private fun LyricLineItem(
     fontScale: Float = DEFAULT_FONT_SCALE,
     onClick: (() -> Unit)? = null
 ) {
-    // 不透明度动画
+    // 不透明度动画（设计三态：当前行全不透明、已唱 text2 清晰、未唱 text2 弱化）
     val alpha by animateFloatAsState(
         targetValue = when {
             isCurrentLine -> 1f
-            isPastLine -> 0.3f
-            else -> 0.55f
+            isPastLine -> 0.85f
+            else -> 0.45f
         },
         animationSpec = tween(durationMillis = 400),
         label = "lyric_alpha"
     )
 
-    // 字号动画（乘以缩放倍率）
+    // 字号动画（乘以缩放倍率；当前行 20sp 对齐设计 Lyric Active）
     val fontSize by animateFloatAsState(
         targetValue = when {
-            isCurrentLine -> 22f * fontScale
-            isNearCurrent -> 18f * fontScale
-            else -> 16f * fontScale
+            isCurrentLine -> 20f * fontScale
+            isNearCurrent -> 17f * fontScale
+            else -> 15f * fontScale
         },
         animationSpec = tween(durationMillis = 400),
         label = "lyric_size"
     )
 
-    // 字重
-    val fontWeight = if (isCurrentLine) FontWeight.Bold else FontWeight.Normal
+    // 字重：当前行 ExtraBold(800)，其余 Normal
+    val fontWeight = if (isCurrentLine) FontWeight.ExtraBold else FontWeight.Normal
 
-    // 颜色
+    // 颜色：当前行强调色（accent），已唱/未唱统一次级文字色（text2），靠透明度区分强弱
     val textColor = if (isCurrentLine) {
         MaterialTheme.colorScheme.primary
     } else {
-        MaterialTheme.colorScheme.onSurface
+        MaterialTheme.colorScheme.onSurfaceVariant
     }
 
     Text(

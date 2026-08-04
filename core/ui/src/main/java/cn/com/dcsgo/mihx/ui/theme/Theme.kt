@@ -3,12 +3,14 @@ package cn.com.dcsgo.mihx.ui.theme
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.ColorScheme
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import cn.com.dcsgo.mihx.core.model.ThemeVariant
@@ -145,6 +147,14 @@ fun MusicplayerTheme(
     MaterialTheme(
         colorScheme = colorScheme,
         typography = Typography,
-        content = content
-    )
+    ) {
+        // Material3 的 MaterialTheme 不提供自适应 LocalContentColor（非 Surface 的
+        // 无颜色 Text 会回落到黑色，深色背景下不可见），这里显式提供 onSurface，
+        // 保证所有未指定 color 的文字随明暗主题自适应。
+        CompositionLocalProvider(
+            LocalContentColor provides colorScheme.onSurface,
+        ) {
+            content()
+        }
+    }
 }

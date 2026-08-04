@@ -23,7 +23,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -39,6 +39,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -178,21 +179,31 @@ fun HomeScreen(
 private fun BoxScope.HomeFabs(
     onLuckyPlayClick: () -> Unit,
 ) {
-    FloatingActionButton(
+    // 对齐设计系统 §5.11：胶囊形 FAB，accent 底 + 文字标签 + 阴影
+    ExtendedFloatingActionButton(
         onClick = onLuckyPlayClick,
         modifier = Modifier
             .align(Alignment.BottomEnd)
             .navigationBarsPadding()
             .padding(end = 16.dp, bottom = 16.dp),
-        containerColor = MaterialTheme.colorScheme.primaryContainer,
-        contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-    ) {
-        Icon(
-            painter = painterResource(id = R.drawable.shuffle_24),
-            contentDescription = "随机播放低播放量歌曲",
-            modifier = Modifier.size(24.dp)
-        )
-    }
+        shape = RoundedCornerShape(25.dp),
+        containerColor = MaterialTheme.colorScheme.primary,
+        contentColor = MaterialTheme.colorScheme.onPrimary,
+        icon = {
+            Icon(
+                painter = painterResource(id = R.drawable.shuffle_24),
+                contentDescription = "随机播放低播放量歌曲",
+                modifier = Modifier.size(20.dp)
+            )
+        },
+        text = {
+            Text(
+                text = "随心播放",
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Bold
+            )
+        }
+    )
 }
 
 @Composable
@@ -243,8 +254,8 @@ private fun AlbumCoverSection(
     ) {
         Box(
             modifier = Modifier
-                .size(280.dp)
-                .clip(RoundedCornerShape(16.dp))
+                .size(252.dp)
+                .clip(RoundedCornerShape(20.dp))
                 .background(MaterialTheme.colorScheme.primaryContainer)
                 .clickable(
                     interactionSource = remember { MutableInteractionSource() },
@@ -258,14 +269,14 @@ private fun AlbumCoverSection(
                 AsyncImage(
                     model = currentSong.albumArtUri,
                     contentDescription = "专辑封面，点击查看歌词",
-                    modifier = Modifier.size(280.dp),
+                    modifier = Modifier.size(252.dp),
                     contentScale = ContentScale.Crop
                 )
             } else {
                 // 无封面时的占位图标
                 Box(
                     modifier = Modifier
-                        .size(280.dp)
+                        .size(252.dp)
                         .background(MaterialTheme.colorScheme.primaryContainer),
                     contentAlignment = Alignment.Center
                 ) {
@@ -277,6 +288,20 @@ private fun AlbumCoverSection(
                     )
                 }
             }
+
+            // 封面顶部高光（近似设计 §5.9 径向光照）
+            Box(
+                modifier = Modifier
+                    .matchParentSize()
+                    .background(
+                        Brush.verticalGradient(
+                            colors = listOf(
+                                Color.White.copy(alpha = 0.14f),
+                                Color.Transparent
+                            )
+                        )
+                    )
+            )
 
             // 点击提示
             Box(
@@ -423,7 +448,8 @@ private fun SongInfoSection(
                 colors = SliderDefaults.colors(
                     thumbColor = MaterialTheme.colorScheme.primary,
                     activeTrackColor = MaterialTheme.colorScheme.primary,
-                    inactiveTrackColor = MaterialTheme.colorScheme.surfaceVariant
+                    // 对齐设计系统 §5.4：未完成轨道用 out1（outlineVariant）
+                    inactiveTrackColor = MaterialTheme.colorScheme.outlineVariant
                 )
             )
             Row(

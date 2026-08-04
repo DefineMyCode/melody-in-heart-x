@@ -46,6 +46,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import cn.com.dcsgo.mihx.core.model.PlayQueue
 import cn.com.dcsgo.mihx.core.model.Song
+import cn.com.dcsgo.mihx.ui.components.EqualizerIndicator
 import cn.com.dcsgo.mihx.ui.components.locateHighlightFlash
 import cn.com.dcsgo.mihx.ui.components.rememberLocateHighlightState
 import kotlinx.coroutines.launch
@@ -277,6 +278,11 @@ private fun QueueSongItem(
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
+        }
+
+        // 播放中 EQ 动画指示器（对齐设计 §6.5）
+        if (isCurrentPlaying) {
+            EqualizerIndicator(modifier = Modifier.size(20.dp))
         }
 
         // 移除按钮

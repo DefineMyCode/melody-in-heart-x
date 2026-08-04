@@ -236,6 +236,7 @@ fun PlaylistScreen(
                         text = selectedPlaylist.name,
                         style = MaterialTheme.typography.headlineMedium,
                         fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                         modifier = Modifier.weight(1f)
@@ -245,6 +246,7 @@ fun PlaylistScreen(
                         text = if (showLocalMusic) "本地音乐" else "曲库",
                         style = MaterialTheme.typography.headlineMedium,
                         fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface,
                         modifier = Modifier.weight(1f)
                     )
                     // 本地音乐管理入口（文字按钮）
@@ -379,8 +381,9 @@ fun PlaylistScreen(
                             }
                         }
                     },
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                    // 对齐设计系统 §5.11：FAB 用 accent 底
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary
                 ) {
                     Icon(
                         imageVector = Icons.Default.MyLocation,
@@ -543,6 +546,7 @@ private fun PlaylistDetailView(
                 text = "歌曲列表",
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Medium,
+                color = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.padding(start = 16.dp, bottom = 8.dp)
             )
             LazyColumn(

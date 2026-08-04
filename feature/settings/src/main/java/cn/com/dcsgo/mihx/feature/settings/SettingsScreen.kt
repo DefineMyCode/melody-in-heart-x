@@ -202,23 +202,15 @@ private fun ThemeVariantCard(
             Color(0xFFFAF5F2),
         )
     }
-    val containerColor = if (selected) {
-        MaterialTheme.colorScheme.primaryContainer
-    } else {
-        MaterialTheme.colorScheme.surfaceVariant
-    }
-    val contentColor = if (selected) {
-        MaterialTheme.colorScheme.onPrimaryContainer
-    } else {
-        MaterialTheme.colorScheme.onSurfaceVariant
-    }
+    // 对齐设计系统 §5.8 颜色选择卡：bg1 底 + 选中态 accent 描边 + 对勾
     Column(
         modifier = modifier
             .clip(RoundedCornerShape(12.dp))
-            .background(containerColor)
+            .background(MaterialTheme.colorScheme.surfaceContainerLowest)
             .border(
-                width = if (selected) 1.dp else 0.dp,
-                color = MaterialTheme.colorScheme.primary,
+                width = 1.dp,
+                color = if (selected) MaterialTheme.colorScheme.primary
+                else MaterialTheme.colorScheme.outlineVariant,
                 shape = RoundedCornerShape(12.dp),
             )
             .clickable(onClick = onClick)
@@ -242,7 +234,7 @@ private fun ThemeVariantCard(
         Text(
             text = variant.label,
             style = MaterialTheme.typography.bodyMedium,
-            color = contentColor,
+            color = MaterialTheme.colorScheme.onSurface,
             fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
         )
         if (selected) {
@@ -265,13 +257,14 @@ private fun ThemeModeChip(
     modifier: Modifier = Modifier,
     onClick: () -> Unit,
 ) {
+    // 对齐设计系统 §5.3 分段控件：选中项 accent 底 + onAccent 文字
     val containerColor = if (selected) {
-        MaterialTheme.colorScheme.primaryContainer
+        MaterialTheme.colorScheme.primary
     } else {
         MaterialTheme.colorScheme.surfaceVariant
     }
     val contentColor = if (selected) {
-        MaterialTheme.colorScheme.onPrimaryContainer
+        MaterialTheme.colorScheme.onPrimary
     } else {
         MaterialTheme.colorScheme.onSurfaceVariant
     }
@@ -503,13 +496,14 @@ private fun GoalPresetChip(
     modifier: Modifier = Modifier,
     onClick: () -> Unit,
 ) {
+    // 对齐设计系统 §5.3 分段控件：选中项 accent 底 + onAccent 文字
     val containerColor = if (selected) {
-        MaterialTheme.colorScheme.primaryContainer
+        MaterialTheme.colorScheme.primary
     } else {
         MaterialTheme.colorScheme.surfaceVariant
     }
     val contentColor = if (selected) {
-        MaterialTheme.colorScheme.onPrimaryContainer
+        MaterialTheme.colorScheme.onPrimary
     } else {
         MaterialTheme.colorScheme.onSurfaceVariant
     }

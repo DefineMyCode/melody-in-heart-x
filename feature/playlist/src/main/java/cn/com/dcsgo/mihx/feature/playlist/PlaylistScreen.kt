@@ -404,43 +404,14 @@ private fun PlaylistDetailView(
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
         Spacer(modifier = Modifier.height(8.dp))
-        // 歌单封面 + 信息
+        // 歌单信息
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Box(
-                modifier = Modifier
-                    .size(120.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(MaterialTheme.colorScheme.primaryContainer)
-            ) {
-                val firstSong = songs.firstOrNull()
-                if (firstSong?.albumArtUri != null) {
-                    AsyncImage(
-                        model = firstSong.albumArtUri,
-                        contentDescription = "专辑封面",
-                        modifier = Modifier.size(120.dp),
-                        contentScale = ContentScale.Crop
-                    )
-                } else {
-                    Icon(
-                        imageVector = Icons.Default.PlayArrow,
-                        contentDescription = null,
-                        modifier = Modifier.size(48.dp).align(Alignment.Center),
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                }
-            }
-            Spacer(modifier = Modifier.width(16.dp))
             Column {
-                Text(
-                    text = selectedPlaylist.name,
-                    style = MaterialTheme.typography.headlineSmall,
-                    fontWeight = FontWeight.Bold
-                )
                 Text(
                     text = if (songs.isEmpty()) "暂无歌曲" else "${songs.size} 首歌曲",
                     style = MaterialTheme.typography.bodyMedium,

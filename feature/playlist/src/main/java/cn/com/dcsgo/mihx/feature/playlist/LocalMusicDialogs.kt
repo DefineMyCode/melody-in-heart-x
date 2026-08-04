@@ -148,7 +148,8 @@ fun BatchAddToPlaylistDialog(
                                     Text(
                                         text = "部分已存在",
                                         style = MaterialTheme.typography.labelSmall,
-                                        color = MaterialTheme.colorScheme.outline
+                                        fontWeight = FontWeight.Medium,
+                                        color = MaterialTheme.colorScheme.primary
                                     )
                                 } else {
                                     Icon(

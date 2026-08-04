@@ -245,10 +245,20 @@ data class PlayQueue(
     fun withCurrentIndex(index: Int): PlayQueue {
         if (songs.isEmpty()) return copy(currentIndex = -1, playOrderIds = emptyList())
         val idx = index.coerceIn(0, songs.lastIndex)
-        return copy(
-            currentIndex = idx,
-            playOrderIds = buildPlayOrderIds(songs, idx, playMode),
-        )
+        // 随机模式且已有完整播放顺序时，稳定地把当前歌曲移到队首，不再重新洗牌。
+        // 避免随机模式下每次同步/换歌都生成新乱序，导致控制器列表被反复替换（死循环）。
+        return if (playMode == PlayMode.SHUFFLE && orderCoversSongs(playOrderIds, songs)) {
+            val targetId = songs[idx].id
+            if (playOrderIds.firstOrNull() == targetId) {
+                copy(currentIndex = idx)
+            } else {
+                val pivot = playOrderIds.indexOf(targetId).takeIf { it >= 0 }
+                    ?: return copy(currentIndex = idx, playOrderIds = buildPlayOrderIds(songs, idx, playMode))
+                copy(currentIndex = idx, playOrderIds = playOrderIds.drop(pivot) + playOrderIds.take(pivot))
+            }
+        } else {
+            copy(currentIndex = idx, playOrderIds = buildPlayOrderIds(songs, idx, playMode))
+        }
     }
 
     fun withSongs(newSongs: List<Song>): PlayQueue {
@@ -322,6 +332,12 @@ data class PlayQueue(
     }
 
     companion object {
+        /** playOrderIds 是否为 songs 的完整排列（数量与 id 计数一致） */
+        private fun orderCoversSongs(playOrderIds: List<Int>, songs: List<Song>): Boolean {
+            if (playOrderIds.size != songs.size) return false
+            return songs.groupingBy { it.id }.eachCount() == playOrderIds.groupingBy { it }.eachCount()
+        }
+
         fun buildPlayOrderIds(songs: List<Song>, startIndex: Int, mode: PlayMode): List<Int> {
             if (songs.isEmpty()) return emptyList()
             val safeIndex = startIndex.coerceIn(0, songs.lastIndex)

@@ -22,7 +22,6 @@ import cn.com.dcsgo.mihx.domain.playback.PlayerQueueServices
 import cn.com.dcsgo.mihx.domain.playback.PlayerQueueServicesFactory
 import cn.com.dcsgo.mihx.domain.playback.QueueManager
 import cn.com.dcsgo.mihx.domain.playback.SongGroupCoordinator
-import cn.com.dcsgo.mihx.domain.playback.UniformRandomPlanner
 import cn.com.dcsgo.mihx.domain.repository.MusicImportRepository
 import cn.com.dcsgo.mihx.domain.repository.PlayStatsRepository
 import cn.com.dcsgo.mihx.domain.repository.PlaybackStateRepository
@@ -106,17 +105,9 @@ object PlayerModule {
         playStatsRepository: PlayStatsRepository,
         quickSkipRepository: QuickSkipRepository,
     ): PlayerQueueServicesFactory {
-        return PlayerQueueServicesFactory { globalUniformRandomEnabled ->
-            val uniformRandomPlanner = UniformRandomPlanner()
-            val playOrderBuilder = QueueManager.PlayOrderBuilder { songs, startIndex, mode ->
-                uniformRandomPlanner.buildPlayOrderIds(
-                    songs = songs,
-                    startIndex = startIndex,
-                    mode = mode,
-                    uniformRandomEnabled = globalUniformRandomEnabled(),
-                    playCounts = playStatsRepository.getRawPlayCounts(songs.map { it.id }),
-                )
-            }
+        return PlayerQueueServicesFactory {
+            // 随机播放模式 = 纯乱序，与全局均匀随机无关
+            val playOrderBuilder = QueueManager.defaultPlayOrderBuilder
             PlayerQueueServices(
                 importer = ImportCoordinator(
                     importRepository = musicImportRepository,

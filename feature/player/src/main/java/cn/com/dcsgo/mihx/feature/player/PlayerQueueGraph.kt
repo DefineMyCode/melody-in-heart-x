@@ -4,9 +4,8 @@ import cn.com.dcsgo.mihx.domain.playback.PlayerQueueServicesFactory
 
 internal class PlayerQueueGraph(
     playerQueueServicesFactory: PlayerQueueServicesFactory,
-    globalUniformRandomEnabled: () -> Boolean,
 ) {
-    private val services = playerQueueServicesFactory.create(globalUniformRandomEnabled)
+    private val services = playerQueueServicesFactory.create()
 
     val importCoordinator = services.importer
     val playlistManager = services.playlistActions

@@ -16,5 +16,5 @@ data class PlayerQueueServices(
 )
 
 fun interface PlayerQueueServicesFactory {
-    fun create(globalUniformRandomEnabled: () -> Boolean): PlayerQueueServices
+    fun create(): PlayerQueueServices
 }

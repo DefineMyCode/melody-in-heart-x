@@ -85,7 +85,6 @@ internal class PlayerRuntime(
     private val playbackController by lazy { mediaControllerGraph.playbackController }
     private val queueGraph = PlayerQueueGraph(
         playerQueueServicesFactory = playerQueueServicesFactory,
-        globalUniformRandomEnabled = { _uiState.value.globalUniformRandomEnabled },
     )
     private val importCoordinator get() = queueGraph.importCoordinator
     private val playlistManager get() = queueGraph.playlistManager

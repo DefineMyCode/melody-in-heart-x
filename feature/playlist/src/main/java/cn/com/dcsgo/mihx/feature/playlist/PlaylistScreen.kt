@@ -118,6 +118,9 @@ fun PlaylistScreen(
     // ── 专辑：隐藏仅有一首歌曲的专辑（默认开启） ──
     var hideSingleSongAlbums by rememberSaveable { mutableStateOf(true) }
 
+    // ── 歌手：隐藏仅有一首歌曲的歌手（默认开启） ──
+    var hideSingleSongArtists by rememberSaveable { mutableStateOf(true) }
+
     // 本地音乐视图内按系统返回键时，先退出本地音乐回到歌单管理页面
     BackHandler(enabled = showLocalMusic) {
         showLocalMusic = false
@@ -311,6 +314,9 @@ fun PlaylistScreen(
                                 librarySearchQuery.isBlank() ||
                                     artist.name.contains(librarySearchQuery, ignoreCase = true)
                             },
+                            // 有搜索内容时隐藏开关
+                            hideSingleSongArtists = librarySearchQuery.isBlank() && hideSingleSongArtists,
+                            onHideSingleSongArtistsChange = { hideSingleSongArtists = it },
                             onArtistClick = onArtistClick,
                         )
                         LibraryTab.ALBUMS -> AlbumListView(

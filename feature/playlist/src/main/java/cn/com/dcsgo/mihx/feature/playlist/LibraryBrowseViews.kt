@@ -187,33 +187,64 @@ fun SegmentedTabRow(
 @Composable
 fun ArtistListView(
     artists: List<ArtistEntry>,
+    hideSingleSongArtists: Boolean,
+    onHideSingleSongArtistsChange: (Boolean) -> Unit,
     onArtistClick: (String) -> Unit,
 ) {
-    if (artists.isEmpty()) {
-        EmptySectionHint("暂无歌手")
-    } else {
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 80.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp),
+    val visibleArtists = if (hideSingleSongArtists) artists.filter { it.songCount > 1 } else artists
+
+    Column(modifier = Modifier.fillMaxSize()) {
+        // 隐藏仅有一首歌曲的歌手开关
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 16.dp, end = 16.dp, top = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
-            item(key = "artist_header") {
-                Spacer(modifier = Modifier.height(20.dp))
-                Text(
-                    text = "歌手 (${artists.size})",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    modifier = Modifier.padding(bottom = 4.dp),
-                )
+            Text(
+                text = "隐藏仅有一首歌曲的歌手",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.weight(1f),
+            )
+            Switch(
+                checked = hideSingleSongArtists,
+                onCheckedChange = onHideSingleSongArtistsChange,
+            )
+        }
+        if (visibleArtists.isEmpty()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(top = 32.dp),
+                contentAlignment = Alignment.TopCenter,
+            ) {
+                EmptySectionHint("暂无歌手")
             }
-            items(artists, key = { "artist_${it.name}" }) { artist ->
-                ArtistItem(
-                    artistName = artist.name,
-                    songCount = artist.songCount,
-                    albumCount = artist.albumCount,
-                    coverUri = artist.coverUri,
-                    onClick = { onArtistClick(artist.name) },
-                )
+        } else {
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 80.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+            ) {
+                item(key = "artist_header") {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        text = "歌手 (${visibleArtists.size})",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        modifier = Modifier.padding(bottom = 4.dp),
+                    )
+                }
+                items(visibleArtists, key = { "artist_${it.name}" }) { artist ->
+                    ArtistItem(
+                        artistName = artist.name,
+                        songCount = artist.songCount,
+                        albumCount = artist.albumCount,
+                        coverUri = artist.coverUri,
+                        onClick = { onArtistClick(artist.name) },
+                    )
+                }
             }
         }
     }

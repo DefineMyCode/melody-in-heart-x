@@ -68,16 +68,9 @@ fun AppRoot(
     }
 
     LaunchedEffect(activeRoute) {
-        if (
-            activeRoute == AppRoutes.HOME ||
-            activeRoute == AppRoutes.PLAYLIST ||
-            activeRoute?.startsWith("${AppRoutes.PLAYLIST}/") == true ||
-            activeRoute == AppRoutes.USER ||
-            activeRoute?.startsWith("artist/") == true ||
-            activeRoute?.startsWith("album/") == true
-        ) {
-            currentDestination = AppDestinations.fromRoute(activeRoute)
-        }
+        // 始终按当前路由所属 Tab 同步高亮（嵌套路由如设置/统计也映射到所属 Tab），
+        // 避免从子页面滑动离开再回来后 currentDestination 停留在旧值
+        currentDestination = AppDestinations.fromRoute(activeRoute)
     }
 
     if (uiState.isLoading) {
@@ -148,6 +141,8 @@ fun AppRoot(
                         restoreState = true
                     }
                 },
+                // 全屏歌词页不响应横滑，避免误切底部 Tab
+                swipeEnabled = activeRoute != AppRoutes.LYRICS,
             ) {
                 AppNavHost(
                     navController = navController,

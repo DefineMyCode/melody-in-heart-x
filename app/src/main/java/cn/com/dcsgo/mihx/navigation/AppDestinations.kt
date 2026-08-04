@@ -15,11 +15,21 @@ enum class AppDestinations(
     companion object {
         fun fromRoute(route: String?): AppDestinations {
             return when {
-                route == USER.route -> USER
+                // 我的页及其子页面（设置、播放统计、统计子页、歌曲 TOP 榜）
+                route == USER.route ||
+                    route == AppRoutes.SETTINGS ||
+                    route == AppRoutes.PLAYBACK_STATS ||
+                    route == AppRoutes.RAW_PLAY_STATS ||
+                    route == AppRoutes.EFFECTIVE_PLAY_STATS ||
+                    route == AppRoutes.SONG_TOP_LIST_FULL -> USER
+                // 曲库页及其子页面（歌单详情、歌手/专辑详情、多版本管理、秒切歌曲）
                 route == PLAYLIST.route ||
                     route?.startsWith("${PLAYLIST.route}/") == true ||
                     route?.startsWith("artist/") == true ||
-                    route?.startsWith("album/") == true -> PLAYLIST
+                    route?.startsWith("album/") == true ||
+                    route == AppRoutes.VERSION_MANAGEMENT ||
+                    route == AppRoutes.QUICK_SKIP_SONGS -> PLAYLIST
+                // 播放页（首页、歌词）及其它
                 else -> HOME
             }
         }

@@ -2,6 +2,13 @@ package cn.com.dcsgo.mihx.app
 
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.LinearOutSlowInEasing
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -56,7 +63,11 @@ import cn.com.dcsgo.mihx.feature.user.UserRouteState
 import cn.com.dcsgo.mihx.feature.user.VersionManagementRoute
 import cn.com.dcsgo.mihx.feature.user.VersionManagementRouteActions
 import cn.com.dcsgo.mihx.feature.user.VersionManagementRouteState
+import cn.com.dcsgo.mihx.navigation.AppDestinations
 import cn.com.dcsgo.mihx.navigation.AppRoutes
+
+/** 路由 → 其所属底部 Tab 的序号（嵌套路由如设置/统计也映射到所属 Tab，同一 Tab 内序号相同则无转场） */
+private fun tabOrdinal(route: String?): Int = AppDestinations.fromRoute(route).ordinal
 
 @Composable
 fun AppNavHost(
@@ -79,8 +90,34 @@ fun AppNavHost(
     NavHost(
         navController = navController,
         startDestination = AppRoutes.HOME,
-        enterTransition = { EnterTransition.None },
-        exitTransition = { ExitTransition.None },
+        enterTransition = {
+            val from = tabOrdinal(initialState.destination.route)
+            val to = tabOrdinal(targetState.destination.route)
+            when {
+                // 目标 Tab 序号更大（左滑/前进）：新页从右滑入 + 淡入
+                to > from ->
+                    slideInHorizontally(tween(300, easing = FastOutSlowInEasing)) { it } +
+                        fadeIn(tween(300, easing = LinearOutSlowInEasing))
+                // 目标 Tab 序号更小（右滑/后退）：新页从左滑入 + 淡入
+                to < from ->
+                    slideInHorizontally(tween(300, easing = FastOutSlowInEasing)) { -it } +
+                        fadeIn(tween(300, easing = LinearOutSlowInEasing))
+                else -> EnterTransition.None
+            }
+        },
+        exitTransition = {
+            val from = tabOrdinal(initialState.destination.route)
+            val to = tabOrdinal(targetState.destination.route)
+            when {
+                to > from ->
+                    slideOutHorizontally(tween(300, easing = FastOutSlowInEasing)) { -it } +
+                        fadeOut(tween(300, easing = LinearOutSlowInEasing))
+                to < from ->
+                    slideOutHorizontally(tween(300, easing = FastOutSlowInEasing)) { it } +
+                        fadeOut(tween(300, easing = LinearOutSlowInEasing))
+                else -> ExitTransition.None
+            }
+        },
         popEnterTransition = { EnterTransition.None },
         popExitTransition = { ExitTransition.None },
     ) {

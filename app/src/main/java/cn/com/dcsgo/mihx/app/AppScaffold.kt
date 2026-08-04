@@ -2,6 +2,7 @@ package cn.com.dcsgo.mihx.app
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -20,6 +21,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -39,6 +41,7 @@ fun AppScaffold(
     onPreviousClick: () -> Unit,
     onNextClick: () -> Unit,
     onNavigateToHome: () -> Unit,
+    swipeEnabled: Boolean = true,
     content: @Composable () -> Unit,
 ) {
     BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
@@ -60,6 +63,8 @@ fun AppScaffold(
                     onPreviousClick = onPreviousClick,
                     onNextClick = onNextClick,
                     onNavigateToHome = onNavigateToHome,
+                    onDestinationSelected = onDestinationSelected,
+                    swipeEnabled = swipeEnabled,
                     content = content,
                 )
             }
@@ -76,6 +81,8 @@ fun AppScaffold(
                     onPreviousClick = onPreviousClick,
                     onNextClick = onNextClick,
                     onNavigateToHome = onNavigateToHome,
+                    onDestinationSelected = onDestinationSelected,
+                    swipeEnabled = swipeEnabled,
                     content = content,
                     modifier = Modifier.weight(1f),
                 )
@@ -99,6 +106,8 @@ private fun ScaffoldContentColumn(
     onPreviousClick: () -> Unit,
     onNextClick: () -> Unit,
     onNavigateToHome: () -> Unit,
+    onDestinationSelected: (AppDestinations) -> Unit,
+    swipeEnabled: Boolean = true,
     content: @Composable () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -110,7 +119,35 @@ private fun ScaffoldContentColumn(
         Box(
             modifier = Modifier
                 .weight(1f)
-                .background(MaterialTheme.colorScheme.surface),
+                .background(MaterialTheme.colorScheme.surface)
+                // 内容区左右滑动切换相邻底部 Tab（子节点如进度条/横向标签行消费拖动时自动取消）
+                .pointerInput(currentDestination, swipeEnabled) {
+                    if (swipeEnabled) {
+                        val swipeThresholdPx = 96.dp.toPx()
+                        var totalDragX = 0f
+                        detectHorizontalDragGestures(
+                            onDragStart = { totalDragX = 0f },
+                            onHorizontalDrag = { change, dragAmount ->
+                                change.consume()
+                                totalDragX += dragAmount
+                            },
+                            onDragEnd = {
+                                val direction = when {
+                                    // 左滑 → 下一个 Tab；右滑 → 上一个 Tab
+                                    totalDragX <= -swipeThresholdPx -> 1
+                                    totalDragX >= swipeThresholdPx -> -1
+                                    else -> 0
+                                }
+                                if (direction != 0) {
+                                    val targetIndex = currentDestination.ordinal + direction
+                                    AppDestinations.entries.getOrNull(targetIndex)
+                                        ?.let(onDestinationSelected)
+                                }
+                            },
+                            onDragCancel = { totalDragX = 0f },
+                        )
+                    }
+                },
         ) {
             content()
         }

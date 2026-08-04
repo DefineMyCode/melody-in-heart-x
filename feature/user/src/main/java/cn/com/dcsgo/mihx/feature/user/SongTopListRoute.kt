@@ -14,7 +14,8 @@ data class SongTopListRouteState(
 
 data class SongTopListRouteActions(
     val onBack: () -> Unit,
-    val onSongClick: (Song) -> Unit,
+    /** 点击歌曲，第二个参数为该歌曲所在时间段（周/月）的整个榜单 */
+    val onSongClick: (Song, List<Song>) -> Unit,
 )
 
 @Composable

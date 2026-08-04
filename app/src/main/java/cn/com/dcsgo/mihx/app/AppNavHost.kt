@@ -9,6 +9,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import cn.com.dcsgo.mihx.app.permissions.PermissionCoordinator
+import cn.com.dcsgo.mihx.app.player.SongPlaybackStrategy
+import cn.com.dcsgo.mihx.app.player.playWith
 import cn.com.dcsgo.mihx.core.model.Lyrics
 import cn.com.dcsgo.mihx.core.model.PlayMode
 import cn.com.dcsgo.mihx.core.model.Playlist
@@ -196,8 +198,7 @@ fun AppNavHost(
                 actions = ArtistDetailRouteActions(
                     onBack = navController::navigateUp,
                     onSongClick = { song, contextSongs ->
-                        val startIndex = contextSongs.indexOfFirst { it.id == song.id }.coerceAtLeast(0)
-                        playerViewModel.setPlayQueue(contextSongs, startIndex, PlayMode.SEQUENTIAL)
+                        playerViewModel.playWith(song, SongPlaybackStrategy.scope(contextSongs))
                     },
                     onAlbumClick = { albumName ->
                         navController.navigate(AppRoutes.albumDetail(albumName))
@@ -221,8 +222,7 @@ fun AppNavHost(
                 actions = AlbumDetailRouteActions(
                     onBack = navController::navigateUp,
                     onSongClick = { song, contextSongs ->
-                        val startIndex = contextSongs.indexOfFirst { it.id == song.id }.coerceAtLeast(0)
-                        playerViewModel.setPlayQueue(contextSongs, startIndex, PlayMode.SEQUENTIAL)
+                        playerViewModel.playWith(song, SongPlaybackStrategy.scope(contextSongs))
                     },
                     onAlbumClick = { albumName ->
                         navController.navigate(AppRoutes.albumDetail(albumName))
@@ -273,9 +273,10 @@ fun AppNavHost(
                     onBack = navController::navigateUp,
                     // 点击版本：将该歌曲所有版本按列表顺序入队，从点击的版本开始顺序播放（替换并清空原队列）
                     onPlayVersion = { song ->
-                        val versions = playerViewModel.getSongsWithSameName(song, allSongs)
-                        val startIndex = versions.indexOfFirst { it.id == song.id }.coerceAtLeast(0)
-                        playerViewModel.setPlayQueue(versions, startIndex, PlayMode.SEQUENTIAL)
+                        playerViewModel.playWith(
+                            song,
+                            SongPlaybackStrategy.scope(playerViewModel.getSongsWithSameName(song, allSongs)),
+                        )
                     },
                     onAddToQueue = playerViewModel::addToPlayQueue,
                     onDeleteSong = { song -> deleteSongWithToast(song.id) },
@@ -321,7 +322,7 @@ fun AppNavHost(
                     onBack = navController::navigateUp,
                     // 点击秒切歌曲：清空队列，只播放这一首，停留在秒切歌曲页面
                     onSongClick = { song ->
-                        playerViewModel.setPlayQueue(listOf(song), 0, PlayMode.SEQUENTIAL)
+                        playerViewModel.playWith(song, SongPlaybackStrategy.single())
                     },
                     onDeleteSong = { song -> deleteSongWithToast(song.id) },
                     onSyncToPlaylist = {
@@ -421,12 +422,11 @@ private fun playlistRouteActions(
     onPlaylistClick = { playlist -> navController.navigate(AppRoutes.playlistDetail(playlist.id)) },
     // 点击歌单中的歌曲：将整个歌单按列表顺序入队，从点击的歌曲开始顺序播放（替换并清空原队列）
     onSongClick = { song, contextSongs ->
-        val startIndex = contextSongs.indexOfFirst { it.id == song.id }.coerceAtLeast(0)
-        playerViewModel.setPlayQueue(contextSongs, startIndex, PlayMode.SEQUENTIAL)
+        playerViewModel.playWith(song, SongPlaybackStrategy.scope(contextSongs))
     },
     // 点击本地音乐中的歌曲：清空队列，只播放这一首
     onLocalSongClick = { song ->
-        playerViewModel.setPlayQueue(listOf(song), 0, PlayMode.SEQUENTIAL)
+        playerViewModel.playWith(song, SongPlaybackStrategy.single())
     },
     onArtistClick = { artistName -> navController.navigate(AppRoutes.artistDetail(artistName)) },
     onAlbumClick = { albumName ->
@@ -504,9 +504,9 @@ private fun playStatsRouteActions(
     playerViewModel: PlayerViewModel,
 ): PlayStatsRouteActions = PlayStatsRouteActions(
     onBack = navController::navigateUp,
+    // 点击统计页歌曲：队列只包含被点击的这一首，不返回上一页
     onSongClick = { song ->
-        val allSongs = playerViewModel.getGroupedSongs(playerViewModel.uiState.value.songs).flatten()
-        playerViewModel.playSongFromContext(song, allSongs)
+        playerViewModel.playWith(song, SongPlaybackStrategy.single())
         // 点击歌曲后停留在当前页，不返回上一页
     },
 )
@@ -552,9 +552,9 @@ private fun playbackStatsRouteActions(
     playerViewModel: PlayerViewModel,
 ): PlaybackStatsRouteActions = PlaybackStatsRouteActions(
     onBack = navController::navigateUp,
+    // 点击统计总览预览歌曲：队列只包含被点击的这一首，不返回上一页
     onSongClick = { song ->
-        val allSongs = playerViewModel.getGroupedSongs(playerViewModel.uiState.value.songs).flatten()
-        playerViewModel.playSongFromContext(song, allSongs)
+        playerViewModel.playWith(song, SongPlaybackStrategy.single())
         // 点击歌曲后停留在当前页，不返回上一页
     },
     onOpenPlayCounts = { navController.navigate(AppRoutes.RAW_PLAY_STATS) },
@@ -584,9 +584,9 @@ private fun songTopListRouteActions(
     playerViewModel: PlayerViewModel,
 ): SongTopListRouteActions = SongTopListRouteActions(
     onBack = navController::navigateUp,
-    onSongClick = { song ->
-        val allSongs = playerViewModel.getGroupedSongs(playerViewModel.uiState.value.songs).flatten()
-        playerViewModel.playSongFromContext(song, allSongs)
+    // 点击TOP榜歌曲：把当前时间段（周/月）的整个榜单入队，从被点击歌曲开始播放，不返回上一页
+    onSongClick = { song, topSongs ->
+        playerViewModel.playWith(song, SongPlaybackStrategy.scope(topSongs))
         // 点击歌曲后停留在当前页，不返回上一页
     },
 )

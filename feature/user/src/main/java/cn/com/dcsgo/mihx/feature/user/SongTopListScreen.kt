@@ -53,7 +53,7 @@ fun SongTopListScreen(
     currentSong: Song?,
     initialPeriod: String = "week",
     onBack: () -> Unit,
-    onSongClick: (Song) -> Unit,
+    onSongClick: (Song, List<Song>) -> Unit,
 ) {
     var period by remember(initialPeriod) {
         mutableStateOf(
@@ -120,6 +120,8 @@ fun SongTopListScreen(
             }
 
             val top = if (period == TopPeriod.WEEKLY) weeklyTop else monthlyTop
+            // 当前时间段榜单对应的歌曲列表（按榜单排名顺序），点击歌曲时作为入队范围
+            val topSongs = remember(top, songsById) { top.mapNotNull { songsById[it.first] } }
             val emptyText = if (period == TopPeriod.WEEKLY) {
                 "本周还没有播放记录"
             } else {
@@ -154,7 +156,7 @@ fun SongTopListScreen(
                                     song = song,
                                     playCount = count,
                                     isPlaying = song.id == currentSong?.id,
-                                    onClick = { onSongClick(song) },
+                                    onClick = { onSongClick(song, topSongs) },
                                 )
                             }
                         }

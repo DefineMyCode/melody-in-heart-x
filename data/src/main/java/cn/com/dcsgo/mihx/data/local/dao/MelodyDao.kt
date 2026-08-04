@@ -49,7 +49,7 @@ data class DailyDurationRow(
     val totalMs: Long,
 )
 
-/** 按歌曲聚合的次数行 */
+/** 按歌曲聚合的有效播放次数行 */
 data class SongPlayCountRow(
     val songId: Int,
     val playCount: Int,
@@ -106,7 +106,7 @@ interface MelodyDao {
         """
         SELECT songId, COUNT(*) AS playCount
         FROM playback_events
-        WHERE startedAtMs >= :startMs AND startedAtMs < :endMs
+        WHERE startedAtMs >= :startMs AND startedAtMs < :endMs AND isEffectivePlay = 1
         GROUP BY songId
         ORDER BY playCount DESC, songId ASC
         """,

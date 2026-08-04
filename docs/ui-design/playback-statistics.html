@@ -1,0 +1,904 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>心有乐章 · 播放统计 · UI 设计</title>
+<style>
+/* ============================================================
+   心有乐章 · 播放统计 · UI 设计
+   复用主设计系统：墨（黑白灰）明暗 / 朱砂 明暗，四套主题
+   ============================================================ */
+
+:root{
+  --font-ui:"SF Pro Text",-apple-system,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans CJK SC",sans-serif;
+  --font-num:"SF Mono","JetBrains Mono",Consolas,"Courier New",monospace;
+  --r-s:8px; --r-m:14px; --r-l:20px; --r-xl:26px;
+}
+
+body[data-theme="mono-light"]{
+  --bg0:#F4F4F4; --bg1:#FFFFFF; --bg2:#FAFAFA; --bg3:#EFEFEF; --bg4:#E6E6E6;
+  --out1:#E7E7E7; --out2:#CFCFCF;
+  --text1:#141414; --text2:#575757; --text3:#989898;
+  --accent:#161616; --on-accent:#FFFFFF; --accent2:#575757; --on-accent2:#FFFFFF;
+  --grad:linear-gradient(90deg,#161616,#6B6B6B);
+  --cover1:#E9E9E9; --cover2:#C7C7C7; --cover-note:#161616;
+  --scrim:rgba(20,20,20,.45); --hover:rgba(20,20,20,.06);
+  --shadow:0 20px 44px -22px rgba(20,20,20,.28);
+  --tint:rgba(20,20,20,.08); --tint-strong:rgba(20,20,20,.14);
+}
+
+body[data-theme="mono-dark"]{
+  --bg0:#000000; --bg1:#0A0A0A; --bg2:#121212; --bg3:#1B1B1B; --bg4:#252525;
+  --out1:#1C1C1C; --out2:#2C2C2C;
+  --text1:#D0D0D0; --text2:#9A9A9A; --text3:#6B6B6B;
+  --accent:#E6E6E6; --on-accent:#0A0A0A; --accent2:#9A9A9A; --on-accent2:#0A0A0A;
+  --grad:linear-gradient(90deg,#E6E6E6,#9A9A9A);
+  --cover1:#242424; --cover2:#0D0D0D; --cover-note:#E6E6E6;
+  --scrim:rgba(0,0,0,.6); --hover:rgba(255,255,255,.06);
+  --shadow:0 24px 50px -24px rgba(0,0,0,.9);
+  --tint:rgba(255,255,255,.10); --tint-strong:rgba(255,255,255,.18);
+}
+
+body[data-theme="vermilion-day"]{
+  --bg0:#FAF5F2; --bg1:#FFFFFF; --bg2:#FBF4F0; --bg3:#F1E7E1; --bg4:#E9DAD2;
+  --out1:#EFE0D9; --out2:#DFC4B9;
+  --text1:#2B1A16; --text2:#6B534B; --text3:#A2877D;
+  --accent:#A32E25; --on-accent:#FFFFFF; --accent2:#D4786C; --on-accent2:#FFFFFF;
+  --grad:linear-gradient(90deg,#A32E25,#D4786C);
+  --cover1:#B04A36; --cover2:#7E2218; --cover-note:#FFFFFF;
+  --scrim:rgba(43,26,22,.45); --hover:rgba(163,46,37,.10);
+  --shadow:0 20px 44px -22px rgba(163,46,37,.35);
+  --tint:rgba(163,46,37,.10); --tint-strong:rgba(163,46,37,.18);
+}
+
+body[data-theme="vermilion-night"]{
+  --bg0:#000000; --bg1:#140B09; --bg2:#1D110E; --bg3:#251814; --bg4:#2E1D18;
+  --out1:#2B1813; --out2:#3E241E;
+  --text1:#EADAD5; --text2:#B79A92; --text3:#7F5E56;
+  --accent:#C04F42; --on-accent:#FFFFFF; --accent2:#8F3B32; --on-accent2:#FFFFFF;
+  --grad:linear-gradient(90deg,#C04F42,#7E3028);
+  --cover1:#B5493D; --cover2:#4A1610; --cover-note:#F2D9D2;
+  --scrim:rgba(0,0,0,.6); --hover:rgba(192,79,66,.12);
+  --shadow:0 24px 50px -24px rgba(0,0,0,.9);
+  --tint:rgba(192,79,66,.12); --tint-strong:rgba(192,79,66,.22);
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{
+  font-family:var(--font-ui);
+  background:var(--bg0);
+  color:var(--text1);
+  transition:background .35s ease,color .35s ease;
+  line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+button{font-family:inherit;border:none;background:none;color:inherit;cursor:pointer}
+svg{display:block}
+.ic{width:1.15em;height:1.15em;flex:none}
+.ic-fill{fill:currentColor;stroke:none}
+.ic-stroke{fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+.page{max-width:1280px;margin:0 auto;padding:0 28px 90px}
+
+/* ---------- 顶栏 ---------- */
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;padding:26px 0 10px}
+.brand{display:flex;align-items:center;gap:14px}
+.logo{width:40px;height:40px;color:var(--accent);transition:color .35s}
+.brand-name{font-weight:800;font-size:18px;letter-spacing:.3px}
+.brand-sub{font-size:12px;color:var(--text2);letter-spacing:2px}
+.theme-ctl{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.theme-pills{display:flex;gap:4px;background:var(--bg1);border:1px solid var(--out1);padding:4px;border-radius:999px;box-shadow:var(--shadow);transition:background .35s}
+.pill{padding:7px 15px;border-radius:999px;font-size:13px;color:var(--text2);transition:all .2s;white-space:nowrap}
+.pill:hover{color:var(--text1)}
+.pill.active{background:var(--accent);color:var(--on-accent)}
+.pill .dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;vertical-align:1px}
+.pill.active .dot{outline:2px solid color-mix(in srgb,var(--on-accent) 30%, transparent)}
+
+/* ---------- Hero ---------- */
+.hero{padding:46px 0 8px}
+.kicker{color:var(--accent);font-weight:700;letter-spacing:6px;font-size:12px;transition:color .35s}
+.hero-title{font-size:clamp(38px,6vw,66px);font-weight:800;line-height:1.05;letter-spacing:1px;margin-top:14px}
+.hero-title .grad{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;transition:background .35s}
+.hero-title .en{display:block;font-size:clamp(13px,1.8vw,18px);font-weight:600;letter-spacing:8px;color:var(--text3);margin-top:14px;text-transform:uppercase}
+.hero-sub{color:var(--text2);max-width:680px;margin-top:20px;font-size:16px;line-height:1.9}
+.hero-facts{display:flex;gap:10px;flex-wrap:wrap;margin-top:26px}
+.fact{display:flex;align-items:center;gap:8px;background:var(--bg1);border:1px solid var(--out1);padding:8px 14px;border-radius:999px;font-size:13px;color:var(--text2)}
+.fact svg{color:var(--accent)}
+
+.pillars{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px;margin-top:44px}
+.pillar{background:var(--bg1);border:1px solid var(--out1);border-radius:var(--r-xl);padding:24px;transition:background .35s}
+.pillar .num{font-family:var(--font-num);color:var(--accent);font-weight:800;font-size:14px;letter-spacing:2px}
+.pillar h3{font-size:17px;font-weight:800;margin:12px 0 8px}
+.pillar p{font-size:13.5px;color:var(--text2);line-height:1.8}
+.pillar .sw{padding:9px 0 2px;font-family:var(--font-num);font-size:12px;color:var(--text3)}
+
+/* ---------- 章节标题 ---------- */
+.sec{margin:84px 0 8px}
+.sec h2{font-size:26px;font-weight:800;letter-spacing:.5px}
+.sec .sub{color:var(--text2);margin-top:6px;font-size:14px;max-width:720px}
+.sec .sub code{font-family:var(--font-num);font-size:12px;color:var(--text1);background:var(--bg3);padding:1px 6px;border-radius:5px}
+.sec-head{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.sec-head .idx{font-family:var(--font-num);color:var(--accent);font-size:13px;font-weight:700;letter-spacing:2px}
+
+/* ---------- 手机稿 ---------- */
+.phones{display:grid;grid-template-columns:repeat(auto-fill,minmax(350px,1fr));gap:44px 32px;margin-top:34px}
+.phone-wrap{display:flex;flex-direction:column;align-items:center;gap:14px}
+.phone-label{font-size:12.5px;color:var(--text2);letter-spacing:1.5px;font-weight:600;text-align:center;max-width:340px;line-height:1.7}
+.phone-label b{color:var(--text1)}
+
+.phone{width:332px;height:700px;background:#000;border-radius:46px;padding:11px;box-shadow:0 30px 70px -30px rgba(0,0,0,.65);flex:none}
+.notch{position:absolute;top:11px;left:50%;transform:translateX(-50%);width:118px;height:25px;background:#000;border-radius:0 0 18px 18px;z-index:20}
+.screen{position:relative;width:100%;height:100%;background:var(--bg0);border-radius:36px;overflow:hidden;display:flex;flex-direction:column;color:var(--text1);transition:background .35s,color .35s}
+.statusbar{height:34px;flex:none;display:flex;align-items:flex-end;justify-content:space-between;padding:0 22px 4px;color:var(--text3);font-size:12px;font-family:var(--font-num)}
+.sb-icons{letter-spacing:3px;font-size:10px}
+.scroll{flex:1;overflow:hidden;position:relative}
+.scroll:hover{overflow-y:auto;scrollbar-width:thin}
+.scroll::-webkit-scrollbar{width:3px}
+.scroll::-webkit-scrollbar-thumb{background:var(--out2);border-radius:3px}
+
+/* 迷你播放栏 */
+.minibar{flex:none;display:flex;align-items:center;gap:11px;background:var(--bg1);border-top:1px solid var(--out1);padding:10px 16px;margin-top:auto;transition:background .35s}
+.minibar-thumb{width:40px;height:40px;border-radius:9px;background:radial-gradient(120% 120% at 30% 25%,var(--cover1),var(--cover2) 70%);display:flex;align-items:center;justify-content:center;color:var(--cover-note);flex:none}
+.minibar-thumb svg{width:16px;height:16px}
+.minibar-mid{flex:1;min-width:0}
+.minibar-title{font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.minibar-progress{height:2.5px;background:var(--out1);border-radius:2px;margin-top:6px;overflow:hidden}
+.minibar-progress i{display:block;height:100%;background:var(--accent);transition:background .35s}
+.minibar-btn{width:36px;height:36px;border-radius:50%;background:var(--accent);color:var(--on-accent);display:flex;align-items:center;justify-content:center;flex:none}
+.minibar-btn svg{width:16px;height:16px}
+
+/* 图标按钮 */
+.icon-btn{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--text2)}
+.icon-btn.sm{width:28px;height:28px}
+.icon-btn:hover{background:var(--hover);color:var(--text1)}
+.icon-btn.active{color:var(--accent)}
+
+/* 顶栏(appbar) */
+.appbar{flex:none;display:flex;align-items:center;justify-content:space-between;padding:8px 12px 4px 8px}
+.appbar .t{font-size:17px;font-weight:800;letter-spacing:.3px}
+.appbar-left,.appbar-right{display:flex;align-items:center;gap:4px}
+
+/* 章节标签 */
+.sec-label{flex:none;display:flex;align-items:center;justify-content:space-between;padding:16px 18px 8px;font-size:13px;font-weight:700;color:var(--text2);letter-spacing:.5px}
+.sec-label .more{display:inline-flex;align-items:center;gap:2px;color:var(--text3);font-size:12px;font-weight:600}
+.sec-label .more svg{width:13px;height:13px}
+
+/* 卡片 */
+.card{flex:none;background:var(--bg1);border:1px solid var(--out1);border-radius:var(--r-l);padding:16px;margin:8px 18px 0;transition:background .35s}
+
+/* ============================================================
+   今日听歌时长 · Hero 卡
+   ============================================================ */
+.today-card{margin-top:8px}
+.today-top{display:flex;align-items:center;justify-content:space-between}
+.today-label{display:flex;align-items:center;gap:7px;font-size:12.5px;font-weight:700;color:var(--text2);letter-spacing:.5px}
+.today-label svg{width:14px;height:14px;color:var(--accent)}
+.today-goal{font-family:var(--font-num);font-size:10.5px;color:var(--text3)}
+.today-body{display:flex;align-items:center;gap:16px;margin-top:14px}
+.today-ring{width:86px;height:86px;flex:none;position:relative;border-radius:50%;
+  background:conic-gradient(var(--accent) 0deg 108deg, var(--bg3) 108deg 360deg)}
+.today-ring::before{content:"";position:absolute;inset:9px;border-radius:50%;background:var(--bg1)}
+.today-ring i{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--font-num);font-size:11px;font-weight:800;font-style:normal;color:var(--accent)}
+.today-num{flex:1;min-width:0}
+.today-big{font-family:var(--font-num);font-size:29px;font-weight:800;letter-spacing:.5px;line-height:1.1}
+.today-big small{font-size:14px;font-weight:700;color:var(--text2);margin-left:3px}
+.today-sub{font-size:11.5px;color:var(--text3);margin-top:5px}
+.today-stats{display:flex;gap:8px;margin-top:14px}
+.s-stat{flex:1;display:flex;align-items:center;gap:7px;background:var(--bg3);border-radius:var(--r-s);padding:9px 10px}
+.s-stat svg{width:13px;height:13px;color:var(--text3);flex:none}
+.s-stat .n{font-family:var(--font-num);font-size:13px;font-weight:800;color:var(--text1)}
+.s-stat .l{font-size:9.5px;color:var(--text3);margin-top:1px}
+
+/* 增量徽章 */
+.delta{display:inline-flex;align-items:center;gap:4px;font-size:10.5px;font-weight:700;padding:3px 8px;border-radius:999px}
+.delta svg{width:11px;height:11px}
+.delta.up{color:var(--accent);background:var(--tint);border:1px solid var(--tint-strong)}
+.delta.flat{color:var(--text3);background:var(--bg3);border:1px solid var(--out1)}
+.delta .mono{font-family:var(--font-num)}
+
+/* 今日分时段迷你条 */
+.today-hours{display:flex;align-items:flex-end;gap:3px;height:34px;margin-top:16px;border-top:1px solid var(--out1);padding-top:8px}
+.today-hours i{flex:1;border-radius:2px 2px 0 0;background:var(--bg3)}
+.today-hours i.on{background:var(--accent)}
+.today-hours i.cur{background:var(--grad)}
+
+/* ============================================================
+   本周听歌时长 · 柱状图
+   ============================================================ */
+.chart-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.chart-title{display:flex;align-items:center;gap:7px;font-size:13px;font-weight:700}
+.chart-title svg{width:15px;height:15px;color:var(--accent)}
+.chart-total{font-family:var(--font-num);font-size:12px;color:var(--text3);margin-top:3px;font-weight:400}
+.chart-right{display:flex;align-items:center;gap:7px}
+.bars{display:flex;align-items:flex-end;gap:8px;height:128px;margin-top:16px}
+.bar{flex:1;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:6px}
+.bar .v{font-family:var(--font-num);font-size:9.5px;color:var(--text3)}
+.bar .c{width:100%;max-width:26px;border-radius:6px 6px 2px 2px;background:var(--bg3)}
+.bar.today .c{background:var(--grad)}
+.bar .d{font-size:11px;color:var(--text2)}
+.bar.today .d{color:var(--accent);font-weight:800}
+.chart-note{display:flex;align-items:center;gap:7px;margin-top:14px;font-size:11px;color:var(--text3)}
+.chart-note .dot{width:8px;height:8px;border-radius:3px;background:var(--grad)}
+
+/* ============================================================
+   TOP 榜
+   ============================================================ */
+.top-hint{flex:none;display:flex;align-items:center;justify-content:center;gap:7px;margin:10px 18px 2px;font-size:11px;color:var(--text3)}
+.top-hint svg{width:13px;height:13px;color:var(--accent)}
+.seg{display:flex;gap:4px;background:var(--bg3);border-radius:12px;padding:4px;margin:10px 18px 4px}
+.seg button{flex:1;padding:8px 4px;border-radius:9px;font-size:12px;color:var(--text2)}
+.seg button.on{background:var(--accent);color:var(--on-accent);font-weight:700}
+.top-item{display:flex;align-items:center;gap:12px;padding:9px 18px;cursor:pointer;transition:background .2s}
+.top-item:hover{background:var(--hover)}
+.top-item.active{background:var(--hover)}
+.rank{width:24px;text-align:center;font-family:var(--font-num);font-size:15px;font-weight:800;color:var(--text3);flex:none}
+.rank.badge{width:26px;height:26px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12px}
+.rank.r1{background:var(--accent);color:var(--on-accent)}
+.rank.r2{background:var(--accent2);color:var(--on-accent2)}
+.rank.r3{background:var(--tint-strong);color:var(--accent)}
+.thumb{width:44px;height:44px;border-radius:10px;background:radial-gradient(120% 120% at 30% 25%,var(--cover1),var(--cover2) 72%);display:flex;align-items:center;justify-content:center;color:var(--cover-note);flex:none}
+.thumb svg{width:18px;height:18px;opacity:.9}
+.li-mid{flex:1;min-width:0}
+.li-title{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.top-item.active .li-title{color:var(--accent)}
+.li-sub{font-size:11.5px;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.li-right{display:flex;align-items:center;gap:8px;color:var(--text3);font-size:11.5px;font-family:var(--font-num);flex:none}
+.li-right svg{width:12px;height:12px}
+.li-right b{font-weight:800;color:var(--text2)}
+.top-foot{flex:none;display:flex;align-items:center;justify-content:center;gap:6px;padding:12px 18px;font-size:12px;color:var(--text3)}
+.top-foot svg{width:13px;height:13px}
+
+/* 空态 */
+.empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:40px 28px;color:var(--text3);text-align:center}
+.empty svg{width:46px;height:46px;opacity:.5}
+.empty .t{font-size:14px;font-weight:700;color:var(--text2)}
+.empty .s{font-size:12px;line-height:1.7}
+
+/* 列表项（复用） */
+.list{flex:1;overflow:hidden;padding-bottom:4px}
+.list:hover{overflow-y:auto;scrollbar-width:thin}
+.eq{display:flex;align-items:flex-end;gap:2.5px;height:14px}
+.eq i{width:3px;border-radius:2px;background:var(--accent);animation:eq 1s ease-in-out infinite}
+.eq i:nth-child(1){animation-delay:0s}
+.eq i:nth-child(2){animation-delay:.18s}
+.eq i:nth-child(3){animation-delay:.36s}
+.eq i:nth-child(4){animation-delay:.09s}
+@keyframes eq{0%,100%{height:26%}50%{height:100%}}
+
+/* 迷你 FAB / 按钮 */
+.btn{display:inline-flex;align-items:center;gap:7px;height:38px;padding:0 18px;border-radius:19px;font-size:13px;font-weight:700;letter-spacing:.3px;transition:all .2s}
+.btn.filled{background:var(--accent);color:var(--on-accent)}
+.btn.outlined{border:1px solid var(--out2);color:var(--text1)}
+.btn svg{width:15px;height:15px}
+.btn:active{transform:scale(.97)}
+
+/* ============================================================
+   统计入口 · 我的页入口卡 / Hub 内入口行
+   ============================================================ */
+.stats-entry{display:flex;align-items:center;gap:14px}
+.stats-entry .ring{width:52px;height:52px;flex:none;position:relative;border-radius:50%;
+  background:conic-gradient(var(--accent) 0deg 108deg,var(--bg3) 108deg 360deg)}
+.stats-entry .ring::before{content:"";position:absolute;inset:6px;border-radius:50%;background:var(--bg1)}
+.stats-entry .ring i{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--font-num);font-size:11px;font-weight:800;font-style:normal;color:var(--accent)}
+.stats-entry-mid{flex:1;min-width:0}
+.stats-entry-t{font-size:15px;font-weight:800;display:flex;align-items:center;gap:7px}
+.stats-entry-t svg{width:16px;height:16px;color:var(--accent)}
+.stats-entry-big{font-family:var(--font-num);font-size:22px;font-weight:800;margin-top:4px;line-height:1.15}
+.stats-entry-big small{font-size:12px;font-weight:700;color:var(--text2)}
+.stats-entry-sub{font-size:11px;color:var(--text3);margin-top:4px}
+.stats-entry-chev{color:var(--text3);display:flex}
+.stats-entry-chev svg{width:18px;height:18px}
+
+.entry-row{flex:none;display:flex;align-items:center;gap:12px;padding:13px 18px;cursor:pointer;transition:background .2s}
+.entry-row:hover{background:var(--hover)}
+.entry-row + .entry-row{border-top:1px solid var(--out1)}
+.entry-ic{width:38px;height:38px;border-radius:12px;background:var(--tint);color:var(--accent);display:flex;align-items:center;justify-content:center;flex:none}
+.entry-ic svg{width:19px;height:19px}
+.entry-mid{flex:1;min-width:0}
+.entry-t{font-size:13.5px;font-weight:700}
+.entry-s{font-size:11px;color:var(--text3);margin-top:1px}
+.entry-chev{color:var(--text3);display:flex}
+.entry-chev svg{width:17px;height:17px}
+
+/* ---------- 说明区 ---------- */
+.notes{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px;margin-top:30px}
+.note{background:var(--bg1);border:1px solid var(--out1);border-radius:var(--r-xl);padding:22px}
+.note h3{font-size:16px;font-weight:800;display:flex;align-items:center;gap:10px}
+.note h3 svg{width:19px;height:19px;color:var(--accent)}
+.note .idx{font-family:var(--font-num);color:var(--accent);font-size:12px;font-weight:700;letter-spacing:2px}
+.note p{font-size:13.5px;color:var(--text2);line-height:1.85;margin-top:10px}
+.note ul{list-style:none;margin-top:12px}
+.note li{font-size:12.5px;color:var(--text2);padding:4px 0 4px 18px;position:relative;line-height:1.7}
+.note li::before{content:"—";position:absolute;left:0;color:var(--accent)}
+
+/* 组件放大图 */
+.comp-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:18px;margin-top:30px}
+.comp{background:var(--bg1);border:1px solid var(--out1);border-radius:var(--r-m);padding:22px;transition:background .35s}
+.comp h4{font-size:13px;font-weight:700;color:var(--text2);letter-spacing:1px;margin-bottom:16px}
+.comp .row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.comp .row + .row{margin-top:16px}
+.demo-bar{display:flex;align-items:flex-end;gap:10px;height:120px;padding:0 6px}
+.demo-bar i{flex:1;border-radius:6px 6px 2px 2px;background:var(--bg3)}
+.demo-bar i.on{background:var(--grad)}
+
+footer{margin-top:90px;padding-top:24px;border-top:1px solid var(--out1);display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;color:var(--text3);font-size:12px}
+footer .mono{font-family:var(--font-num)}
+
+.note-chip{display:inline-flex;align-items:center;gap:6px;background:var(--tint);color:var(--accent);border:1px solid var(--tint-strong);padding:4px 10px;border-radius:999px;font-size:11.5px;font-weight:600}
+
+@media (max-width:720px){
+  .page{padding:0 16px 70px}
+  .hero-title{font-size:40px}
+  .phones{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body data-theme="mono-dark">
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" fill="currentColor"/></symbol>
+  <symbol id="i-pause" viewBox="0 0 24 24"><path d="M6 4h4v16H6zM14 4h4v16h-4z" fill="currentColor"/></symbol>
+  <symbol id="i-back" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-note" viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" fill="currentColor"/></symbol>
+  <symbol id="i-dots" viewBox="0 0 24 24"><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" fill="currentColor"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-1 3h2v5.6l4.2 2.5-1 1.7-5.2-3.1V7z" fill="currentColor"/></symbol>
+  <symbol id="i-cal" viewBox="0 0 24 24"><path d="M7 3v2H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2V3h-2v2H9V3H7zm-2 8h14v8H5v-8zm2-2a1 1 0 1 1 0-2 1 1 0 0 1 0 2zm4 0a1 1 0 1 1 0-2 1 1 0 0 1 0 2zm4 0a1 1 0 1 1 0-2 1 1 0 0 1 0 2z" fill="currentColor"/></symbol>
+  <symbol id="i-chart" viewBox="0 0 24 24"><path d="M5 20h4V9H5v11zm5 0h4V4h-4v16zm5 0h4v-7h-4v7z" fill="currentColor"/></symbol>
+  <symbol id="i-chart-line" viewBox="0 0 24 24"><path d="M3 17l5-6 4 3 6-8 3 3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 21h18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="i-chev-r" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-trend-up" viewBox="0 0 24 24"><path d="M3 17l6-6 4 4 8-9M14 6h7v7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-trend-down" viewBox="0 0 24 24"><path d="M3 7l6 6 4-4 8 9M14 18h7v-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-trophy" viewBox="0 0 24 24"><path d="M6 4h12v3a6 6 0 0 1-12 0V4zm-2 0v3c0 3 2 5.4 4.7 6.2A6.5 6.5 0 0 0 12 16a6.5 6.5 0 0 0 3.3-2.8C18 12.4 20 10 20 7V4h-2v3a4 4 0 0 1-8 0V4H4zm8 14a8.5 8.5 0 0 1-5-1.6V20a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-3.6A8.5 8.5 0 0 1 12 18z" fill="currentColor"/></symbol>
+  <symbol id="i-head" viewBox="0 0 24 24"><path d="M12 3a9 9 0 0 0-9 9c0 1.9.6 3.7 1.6 5.2L3 22l4.6-1.3A9 9 0 1 0 12 3zm0 2a7 7 0 1 1 0 14 7 7 0 0 1 0-14zm-3.5 7a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3zm7 0a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3z" fill="currentColor"/></symbol>
+  <symbol id="i-shuffle" viewBox="0 0 24 24"><path d="M10.59 9.17 5.41 4 4 5.41l5.17 5.17 1.42-1.41zM14.5 4l2.04 2.04L4 18.59 5.41 20 17.96 7.46 20 9.5V4h-5.5zm.33 9.41-1.41 1.41 3.13 3.13L14.5 20H20v-5.5l-2.04 2.04-3.13-3.13z" fill="currentColor"/></symbol>
+  <symbol id="i-sliders" viewBox="0 0 24 24"><path d="M3 17v2h6v-2H3zM3 5v2h10V5H3zm10 16v-2h8v-2h-8v-2h-2v6h2zM7 9v2H3v2h4v2h2V9H7zm14 4v-2H11v2h10zm-6-4h2V7h4V5h-4V3h-2v6z" fill="currentColor"/></symbol>
+  <symbol id="i-infinite" viewBox="0 0 24 24"><path d="M8 8c-2.2 0-4 1.8-4 4s1.8 4 4 4c2.4 0 4.2-8 8-8 2.2 0 4 1.8 4 4s-1.8 4-4 4c-2.4 0-4.2-8-8-8z" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
+</svg>
+
+<div class="page">
+
+  <!-- ===================== 顶栏 ===================== -->
+  <header class="topbar">
+    <div class="brand">
+      <svg class="logo" viewBox="0 0 64 64" fill="none">
+        <path d="M32 55C32 55 10 42 10 24 10 15 17 9 24 9c4 0 7 2 8 5 1-3 4-5 8-5 7 0 14 6 14 15 0 18-22 31-22 31z" stroke="currentColor" stroke-width="3.4" stroke-linejoin="round"/>
+        <path d="M27 33l4-12M27 33l-4 6M31 21l4 12M35 33l3-8" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="27" cy="33" r="4.6" fill="currentColor"/>
+        <circle cx="35" cy="33" r="4.6" fill="currentColor"/>
+      </svg>
+      <div>
+        <div class="brand-name">心有乐章</div>
+        <div class="brand-sub">MELODY IN HEART</div>
+      </div>
+    </div>
+    <div class="theme-ctl">
+      <div class="theme-pills">
+        <button class="pill" data-pill="mono-light"><span class="dot" style="background:#141414"></span>墨 · 浅</button>
+        <button class="pill active" data-pill="mono-dark"><span class="dot" style="background:#D0D0D0"></span>墨 · 深 (OLED)</button>
+        <button class="pill" data-pill="vermilion-day"><span class="dot" style="background:#A32E25"></span>朱砂 · 昼</button>
+        <button class="pill" data-pill="vermilion-night"><span class="dot" style="background:#C04F42"></span>朱砂 · 夜</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===================== Hero ===================== -->
+  <section class="hero">
+    <div class="kicker">FEATURE · PLAYBACK STATISTICS · v1</div>
+    <h1 class="hero-title">播放统计<span class="grad">，听见每一天</span><span class="en">Playback Statistics</span></h1>
+    <p class="hero-sub">
+      在「我的」页把播放统计升级为<strong>统计中心</strong>，新增<strong>今日听歌时长</strong>、<strong>本周听歌时长柱状图</strong>、
+      <strong>本周 / 本月歌曲 TOP 榜</strong>；原有的「播放次数 / 有效播放次数」两个全量列表一并收纳进统计中心，
+      入口单一、层级清晰。全部沿用四套主题令牌，深色模式 OLED 纯黑，数据可视克制不喧宾夺主。
+    </p>
+    <div class="hero-facts">
+      <span class="fact"><svg class="ic ic-fill"><use href="#i-chart"/></svg>今日 · 本周 · 本月</span>
+      <span class="fact"><svg class="ic ic-fill"><use href="#i-trophy"/></svg>歌曲热度 Top 榜</span>
+      <span class="fact"><svg class="ic ic-fill"><use href="#i-chart-line"/></svg>本地数据 · 无网络</span>
+    </div>
+
+    <div class="pillars">
+      <div class="pillar">
+        <div class="num">01 / 今日</div>
+        <h3>今日听歌时长</h3>
+        <p>实时累计当天有效播放时长，大数字 + 环形进度 + 较昨日 / 较上周增量。今天的目标感来自小目标进度环。</p>
+        <div class="sw">数据源 · PlayDurationTracker 当日累计</div>
+      </div>
+      <div class="pillar">
+        <div class="num">02 / 本周</div>
+        <h3>柱状统计图</h3>
+        <p>自然周（周一 ~ 周日）按天聚合时长，柱高直观对比，今天高亮强调；顶部展示本周总时长与较上周变化。</p>
+        <div class="sw">数据源 · 按天聚合（无数据日留空）</div>
+      </div>
+      <div class="pillar">
+        <div class="num">03 / Top 榜</div>
+        <h3>本周 / 本月歌曲榜</h3>
+        <p>按播放次数（或播放时长）排序的歌曲热度榜，周 / 月一键切换；点击条目可直接播放。前三名使用奖牌式排名徽标。</p>
+        <div class="sw">数据源 · rawPlayCount 按周 / 月聚合</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== 手机稿 ===================== -->
+  <div class="sec sec-head" id="mockups">
+    <span class="idx">01</span>
+    <div>
+      <h2>界面稿 · 手机</h2>
+      <div class="sub">四张稿子：我的页入口卡、统计总览（今日 + 本周柱状图 + 榜单预览 + 全部歌曲统计）、本周歌曲 TOP 榜、本月歌曲 TOP 榜。左上角切换主题，全部稿子即时换肤。</div>
+    </div>
+  </div>
+
+  <div class="phones">
+
+    <!-- 00 我的页 · 播放统计入口 -->
+    <div class="phone-wrap">
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="screen">
+          <div class="statusbar"><span>21:05</span><span class="sb-icons">▮▮ ▮● ♪</span></div>
+          <div class="appbar">
+            <div class="appbar-left"><span class="t">我的</span></div>
+            <div class="appbar-right"><button class="icon-btn"><svg class="ic ic-fill"><use href="#i-sliders"/></svg></button></div>
+          </div>
+          <div class="scroll">
+            <div class="card stats-entry" style="margin-top:10px;cursor:pointer">
+              <div class="ring"><i>54%</i></div>
+              <div class="stats-entry-mid">
+                <div class="stats-entry-t"><svg class="ic ic-fill"><use href="#i-chart"/></svg>播放统计</div>
+                <div class="stats-entry-big">今日 1<small>小时</small> 05<small>分</small></div>
+                <div class="stats-entry-sub">较昨日 +42 分 · 本周 9 小时 42 分 · 周月榜单</div>
+              </div>
+              <div class="stats-entry-chev"><svg class="ic ic-stroke"><use href="#i-chev-r"/></svg></div>
+            </div>
+          </div>
+          <div class="minibar">
+            <div class="minibar-thumb"><svg class="ic ic-fill"><use href="#i-note"/></svg></div>
+            <div class="minibar-mid">
+              <div class="minibar-title">海阔天空</div>
+              <div class="minibar-progress"><i style="width:54%"></i></div>
+            </div>
+            <button class="minibar-btn"><svg class="ic ic-fill"><use href="#i-play"/></svg></button>
+          </div>
+        </div>
+      </div>
+      <div class="phone-label">01 · <b>我的页</b> · 「播放统计」卡片升级为单一入口（今日时长迷你预览 + 目标环）· 搜索 / 添加文件夹 / 歌单 / 全部歌曲已迁至「曲库」</div>
+    </div>
+
+    <!-- 01 统计总览 -->
+    <div class="phone-wrap">
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="screen">
+          <div class="statusbar"><span>21:05</span><span class="sb-icons">▮▮ ▮● ♪</span></div>
+          <div class="appbar">
+            <div class="appbar-left">
+              <button class="icon-btn"><svg class="ic ic-stroke"><use href="#i-back"/></svg></button>
+              <span class="t">播放统计</span>
+            </div>
+            <div class="appbar-right">
+              <button class="icon-btn active"><svg class="ic ic-fill"><use href="#i-chart"/></svg></button>
+              <button class="icon-btn"><svg class="ic ic-fill"><use href="#i-dots"/></svg></button>
+            </div>
+          </div>
+          <div class="scroll">
+
+            <!-- 今日听歌时长 -->
+            <div class="card today-card">
+              <div class="today-top">
+                <div class="today-label"><svg class="ic ic-fill"><use href="#i-clock"/></svg>今日听歌时长</div>
+                <span class="today-goal">目标 · 2 小时</span>
+              </div>
+              <div class="today-body">
+                <div class="today-ring"><i>54%</i></div>
+                <div class="today-num">
+                  <div class="today-big">1<small>小时</small> 05<small>分</small></div>
+                  <div class="today-sub">今天已听 12 首 · 正在播放 2 首</div>
+                </div>
+              </div>
+              <div class="today-stats">
+                <div class="s-stat">
+                  <svg class="ic ic-fill"><use href="#i-trend-up"/></svg>
+                  <div><div class="n">+42 分</div><div class="l">较昨日</div></div>
+                </div>
+                <div class="s-stat">
+                  <svg class="ic ic-fill"><use href="#i-trend-up"/></svg>
+                  <div><div class="n">+1 时 06 分</div><div class="l">较上周同日</div></div>
+                </div>
+              </div>
+              <div class="today-hours">
+                <i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i>
+                <i class="cur"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+              </div>
+            </div>
+
+            <!-- 本周听歌时长 柱状图 -->
+            <div class="card">
+              <div class="chart-head">
+                <div>
+                  <div class="chart-title"><svg class="ic ic-fill"><use href="#i-cal"/></svg>本周听歌时长</div>
+                  <div class="chart-total">合计 9 小时 42 分</div>
+                </div>
+                <div class="chart-right">
+                  <span class="delta up"><svg class="ic ic-stroke"><use href="#i-trend-up"/></svg><span class="mono">+12%</span></span>
+                </div>
+              </div>
+              <div class="bars">
+                <div class="bar"><span class="v">40</span><span class="c" style="height:24%"></span><span class="d">一</span></div>
+                <div class="bar today"><span class="v">25</span><span class="c" style="height:15%"></span><span class="d">二</span></div>
+                <div class="bar"><span class="v">62</span><span class="c" style="height:37%"></span><span class="d">三</span></div>
+                <div class="bar"><span class="v">35</span><span class="c" style="height:21%"></span><span class="d">四</span></div>
+                <div class="bar"><span class="v">92</span><span class="c" style="height:55%"></span><span class="d">五</span></div>
+                <div class="bar"><span class="v">168</span><span class="c" style="height:100%"></span><span class="d">六</span></div>
+                <div class="bar"><span class="v">160</span><span class="c" style="height:95%"></span><span class="d">日</span></div>
+              </div>
+              <div class="chart-note"><span class="dot"></span>柱体数值单位：分钟 · 无听歌记录的日期留空</div>
+            </div>
+
+            <!-- 本周歌曲 TOP 榜 预览 -->
+            <div class="sec-label">本周歌曲 TOP 榜
+              <span class="more">查看全部<svg class="ic ic-stroke"><use href="#i-chev-r"/></svg></span>
+            </div>
+            <div class="top-item active">
+              <span class="rank r1">1</span>
+              <div class="thumb"><svg><use href="#i-note"/></svg></div>
+              <div class="li-mid"><div class="li-title">海阔天空</div><div class="li-sub">Beyond · 乐与怒</div></div>
+              <div class="li-right"><span class="eq"><i></i><i></i><i></i><i></i></span><b>128</b> 次</div>
+            </div>
+            <div class="top-item">
+              <span class="rank r2">2</span>
+              <div class="thumb"><svg><use href="#i-note"/></svg></div>
+              <div class="li-mid"><div class="li-title">光年之外</div><div class="li-sub">G.E.M. · 光年之外</div></div>
+              <div class="li-right"><b>96</b> 次</div>
+            </div>
+            <div class="top-item">
+              <span class="rank r3">3</span>
+              <div class="thumb"><svg><use href="#i-note"/></svg></div>
+              <div class="li-mid"><div class="li-title">夜空中最亮的星</div><div class="li-sub">逃跑计划 · 世界</div></div>
+              <div class="li-right"><b>78</b> 次</div>
+            </div>
+
+            <!-- 本月歌曲 TOP 榜 预览 -->
+            <div class="sec-label">本月歌曲 TOP 榜
+              <span class="more">查看全部<svg class="ic ic-stroke"><use href="#i-chev-r"/></svg></span>
+            </div>
+            <div class="top-item">
+              <span class="rank r1">1</span>
+              <div class="thumb"><svg><use href="#i-note"/></svg></div>
+              <div class="li-mid"><div class="li-title">平凡之路</div><div class="li-sub">朴树 · 猎户星座</div></div>
+              <div class="li-right"><b>312</b> 次</div>
+            </div>
+            <div class="top-item">
+              <span class="rank r2">2</span>
+              <div class="thumb"><svg><use href="#i-note"/></svg></div>
+              <div class="li-mid"><div class="li-title">City of Stars</div><div class="li-sub">Ryan Gosling · La La Land</div></div>
+              <div class="li-right"><b>287</b> 次</div>
+            </div>
+            <div class="top-item">
+              <span class="rank r3">3</span>
+              <div class="thumb"><svg><use href="#i-note"/></svg></div>
+              <div class="li-mid"><div class="li-title">夜的第七章</div><div class="li-sub">周杰伦 · 依然范特西</div></div>
+              <div class="li-right"><b>261</b> 次</div>
+            </div>
+
+            <!-- 全部歌曲统计 · 原有功能入口 -->
+            <div class="sec-label">全部歌曲统计</div>
+            <div class="entry-row">
+              <div class="entry-ic"><svg class="ic ic-fill"><use href="#i-chart"/></svg></div>
+              <div class="entry-mid"><div class="entry-t">播放次数</div><div class="entry-s">全部歌曲按播放次数排序 · 可搜索 / 排序</div></div>
+              <div class="entry-chev"><svg class="ic ic-stroke"><use href="#i-chev-r"/></svg></div>
+            </div>
+            <div class="entry-row">
+              <div class="entry-ic"><svg class="ic ic-fill"><use href="#i-chart-line"/></svg></div>
+              <div class="entry-mid"><div class="entry-t">有效播放次数</div><div class="entry-s">完播率达 90% 或超过 5 分钟才计一次</div></div>
+              <div class="entry-chev"><svg class="ic ic-stroke"><use href="#i-chev-r"/></svg></div>
+            </div>
+          </div>
+          <div class="minibar">
+            <div class="minibar-thumb"><svg class="ic ic-fill"><use href="#i-note"/></svg></div>
+            <div class="minibar-mid">
+              <div class="minibar-title">海阔天空</div>
+              <div class="minibar-progress"><i style="width:54%"></i></div>
+            </div>
+            <button class="minibar-btn"><svg class="ic ic-fill"><use href="#i-play"/></svg></button>
+          </div>
+        </div>
+      </div>
+      <div class="phone-label">02 · <b>统计总览</b> · 今日时长（环形进度 + 增量）+ 本周柱状图（今天高亮）+ 周 / 月 Top 预览 + 底部「全部歌曲统计」</div>
+    </div>
+
+    <!-- 02 本周歌曲 TOP 榜 -->
+    <div class="phone-wrap">
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="screen">
+          <div class="statusbar"><span>21:05</span><span class="sb-icons">▮▮ ▮● ♪</span></div>
+          <div class="appbar">
+            <div class="appbar-left">
+              <button class="icon-btn"><svg class="ic ic-stroke"><use href="#i-back"/></svg></button>
+              <span class="t">歌曲 TOP 榜</span>
+            </div>
+            <div class="appbar-right">
+              <button class="icon-btn"><svg class="ic ic-fill"><use href="#i-chart"/></svg></button>
+              <button class="icon-btn"><svg class="ic ic-fill"><use href="#i-dots"/></svg></button>
+            </div>
+          </div>
+          <div class="seg">
+            <button class="on">本周</button>
+            <button>本月</button>
+          </div>
+          <div class="top-hint"><svg class="ic ic-fill"><use href="#i-trophy"/></svg>按播放次数排序 · 本周共 46 首被播放</div>
+          <div class="list">
+            <div class="top-item active">
+              <span class="rank r1">1</span>
+              <div class="thumb"><svg><use href="#i-note"/></svg></div>
+              <div class="li-mid"><div class="li-title">海阔天空</div><div class="li-sub">Beyond · 乐与怒</div></div>
+              <div class="li-right"><span class="eq"><i></i><i></i><i></i><i></i></span><b>128</b> 次</div>
+            </div>
+            <div class="top-item">
+              <span class="rank r2">2</span>
+              <div class="thumb"><svg><use href="#i-note"/></svg></div>
+              <div class="li-mid"><div class="li-title">光年之外</div><div class="li-sub">G.E.M. · 光年之外</div></div>
+              <div class="li-right"><b>96</b> 次</div>
+            </div>
+            <div class="top-item">
+              <span class="rank r3">3</span>
+              <div class="thumb"><svg><use href="#i-note"/></svg></div>
+              <div class="li-mid"><div class="li-title">夜空中最亮的星</div><div class="li-sub">逃跑计划 · 世界</div></div>
+              <div class="li-right"><b>78</b> 次</div>
+            </div>
+            <div class="top-item">
+              <span class="rank">4</span>
+              <div class="thumb"><svg><use href="#i-note"/></svg></div>
+              <div class="li-mid"><div class="li-title">平凡之路</div><div class="li-sub">朴树 · 猎户星座</div></div>
+              <div class="li-right"><b>72</b> 次</div>
+            </div>
+            <div class="top-item">
+              <span class="rank">5</span>
+              <div class="thumb"><svg><use href="#i-note"/></svg></div>
+              <div class="li-mid"><div class="li-title">City of Stars</div><div class="li-sub">Ryan Gosling · La La Land</div></div>
+              <div class="li-right"><b>65</b> 次</div>
+            </div>
+            <div class="top-item">
+              <span class="rank">6</span>
+              <div class="thumb"><svg><use href="#i-note"/></svg></div>
+              <div class="li-mid"><div class="li-title">夜的第七章</div><div class="li-sub">周杰伦 · 依然范特西</div></div>
+              <div class="li-right"><b>58</b> 次</div>
+            </div>
+            <div class="top-item">
+              <span class="rank">7</span>
+              <div class="thumb"><svg><use href="#i-note"/></svg></div>
+              <div class="li-mid"><div class="li-title">浮夸</div><div class="li-sub">陈奕迅 · U87</div></div>
+              <div class="li-right"><b>51</b> 次</div>
+            </div>
+            <div class="top-item">
+              <span class="rank">8</span>
+              <div class="thumb"><svg><use href="#i-note"/></svg></div>
+              <div class="li-mid"><div class="li-title">晴天</div><div class="li-sub">周杰伦 · 叶惠美</div></div>
+              <div class="li-right"><b>44</b> 次</div>
+            </div>
+          </div>
+          <div class="top-foot"><svg class="ic ic-fill"><use href="#i-infinite"/></svg>下拉加载更多 · 显示全部被播放过的歌曲</div>
+        </div>
+      </div>
+      <div class="phone-label">03 · <b>本周歌曲 TOP 榜</b> · 分段切换周 / 月 · 前三名奖牌徽标 · 点击条目直接播放</div>
+    </div>
+
+    <!-- 03 本月歌曲 TOP 榜 -->
+    <div class="phone-wrap">
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="screen">
+          <div class="statusbar"><span>21:05</span><span class="sb-icons">▮▮ ▮● ♪</span></div>
+          <div class="appbar">
+            <div class="appbar-left">
+              <button class="icon-btn"><svg class="ic ic-stroke"><use href="#i-back"/></svg></button>
+              <span class="t">歌曲 TOP 榜</span>
+            </div>
+            <div class="appbar-right">
+              <button class="icon-btn"><svg class="ic ic-fill"><use href="#i-chart"/></svg></button>
+              <button class="icon-btn"><svg class="ic ic-fill"><use href="#i-dots"/></svg></button>
+            </div>
+          </div>
+          <div class="seg">
+            <button>本周</button>
+            <button class="on">本月</button>
+          </div>
+          <div class="top-hint"><svg class="ic ic-fill"><use href="#i-trophy"/></svg>按播放次数排序 · 本月共 168 首被播放</div>
+          <div class="list">
+            <div class="top-item active">
+              <span class="rank r1">1</span>
+              <div class="thumb"><svg><use href="#i-note"/></svg></div>
+              <div class="li-mid"><div class="li-title">平凡之路</div><div class="li-sub">朴树 · 猎户星座</div></div>
+              <div class="li-right"><span class="eq"><i></i><i></i><i></i><i></i></span><b>312</b> 次</div>
+            </div>
+            <div class="top-item">
+              <span class="rank r2">2</span>
+              <div class="thumb"><svg><use href="#i-note"/></svg></div>
+              <div class="li-mid"><div class="li-title">City of Stars</div><div class="li-sub">Ryan Gosling · La La Land</div></div>
+              <div class="li-right"><b>287</b> 次</div>
+            </div>
+            <div class="top-item">
+              <span class="rank r3">3</span>
+              <div class="thumb"><svg><use href="#i-note"/></svg></div>
+              <div class="li-mid"><div class="li-title">夜的第七章</div><div class="li-sub">周杰伦 · 依然范特西</div></div>
+              <div class="li-right"><b>261</b> 次</div>
+            </div>
+            <div class="top-item">
+              <span class="rank">4</span>
+              <div class="thumb"><svg><use href="#i-note"/></svg></div>
+              <div class="li-mid"><div class="li-title">海阔天空</div><div class="li-sub">Beyond · 乐与怒</div></div>
+              <div class="li-right"><b>240</b> 次</div>
+            </div>
+            <div class="top-item">
+              <span class="rank">5</span>
+              <div class="thumb"><svg><use href="#i-note"/></svg></div>
+              <div class="li-mid"><div class="li-title">光年之外</div><div class="li-sub">G.E.M. · 光年之外</div></div>
+              <div class="li-right"><b>196</b> 次</div>
+            </div>
+            <div class="top-item">
+              <span class="rank">6</span>
+              <div class="thumb"><svg><use href="#i-note"/></svg></div>
+              <div class="li-mid"><div class="li-title">晴天</div><div class="li-sub">周杰伦 · 叶惠美</div></div>
+              <div class="li-right"><b>173</b> 次</div>
+            </div>
+            <div class="top-item">
+              <span class="rank">7</span>
+              <div class="thumb"><svg><use href="#i-note"/></svg></div>
+              <div class="li-mid"><div class="li-title">浮夸</div><div class="li-sub">陈奕迅 · U87</div></div>
+              <div class="li-right"><b>158</b> 次</div>
+            </div>
+            <div class="top-item">
+              <span class="rank">8</span>
+              <div class="thumb"><svg><use href="#i-note"/></svg></div>
+              <div class="li-mid"><div class="li-title">夜空中最亮的星</div><div class="li-sub">逃跑计划 · 世界</div></div>
+              <div class="li-right"><b>149</b> 次</div>
+            </div>
+          </div>
+          <div class="top-foot"><svg class="ic ic-fill"><use href="#i-infinite"/></svg>下拉加载更多 · 显示全部被播放过的歌曲</div>
+        </div>
+      </div>
+      <div class="phone-label">04 · <b>本月歌曲 TOP 榜</b> · 同一分段控件切换「本月」 · 统计口径与本周一致</div>
+    </div>
+
+  </div>
+
+  <!-- ===================== 设计说明 ===================== -->
+  <div class="sec sec-head" id="notes">
+    <span class="idx">02</span>
+    <div>
+      <h2>设计说明 · 交互与数据</h2>
+      <div class="sub">四个模块的进入路径、数据口径与空态约定，便于后续落地到 Compose 与存储层。</div>
+    </div>
+  </div>
+
+  <div class="notes">
+    <div class="note">
+      <h3><span class="idx">A</span><svg class="ic ic-fill"><use href="#i-clock"/></svg>今日听歌时长</h3>
+      <p>「播放统计」页首屏，实时反映今天累计的<strong>有效播放时长</strong>。</p>
+      <ul>
+        <li>大数字：小时 + 分钟，环形进度指向今日目标（可设置，默认 2 小时）。</li>
+        <li>双增量卡：较昨日、较上周同一天的差值，上升为强调色，下降为中性灰。</li>
+        <li>底部 24 格迷你条：按小时可视化今日分布，当前小时渐变高亮。</li>
+        <li>空态：今日尚未播放时显示「今天还没有听歌，去听听吧」。</li>
+      </ul>
+    </div>
+    <div class="note">
+      <h3><span class="idx">B</span><svg class="ic ic-fill"><use href="#i-chart"/></svg>本周听歌时长柱状图</h3>
+      <p>自然周聚合（周一 00:00 ~ 周日 23:59），每根柱代表一天的听歌时长。</p>
+      <ul>
+        <li>柱高 = 当天时长占本周单日最大值的比例，柱顶标注分钟数。</li>
+        <li>今天所在柱子用主题渐变强调，日期标签与其余日期一致（如「二」）。</li>
+        <li>顶部展示本周合计与较上周百分比增量；无数据日期留空不画柱。</li>
+        <li>超出一天容量的长音频：按天边界切分，跨天只计入当天播放的时长。</li>
+      </ul>
+    </div>
+    <div class="note">
+      <h3><span class="idx">C</span><svg class="ic ic-fill"><use href="#i-trophy"/></svg>本周 / 本月歌曲 TOP 榜</h3>
+      <p>按<strong>播放次数</strong>（rawPlayCount）排序的歌曲热度榜，支持周 / 月维度一键切换。</p>
+      <ul>
+        <li>榜一 / 二 / 三使用奖牌式徽标（强调色、次级色、浅色）；其余为灰色序号。</li>
+        <li>行尾展示播放次数与正在播放的均衡器动效；点击条目直接播放该歌曲。</li>
+        <li>预览卡在统计总览展示前三名，入口「查看全部」进入完整榜单页。</li>
+        <li>完整榜单支持滚动加载，空态展示「本周 / 本月还没有播放记录」。</li>
+      </ul>
+    </div>
+    <div class="note">
+      <h3><span class="idx">D</span><svg class="ic ic-fill"><use href="#i-cal"/></svg>入口与统计口径</h3>
+      <p>「我的」页的播放统计卡片升级为<strong>单一入口</strong>（今日时长迷你预览 + 目标环），点击进入统计总览；原有的「播放次数 / 有效播放次数」两个全量列表收纳到总览页底部「全部歌曲统计」分区，复用现有 PlayStatsScreen，代码不动仅迁移入口。</p>
+      <ul>
+        <li>时长：以 PlayDurationTracker 累计的播放时长为准，暂停 / 拖拽不计入。</li>
+        <li>周：ISO 自然周（周一起始）；月：自然月，均按本地时区。</li>
+        <li>榜单：播放次数优先，并列时按最近播放时间升序稳定排序。</li>
+        <li>增量计算需保留前一日 / 前一周同期的历史快照。</li>
+        <li>原「播放次数 / 有效播放次数」列表页保持原样，仅把入口迁入统计中心。</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ===================== 组件 ===================== -->
+  <div class="sec sec-head" id="components">
+    <span class="idx">03</span>
+    <div>
+      <h2>组件放大 · 关键视觉</h2>
+      <div class="sub">今日时长环、增量徽章、柱状图、奖牌排名的单独演示。</div>
+    </div>
+  </div>
+
+  <div class="comp-grid">
+    <div class="comp">
+      <h4>今日时长环 · TODAY RING</h4>
+      <div class="row">
+        <div class="today-ring" style="width:120px;height:120px"><i style="font-size:15px">54%</i></div>
+        <div>
+          <div class="today-big" style="font-size:24px">1<small>小时</small> 05<small>分</small></div>
+          <div class="today-sub">达成今日目标的 54%</div>
+        </div>
+      </div>
+    </div>
+    <div class="comp">
+      <h4>增量徽章 · DELTA CHIP</h4>
+      <div class="row">
+        <span class="delta up"><svg class="ic ic-stroke"><use href="#i-trend-up"/></svg><span class="mono">+12%</span></span>
+        <span class="delta up"><svg class="ic ic-stroke"><use href="#i-trend-up"/></svg>较昨日 +42 分</span>
+        <span class="delta flat">较上周 —</span>
+      </div>
+      <div class="row">
+        <span class="note-chip">今天 · 高亮渐变柱</span>
+      </div>
+    </div>
+    <div class="comp">
+      <h4>柱状图 · BAR CHART</h4>
+      <div class="demo-bar">
+        <i style="height:24%"></i>
+        <i class="on" style="height:15%"></i>
+        <i style="height:37%"></i>
+        <i style="height:21%"></i>
+        <i style="height:55%"></i>
+        <i style="height:100%"></i>
+        <i style="height:95%"></i>
+      </div>
+      <div class="row" style="margin-top:12px">
+        <span class="chart-note"><span class="dot"></span>今天（渐变柱） · 其余为中性填充</span>
+      </div>
+    </div>
+    <div class="comp">
+      <h4>奖牌排名 · RANK BADGE</h4>
+      <div class="row">
+        <span class="rank badge r1">1</span>
+        <span class="rank badge r2">2</span>
+        <span class="rank badge r3">3</span>
+        <span class="rank">4</span>
+        <span class="rank">10</span>
+      </div>
+      <div class="row" style="margin-top:12px">
+        <span style="font-size:12px;color:var(--text2)">前三名使用主题色阶，其余保持灰色序号。</span>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <div>Melody in Heart · 播放统计 · UI 设计 · 心有乐章</div>
+    <div class="mono">docs/ui-design/playback-statistics.html · 设计稿待落地到 Compose · 未改动项目代码</div>
+  </footer>
+</div>
+
+<script>
+(function(){
+  var pills = document.querySelectorAll('.pill[data-pill]');
+  function paint(theme){
+    document.body.dataset.theme = theme;
+    pills.forEach(function(p){
+      p.classList.toggle('active', p.getAttribute('data-pill') === theme);
+    });
+  }
+  pills.forEach(function(p){
+    p.addEventListener('click', function(){
+      paint(p.getAttribute('data-pill'));
+    });
+  });
+  paint('mono-dark');
+})();
+</script>
+</body>
+</html>

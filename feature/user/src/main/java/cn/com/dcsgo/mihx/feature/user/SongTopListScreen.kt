@@ -51,10 +51,15 @@ fun SongTopListScreen(
     monthlyTop: List<Pair<Int, Int>>,
     songs: List<Song>,
     currentSong: Song?,
+    initialPeriod: String = "week",
     onBack: () -> Unit,
     onSongClick: (Song) -> Unit,
 ) {
-    var period by remember { mutableStateOf(TopPeriod.WEEKLY) }
+    var period by remember(initialPeriod) {
+        mutableStateOf(
+            if (initialPeriod == "month") TopPeriod.MONTHLY else TopPeriod.WEEKLY
+        )
+    }
     val songsById = remember(songs) { songs.associateBy { it.id } }
 
     Scaffold(

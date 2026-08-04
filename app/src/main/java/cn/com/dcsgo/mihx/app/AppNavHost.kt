@@ -245,9 +245,18 @@ fun AppNavHost(
             )
         }
 
-        composable(AppRoutes.SONG_TOP_LIST) {
+        composable(
+            route = AppRoutes.SONG_TOP_LIST_FULL,
+            arguments = listOf(
+                navArgument(AppRoutes.SONG_TOP_PERIOD) {
+                    type = NavType.StringType
+                    defaultValue = "week"
+                },
+            ),
+        ) { backStackEntry ->
+            val period = backStackEntry.arguments?.getString(AppRoutes.SONG_TOP_PERIOD) ?: "week"
             SongTopListRoute(
-                state = songTopListRouteState(uiState, playerViewModel),
+                state = songTopListRouteState(uiState, playerViewModel, period),
                 actions = songTopListRouteActions(navController, playerViewModel),
             )
         }
@@ -498,7 +507,7 @@ private fun playStatsRouteActions(
     onSongClick = { song ->
         val allSongs = playerViewModel.getGroupedSongs(playerViewModel.uiState.value.songs).flatten()
         playerViewModel.playSongFromContext(song, allSongs)
-        navController.navigateUp()
+        // 点击歌曲后停留在当前页，不返回上一页
     },
 )
 
@@ -546,17 +555,18 @@ private fun playbackStatsRouteActions(
     onSongClick = { song ->
         val allSongs = playerViewModel.getGroupedSongs(playerViewModel.uiState.value.songs).flatten()
         playerViewModel.playSongFromContext(song, allSongs)
-        navController.navigateUp()
+        // 点击歌曲后停留在当前页，不返回上一页
     },
     onOpenPlayCounts = { navController.navigate(AppRoutes.RAW_PLAY_STATS) },
     onOpenEffectivePlayCounts = { navController.navigate(AppRoutes.EFFECTIVE_PLAY_STATS) },
-    onOpenWeeklyTop = { navController.navigate(AppRoutes.SONG_TOP_LIST) },
-    onOpenMonthlyTop = { navController.navigate(AppRoutes.SONG_TOP_LIST) },
+    onOpenWeeklyTop = { navController.navigate(AppRoutes.songTopList("week")) },
+    onOpenMonthlyTop = { navController.navigate(AppRoutes.songTopList("month")) },
 )
 
 private fun songTopListRouteState(
     uiState: PlayerUiState,
     playerViewModel: PlayerViewModel,
+    initialPeriod: String = "week",
 ): SongTopListRouteState {
     val allSongs = playerViewModel.getGroupedSongs(uiState.songs).flatten()
     val snapshot = playerViewModel.playStatsRepository.playbackStatsSnapshot()
@@ -565,6 +575,7 @@ private fun songTopListRouteState(
         monthlyTop = snapshot.monthlyTop,
         songs = allSongs,
         currentSong = uiState.currentSong,
+        initialPeriod = initialPeriod,
     )
 }
 
@@ -576,6 +587,6 @@ private fun songTopListRouteActions(
     onSongClick = { song ->
         val allSongs = playerViewModel.getGroupedSongs(playerViewModel.uiState.value.songs).flatten()
         playerViewModel.playSongFromContext(song, allSongs)
-        navController.navigateUp()
+        // 点击歌曲后停留在当前页，不返回上一页
     },
 )

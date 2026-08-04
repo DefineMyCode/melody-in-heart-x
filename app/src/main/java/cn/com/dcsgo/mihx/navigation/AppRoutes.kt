@@ -15,6 +15,11 @@ object AppRoutes {
     const val VERSION_MANAGEMENT = "version-management"
     const val PLAYBACK_STATS = "playback-stats"
     const val SONG_TOP_LIST = "song-top-list"
+    const val SONG_TOP_PERIOD = "period"
+    const val SONG_TOP_LIST_FULL = "song-top-list?period={$SONG_TOP_PERIOD}"
+
+    /** 歌曲 TOP 榜路由，period 取 "week" / "month" */
+    fun songTopList(period: String): String = "song-top-list?period=$period"
     const val RAW_PLAY_STATS = "play-stats/raw"
     const val EFFECTIVE_PLAY_STATS = "play-stats/effective"
     const val QUICK_SKIP_SONGS = "quick-skip-songs"

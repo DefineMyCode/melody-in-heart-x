@@ -146,8 +146,9 @@ class MusicRepository(
                     val lrcUri = lrcUriString?.let { Uri.parse(it) }
                     val titleOverride = if (obj.has("titleOverride")) obj.optString("titleOverride", "").ifEmpty { null } else null
                     val album = if (obj.has("album")) obj.optString("album", "") else ""
+                    val durationMs = if (obj.has("durationMs")) obj.optLong("durationMs", 0L) else 0L
 
-                    songs.add(Song(id = id, title = title, artist = artist, album = album, sampleRate = sampleRate, uri = uri, albumArtUri = albumArtUri, lrcUri = lrcUri, titleOverride = titleOverride))
+                    songs.add(Song(id = id, title = title, artist = artist, album = album, sampleRate = sampleRate, durationMs = durationMs, uri = uri, albumArtUri = albumArtUri, lrcUri = lrcUri, titleOverride = titleOverride))
                     if (id >= nextId) nextId = id + 1
                 }
             }
@@ -178,6 +179,7 @@ class MusicRepository(
             obj.put("artist", song.artist)
             obj.put("album", song.album)
             obj.put("sampleRate", song.sampleRate)
+            obj.put("durationMs", song.durationMs)
             obj.put("uri", song.uri.toString())
             song.albumArtUri?.let { obj.put("albumArtUri", it.toString()) }
             song.lrcUri?.let { obj.put("lrcUri", it.toString()) }
@@ -453,6 +455,7 @@ class MusicRepository(
                         artist = metadata.artist,
                         album = metadata.album,
                         sampleRate = metadata.sampleRate,
+                        durationMs = metadata.durationMs,
                         uri = fileUri,
                         albumArtUri = albumArtUri,
                         lrcUri = lrcFilesByKey[audioFile.matchKey],
@@ -477,6 +480,8 @@ class MusicRepository(
         // 持久化歌曲和歌单数据
         persistSongs()
         persistPlaylists()
+        // 通知 UI 刷新（歌曲、歌单、曲库歌手/专辑目录）
+        onSongsChanged?.invoke()
         val finalAddedCount = addedCount.get()
         AppLog.info(TAG, "addFolder: added $finalAddedCount songs (skipped ${audioFiles.size - finalAddedCount})")
         PerformanceTrace.log(
@@ -638,7 +643,7 @@ class MusicRepository(
             return DeleteSongResult.Failure(fileDeleteResult.reason)
         }
 
-        return lock.write {
+        val result = lock.write {
             val songIndex = songs.indexOfFirst { it.id == songId }
             if (songIndex < 0) return@write DeleteSongResult.Failure("歌曲不存在或已被删除")
 
@@ -661,6 +666,9 @@ class MusicRepository(
                 }
             )
         }
+        // 通知 UI 刷新（歌曲、歌单、曲库歌手/专辑目录）
+        onSongsChanged?.invoke()
+        return result
     }
 
     private fun deleteBackingFile(song: Song): BackingFileDeleteResult {

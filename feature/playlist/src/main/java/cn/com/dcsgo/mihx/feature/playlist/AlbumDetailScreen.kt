@@ -32,6 +32,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import cn.com.dcsgo.mihx.core.common.time.formatHoursMinutes
 import cn.com.dcsgo.mihx.core.model.LibraryCatalog
 import cn.com.dcsgo.mihx.core.model.Song
 
@@ -54,6 +55,7 @@ fun AlbumDetailScreen(
 ) {
     // 该专辑的所有歌曲（不限定单个歌手）
     val albumSongs = songs.filter { it.album == albumName }
+    val totalDurationMs = albumSongs.sumOf { it.durationMs }
     // 该专辑关联的所有歌手（拆分后的最小单位）
     val albumArtists = albumSongs.flatMap { it.parsedArtists }.distinct()
     // 与专辑共享任一歌手的其他专辑
@@ -82,7 +84,7 @@ fun AlbumDetailScreen(
                     overflow = TextOverflow.Ellipsis
                 )
                 Text(
-                    text = albumArtists.joinToString("、"),
+                    text = "${albumArtists.joinToString("、")} · 共 ${formatHoursMinutes(totalDurationMs)}",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 1,
@@ -114,6 +116,7 @@ fun AlbumDetailScreen(
                         SongItem(
                             song = song,
                             isCurrentPlaying = isPlaying && currentSong?.id == song.id,
+                            showDuration = true,
                             onSongClick = onSongClick,
                         )
                     }

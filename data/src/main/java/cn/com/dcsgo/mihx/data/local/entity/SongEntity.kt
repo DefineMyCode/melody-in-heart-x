@@ -24,4 +24,6 @@ data class SongEntity(
     val albumArtCacheUri: String?,
     val lrcUri: String?,
     val importedAt: Long,
+    /** 歌曲总时长（毫秒），导入时从元数据提取；未知时为 0 */
+    val durationMs: Long = 0L,
 )

@@ -33,6 +33,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import cn.com.dcsgo.mihx.core.common.time.formatHoursMinutes
 import cn.com.dcsgo.mihx.core.model.LibraryCatalog
 import cn.com.dcsgo.mihx.core.model.Song
 
@@ -56,6 +57,7 @@ fun ArtistDetailScreen(
     // 该歌手的所有歌曲（歌手为拆分后的最小单位，歌曲属于任一拆分歌手即关联）
     val artistSongs = songs.filter { artistName in it.parsedArtists }
     val albums = LibraryCatalog.deriveAlbums(artistSongs)
+    val totalDurationMs = artistSongs.sumOf { it.durationMs }
     var selectedSection by rememberSaveable { mutableStateOf(0) }
 
     Column(modifier = Modifier.fillMaxSize()) {
@@ -79,7 +81,7 @@ fun ArtistDetailScreen(
                     overflow = TextOverflow.Ellipsis
                 )
                 Text(
-                    text = "${albums.size} 张专辑 · ${artistSongs.size} 首歌曲",
+                    text = "${albums.size} 张专辑 · ${artistSongs.size} 首歌曲 · 共 ${formatHoursMinutes(totalDurationMs)}",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -109,6 +111,7 @@ fun ArtistDetailScreen(
                         SongItem(
                             song = song,
                             isCurrentPlaying = isPlaying && currentSong?.id == song.id,
+                            showDuration = true,
                             onSongClick = onSongClick,
                         )
                     }

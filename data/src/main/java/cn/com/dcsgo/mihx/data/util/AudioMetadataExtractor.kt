@@ -23,6 +23,7 @@ object AudioMetadataExtractor {
         val artist: String,
         val album: String,
         val sampleRate: Int,
+        val durationMs: Long = 0L,
     )
 
     /**
@@ -59,11 +60,14 @@ object AudioMetadataExtractor {
             val sampleRate = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_SAMPLERATE)
                 ?.toIntOrNull() ?: 0
 
+            val durationMs = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
+                ?.toLongOrNull() ?: 0L
+
             AppLog.debug(
                 TAG,
-                "extractMetadata: title=$title, artist=$artist, album=$album, sampleRate=$sampleRate"
+                "extractMetadata: title=$title, artist=$artist, album=$album, sampleRate=$sampleRate, durationMs=$durationMs"
             )
-            return ExtractedMetadata(title = title, artist = artist, album = album, sampleRate = sampleRate)
+            return ExtractedMetadata(title = title, artist = artist, album = album, sampleRate = sampleRate, durationMs = durationMs)
         } catch (e: Exception) {
             AppLog.warning(TAG, "extractMetadata failed for $uri: ${e.message}")
             return ExtractedMetadata(title = fallbackTitle, artist = "未知艺术家", album = "", sampleRate = 0)

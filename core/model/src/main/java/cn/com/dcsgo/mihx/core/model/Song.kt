@@ -30,6 +30,8 @@ data class Song(
     val albumId: Int? = null,
     /** 拆分后的歌手实体 ID 列表（曲库持久化关联） */
     val artistIds: List<Int> = emptyList(),
+    /** 歌曲总时长（毫秒），导入时从元数据提取并持久化；未知时为 0 */
+    val durationMs: Long = 0L,
 ) {
     /** 采样率格式化字符串，用于 UI 展示（如 "44kHz"） */
     val sampleRateDisplay: String

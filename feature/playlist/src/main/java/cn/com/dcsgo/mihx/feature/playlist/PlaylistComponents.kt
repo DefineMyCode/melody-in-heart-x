@@ -43,6 +43,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import cn.com.dcsgo.mihx.core.common.time.formatDurationTime
 import cn.com.dcsgo.mihx.core.model.Playlist
 import cn.com.dcsgo.mihx.core.model.Song
 
@@ -156,6 +157,7 @@ fun SongItem(
     song: Song,
     isCurrentPlaying: Boolean = false,
     modifier: Modifier = Modifier,
+    showDuration: Boolean = false,
     onSongClick: (Song) -> Unit,
     onShowAddToPlaylist: ((Song) -> Unit)? = null,
     showRemoveButton: Boolean = false,
@@ -217,6 +219,15 @@ fun SongItem(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 maxLines = 1
             )
+        }
+        // 歌曲时长（可选展示，用于歌手/专辑详情页）
+        if (showDuration && song.durationMs > 0L) {
+            Text(
+                text = formatDurationTime(song.durationMs),
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Spacer(modifier = Modifier.width(8.dp))
         }
         // 移除按钮（歌单详情页显示）
         if (showRemoveButton && onRemoveClick != null) {

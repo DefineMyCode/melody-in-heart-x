@@ -65,6 +65,7 @@ class LegacyJsonSnapshotParser {
                 albumArtCacheUri = obj.optString("albumArtUri").ifBlank { null },
                 lrcUri = obj.optString("lrcUri").ifBlank { null },
                 importedAt = importedAt,
+                durationMs = obj.optLong("durationMs", 0L),
             )
             val titleOverride = obj.optString("titleOverride").ifBlank { null }
             if (titleOverride != null) {

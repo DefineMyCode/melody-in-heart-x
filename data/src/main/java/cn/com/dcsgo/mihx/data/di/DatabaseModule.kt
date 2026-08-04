@@ -29,7 +29,7 @@ object DatabaseModule {
             "melody.db",
         )
             .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
-            .addMigrations(MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6)
+            .addMigrations(MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7)
             .build()
     }
 
@@ -114,6 +114,13 @@ object DatabaseModule {
                 "CREATE INDEX IF NOT EXISTS `index_playback_events_startedAtMs` " +
                     "ON `playback_events` (`startedAtMs`)"
             )
+        }
+    }
+
+    private val MIGRATION_6_7 = object : Migration(6, 7) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            // 歌曲新增时长列（毫秒），用于曲库列表/详情展示
+            db.execSQL("ALTER TABLE `songs` ADD COLUMN `durationMs` INTEGER NOT NULL DEFAULT 0")
         }
     }
 }

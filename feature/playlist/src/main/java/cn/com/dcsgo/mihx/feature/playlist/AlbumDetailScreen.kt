@@ -84,11 +84,16 @@ fun AlbumDetailScreen(
                     overflow = TextOverflow.Ellipsis
                 )
                 Text(
-                    text = "${albumArtists.joinToString("、")} · 共 ${formatHoursMinutes(totalDurationMs)}",
+                    text = albumArtists.joinToString("、"),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
+                )
+                Text(
+                    text = "共 ${formatHoursMinutes(totalDurationMs)}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }

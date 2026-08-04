@@ -10,6 +10,7 @@ import cn.com.dcsgo.mihx.core.model.Song
 import cn.com.dcsgo.mihx.data.local.entity.AlbumEntity
 import cn.com.dcsgo.mihx.data.local.entity.ArtistEntity
 import cn.com.dcsgo.mihx.data.local.entity.MigrationStateEntity
+import cn.com.dcsgo.mihx.data.local.entity.PlaybackEventEntity
 import cn.com.dcsgo.mihx.data.local.entity.PlayStatsEntity
 import cn.com.dcsgo.mihx.data.local.entity.PlaylistEntity
 import cn.com.dcsgo.mihx.data.local.entity.PlaylistSongCrossRef
@@ -42,6 +43,18 @@ data class AlbumArtistNameRow(
     val artistName: String,
 )
 
+/** 按天聚合的时长行（day 为 'yyyy-MM-dd'，本地时区） */
+data class DailyDurationRow(
+    val day: String,
+    val totalMs: Long,
+)
+
+/** 按歌曲聚合的次数行 */
+data class SongPlayCountRow(
+    val songId: Int,
+    val playCount: Int,
+)
+
 @Dao
 interface MelodyDao {
     @Query("SELECT * FROM songs ORDER BY id")
@@ -61,6 +74,44 @@ interface MelodyDao {
 
     @Query("SELECT * FROM play_stats WHERE songId = :songId")
     suspend fun playStat(songId: Int): PlayStatsEntity?
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertPlaybackEvent(event: PlaybackEventEntity)
+
+    @Query(
+        "SELECT COALESCE(SUM(durationMs), 0) FROM playback_events " +
+            "WHERE startedAtMs >= :startMs AND startedAtMs < :endMs",
+    )
+    suspend fun totalDurationBetween(startMs: Long, endMs: Long): Long
+
+    @Query(
+        "SELECT COUNT(DISTINCT songId) FROM playback_events " +
+            "WHERE startedAtMs >= :startMs AND startedAtMs < :endMs",
+    )
+    suspend fun distinctSongsBetween(startMs: Long, endMs: Long): Int
+
+    @Query(
+        """
+        SELECT strftime('%Y-%m-%d', startedAtMs / 1000, 'unixepoch', 'localtime') AS day,
+            COALESCE(SUM(durationMs), 0) AS totalMs
+        FROM playback_events
+        WHERE startedAtMs >= :startMs AND startedAtMs < :endMs
+        GROUP BY day
+        ORDER BY day
+        """,
+    )
+    suspend fun dailyDurationsBetween(startMs: Long, endMs: Long): List<DailyDurationRow>
+
+    @Query(
+        """
+        SELECT songId, COUNT(*) AS playCount
+        FROM playback_events
+        WHERE startedAtMs >= :startMs AND startedAtMs < :endMs
+        GROUP BY songId
+        ORDER BY playCount DESC, songId ASC
+        """,
+    )
+    suspend fun playCountsBetween(startMs: Long, endMs: Long): List<SongPlayCountRow>
 
     @Query("SELECT * FROM quick_skip_songs ORDER BY songId")
     suspend fun quickSkipSongs(): List<QuickSkipSongEntity>

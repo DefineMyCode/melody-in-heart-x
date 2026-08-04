@@ -191,6 +191,19 @@ class MusicRepositoryRoomTest {
             playlistSongRefs.sortedWith(compareBy({ it.playlistId }, { it.sortOrder }))
         override suspend fun songGroupOverrides(): List<SongGroupOverrideEntity> = songGroupOverrides
         override suspend fun playStats(): List<PlayStatsEntity> = playStats.sortedBy { it.songId }
+        override suspend fun insertPlaybackEvent(
+            event: cn.com.dcsgo.mihx.data.local.entity.PlaybackEventEntity,
+        ) = Unit
+        override suspend fun totalDurationBetween(startMs: Long, endMs: Long): Long = 0L
+        override suspend fun distinctSongsBetween(startMs: Long, endMs: Long): Int = 0
+        override suspend fun dailyDurationsBetween(
+            startMs: Long,
+            endMs: Long,
+        ): List<cn.com.dcsgo.mihx.data.local.dao.DailyDurationRow> = emptyList()
+        override suspend fun playCountsBetween(
+            startMs: Long,
+            endMs: Long,
+        ): List<cn.com.dcsgo.mihx.data.local.dao.SongPlayCountRow> = emptyList()
         override suspend fun playStat(songId: Int): PlayStatsEntity? = playStats.firstOrNull { it.songId == songId }
         override suspend fun quickSkipSongs(): List<QuickSkipSongEntity> = quickSkipSongs.sortedBy { it.songId }
         override suspend fun quickSkipSong(songId: Int): QuickSkipSongEntity? =

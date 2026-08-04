@@ -13,6 +13,8 @@ object AppRoutes {
     const val ALBUM_DETAIL = "album/{$ALBUM_NAME}"
     const val USER = "user"
     const val VERSION_MANAGEMENT = "version-management"
+    const val PLAYBACK_STATS = "playback-stats"
+    const val SONG_TOP_LIST = "song-top-list"
     const val RAW_PLAY_STATS = "play-stats/raw"
     const val EFFECTIVE_PLAY_STATS = "play-stats/effective"
     const val QUICK_SKIP_SONGS = "quick-skip-songs"

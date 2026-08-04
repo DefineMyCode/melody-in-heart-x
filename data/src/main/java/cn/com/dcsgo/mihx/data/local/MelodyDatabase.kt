@@ -6,6 +6,7 @@ import cn.com.dcsgo.mihx.data.local.dao.MelodyDao
 import cn.com.dcsgo.mihx.data.local.entity.AlbumEntity
 import cn.com.dcsgo.mihx.data.local.entity.ArtistEntity
 import cn.com.dcsgo.mihx.data.local.entity.MigrationStateEntity
+import cn.com.dcsgo.mihx.data.local.entity.PlaybackEventEntity
 import cn.com.dcsgo.mihx.data.local.entity.PlayStatsEntity
 import cn.com.dcsgo.mihx.data.local.entity.PlaylistEntity
 import cn.com.dcsgo.mihx.data.local.entity.PlaylistSongCrossRef
@@ -21,6 +22,7 @@ import cn.com.dcsgo.mihx.data.local.entity.SongGroupOverrideEntity
         PlaylistEntity::class,
         PlaylistSongCrossRef::class,
         PlayStatsEntity::class,
+        PlaybackEventEntity::class,
         QuickSkipSongEntity::class,
         QuickSkipShortPlayEntity::class,
         SongGroupOverrideEntity::class,
@@ -29,7 +31,7 @@ import cn.com.dcsgo.mihx.data.local.entity.SongGroupOverrideEntity
         AlbumEntity::class,
         SongArtistCrossRef::class,
     ],
-    version = 5,
+    version = 6,
     exportSchema = true,
 )
 abstract class MelodyDatabase : RoomDatabase() {

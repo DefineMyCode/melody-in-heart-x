@@ -3,13 +3,15 @@ package cn.com.dcsgo.mihx.feature.user
 import androidx.compose.runtime.Composable
 
 data class UserRouteState(
-    val placeholders: Unit = Unit,
+    /** 今日累计听歌时长（毫秒），用于「我的」页入口卡预览 */
+    val todayDurationMs: Long = 0L,
+    /** 本周累计听歌时长（毫秒），用于「我的」页入口卡预览 */
+    val weekTotalMs: Long = 0L,
 )
 
 data class UserRouteActions(
     val onShowSettings: () -> Unit,
-    val onShowRawPlayStats: () -> Unit,
-    val onShowEffectivePlayStats: () -> Unit,
+    val onShowPlaybackStats: () -> Unit,
 )
 
 @Composable
@@ -19,7 +21,8 @@ fun UserRoute(
 ) {
     UserScreen(
         onShowSettings = actions.onShowSettings,
-        onShowPlayStats = actions.onShowRawPlayStats,
-        onShowEffectivePlayStats = actions.onShowEffectivePlayStats,
+        todayDurationMs = state.todayDurationMs,
+        weekTotalMs = state.weekTotalMs,
+        onOpenPlaybackStats = actions.onShowPlaybackStats,
     )
 }

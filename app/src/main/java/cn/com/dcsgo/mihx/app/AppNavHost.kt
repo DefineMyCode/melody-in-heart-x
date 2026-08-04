@@ -42,6 +42,12 @@ import cn.com.dcsgo.mihx.feature.playlist.PlaylistRouteState
 import cn.com.dcsgo.mihx.feature.settings.SettingsRoute
 import cn.com.dcsgo.mihx.feature.settings.SettingsRouteActions
 import cn.com.dcsgo.mihx.feature.settings.SettingsRouteState
+import cn.com.dcsgo.mihx.feature.user.PlaybackStatsRoute
+import cn.com.dcsgo.mihx.feature.user.PlaybackStatsRouteActions
+import cn.com.dcsgo.mihx.feature.user.PlaybackStatsRouteState
+import cn.com.dcsgo.mihx.feature.user.SongTopListRoute
+import cn.com.dcsgo.mihx.feature.user.SongTopListRouteActions
+import cn.com.dcsgo.mihx.feature.user.SongTopListRouteState
 import cn.com.dcsgo.mihx.feature.user.UserRoute
 import cn.com.dcsgo.mihx.feature.user.UserRouteActions
 import cn.com.dcsgo.mihx.feature.user.UserRouteState
@@ -215,12 +221,22 @@ fun AppNavHost(
 
         composable(AppRoutes.USER) {
             UserRoute(
-                state = userRouteState(),
-                actions = userRouteActions(
-                    navController = navController,
-                    onShowRawPlayStats = { navController.navigate(AppRoutes.RAW_PLAY_STATS) },
-                    onShowEffectivePlayStats = { navController.navigate(AppRoutes.EFFECTIVE_PLAY_STATS) },
-                ),
+                state = userRouteState(playerViewModel),
+                actions = userRouteActions(navController),
+            )
+        }
+
+        composable(AppRoutes.PLAYBACK_STATS) {
+            PlaybackStatsRoute(
+                state = playbackStatsRouteState(uiState, playerViewModel),
+                actions = playbackStatsRouteActions(navController, playerViewModel),
+            )
+        }
+
+        composable(AppRoutes.SONG_TOP_LIST) {
+            SongTopListRoute(
+                state = songTopListRouteState(uiState, playerViewModel),
+                actions = songTopListRouteActions(navController, playerViewModel),
             )
         }
 
@@ -421,7 +437,13 @@ private fun playlistRouteActions(
     onAddSongToNextPlay = playerViewModel::addSongToNextPlay,
 )
 
-private fun userRouteState(): UserRouteState = UserRouteState()
+private fun userRouteState(playerViewModel: PlayerViewModel): UserRouteState {
+    val snapshot = playerViewModel.playStatsRepository.playbackStatsSnapshot()
+    return UserRouteState(
+        todayDurationMs = snapshot.todayDurationMs,
+        weekTotalMs = snapshot.weekTotalMs,
+    )
+}
 
 private data class RankedStatsContent(
     val songs: List<Song>,
@@ -476,10 +498,62 @@ private fun rankedStatsContent(
 
 private fun userRouteActions(
     navController: NavHostController,
-    onShowRawPlayStats: () -> Unit,
-    onShowEffectivePlayStats: () -> Unit,
 ): UserRouteActions = UserRouteActions(
     onShowSettings = { navController.navigate(AppRoutes.SETTINGS) },
-    onShowRawPlayStats = onShowRawPlayStats,
-    onShowEffectivePlayStats = onShowEffectivePlayStats,
+    onShowPlaybackStats = { navController.navigate(AppRoutes.PLAYBACK_STATS) },
+)
+
+private fun playbackStatsRouteState(
+    uiState: PlayerUiState,
+    playerViewModel: PlayerViewModel,
+): PlaybackStatsRouteState {
+    val allSongs = playerViewModel.getGroupedSongs(uiState.songs).flatten()
+    return PlaybackStatsRouteState(
+        snapshot = playerViewModel.playStatsRepository.playbackStatsSnapshot(),
+        songs = allSongs,
+        currentSong = uiState.currentSong,
+        isPlaying = uiState.isPlaying,
+    )
+}
+
+private fun playbackStatsRouteActions(
+    navController: NavHostController,
+    playerViewModel: PlayerViewModel,
+): PlaybackStatsRouteActions = PlaybackStatsRouteActions(
+    onBack = navController::navigateUp,
+    onSongClick = { song ->
+        val allSongs = playerViewModel.getGroupedSongs(playerViewModel.uiState.value.songs).flatten()
+        playerViewModel.playSongFromContext(song, allSongs)
+        navController.navigateUp()
+    },
+    onOpenPlayCounts = { navController.navigate(AppRoutes.RAW_PLAY_STATS) },
+    onOpenEffectivePlayCounts = { navController.navigate(AppRoutes.EFFECTIVE_PLAY_STATS) },
+    onOpenWeeklyTop = { navController.navigate(AppRoutes.SONG_TOP_LIST) },
+    onOpenMonthlyTop = { navController.navigate(AppRoutes.SONG_TOP_LIST) },
+)
+
+private fun songTopListRouteState(
+    uiState: PlayerUiState,
+    playerViewModel: PlayerViewModel,
+): SongTopListRouteState {
+    val allSongs = playerViewModel.getGroupedSongs(uiState.songs).flatten()
+    val snapshot = playerViewModel.playStatsRepository.playbackStatsSnapshot()
+    return SongTopListRouteState(
+        weeklyTop = snapshot.weeklyTop,
+        monthlyTop = snapshot.monthlyTop,
+        songs = allSongs,
+        currentSong = uiState.currentSong,
+    )
+}
+
+private fun songTopListRouteActions(
+    navController: NavHostController,
+    playerViewModel: PlayerViewModel,
+): SongTopListRouteActions = SongTopListRouteActions(
+    onBack = navController::navigateUp,
+    onSongClick = { song ->
+        val allSongs = playerViewModel.getGroupedSongs(playerViewModel.uiState.value.songs).flatten()
+        playerViewModel.playSongFromContext(song, allSongs)
+        navController.navigateUp()
+    },
 )

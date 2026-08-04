@@ -27,7 +27,10 @@ object DatabaseModule {
             context,
             MelodyDatabase::class.java,
             "melody.db",
-        ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5).build()
+        )
+            .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
+            .addMigrations(MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6)
+            .build()
     }
 
     @Provides
@@ -93,6 +96,24 @@ object DatabaseModule {
             db.execSQL("CREATE INDEX IF NOT EXISTS `index_song_artist_cross_ref_artistId` ON `song_artist_cross_ref` (`artistId`)")
             // 歌曲新增专辑外键
             db.execSQL("ALTER TABLE `songs` ADD COLUMN `albumId` INTEGER")
+        }
+    }
+
+    private val MIGRATION_5_6 = object : Migration(5, 6) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            // 播放会话事件表：按日/周/月聚合时长与歌曲热度榜
+            db.execSQL(
+                "CREATE TABLE IF NOT EXISTS `playback_events` (" +
+                    "`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                    "`songId` INTEGER NOT NULL, " +
+                    "`startedAtMs` INTEGER NOT NULL, " +
+                    "`durationMs` INTEGER NOT NULL, " +
+                    "`isEffectivePlay` INTEGER NOT NULL)"
+            )
+            db.execSQL(
+                "CREATE INDEX IF NOT EXISTS `index_playback_events_startedAtMs` " +
+                    "ON `playback_events` (`startedAtMs`)"
+            )
         }
     }
 }

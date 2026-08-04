@@ -4,9 +4,16 @@ import android.content.Context
 import android.content.SharedPreferences
 import cn.com.dcsgo.mihx.core.common.AppLog
 import cn.com.dcsgo.mihx.data.local.dao.MelodyDao
+import cn.com.dcsgo.mihx.data.local.entity.PlaybackEventEntity
 import cn.com.dcsgo.mihx.data.local.entity.PlayStatsEntity
+import cn.com.dcsgo.mihx.domain.repository.DayDuration
+import cn.com.dcsgo.mihx.domain.repository.PlaybackStatsSnapshot
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
+import java.time.DayOfWeek
+import java.time.LocalDate
+import java.time.ZoneId
+import java.time.temporal.TemporalAdjusters
 
 private const val TAG = "PlayStatsRepository"
 private const val PREFS_NAME = "play_stats_prefs"
@@ -102,6 +109,77 @@ class PlayStatsRepository(
 
     override fun recordCompletedPlay(songId: Int) {
         increment(songId)
+    }
+
+    override fun recordPlaybackSession(
+        songId: Int,
+        startedAtMs: Long,
+        durationMs: Long,
+        isEffectivePlay: Boolean,
+    ) {
+        val dao = melodyDao ?: return
+        runBlocking(Dispatchers.IO) {
+            dao.insertPlaybackEvent(
+                PlaybackEventEntity(
+                    songId = songId,
+                    startedAtMs = startedAtMs,
+                    durationMs = durationMs.coerceAtLeast(0L),
+                    isEffectivePlay = isEffectivePlay,
+                ),
+            )
+        }
+    }
+
+    override fun playbackStatsSnapshot(): PlaybackStatsSnapshot {
+        val dao = melodyDao ?: return PlaybackStatsSnapshot.EMPTY
+        val zone = ZoneId.systemDefault()
+        val today = LocalDate.now(zone)
+        val weekStart = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
+        val monthStart = today.withDayOfMonth(1)
+        val nowMs = System.currentTimeMillis()
+
+        fun startOfDay(date: LocalDate): Long = date.atStartOfDay(zone).toInstant().toEpochMilli()
+
+        fun endOfDay(date: LocalDate): Long =
+            date.plusDays(1).atStartOfDay(zone).toInstant().toEpochMilli()
+
+        return runBlocking(Dispatchers.IO) {
+            val todayDurationMs = dao.totalDurationBetween(startOfDay(today), endOfDay(today))
+            val todaySongCount = dao.distinctSongsBetween(startOfDay(today), endOfDay(today))
+            val yesterdayDurationMs =
+                dao.totalDurationBetween(startOfDay(today.minusDays(1)), endOfDay(today.minusDays(1)))
+            val lastWeekSameDayDurationMs = dao.totalDurationBetween(
+                startOfDay(today.minusWeeks(1)),
+                endOfDay(today.minusWeeks(1)),
+            )
+            val weekTotalMs = dao.totalDurationBetween(startOfDay(weekStart), nowMs)
+            val lastWeekTotalMs = dao.totalDurationBetween(
+                startOfDay(weekStart.minusWeeks(1)),
+                startOfDay(weekStart),
+            )
+            val daily = dao.dailyDurationsBetween(startOfDay(weekStart), nowMs)
+                .associate { it.day to it.totalMs }
+            val weekDays = (0..6).map { offset ->
+                val day = weekStart.plusDays(offset.toLong())
+                DayDuration(day, daily[day.toString()] ?: 0L)
+            }
+            val weeklyTop = dao.playCountsBetween(startOfDay(weekStart), nowMs)
+                .map { it.songId to it.playCount }
+            val monthlyTop = dao.playCountsBetween(startOfDay(monthStart), nowMs)
+                .map { it.songId to it.playCount }
+
+            PlaybackStatsSnapshot(
+                todayDurationMs = todayDurationMs,
+                todaySongCount = todaySongCount,
+                yesterdayDurationMs = yesterdayDurationMs,
+                lastWeekSameDayDurationMs = lastWeekSameDayDurationMs,
+                weekTotalMs = weekTotalMs,
+                lastWeekTotalMs = lastWeekTotalMs,
+                weekDays = weekDays,
+                weeklyTop = weeklyTop,
+                monthlyTop = monthlyTop,
+            )
+        }
     }
 
     /** 获取所有已有播放记录的 Map<songId, count> */

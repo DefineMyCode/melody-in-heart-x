@@ -16,8 +16,9 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun UserScreen(
     onShowSettings: () -> Unit = {},
-    onShowPlayStats: () -> Unit = {},
-    onShowEffectivePlayStats: () -> Unit = {},
+    todayDurationMs: Long = 0L,
+    weekTotalMs: Long = 0L,
+    onOpenPlaybackStats: () -> Unit = {},
 ) {
     Box(
         modifier = Modifier
@@ -37,8 +38,9 @@ fun UserScreen(
 
             item(key = "play_stats", contentType = "header") {
                 PlayStatsSection(
-                    onPlayCountClick = onShowPlayStats,
-                    onEffectivePlayCountClick = onShowEffectivePlayStats
+                    todayDurationMs = todayDurationMs,
+                    weekTotalMs = weekTotalMs,
+                    onOpenPlaybackStats = onOpenPlaybackStats
                 )
             }
         }

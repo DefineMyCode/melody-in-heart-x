@@ -15,3 +15,19 @@ fun formatDurationTime(timeMs: Long): String {
         "%d:%02d".format(minutes, seconds)
     }
 }
+
+/**
+ * 将时长格式化为中文「x小时 y分」。
+ * 示例：1小时 05分 / 40分 / 2小时 / 0分。
+ */
+fun formatHoursMinutes(timeMs: Long): String {
+    if (timeMs <= 0) return "0分"
+    val totalMinutes = timeMs / 60_000
+    val hours = totalMinutes / 60
+    val minutes = totalMinutes % 60
+    return when {
+        hours > 0 && minutes > 0 -> "${hours}小时 %02d分".format(minutes)
+        hours > 0 -> "${hours}小时"
+        else -> "${minutes}分"
+    }
+}

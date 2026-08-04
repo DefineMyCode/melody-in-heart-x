@@ -12,8 +12,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -27,7 +30,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import cn.com.dcsgo.mihx.core.common.time.formatHoursMinutes
 
 // ─────────────────────────────────────────────────────────────────
 // 用户信息区域
@@ -87,111 +92,74 @@ fun UserInfoSection(
 }
 
 // ─────────────────────────────────────────────────────────────────
-// 操作按钮组件（文件管理 / 播放统计共用）
-// ─────────────────────────────────────────────────────────────────
-
-@Composable
-private fun ActionButton(
-    icon: Int,
-    label: String,
-    description: String,
-    onClick: () -> Unit,
-    enabled: Boolean = true,
-    modifier: Modifier = Modifier,
-) {
-    Column(
-        modifier = modifier
-            .clip(RoundedCornerShape(12.dp))
-            .clickable(enabled = enabled) { if (enabled) onClick() }
-            .padding(horizontal = 8.dp, vertical = 10.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Box(
-            modifier = Modifier
-                .size(44.dp)
-                .clip(CircleShape)
-                .background(
-                    if (enabled) MaterialTheme.colorScheme.primaryContainer
-                    else MaterialTheme.colorScheme.surfaceVariant
-                ),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                painter = painterResource(id = icon),
-                contentDescription = label,
-                modifier = Modifier.size(22.dp),
-                tint = if (enabled) MaterialTheme.colorScheme.primary
-                       else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
-            )
-        }
-        Spacer(modifier = Modifier.height(6.dp))
-        Text(
-            text = label,
-            style = MaterialTheme.typography.labelMedium,
-            fontWeight = FontWeight.Medium,
-            color = if (enabled) MaterialTheme.colorScheme.onSurface
-                    else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
-        )
-        Text(
-            text = description,
-            style = MaterialTheme.typography.labelSmall,
-            color = if (enabled) MaterialTheme.colorScheme.onSurfaceVariant
-                    else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
-        )
-    }
-}
-
-// ─────────────────────────────────────────────────────────────────
 // 播放统计区域
 // ─────────────────────────────────────────────────────────────────
 
 /**
- * 播放统计卡片，预留播放次数与有效播放次数入口。
+ * 播放统计入口卡（单一入口）。
+ *
+ * 展示今日 / 本周时长的迷你预览，点击进入统计总览（今日、本周柱状图、周月榜单、
+ * 全部歌曲统计均收纳在总览页内）。
+ *
+ * @param todayDurationMs   今日累计听歌时长（毫秒）
+ * @param weekTotalMs       本周累计听歌时长（毫秒）
+ * @param onOpenPlaybackStats 点击卡片进入统计总览
  */
 @Composable
 fun PlayStatsSection(
-    onPlayCountClick: () -> Unit = {},
-    onEffectivePlayCountClick: () -> Unit = {},
+    todayDurationMs: Long = 0L,
+    weekTotalMs: Long = 0L,
+    onOpenPlaybackStats: () -> Unit = {},
 ) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onOpenPlaybackStats),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
-        Column(
-            modifier = Modifier.padding(16.dp)
+        Row(
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
-                text = "播放统计",
-                style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(bottom = 12.dp)
-            )
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            Box(
+                modifier = Modifier
+                    .size(44.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.primaryContainer),
+                contentAlignment = Alignment.Center
             ) {
-                ActionButton(
-                    icon = R.drawable.bar_chart_4_bars_24,
-                    label = "播放次数",
-                    description = "统计入口",
-                    onClick = onPlayCountClick,
-                    modifier = Modifier.weight(1f)
-                )
-
-                ActionButton(
-                    icon = R.drawable.bar_chart_24,
-                    label = "有效播放次数",
-                    description = "统计入口",
-                    onClick = onEffectivePlayCountClick,
-                    modifier = Modifier.weight(1f)
+                Icon(
+                    painter = painterResource(R.drawable.bar_chart_4_bars_24),
+                    contentDescription = "播放统计",
+                    modifier = Modifier.size(22.dp),
+                    tint = MaterialTheme.colorScheme.primary
                 )
             }
+            Spacer(modifier = Modifier.width(12.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = "播放统计",
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Text(
+                    text = "今日 ${formatHoursMinutes(todayDurationMs)} · 本周 ${formatHoursMinutes(weekTotalMs)}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
     }
 }

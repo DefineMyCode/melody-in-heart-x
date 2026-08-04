@@ -117,13 +117,16 @@ class PlayDurationTracker(
         // 结算当前歌曲的播放时长
         currentSongId?.let { songId ->
             val totalDuration = currentPlayDurationMs.get()
+            val startedAtMs = System.currentTimeMillis() - totalDuration
+            var isEffective = false
 
             // 检查是否达到播放次数计数条件：完播率达标或长歌播放超过5分钟
             if (currentSongDurationMs > 0) {
                 val completionThreshold = (currentSongDurationMs * COMPLETION_RATE_THRESHOLD).toLong()
                 val isCompletionReached = totalDuration >= completionThreshold
                 val isLongPlayReached = totalDuration >= LONG_PLAY_THRESHOLD_MS
-                if (isCompletionReached || isLongPlayReached) {
+                isEffective = isCompletionReached || isLongPlayReached
+                if (isEffective) {
                     playStatsRepository.increment(songId)
 
                     // 如果歌曲在秒切歌曲列表中，播放次数加1后自动移除
@@ -159,6 +162,16 @@ class PlayDurationTracker(
                             "90%阈值=${completionThreshold}ms, 5分钟阈值=${LONG_PLAY_THRESHOLD_MS}ms"
                     )
                 }
+            }
+
+            // 记录本次播放会话（供今日/本周/本月统计聚合）
+            if (totalDuration > 0L) {
+                playStatsRepository.recordPlaybackSession(
+                    songId = songId,
+                    startedAtMs = startedAtMs,
+                    durationMs = totalDuration,
+                    isEffectivePlay = isEffective,
+                )
             }
         }
 

@@ -5,6 +5,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.floatPreferencesKey
+import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
@@ -33,4 +34,7 @@ object PlayerSettingsKeys {
     // 定时关闭：结束时间戳（epoch 毫秒，0 = 未设置）与是否播完最后一曲
     val SLEEP_TIMER_END_AT_MS = longPreferencesKey("sleep_timer_end_at_ms")
     val SLEEP_TIMER_PLAY_LAST_SONG = booleanPreferencesKey("sleep_timer_play_last_song")
+
+    // 每日听歌时长目标（分钟，0 = 未设置）
+    val DAILY_LISTENING_GOAL_MINUTES = intPreferencesKey("daily_listening_goal_minutes")
 }

@@ -8,6 +8,7 @@ data class SettingsRouteState(
     val themeMode: ThemeMode,
     val themeVariant: ThemeVariant,
     val globalUniformRandomEnabled: Boolean,
+    val dailyListeningGoalMinutes: Int,
 )
 
 data class SettingsRouteActions(
@@ -15,6 +16,7 @@ data class SettingsRouteActions(
     val onThemeModeChange: (ThemeMode) -> Unit,
     val onThemeVariantChange: (ThemeVariant) -> Unit,
     val onGlobalUniformRandomEnabledChange: (Boolean) -> Unit,
+    val onDailyListeningGoalMinutesChange: (Int) -> Unit,
     val onRequestBluetoothPermission: () -> Unit,
     val onRequestNotificationPermission: () -> Unit,
 )
@@ -32,6 +34,8 @@ fun SettingsRoute(
         onThemeVariantChange = actions.onThemeVariantChange,
         globalUniformRandomEnabled = state.globalUniformRandomEnabled,
         onGlobalUniformRandomEnabledChange = actions.onGlobalUniformRandomEnabledChange,
+        dailyListeningGoalMinutes = state.dailyListeningGoalMinutes,
+        onDailyListeningGoalMinutesChange = actions.onDailyListeningGoalMinutesChange,
         onRequestBluetoothPermission = actions.onRequestBluetoothPermission,
         onRequestNotificationPermission = actions.onRequestNotificationPermission,
     )

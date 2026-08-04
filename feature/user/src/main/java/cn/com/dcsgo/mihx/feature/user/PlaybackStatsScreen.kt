@@ -50,6 +50,7 @@ fun PlaybackStatsScreen(
     songs: List<Song>,
     currentSong: Song?,
     isPlaying: Boolean,
+    dailyListeningGoalMinutes: Int = 0,
     onBack: () -> Unit,
     onSongClick: (Song) -> Unit,
     onOpenPlayCounts: () -> Unit,
@@ -81,7 +82,12 @@ fun PlaybackStatsScreen(
                 .padding(padding)
                 .verticalScroll(rememberScrollState()),
         ) {
-            TodayCard(snapshot = snapshot, isPlaying = isPlaying, currentSong = currentSong)
+            TodayCard(
+                snapshot = snapshot,
+                isPlaying = isPlaying,
+                currentSong = currentSong,
+                dailyGoalMinutes = dailyListeningGoalMinutes,
+            )
 
             WeekChartCard(snapshot = snapshot)
 
@@ -131,6 +137,7 @@ private fun TodayCard(
     snapshot: PlaybackStatsSnapshot,
     isPlaying: Boolean,
     currentSong: Song?,
+    dailyGoalMinutes: Int,
 ) {
     Card(
         modifier = Modifier
@@ -158,7 +165,11 @@ private fun TodayCard(
                 )
                 Spacer(modifier = Modifier.weight(1f))
                 Text(
-                    text = "目标 ${DAILY_GOAL_MINUTES / 60} 小时",
+                    text = if (dailyGoalMinutes > 0) {
+                        "目标 ${dailyGoalMinutes} 分钟"
+                    } else {
+                        "无目标"
+                    },
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -171,7 +182,11 @@ private fun TodayCard(
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
             ) {
                 TodayRing(
-                    progress = snapshot.todayDurationMs / (DAILY_GOAL_MINUTES * 60_000f),
+                    progress = if (dailyGoalMinutes > 0) {
+                        snapshot.todayDurationMs / (dailyGoalMinutes * 60_000f)
+                    } else {
+                        0f
+                    },
                     modifier = Modifier.size(84.dp),
                 )
                 Column {

@@ -329,6 +329,7 @@ fun AppNavHost(
                     themeMode = themeMode,
                     themeVariant = themeVariant,
                     globalUniformRandomEnabled = uiState.globalUniformRandomEnabled,
+                    dailyListeningGoalMinutes = uiState.dailyListeningGoalMinutes,
                 ),
                 actions = SettingsRouteActions(
                     onBack = navController::navigateUp,
@@ -354,6 +355,13 @@ fun AppNavHost(
                     onGlobalUniformRandomEnabledChange = { enabled ->
                         playerViewModel.setGlobalUniformRandomEnabled(enabled)
                         showToast(if (enabled) "已开启全局均匀随机" else "已关闭全局均匀随机")
+                    },
+                    onDailyListeningGoalMinutesChange = { minutes ->
+                        playerViewModel.setDailyListeningGoalMinutes(minutes)
+                        showToast(
+                            if (minutes == 0) "已取消每日听歌时长目标"
+                            else "已设置每日听歌时长目标：${minutes}分钟",
+                        )
                     },
                     onRequestBluetoothPermission = {
                         permissionCoordinator.requestBluetoothConnectPermission {
@@ -526,6 +534,7 @@ private fun playbackStatsRouteState(
         songs = allSongs,
         currentSong = uiState.currentSong,
         isPlaying = uiState.isPlaying,
+        dailyListeningGoalMinutes = uiState.dailyListeningGoalMinutes,
     )
 }
 

@@ -39,8 +39,7 @@ import cn.com.dcsgo.mihx.core.model.Song
 import cn.com.dcsgo.mihx.domain.repository.DayDuration
 import java.time.LocalDate
 
-/** 今日听歌时长目标（分钟），目前为常量，后续可做成设置项 */
-internal const val DAILY_GOAL_MINUTES = 120L
+/** 每日听歌时长目标（分钟），由设置页面配置，通过 PlaybackStatsRouteState 传入 */
 
 /** 进度环：主题色描边 + 中央百分比 */
 @Composable

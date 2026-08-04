@@ -57,6 +57,8 @@ data class PlayerUiState(
     val isInfinitePlay: Boolean = false,
     /** 是否启用全局均匀随机 */
     val globalUniformRandomEnabled: Boolean = true,
+    /** 每日听歌时长目标（分钟），0 表示无目标，默认 120（2 小时） */
+    val dailyListeningGoalMinutes: Int = 120,
     /** 是否启用蓝牙播放监听 */
     val bluetoothPlaybackMonitoringEnabled: Boolean = false,
     /** 是否启用播放通知控制 */

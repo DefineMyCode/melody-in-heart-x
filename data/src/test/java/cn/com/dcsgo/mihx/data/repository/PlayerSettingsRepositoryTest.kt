@@ -212,6 +212,30 @@ class PlayerSettingsRepositoryTest {
         }
     }
 
+    @Test
+    fun dailyListeningGoalDefaultsToTwoHoursAndPersistsToDataStore() = runBlocking {
+        val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+        val file = tempDataStoreFile()
+        val store = PreferenceDataStoreFactory.create(
+            scope = scope,
+            produceFile = { file },
+        )
+        val legacyPrefs = FakeSharedPreferences()
+        val repository = PlayerSettingsRepository(store, legacyPrefs)
+
+        try {
+            assertEquals(120, repository.currentDailyListeningGoalMinutes())
+
+            repository.setDailyListeningGoalMinutes(60)
+
+            assertEquals(60, repository.currentDailyListeningGoalMinutes())
+            assertEquals(60, store.data.first()[PlayerSettingsKeys.DAILY_LISTENING_GOAL_MINUTES])
+        } finally {
+            scope.cancel()
+            file.delete()
+        }
+    }
+
     private fun tempDataStoreFile(): File {
         return File.createTempFile("player-settings-", ".preferences_pb").apply {
             delete()

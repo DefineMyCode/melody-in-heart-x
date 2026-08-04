@@ -63,6 +63,10 @@ class PlayerSettingsRepository(
         preferences[PlayerSettingsKeys.LYRIC_FONT_SCALE] ?: 1f
     }
 
+    override val dailyListeningGoalMinutes: Flow<Int> = settingsStore.data.map { preferences ->
+        preferences[PlayerSettingsKeys.DAILY_LISTENING_GOAL_MINUTES] ?: 120
+    }
+
     override fun currentGlobalUniformRandomEnabled(): Boolean {
         return runBlocking(Dispatchers.IO) {
             globalUniformRandomEnabled.first()
@@ -78,6 +82,12 @@ class PlayerSettingsRepository(
     override fun currentPlaybackNotificationEnabled(): Boolean {
         return runBlocking(Dispatchers.IO) {
             playbackNotificationEnabled.first()
+        }
+    }
+
+    override fun currentDailyListeningGoalMinutes(): Int {
+        return runBlocking(Dispatchers.IO) {
+            dailyListeningGoalMinutes.first()
         }
     }
 
@@ -144,6 +154,18 @@ class PlayerSettingsRepository(
     override suspend fun setLyricFontScale(scale: Float) {
         settingsStore.edit { preferences ->
             preferences[PlayerSettingsKeys.LYRIC_FONT_SCALE] = scale
+        }
+    }
+
+    override suspend fun setDailyListeningGoalMinutes(minutes: Int) {
+        settingsStore.edit { preferences ->
+            preferences[PlayerSettingsKeys.DAILY_LISTENING_GOAL_MINUTES] = minutes
+        }
+    }
+
+    override fun setDailyListeningGoalMinutesBlocking(minutes: Int) {
+        runBlocking(Dispatchers.IO) {
+            setDailyListeningGoalMinutes(minutes)
         }
     }
 

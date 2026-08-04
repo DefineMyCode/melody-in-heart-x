@@ -11,10 +11,12 @@ interface PlayerSettingsRepository {
     val bluetoothPlaybackMonitoringEnabled: Flow<Boolean>
     val playbackNotificationEnabled: Flow<Boolean>
     val lyricFontScale: Flow<Float>
+    val dailyListeningGoalMinutes: Flow<Int>
 
     fun currentGlobalUniformRandomEnabled(): Boolean
     fun currentBluetoothPlaybackMonitoringEnabled(): Boolean
     fun currentPlaybackNotificationEnabled(): Boolean
+    fun currentDailyListeningGoalMinutes(): Int
     fun setGlobalUniformRandomEnabledBlocking(enabled: Boolean)
     fun setBluetoothPlaybackMonitoringEnabledBlocking(enabled: Boolean)
     fun setPlaybackNotificationEnabledBlocking(enabled: Boolean)
@@ -24,6 +26,8 @@ interface PlayerSettingsRepository {
     suspend fun setBluetoothPlaybackMonitoringEnabled(enabled: Boolean)
     suspend fun setPlaybackNotificationEnabled(enabled: Boolean)
     suspend fun setLyricFontScale(scale: Float)
+    suspend fun setDailyListeningGoalMinutes(minutes: Int)
+    fun setDailyListeningGoalMinutesBlocking(minutes: Int)
 
     /** 定时关闭结束时间戳（epoch 毫秒，0 = 未设置） */
     fun currentSleepTimerEndAtMs(): Long

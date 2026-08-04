@@ -324,11 +324,13 @@ internal class PlayerRuntime(
         val globalUniformRandomEnabled = playerSettingsRepository.currentGlobalUniformRandomEnabled()
         val bluetoothPlaybackMonitoringEnabled = playerSettingsRepository.currentBluetoothPlaybackMonitoringEnabled()
         val playbackNotificationEnabled = playerSettingsRepository.currentPlaybackNotificationEnabled()
+        val dailyListeningGoalMinutes = playerSettingsRepository.currentDailyListeningGoalMinutes()
         _uiState.update {
             it.copy(
                 globalUniformRandomEnabled = globalUniformRandomEnabled,
                 bluetoothPlaybackMonitoringEnabled = bluetoothPlaybackMonitoringEnabled,
                 playbackNotificationEnabled = playbackNotificationEnabled,
+                dailyListeningGoalMinutes = dailyListeningGoalMinutes,
             )
         }
         sleepTimerCoordinator.restore()
@@ -576,6 +578,11 @@ internal class PlayerRuntime(
     fun setGlobalUniformRandomEnabled(enabled: Boolean) {
         playerSettingsRepository.setGlobalUniformRandomEnabledBlocking(enabled)
         _uiState.update { it.copy(globalUniformRandomEnabled = enabled) }
+    }
+
+    fun setDailyListeningGoalMinutes(minutes: Int) {
+        playerSettingsRepository.setDailyListeningGoalMinutesBlocking(minutes)
+        _uiState.update { it.copy(dailyListeningGoalMinutes = minutes) }
     }
 
     fun initializeBluetoothPlayback() {

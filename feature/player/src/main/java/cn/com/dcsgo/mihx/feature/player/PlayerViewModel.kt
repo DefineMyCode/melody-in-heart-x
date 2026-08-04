@@ -268,6 +268,10 @@ class PlayerViewModel @Inject constructor(
         runtime.setGlobalUniformRandomEnabled(enabled)
     }
 
+    fun setDailyListeningGoalMinutes(minutes: Int) {
+        runtime.setDailyListeningGoalMinutes(minutes)
+    }
+
     fun initializeBluetoothPlayback() {
         runtime.initializeBluetoothPlayback()
     }

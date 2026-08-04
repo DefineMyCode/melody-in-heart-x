@@ -9,6 +9,8 @@ data class PlaybackStatsRouteState(
     val songs: List<Song>,
     val currentSong: Song?,
     val isPlaying: Boolean,
+    /** 每日听歌时长目标（分钟），0 表示无目标，默认 120 */
+    val dailyListeningGoalMinutes: Int = 120,
 )
 
 data class PlaybackStatsRouteActions(
@@ -30,6 +32,7 @@ fun PlaybackStatsRoute(
         songs = state.songs,
         currentSong = state.currentSong,
         isPlaying = state.isPlaying,
+        dailyListeningGoalMinutes = state.dailyListeningGoalMinutes,
         onBack = actions.onBack,
         onSongClick = actions.onSongClick,
         onOpenPlayCounts = actions.onOpenPlayCounts,

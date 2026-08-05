@@ -19,6 +19,7 @@ class ExampleInstrumentedTest {
     fun useAppContext() {
         // Context of the app under test.
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
-        assertEquals("cn.com.dcsgo.mihx", appContext.packageName)
+        // debug 变体带 .debug 包名后缀，release 不带，只断言包名前缀
+        assertTrue(appContext.packageName.startsWith("cn.com.dcsgo.mihx"))
     }
 }

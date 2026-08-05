@@ -24,6 +24,11 @@ android {
     }
 
     buildTypes {
+        debug {
+            // debug 使用独立包名，可和 release 同时安装在同一台设备上
+            applicationIdSuffix = ".debug"
+            versionNameSuffix = "-debug"
+        }
         release {
             isMinifyEnabled = true
             isShrinkResources = true

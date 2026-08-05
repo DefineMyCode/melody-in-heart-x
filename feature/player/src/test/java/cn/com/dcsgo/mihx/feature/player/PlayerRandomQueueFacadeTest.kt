@@ -64,6 +64,29 @@ class PlayerRandomQueueFacadeTest {
     }
 
     @Test
+    fun playRandomQueueReturnsFalseWhenNoSongs() {
+        state = state.copy(songs = emptyList())
+
+        val started = facade.playRandomQueue()
+
+        assertFalse(started)
+        assertEquals(null, setQueueSongs)
+        assertFalse(state.isInfinitePlay)
+    }
+
+    @Test
+    fun playRandomQueueReturnsFalseWhenNoPlayableSongs() {
+        state = state.copy(
+            songs = listOf(Song(id = 1, title = "Unplayable", artist = "Artist", sampleRate = 0)),
+        )
+
+        val started = facade.playRandomQueue()
+
+        assertFalse(started)
+        assertEquals(null, setQueueSongs)
+    }
+
+    @Test
     fun startInfinitePlayKeepsCurrentQueueAndStoresCoveredIds() {
         state = state.copy(
             songs = songs(1, 2, 3),
@@ -88,6 +111,16 @@ class PlayerRandomQueueFacadeTest {
         assertEquals(null, setQueueSongs)
         assertTrue(state.isInfinitePlay)
         assertEquals(emptySet<Int>(), state.infinitePlayedSongIds)
+    }
+
+    @Test
+    fun startInfinitePlayReturnsFalseWhenNoSongs() {
+        state = state.copy(songs = emptyList())
+
+        val started = facade.startInfinitePlay()
+
+        assertFalse(started)
+        assertFalse(state.isInfinitePlay)
     }
 
     @Test

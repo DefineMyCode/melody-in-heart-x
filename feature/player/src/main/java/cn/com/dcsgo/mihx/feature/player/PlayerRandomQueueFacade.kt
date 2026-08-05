@@ -16,13 +16,17 @@ class PlayerRandomQueueFacade(
 ) {
     private val recentPlayedSongIds = mutableSetOf<Int>()
 
-    fun playRandomQueue() {
+    /**
+     * 生成随机队列并开始顺序播放。
+     * @return true 表示已生成队列并开始播放；false 表示库中无可播放歌曲，未开始播放。
+     */
+    fun playRandomQueue(): Boolean {
         val plan = planner.planRandomQueue(
             songs = state().songs,
             recentSongIds = recentPlayedSongIds,
             uniformRandomEnabled = state().globalUniformRandomEnabled,
             playCounts = rawPlayCounts(state().songs.map { it.id }),
-        ) ?: return
+        ) ?: return false
 
         updateState { it.copy(isInfinitePlay = false, infinitePlayedSongIds = emptySet()) }
         recentPlayedSongIds.clear()
@@ -33,14 +37,19 @@ class PlayerRandomQueueFacade(
 
         setPlayQueue(plan.songs, 0, PlayMode.SEQUENTIAL)
         log("playRandomQueue: songs=${plan.songs.size}, recent=${recentPlayedSongIds.size}")
+        return true
     }
 
-    fun startInfinitePlay() {
+    /**
+     * 开启无限随机播放。
+     * @return true 表示已开启；false 表示库中无可播放歌曲，未开启。
+     */
+    fun startInfinitePlay(): Boolean {
         val current = state()
         val plan = planner.planInfiniteStart(
             allSongs = current.songs,
             queue = current.playQueue,
-        ) ?: return
+        ) ?: return false
 
         updateState {
             it.copy(
@@ -49,6 +58,7 @@ class PlayerRandomQueueFacade(
             )
         }
         log("startInfinitePlay: keep current queue, covered=${plan.playedSongIds.size}")
+        return true
     }
 
     fun stopInfinitePlay() {

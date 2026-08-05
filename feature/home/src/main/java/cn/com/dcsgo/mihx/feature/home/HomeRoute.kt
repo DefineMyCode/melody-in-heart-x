@@ -33,8 +33,8 @@ data class HomeRouteActions(
     val onShowLyrics: () -> Unit,
     val onArtistClick: (String) -> Unit = {},
     val onAlbumClick: (String) -> Unit = {},
-    val onLuckyPlayClick: () -> Unit,
-    val onStartInfinitePlay: () -> Unit,
+    val onLuckyPlayClick: () -> Boolean,
+    val onStartInfinitePlay: () -> Boolean,
     val onStopInfinitePlay: () -> Unit,
     val onRelatedPlayClick: (Song) -> Unit = {},
     val onSleepTimerStart: (Int, Boolean) -> Unit = { _, _ -> },
@@ -81,16 +81,22 @@ fun HomeRoute(
         onArtistClick = actions.onArtistClick,
         onAlbumClick = actions.onAlbumClick,
         onLuckyPlayClick = {
-            actions.onLuckyPlayClick()
-            showToast("已生成随机队列，开始播放~")
+            val started = actions.onLuckyPlayClick()
+            showToast(
+                if (started) "已生成随机队列，开始播放~"
+                else "还没有可播放的音乐，请先导入歌曲吧~"
+            )
         },
         onInfinitePlayClick = {
             if (state.isInfinitePlay) {
                 actions.onStopInfinitePlay()
                 showToast("已退出无限随机播放模式")
             } else {
-                actions.onStartInfinitePlay()
-                showToast("已开启无限随机播放模式，随机播放全部歌曲~")
+                val started = actions.onStartInfinitePlay()
+                showToast(
+                    if (started) "已开启无限随机播放模式，随机播放全部歌曲~"
+                    else "还没有可播放的音乐，请先导入歌曲吧~"
+                )
             }
         },
         onRelatedPlayClick = {

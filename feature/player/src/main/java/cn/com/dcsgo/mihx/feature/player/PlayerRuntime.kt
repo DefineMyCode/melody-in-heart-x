@@ -579,12 +579,12 @@ internal class PlayerRuntime(
         return versionFacade.resetSongGroupKey(song)
     }
 
-    fun playRandomQueue() {
-        randomQueueFacade.playRandomQueue()
+    fun playRandomQueue(): Boolean {
+        return randomQueueFacade.playRandomQueue()
     }
 
-    fun startInfinitePlay() {
-        randomQueueFacade.startInfinitePlay()
+    fun startInfinitePlay(): Boolean {
+        return randomQueueFacade.startInfinitePlay()
     }
 
     fun stopInfinitePlay() {

@@ -233,9 +233,12 @@ class PlayerViewModel @Inject constructor(
     /** Clears a song title override and restores its natural group key. */
     fun resetSongGroupKey(song: Song): Boolean = runtime.resetSongGroupKey(song)
 
-    /** Builds a random queue and starts playback immediately. */
-    fun playRandomQueue() {
-        runtime.playRandomQueue()
+    /**
+     * Builds a random queue and starts playback immediately.
+     * @return true 表示已生成随机队列并开始播放；false 表示库中无可播放歌曲，未开始播放。
+     */
+    fun playRandomQueue(): Boolean {
+        return runtime.playRandomQueue()
     }
 
     /**
@@ -246,9 +249,12 @@ class PlayerViewModel @Inject constructor(
         return runtime.playRelatedSongs(currentSong)
     }
 
-    /** Starts infinite random playback. */
-    fun startInfinitePlay() {
-        runtime.startInfinitePlay()
+    /**
+     * Starts infinite random playback.
+     * @return true 表示已开启无限随机播放；false 表示库中无可播放歌曲，未开启。
+     */
+    fun startInfinitePlay(): Boolean {
+        return runtime.startInfinitePlay()
     }
 
     /** Stops infinite playback mode. */

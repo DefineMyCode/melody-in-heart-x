@@ -57,19 +57,12 @@
 
 ## 实际使用截图
 
-<img src="./docs/readme-img/sample-use/1.png" style="width:20%; height:20%;">
-<img src="./docs/readme-img/sample-use/2.png" style="width:20%; height:20%;">
-<img src="./docs/readme-img/sample-use/3.png" style="width:20%; height:20%;">
-<img src="./docs/readme-img/sample-use/4.png" style="width:20%; height:20%;">
-<img src="./docs/readme-img/sample-use/5.png" style="width:20%; height:20%;">
-<img src="./docs/readme-img/sample-use/6.png" style="width:20%; height:20%;">
-<img src="./docs/readme-img/sample-use/7.png" style="width:20%; height:20%;">
-<img src="./docs/readme-img/sample-use/8.png" style="width:20%; height:20%;">
-<img src="./docs/readme-img/sample-use/9.png" style="width:20%; height:20%;">
-<img src="./docs/readme-img/sample-use/10.png" style="width:20%; height:20%;">
-<img src="./docs/readme-img/sample-use/11.png" style="width:20%; height:20%;">
-<img src="./docs/readme-img/sample-use/12.png" style="width:20%; height:20%;">
-<img src="./docs/readme-img/sample-use/13.png" style="width:20%; height:20%;">
+|                                          |                                          |                                          |                                          |
+|:----------------------------------------:|:----------------------------------------:|:----------------------------------------:|:----------------------------------------:|
+| ![](./docs/readme-img/sample-use/1.png)  | ![](./docs/readme-img/sample-use/2.png)  | ![](./docs/readme-img/sample-use/3.png)  | ![](./docs/readme-img/sample-use/4.png)  |
+| ![](./docs/readme-img/sample-use/5.png)  | ![](./docs/readme-img/sample-use/6.png)  | ![](./docs/readme-img/sample-use/7.png)  | ![](./docs/readme-img/sample-use/8.png)  |
+| ![](./docs/readme-img/sample-use/9.png)  | ![](./docs/readme-img/sample-use/10.png) | ![](./docs/readme-img/sample-use/11.png) | ![](./docs/readme-img/sample-use/12.png) |
+| ![](./docs/readme-img/sample-use/13.png) |                                          |                                          |                                          |
 
 ---
 

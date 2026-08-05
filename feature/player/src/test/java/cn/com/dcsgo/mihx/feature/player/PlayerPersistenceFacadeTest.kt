@@ -7,6 +7,7 @@ import cn.com.dcsgo.mihx.domain.playback.PlaybackStateStorage
 import cn.com.dcsgo.mihx.domain.playback.RestoredPlaybackState
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -73,7 +74,9 @@ class PlayerPersistenceFacadeTest {
         facade.savePlaybackState(positionMs = 123L)
         state = state.copy(playQueue = PlayQueue(), currentSong = null, isPlaying = true)
 
-        facade.restorePlaybackState()
+        val result = facade.restorePlaybackState()
+        assertNotNull(result)
+        facade.applyRestoreResult(result!!)
 
         assertEquals(listOf(1, 2), state.playQueue.songs.map { it.id })
         assertEquals(1, state.currentSong?.id)
@@ -103,7 +106,9 @@ class PlayerPersistenceFacadeTest {
             infinitePlayedSongIds = emptySet(),
         )
 
-        facade.restorePlaybackState()
+        val result = facade.restorePlaybackState()
+        assertNotNull(result)
+        facade.applyRestoreResult(result!!)
 
         assertTrue(state.isInfinitePlay)
         assertEquals(setOf(1, 2), state.infinitePlayedSongIds)

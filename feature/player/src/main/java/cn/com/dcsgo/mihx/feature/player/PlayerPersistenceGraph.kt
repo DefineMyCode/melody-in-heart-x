@@ -7,6 +7,7 @@ import cn.com.dcsgo.mihx.domain.playback.PlaybackRestoreCoordinator
 import cn.com.dcsgo.mihx.domain.playback.PlaybackStateStorageFactory
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 internal class PlayerPersistenceGraph(
     playbackStateStorageFactory: PlaybackStateStorageFactory,
@@ -56,7 +57,16 @@ internal class PlayerPersistenceGraph(
     }
 
     fun restorePlaybackState() {
-        persistenceFacade.restorePlaybackState()
+        // 状态读取/解码（DataStore + JSON，内部 runBlocking）放 IO，应用结果回主线程，
+        // 启动路径不再被阻塞
+        scope.launch(dispatchers.io) {
+            val result = persistenceFacade.restorePlaybackState()
+            if (result != null) {
+                withContext(dispatchers.main) {
+                    persistenceFacade.applyRestoreResult(result)
+                }
+            }
+        }
     }
 
     fun onPlaybackPosition(positionMs: Long) {

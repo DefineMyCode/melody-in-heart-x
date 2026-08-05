@@ -37,8 +37,13 @@ class PlayerPersistenceFacade(
         playbackStateStore.clear()
     }
 
-    fun restorePlaybackState() {
-        val result = playbackRestoreCoordinator.restore(state().songs) ?: return
+    /** 仅在 IO 线程读取并解码播放状态，返回 null 表示无需恢复；由调用方在合适线程 [applyRestoreResult] */
+    fun restorePlaybackState(): PlaybackRestoreResult? {
+        return playbackRestoreCoordinator.restore(state().songs)
+    }
+
+    /** 将恢复结果应用到 UI 状态与控制器队列（应回到主线程调用） */
+    fun applyRestoreResult(result: PlaybackRestoreResult) {
         applyPlaybackRestoreResult(result)
     }
 

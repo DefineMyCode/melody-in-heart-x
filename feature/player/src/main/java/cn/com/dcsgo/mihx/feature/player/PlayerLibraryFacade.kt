@@ -7,8 +7,12 @@ import cn.com.dcsgo.mihx.domain.playlist.PlaylistSnapshot
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+
+/** 全库封面校验延后启动的延迟，避开首屏渲染与用户早期操作 */
+private const val ALBUM_ART_REFRESH_DELAY_MS = 2_000L
 
 class PlayerLibraryFacade(
     private val updateState: ((PlayerUiState) -> PlayerUiState) -> Unit,
@@ -19,6 +23,7 @@ class PlayerLibraryFacade(
     private val setSongsChangedListener: (() -> Unit) -> Unit,
     private val catalogScope: CoroutineScope,
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
+    private val albumArtRefreshDelayMs: Long = ALBUM_ART_REFRESH_DELAY_MS,
 ) {
     suspend fun loadInitialData(afterInitialSnapshot: () -> Unit) {
         updateState { it.copy(isLoading = true) }
@@ -29,8 +34,21 @@ class PlayerLibraryFacade(
 
         afterInitialSnapshot()
 
-        refreshAllAlbumArt {
-            refreshSnapshot()
+        // 专辑封面校验延后到低优先级后台，避免与首屏交互/播放抢占 CPU 与 IO
+        scheduleAlbumArtRefresh()
+    }
+
+    /** 延迟 + 单线程 IO 执行全库封面校验，不阻塞启动路径 */
+    private fun scheduleAlbumArtRefresh() {
+        catalogScope.launch(Dispatchers.IO.limitedParallelism(1)) {
+            delay(albumArtRefreshDelayMs)
+            try {
+                refreshAllAlbumArt {
+                    refreshSnapshot()
+                }
+            } catch (e: Exception) {
+                AppLog.error("PlayerLibraryFacade", "refreshAllAlbumArt failed", e)
+            }
         }
     }
 

@@ -5,5 +5,7 @@
         <item name="android:windowBackground">@android:color/black</item>
         <item name="android:statusBarColor">@android:color/black</item>
         <item name="android:navigationBarColor">@android:color/black</item>
+        <!-- 原生启动屏（API 31+，minSdk 33 恒生效）：黑底 + 默认应用图标，避免冷启动白屏跳变 -->
+        <item name="android:windowSplashScreenBackground">@android:color/black</item>
     </style>
 </resources>

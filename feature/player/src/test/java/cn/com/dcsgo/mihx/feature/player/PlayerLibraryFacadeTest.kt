@@ -5,6 +5,7 @@ import cn.com.dcsgo.mihx.core.model.Song
 import cn.com.dcsgo.mihx.domain.playlist.PlaylistSnapshot
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.runBlocking
@@ -43,6 +44,7 @@ class PlayerLibraryFacadeTest {
         setSongsChangedListener = { callback -> listener = callback },
         catalogScope = testScope,
         ioDispatcher = Dispatchers.Unconfined,
+        albumArtRefreshDelayMs = 0,
     )
 
     @Test
@@ -60,6 +62,8 @@ class PlayerLibraryFacadeTest {
                 assertEquals(listOf("Initial"), state.playlists.map { it.name })
                 assertFalse(state.isLoading)
             }
+            // 等待延后的封面校验协程完成（测试中 delay=0）
+            testScope.coroutineContext[Job]?.children?.forEach { it.join() }
         }
 
         assertTrue(loaded)

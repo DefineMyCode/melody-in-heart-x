@@ -34,8 +34,8 @@ data class PlayerUiState(
     val playlists: List<Playlist> = emptyList(),
     /** 错误提示信息，null 表示无错误 */
     val errorMessage: String? = null,
-    /** 数据是否正在加载（启动时扫描） */
-    val isLoading: Boolean = false,
+    /** 数据是否正在加载（启动时扫描）。默认 true，首帧显示启动页而非空 Home，避免闪烁 */
+    val isLoading: Boolean = true,
     /** 是否正在导入文件夹（扫描 + 元数据提取中） */
     val isImporting: Boolean = false,
     /** 导入进度：当前已处理文件数 */

@@ -25,6 +25,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 private const val TAG = "PlayerViewModel"
@@ -340,22 +341,33 @@ internal class PlayerRuntime(
     )
 
     fun start() {
-        val globalUniformRandomEnabled = playerSettingsRepository.currentGlobalUniformRandomEnabled()
-        val bluetoothPlaybackMonitoringEnabled = playerSettingsRepository.currentBluetoothPlaybackMonitoringEnabled()
-        val playbackNotificationEnabled = playerSettingsRepository.currentPlaybackNotificationEnabled()
-        val dailyListeningGoalMinutes = playerSettingsRepository.currentDailyListeningGoalMinutes()
-        _uiState.update {
-            it.copy(
-                globalUniformRandomEnabled = globalUniformRandomEnabled,
-                bluetoothPlaybackMonitoringEnabled = bluetoothPlaybackMonitoringEnabled,
-                playbackNotificationEnabled = playbackNotificationEnabled,
-                dailyListeningGoalMinutes = dailyListeningGoalMinutes,
-            )
-        }
-        sleepTimerCoordinator.restore()
-        startupFacade.start()
-        if (bluetoothPlaybackMonitoringEnabled) {
-            bluetoothGraph.initialize()
+        // 启动时把 4 个 DataStore 设置读取 + 定时器恢复（共 6-7 次 runBlocking）移到 IO，
+        // 不再阻塞主线程的首帧。startupFacade.start() 仍在主线程执行。
+        scope.launch {
+            val startupSettings = withContext(dispatchers.io) {
+                StartupSettings(
+                    globalUniformRandomEnabled = playerSettingsRepository.currentGlobalUniformRandomEnabled(),
+                    bluetoothPlaybackMonitoringEnabled = playerSettingsRepository.currentBluetoothPlaybackMonitoringEnabled(),
+                    playbackNotificationEnabled = playerSettingsRepository.currentPlaybackNotificationEnabled(),
+                    dailyListeningGoalMinutes = playerSettingsRepository.currentDailyListeningGoalMinutes(),
+                )
+            }
+            _uiState.update {
+                it.copy(
+                    globalUniformRandomEnabled = startupSettings.globalUniformRandomEnabled,
+                    bluetoothPlaybackMonitoringEnabled = startupSettings.bluetoothPlaybackMonitoringEnabled,
+                    playbackNotificationEnabled = startupSettings.playbackNotificationEnabled,
+                    dailyListeningGoalMinutes = startupSettings.dailyListeningGoalMinutes,
+                )
+            }
+            // 定时器恢复（2 读 + 可能 1 写）也放 IO；updateState 与 startTicker 均线程安全
+            withContext(dispatchers.io) {
+                sleepTimerCoordinator.restore()
+            }
+            startupFacade.start()
+            if (startupSettings.bluetoothPlaybackMonitoringEnabled) {
+                bluetoothGraph.initialize()
+            }
         }
     }
 
@@ -652,3 +664,11 @@ internal class PlayerRuntime(
         persistenceGraph.restorePlaybackState()
     }
 }
+
+/** 启动时一次性读取的用户设置快照 */
+private data class StartupSettings(
+    val globalUniformRandomEnabled: Boolean,
+    val bluetoothPlaybackMonitoringEnabled: Boolean,
+    val playbackNotificationEnabled: Boolean,
+    val dailyListeningGoalMinutes: Int,
+)

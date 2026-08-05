@@ -16,7 +16,6 @@ class PlayerVersionFacadeTest {
     private var groupUpdateResult = true
     private var saved = false
     private var playedQueueIndex: Int? = null
-    private var playedNext = false
     private val facade = PlayerVersionFacade(
         state = { state },
         updateState = { transform -> state = transform(state) },
@@ -30,7 +29,6 @@ class PlayerVersionFacadeTest {
         ),
         savePlaybackState = { saved = true },
         playFromQueue = { _, index -> playedQueueIndex = index },
-        playNext = { playedNext = true },
         isPlayable = { it.sampleRate > 0 },
     )
 
@@ -63,14 +61,15 @@ class PlayerVersionFacadeTest {
     }
 
     @Test
-    fun switchToVersionInsertsMissingSongAndPlaysNext() {
+    fun switchToVersionInsertsMissingSongAndPlaysFromQueue() {
         val target = song(3, playable = true)
         state = state.copy(playQueue = PlayQueue().setQueue(listOf(song(1), song(2)), startIndex = 0))
 
         facade.switchToVersion(target)
 
         assertEquals(listOf(1, 3, 2), state.playQueue.songs.map { it.id })
-        assertTrue(playedNext)
+        assertEquals(1, state.playQueue.currentIndex)
+        assertEquals(1, playedQueueIndex)
         assertTrue(saved)
     }
 

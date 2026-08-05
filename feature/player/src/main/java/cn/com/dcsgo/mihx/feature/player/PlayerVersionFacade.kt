@@ -13,7 +13,6 @@ class PlayerVersionFacade(
     private val songGroupCoordinator: SongGroupCoordinator,
     private val savePlaybackState: () -> Unit,
     private val playFromQueue: (PlayQueue, Int) -> Unit,
-    private val playNext: () -> Unit,
     private val isPlayable: (Song) -> Boolean = { it.uri != null },
     private val playOrderBuilder: QueueManager.PlayOrderBuilder = QueueManager.defaultPlayOrderBuilder,
 ) {
@@ -33,9 +32,14 @@ class PlayerVersionFacade(
                 playFromQueue(queue, plan.index)
             }
             is SongVersionManager.SwitchPlan.InsertNext -> {
-                updateState { it.copy(playQueue = plan.queue) }
+                // 目标不在队列时插入到下一首位置，并走与 PlayExisting 相同的
+                // playFromQueue 路径（经窗口规划器重建控制器队列后播放）。
+                // 不能直接调用 playNext()——MediaController 的窗口队列尚未同步插入的
+                // 歌曲，会播到旧窗口里的下一首无关歌曲。
+                val queue = QueueManager.withCurrentIndex(plan.queue, plan.index, playOrderBuilder)
+                updateState { it.copy(playQueue = queue) }
                 savePlaybackState()
-                playNext()
+                playFromQueue(queue, plan.index)
             }
             null -> Unit
         }

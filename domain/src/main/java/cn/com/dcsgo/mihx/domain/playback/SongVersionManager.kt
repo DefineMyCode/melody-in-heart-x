@@ -6,7 +6,7 @@ import cn.com.dcsgo.mihx.core.model.Song
 object SongVersionManager {
     sealed class SwitchPlan {
         data class PlayExisting(val queue: PlayQueue, val index: Int) : SwitchPlan()
-        data class InsertNext(val queue: PlayQueue) : SwitchPlan()
+        data class InsertNext(val queue: PlayQueue, val index: Int) : SwitchPlan()
     }
 
     fun groupedSongs(songs: List<Song>, isPlayable: (Song) -> Boolean = { it.uri != null }): List<List<Song>> {
@@ -48,7 +48,10 @@ object SongVersionManager {
         val insertIndex = (currentIndex + 1).coerceAtMost(updatedSongs.size)
         updatedSongs.add(insertIndex, targetSong)
 
-        return SwitchPlan.InsertNext(queue.withSongs(updatedSongs))
+        return SwitchPlan.InsertNext(
+            queue = queue.withSongs(updatedSongs),
+            index = insertIndex,
+        )
     }
 
     fun replaceCurrentInQueue(queue: PlayQueue, targetSong: Song): PlayQueue? {

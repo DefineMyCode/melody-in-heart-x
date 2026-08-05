@@ -257,7 +257,6 @@ internal class PlayerRuntime(
         songGroupCoordinator = songGroupCoordinator,
         savePlaybackState = ::savePlaybackStateAsync,
         playFromQueue = { queue, index -> playbackBridgeFacade.playFromQueue(queue, index) },
-        playNext = ::playNext,
         playOrderBuilder = playOrderBuilder,
     )
     private val playbackSessionGraph by lazy {

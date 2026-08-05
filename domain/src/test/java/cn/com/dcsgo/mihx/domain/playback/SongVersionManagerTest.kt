@@ -59,6 +59,7 @@ class SongVersionManagerTest {
         val insert = plan as SongVersionManager.SwitchPlan.InsertNext
         assertEquals(listOf(1, 2, 4, 3), insert.queue.songs.map { it.id })
         assertEquals(1, insert.queue.currentIndex)
+        assertEquals(2, insert.index)
     }
 
     @Test

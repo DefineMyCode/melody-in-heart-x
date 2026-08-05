@@ -164,8 +164,10 @@ class PlayStatsRepository(
                 DayDuration(day, daily[day.toString()] ?: 0L)
             }
             val weeklyTop = dao.playCountsBetween(startOfDay(weekStart), nowMs)
+                .take(PlaybackStatsSnapshot.WEEKLY_TOP_SIZE)
                 .map { it.songId to it.playCount }
             val monthlyTop = dao.playCountsBetween(startOfDay(monthStart), nowMs)
+                .take(PlaybackStatsSnapshot.MONTHLY_TOP_SIZE)
                 .map { it.songId to it.playCount }
 
             PlaybackStatsSnapshot(

@@ -25,8 +25,8 @@ data class DayDuration(
  * @param weekTotalMs                本周累计听歌时长
  * @param lastWeekTotalMs            上周累计听歌时长（用于「较上周」百分比）
  * @param weekDays                   本周周一~周日逐日时长（自然周，周一起始）
- * @param weeklyTop                  本周歌曲有效播放次数榜（songId to playCount，降序）
- * @param monthlyTop                 本月歌曲有效播放次数榜（songId to playCount，降序）
+ * @param weeklyTop                  本周歌曲有效播放次数榜（songId to playCount，降序，最多前 10）
+ * @param monthlyTop                 本月歌曲有效播放次数榜（songId to playCount，降序，最多前 20）
  */
 data class PlaybackStatsSnapshot(
     val todayDurationMs: Long,
@@ -40,6 +40,12 @@ data class PlaybackStatsSnapshot(
     val monthlyTop: List<Pair<Int, Int>>,
 ) {
     companion object {
+        /** 本周歌曲 TOP 榜条数上限 */
+        const val WEEKLY_TOP_SIZE = 10
+
+        /** 本月歌曲 TOP 榜条数上限 */
+        const val MONTHLY_TOP_SIZE = 20
+
         val EMPTY = PlaybackStatsSnapshot(
             todayDurationMs = 0L,
             todaySongCount = 0,

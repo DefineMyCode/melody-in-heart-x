@@ -38,6 +38,7 @@ class PlayerRandomQueueFacadeTest {
     fun playRandomQueueStartsSequentialQueueAndLeavesInfiniteMode() {
         state = state.copy(
             songs = songs(1, 2, 3),
+            globalUniformRandomEnabled = false,
             isInfinitePlay = true,
             infinitePlayedSongIds = setOf(9),
         )

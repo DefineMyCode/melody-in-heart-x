@@ -101,6 +101,13 @@ class PlayerPlaylistFacadeTest {
             playlists.find { it.id == playlistId }?.songIds?.remove(songId)
         }
 
+        override fun reorderPlaylist(playlistId: Int, orderedSongIds: List<Int>) {
+            val index = playlists.indexOfFirst { it.id == playlistId }
+            if (index >= 0) {
+                playlists[index] = playlists[index].copy(songIds = orderedSongIds.toMutableList())
+            }
+        }
+
         override fun isSongInPlaylist(playlistId: Int, songId: Int): Boolean {
             return playlists.find { it.id == playlistId }?.songIds?.contains(songId) == true
         }

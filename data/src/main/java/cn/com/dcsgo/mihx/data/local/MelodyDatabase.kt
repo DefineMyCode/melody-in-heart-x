@@ -31,7 +31,7 @@ import cn.com.dcsgo.mihx.data.local.entity.SongGroupOverrideEntity
         AlbumEntity::class,
         SongArtistCrossRef::class,
     ],
-    version = 7,
+    version = 8,
     exportSchema = true,
 )
 abstract class MelodyDatabase : RoomDatabase() {

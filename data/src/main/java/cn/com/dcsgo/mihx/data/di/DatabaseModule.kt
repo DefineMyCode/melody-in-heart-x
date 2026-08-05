@@ -29,7 +29,7 @@ object DatabaseModule {
             "melody.db",
         )
             .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
-            .addMigrations(MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7)
+            .addMigrations(MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8)
             .build()
     }
 
@@ -121,6 +121,19 @@ object DatabaseModule {
         override fun migrate(db: SupportSQLiteDatabase) {
             // 歌曲新增时长列（毫秒），用于曲库列表/详情展示
             db.execSQL("ALTER TABLE `songs` ADD COLUMN `durationMs` INTEGER NOT NULL DEFAULT 0")
+        }
+    }
+
+    private val MIGRATION_7_8 = object : Migration(7, 8) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            // playback_events 复合索引：覆盖全部按时间范围聚合的查询（时长/去重歌数/逐日/歌曲榜）
+            // 并补齐「新装库无索引」的历史不一致。先替换 5→6 创建的单列 startedAtMs 索引
+            // （它是新复合索引的前缀，继续保留会造成冗余）。
+            db.execSQL("DROP INDEX IF EXISTS `index_playback_events_startedAtMs`")
+            db.execSQL(
+                "CREATE INDEX IF NOT EXISTS `index_playback_events_startedAtMs_isEffectivePlay_songId` " +
+                    "ON `playback_events` (`startedAtMs`, `isEffectivePlay`, `songId`)"
+            )
         }
     }
 }

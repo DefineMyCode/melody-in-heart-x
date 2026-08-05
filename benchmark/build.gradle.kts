@@ -19,6 +19,8 @@ android {
     buildTypes {
         create("benchmark") {
             matchingFallbacks += listOf("release")
+            // benchmark 测试 APK 需可安装（debug 签名），与 :app 的 benchmark 变体一致
+            signingConfig = signingConfigs.getByName("debug")
         }
     }
 

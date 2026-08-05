@@ -55,6 +55,8 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import cn.com.dcsgo.mihx.core.model.Song
+import cn.com.dcsgo.mihx.core.model.SongInfo
+import cn.com.dcsgo.mihx.ui.components.SongInfoDialog
 import cn.com.dcsgo.mihx.ui.components.locateHighlightFlash
 import cn.com.dcsgo.mihx.ui.components.rememberLocateHighlightState
 import kotlinx.coroutines.launch
@@ -104,6 +106,7 @@ fun VersionManagementScreen(
     onDetachVersion: (Song) -> Unit,
     onReassignVersion: (song: Song, targetSong: Song) -> Unit,
     onCopied: (text: String) -> Unit = {},
+    loadSongInfo: suspend (Song) -> SongInfo? = { null },
 ) {
     // ── 分组计算（remember key = songs，仅在数据变化时重算）
     val versionGroups = remember(songs) {
@@ -158,6 +161,16 @@ fun VersionManagementScreen(
     var songToDelete: Song? by remember { mutableStateOf(null) }
     var songToReassign: Song? by remember { mutableStateOf(null) }
 
+    // ── 歌曲信息 Dialog 状态（选定歌曲后异步加载元数据）
+    var songForInfo: Song? by remember { mutableStateOf(null) }
+    var songInfo by remember { mutableStateOf<SongInfo?>(null) }
+    LaunchedEffect(songForInfo) {
+        val uri = songForInfo?.uri
+        if (uri != null) {
+            songInfo = songForInfo?.let { loadSongInfo(it) }
+        }
+    }
+
     // ── 删除确认 Dialog ──
     songToDelete?.let { song ->
         DeleteVersionConfirmDialog(
@@ -181,6 +194,17 @@ fun VersionManagementScreen(
                 songToReassign = null
             },
             onCopied = onCopied
+        )
+    }
+
+    // ── 歌曲信息 Dialog ──
+    val infoSong = songForInfo
+    val currentSongInfo = songInfo
+    if (infoSong != null && currentSongInfo != null) {
+        SongInfoDialog(
+            song = infoSong,
+            songInfo = currentSongInfo,
+            onDismiss = { songForInfo = null; songInfo = null },
         )
     }
 
@@ -330,6 +354,7 @@ fun VersionManagementScreen(
                             modifier = Modifier.locateHighlightFlash(group.groupKey, locateHighlight),
                             onPlayVersion = onPlayVersion,
                             onAddToQueue = onAddToQueue,
+                            onShowInfo = { songForInfo = it },
                             onDeleteVersion = { songToDelete = it },
                             onCopyTitle = { title ->
                                 onCopied(title)

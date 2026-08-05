@@ -25,6 +25,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.CallSplit
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.PlayArrow
@@ -141,6 +142,7 @@ fun VersionGroupRow(
     modifier: Modifier = Modifier,
     onPlayVersion: (Song) -> Unit,
     onAddToQueue: (Song) -> Unit,
+    onShowInfo: (Song) -> Unit,
     onDeleteVersion: (Song) -> Unit,
     onCopyTitle: (String) -> Unit,
     onDetachVersion: (Song) -> Unit,
@@ -266,6 +268,7 @@ fun VersionGroupRow(
                             isLastItem = index == group.versions.lastIndex,
                             onPlay = { onPlayVersion(song) },
                             onAddToQueue = { onAddToQueue(song) },
+                            onShowInfo = { onShowInfo(song) },
                             onDelete = { onDeleteVersion(song) },
                             onCopyTitle = { onCopyTitle(song.title) },
                             onDetach = { onDetachVersion(song) },
@@ -305,6 +308,7 @@ fun VersionItemRow(
     isLastItem: Boolean,
     onPlay: () -> Unit,
     onAddToQueue: () -> Unit,
+    onShowInfo: () -> Unit,
     onDelete: () -> Unit,
     onCopyTitle: () -> Unit,
     onDetach: () -> Unit,
@@ -443,6 +447,22 @@ fun VersionItemRow(
                     expanded = showMoreMenu,
                     onDismissRequest = { showMoreMenu = false }
                 ) {
+                    // 查看歌曲详情
+                    androidx.compose.material3.DropdownMenuItem(
+                        text = { Text("查看歌曲详情") },
+                        onClick = {
+                            showMoreMenu = false
+                            onShowInfo()
+                        },
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.Info,
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+                    )
+
                     // 复制歌曲名
                     androidx.compose.material3.DropdownMenuItem(
                         text = { Text("复制歌曲名") },

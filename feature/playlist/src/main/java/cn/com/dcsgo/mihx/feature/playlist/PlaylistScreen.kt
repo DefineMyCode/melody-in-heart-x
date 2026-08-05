@@ -60,6 +60,7 @@ import cn.com.dcsgo.mihx.core.model.ArtistEntry
 import cn.com.dcsgo.mihx.core.model.Playlist
 import cn.com.dcsgo.mihx.core.model.Song
 import cn.com.dcsgo.mihx.core.model.SongInfo
+import cn.com.dcsgo.mihx.ui.components.SongInfoDialog
 import cn.com.dcsgo.mihx.ui.components.locateHighlightFlash
 import cn.com.dcsgo.mihx.ui.components.rememberLocateHighlightState
 import sh.calvin.reorderable.ReorderableItem

@@ -342,6 +342,7 @@ fun AppNavHost(
                     onCopied = { text -> showToast("已复制: $text") },
                 ),
                 showToast = showToast,
+                loadSongInfo = loadSongInfo,
             )
         }
 

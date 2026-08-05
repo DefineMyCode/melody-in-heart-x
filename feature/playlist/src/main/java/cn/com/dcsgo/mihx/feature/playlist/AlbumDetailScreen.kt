@@ -47,6 +47,7 @@ import cn.com.dcsgo.mihx.core.model.LibraryCatalog
 import cn.com.dcsgo.mihx.core.model.Playlist
 import cn.com.dcsgo.mihx.core.model.Song
 import cn.com.dcsgo.mihx.core.model.SongInfo
+import cn.com.dcsgo.mihx.ui.components.SongInfoDialog
 
 /**
  * 专辑详情页

@@ -2,6 +2,7 @@ package cn.com.dcsgo.mihx.feature.user
 
 import androidx.compose.runtime.Composable
 import cn.com.dcsgo.mihx.core.model.Song
+import cn.com.dcsgo.mihx.core.model.SongInfo
 
 data class VersionManagementRouteState(
     val songs: List<Song>,
@@ -24,6 +25,7 @@ fun VersionManagementRoute(
     state: VersionManagementRouteState,
     actions: VersionManagementRouteActions,
     showToast: (String) -> Unit,
+    loadSongInfo: suspend (Song) -> SongInfo? = { null },
 ) {
     VersionManagementScreen(
         songs = state.songs,
@@ -51,5 +53,6 @@ fun VersionManagementRoute(
             showToast("已将「${song.title}」关联到「${targetSong.title}」分组")
         },
         onCopied = actions.onCopied,
+        loadSongInfo = loadSongInfo,
     )
 }

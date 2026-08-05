@@ -755,6 +755,8 @@ private fun PlaylistListView(
     if (songs.isEmpty() && playlists.isEmpty()) {
         EmptyLibraryHint()
     } else {
+        // 歌曲 ID → 歌曲 映射只建一次，供所有歌单项 O(1) 取封面（须在 LazyColumn 组合作用域之外）
+        val songById = remember(songs) { songs.associateBy { it.id } }
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             contentPadding = androidx.compose.foundation.layout.PaddingValues(
@@ -772,6 +774,7 @@ private fun PlaylistListView(
                     PlaylistItem(
                         playlist = playlist,
                         songs = songs,
+                        songById = songById,
                         onPlaylistClick = onPlaylistClick,
                         onDelete = { onDelete(playlist) },
                         onRename = { onRename(playlist) }

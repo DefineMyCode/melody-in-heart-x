@@ -1,8 +1,10 @@
 package cn.com.dcsgo.mihx.feature.home
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Stable
 import cn.com.dcsgo.mihx.core.model.Song
 
+@Stable
 data class PlayStatsRouteState(
     val title: String,
     val songs: List<Song>,

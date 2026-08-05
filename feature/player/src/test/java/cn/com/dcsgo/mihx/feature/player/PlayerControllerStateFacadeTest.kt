@@ -49,6 +49,7 @@ class PlayerControllerStateFacadeTest {
             songs = songs,
             playQueue = PlayQueue().setQueue(songs, startIndex = 0),
             currentSong = songs[0],
+            currentPositionMs = 99L,
         )
 
         facade.syncControllerPlaybackState(
@@ -63,7 +64,8 @@ class PlayerControllerStateFacadeTest {
         assertEquals(2, state.currentSong?.id)
         assertEquals(1, state.playQueue.currentIndex)
         assertTrue(state.isPlaying)
-        assertEquals(42L, state.currentPositionMs)
+        // 播放位置不再由 controller snapshot 覆盖到 uiState（改由 positionMs 窄流驱动）
+        assertEquals(99L, state.currentPositionMs)
         assertEquals(100L, state.durationMs)
         assertEquals(listOf(1, 2), state.sameNameSongs.map { it.id })
         assertEquals(2, trackedSongId)

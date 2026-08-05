@@ -31,6 +31,9 @@ class PlayerViewModel @Inject constructor(
     val playStatsRepository = runtime.playStatsRepository
     val uiState: StateFlow<PlayerUiState> = runtime.uiState
 
+    /** 播放位置（毫秒）窄流：播放中每 ~500ms 更新，仅供进度条/歌词等局部订阅，避免整壳重组。 */
+    val positionMs: StateFlow<Long> = runtime.positionMs
+
     /** Current playback queue. */
     val playQueue: PlayQueue get() = runtime.playQueue
 

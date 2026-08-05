@@ -1,5 +1,6 @@
 package cn.com.dcsgo.mihx.core.model
 
+import androidx.compose.runtime.Stable
 import cn.com.dcsgo.mihx.core.model.R
 
 /**
@@ -36,6 +37,7 @@ enum class PlayMode(val label: String, val icon: Int) {
  * - 当前播放位置通过 [currentIndex] 追踪
  * - 支持添加/移除单首歌，以及整体替换
  */
+@Stable
 data class PlayQueue(
     /** 队列中的歌曲列表（UI 展示顺序，始终不变） */
     val songs: List<Song> = emptyList(),

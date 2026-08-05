@@ -29,6 +29,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -70,10 +71,11 @@ fun ArtistDetailScreen(
     onAddSongsToPlaylist: (List<Song>, Playlist) -> Unit = { _, _ -> },
     onCreatePlaylistWithResult: (String) -> Playlist? = { null },
 ) {
-    // 该歌手的所有歌曲（歌手为拆分后的最小单位，歌曲属于任一拆分歌手即关联）
-    val artistSongs = songs.filter { artistName in it.parsedArtists }
-    val albums = LibraryCatalog.deriveAlbums(artistSongs)
-    val totalDurationMs = artistSongs.sumOf { it.durationMs }
+    // 该歌手的所有歌曲（歌手为拆分后的最小单位，歌曲属于任一拆分歌手即关联）：
+    // 全库过滤与派生只在曲库/歌手名变化时重算
+    val artistSongs = remember(songs, artistName) { songs.filter { artistName in it.parsedArtists } }
+    val albums = remember(artistSongs) { LibraryCatalog.deriveAlbums(artistSongs) }
+    val totalDurationMs = remember(artistSongs) { artistSongs.sumOf { it.durationMs } }
     var selectedSection by rememberSaveable { mutableStateOf(0) }
 
     // 多选 / 搜索状态
@@ -343,6 +345,7 @@ fun ArtistDetailScreen(
 // 歌手详情 Route
 // ─────────────────────────────────────────────────────────────────────────────
 
+@Stable
 data class ArtistDetailRouteState(
     val artistName: String,
     val songs: List<Song>,

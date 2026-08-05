@@ -22,6 +22,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -31,8 +32,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import cn.com.dcsgo.mihx.core.model.Song
+import kotlinx.coroutines.flow.StateFlow
 
 /**
  * 播放器底部栏（对齐 UI 设计系统 §5.10 迷你播放栏）
@@ -42,6 +45,7 @@ import cn.com.dcsgo.mihx.core.model.Song
  *
  * @param currentSong        当前播放的歌曲
  * @param isPlaying          是否正在播放
+ * @param positionMs         播放位置（毫秒）窄流：仅本栏局部订阅，避免整壳随播放位置重组
  * @param onPlayPauseClick   播放/暂停回调
  * @param onPreviousClick    上一首回调
  * @param onNextClick        下一首回调
@@ -51,13 +55,14 @@ import cn.com.dcsgo.mihx.core.model.Song
 fun MusicPlayerBottomBar(
     currentSong: Song,
     isPlaying: Boolean,
-    currentPositionMs: Long = 0L,
+    positionMs: StateFlow<Long>,
     durationMs: Long = 0L,
     onPlayPauseClick: () -> Unit,
     onPreviousClick: () -> Unit,
     onNextClick: () -> Unit,
     onNavigateToHome: () -> Unit,
 ) {
+    val currentPositionMs by positionMs.collectAsStateWithLifecycle()
     Column(
         modifier = Modifier
             .fillMaxWidth()

@@ -1,5 +1,6 @@
 package cn.com.dcsgo.mihx.feature.player
 
+import androidx.compose.runtime.Stable
 import cn.com.dcsgo.mihx.core.model.AlbumEntry
 import cn.com.dcsgo.mihx.core.model.ArtistEntry
 import cn.com.dcsgo.mihx.core.model.PlayMode
@@ -13,6 +14,7 @@ import cn.com.dcsgo.mihx.core.model.Song
  * 使用不可变数据类 + StateFlow 推送，避免跨 Composable 的状态散落。
  * ViewModel 持有唯一的 MutableStateFlow<PlayerUiState>，Screen 只读取。
  */
+@Stable
 data class PlayerUiState(
     /** 当前正在播放（或已暂停）的歌曲，null 表示尚未选曲 */
     val currentSong: Song? = null,

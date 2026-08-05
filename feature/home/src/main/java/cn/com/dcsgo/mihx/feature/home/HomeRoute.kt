@@ -1,9 +1,11 @@
 package cn.com.dcsgo.mihx.feature.home
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Stable
 import cn.com.dcsgo.mihx.core.model.PlayMode
 import cn.com.dcsgo.mihx.core.model.Song
 
+@Stable
 data class HomeRouteState(
     val currentSong: Song?,
     val isPlaying: Boolean,

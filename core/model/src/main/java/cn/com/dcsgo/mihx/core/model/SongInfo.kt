@@ -1,8 +1,11 @@
 package cn.com.dcsgo.mihx.core.model
 
+import androidx.compose.runtime.Stable
+
 /**
  * 歌曲详细信息（用于歌曲信息 Dialog 展示）
  */
+@Stable
 data class SongInfo(
     val title: String = "",
     val artist: String = "",

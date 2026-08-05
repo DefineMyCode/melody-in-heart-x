@@ -12,7 +12,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
 
 private const val TAG = "PlayDurationTracker"
-private const val UPDATE_INTERVAL_MS = 100L // 100毫秒更新一次
+private const val UPDATE_INTERVAL_MS = 1000L // 每秒更新一次（仅累计播放时长统计，1s 粒度足够）
 private const val SHORT_PLAY_THRESHOLD_MS = 5000L // 短时长阈值：5秒
 private const val SHORT_PLAY_COUNT_THRESHOLD = 2 // 短时长播放次数阈值：累计2次
 private const val COMPLETION_RATE_THRESHOLD = 0.9

@@ -21,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -51,9 +52,9 @@ fun AppRoot(
     val backStackEntry by navController.currentBackStackEntryAsState()
     val activeRoute = backStackEntry?.destination?.route
     var currentDestination by remember { mutableStateOf(AppDestinations.HOME) }
-    val themeMode by settingsViewModel.themeMode.collectAsState()
-    val themeVariant by settingsViewModel.themeVariant.collectAsState()
-    val lyricFontScale by settingsViewModel.lyricFontScale.collectAsState()
+    val themeMode by settingsViewModel.themeMode.collectAsStateWithLifecycle()
+    val themeVariant by settingsViewModel.themeVariant.collectAsStateWithLifecycle()
+    val lyricFontScale by settingsViewModel.lyricFontScale.collectAsStateWithLifecycle()
     val systemDarkTheme = isSystemInDarkTheme()
     val isDarkTheme = when (themeMode) {
         ThemeMode.SYSTEM -> systemDarkTheme
@@ -61,7 +62,7 @@ fun AppRoot(
         ThemeMode.DARK -> true
     }
     var showQueueSheet by remember { mutableStateOf(false) }
-    val uiState by playerViewModel.uiState.collectAsState()
+    val uiState by playerViewModel.uiState.collectAsStateWithLifecycle()
 
     BackHandler(enabled = showQueueSheet) {
         showQueueSheet = false
@@ -118,7 +119,7 @@ fun AppRoot(
                 currentDestination = currentDestination,
                 currentSong = uiState.currentSong,
                 isPlaying = uiState.isPlaying,
-                currentPositionMs = uiState.currentPositionMs,
+                positionMs = playerViewModel.positionMs,
                 durationMs = uiState.durationMs,
                 onDestinationSelected = { destination ->
                     navController.navigate(destination.route) {

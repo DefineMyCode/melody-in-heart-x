@@ -28,13 +28,14 @@ import androidx.compose.ui.unit.dp
 import cn.com.dcsgo.mihx.core.model.Song
 import cn.com.dcsgo.mihx.feature.player.MusicPlayerBottomBar
 import cn.com.dcsgo.mihx.navigation.AppDestinations
+import kotlinx.coroutines.flow.StateFlow
 
 @Composable
 fun AppScaffold(
     currentDestination: AppDestinations,
     currentSong: Song?,
     isPlaying: Boolean,
-    currentPositionMs: Long,
+    positionMs: StateFlow<Long>,
     durationMs: Long,
     onDestinationSelected: (AppDestinations) -> Unit,
     onPlayPauseClick: () -> Unit,
@@ -57,7 +58,7 @@ fun AppScaffold(
                     currentDestination = currentDestination,
                     currentSong = currentSong,
                     isPlaying = isPlaying,
-                    currentPositionMs = currentPositionMs,
+                    positionMs = positionMs,
                     durationMs = durationMs,
                     onPlayPauseClick = onPlayPauseClick,
                     onPreviousClick = onPreviousClick,
@@ -75,7 +76,7 @@ fun AppScaffold(
                     currentDestination = currentDestination,
                     currentSong = currentSong,
                     isPlaying = isPlaying,
-                    currentPositionMs = currentPositionMs,
+                    positionMs = positionMs,
                     durationMs = durationMs,
                     onPlayPauseClick = onPlayPauseClick,
                     onPreviousClick = onPreviousClick,
@@ -100,7 +101,7 @@ private fun ScaffoldContentColumn(
     currentDestination: AppDestinations,
     currentSong: Song?,
     isPlaying: Boolean,
-    currentPositionMs: Long,
+    positionMs: StateFlow<Long>,
     durationMs: Long,
     onPlayPauseClick: () -> Unit,
     onPreviousClick: () -> Unit,
@@ -155,7 +156,7 @@ private fun ScaffoldContentColumn(
             MusicPlayerBottomBar(
                 isPlaying = isPlaying,
                 currentSong = currentSong,
-                currentPositionMs = currentPositionMs,
+                positionMs = positionMs,
                 durationMs = durationMs,
                 onPlayPauseClick = onPlayPauseClick,
                 onPreviousClick = onPreviousClick,

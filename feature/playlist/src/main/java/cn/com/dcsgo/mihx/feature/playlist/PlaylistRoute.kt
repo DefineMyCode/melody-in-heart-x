@@ -1,12 +1,14 @@
 package cn.com.dcsgo.mihx.feature.playlist
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Stable
 import cn.com.dcsgo.mihx.core.model.AlbumEntry
 import cn.com.dcsgo.mihx.core.model.ArtistEntry
 import cn.com.dcsgo.mihx.core.model.Playlist
 import cn.com.dcsgo.mihx.core.model.Song
 import cn.com.dcsgo.mihx.core.model.SongInfo
 
+@Stable
 data class PlaylistRouteState(
     val playlists: List<Playlist>,
     val librarySongs: List<Song>,

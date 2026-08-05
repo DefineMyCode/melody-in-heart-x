@@ -1,9 +1,11 @@
 package cn.com.dcsgo.mihx.feature.settings
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Stable
 import cn.com.dcsgo.mihx.core.model.ThemeMode
 import cn.com.dcsgo.mihx.core.model.ThemeVariant
 
+@Stable
 data class SettingsRouteState(
     val themeMode: ThemeMode,
     val themeVariant: ThemeVariant,

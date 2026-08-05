@@ -91,14 +91,18 @@ class PlayerPlaylistFacadeTest {
         }
 
         override fun addSongToPlaylist(playlistId: Int, songId: Int): Boolean {
-            val playlist = playlists.find { it.id == playlistId } ?: return false
+            val index = playlists.indexOfFirst { it.id == playlistId }
+            if (index < 0) return false
+            val playlist = playlists[index]
             if (songId in playlist.songIds) return false
-            playlist.songIds += songId
+            playlists[index] = playlist.copy(songIds = playlist.songIds + songId)
             return true
         }
 
         override fun removeSongFromPlaylist(playlistId: Int, songId: Int) {
-            playlists.find { it.id == playlistId }?.songIds?.remove(songId)
+            val index = playlists.indexOfFirst { it.id == playlistId }
+            if (index < 0) return
+            playlists[index] = playlists[index].copy(songIds = playlists[index].songIds - songId)
         }
 
         override fun reorderPlaylist(playlistId: Int, orderedSongIds: List<Int>) {

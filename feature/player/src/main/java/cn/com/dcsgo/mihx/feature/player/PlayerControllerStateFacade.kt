@@ -76,7 +76,10 @@ private fun PlayerUiState.applyControllerPlaybackState(state: ControllerPlayback
         playQueue = state.playQueue,
         currentSong = state.currentSong,
         isPlaying = state.isPlaying,
-        currentPositionMs = state.currentPositionMs,
+        // 播放位置不再随每个 controller snapshot 刷新到 uiState（改由 positionMs 窄流驱动），
+        // 这里保留离散事件写入的值；播放中 ControllerPlaybackState 其余字段不变时整个副本相等，
+        // StateFlow 不会发出新值，避免整壳重组。
+        currentPositionMs = currentPositionMs,
         durationMs = state.durationMs,
         sameNameSongs = state.sameNameSongs,
     )

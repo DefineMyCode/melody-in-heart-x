@@ -40,11 +40,11 @@ internal class PlayerPersistenceGraph(
     private val playbackStateAutosaver = PlayerPlaybackStateAutosaver(
         currentTimeMs = { SystemClock.elapsedRealtime() },
         syncPlaybackState = syncPlaybackState,
-        savePlaybackState = { positionMs -> savePlaybackState(positionMs) },
+        savePlaybackState = { positionMs -> savePlaybackStateAsync(positionMs) },
     )
 
-    fun savePlaybackStateAsync() {
-        persistenceFacade.savePlaybackStateAsync()
+    fun savePlaybackStateAsync(positionMs: Long = currentPlaybackPositionMs()) {
+        persistenceFacade.savePlaybackStateAsync(positionMs)
     }
 
     fun savePlaybackState(positionMs: Long = currentPlaybackPositionMs()) {

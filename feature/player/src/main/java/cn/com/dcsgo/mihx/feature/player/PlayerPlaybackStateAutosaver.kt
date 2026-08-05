@@ -23,6 +23,7 @@ class PlayerPlaybackStateAutosaver(
     }
 
     companion object {
-        const val DEFAULT_INTERVAL_MS = 1_000L
+        // 崩溃恢复粒度 5s 足够；退出/切歌/暂停仍走显式保存保底
+        const val DEFAULT_INTERVAL_MS = 5_000L
     }
 }

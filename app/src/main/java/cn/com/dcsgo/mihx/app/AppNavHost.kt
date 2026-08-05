@@ -10,6 +10,9 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -122,11 +125,13 @@ fun AppNavHost(
         popExitTransition = { ExitTransition.None },
     ) {
         composable(AppRoutes.HOME) {
+            // 播放位置窄流：只在当前目的地（播放页）订阅，不驱动整壳重组
+            val positionMs by playerViewModel.positionMs.collectAsStateWithLifecycle()
             HomeRoute(
                 state = HomeRouteState(
                     currentSong = uiState.currentSong,
                     isPlaying = uiState.isPlaying,
-                    currentPositionMs = uiState.currentPositionMs,
+                    currentPositionMs = positionMs,
                     durationMs = uiState.durationMs,
                     playMode = uiState.playQueue.playMode,
                     isInfinitePlay = uiState.isInfinitePlay,
@@ -181,10 +186,12 @@ fun AppNavHost(
         }
 
         composable(AppRoutes.LYRICS) {
+            // 播放位置窄流：只在歌词页订阅，随位置推进只重组歌词内容
+            val positionMs by playerViewModel.positionMs.collectAsStateWithLifecycle()
             LyricsRoute(
                 state = LyricsRouteState(
                     currentSong = uiState.currentSong,
-                    currentPositionMs = uiState.currentPositionMs,
+                    currentPositionMs = positionMs,
                     isPlaying = uiState.isPlaying,
                     fontScale = lyricFontScale,
                 ),
@@ -319,7 +326,10 @@ fun AppNavHost(
         }
 
         composable(AppRoutes.VERSION_MANAGEMENT) {
-            val allSongs = playerViewModel.getGroupedSongs(uiState.songs).flatten()
+            // 全库分组只在曲库变化时重算，避免每次重组都 O(n) 过滤+分组
+            val allSongs = remember(uiState.songs) {
+                playerViewModel.getGroupedSongs(uiState.songs).flatten()
+            }
             VersionManagementRoute(
                 state = VersionManagementRouteState(
                     songs = allSongs,

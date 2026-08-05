@@ -318,6 +318,7 @@ fun SongItem(
  *
  * @param playlist         歌单数据
  * @param songs            所有歌曲列表（用于获取封面）
+ * @param songById         歌曲 ID → 歌曲 映射（由父层 remember 一次，避免每个歌单项 O(M) 扫描）
  * @param onPlaylistClick  点击歌单的回调
  * @param onDelete         删除歌单的回调
  * @param onRename         重命名歌单的回调
@@ -326,6 +327,7 @@ fun SongItem(
 fun PlaylistItem(
     playlist: Playlist,
     songs: List<Song> = emptyList(),
+    songById: Map<Int, Song> = emptyMap(),
     onPlaylistClick: (Playlist) -> Unit,
     onDelete: () -> Unit = {},
     onRename: () -> Unit = {},
@@ -346,7 +348,9 @@ fun PlaylistItem(
                 .background(MaterialTheme.colorScheme.primaryContainer),
             contentAlignment = Alignment.Center
         ) {
-            val firstSong = songs.firstOrNull { playlist.songIds.contains(it.id) }
+            val firstSong = remember(playlist.songIds, songById) {
+                playlist.songIds.firstNotNullOfOrNull { songById[it] }
+            }
             if (firstSong?.albumArtUri != null) {
                 AsyncImage(
                     model = firstSong.albumArtUri,

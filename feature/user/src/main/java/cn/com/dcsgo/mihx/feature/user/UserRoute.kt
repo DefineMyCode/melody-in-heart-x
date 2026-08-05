@@ -1,7 +1,9 @@
 package cn.com.dcsgo.mihx.feature.user
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Stable
 
+@Stable
 data class UserRouteState(
     /** 今日累计听歌时长（毫秒），用于「我的」页入口卡预览 */
     val todayDurationMs: Long = 0L,

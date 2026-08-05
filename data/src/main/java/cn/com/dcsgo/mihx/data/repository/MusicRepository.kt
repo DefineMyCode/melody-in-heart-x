@@ -563,7 +563,8 @@ class MusicRepository(
         if (index < 0) return false
         val playlist = playlists[index]
         if (playlist.songIds.contains(songId)) return false
-        playlist.songIds.add(songId)
+        // songIds 为不可变 List，增改用 copy 生成新实例
+        playlists[index] = playlist.copy(songIds = playlist.songIds + songId)
         updatePlaylistSongCount(playlistId)
         persistPlaylists()
         return true
@@ -574,7 +575,9 @@ class MusicRepository(
         val index = playlists.indexOfFirst { it.id == playlistId }
         if (index < 0) return@write false
         val playlist = playlists[index]
-        if (!playlist.songIds.remove(songId)) return@write false
+        val newSongIds = playlist.songIds - songId
+        if (newSongIds.size == playlist.songIds.size) return@write false
+        playlists[index] = playlist.copy(songIds = newSongIds)
         updatePlaylistSongCount(playlistId)
         persistPlaylists()
         AppLog.info(TAG, "removeSongFromPlaylist: song=$songId from playlist=$playlistId")
@@ -585,9 +588,7 @@ class MusicRepository(
     fun reorderPlaylist(playlistId: Int, orderedSongIds: List<Int>): Boolean = lock.write {
         val index = playlists.indexOfFirst { it.id == playlistId }
         if (index < 0) return@write false
-        val playlist = playlists[index]
-        playlist.songIds.clear()
-        playlist.songIds.addAll(orderedSongIds)
+        playlists[index] = playlists[index].copy(songIds = orderedSongIds)
         persistPlaylists()
         AppLog.info(TAG, "reorderPlaylist: id=$playlistId, count=${orderedSongIds.size}")
         true
@@ -659,8 +660,10 @@ class MusicRepository(
             val songIndex = songs.indexOfFirst { it.id == songId }
             if (songIndex < 0) return@write DeleteSongResult.Failure("歌曲不存在或已被删除")
 
-            playlists.forEach { playlist ->
-                if (playlist.songIds.remove(songId)) {
+            for (index in playlists.indices) {
+                val playlist = playlists[index]
+                if (playlist.songIds.contains(songId)) {
+                    playlists[index] = playlist.copy(songIds = playlist.songIds - songId)
                     updatePlaylistSongCount(playlist.id)
                 }
             }

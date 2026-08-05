@@ -30,6 +30,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -71,14 +72,16 @@ fun AlbumDetailScreen(
     onAddSongsToPlaylist: (List<Song>, Playlist) -> Unit = { _, _ -> },
     onCreatePlaylistWithResult: (String) -> Playlist? = { null },
 ) {
-    // 该专辑的所有歌曲（不限定单个歌手）
-    val albumSongs = songs.filter { it.album == albumName }
-    val totalDurationMs = albumSongs.sumOf { it.durationMs }
+    // 该专辑的所有歌曲（不限定单个歌手）：全库过滤只在曲库/专辑名变化时重算
+    val albumSongs = remember(songs, albumName) { songs.filter { it.album == albumName } }
+    val totalDurationMs = remember(albumSongs) { albumSongs.sumOf { it.durationMs } }
     // 该专辑关联的所有歌手（拆分后的最小单位）
-    val albumArtists = albumSongs.flatMap { it.parsedArtists }.distinct()
+    val albumArtists = remember(albumSongs) { albumSongs.flatMap { it.parsedArtists }.distinct() }
     // 与专辑共享任一歌手的其他专辑
-    val otherAlbums = LibraryCatalog.deriveAlbums(songs)
-        .filter { it.name != albumName && it.artistNames.any { artist -> artist in albumArtists } }
+    val otherAlbums = remember(songs, albumName, albumArtists) {
+        LibraryCatalog.deriveAlbums(songs)
+            .filter { it.name != albumName && it.artistNames.any { artist -> artist in albumArtists } }
+    }
     var selectedSection by rememberSaveable { mutableStateOf(0) }
 
     // 多选 / 搜索状态
@@ -355,6 +358,7 @@ fun AlbumDetailScreen(
 // 专辑详情 Route
 // ─────────────────────────────────────────────────────────────────────────────
 
+@Stable
 data class AlbumDetailRouteState(
     val albumName: String,
     val songs: List<Song>,

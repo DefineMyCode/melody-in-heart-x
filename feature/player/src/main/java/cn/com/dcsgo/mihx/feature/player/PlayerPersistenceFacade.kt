@@ -15,8 +15,8 @@ class PlayerPersistenceFacade(
     private val launchIo: (() -> Unit) -> Unit,
     private val log: (String) -> Unit,
 ) {
-    fun savePlaybackStateAsync() {
-        val positionMs = currentPlaybackPositionMs()
+    fun savePlaybackStateAsync(positionMs: Long = currentPlaybackPositionMs()) {
+        // 先捕获位置，再把 DataStore 写移到 IO，避免播放中主线程每秒阻塞写盘
         launchIo {
             savePlaybackState(positionMs)
         }

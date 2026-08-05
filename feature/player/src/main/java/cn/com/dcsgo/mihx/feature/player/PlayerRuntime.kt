@@ -112,7 +112,7 @@ internal class PlayerRuntime(
             scope = scope,
             dispatchers = dispatchers,
             state = { _uiState.value },
-            updateState = { transform -> _uiState.update(transform) },
+            updateState = ::updateUiState,
             syncPlaybackState = { mediaControllerGraph.syncCurrentPlaybackState() },
             currentPlaybackPositionMs = { playbackBridgeFacade.currentPlaybackPositionMs() },
             prepareControllerQueue = { queue, index, positionMs ->
@@ -125,6 +125,25 @@ internal class PlayerRuntime(
     private val _uiState = MutableStateFlow(PlayerUiState())
     val uiState: StateFlow<PlayerUiState> = _uiState.asStateFlow()
 
+    /** 播放位置（毫秒）独立窄流：仅驱动进度条/歌词等需要实时位置的组件，避免整壳重组 */
+    private val _positionMs = MutableStateFlow(0L)
+    val positionMs: StateFlow<Long> = _positionMs.asStateFlow()
+
+    /**
+     * 统一的状态更新入口。当离散事件（seek、切歌、恢复、暂停等）写入
+     * [PlayerUiState.currentPositionMs] 时，同步到 [positionMs] 窄流，
+     * 保证 UI 立即反映到目标位置。播放期间的逐 tick 更新走 [positionMs] 直写，不经过这里。
+     */
+    private fun updateUiState(transform: (PlayerUiState) -> PlayerUiState) {
+        _uiState.update { current ->
+            val next = transform(current)
+            if (next.currentPositionMs != current.currentPositionMs) {
+                _positionMs.value = next.currentPositionMs
+            }
+            next
+        }
+    }
+
     val playQueue: PlayQueue get() = _uiState.value.playQueue
     val currentSong: Song? get() = _uiState.value.currentSong
     val currentPlayMode: PlayMode get() = _uiState.value.playQueue.playMode
@@ -134,13 +153,14 @@ internal class PlayerRuntime(
         isPlaying = { _uiState.value.isPlaying },
         currentPositionMs = { playbackBridgeFacade.currentPlaybackPositionMs() },
         updatePosition = { positionMs ->
-            _uiState.update { it.copy(currentPositionMs = positionMs) }
+            // 只写窄流，不再更新 PlayerUiState，避免整壳重组
+            _positionMs.value = positionMs
             persistenceGraph.onPlaybackPosition(positionMs)
         },
     )
 
     private val libraryFacade = PlayerLibraryFacade(
-        updateState = { transform -> _uiState.update(transform) },
+        updateState = ::updateUiState,
         loadPersistedSongs = { songRepository.loadSongs() },
         loadLibraryCatalog = {
             songRepository.loadLibraryArtists() to songRepository.loadLibraryAlbums()
@@ -154,13 +174,13 @@ internal class PlayerRuntime(
         catalogScope = scope,
     )
     private val importFacade = PlayerImportFacade(
-        updateState = { transform -> _uiState.update(transform) },
+        updateState = ::updateUiState,
         importer = importCoordinator,
         launch = { task -> scope.launch { task() } },
     )
     private val playlistFacade = PlayerPlaylistFacade(
         state = { _uiState.value },
-        updateState = { transform -> _uiState.update(transform) },
+        updateState = ::updateUiState,
         playlistManager = playlistManager,
     )
     private val songDeletionFacade = PlayerSongDeletionFacade(
@@ -182,7 +202,7 @@ internal class PlayerRuntime(
     )
     private val queueFacade = PlayerQueueFacade(
         state = { _uiState.value },
-        updateState = { transform -> _uiState.update(transform) },
+        updateState = ::updateUiState,
         playFromQueue = { queue, index -> playbackBridgeFacade.playFromQueue(queue, index) },
         syncPlayerQueue = { queue -> playbackBridgeFacade.syncPlayerQueue(queue) },
         clearControllerPlaylist = { playbackBridgeFacade.clearControllerPlaylist() },
@@ -193,7 +213,7 @@ internal class PlayerRuntime(
     )
     private val controllerStateFacade = PlayerControllerStateFacade(
         state = { _uiState.value },
-        updateState = { transform -> _uiState.update(transform) },
+        updateState = ::updateUiState,
         synchronizer = controllerStateSynchronizer,
         trackedSongId = { trackedSongId },
         setTrackedSongId = { trackedSongId = it },
@@ -218,7 +238,7 @@ internal class PlayerRuntime(
     )
     private val playbackFacade = PlayerPlaybackFacade(
         state = { _uiState.value },
-        updateState = { transform -> _uiState.update(transform) },
+        updateState = ::updateUiState,
         hasCurrentMediaItem = { playbackController.hasCurrentMediaItem },
         setPlayQueue = { songs, startIndex -> setPlayQueue(songs, startIndex) },
         playQueueItem = ::playQueueItem,
@@ -236,12 +256,12 @@ internal class PlayerRuntime(
         scope = scope,
         settings = playerSettingsRepository,
         state = { _uiState.value },
-        updateState = { transform -> _uiState.update(transform) },
+        updateState = ::updateUiState,
         pausePlayback = { playbackBridgeFacade.pausePlayback() },
     )
     private val mediaEventFacade = PlayerMediaEventFacade(
         state = { _uiState.value },
-        updateState = { transform -> _uiState.update(transform) },
+        updateState = ::updateUiState,
         stopPlaybackTracking = playDurationTracker::stopPlayback,
         clearTrackedSong = { trackedSongId = null },
         remainingMediaItems = { playbackBridgeFacade.remainingMediaItems() },
@@ -253,7 +273,7 @@ internal class PlayerRuntime(
     )
     private val versionFacade = PlayerVersionFacade(
         state = { _uiState.value },
-        updateState = { transform -> _uiState.update(transform) },
+        updateState = ::updateUiState,
         songGroupCoordinator = songGroupCoordinator,
         savePlaybackState = ::savePlaybackStateAsync,
         playFromQueue = { queue, index -> playbackBridgeFacade.playFromQueue(queue, index) },
@@ -265,7 +285,7 @@ internal class PlayerRuntime(
             controller = playbackController,
             durationTracker = playDurationTracker,
             state = { _uiState.value },
-            updateState = { transform -> _uiState.update(transform) },
+            updateState = ::updateUiState,
             setTrackedSongId = { trackedSongId = it },
             updateSameNameSongs = versionFacade::updateSameNameSongs,
             savePlaybackState = ::savePlaybackStateAsync,
@@ -275,7 +295,7 @@ internal class PlayerRuntime(
     }
     private val randomQueueFacade = PlayerRandomQueueFacade(
         state = { _uiState.value },
-        updateState = { transform -> _uiState.update(transform) },
+        updateState = ::updateUiState,
         setPlayQueue = { songs, startIndex, mode -> setPlayQueue(songs, startIndex, mode) },
         syncPlayerQueue = { queue -> playbackBridgeFacade.syncPlayerQueue(queue) },
         rawPlayCounts = playStatsRepository::getRawPlayCounts,
@@ -293,7 +313,7 @@ internal class PlayerRuntime(
         logError = { message, error -> mediaControllerGraph.logError(message, error) },
     )
     private val errorFacade = PlayerErrorFacade(
-        updateState = { transform -> _uiState.update(transform) },
+        updateState = ::updateUiState,
         startQueuePlayback = playbackSessionGraph::startQueuePlayback,
     )
     private val playbackBridgeFacade: PlayerPlaybackBridgeFacade by lazy {

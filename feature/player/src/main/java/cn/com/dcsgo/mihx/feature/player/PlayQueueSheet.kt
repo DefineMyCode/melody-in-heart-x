@@ -190,7 +190,8 @@ fun PlayQueueSheet(
                     contentPadding = PaddingValues(vertical = 8.dp),
                     verticalArrangement = Arrangement.spacedBy(0.dp)
                 ) {
-                    itemsIndexed(playQueue.songs, key = { _, song -> song.id }) { index, song ->
+                    // PlayQueue 允许同一首歌出现多次，用「索引:歌曲ID」作为稳定 key 避免重复
+                    itemsIndexed(playQueue.songs, key = { index, song -> "$index:${song.id}" }) { index, song ->
                         val isCurrentPlaying = playQueue.currentIndex == index && currentSongId == song.id
                         QueueSongItem(
                             song = song,

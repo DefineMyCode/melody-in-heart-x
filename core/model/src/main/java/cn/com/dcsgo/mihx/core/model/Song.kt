@@ -1,6 +1,7 @@
 package cn.com.dcsgo.mihx.core.model
 
 import android.net.Uri
+import androidx.compose.runtime.Stable
 
 /**
  * 歌曲数据模型
@@ -16,6 +17,7 @@ import android.net.Uri
  * @property titleOverride 用户自定义的分组键覆盖值，null 时回退到 title。
  *                         用于"多版本管理"中将歌曲从某分组移出或关联到其他歌曲。
  */
+@Stable
 data class Song(
     val id: Int,
     val title: String,

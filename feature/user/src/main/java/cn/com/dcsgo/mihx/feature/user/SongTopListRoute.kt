@@ -1,8 +1,10 @@
 package cn.com.dcsgo.mihx.feature.user
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Stable
 import cn.com.dcsgo.mihx.core.model.Song
 
+@Stable
 data class SongTopListRouteState(
     val weeklyTop: List<Pair<Int, Int>>,
     val monthlyTop: List<Pair<Int, Int>>,

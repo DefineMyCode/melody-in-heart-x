@@ -18,6 +18,9 @@ android {
         versionName = "2.0.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        // 应用仅中文界面，裁剪依赖库翻译资源，显著缩小 resources.arsc
+        resConfigs("zh", "en")
     }
 
     buildTypes {
@@ -28,6 +31,10 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            // minSdk 33 起所有真实设备均为 64 位，release 只打 arm64-v8a（debug 保持全 ABI 兼容模拟器）
+            ndk {
+                abiFilters += "arm64-v8a"
+            }
         }
         create("benchmark") {
             initWith(getByName("release"))

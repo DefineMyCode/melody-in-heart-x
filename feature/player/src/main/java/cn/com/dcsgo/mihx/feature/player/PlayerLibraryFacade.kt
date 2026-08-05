@@ -1,5 +1,6 @@
 package cn.com.dcsgo.mihx.feature.player
 
+import cn.com.dcsgo.mihx.core.common.AppLog
 import cn.com.dcsgo.mihx.core.model.AlbumEntry
 import cn.com.dcsgo.mihx.core.model.ArtistEntry
 import cn.com.dcsgo.mihx.domain.playlist.PlaylistSnapshot
@@ -50,12 +51,16 @@ class PlayerLibraryFacade(
         }
         // 同步刷新曲库歌手/专辑目录（从持久化表查询）
         catalogScope.launch {
-            val (artists, albums) = loadLibraryCatalog()
-            updateState { state ->
-                state.copy(
-                    libraryArtists = artists,
-                    libraryAlbums = albums,
-                )
+            try {
+                val (artists, albums) = loadLibraryCatalog()
+                updateState { state ->
+                    state.copy(
+                        libraryArtists = artists,
+                        libraryAlbums = albums,
+                    )
+                }
+            } catch (e: Exception) {
+                AppLog.error("PlayerLibraryFacade", "loadLibraryCatalog failed", e)
             }
         }
     }

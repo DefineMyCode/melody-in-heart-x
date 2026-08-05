@@ -46,9 +46,10 @@ fun CreatePlaylistDialog(
                     isError = errorMessage != null,
                     modifier = Modifier.fillMaxWidth()
                 )
-                if (errorMessage != null) {
+                val message = errorMessage
+                if (message != null) {
                     Text(
-                        text = errorMessage!!,
+                        text = message,
                         color = MaterialTheme.colorScheme.error,
                         style = MaterialTheme.typography.bodySmall,
                         modifier = Modifier.padding(top = 4.dp)
@@ -148,9 +149,10 @@ fun RenamePlaylistDialog(
                     isError = errorMessage != null,
                     modifier = Modifier.fillMaxWidth()
                 )
-                if (errorMessage != null) {
+                val message = errorMessage
+                if (message != null) {
                     Text(
-                        text = errorMessage!!,
+                        text = message,
                         color = MaterialTheme.colorScheme.error,
                         style = MaterialTheme.typography.bodySmall,
                         modifier = Modifier.padding(top = 4.dp)

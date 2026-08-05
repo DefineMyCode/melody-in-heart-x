@@ -3,6 +3,7 @@ package cn.com.dcsgo.mihx.data.repository
 import android.content.Context
 import android.content.SharedPreferences
 import android.net.Uri
+import androidx.annotation.VisibleForTesting
 import androidx.documentfile.provider.DocumentFile
 import cn.com.dcsgo.mihx.core.common.AppLog
 import cn.com.dcsgo.mihx.core.common.PerformanceTrace
@@ -17,9 +18,13 @@ import cn.com.dcsgo.mihx.data.util.AlbumArtExtractor
 import cn.com.dcsgo.mihx.data.util.AudioFileUtils
 import cn.com.dcsgo.mihx.data.util.AudioMetadataExtractor
 import cn.com.dcsgo.mihx.domain.model.DeleteSongResult
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.withContext
@@ -57,6 +62,17 @@ class MusicRepository(
     // 读写锁：保护 songs / playlists / nextId / nextPlaylistId 的并发访问。
     // 导入（IO 线程写）与 Compose recompose（主线程读）并发时防止 ConcurrentModificationException。
     private val lock = ReentrantReadWriteLock()
+
+    // 后台持久化作用域：单线程 IO 串行落盘（limitedParallelism(1) 保证多次全表快照按提交顺序写入，
+    // 后一次快照总是前一次的超集，最终状态正确），不阻塞调用线程（主线程 UI 动作不再等待磁盘写）。
+    private val persistDispatcher = Dispatchers.IO.limitedParallelism(1)
+    private val persistScope = CoroutineScope(SupervisorJob() + persistDispatcher)
+
+    /** 测试用：等待所有已提交的持久化写完成后再断言 DAO 状态 */
+    @VisibleForTesting
+    suspend fun flushPersists() {
+        persistScope.coroutineContext[Job]?.children?.forEach { it.join() }
+    }
 
     // SharedPreferences 用于持久化歌单数据
     private val prefs: SharedPreferences? by lazy {
@@ -165,10 +181,10 @@ class MusicRepository(
         val room = roomDataSource
         if (room != null) {
             val now = System.currentTimeMillis()
-            runBlocking(Dispatchers.IO) {
+            persistScope.launch {
                 room.persistSongs(snapshot, importedAt = now)
             }
-            AppLog.debug(TAG, "persistSongs: saved ${snapshot.size} songs to Room")
+            AppLog.debug(TAG, "persistSongs: queued ${snapshot.size} songs to Room")
             return
         }
         val jsonArray = JSONArray()
@@ -222,10 +238,10 @@ class MusicRepository(
         val room = roomDataSource
         if (room != null) {
             val now = System.currentTimeMillis()
-            runBlocking(Dispatchers.IO) {
+            persistScope.launch {
                 room.persistPlaylists(snapshot, updatedAt = now)
             }
-            AppLog.debug(TAG, "persistPlaylists: saved ${snapshot.size} playlists to Room")
+            AppLog.debug(TAG, "persistPlaylists: queued ${snapshot.size} playlists to Room")
             return
         }
         val jsonArray = JSONArray()

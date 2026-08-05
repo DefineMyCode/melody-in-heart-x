@@ -195,7 +195,7 @@ private fun SyncSystemBarsAppearance(darkTheme: Boolean) {
     val context = LocalContext.current
     if (!view.isInEditMode) {
         SideEffect {
-            val window = (context as Activity).window
+            val window = (context as? Activity)?.window ?: return@SideEffect
             WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !darkTheme
         }
     }

@@ -627,7 +627,12 @@ internal class PlayerRuntime(
 
     private fun loadInitialData(afterInitialSnapshot: () -> Unit) {
         scope.launch {
-            libraryFacade.loadInitialData(afterInitialSnapshot)
+            try {
+                libraryFacade.loadInitialData(afterInitialSnapshot)
+            } catch (e: Exception) {
+                AppLog.error(TAG, "loadInitialData failed", e)
+                _uiState.update { it.copy(isLoading = false) }
+            }
         }
     }
 

@@ -14,10 +14,9 @@ import java.io.FileOutputStream
 
 private const val TAG = "AlbumArtExtractor"
 private const val CACHE_DIR_NAME = "album_art"
+private const val TARGET_ALBUM_ART_PX = 512
 
 object AlbumArtExtractor {
-
-    private val placeholderUris = mutableMapOf<String, Uri>()
 
     /**
      * 获取歌曲封面 URI：
@@ -123,11 +122,21 @@ object AlbumArtExtractor {
                 return null
             }
 
-            // 解码图片并压缩到合理大小（如 512x512）
-            val original = BitmapFactory.decodeByteArray(artBytes, 0, artBytes.size)
+            // 先采样解码到 ~512px 量级，避免整幅超大内嵌封面导致内存尖峰
+            val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+            BitmapFactory.decodeByteArray(artBytes, 0, artBytes.size, bounds)
+            var sampleSize = 1
+            while (
+                bounds.outWidth / (sampleSize * 2) >= TARGET_ALBUM_ART_PX &&
+                bounds.outHeight / (sampleSize * 2) >= TARGET_ALBUM_ART_PX
+            ) {
+                sampleSize *= 2
+            }
+            val decodeOptions = BitmapFactory.Options().apply { inSampleSize = sampleSize }
+            val original = BitmapFactory.decodeByteArray(artBytes, 0, artBytes.size, decodeOptions)
                 ?: return null
 
-            val scaled = scaleBitmap(original, 512)
+            val scaled = scaleBitmap(original, TARGET_ALBUM_ART_PX)
             // 只在确实创建了新 bitmap 时回收 original，避免双重回收
             if (scaled !== original) {
                 original.recycle()

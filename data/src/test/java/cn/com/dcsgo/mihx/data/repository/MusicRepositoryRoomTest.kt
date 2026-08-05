@@ -73,6 +73,7 @@ class MusicRepositoryRoomTest {
         assertTrue(repository.addSongToPlaylist(playlist.id, 1))
         assertFalse(repository.addSongToPlaylist(playlist.id, 1))
         assertTrue(repository.addSongToPlaylist(playlist.id, 2))
+        repository.flushPersists()
 
         assertEquals(listOf(1, 2), repository.getSongsByPlaylistId(playlist.id).map { it.id })
         assertEquals(
@@ -93,6 +94,7 @@ class MusicRepositoryRoomTest {
         repository.loadSongs()
 
         assertTrue(repository.updateSongTitleOverride(songId = 1, titleOverride = "Album Version"))
+        repository.flushPersists()
 
         assertEquals("Album Version", repository.getSongs().single().titleOverride)
         assertEquals(
@@ -101,6 +103,7 @@ class MusicRepositoryRoomTest {
         )
 
         assertTrue(repository.updateSongTitleOverride(songId = 1, titleOverride = null))
+        repository.flushPersists()
 
         assertEquals(null, repository.getSongs().single().titleOverride)
         assertEquals(emptyList<SongGroupOverrideEntity>(), dao.songGroupOverrides)

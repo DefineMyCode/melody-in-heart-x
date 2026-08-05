@@ -145,7 +145,7 @@ fun QuickSkipSongsScreen(
             },
             title = { Text("确认删除") },
             text = {
-                Text("确定要删除「${songToDelete!!.title}」吗？\n\n此操作会删除本地歌曲文件，无法恢复。")
+                Text("确定要删除「${songToDelete?.title.orEmpty()}」吗？\n\n此操作会删除本地歌曲文件，无法恢复。")
             },
             confirmButton = {
                 Button(

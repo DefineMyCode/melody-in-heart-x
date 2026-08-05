@@ -34,10 +34,12 @@
             </intent-filter>
         </activity>
 
-        <!-- 自定义 ImageLoaderFactory，移除 Coil 默认自动初始化器（启动不再建 OkHttp/缓存） -->
+        <!-- 自定义 ImageLoaderFactory，移除 Coil 默认自动初始化器（启动不再建 OkHttp/缓存）；
+             MissingClass 为误报（该类在 coil 依赖中，仅从清单移除其 provider） -->
         <provider
             android:name="coil.CoilInitializer"
             android:authorities="${applicationId}.coil.CoilInitializer"
+            tools:ignore="MissingClass"
             tools:node="remove" />
 
     </application>

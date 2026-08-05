@@ -266,7 +266,9 @@ internal class PlayerRuntime(
         stopPlaybackTracking = playDurationTracker::stopPlayback,
         clearTrackedSong = { trackedSongId = null },
         remainingMediaItems = { playbackBridgeFacade.remainingMediaItems() },
-        refillInfinitePlayQueue = { startedSongId -> playbackBridgeFacade.refillInfinitePlayQueue(startedSongId) },
+        refillInfinitePlayQueue = { startedSongId, advanceAfterWrap ->
+            playbackBridgeFacade.refillInfinitePlayQueue(startedSongId, advanceAfterWrap)
+        },
         syncPlayerQueue = { queue -> playbackBridgeFacade.syncPlayerQueue(queue) },
         log = { message -> AppLog.debug(TAG, message) },
         playOrderBuilder = playOrderBuilder,
@@ -299,6 +301,8 @@ internal class PlayerRuntime(
         updateState = ::updateUiState,
         setPlayQueue = { songs, startIndex, mode -> setPlayQueue(songs, startIndex, mode) },
         syncPlayerQueue = { queue -> playbackBridgeFacade.syncPlayerQueue(queue) },
+        remainingMediaItems = { playbackBridgeFacade.remainingMediaItems() },
+        playFromQueue = { queue, index -> playbackBridgeFacade.playFromQueue(queue, index) },
         rawPlayCounts = playStatsRepository::getRawPlayCounts,
         log = { message -> AppLog.debug(TAG, message) },
     )
@@ -329,7 +333,9 @@ internal class PlayerRuntime(
             startControllerSinglePlayback = playbackSessionGraph::startSinglePlayback,
             playFromQueue = errorFacade::playFromQueue,
             syncPlayerQueue = controllerQueueFacade::syncPlayerQueue,
-            refillInfinitePlayQueue = { startedSongId -> randomQueueFacade.refillInfinitePlayQueue(startedSongId) },
+            refillInfinitePlayQueue = { startedSongId, advanceAfterWrap ->
+                randomQueueFacade.refillInfinitePlayQueue(startedSongId, advanceAfterWrap)
+            },
         )
     }
     private val startupFacade = PlayerStartupFacade(

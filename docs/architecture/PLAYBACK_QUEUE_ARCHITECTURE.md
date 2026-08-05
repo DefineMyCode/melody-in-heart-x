@@ -157,10 +157,13 @@
 ### 无限播放补队列
 
 1. 开启无限播放时，不替换当前播放队列，只记录当前队列中已覆盖的可播放歌曲 ID。
-2. 自动切歌或手动下一首时，如果 Controller 队列接近尾部，触发 `PlayerRandomQueueFacade.refillInfinitePlayQueue(...)`。
-3. 自动切歌路径会传入 Media3 刚开始播放的 `startedSongId`。
-4. 补队列前先用 `startedSongId` 校正 `PlayQueue.currentIndex`，避免播放器已经切到 B，但 UI 队列还停在 A 时，补队列同步又跳回 A。
-5. `RandomQueuePlanner` 从尚未覆盖的本地可播放歌曲中选取一批追加到队尾；可选歌曲不足时重置覆盖历史，尽量循环覆盖全库。开启全局均匀随机时，候选集合仍保留该覆盖历史，再优先选择原始播放次数较低的歌曲。
+2. 歌曲切换（自然结束 `AUTO`、手动下一首/上一首 `SEEK`、单曲重复 `REPEAT`）时，如果 Controller 队列接近尾部，触发 `PlayerRandomQueueFacade.refillInfinitePlayQueue(...)`。播放页下一首按钮会在切歌前主动补队列，耳机/锁屏/通知栏等系统媒体键切歌则依赖 `PlaybackController.onMediaItemTransition` 对 `SEEK`/`REPEAT` 的转发。
+3. 在队列末尾开启无限播放时（当前歌曲已是窗口最后一首、剩余数量不足补队列阈值），`startInfinitePlay()` 会立即补队列。否则当前歌曲仍是窗口最后一首：自然结束或系统媒体键切下一首时 Media3 会因 `REPEAT_MODE_ALL` 回绕到旧窗口第一首，而新歌曲补在其后，导致用户重播旧窗口而不是继续播放新补充的歌曲。
+4. 自动切歌路径会传入 Media3 刚开始播放的 `startedSongId`。
+5. 补队列前先用 `startedSongId` 校正 `PlayQueue.currentIndex`，避免播放器已经切到 B，但 UI 队列还停在 A 时，补队列同步又跳回 A。
+6. 窗口尾部 repeat 回绕说明窗口已耗尽，即使剩余数量较多也强制补队列，防止系统侧手动切歌后无限播放枯竭。回绕用索引检测（上一首位于窗口最后一首、新位置回到索引 0）：Media3 的 `REPEAT` 原因只表示 `REPEAT_MODE_ONE` 单曲重复，不会在回绕时触发，回绕实际以 `SEEK`/`AUTO` 原因上报。
+7. 回绕补队列时会把当前歌曲**跳到第一首新补充的歌曲**并从 0 开始播放，而不是停留在回绕到的旧窗口第一首。这样在队列末尾手动切歌（播放页按钮在切歌前补队列、耳机/锁屏/通知栏切歌在回绕后补队列）都能继续听到新歌；非回绕的接近队尾补队列仍保持当前歌曲不变。
+8. `RandomQueuePlanner` 从尚未覆盖的本地可播放歌曲中选取一批追加到队尾；可选歌曲不足时重置覆盖历史，尽量循环覆盖全库。开启全局均匀随机时，候选集合仍保留该覆盖历史，再优先选择原始播放次数较低的歌曲。
 
 ### 播放状态持久化
 

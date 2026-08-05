@@ -15,6 +15,9 @@ class PlayerRandomQueueFacadeTest {
     private var setQueueSongs: List<Song>? = null
     private var setQueueMode: PlayMode? = null
     private var syncedQueue: PlayQueue? = null
+    private var remainingItems = Int.MAX_VALUE
+    private var playedFromQueue: PlayQueue? = null
+    private var playedFromIndex: Int? = null
     private val logs = mutableListOf<String>()
     private val facade = PlayerRandomQueueFacade(
         state = { state },
@@ -25,6 +28,11 @@ class PlayerRandomQueueFacadeTest {
             setQueueMode = mode
         },
         syncPlayerQueue = { syncedQueue = it },
+        remainingMediaItems = { remainingItems },
+        playFromQueue = { queue, index ->
+            playedFromQueue = queue
+            playedFromIndex = index
+        },
         rawPlayCounts = { ids -> ids.associateWith { if (it == 1) 10 else 0 } },
         log = { logs += it },
         planner = RandomQueuePlanner(
@@ -114,6 +122,40 @@ class PlayerRandomQueueFacadeTest {
     }
 
     @Test
+    fun startInfinitePlayRefillsWhenAtQueueTail() {
+        // 队列末尾开启无限播放：当前歌曲 A(4) 已是最后一首，应立即补队列，
+        // 让下一首（自然结束或系统媒体键下一首）是新歌而不是回绕到旧窗口第一首。
+        state = state.copy(
+            songs = songs(1, 2, 3, 4, 5, 6),
+            playQueue = PlayQueue().setQueue(songs(1, 2, 3, 4), startIndex = 3),
+        )
+        remainingItems = 0
+
+        facade.startInfinitePlay()
+
+        assertTrue(state.isInfinitePlay)
+        // 队列追加了 5、6，当前歌曲仍是 A(4)
+        assertEquals(listOf(1, 2, 3, 4, 5, 6), state.playQueue.songs.map { it.id })
+        assertEquals(3, state.playQueue.currentIndex)
+        assertEquals(state.playQueue, syncedQueue)
+    }
+
+    @Test
+    fun startInfinitePlayDoesNotRefillWhenNotNearTail() {
+        state = state.copy(
+            songs = songs(1, 2, 3, 4, 5, 6),
+            playQueue = PlayQueue().setQueue(songs(1, 2, 3, 4), startIndex = 0),
+        )
+        remainingItems = 10
+
+        facade.startInfinitePlay()
+
+        assertTrue(state.isInfinitePlay)
+        assertEquals(listOf(1, 2, 3, 4), state.playQueue.songs.map { it.id })
+        assertEquals(null, syncedQueue)
+    }
+
+    @Test
     fun startInfinitePlayReturnsFalseWhenNoSongs() {
         state = state.copy(songs = emptyList())
 
@@ -176,6 +218,45 @@ class PlayerRandomQueueFacadeTest {
         facade.refillInfinitePlayQueue()
 
         assertEquals(listOf(1), state.playQueue.songs.map { it.id })
+        assertEquals(null, syncedQueue)
+    }
+
+    @Test
+    fun refillInfinitePlayQueueAdvanceAfterWrapJumpsToFirstNewSong() {
+        // 窗口尾部回绕后补队列：当前歌曲跳到第一首新补充的歌曲（而不是停留在回绕到的旧歌）
+        state = state.copy(
+            songs = songs(1, 2, 3, 4, 5, 6),
+            playQueue = PlayQueue().setQueue(songs(1, 2, 3, 4), startIndex = 3),
+            isInfinitePlay = true,
+            infinitePlayedSongIds = setOf(1, 2, 3, 4),
+        )
+
+        facade.refillInfinitePlayQueue(startedSongId = 4, advanceAfterWrap = true)
+
+        // 追加 5、6，当前歌曲跳到索引 4（歌曲 5）
+        assertEquals(listOf(1, 2, 3, 4, 5, 6), state.playQueue.songs.map { it.id })
+        assertEquals(4, state.playQueue.currentIndex)
+        assertEquals(4, playedFromIndex)
+        assertEquals(listOf(1, 2, 3, 4, 5, 6), playedFromQueue?.songs?.map { it.id })
+        // 跳转走 playFromQueue，不走 syncPlayerQueue
+        assertEquals(null, syncedQueue)
+    }
+
+    @Test
+    fun refillInfinitePlayQueueAdvanceAfterWrapKeepsCurrentSongWhenNoNewSongs() {
+        // 库已全部覆盖、无新歌可补时，advance 不能跳到不存在的歌曲
+        state = state.copy(
+            songs = songs(1, 2, 3, 4),
+            playQueue = PlayQueue().setQueue(songs(1, 2, 3, 4), startIndex = 3),
+            isInfinitePlay = true,
+            infinitePlayedSongIds = setOf(1, 2, 3, 4),
+        )
+
+        facade.refillInfinitePlayQueue(startedSongId = 4, advanceAfterWrap = true)
+
+        assertEquals(listOf(1, 2, 3, 4), state.playQueue.songs.map { it.id })
+        assertEquals(3, state.playQueue.currentIndex)
+        assertEquals(null, playedFromIndex)
         assertEquals(null, syncedQueue)
     }
 

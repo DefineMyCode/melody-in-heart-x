@@ -29,6 +29,7 @@ class PlaybackController(
     private var controllerFuture: com.google.common.util.concurrent.ListenableFuture<MediaController>? = null
     private var controller: MediaController? = null
     private var lastSyncedQueueFingerprint: ControllerQueueFingerprint? = null
+    private var lastCurrentMediaItemIndex: Int = C.INDEX_UNSET
     private val pendingActions = ArrayDeque<(MediaController) -> Unit>()
     private val listener = object : Player.Listener {
         override fun onIsPlayingChanged(isPlaying: Boolean) {
@@ -40,13 +41,34 @@ class PlaybackController(
 
         override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
             if (!playWhenReady && reason == Player.PLAY_WHEN_READY_CHANGE_REASON_END_OF_MEDIA_ITEM) {
-                callbacks.onMediaItemEnded(null)
+                callbacks.onMediaItemEnded(null, false)
             }
         }
 
         override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
-            if (mediaItem != null && reason == Player.MEDIA_ITEM_TRANSITION_REASON_AUTO) {
-                callbacks.onMediaItemEnded(mediaItem.mediaId.toIntOrNull())
+            val currentController = controller
+            val newIndex = currentController?.currentMediaItemIndex ?: C.INDEX_UNSET
+            // 回绕后剩余数量会重新变大，仅靠剩余阈值判断会漏掉补队列，导致无限播放枯竭，
+            // 因此这里用索引判断回绕并传给 onMediaItemEnded（详见 isMediaItemWrap）。
+            val wrapped = isMediaItemWrap(
+                previousIndex = lastCurrentMediaItemIndex,
+                newIndex = newIndex,
+                mediaItemCount = currentController?.mediaItemCount ?: 0,
+            )
+            lastCurrentMediaItemIndex = newIndex
+
+            // 用户导航型切歌（自然结束 AUTO、手动下一首/上一首 SEEK、单曲重复 REPEAT）
+            // 都要走 onMediaItemEnded，否则耳机/锁屏/通知栏手动切歌时无限播放不会补队列。
+            // PLAYLIST_CHANGED 是应用自身重建窗口产生的，不需要触发。
+            if (mediaItem != null &&
+                (reason == Player.MEDIA_ITEM_TRANSITION_REASON_AUTO ||
+                    reason == Player.MEDIA_ITEM_TRANSITION_REASON_SEEK ||
+                    reason == Player.MEDIA_ITEM_TRANSITION_REASON_REPEAT)
+            ) {
+                callbacks.onMediaItemEnded(
+                    mediaItem.mediaId.toIntOrNull(),
+                    wrapped,
+                )
             }
         }
 
@@ -296,4 +318,27 @@ class PlaybackController(
         val songIds: List<Int>,
         val startIndex: Int,
     )
+}
+
+/**
+ * 判断某次媒体项切换是否为窗口尾部回绕。
+ *
+ * 回绕发生在「上一首处于窗口最后一首、新位置回到索引 0」时。注意 Media3 对
+ * `REPEAT_MODE_ALL` 下 `seekToNextMediaItem()` 从尾部回绕到开头，仍以
+ * `MEDIA_ITEM_TRANSITION_REASON_SEEK` 上报；`MEDIA_ITEM_TRANSITION_REASON_REPEAT`
+ * 只表示 `REPEAT_MODE_ONE` 单曲重复，不会在回绕时触发，因此必须用索引而非原因判断。
+ *
+ * @param previousIndex 切换前的 `currentMediaItemIndex`；无当前项时为 [C.INDEX_UNSET]
+ * @param newIndex      切换后的 `currentMediaItemIndex`
+ * @param mediaItemCount 切换后的队列项数
+ */
+internal fun isMediaItemWrap(
+    previousIndex: Int,
+    newIndex: Int,
+    mediaItemCount: Int,
+): Boolean {
+    return newIndex == 0 &&
+        previousIndex != C.INDEX_UNSET &&
+        previousIndex >= mediaItemCount - 1 &&
+        previousIndex > newIndex
 }

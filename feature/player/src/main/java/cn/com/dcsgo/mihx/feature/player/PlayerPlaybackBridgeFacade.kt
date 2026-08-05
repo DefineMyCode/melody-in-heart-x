@@ -14,7 +14,7 @@ class PlayerPlaybackBridgeFacade(
     private val startControllerSinglePlayback: (Song) -> Boolean,
     private val playFromQueue: (PlayQueue, Int) -> Unit,
     private val syncPlayerQueue: (PlayQueue) -> Unit,
-    private val refillInfinitePlayQueue: (Int?) -> Unit,
+    private val refillInfinitePlayQueue: (Int?, Boolean) -> Unit,
 ) {
     fun remainingMediaItems(): Int {
         return remainingMediaItems.invoke()
@@ -56,7 +56,7 @@ class PlayerPlaybackBridgeFacade(
         syncPlayerQueue.invoke(queue)
     }
 
-    fun refillInfinitePlayQueue(startedSongId: Int? = null) {
-        refillInfinitePlayQueue.invoke(startedSongId)
+    fun refillInfinitePlayQueue(startedSongId: Int? = null, advanceAfterWrap: Boolean = false) {
+        refillInfinitePlayQueue.invoke(startedSongId, advanceAfterWrap)
     }
 }

@@ -9,23 +9,31 @@ class PlayerMediaEventFacade(
     private val stopPlaybackTracking: () -> Unit,
     private val clearTrackedSong: () -> Unit,
     private val remainingMediaItems: () -> Int,
-    private val refillInfinitePlayQueue: (Int?) -> Unit,
+    private val refillInfinitePlayQueue: (Int?, Boolean) -> Unit,
     private val syncPlayerQueue: (PlayQueue) -> Unit,
     private val log: (String) -> Unit,
     private val refillThreshold: Int = DEFAULT_REFILL_THRESHOLD,
     private val playOrderBuilder: QueueManager.PlayOrderBuilder = QueueManager.defaultPlayOrderBuilder,
     private val onSleepTimerSongEnded: () -> Unit = {},
 ) {
-    fun handleMediaItemEnded(startedSongId: Int? = null) {
+    /**
+     * 歌曲切换完成时调用（自然结束、手动下一首/上一首、repeat 回绕）。
+     *
+     * @param startedSongId 新开始歌曲的 ID，用于把业务队列当前项校正到实际播放项
+     * @param wrapped       是否发生了窗口尾部 repeat 回绕（上一首位于窗口最后一首、新位置回到窗口开头）。
+     *                      回绕说明窗口已耗尽：除了补队列，还会把当前歌曲跳到第一首新补充的歌曲，
+     *                      避免回绕后重播旧窗口而不是继续播放新歌曲。
+     */
+    fun handleMediaItemEnded(startedSongId: Int? = null, wrapped: Boolean = false) {
         stopPlaybackTracking()
         clearTrackedSong()
 
         val current = state()
         if (current.isInfinitePlay) {
             val remainingSongs = remainingMediaItems()
-            if (remainingSongs <= refillThreshold) {
-                refillInfinitePlayQueue(startedSongId)
-                log("infinite play refill: remaining=$remainingSongs")
+            if (wrapped || remainingSongs <= refillThreshold) {
+                refillInfinitePlayQueue(startedSongId, wrapped)
+                log("infinite play refill: remaining=$remainingSongs wrapped=$wrapped")
             }
         }
 

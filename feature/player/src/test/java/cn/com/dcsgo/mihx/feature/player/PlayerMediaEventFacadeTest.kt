@@ -15,6 +15,7 @@ class PlayerMediaEventFacadeTest {
     private var clearedTrackedSong = false
     private var remainingItems = Int.MAX_VALUE
     private var refilledStartedSongId: Int? = null
+    private var refillAdvancedAfterWrap = false
     private var syncedQueue: PlayQueue? = null
     private val logs = mutableListOf<String>()
     private val facade = PlayerMediaEventFacade(
@@ -23,7 +24,10 @@ class PlayerMediaEventFacadeTest {
         stopPlaybackTracking = { stoppedTracking = true },
         clearTrackedSong = { clearedTrackedSong = true },
         remainingMediaItems = { remainingItems },
-        refillInfinitePlayQueue = { startedSongId -> refilledStartedSongId = startedSongId },
+        refillInfinitePlayQueue = { startedSongId, advanceAfterWrap ->
+            refilledStartedSongId = startedSongId
+            refillAdvancedAfterWrap = advanceAfterWrap
+        },
         syncPlayerQueue = { syncedQueue = it },
         log = { logs += it },
     )
@@ -44,7 +48,31 @@ class PlayerMediaEventFacadeTest {
         facade.handleMediaItemEnded(startedSongId = 2)
 
         assertEquals(2, refilledStartedSongId)
-        assertEquals(listOf("infinite play refill: remaining=5"), logs)
+        assertFalse(refillAdvancedAfterWrap)
+        assertEquals(listOf("infinite play refill: remaining=5 wrapped=false"), logs)
+    }
+
+    @Test
+    fun handleMediaItemEndedRefillsInfiniteQueueOnWrapEvenWhenNotNearTail() {
+        state = state.copy(isInfinitePlay = true)
+        remainingItems = 50
+
+        facade.handleMediaItemEnded(startedSongId = 3, wrapped = true)
+
+        assertEquals(3, refilledStartedSongId)
+        assertTrue(refillAdvancedAfterWrap)
+        assertEquals(listOf("infinite play refill: remaining=50 wrapped=true"), logs)
+    }
+
+    @Test
+    fun handleMediaItemEndedDoesNotRefillOnWrapOutsideInfiniteMode() {
+        state = state.copy(isInfinitePlay = false)
+        remainingItems = 0
+
+        facade.handleMediaItemEnded(wrapped = true)
+
+        assertEquals(null, refilledStartedSongId)
+        assertEquals(emptyList<String>(), logs)
     }
 
     @Test

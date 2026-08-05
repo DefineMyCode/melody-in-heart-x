@@ -9,7 +9,7 @@ private const val TAG = "PlayerMediaControllerGraph"
 internal class PlayerMediaControllerGraph(
     playbackControllerPortFactory: PlaybackControllerPortFactory,
     private val controllerStateAdapter: PlayerControllerStateAdapter,
-    private val handleMediaItemEnded: (Int?) -> Unit,
+    private val handleMediaItemEnded: (Int?, Boolean) -> Unit,
     private val handlePlaybackEnded: () -> Unit,
 ) {
     val playbackController = playbackControllerPortFactory.create(

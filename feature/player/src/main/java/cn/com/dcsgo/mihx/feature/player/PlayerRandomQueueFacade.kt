@@ -10,6 +10,8 @@ class PlayerRandomQueueFacade(
     private val updateState: ((PlayerUiState) -> PlayerUiState) -> Unit,
     private val setPlayQueue: (List<Song>, Int, PlayMode) -> Unit,
     private val syncPlayerQueue: (PlayQueue) -> Unit,
+    private val remainingMediaItems: () -> Int,
+    private val playFromQueue: (PlayQueue, Int) -> Unit,
     private val rawPlayCounts: (List<Int>) -> Map<Int, Int> = { emptyMap() },
     private val log: (String) -> Unit,
     private val planner: RandomQueuePlanner = RandomQueuePlanner(),
@@ -58,6 +60,15 @@ class PlayerRandomQueueFacade(
             )
         }
         log("startInfinitePlay: keep current queue, covered=${plan.playedSongIds.size}")
+
+        // 开启时若已处于队列尾部（剩余不足补队列阈值），立即补队列。
+        // 否则当前歌曲 A 仍是窗口最后一首：自然结束或系统媒体键（耳机/锁屏/通知栏）切下一首时，
+        // Media3 会因 REPEAT_MODE_ALL 回绕到旧窗口第一首 B，而新歌曲补在 B 之后，
+        // 导致用户重播旧窗口而不是继续播放新补充的歌曲（播放页下一首按钮是切歌前先补队列，不受影响）。
+        if (remainingMediaItems() <= PlayerMediaEventFacade.DEFAULT_REFILL_THRESHOLD) {
+            refillInfinitePlayQueue(startedSongId = current.currentSong?.id)
+            log("startInfinitePlay: refilled at queue tail")
+        }
         return true
     }
 
@@ -66,7 +77,14 @@ class PlayerRandomQueueFacade(
         log("stopInfinitePlay")
     }
 
-    fun refillInfinitePlayQueue(startedSongId: Int? = null) {
+    /**
+     * 无限播放补队列：向队尾追加尚未覆盖的可播放歌曲。
+     *
+     * @param startedSongId    用于把业务队列当前项校正到实际播放项
+     * @param advanceAfterWrap 窗口尾部回绕后调用：把当前歌曲跳到第一首新补充的歌曲并从 0 开始播放。
+     *                         否则保持当前歌曲不变，仅扩展队列（播放页下一首按钮的切歌前补队列路径）。
+     */
+    fun refillInfinitePlayQueue(startedSongId: Int? = null, advanceAfterWrap: Boolean = false) {
         val current = state()
         if (!current.isInfinitePlay) return
 
@@ -78,18 +96,32 @@ class PlayerRandomQueueFacade(
             uniformRandomEnabled = current.globalUniformRandomEnabled,
             playCounts = rawPlayCounts(current.songs.map { it.id }),
         ) ?: return
+        if (plan.addedSongs.isEmpty()) return
 
         if (plan.resetHistory) {
             log("refillInfinitePlayQueue: reset played history")
         }
 
-        updateState {
-            it.copy(
-                playQueue = plan.queue,
-                infinitePlayedSongIds = plan.playedSongIds,
-            )
+        if (advanceAfterWrap) {
+            // 回绕后跳到第一首新补充的歌曲：追加位于原队列末尾之后，把当前项指到那里并从 0 开始播放。
+            val firstNewIndex = queue.songs.size
+            val newQueue = plan.queue.withCurrentIndex(firstNewIndex)
+            updateState {
+                it.copy(
+                    playQueue = newQueue,
+                    infinitePlayedSongIds = plan.playedSongIds,
+                )
+            }
+            playFromQueue(newQueue, firstNewIndex)
+        } else {
+            updateState {
+                it.copy(
+                    playQueue = plan.queue,
+                    infinitePlayedSongIds = plan.playedSongIds,
+                )
+            }
+            syncPlayerQueue(plan.queue)
         }
-        syncPlayerQueue(plan.queue)
         log("refillInfinitePlayQueue: added=${plan.addedSongs.size}")
     }
 

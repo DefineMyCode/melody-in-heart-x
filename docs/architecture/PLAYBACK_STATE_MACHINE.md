@@ -35,7 +35,7 @@ This document defines the product-level playback state model used around Media3.
 | `playing` | `onIsPlayingChanged(false)` with `isBuffering=false` | `paused` | Save playback state and pause play-duration tracking. |
 | `playing` | `STATE_BUFFERING` or `onIsPlayingChanged(false)` with `isBuffering=true` | `buffering` | Do not treat this as an intentional pause. |
 | `buffering` | `onIsPlayingChanged(true)` | `playing` | Resume normal tracking without resetting the current song. |
-| `playing`/`buffering` | `onMediaItemTransition(..., AUTO)` | `playing` or `ended` | The started media id is used to stop old tracking and begin tracking the new song. |
+| `playing`/`buffering` | `onMediaItemTransition(..., AUTO/SEEK/REPEAT)` | `playing` or `ended` | 自然结束（AUTO）、手动下一首/上一首（SEEK，含耳机/锁屏/通知栏）、单曲重复（REPEAT）都会进入 `PlayerMediaEventFacade.handleMediaItemEnded`：停止旧曲目跟踪、接近窗口尾部时补无限队列（repeat 回绕——上一首在窗口尾部且新位置回到索引 0——时强制补队列）、必要时恢复 add-next 播放模式。The started media id is used to stop old tracking and begin tracking the new song. |
 | `playing`/`paused`/`buffering` | `STATE_ENDED` | `ended` | `PlayerMediaEventFacade.handlePlaybackEnded` sets `isPlaying=false` and position `0`. |
 | any | Controller connection failure or command exception | `error` | Pending actions stay isolated; failures are logged and should not corrupt the business queue. |
 | `ended`/`error` | User selects a valid item or queue is rebuilt | `preparing` | Recovery always goes through a fresh controller command. |

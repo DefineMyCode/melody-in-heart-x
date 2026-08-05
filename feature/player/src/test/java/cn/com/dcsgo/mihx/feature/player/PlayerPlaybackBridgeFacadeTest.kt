@@ -39,7 +39,9 @@ class PlayerPlaybackBridgeFacadeTest {
         },
         playFromQueue = { _, index -> calls += "playFromQueue:$index" },
         syncPlayerQueue = { calls += "syncQueue" },
-        refillInfinitePlayQueue = { startedSongId -> calls += "refill:$startedSongId" },
+        refillInfinitePlayQueue = { startedSongId, advanceAfterWrap ->
+            calls += "refill:$startedSongId:$advanceAfterWrap"
+        },
     )
 
     @Test
@@ -54,7 +56,7 @@ class PlayerPlaybackBridgeFacadeTest {
         assertTrue(facade.startControllerSinglePlayback(song(2)))
         facade.playFromQueue(queue, 0)
         facade.syncPlayerQueue(queue)
-        facade.refillInfinitePlayQueue(2)
+        facade.refillInfinitePlayQueue(2, true)
 
         assertEquals(
             listOf(
@@ -68,7 +70,7 @@ class PlayerPlaybackBridgeFacadeTest {
                 "startSingle:2",
                 "playFromQueue:0",
                 "syncQueue",
-                "refill:2",
+                "refill:2:true",
             ),
             calls,
         )

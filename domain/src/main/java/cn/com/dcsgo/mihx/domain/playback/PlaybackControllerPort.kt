@@ -7,7 +7,7 @@ data class ControllerQueueSnapshot(
 
 data class PlaybackControllerCallbacks(
     val onIsPlayingChanged: (isPlaying: Boolean, isBuffering: Boolean) -> Unit,
-    val onMediaItemEnded: (songId: Int?) -> Unit,
+    val onMediaItemEnded: (songId: Int?, wrapped: Boolean) -> Unit,
     val onPlaybackSnapshot: (ControllerPlaybackSnapshot) -> Unit,
     val onPlaybackEnded: () -> Unit,
 )

@@ -41,6 +41,10 @@ android {
             matchingFallbacks += listOf("release")
             signingConfig = signingConfigs.getByName("debug")
             isDebuggable = false
+            // benchmark 需要在真机（arm64）与 x86_64 模拟器上运行，保留两套 ABI
+            ndk {
+                abiFilters += "x86_64"
+            }
         }
     }
     compileOptions {

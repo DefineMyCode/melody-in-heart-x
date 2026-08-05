@@ -11,6 +11,8 @@ android {
         minSdk = 33
         targetSdk = 36
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        // 允许在模拟器上跑测量（结果以警告形式标记，不中断测试）
+        testInstrumentationRunnerArguments["androidx.benchmark.suppressErrors"] = "EMULATOR"
     }
 
     targetProjectPath = ":app"

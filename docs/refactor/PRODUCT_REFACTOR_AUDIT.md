@@ -25,6 +25,9 @@ This audit tracks the refactor against `review.md` and the productization plan. 
 - Kotlin compilation is configured to run in-process for deterministic Windows verification after daemon marker-file permission failures caused unstable incremental builds.
 - Full JVM unit tests pass across debug, release, and benchmark unit-test variants.
 - Release and benchmark APK variants assemble successfully with R8/resource shrinking enabled.
+- Release builds ship only `arm64-v8a` native libs and `resConfigs("zh","en")`; release APK is ~6.2 MB.
+- A Baseline Profile (2425 rules, generated on a Pixel 6 emulator) is bundled in release via `androidx.profileinstaller`, plus a scroll `FrameTimingMetric` benchmark.
+- Playback-position UI updates are isolated to a narrow `positionMs` flow, persistence/startup writes are off the main thread, and model/route-state classes carry `@Stable`/`@Immutable` to cut recomposition.
 
 ## Verified By Tests Or Gates
 
@@ -56,7 +59,7 @@ This audit tracks the refactor against `review.md` and the productization plan. 
 - Player tests cover planner/facade behavior, window boundaries, window sizing for 100/500/1000 song queues, next-song insertion, play-mode mapping, controller-window synchronization, and playback-state serializer compatibility.
 - Compose instrumentation tests exist for home, playlist, and settings flows, including playlist create, rename, delete, add-to-playlist, remove-from-playlist, batch playback actions, playback controls, and settings toggles.
 - Runtime permission policy is isolated behind JVM tests that verify notification and Bluetooth permission denial messages by Android API level.
-- Macrobenchmark coverage now exists for cold startup through `:benchmark`; compile/package verification is expected in CI, while metric execution still requires an emulator or physical device.
+- Macrobenchmark coverage exists for cold startup, home-screen scroll (`FrameTimingMetric`), and Baseline Profile generation through `:benchmark`. Compile/package verification is expected in CI; metric execution has been run on a Pixel 6 emulator (cold start median ≈ 810 ms, software-rendered).
 
 ## Still Not Fully Proven
 
@@ -64,4 +67,4 @@ This audit tracks the refactor against `review.md` and the productization plan. 
 - Media3 service/system media key behavior is still mostly covered through planner/facade unit tests rather than an end-to-end device test.
 - `MusicRepository` is now hidden behind narrow adapters and delegates Room song/playlist persistence to `RoomMusicLibraryDataSource`, but import scanning, album-art refresh, SAF deletion, and in-memory mutation coordination remain broad enough to split further in a later phase.
 - Playback state serialization is now isolated and tested, but it still stores JSON text in Preferences DataStore. A later phase can migrate it to Proto DataStore if stronger schema evolution is needed.
-- Performance observability exists through `PerformanceTrace`, playback-window shape tests, and a cold-start Macrobenchmark module. Actual startup timing numbers still need a device/emulator acceptance run.
+- Performance observability exists through `PerformanceTrace`, playback-window shape tests, a cold-start Macrobenchmark, a scroll benchmark, and a bundled Baseline Profile. Cold-start timing is now measured on an emulator (software-rendered); physical-device acceptance is still pending, and MIUI devices may block macrobenchmark's automated permission/frame-confirmation steps.

@@ -111,7 +111,8 @@
 - `PlayerMediaEventFacade`：处理自动切歌、播放结束、无限播放补队列和“添加到下一首”后的播放模式恢复。
 - `PlayerRandomQueueFacade` + `RandomQueuePlanner` + `UniformRandomPlanner`：随机播放、全局均匀随机和无限播放状态/补队列逻辑。
 - `PlayerPersistenceFacade` + `PlaybackStateStore` + `PlaybackRestoreCoordinator`：保存和恢复播放队列、当前歌曲、进度、播放模式和无限播放状态。
-- `PlayerPlaybackProgressTicker` + `PlayerPlaybackStateAutosaver`：播放中刷新 UI 进度，并定期保存轻量播放快照。
+- `PlayerPlaybackProgressTicker` + `PlayerPlaybackStateAutosaver`：播放中刷新 UI 进度，并定期保存轻量播放快照。播放位置通过独立的 `positionMs: StateFlow<Long>` 窄流下发，只驱动进度条/歌词等局部组件；`PlayerUiState.currentPositionMs` 仅在 seek、切歌、恢复等离散事件时更新，避免播放中整壳重组。
+- `PlayerControllerStateFacade` 不再把每个 controller snapshot 的 `currentPositionMs` 写回 `PlayerUiState`（稳态副本相等时 StateFlow 不重发），位置统一由窄流驱动。
 - `PlayerPlaybackSessionGraph` / `PlayerMediaControllerGraph` / `PlayerQueueGraph` / `PlayerPersistenceGraph` / `PlayerBluetoothGraph`：组装播放会话、MediaController 连接、事件路由、队列服务、持久化和蓝牙监听。
 
 ## 同步流程

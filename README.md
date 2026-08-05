@@ -17,7 +17,7 @@
 ### 🎵 播放控制
 - 播放 / 暂停 / 上一首 / 下一首
 - 可拖动进度条，显示当前时间和总时长；播放中默认约 `500ms` 刷新 UI 进度，拖动时使用本地 UI 状态即时反馈
-- **播放队列**：任意歌曲来源均可构建独立队列，UI 保留完整业务队列，Media3 侧使用窗口化队列同步，详见 [PLAYBACK_QUEUE_ARCHITECTURE.md](PLAYBACK_QUEUE_ARCHITECTURE.md)
+- **播放队列**：任意歌曲来源均可构建独立队列，UI 保留完整业务队列，Media3 侧使用窗口化队列同步，详见 [播放队列架构](docs/architecture/PLAYBACK_QUEUE_ARCHITECTURE.md)
 - **三种播放模式**：顺序 / 倒序 / 随机（首页切换按钮）
 - **上下文播放**：从歌单点击 → 以歌单为队列；从本地音乐点击 → 以全库为队列
 - **批量入队**：歌单详情页支持整单加入队尾（允许重复追加）和整单插入到当前歌曲后面
@@ -169,9 +169,11 @@
 
 ## 核心文档
 
-- [PLAYBACK_QUEUE_ARCHITECTURE.md](PLAYBACK_QUEUE_ARCHITECTURE.md)：播放队列、窗口化同步和系统控制一致性说明
-- [PLAYBACK_STATE_MACHINE.md](PLAYBACK_STATE_MACHINE.md)：Media3 与 UI/持久化状态机说明
-- [PRODUCT_REFACTOR_AUDIT.md](PRODUCT_REFACTOR_AUDIT.md)：本轮产品化重构完成度与剩余风险清单
+全部文档已归入 `docs/` 目录，入口见 [文档索引](docs/README.md)：
+
+- [播放队列架构](docs/architecture/PLAYBACK_QUEUE_ARCHITECTURE.md)：播放队列、窗口化同步和系统控制一致性说明
+- [播放状态机](docs/architecture/PLAYBACK_STATE_MACHINE.md)：Media3 与 UI/持久化状态机说明
+- [产品化重构审计](docs/refactor/PRODUCT_REFACTOR_AUDIT.md)：本轮产品化重构完成度与剩余风险清单
 
 ## 权限
 

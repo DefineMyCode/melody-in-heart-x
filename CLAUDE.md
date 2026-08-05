@@ -88,6 +88,8 @@ The `check` lifecycle task aggregates `spotlessCheck` + `verifyProductArchitectu
 - JVM heap is set to 2048 MB.
 - `android.nonTransitiveRClass=true` — do not reference resources across module boundaries by R class.
 - Compose compiler is the Kotlin 2.0+ **compose compiler plugin** (`org.jetbrains.kotlin.plugin.compose`). Do NOT add the old `composeOptions { kotlinCompilerExtensionVersion }` block — it won't work.
+- Release builds are **arm64-v8a only** (`minSdk 33` 全是 64 位设备) with `resConfigs("zh", "en")`; debug/benchmark 保留全 ABI 以兼容模拟器。
+- Baseline Profile 位于 `app/src/main/baselineProfiles/baseline-prof.txt`（release 自动打包 + `profileinstaller` 应用）；`:benchmark` 模块含 `StartupBenchmark` / `ScrollBenchmark` / `BaselineProfileGenerator`，跑在真机或模拟器（MIUI 真机可能因 ROM 限制无法跑 macrobenchmark）。
 
 ## Architecture Overview
 
@@ -150,7 +152,7 @@ Every feature module exposes its UI through a Route + Screen pair:
 
 Routes are wired in `AppNavHost.kt`. No feature should render another feature's UI directly.
 
-### Playback Queue Architecture (see [PLAYBACK_QUEUE_ARCHITECTURE.md](PLAYBACK_QUEUE_ARCHITECTURE.md))
+### Playback Queue Architecture (see [docs/architecture/PLAYBACK_QUEUE_ARCHITECTURE.md](docs/architecture/PLAYBACK_QUEUE_ARCHITECTURE.md))
 
 Key invariants:
 - `PlayQueue.songs` = full business queue (allows duplicate entries). `PlayQueue.currentIndex` indexes into this list.
@@ -159,13 +161,13 @@ Key invariants:
 - Never re-introduce `PlayQueue.nextIndex()`/`previousIndex()` — navigation is done through MediaController.
 - Queue sync, next-song insertion, and play mode changes must go through the windowed planner layer in `player/window/`.
 
-### Playback State Machine (see [PLAYBACK_STATE_MACHINE.md](PLAYBACK_STATE_MACHINE.md))
+### Playback State Machine (see [docs/architecture/PLAYBACK_STATE_MACHINE.md](docs/architecture/PLAYBACK_STATE_MACHINE.md))
 
 Canonical states: `idle → preparing → ready → playing ↔ paused/buffering → ended/error`. `ControllerPlaybackStateSynchronizer` is the single point that maps Media3 snapshots into `PlayerUiState`.
 
 ### Data Persistence
 
-- **Room** (`MelodyDatabase`, v7): songs, playlists, playlist-song refs, play stats, quick-skip songs, short-play counts, song group overrides, migration state, artists, albums. Schema exports in `data/schemas/`.
+- **Room** (`MelodyDatabase`, v8): songs, playlists, playlist-song refs, play stats, quick-skip songs, short-play counts, song group overrides, migration state, artists, albums. Schema exports in `data/schemas/`.
 - **DataStore Preferences**: player settings (theme, random mode, Bluetooth, notifications) and playback state snapshots.
 - **Legacy migration**: `SharedPreferencesLegacyJsonMigration` handles v1 JSON → Room migration on first launch. Legacy SharedPreferences readers remain only for that path.
 

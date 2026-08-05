@@ -1,5 +1,7 @@
 # Melody in Heart 项目评审与重构建议
 
+> ⚠️ **本文档是重构前的评审快照**：其中的「现状」「项目结构」「依赖配置」等描述（如单模块结构、`PlayerViewModelComponents` 单体、`release.isMinifyEnabled = false`、AGP alpha 版本、SharedPreferences/JSON 持久化等）反映的是**评审当时**的状态，多数建议已在后续产品化重构中落实。当前实现与完成度请以 [PRODUCT_REFACTOR_AUDIT.md](PRODUCT_REFACTOR_AUDIT.md) 为准。
+
 ## 一、总体评价
 
 当前项目已经具备较完整的本地音乐播放器能力，技术栈选择清晰，核心功能覆盖了播放控制、播放队列、Media3 后台播放、歌词、歌单、多版本歌曲、播放统计、SAF 文件导入、蓝牙状态监听等多个真实产品场景。
@@ -8,7 +10,7 @@
 
 - 已采用 Kotlin + Jetpack Compose + Material3 + Media3，方向符合现代 Android 开发实践。
 - 播放队列逻辑已经从早期大 ViewModel 中拆出 `ControllerQueuePlanner`、`RandomQueuePlanner`、`PlaybackStateStore`、多个 `Player*Facade`，并配套了较多单元测试。
-- `PLAYBACK_QUEUE_ARCHITECTURE.md` 对播放器队列、业务队列、系统控制队列之间的关系写得比较清楚，说明项目已经开始形成架构意识。
+- [播放队列架构](../architecture/PLAYBACK_QUEUE_ARCHITECTURE.md) 对播放器队列、业务队列、系统控制队列之间的关系写得比较清楚，说明项目已经开始形成架构意识。
 - 播放器核心场景测试覆盖较积极，`app/src/test` 下已有 39 个 Kotlin 测试文件，尤其播放器相关逻辑不是纯靠手测维护。
 
 同时，项目也进入了典型的“功能快速增长后需要治理”的阶段。当前主要问题不是功能缺失，而是边界逐渐变厚、单模块压力增加、持久化方案偏轻、UI 与应用装配耦合较高，以及大曲库性能还有明确优化空间。

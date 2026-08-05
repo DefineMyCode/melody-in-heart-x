@@ -141,7 +141,7 @@ tasks.register("verifyProductArchitecture") {
             }
         }
 
-        val playbackStateMachineDoc = file("PLAYBACK_STATE_MACHINE.md")
+        val playbackStateMachineDoc = file("docs/architecture/PLAYBACK_STATE_MACHINE.md")
         if (!playbackStateMachineDoc.exists()) {
             fail("Playback state machine documentation is required for Media3/controller/UI synchronization.")
         }
@@ -165,7 +165,7 @@ tasks.register("verifyProductArchitecture") {
                 fail("PLAYBACK_STATE_MACHINE.md must document playback state/sync term: $requiredTerm")
             }
         }
-        val productAudit = file("PRODUCT_REFACTOR_AUDIT.md")
+        val productAudit = file("docs/refactor/PRODUCT_REFACTOR_AUDIT.md")
         if (!productAudit.exists()) {
             fail("PRODUCT_REFACTOR_AUDIT.md must track product refactor completion evidence and remaining risks.")
         }

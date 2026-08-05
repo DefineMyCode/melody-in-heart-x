@@ -402,7 +402,7 @@ tasks.register("verifyProductArchitecture") {
                 unkeyedLazyItems.joinToString("\n") { it.relativeTo(rootDir).path })
         }
 
-        val implementationImportRegex = Regex("""import\s+com\.dcsgo\.data\.(repository|local)\.""")
+        val implementationImportRegex = Regex("""import\s+cn\.com\.dcsgo\.mihx\.data\.(repository|local)\.""")
         val implementationImports = listOf("feature", "domain", "player")
             .flatMap { dirName ->
                 val dir = file(dirName)

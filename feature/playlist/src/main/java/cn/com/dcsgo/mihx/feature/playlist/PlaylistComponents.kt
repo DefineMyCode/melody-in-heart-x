@@ -51,6 +51,7 @@ import cn.com.dcsgo.mihx.core.common.time.formatDurationTime
 import cn.com.dcsgo.mihx.core.model.Playlist
 import cn.com.dcsgo.mihx.core.model.Song
 import cn.com.dcsgo.mihx.ui.components.EqualizerIndicator
+import cn.com.dcsgo.mihx.ui.components.SongListItem
 
 /** 曲库页顶部类目 */
 enum class LibraryTab(val label: String) {
@@ -145,16 +146,11 @@ fun EmptySectionHint(message: String) {
 // 歌曲列表项（支持添加到歌单 / 添加到队列 / 移除）
 // ─────────────────────────────────────────────────────────────────────────────
 
-/** 歌曲条目「更多」菜单动作项 */
-data class SongItemAction(
-    val label: String,
-    val onClick: () -> Unit,
-    val destructive: Boolean = false,
-    val leadingIcon: (@Composable () -> Unit)? = null,
-)
+/** 歌曲条目「更多」菜单动作项（实现迁移至 core:ui 供各 feature 复用） */
+typealias SongItemAction = cn.com.dcsgo.mihx.ui.components.SongItemAction
 
 /**
- * 歌曲列表项组件
+ * 歌曲列表项组件（委托给 core:ui 的共享 [SongListItem]，保留多选指示与更多菜单）
  *
  * @param song              歌曲数据
  * @param isCurrentPlaying  是否正在播放（影响封面和标题样式）
@@ -175,133 +171,79 @@ fun SongItem(
     onSongClick: (Song) -> Unit,
     menuActions: List<SongItemAction> = emptyList(),
 ) {
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .clickable { onSongClick(song) }
-            .padding(vertical = 10.dp, horizontal = 4.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        // 多选模式：行首选中指示（与 LocalSongItem 一致）
-        if (isSelectMode) {
-            Box(modifier = Modifier.size(32.dp), contentAlignment = Alignment.Center) {
-                if (isSelected) {
-                    Icon(
-                        imageVector = Icons.Default.CheckCircle,
-                        contentDescription = "已选中",
-                        modifier = Modifier.size(24.dp),
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                } else {
-                    Icon(
-                        imageVector = Icons.Default.AddCircleOutline,
-                        contentDescription = "未选中",
-                        modifier = Modifier.size(24.dp),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
-            Spacer(modifier = Modifier.width(8.dp))
-        }
-        // 封面 / 播放指示（对齐设计 §5.13：44dp 缩略图、10dp 圆角）
-        Box(
-            modifier = Modifier
-                .size(44.dp)
-                .clip(RoundedCornerShape(10.dp))
-                .background(
-                    if (isCurrentPlaying) MaterialTheme.colorScheme.primary
-                    else MaterialTheme.colorScheme.primaryContainer
-                ),
-            contentAlignment = Alignment.Center
-        ) {
-            if (song.albumArtUri != null) {
-                AsyncImage(
-                    model = song.albumArtUri,
-                    contentDescription = "专辑封面",
-                    modifier = Modifier.size(44.dp),
-                    contentScale = ContentScale.Crop
-                )
-            } else {
-                Icon(
-                    painter = painterResource(
-                        id = if (isCurrentPlaying) R.drawable.pause_24 else R.drawable.queue_music_24
-                    ),
-                    contentDescription = if (isCurrentPlaying) "正在播放" else "播放",
-                    modifier = Modifier.size(20.dp),
-                    tint = if (isCurrentPlaying) MaterialTheme.colorScheme.onPrimary
-                    else MaterialTheme.colorScheme.primary
-                )
-            }
-        }
-        Spacer(modifier = Modifier.width(12.dp))
-        // 歌曲信息
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = song.title,
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = if (isCurrentPlaying) FontWeight.Bold else FontWeight.SemiBold,
-                color = if (isCurrentPlaying) MaterialTheme.colorScheme.primary
-                else MaterialTheme.colorScheme.onSurface,
-                maxLines = 1
-            )
-            Text(
-                text = song.artist,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                maxLines = 1
-            )
-        }
-        // 播放中 EQ 动画指示器（对齐设计 §5.13）
-        if (isCurrentPlaying) {
-            EqualizerIndicator(modifier = Modifier.width(20.dp))
-            Spacer(modifier = Modifier.width(8.dp))
-        }
-        // 歌曲时长（可选展示，用于歌手/专辑详情页；等宽字体对齐设计 §3.1）
-        if (showDuration && song.durationMs > 0L) {
-            Text(
-                text = formatDurationTime(song.durationMs),
-                style = MaterialTheme.typography.labelSmall.copy(
-                    fontFamily = FontFamily.Monospace,
-                ),
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-        }
-        // 更多操作菜单（合并 移除 / 加入队列 / 下一首 / 加入歌单）；多选模式下隐藏
-        if (!isSelectMode && menuActions.isNotEmpty()) {
-            var menuExpanded by remember { mutableStateOf(false) }
-            Box {
-                IconButton(onClick = { menuExpanded = true }) {
-                    Icon(
-                        imageVector = Icons.Filled.MoreVert,
-                        contentDescription = "更多操作",
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-                DropdownMenu(
-                    expanded = menuExpanded,
-                    onDismissRequest = { menuExpanded = false },
-                ) {
-                    menuActions.forEach { action ->
-                        DropdownMenuItem(
-                            text = {
-                                Text(
-                                    text = action.label,
-                                    color = if (action.destructive) {
-                                        MaterialTheme.colorScheme.error
-                                    } else {
-                                        Color.Unspecified
-                                    },
-                                )
-                            },
-                            onClick = {
-                                menuExpanded = false
-                                action.onClick()
-                            },
-                            leadingIcon = action.leadingIcon,
+    SongListItem(
+        song = song,
+        isCurrentPlaying = isCurrentPlaying,
+        modifier = modifier,
+        showDuration = showDuration,
+        onClick = { onSongClick(song) },
+        leading = if (isSelectMode) {
+            {
+                // 多选模式：行首选中指示（与 LocalSongItem 一致）
+                Box(modifier = Modifier.size(32.dp), contentAlignment = Alignment.Center) {
+                    if (isSelected) {
+                        Icon(
+                            imageVector = Icons.Default.CheckCircle,
+                            contentDescription = "已选中",
+                            modifier = Modifier.size(24.dp),
+                            tint = MaterialTheme.colorScheme.primary,
+                        )
+                    } else {
+                        Icon(
+                            imageVector = Icons.Default.AddCircleOutline,
+                            contentDescription = "未选中",
+                            modifier = Modifier.size(24.dp),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
                 }
+                Spacer(modifier = Modifier.width(8.dp))
+            }
+        } else {
+            null
+        },
+        trailing = if (!isSelectMode && menuActions.isNotEmpty()) {
+            { SongItemMenu(menuActions) }
+        } else {
+            null
+        },
+    )
+}
+
+/** 歌曲条目「更多」下拉菜单（多选模式隐藏） */
+@Composable
+private fun SongItemMenu(menuActions: List<SongItemAction>) {
+    var menuExpanded by remember { mutableStateOf(false) }
+    Box {
+        IconButton(onClick = { menuExpanded = true }) {
+            Icon(
+                imageVector = Icons.Filled.MoreVert,
+                contentDescription = "更多操作",
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        DropdownMenu(
+            expanded = menuExpanded,
+            onDismissRequest = { menuExpanded = false },
+        ) {
+            menuActions.forEach { action ->
+                DropdownMenuItem(
+                    text = {
+                        Text(
+                            text = action.label,
+                            color = if (action.destructive) {
+                                MaterialTheme.colorScheme.error
+                            } else {
+                                Color.Unspecified
+                            },
+                        )
+                    },
+                    onClick = {
+                        menuExpanded = false
+                        action.onClick()
+                    },
+                    leadingIcon = action.leadingIcon,
+                )
             }
         }
     }

@@ -47,6 +47,7 @@ import androidx.compose.ui.unit.dp
 import cn.com.dcsgo.mihx.core.model.PlayQueue
 import cn.com.dcsgo.mihx.core.model.Song
 import cn.com.dcsgo.mihx.ui.components.EqualizerIndicator
+import cn.com.dcsgo.mihx.ui.components.SongListItem
 import cn.com.dcsgo.mihx.ui.components.locateHighlightFlash
 import cn.com.dcsgo.mihx.ui.components.rememberLocateHighlightState
 import kotlinx.coroutines.launch
@@ -223,79 +224,55 @@ private fun QueueSongItem(
     onItemClick: () -> Unit = {},
     onRemoveClick: () -> Unit = {}
 ) {
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(8.dp))
-            .clickable(onClick = onItemClick)
-            .padding(vertical = 8.dp, horizontal = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        // 序号或播放图标
-        Box(
-            modifier = Modifier
-                .size(40.dp)
-                .clip(RoundedCornerShape(6.dp))
-                .background(
-                    if (isCurrentPlaying) MaterialTheme.colorScheme.primary
-                    else MaterialTheme.colorScheme.primaryContainer
-                ),
-            contentAlignment = Alignment.Center
-        ) {
-            if (isCurrentPlaying) {
+    SongListItem(
+        song = song,
+        isCurrentPlaying = isCurrentPlaying,
+        modifier = modifier.clip(RoundedCornerShape(8.dp)),
+        contentPadding = PaddingValues(vertical = 8.dp, horizontal = 8.dp),
+        onClick = onItemClick,
+        cover = { playing -> QueueIndexBox(song, index, playing) },
+        trailing = {
+            IconButton(
+                onClick = onRemoveClick,
+                modifier = Modifier.size(32.dp)
+            ) {
                 Icon(
-                    painter = painterResource(id = R.drawable.pause_24),
-                    contentDescription = "正在播放",
-                    modifier = Modifier.size(18.dp),
-                    tint = MaterialTheme.colorScheme.onPrimary
-                )
-            } else {
-                Text(
-                    text = (index + 1).toString(),
-                    style = MaterialTheme.typography.labelSmall,
-                    fontWeight = FontWeight.Bold,
-                    color = if (isCurrentPlaying) MaterialTheme.colorScheme.onPrimary
-                    else MaterialTheme.colorScheme.onPrimaryContainer
+                    imageVector = Icons.Default.Close,
+                    contentDescription = "从队列移除",
+                    modifier = Modifier.size(16.dp),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
-        }
+        },
+    )
+}
 
-        // 歌曲信息
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = song.title,
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = if (isCurrentPlaying) FontWeight.Bold else FontWeight.Medium,
-                color = if (isCurrentPlaying) MaterialTheme.colorScheme.primary
-                else MaterialTheme.colorScheme.onSurface,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-            Text(
-                text = song.artist,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-        }
-
-        // 播放中 EQ 动画指示器（对齐设计 §6.5）
+/** 队列序号 / 播放中指示（40dp 圆角盒） */
+@Composable
+private fun QueueIndexBox(song: Song, index: Int, isCurrentPlaying: Boolean) {
+    Box(
+        modifier = Modifier
+            .size(40.dp)
+            .clip(RoundedCornerShape(6.dp))
+            .background(
+                if (isCurrentPlaying) MaterialTheme.colorScheme.primary
+                else MaterialTheme.colorScheme.primaryContainer
+            ),
+        contentAlignment = Alignment.Center
+    ) {
         if (isCurrentPlaying) {
-            EqualizerIndicator(modifier = Modifier.size(20.dp))
-        }
-
-        // 移除按钮
-        IconButton(
-            onClick = onRemoveClick,
-            modifier = Modifier.size(32.dp)
-        ) {
             Icon(
-                imageVector = Icons.Default.Close,
-                contentDescription = "从队列移除",
-                modifier = Modifier.size(16.dp),
-                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                painter = painterResource(id = R.drawable.pause_24),
+                contentDescription = "正在播放",
+                modifier = Modifier.size(18.dp),
+                tint = MaterialTheme.colorScheme.onPrimary
+            )
+        } else {
+            Text(
+                text = (index + 1).toString(),
+                style = MaterialTheme.typography.labelSmall,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onPrimaryContainer
             )
         }
     }

@@ -63,6 +63,9 @@ import cn.com.dcsgo.mihx.feature.user.SongTopListRouteState
 import cn.com.dcsgo.mihx.feature.user.UserRoute
 import cn.com.dcsgo.mihx.feature.user.UserRouteActions
 import cn.com.dcsgo.mihx.feature.user.UserRouteState
+import cn.com.dcsgo.mihx.feature.user.VersionComparisonRoute
+import cn.com.dcsgo.mihx.feature.user.VersionComparisonRouteActions
+import cn.com.dcsgo.mihx.feature.user.VersionComparisonRouteState
 import cn.com.dcsgo.mihx.feature.user.VersionManagementRoute
 import cn.com.dcsgo.mihx.feature.user.VersionManagementRouteActions
 import cn.com.dcsgo.mihx.feature.user.VersionManagementRouteState
@@ -349,7 +352,49 @@ fun AppNavHost(
                     onDeleteSong = { song -> deleteSongWithToast(song.id) },
                     onDetachVersion = playerViewModel::detachSongFromGroup,
                     onReassignVersion = playerViewModel::reassignSongToGroup,
+                    onCompare = { group ->
+                        navController.navigate(AppRoutes.versionComparison(group.groupKey))
+                    },
                     onCopied = { text -> showToast("已复制: $text") },
+                ),
+                showToast = showToast,
+                loadSongInfo = loadSongInfo,
+            )
+        }
+
+        composable(
+            route = AppRoutes.VERSION_COMPARISON,
+            arguments = listOf(navArgument(AppRoutes.VERSION_GROUP_ID) { type = NavType.StringType }),
+        ) { backStackEntry ->
+            val groupId = backStackEntry.arguments?.getString(AppRoutes.VERSION_GROUP_ID).orEmpty()
+            val allSongs = remember(uiState.songs) {
+                playerViewModel.getGroupedSongs(uiState.songs).flatten()
+            }
+            val groupSongs = remember(groupId, allSongs) {
+                allSongs.filter { it.groupKey == groupId }
+            }
+            // 播放位置窄流：只在对比页订阅，供底部进度条拖拽
+            val positionMs by playerViewModel.positionMs.collectAsStateWithLifecycle()
+            VersionComparisonRoute(
+                state = VersionComparisonRouteState(
+                    songs = groupSongs,
+                    allSongs = allSongs,
+                    currentSong = uiState.currentSong,
+                    isPlaying = uiState.isPlaying,
+                    currentPositionMs = positionMs,
+                    durationMs = uiState.durationMs,
+                ),
+                actions = VersionComparisonRouteActions(
+                    onBack = navController::navigateUp,
+                    // 播放某版本：该分组所有版本作为上下文队列，从点击的版本开始顺序播放
+                    onPlayVersion = { song ->
+                        playerViewModel.playWith(
+                            song,
+                            SongPlaybackStrategy.scope(playerViewModel.getSongsWithSameName(song, allSongs)),
+                        )
+                    },
+                    onSeekTo = playerViewModel::seekTo,
+                    onDeleteSong = { song -> deleteSongWithToast(song.id) },
                 ),
                 showToast = showToast,
                 loadSongInfo = loadSongInfo,

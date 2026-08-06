@@ -28,6 +28,7 @@ enum class AppDestinations(
                     route?.startsWith("artist/") == true ||
                     route?.startsWith("album/") == true ||
                     route == AppRoutes.VERSION_MANAGEMENT ||
+                    route?.startsWith("version-comparison/") == true ||
                     route == AppRoutes.QUICK_SKIP_SONGS -> PLAYLIST
                 // 播放页（首页、歌词）及其它
                 else -> HOME

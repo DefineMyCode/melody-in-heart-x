@@ -19,6 +19,7 @@ data class VersionManagementRouteActions(
     val onDeleteSong: (Song) -> Unit,
     val onDetachVersion: (Song) -> Unit,
     val onReassignVersion: (song: Song, targetSong: Song) -> Unit,
+    val onCompare: (SongVersionGroup) -> Unit = {},
     val onCopied: (String) -> Unit,
 )
 
@@ -54,6 +55,7 @@ fun VersionManagementRoute(
             actions.onReassignVersion(song, targetSong)
             showToast("已将「${song.title}」关联到「${targetSong.title}」分组")
         },
+        onCompare = actions.onCompare,
         onCopied = actions.onCopied,
         loadSongInfo = loadSongInfo,
     )

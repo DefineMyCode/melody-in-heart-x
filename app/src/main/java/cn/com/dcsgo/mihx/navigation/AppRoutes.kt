@@ -13,6 +13,8 @@ object AppRoutes {
     const val ALBUM_DETAIL = "album/{$ALBUM_NAME}"
     const val USER = "user"
     const val VERSION_MANAGEMENT = "version-management"
+    const val VERSION_GROUP_ID = "groupId"
+    const val VERSION_COMPARISON = "version-comparison/{$VERSION_GROUP_ID}"
     const val PLAYBACK_STATS = "playback-stats"
     const val SONG_TOP_LIST = "song-top-list"
     const val SONG_TOP_PERIOD = "period"
@@ -31,4 +33,6 @@ object AppRoutes {
     fun artistDetail(artistName: String): String = "artist/${Uri.encode(artistName)}"
 
     fun albumDetail(albumName: String): String = "album/${Uri.encode(albumName)}"
+
+    fun versionComparison(groupId: String): String = "version-comparison/${Uri.encode(groupId)}"
 }

@@ -56,6 +56,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import cn.com.dcsgo.mihx.core.model.Song
 import cn.com.dcsgo.mihx.core.model.SongInfo
+import cn.com.dcsgo.mihx.domain.playback.SongVersionComparer
 import cn.com.dcsgo.mihx.ui.components.SongInfoDialog
 import cn.com.dcsgo.mihx.ui.components.locateHighlightFlash
 import cn.com.dcsgo.mihx.ui.components.rememberLocateHighlightState
@@ -91,6 +92,7 @@ import kotlinx.coroutines.launch
  * @param onDeleteSong      删除某首歌曲（从本地文件和所有歌单中移除）
  * @param onDetachVersion   将某版本移出当前分组（独立成单曲）
  * @param onReassignVersion 将某版本关联到其他歌曲分组的回调（传出 song 和选定的 targetSong）
+ * @param onCompare         点击分组「对比」按钮进入版本对比页的回调
  * @param onCopied          复制歌曲名后的回调（用于显示 Toast）
  */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -105,6 +107,7 @@ fun VersionManagementScreen(
     onDeleteSong: (Song) -> Unit,
     onDetachVersion: (Song) -> Unit,
     onReassignVersion: (song: Song, targetSong: Song) -> Unit,
+    onCompare: (SongVersionGroup) -> Unit = {},
     onCopied: (text: String) -> Unit = {},
     loadSongInfo: suspend (Song) -> SongInfo? = { null },
 ) {
@@ -115,15 +118,16 @@ fun VersionManagementScreen(
             .groupBy { it.groupKey }
             .filter { (_, list) -> list.size >= 2 }
             .values
-            .map { songList ->
-                val sorted = songList.sortedByDescending { it.sampleRate }
-                SongVersionGroup(
-                    groupKey = songList.first().groupKey,
-                    displayTitle = songList.first().title,
-                    albumArtUri = sorted.firstOrNull { it.albumArtUri != null }?.albumArtUri,
-                    versions = sorted
-                )
-            }
+                .map { songList ->
+                    val sorted = songList.sortedByDescending { it.sampleRate }
+                    SongVersionGroup(
+                        groupKey = songList.first().groupKey,
+                        displayTitle = songList.first().title,
+                        albumArtUri = sorted.firstOrNull { it.albumArtUri != null }?.albumArtUri,
+                        versions = sorted,
+                        diffHint = SongVersionComparer.diffHint(sorted)
+                    )
+                }
             .sortedBy { it.displayTitle }
     }
 
@@ -360,7 +364,8 @@ fun VersionManagementScreen(
                                 onCopied(title)
                             },
                             onDetachVersion = onDetachVersion,
-                            onReassignVersion = { songToReassign = it }
+                            onReassignVersion = { songToReassign = it },
+                            onCompare = { onCompare(group) }
                         )
                     }
                 }

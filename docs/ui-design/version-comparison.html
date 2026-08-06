@@ -180,12 +180,10 @@ svg{display:block}
    版本横滑条
    ============================================================ */
 .strip-zone{flex:none;padding:8px 0 2px}
-.strip-title{display:flex;align-items:center;justify-content:space-between;padding:0 18px 8px;font-size:12px;font-weight:700;color:var(--text2);letter-spacing:.5px}
-.strip-title .hint{font-size:10.5px;color:var(--text3);font-weight:600}
 .vstrip{display:flex;gap:9px;padding:2px 18px 4px;overflow:hidden}
 .vcard{flex:none;width:112px;background:var(--bg1);border:1px solid var(--out1);border-radius:var(--r-m);padding:9px;cursor:pointer;transition:all .2s;position:relative}
 .vcard:hover{border-color:var(--out2)}
-.vcard.sel{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.vcard.sel{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent);background:var(--tint)}
 .vcard-cover{width:100%;aspect-ratio:1;border-radius:9px;background:radial-gradient(120% 120% at 30% 25%,var(--cover1),var(--cover2) 72%);display:flex;align-items:center;justify-content:center;color:var(--cover-note);position:relative}
 .vcard-cover svg{width:22px;height:22px;opacity:.9}
 .vcard-cover .play-ov{position:absolute;right:4px;bottom:4px;width:22px;height:22px;border-radius:50%;background:rgba(0,0,0,.55);color:#fff;display:flex;align-items:center;justify-content:center}
@@ -199,9 +197,15 @@ svg{display:block}
 .vcard .mini-q{height:3px;border-radius:2px;background:var(--bg3);margin-top:6px;overflow:hidden}
 .vcard .mini-q i{display:block;height:100%;border-radius:2px;background:var(--grad)}
 .badge{position:absolute;top:5px;left:5px;z-index:2;display:inline-flex;align-items:center;gap:3px;font-size:9px;font-weight:800;letter-spacing:.3px;padding:3px 6px;border-radius:6px}
-.badge.ref{background:var(--accent);color:var(--on-accent)}
+.badge.sel{background:var(--accent);color:var(--on-accent)}
 .badge.best{background:var(--tint-strong);color:var(--accent);border:1px solid var(--tint-strong);backdrop-filter:blur(2px)}
 .badge.best svg{width:10px;height:10px}
+/* 采样率 · 编码格式行（音质条上方），行尾为删除入口 */
+.vcard-grow{flex:1}
+.cover-del{position:absolute;right:4px;bottom:4px;width:24px;height:24px;border-radius:50%;background:var(--err);color:#fff;display:flex;align-items:center;justify-content:center;z-index:3;box-shadow:0 2px 6px rgba(0,0,0,.4)}
+.cover-del svg{width:12px;height:12px}
+.cover-del.inline{position:static;width:20px;height:20px;box-shadow:none;flex:none}
+.cover-del.inline svg{width:11px;height:11px}
 
 /* ============================================================
    差异总览
@@ -283,6 +287,30 @@ svg{display:block}
 .cmp-edge::after{content:"";position:absolute;right:0;top:0;bottom:0;width:40px;background:linear-gradient(90deg,transparent,var(--bg1) 85%);pointer-events:none;z-index:4}
 .hscroll-note{display:flex;align-items:center;gap:5px;padding:2px 14px 11px;font-size:9.5px;color:var(--text3)}
 .hscroll-note svg{width:11px;height:11px}
+
+/* ============================================================
+   文件路径对比
+   ============================================================ */
+.path-zone{flex:none;margin:8px 18px 0}
+.path-card{background:var(--bg1);border:1px solid var(--out1);border-radius:var(--r-l);padding:12px 0 8px;transition:background .35s}
+.path-head{display:flex;align-items:center;justify-content:space-between;padding:0 16px 6px}
+.path-title{display:flex;align-items:center;gap:7px;font-size:13px;font-weight:700}
+.path-title svg{width:15px;height:15px;color:var(--accent)}
+.path-hint{font-size:10px;color:var(--text3)}
+.path-row{display:flex;align-items:center;gap:11px;padding:9px 16px;cursor:pointer;transition:background .2s}
+.path-row:hover{background:var(--hover)}
+.path-row.sel{background:var(--tint);box-shadow:inset 3px 0 0 var(--accent)}
+.path-row.sel .path-name{color:var(--accent)}
+.path-row + .path-row{border-top:1px solid var(--out1)}
+.path-badge{font-size:9px;font-weight:800;color:var(--accent);background:var(--tint-strong);border:1px solid var(--tint-strong);padding:1px 6px;border-radius:999px}
+.path-thumb{width:38px;height:38px;border-radius:9px;background:radial-gradient(120% 120% at 30% 25%,var(--cover1),var(--cover2) 72%);display:flex;align-items:center;justify-content:center;color:var(--cover-note);flex:none}
+.path-thumb svg{width:15px;height:15px}
+.path-meta{flex:1;min-width:0}
+.path-name{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:800}
+.path-value{font-family:var(--font-num);font-size:10.5px;color:var(--text3);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.path-del{width:30px;height:30px;border-radius:50%;background:var(--err-soft);color:var(--err);display:flex;align-items:center;justify-content:center;flex:none;transition:all .2s}
+.path-del:hover{background:var(--err-border)}
+.path-del svg{width:14px;height:14px}
 
 /* ============================================================
    对比聆听 A/B
@@ -407,22 +435,15 @@ svg{display:block}
 .del-chip{display:inline-flex;align-items:center;gap:4px;font-size:9.5px;font-weight:700;padding:3px 7px;border-radius:999px;background:var(--bg3);border:1px solid var(--out1);color:var(--text3);font-family:var(--font-num)}
 .del-chip svg{width:10px;height:10px}
 
-/* 版本卡上的更多按钮（删除入口） */
-.strip-zone{position:relative}
-.vcard .more-btn{position:absolute;top:4px;right:4px;width:20px;height:20px;border-radius:50%;background:rgba(0,0,0,.5);color:#fff;display:flex;align-items:center;justify-content:center;z-index:3;opacity:0;transition:opacity .2s}
-.vcard:hover .more-btn{opacity:1}
-.vcard .more-btn svg{width:13px;height:13px}
-.vcard .more-btn.show{opacity:1}
-.card-menu{position:absolute;top:132px;z-index:6;background:var(--bg4);border:1px solid var(--out1);border-radius:12px;box-shadow:var(--shadow);padding:4px;min-width:158px}
-.card-menu .mi{display:flex;align-items:center;gap:9px;padding:9px 11px;border-radius:8px;font-size:12.5px;color:var(--text1);cursor:pointer}
-.card-menu .mi:hover{background:var(--hover)}
-.card-menu .mi svg{width:15px;height:15px;color:var(--text3)}
-.card-menu .mi.danger{color:var(--err)}
-.card-menu .mi.danger svg{color:var(--err)}
-.card-menu .sep{height:1px;background:var(--out1);margin:4px 6px}
-
 /* 底部操作条 */
 .action-bar{flex:none;display:flex;align-items:center;gap:8px;padding:10px 18px;border-top:1px solid var(--out1);background:var(--bg1);margin-top:auto;transition:background .35s}
+.action-bar.col{flex-direction:column;align-items:stretch;gap:0;padding:6px 18px 8px}
+.prog-wrap{padding:0 6px}
+.slider-prog{position:relative;width:100%;height:4px;border-radius:2px;background:var(--out1);margin-top:4px;cursor:pointer}
+.slider-prog::before{content:"";position:absolute;left:0;top:0;bottom:0;width:33%;border-radius:2px;background:var(--accent)}
+.slider-prog::after{content:"";position:absolute;left:33%;top:50%;width:14px;height:14px;border-radius:50%;background:var(--accent);transform:translate(-50%,-50%);box-shadow:0 2px 6px var(--scrim)}
+.prog-times{width:100%;display:flex;justify-content:space-between;color:var(--text3);font-size:10px;font-family:var(--font-num);margin-top:6px}
+.action-row2{display:flex;align-items:center;gap:8px;margin-top:2px}
 .btn{display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 14px;border-radius:18px;font-size:12px;font-weight:700;letter-spacing:.2px;transition:all .2s}
 .btn.filled{background:var(--accent);color:var(--on-accent)}
 .btn.outlined{border:1px solid var(--out2);color:var(--text1)}
@@ -509,6 +530,7 @@ footer .mono{font-family:var(--font-num)}
   <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 8h.01M12 11v5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
   <symbol id="i-clock" viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-1 3h2v5.6l4.2 2.5-1 1.7-5.2-3.1V7z" fill="currentColor"/></symbol>
   <symbol id="i-trash" viewBox="0 0 24 24"><path d="M9 3h6l1 2h4v2H4V5h4l1-2zM6 9h12l-1 12a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L6 9zm5 2v9h2v-9h-2zm-4 0v9h2v-9H7zm8 0v9h2v-9h-2z" fill="currentColor"/></symbol>
+  <symbol id="i-copy" viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
 </svg>
 
 <div class="page">
@@ -543,13 +565,13 @@ footer .mono{font-family:var(--font-num)}
     <h1 class="hero-title">版本对比<span class="grad">，差异一眼可见</span><span class="en">Version Comparison</span></h1>
     <p class="hero-sub">
       多版本管理从「能看出有几个版本」升级到<strong>「一眼看出差别在哪」</strong>。同名歌曲的多个版本以<strong>规格对比表</strong>呈现：
-      相同信息折叠收起、差异单元高亮、可选<strong>对比基准</strong>、音质条一眼辨高低，并支持<strong>A/B 盲听</strong>。
+      相同信息折叠收起、差异单元高亮、可选<strong>对比基准</strong>、音质条一眼辨高低，并支持<strong>文件路径对比</strong>。
       针对 4 个版本左右的歌曲，首列固定 + 横滑 + 折叠共同项，手机上依然不拥挤。
     </p>
     <div class="hero-facts">
       <span class="fact"><svg class="ic ic-stroke"><use href="#i-compare"/></svg>共同折叠 · 差异高亮</span>
       <span class="fact"><svg class="ic ic-stroke"><use href="#i-diff"/></svg>基准切换 · 音质条对比</span>
-      <span class="fact"><svg class="ic ic-stroke"><use href="#i-ear"/></svg>A/B 盲听对比</span>
+      <span class="fact"><svg class="ic ic-stroke"><use href="#i-info"/></svg>文件路径对比 · 真实路径核对</span>
       <span class="fact"><svg class="ic ic-stroke"><use href="#i-trash"/></svg>对比完删除 · 二次确认</span>
     </div>
 
@@ -586,7 +608,7 @@ footer .mono{font-family:var(--font-num)}
     <span class="idx">01</span>
     <div>
       <h2>界面稿 · 手机</h2>
-      <div class="sub">四张稿子：多版本管理页新增「对比」入口、版本对比主页面（基准 + 差异表 + 折叠共同项）、A/B 盲听对比、删除本地文件的确认弹窗。左上角切换主题，全部稿子即时换肤。</div>
+      <div class="sub">三张稿子：多版本管理页新增「对比」入口、版本对比主页面（基准 + 差异表 + 折叠共同项 + 文件路径）、删除本地文件的确认弹窗。左上角切换主题，全部稿子即时换肤。</div>
     </div>
   </div>
 
@@ -690,41 +712,33 @@ footer .mono{font-family:var(--font-num)}
           <div class="scroll">
             <!-- 版本横滑条 -->
             <div class="strip-zone">
-              <div class="strip-title"><span>选择对比基准</span><span class="hint">点击卡片切换基准 · 卡片「⋯」可删除</span></div>
               <div class="vstrip">
                 <div class="vcard sel" data-v="0">
-                  <span class="badge ref">基准</span>
+                  <span class="badge sel">已选</span>
                   <span class="badge best"><svg class="ic ic-fill"><use href="#i-trophy"/></svg>最佳</span>
-                  <div class="vcard-cover"><svg class="ic ic-fill"><use href="#i-note"/></svg><span class="play-ov"><svg class="ic ic-fill"><use href="#i-play"/></svg></span></div>
+                  <div class="vcard-cover"><svg class="ic ic-fill"><use href="#i-note"/></svg></div>
                   <div class="vcard-name">FLAC 96k</div>
-                  <div class="vcard-meta"><span class="fmt lossless">FLAC</span><span class="vcard-rate">96k · 24b</span></div>
+                  <div class="vcard-meta"><span class="fmt lossless">FLAC</span><span class="vcard-rate">96kHz</span><span class="vcard-grow"></span><button class="cover-del inline"><svg class="ic ic-fill"><use href="#i-trash"/></svg></button></div>
                   <div class="mini-q"><i style="width:100%"></i></div>
                 </div>
                 <div class="vcard" data-v="1">
-                  <button class="more-btn show"><svg class="ic ic-fill"><use href="#i-dots"/></svg></button>
                   <div class="vcard-cover"><svg class="ic ic-fill"><use href="#i-note"/></svg></div>
                   <div class="vcard-name">WAV 44.1k</div>
-                  <div class="vcard-meta"><span class="fmt lossless">WAV</span><span class="vcard-rate">44.1k · 16b</span></div>
+                  <div class="vcard-meta"><span class="fmt lossless">WAV</span><span class="vcard-rate">44.1kHz</span><span class="vcard-grow"></span><button class="cover-del inline"><svg class="ic ic-fill"><use href="#i-trash"/></svg></button></div>
                   <div class="mini-q"><i style="width:62%"></i></div>
                 </div>
                 <div class="vcard" data-v="2">
                   <div class="vcard-cover"><svg class="ic ic-fill"><use href="#i-note"/></svg></div>
                   <div class="vcard-name">MP3 320k</div>
-                  <div class="vcard-meta"><span class="fmt lossy">MP3</span><span class="vcard-rate">320kbps</span></div>
+                  <div class="vcard-meta"><span class="fmt lossy">MP3</span><span class="vcard-rate">48kHz</span><span class="vcard-grow"></span><button class="cover-del inline"><svg class="ic ic-fill"><use href="#i-trash"/></svg></button></div>
                   <div class="mini-q"><i style="width:34%"></i></div>
                 </div>
                 <div class="vcard" data-v="3">
                   <div class="vcard-cover"><svg class="ic ic-fill"><use href="#i-note"/></svg></div>
                   <div class="vcard-name">FLAC 现场</div>
-                  <div class="vcard-meta"><span class="fmt lossless">FLAC</span><span class="vcard-rate">44.1k · 16b</span></div>
+                  <div class="vcard-meta"><span class="fmt lossless">FLAC</span><span class="vcard-rate">44.1kHz</span><span class="vcard-grow"></span><button class="cover-del inline"><svg class="ic ic-fill"><use href="#i-trash"/></svg></button></div>
                   <div class="mini-q"><i style="width:60%"></i></div>
                 </div>
-              </div>
-              <div class="card-menu" style="right:10px">
-                <div class="mi"><svg class="ic ic-stroke"><use href="#i-ear"/></svg>A/B 试听</div>
-                <div class="mi"><svg class="ic ic-stroke"><use href="#i-compare"/></svg>设为基准</div>
-                <div class="sep"></div>
-                <div class="mi danger"><svg class="ic ic-fill"><use href="#i-trash"/></svg>删除本地文件</div>
               </div>
             </div>
 
@@ -777,7 +791,7 @@ footer .mono{font-family:var(--font-num)}
                   <thead>
                     <tr>
                       <th class="c-label">规格</th>
-                      <th class="ref" data-col="0"><div class="th-chip"><div class="th-cover"><svg class="ic ic-fill"><use href="#i-note"/></svg></div><div class="th-name">FLAC 96k</div><div class="th-sub">基准</div></div></th>
+                      <th class="ref" data-col="0"><div class="th-chip"><div class="th-cover"><svg class="ic ic-fill"><use href="#i-note"/></svg></div><div class="th-name">FLAC 96k</div><div class="th-sub">已选</div></div></th>
                       <th data-col="1"><div class="th-chip"><div class="th-cover"><svg class="ic ic-fill"><use href="#i-note"/></svg></div><div class="th-name">WAV</div><div class="th-sub">44.1k</div></div></th>
                       <th data-col="2"><div class="th-chip"><div class="th-cover"><svg class="ic ic-fill"><use href="#i-note"/></svg></div><div class="th-name">MP3</div><div class="th-sub">320k</div></div></th>
                       <th data-col="3"><div class="th-chip"><div class="th-cover"><svg class="ic ic-fill"><use href="#i-note"/></svg></div><div class="th-name">FLAC</div><div class="th-sub">现场</div></div></th>
@@ -797,6 +811,13 @@ footer .mono{font-family:var(--font-num)}
                       <td class="cell diff" data-col="1">44.1kHz<div class="bar-mini"><i style="width:46%"></i></div></td>
                       <td class="cell diff" data-col="2">48kHz<div class="bar-mini"><i style="width:50%"></i></div></td>
                       <td class="cell diff" data-col="3">44.1kHz<div class="bar-mini"><i style="width:46%"></i></div></td>
+                    </tr>
+                    <tr>
+                      <td class="c-label">比特率</td>
+                      <td class="cell best" data-col="0">4608k</td>
+                      <td class="cell diff" data-col="1">1411k</td>
+                      <td class="cell diff" data-col="2">320k</td>
+                      <td class="cell diff" data-col="3">1411k</td>
                     </tr>
                     <tr>
                       <td class="c-label">位深</td>
@@ -832,134 +853,54 @@ footer .mono{font-family:var(--font-num)}
               <div class="hscroll-note"><svg class="ic ic-stroke"><use href="#i-chev-r"/></svg>规格超过 3 列时横向滑动 · 首列固定</div>
             </div>
 
-            <!-- A/B 试听（入口） -->
-            <div class="ab-zone">
-              <div class="ab-card">
-                <div class="ab-title">
-                  <div class="t"><svg class="ic ic-stroke"><use href="#i-ear"/></svg>对比聆听</div>
-                  <label class="ab-blind"><input type="checkbox">盲听模式</label>
+            <!-- 文件路径 -->
+            <div class="path-zone">
+              <div class="path-card">
+                <div class="path-head">
+                  <span class="path-title"><svg class="ic ic-fill"><use href="#i-copy"/></svg>文件路径</span>
+                  <span class="path-hint">点击行切换基准 · 行尾可删除</span>
                 </div>
-                <div class="ab-pair">
-                  <div class="ab-slot on">
-                    <span class="ab-tag A">A</span>
-                    <div class="ab-thumb"><svg class="ic ic-fill"><use href="#i-note"/></svg></div>
-                    <div class="ab-meta"><div class="ab-name">FLAC 96kHz</div><div class="ab-sub">24bit · Hi-Res</div></div>
+                <div class="path-row sel">
+                  <div class="path-thumb"><svg class="ic ic-fill"><use href="#i-note"/></svg></div>
+                  <div class="path-meta">
+                    <div class="path-name"><span class="fmt lossless">FLAC</span> 96kHz <span class="path-badge">已选</span></div>
+                    <div class="path-value">/storage/emulated/0/Music/海阔天空.flac</div>
                   </div>
-                  <div class="ab-mid">
-                    <span class="sw-icon"><svg class="ic ic-stroke"><use href="#i-swap"/></svg></span>
-                    <span class="lbl">A↔B</span>
-                  </div>
-                  <div class="ab-slot">
-                    <span class="ab-tag B">B</span>
-                    <div class="ab-thumb"><svg class="ic ic-fill"><use href="#i-note"/></svg></div>
-                    <div class="ab-meta"><div class="ab-name">MP3 320k</div><div class="ab-sub">48kHz · 压缩</div></div>
-                  </div>
+                  <button class="path-del"><svg class="ic ic-fill"><use href="#i-trash"/></svg></button>
                 </div>
-                <div class="ab-ctrl">
-                  <div class="ab-seg">
-                    <button class="on" data-ab="A">A</button>
-                    <button data-ab="B">B</button>
+                <div class="path-row">
+                  <div class="path-thumb"><svg class="ic ic-fill"><use href="#i-note"/></svg></div>
+                  <div class="path-meta">
+                    <div class="path-name"><span class="fmt lossless">WAV</span> 44.1kHz</div>
+                    <div class="path-value">/storage/emulated/0/Music/无损备份/海阔天空.wav</div>
                   </div>
-                  <button class="ab-play"><svg class="ic ic-fill"><use href="#i-play"/></svg></button>
-                  <div class="ab-progress">
-                    <div class="ab-bar"><i></i></div>
-                    <div class="ab-times"><span>1:24</span><span>5:10</span></div>
-                  </div>
+                  <button class="path-del"><svg class="ic ic-fill"><use href="#i-trash"/></svg></button>
                 </div>
-                <div class="ab-note"><svg class="ic ic-stroke"><use href="#i-swap"/></svg>连点 A/B 即时切换 · 进度与播放状态共享保留</div>
+                <div class="path-row">
+                  <div class="path-thumb"><svg class="ic ic-fill"><use href="#i-note"/></svg></div>
+                  <div class="path-meta">
+                    <div class="path-name"><span class="fmt lossy">MP3</span> 320k</div>
+                    <div class="path-value">/storage/1AE3-23F4/Download/海阔天空.mp3</div>
+                  </div>
+                  <button class="path-del"><svg class="ic ic-fill"><use href="#i-trash"/></svg></button>
+                </div>
               </div>
             </div>
           </div>
 
-          <div class="action-bar">
-            <button class="btn outlined"><svg class="ic ic-fill"><use href="#i-note"/></svg>加入队列</button>
-            <span class="spacer"></span>
-            <button class="btn filled"><svg class="ic ic-fill"><use href="#i-play"/></svg>播放基准</button>
+          <div class="action-bar col">
+            <div class="prog-wrap">
+              <div class="slider-prog"><i style="width:33%"></i></div>
+              <div class="prog-times"><span>1:24</span><span>5:10</span></div>
+            </div>
+            <div class="action-row2">
+              <span class="spacer"></span>
+              <button class="btn filled"><svg class="ic ic-fill"><use href="#i-play"/></svg>播放选中</button>
+            </div>
           </div>
         </div>
       </div>
-      <div class="phone-label">02 · <b>版本对比 · 主页面</b> · 横滑版本条选基准 · 差异总览 · 「各版本一致」折叠 · 规格对比表（首列固定 + 横滑 + 音质条 + 差异高亮）· 底部 A/B 试听 + 操作条</div>
-    </div>
-
-    <!-- 03 A/B 盲听 -->
-    <div class="phone-wrap">
-      <div class="phone">
-        <div class="notch"></div>
-        <div class="screen">
-          <div class="statusbar"><span>21:05</span><span class="sb-icons">▮▮ ▮● ♪</span></div>
-          <div class="appbar">
-            <div class="appbar-left">
-              <button class="icon-btn"><svg class="ic ic-stroke"><use href="#i-back"/></svg></button>
-              <div><div class="t">对比聆听</div><div class="appbar-sub">A · FLAC 96k vs B · MP3 320k</div></div>
-            </div>
-            <div class="appbar-right">
-              <button class="icon-btn"><svg class="ic ic-fill"><use href="#i-dots"/></svg></button>
-            </div>
-          </div>
-          <div class="scroll" style="padding-top:10px">
-            <div class="ab-full">
-              <div class="ab-hero">
-                <div class="ab-hero-cover"><svg class="ic ic-fill"><use href="#i-note"/></svg></div>
-                <div class="ab-hero-meta">
-                  <div class="ab-hero-title">海阔天空</div>
-                  <div class="ab-hero-sub">Beyond · 乐与怒</div>
-                </div>
-                <span class="tag diff"><svg class="ic ic-stroke"><use href="#i-ear"/></svg>盲听</span>
-              </div>
-
-              <div class="ab-full-card">
-                <div class="ab-full-slot A">
-                  <span class="ab-tag A">A</span>
-                  <div class="ab-thumb-lg"><svg class="ic ic-fill"><use href="#i-note"/></svg></div>
-                  <div class="ab-meta-lg">
-                    <div class="ab-name">FLAC 96kHz · 24bit</div>
-                    <div class="ab-sub">Hi-Res · 98.6MB · 有歌词</div>
-                    <div class="mini-q"><i style="width:100%"></i></div>
-                  </div>
-                  <button class="ab-tap"><svg class="ic ic-fill"><use href="#i-check"/></svg></button>
-                </div>
-                <div class="ab-or"><span>或</span></div>
-                <div class="ab-full-slot">
-                  <span class="ab-tag B">B</span>
-                  <div class="ab-thumb-lg"><svg class="ic ic-fill"><use href="#i-note"/></svg></div>
-                  <div class="ab-meta-lg">
-                    <div class="ab-name">MP3 320kbps · 48kHz</div>
-                    <div class="ab-sub">压缩 · 12.3MB · 无歌词</div>
-                    <div class="mini-q"><i style="width:34%"></i></div>
-                  </div>
-                  <button class="ab-tap"><svg class="ic ic-stroke"><use href="#i-play"/></svg></button>
-                </div>
-              </div>
-
-              <div class="card ab-listen" style="margin-top:10px">
-                <div class="ab-ctrl" style="margin-top:0">
-                  <div class="ab-seg"><button class="on" data-ab="A">A</button><button data-ab="B">B</button></div>
-                  <button class="ab-play"><svg class="ic ic-fill"><use href="#i-play"/></svg></button>
-                  <div class="ab-progress">
-                    <div class="ab-bar"><i style="width:58%"></i></div>
-                    <div class="ab-times"><span>2:24</span><span>5:10</span></div>
-                  </div>
-                </div>
-              </div>
-
-              <div class="ab-tips">
-                <div class="tip"><svg class="ic ic-stroke"><use href="#i-swap"/></svg><b>快速切换</b>双指连点或点击 A/B，无需暂停</div>
-                <div class="tip"><svg class="ic ic-stroke"><use href="#i-clock"/></svg><b>进度共享</b>切换后从同一位置继续播放，方便定位听感差异段落</div>
-                <div class="tip"><svg class="ic ic-fill"><use href="#i-trophy"/></svg><b>盲听模式</b>隐藏规格标签，凭耳朵判断后再揭晓</div>
-              </div>
-            </div>
-          </div>
-          <div class="minibar">
-            <div class="minibar-thumb"><svg class="ic ic-fill"><use href="#i-note"/></svg></div>
-            <div class="minibar-mid">
-              <div class="minibar-title">海阔天空</div>
-              <div class="minibar-progress"><i style="width:58%"></i></div>
-            </div>
-            <button class="minibar-btn"><svg class="ic ic-fill"><use href="#i-pause"/></svg></button>
-          </div>
-        </div>
-      </div>
-      <div class="phone-label">03 · <b>A/B 盲听对比</b> · 同一首歌曲在两版本间秒切，进度共享；盲听模式隐藏规格，先听后看，减少「心理暗示」对听感的干扰</div>
+      <div class="phone-label">02 · <b>版本对比 · 主页面</b> · 横滑版本条选基准 · 差异总览 · 「各版本一致」折叠 · 规格对比表（首列固定 + 横滑 + 音质条 + 比特率 + 差异高亮 + 表头可点击）· 文件路径对比（真实路径 + 行尾删除 + 点击切换基准）· 底部可拖拽进度条 + 播放选中</div>
     </div>
 
     <!-- 04 删除本地文件 · 确认弹窗 -->
@@ -980,11 +921,10 @@ footer .mono{font-family:var(--font-num)}
           </div>
           <div class="scroll">
             <div class="strip-zone dim">
-              <div class="strip-title"><span>选择对比基准</span><span class="hint">点击卡片切换基准</span></div>
               <div class="vstrip">
-                <div class="vcard sel"><div class="vcard-cover"><svg class="ic ic-fill"><use href="#i-note"/></svg></div><div class="vcard-name">FLAC 96k</div><div class="vcard-meta"><span class="fmt lossless">FLAC</span><span class="vcard-rate">96k · 24b</span></div><div class="mini-q"><i style="width:100%"></i></div></div>
-                <div class="vcard"><button class="more-btn show"><svg class="ic ic-fill"><use href="#i-dots"/></svg></button><div class="vcard-cover"><svg class="ic ic-fill"><use href="#i-note"/></svg></div><div class="vcard-name">WAV 44.1k</div><div class="vcard-meta"><span class="fmt lossless">WAV</span><span class="vcard-rate">44.1k · 16b</span></div><div class="mini-q"><i style="width:62%"></i></div></div>
-                <div class="vcard"><div class="vcard-cover"><svg class="ic ic-fill"><use href="#i-note"/></svg></div><div class="vcard-name">MP3 320k</div><div class="vcard-meta"><span class="fmt lossy">MP3</span><span class="vcard-rate">320kbps</span></div><div class="mini-q"><i style="width:34%"></i></div></div>
+                <div class="vcard sel"><div class="vcard-cover"><svg class="ic ic-fill"><use href="#i-note"/></svg></div><div class="vcard-name">FLAC 96k</div><div class="vcard-meta"><span class="fmt lossless">FLAC</span><span class="vcard-rate">96kHz</span><span class="vcard-grow"></span><button class="cover-del inline"><svg class="ic ic-fill"><use href="#i-trash"/></svg></button></div><div class="mini-q"><i style="width:100%"></i></div></div>
+                <div class="vcard"><div class="vcard-cover"><svg class="ic ic-fill"><use href="#i-note"/></svg></div><div class="vcard-name">WAV 44.1k</div><div class="vcard-meta"><span class="fmt lossless">WAV</span><span class="vcard-rate">44.1kHz</span><span class="vcard-grow"></span><button class="cover-del inline"><svg class="ic ic-fill"><use href="#i-trash"/></svg></button></div><div class="mini-q"><i style="width:62%"></i></div></div>
+                <div class="vcard"><div class="vcard-cover"><svg class="ic ic-fill"><use href="#i-note"/></svg></div><div class="vcard-name">MP3 320k</div><div class="vcard-meta"><span class="fmt lossy">MP3</span><span class="vcard-rate">48kHz</span><span class="vcard-grow"></span><button class="cover-del inline"><svg class="ic ic-fill"><use href="#i-trash"/></svg></button></div><div class="mini-q"><i style="width:34%"></i></div></div>
               </div>
             </div>
             <div class="card diff-sum dim">
@@ -1009,7 +949,7 @@ footer .mono{font-family:var(--font-num)}
                 <svg class="ic ic-stroke"><use href="#i-info"/></svg>
                 <span>此操作将<b>删除本地音频文件</b>，并从所有歌单中移除该版本。<b>不可撤销</b>。</span>
               </div>
-              <div class="del-tip"><svg class="ic ic-stroke"><use href="#i-ear"/></svg>拿不准？可先 A/B 试听再决定</div>
+              <div class="del-tip"><svg class="ic ic-fill"><use href="#i-copy"/></svg>拿不准？先对比「文件路径」确认目标版本再删除</div>
               <div class="acts">
                 <button class="btn outlined">取消</button>
                 <button class="btn danger"><svg class="ic ic-fill"><use href="#i-trash"/></svg>删除文件</button>
@@ -1018,7 +958,7 @@ footer .mono{font-family:var(--font-num)}
           </div>
         </div>
       </div>
-      <div class="phone-label">04 · <b>删除本地文件 · 确认弹窗</b> · 明确展示将删除的文件规格与占用空间，红色强调「删除本地文件 + 移除歌单引用 + 不可撤销」；确认后版本卡与表格列一并移除，Toast 反馈</div>
+      <div class="phone-label">03 · <b>删除本地文件 · 确认弹窗</b> · 明确展示将删除的文件规格与占用空间，红色强调「删除本地文件 + 移除歌单引用 + 不可撤销」；确认后版本卡与表格列一并移除，Toast 反馈</div>
     </div>
   </div>
 
@@ -1049,20 +989,20 @@ footer .mono{font-family:var(--font-num)}
           <div class="t-strip">
             <div class="vcard sel" data-v="0">
               <div class="vcard-cover"><svg class="ic ic-fill"><use href="#i-note"/></svg></div>
-              <div style="flex:1;min-width:0"><div class="vcard-name">FLAC 96kHz</div><div class="vcard-meta"><span class="fmt lossless">FLAC</span><span class="vcard-rate">24bit</span></div><div class="mini-q"><i style="width:100%"></i></div></div>
-              <span class="badge ref">基准</span>
+              <div style="flex:1;min-width:0"><div class="vcard-name">FLAC 96kHz</div><div class="vcard-meta"><span class="fmt lossless">FLAC</span><span class="vcard-rate">24bit</span><span class="vcard-grow"></span><button class="cover-del inline"><svg class="ic ic-fill"><use href="#i-trash"/></svg></button></div><div class="mini-q"><i style="width:100%"></i></div></div>
+              <span class="badge sel">已选</span>
             </div>
             <div class="vcard" data-v="1">
               <div class="vcard-cover"><svg class="ic ic-fill"><use href="#i-note"/></svg></div>
-              <div style="flex:1;min-width:0"><div class="vcard-name">WAV 44.1kHz</div><div class="vcard-meta"><span class="fmt lossless">WAV</span><span class="vcard-rate">16bit</span></div><div class="mini-q"><i style="width:62%"></i></div></div>
+              <div style="flex:1;min-width:0"><div class="vcard-name">WAV 44.1kHz</div><div class="vcard-meta"><span class="fmt lossless">WAV</span><span class="vcard-rate">16bit</span><span class="vcard-grow"></span><button class="cover-del inline"><svg class="ic ic-fill"><use href="#i-trash"/></svg></button></div><div class="mini-q"><i style="width:62%"></i></div></div>
             </div>
             <div class="vcard" data-v="2">
               <div class="vcard-cover"><svg class="ic ic-fill"><use href="#i-note"/></svg></div>
-              <div style="flex:1;min-width:0"><div class="vcard-name">MP3 320kbps</div><div class="vcard-meta"><span class="fmt lossy">MP3</span><span class="vcard-rate">48kHz</span></div><div class="mini-q"><i style="width:34%"></i></div></div>
+              <div style="flex:1;min-width:0"><div class="vcard-name">MP3 320kbps</div><div class="vcard-meta"><span class="fmt lossy">MP3</span><span class="vcard-rate">48kHz</span><span class="vcard-grow"></span><button class="cover-del inline"><svg class="ic ic-fill"><use href="#i-trash"/></svg></button></div><div class="mini-q"><i style="width:34%"></i></div></div>
             </div>
             <div class="vcard" data-v="3">
               <div class="vcard-cover"><svg class="ic ic-fill"><use href="#i-note"/></svg></div>
-              <div style="flex:1;min-width:0"><div class="vcard-name">FLAC 现场版</div><div class="vcard-meta"><span class="fmt lossless">FLAC</span><span class="vcard-rate">44.1kHz</span></div><div class="mini-q"><i style="width:60%"></i></div></div>
+              <div style="flex:1;min-width:0"><div class="vcard-name">FLAC 现场版</div><div class="vcard-meta"><span class="fmt lossless">FLAC</span><span class="vcard-rate">44.1kHz</span><span class="vcard-grow"></span><button class="cover-del inline"><svg class="ic ic-fill"><use href="#i-trash"/></svg></button></div><div class="mini-q"><i style="width:60%"></i></div></div>
             </div>
           </div>
 
@@ -1075,7 +1015,7 @@ footer .mono{font-family:var(--font-num)}
               <thead>
                 <tr>
                   <th class="c-label">规格</th>
-                  <th class="ref" data-col="0"><div class="th-chip"><div class="th-cover"><svg class="ic ic-fill"><use href="#i-note"/></svg></div><div class="th-name">FLAC 96k</div><div class="th-sub">基准 · 最佳</div></div></th>
+                  <th class="ref" data-col="0"><div class="th-chip"><div class="th-cover"><svg class="ic ic-fill"><use href="#i-note"/></svg></div><div class="th-name">FLAC 96k</div><div class="th-sub">已选 · 最佳</div></div></th>
                   <th data-col="1"><div class="th-chip"><div class="th-cover"><svg class="ic ic-fill"><use href="#i-note"/></svg></div><div class="th-name">WAV</div><div class="th-sub">44.1k</div></div></th>
                   <th data-col="2"><div class="th-chip"><div class="th-cover"><svg class="ic ic-fill"><use href="#i-note"/></svg></div><div class="th-name">MP3</div><div class="th-sub">320k</div></div></th>
                   <th data-col="3"><div class="th-chip"><div class="th-cover"><svg class="ic ic-fill"><use href="#i-note"/></svg></div><div class="th-name">FLAC</div><div class="th-sub">现场</div></div></th>
@@ -1095,6 +1035,13 @@ footer .mono{font-family:var(--font-num)}
                   <td class="cell diff" data-col="1">44.1kHz<div class="bar-mini"><i style="width:46%"></i></div></td>
                   <td class="cell diff" data-col="2">48kHz<div class="bar-mini"><i style="width:50%"></i></div></td>
                   <td class="cell diff" data-col="3">44.1kHz<div class="bar-mini"><i style="width:46%"></i></div></td>
+                </tr>
+                <tr>
+                  <td class="c-label">比特率</td>
+                  <td class="cell best" data-col="0">4608k</td>
+                  <td class="cell diff" data-col="1">1411k</td>
+                  <td class="cell diff" data-col="2">320k</td>
+                  <td class="cell diff" data-col="3">1411k</td>
                 </tr>
                 <tr>
                   <td class="c-label">位深</td>
@@ -1129,11 +1076,9 @@ footer .mono{font-family:var(--font-num)}
           </div>
         </div>
         <div class="t-action">
-          <button class="btn outlined"><svg class="ic ic-fill"><use href="#i-note"/></svg>加入队列</button>
-          <button class="btn outlined"><svg class="ic ic-stroke"><use href="#i-ear"/></svg>A/B 试听</button>
           <span class="spacer"></span>
           <button class="btn outlined" style="border-color:var(--err);color:var(--err)"><svg class="ic ic-fill"><use href="#i-trash"/></svg>删除版本</button>
-          <button class="btn filled"><svg class="ic ic-fill"><use href="#i-play"/></svg>播放基准 FLAC 96k</button>
+          <button class="btn filled"><svg class="ic ic-fill"><use href="#i-play"/></svg>播放选中 FLAC 96k</button>
         </div>
       </div>
     </div>
@@ -1156,10 +1101,10 @@ footer .mono{font-family:var(--font-num)}
     </div>
     <div class="note">
       <h3><span class="idx">N2</span> 基准比对，高亮不同</h3>
-      <p>基准默认取音质评分最高者（推荐值）。每行以基准值为参照：<strong>相同 → 灰化弱化；不同 → 朱砂描边浅底 + 加粗</strong>。点版本卡换基准，全表即时重算高亮，前后对比稳定可预测。</p>
+      <p>基准默认取推荐版本（音质评分最高者）。每行以基准值为参照：<strong>相同 → 灰化弱化；不同 → 朱砂描边浅底 + 加粗</strong>。点版本卡 / 表头 / 路径行任意位置换基准，全表即时重算高亮。</p>
       <ul>
-        <li>音质评分 = 格式(无损优先) × 采样率 × 位深 综合</li>
-        <li>数值行（采样率 / 位深 / 大小）配迷你音质条，大小即量级</li>
+        <li>推荐 = 采样率 × 无损加权评分最高；评分相同再优先比特率高者</li>
+        <li>数值行（采样率 / 比特率 / 大小）配迷你音质条，大小即量级</li>
       </ul>
     </div>
     <div class="note">
@@ -1173,12 +1118,13 @@ footer .mono{font-family:var(--font-num)}
       </table>
     </div>
     <div class="note">
-      <h3><span class="idx">N4</span> 听感也要对比</h3>
-      <p>规格差异只是纸面，听感差异才决定选择。A/B 盲听把对比限制在<strong>两个版本之间</strong>，避免多版本同时试听的认知负担；进度共享、秒切、盲听模式，让用户凭耳朵做决定。</p>
+      <h3><span class="idx">N4</span> 选中与操作一体化</h3>
+      <p>「所选版本」贯穿全页：点<strong>版本卡</strong>、<strong>规格对比表头</strong>或<strong>文件路径行</strong>任意一处都能切换所选，三处同步高亮。选中态用主题色描边 + 浅底 + 「已选」徽标，四套主题下均清晰可辨。规格表新增<strong>比特率</strong>行（从元数据读取，与「查看歌曲详情」同源）。</p>
       <ul>
-        <li>连点 A/B 即切，无需暂停</li>
-        <li>切换后进度共享，可反复听同一段落</li>
-        <li>盲听模式隐藏规格，先听后揭晓</li>
+        <li>版本卡 / 表头 / 路径行点击均可切换所选，高亮同步</li>
+        <li>比特率行：有数据才显示，缺失版本标「未知」</li>
+        <li>删除入口收拢到封面右下角（版本卡 / 路径行双入口，均二次确认）</li>
+        <li>底部「播放选中」上方为可拖拽进度条，松手即跳转播放进度</li>
       </ul>
     </div>
     <div class="note">
@@ -1199,7 +1145,7 @@ footer .mono{font-family:var(--font-num)}
     <span class="idx">04</span>
     <div>
       <h2>组件放大 · 关键视觉</h2>
-      <div class="sub">版本卡、差异单元、音质条、A/B 分段控件、删除（本地文件）弹窗与 Toast 的单独演示。</div>
+      <div class="sub">版本卡、差异单元、音质条、文件路径行、进度条、删除（本地文件）弹窗与 Toast 的单独演示。</div>
     </div>
   </div>
 
@@ -1207,23 +1153,23 @@ footer .mono{font-family:var(--font-num)}
     <div class="comp">
       <h4>版本卡 · VERSION CARD</h4>
       <div class="row">
-        <div class="vcard" style="position:relative">
-          <span class="badge ref">基准</span>
+        <div class="vcard sel" style="position:relative">
+          <span class="badge sel">已选</span>
           <span class="badge best"><svg class="ic ic-fill"><use href="#i-trophy"/></svg>最佳</span>
           <div class="vcard-cover"><svg class="ic ic-fill"><use href="#i-note"/></svg></div>
           <div class="vcard-name">FLAC 96k</div>
-          <div class="vcard-meta"><span class="fmt lossless">FLAC</span><span class="vcard-rate">24bit</span></div>
+          <div class="vcard-meta"><span class="fmt lossless">FLAC</span><span class="vcard-rate">96kHz</span><span class="vcard-grow"></span><button class="cover-del inline"><svg class="ic ic-fill"><use href="#i-trash"/></svg></button></div>
           <div class="mini-q"><i style="width:100%"></i></div>
         </div>
         <div class="vcard">
           <div class="vcard-cover"><svg class="ic ic-fill"><use href="#i-note"/></svg></div>
           <div class="vcard-name">MP3 320k</div>
-          <div class="vcard-meta"><span class="fmt lossy">MP3</span><span class="vcard-rate">48kHz</span></div>
+          <div class="vcard-meta"><span class="fmt lossy">MP3</span><span class="vcard-rate">48kHz</span><span class="vcard-grow"></span><button class="cover-del inline"><svg class="ic ic-fill"><use href="#i-trash"/></svg></button></div>
           <div class="mini-q"><i style="width:34%"></i></div>
         </div>
       </div>
       <div class="row" style="margin-top:14px">
-        <span class="note-chip">基准 = 当前高亮列 · 最佳 = 音质评分最高 · 底端音质条 = 规格量级</span>
+        <span class="note-chip">选中态 = 主题色描边 + 浅底 + 「已选」徽标 · 删除入口在采样率/格式行末尾（音质条上方）· 底端音质条 = 规格量级</span>
       </div>
     </div>
 
@@ -1256,16 +1202,29 @@ footer .mono{font-family:var(--font-num)}
     </div>
 
     <div class="comp">
-      <h4>A/B 分段 · BLIND A/B</h4>
-      <div class="row">
-        <div class="ab-seg"><button class="on" data-ab="A">A</button><button data-ab="B">B</button></div>
-        <button class="ab-play"><svg class="ic ic-fill"><use href="#i-play"/></svg></button>
+      <h4>文件路径行 · FILE PATH</h4>
+      <div class="row" style="flex-direction:column;align-items:stretch">
+        <div class="path-card">
+          <div class="path-row sel">
+            <div class="path-thumb"><svg class="ic ic-fill"><use href="#i-note"/></svg></div>
+            <div class="path-meta">
+              <div class="path-name"><span class="fmt lossless">FLAC</span> 96kHz <span class="path-badge">已选</span></div>
+              <div class="path-value">/storage/emulated/0/Music/海阔天空.flac</div>
+            </div>
+            <button class="path-del"><svg class="ic ic-fill"><use href="#i-trash"/></svg></button>
+          </div>
+          <div class="path-row">
+            <div class="path-thumb"><svg class="ic ic-fill"><use href="#i-note"/></svg></div>
+            <div class="path-meta">
+              <div class="path-name"><span class="fmt lossy">MP3</span> 320k</div>
+              <div class="path-value">/storage/1AE3-23F4/Download/海阔天空.mp3</div>
+            </div>
+            <button class="path-del"><svg class="ic ic-fill"><use href="#i-trash"/></svg></button>
+          </div>
+        </div>
       </div>
       <div class="row" style="margin-top:14px">
-        <label class="ab-blind"><input type="checkbox">盲听模式（隐藏规格标签）</label>
-      </div>
-      <div class="row" style="margin-top:14px">
-        <span style="font-size:12px;color:var(--text2)">A/B 只在两个版本间切换，共享进度；盲听关闭标签显示，避免心理暗示。</span>
+        <span class="note-chip">真实路径与「查看歌曲详情」一致 · 选中行高亮「已选」· 点击行切换所选 · 行尾删除二次确认</span>
       </div>
     </div>
 

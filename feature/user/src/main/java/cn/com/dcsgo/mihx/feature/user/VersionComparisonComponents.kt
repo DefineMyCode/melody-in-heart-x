@@ -983,8 +983,7 @@ private fun FilePathCard(
                             text = displayPath,
                             style = MaterialTheme.typography.bodySmall,
                             color = if (isReference) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant,
-                            maxLines = 2,
-                            overflow = TextOverflow.Ellipsis,
+                            maxLines = Int.MAX_VALUE,
                         )
                     }
                     // 删除本地文件

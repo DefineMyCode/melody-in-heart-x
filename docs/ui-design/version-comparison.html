@@ -1,0 +1,1373 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>心有乐章 · 版本对比 · UI 设计</title>
+<style>
+/* ============================================================
+   心有乐章 · 版本对比 · UI 设计
+   复用主设计系统：墨（黑白灰）明暗 / 朱砂 明暗，四套主题
+   核心命题：多版本歌曲的差异比对，4 个版本左右依然舒适
+   ============================================================ */
+
+:root{
+  --font-ui:"SF Pro Text",-apple-system,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans CJK SC",sans-serif;
+  --font-num:"SF Mono","JetBrains Mono",Consolas,"Courier New",monospace;
+  --r-s:8px; --r-m:14px; --r-l:20px; --r-xl:26px;
+}
+
+body[data-theme="mono-light"]{
+  --bg0:#F4F4F4; --bg1:#FFFFFF; --bg2:#FAFAFA; --bg3:#EFEFEF; --bg4:#E6E6E6;
+  --out1:#E7E7E7; --out2:#CFCFCF;
+  --text1:#141414; --text2:#575757; --text3:#989898;
+  --accent:#161616; --on-accent:#FFFFFF; --accent2:#575757; --on-accent2:#FFFFFF;
+  --grad:linear-gradient(90deg,#161616,#6B6B6B);
+  --cover1:#E9E9E9; --cover2:#C7C7C7; --cover-note:#161616;
+  --scrim:rgba(20,20,20,.45); --hover:rgba(20,20,20,.06);
+  --shadow:0 20px 44px -22px rgba(20,20,20,.28);
+  --tint:rgba(20,20,20,.08); --tint-strong:rgba(20,20,20,.14);
+  --err:#B3261E; --on-err:#FFFFFF; --err-soft:#F9DEDC; --err-border:rgba(179,38,30,.32);
+}
+
+body[data-theme="mono-dark"]{
+  --bg0:#000000; --bg1:#0A0A0A; --bg2:#121212; --bg3:#1B1B1B; --bg4:#252525;
+  --out1:#1C1C1C; --out2:#2C2C2C;
+  --text1:#D0D0D0; --text2:#9A9A9A; --text3:#6B6B6B;
+  --accent:#E6E6E6; --on-accent:#0A0A0A; --accent2:#9A9A9A; --on-accent2:#0A0A0A;
+  --grad:linear-gradient(90deg,#E6E6E6,#9A9A9A);
+  --cover1:#242424; --cover2:#0D0D0D; --cover-note:#E6E6E6;
+  --scrim:rgba(0,0,0,.6); --hover:rgba(255,255,255,.06);
+  --shadow:0 24px 50px -24px rgba(0,0,0,.9);
+  --tint:rgba(255,255,255,.10); --tint-strong:rgba(255,255,255,.18);
+  --err:#F2B8B5; --on-err:#601410; --err-soft:rgba(242,184,181,.14); --err-border:rgba(242,184,181,.38);
+}
+
+body[data-theme="vermilion-day"]{
+  --bg0:#FAF5F2; --bg1:#FFFFFF; --bg2:#FBF4F0; --bg3:#F1E7E1; --bg4:#E9DAD2;
+  --out1:#EFE0D9; --out2:#DFC4B9;
+  --text1:#2B1A16; --text2:#6B534B; --text3:#A2877D;
+  --accent:#A32E25; --on-accent:#FFFFFF; --accent2:#D4786C; --on-accent2:#FFFFFF;
+  --grad:linear-gradient(90deg,#A32E25,#D4786C);
+  --cover1:#B04A36; --cover2:#7E2218; --cover-note:#FFFFFF;
+  --scrim:rgba(43,26,22,.45); --hover:rgba(163,46,37,.10);
+  --shadow:0 20px 44px -22px rgba(163,46,37,.35);
+  --tint:rgba(163,46,37,.10); --tint-strong:rgba(163,46,37,.18);
+  --err:#8C1D18; --on-err:#FFFFFF; --err-soft:#F6DCD6; --err-border:rgba(140,29,24,.32);
+}
+
+body[data-theme="vermilion-night"]{
+  --bg0:#000000; --bg1:#140B09; --bg2:#1D110E; --bg3:#251814; --bg4:#2E1D18;
+  --out1:#2B1813; --out2:#3E241E;
+  --text1:#EADAD5; --text2:#B79A92; --text3:#7F5E56;
+  --accent:#C04F42; --on-accent:#FFFFFF; --accent2:#8F3B32; --on-accent2:#FFFFFF;
+  --grad:linear-gradient(90deg,#C04F42,#7E3028);
+  --cover1:#B5493D; --cover2:#4A1610; --cover-note:#F2D9D2;
+  --scrim:rgba(0,0,0,.6); --hover:rgba(192,79,66,.12);
+  --shadow:0 24px 50px -24px rgba(0,0,0,.9);
+  --tint:rgba(192,79,66,.12); --tint-strong:rgba(192,79,66,.22);
+  --err:#E59890; --on-err:#5F0F0C; --err-soft:rgba(229,152,144,.14); --err-border:rgba(229,152,144,.38);
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{
+  font-family:var(--font-ui);
+  background:var(--bg0);
+  color:var(--text1);
+  transition:background .35s ease,color .35s ease;
+  line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+button{font-family:inherit;border:none;background:none;color:inherit;cursor:pointer}
+svg{display:block}
+.ic{width:1.15em;height:1.15em;flex:none}
+.ic-fill{fill:currentColor;stroke:none}
+.ic-stroke{fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+.page{max-width:1280px;margin:0 auto;padding:0 28px 90px}
+
+/* ---------- 顶栏 ---------- */
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;padding:26px 0 10px}
+.brand{display:flex;align-items:center;gap:14px}
+.logo{width:40px;height:40px;color:var(--accent);transition:color .35s}
+.brand-name{font-weight:800;font-size:18px;letter-spacing:.3px}
+.brand-sub{font-size:12px;color:var(--text2);letter-spacing:2px}
+.theme-ctl{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.theme-pills{display:flex;gap:4px;background:var(--bg1);border:1px solid var(--out1);padding:4px;border-radius:999px;box-shadow:var(--shadow);transition:background .35s}
+.pill{padding:7px 15px;border-radius:999px;font-size:13px;color:var(--text2);transition:all .2s;white-space:nowrap}
+.pill:hover{color:var(--text1)}
+.pill.active{background:var(--accent);color:var(--on-accent)}
+.pill .dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;vertical-align:1px}
+.pill.active .dot{outline:2px solid color-mix(in srgb,var(--on-accent) 30%, transparent)}
+
+/* ---------- Hero ---------- */
+.hero{padding:46px 0 8px}
+.kicker{color:var(--accent);font-weight:700;letter-spacing:6px;font-size:12px;transition:color .35s}
+.hero-title{font-size:clamp(38px,6vw,66px);font-weight:800;line-height:1.05;letter-spacing:1px;margin-top:14px}
+.hero-title .grad{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;transition:background .35s}
+.hero-title .en{display:block;font-size:clamp(13px,1.8vw,18px);font-weight:600;letter-spacing:8px;color:var(--text3);margin-top:14px;text-transform:uppercase}
+.hero-sub{color:var(--text2);max-width:700px;margin-top:20px;font-size:16px;line-height:1.9}
+.hero-facts{display:flex;gap:10px;flex-wrap:wrap;margin-top:26px}
+.fact{display:flex;align-items:center;gap:8px;background:var(--bg1);border:1px solid var(--out1);padding:8px 14px;border-radius:999px;font-size:13px;color:var(--text2)}
+.fact svg{color:var(--accent)}
+
+.pillars{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px;margin-top:44px}
+.pillar{background:var(--bg1);border:1px solid var(--out1);border-radius:var(--r-xl);padding:24px;transition:background .35s}
+.pillar .num{font-family:var(--font-num);color:var(--accent);font-weight:800;font-size:14px;letter-spacing:2px}
+.pillar h3{font-size:17px;font-weight:800;margin:12px 0 8px}
+.pillar p{font-size:13.5px;color:var(--text2);line-height:1.8}
+.pillar .sw{padding:9px 0 2px;font-family:var(--font-num);font-size:12px;color:var(--text3)}
+
+/* ---------- 章节标题 ---------- */
+.sec{margin:84px 0 8px}
+.sec h2{font-size:26px;font-weight:800;letter-spacing:.5px}
+.sec .sub{color:var(--text2);margin-top:6px;font-size:14px;max-width:760px}
+.sec .sub code{font-family:var(--font-num);font-size:12px;color:var(--text1);background:var(--bg3);padding:1px 6px;border-radius:5px}
+.sec-head{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.sec-head .idx{font-family:var(--font-num);color:var(--accent);font-size:13px;font-weight:700;letter-spacing:2px}
+
+/* ---------- 手机稿 ---------- */
+.phones{display:grid;grid-template-columns:repeat(auto-fill,minmax(350px,1fr));gap:44px 32px;margin-top:34px}
+.phone-wrap{display:flex;flex-direction:column;align-items:center;gap:14px}
+.phone-label{font-size:12.5px;color:var(--text2);letter-spacing:1.5px;font-weight:600;text-align:center;max-width:340px;line-height:1.7}
+.phone-label b{color:var(--text1)}
+
+.phone{width:332px;height:700px;background:#000;border-radius:46px;padding:11px;box-shadow:0 30px 70px -30px rgba(0,0,0,.65);flex:none}
+.notch{position:absolute;top:11px;left:50%;transform:translateX(-50%);width:118px;height:25px;background:#000;border-radius:0 0 18px 18px;z-index:20}
+.screen{position:relative;width:100%;height:100%;background:var(--bg0);border-radius:36px;overflow:hidden;display:flex;flex-direction:column;color:var(--text1);transition:background .35s,color .35s}
+.statusbar{height:34px;flex:none;display:flex;align-items:flex-end;justify-content:space-between;padding:0 22px 4px;color:var(--text3);font-size:12px;font-family:var(--font-num)}
+.sb-icons{letter-spacing:3px;font-size:10px}
+.scroll{flex:1;overflow:hidden;position:relative}
+.scroll:hover{overflow-y:auto;scrollbar-width:thin}
+.scroll::-webkit-scrollbar{width:3px}
+.scroll::-webkit-scrollbar-thumb{background:var(--out2);border-radius:3px}
+
+/* 迷你播放栏 */
+.minibar{flex:none;display:flex;align-items:center;gap:11px;background:var(--bg1);border-top:1px solid var(--out1);padding:10px 16px;margin-top:auto;transition:background .35s}
+.minibar-thumb{width:40px;height:40px;border-radius:9px;background:radial-gradient(120% 120% at 30% 25%,var(--cover1),var(--cover2) 70%);display:flex;align-items:center;justify-content:center;color:var(--cover-note);flex:none}
+.minibar-thumb svg{width:16px;height:16px}
+.minibar-mid{flex:1;min-width:0}
+.minibar-title{font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.minibar-progress{height:2.5px;background:var(--out1);border-radius:2px;margin-top:6px;overflow:hidden}
+.minibar-progress i{display:block;height:100%;background:var(--accent);transition:background .35s}
+.minibar-btn{width:36px;height:36px;border-radius:50%;background:var(--accent);color:var(--on-accent);display:flex;align-items:center;justify-content:center;flex:none}
+.minibar-btn svg{width:16px;height:16px}
+
+/* 图标按钮 */
+.icon-btn{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--text2)}
+.icon-btn.sm{width:28px;height:28px}
+.icon-btn:hover{background:var(--hover);color:var(--text1)}
+.icon-btn.active{color:var(--accent)}
+
+/* 顶栏(appbar) */
+.appbar{flex:none;display:flex;align-items:center;justify-content:space-between;padding:8px 12px 4px 8px}
+.appbar .t{font-size:17px;font-weight:800;letter-spacing:.3px}
+.appbar-left,.appbar-right{display:flex;align-items:center;gap:4px}
+.appbar-sub{font-size:11px;color:var(--text3);margin-top:1px;letter-spacing:.2px}
+.appbar-left{min-width:0}
+
+/* 卡片 */
+.card{flex:none;background:var(--bg1);border:1px solid var(--out1);border-radius:var(--r-l);padding:16px;margin:8px 18px 0;transition:background .35s}
+
+/* 通用小标签 */
+.tag{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:999px}
+.tag svg{width:11px;height:11px}
+.tag.same{color:var(--text3);background:var(--bg3);border:1px solid var(--out1)}
+.tag.diff{color:var(--accent);background:var(--tint);border:1px solid var(--tint-strong)}
+
+/* ============================================================
+   版本横滑条
+   ============================================================ */
+.strip-zone{flex:none;padding:8px 0 2px}
+.strip-title{display:flex;align-items:center;justify-content:space-between;padding:0 18px 8px;font-size:12px;font-weight:700;color:var(--text2);letter-spacing:.5px}
+.strip-title .hint{font-size:10.5px;color:var(--text3);font-weight:600}
+.vstrip{display:flex;gap:9px;padding:2px 18px 4px;overflow:hidden}
+.vcard{flex:none;width:112px;background:var(--bg1);border:1px solid var(--out1);border-radius:var(--r-m);padding:9px;cursor:pointer;transition:all .2s;position:relative}
+.vcard:hover{border-color:var(--out2)}
+.vcard.sel{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.vcard-cover{width:100%;aspect-ratio:1;border-radius:9px;background:radial-gradient(120% 120% at 30% 25%,var(--cover1),var(--cover2) 72%);display:flex;align-items:center;justify-content:center;color:var(--cover-note);position:relative}
+.vcard-cover svg{width:22px;height:22px;opacity:.9}
+.vcard-cover .play-ov{position:absolute;right:4px;bottom:4px;width:22px;height:22px;border-radius:50%;background:rgba(0,0,0,.55);color:#fff;display:flex;align-items:center;justify-content:center}
+.vcard-cover .play-ov svg{width:11px;height:11px;margin-left:1px}
+.vcard-name{font-size:10.5px;font-weight:700;margin-top:7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vcard-meta{display:flex;align-items:center;gap:4px;margin-top:3px}
+.fmt{display:inline-flex;align-items:center;font-size:9.5px;font-weight:800;letter-spacing:.4px;padding:2px 6px;border-radius:5px}
+.fmt.lossless{color:var(--accent);background:var(--tint);border:1px solid var(--tint-strong)}
+.fmt.lossy{color:var(--text3);background:var(--bg3);border:1px solid var(--out1)}
+.vcard-rate{font-family:var(--font-num);font-size:9.5px;color:var(--text2);white-space:nowrap}
+.vcard .mini-q{height:3px;border-radius:2px;background:var(--bg3);margin-top:6px;overflow:hidden}
+.vcard .mini-q i{display:block;height:100%;border-radius:2px;background:var(--grad)}
+.badge{position:absolute;top:5px;left:5px;z-index:2;display:inline-flex;align-items:center;gap:3px;font-size:9px;font-weight:800;letter-spacing:.3px;padding:3px 6px;border-radius:6px}
+.badge.ref{background:var(--accent);color:var(--on-accent)}
+.badge.best{background:var(--tint-strong);color:var(--accent);border:1px solid var(--tint-strong);backdrop-filter:blur(2px)}
+.badge.best svg{width:10px;height:10px}
+
+/* ============================================================
+   差异总览
+   ============================================================ */
+.diff-sum{display:flex;align-items:center;gap:12px}
+.sum-big{display:flex;align-items:baseline;gap:2px;flex:none}
+.sum-big b{font-family:var(--font-num);font-size:30px;font-weight:800;line-height:1}
+.sum-big span{font-size:12px;color:var(--text2)}
+.sum-mid{flex:1;min-width:0}
+.sum-tags{display:flex;gap:6px;flex-wrap:wrap}
+.sum-note{font-size:11px;color:var(--text3);margin-top:5px}
+.rec-card{flex:none;display:flex;align-items:center;gap:8px;background:var(--tint);border:1px solid var(--tint-strong);border-radius:12px;padding:8px 10px}
+.rec-card svg{width:16px;height:16px;color:var(--accent)}
+.rec-card .t{font-size:10.5px;font-weight:800;color:var(--accent)}
+.rec-card .s{font-size:9px;color:var(--text3)}
+
+/* ============================================================
+   共同信息（折叠）
+   ============================================================ */
+.common-card{flex:none;margin:8px 18px 0;background:var(--bg1);border:1px solid var(--out1);border-radius:var(--r-m);overflow:hidden;transition:background .35s}
+.common-head{display:flex;align-items:center;gap:8px;padding:11px 14px;cursor:pointer}
+.common-head .t{flex:1;font-size:12.5px;font-weight:700;color:var(--text2);display:flex;align-items:center;gap:7px}
+.common-head .t svg{width:14px;height:14px;color:var(--accent)}
+.common-head .cnt{font-family:var(--font-num);font-size:10.5px;color:var(--text3)}
+.common-head .arr{color:var(--text3);display:flex;transition:transform .25s}
+.common-card.open .common-head .arr{transform:rotate(180deg)}
+.common-body{display:none;padding:0 14px 12px}
+.common-card.open .common-body{display:block}
+.common-kv{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:7px;background:var(--bg3);border-radius:10px;padding:9px 10px}
+.common-kv .kv{font-size:11px}
+.common-kv .kv b{display:block;font-size:9px;color:var(--text3);font-weight:600;letter-spacing:.5px;margin-bottom:1px}
+.common-kv .kv span{font-size:11px;color:var(--text1);font-weight:600}
+
+/* ============================================================
+   差异对比表
+   ============================================================ */
+.cmp-card{flex:none;margin:8px 18px 0;background:var(--bg1);border:1px solid var(--out1);border-radius:var(--r-l);overflow:hidden;transition:background .35s}
+.cmp-head{display:flex;align-items:center;justify-content:space-between;padding:13px 14px 9px}
+.cmp-title{display:flex;align-items:center;gap:7px;font-size:13px;font-weight:700}
+.cmp-title svg{width:15px;height:15px;color:var(--accent)}
+.cmp-hint{display:inline-flex;align-items:center;gap:5px;font-size:10px;color:var(--text3)}
+.cmp-hint svg{width:12px;height:12px}
+.legend{display:flex;align-items:center;gap:12px;padding:0 14px 10px;font-size:9.5px;color:var(--text3)}
+.legend i{display:inline-block;width:8px;height:8px;border-radius:3px;vertical-align:-1px;margin-right:4px}
+.legend .d{background:var(--tint);border:1px solid var(--tint-strong)}
+.legend .s{background:var(--bg3)}
+
+.cmp-scroll{overflow-x:auto;scrollbar-width:none}
+.cmp-scroll::-webkit-scrollbar{display:none}
+.ctable{border-collapse:collapse;width:max-content;min-width:100%}
+.ctable th,.ctable td{text-align:center;padding:7px 8px;font-size:11px}
+.ctable .c-label{text-align:left;font-size:11px;color:var(--text2);font-weight:600;width:76px;position:sticky;left:0;background:var(--bg1);z-index:3;padding-left:14px}
+.ctable thead th{position:relative}
+.ctable thead .c-label{font-size:10.5px;color:var(--text3)}
+.th-chip{display:flex;flex-direction:column;align-items:center;gap:3px;padding:4px 6px 6px;border-radius:10px}
+.ctable thead th.ref .th-chip{background:var(--tint);box-shadow:inset 0 0 0 1px var(--tint-strong)}
+.ctable thead th.ref::after{content:"";position:absolute;left:8px;right:8px;top:0;height:2px;border-radius:2px;background:var(--accent)}
+.th-cover{width:26px;height:26px;border-radius:6px;background:radial-gradient(120% 120% at 30% 25%,var(--cover1),var(--cover2) 72%);display:flex;align-items:center;justify-content:center;color:var(--cover-note)}
+.th-cover svg{width:12px;height:12px}
+.th-name{font-size:9.5px;font-weight:800;white-space:nowrap}
+.th-sub{font-size:8.5px;color:var(--text3);font-family:var(--font-num);white-space:nowrap}
+.ctable tbody tr{border-top:1px solid var(--out1)}
+.cell{font-family:var(--font-num);font-weight:600;color:var(--text3);white-space:nowrap;transition:background .2s}
+.cell.diff{color:var(--accent);font-weight:800;background:var(--tint);border-radius:7px}
+.cell.best{color:var(--accent);font-weight:800}
+.cell.same{color:var(--text3)}
+.cell.dash{color:var(--text3)}
+.cell.ref-col{background:color-mix(in srgb,var(--bg2) 60%, transparent)}
+.bar-mini{height:3px;border-radius:2px;background:var(--bg3);margin:4px 8px 0;overflow:hidden}
+.bar-mini i{display:block;height:100%;border-radius:2px;background:var(--bg3)}
+.bar-mini.on i{background:var(--grad)}
+.presence{display:inline-flex;align-items:center;gap:3px;font-family:var(--font-ui);font-size:10px}
+.presence svg{width:11px;height:11px}
+.presence.yes{color:var(--text2)}
+.presence.no{color:var(--text3)}
+
+/* 手机端滑动提示渐变 */
+.cmp-edge{position:relative}
+.cmp-edge::after{content:"";position:absolute;right:0;top:0;bottom:0;width:40px;background:linear-gradient(90deg,transparent,var(--bg1) 85%);pointer-events:none;z-index:4}
+.hscroll-note{display:flex;align-items:center;gap:5px;padding:2px 14px 11px;font-size:9.5px;color:var(--text3)}
+.hscroll-note svg{width:11px;height:11px}
+
+/* ============================================================
+   对比聆听 A/B
+   ============================================================ */
+.ab-zone{flex:none;margin:8px 18px 0}
+.ab-card{background:var(--bg1);border:1px solid var(--out1);border-radius:var(--r-l);padding:14px;transition:background .35s}
+.ab-title{display:flex;align-items:center;justify-content:space-between}
+.ab-title .t{display:flex;align-items:center;gap:7px;font-size:13px;font-weight:700}
+.ab-title .t svg{width:15px;height:15px;color:var(--accent)}
+.ab-blind{display:flex;align-items:center;gap:6px;font-size:10px;color:var(--text3);cursor:pointer;user-select:none}
+.ab-blind input{accent-color:var(--accent);width:13px;height:13px;cursor:pointer}
+.ab-pair{display:flex;align-items:center;gap:8px;margin-top:12px}
+.ab-slot{flex:1;display:flex;align-items:center;gap:8px;background:var(--bg2);border:1px solid var(--out1);border-radius:11px;padding:7px 9px;cursor:pointer;position:relative}
+.ab-slot.on{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.ab-slot .ab-thumb{width:30px;height:30px;border-radius:7px;background:radial-gradient(120% 120% at 30% 25%,var(--cover1),var(--cover2) 72%);display:flex;align-items:center;justify-content:center;color:var(--cover-note);flex:none}
+.ab-slot .ab-thumb svg{width:13px;height:13px}
+.ab-slot .ab-meta{min-width:0;flex:1}
+.ab-slot .ab-name{font-size:10.5px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ab-slot .ab-sub{font-size:9px;color:var(--text3);font-family:var(--font-num);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ab-slot .ab-tag{position:absolute;top:-6px;left:8px;font-size:8.5px;font-weight:800;padding:1px 6px;border-radius:5px}
+.ab-slot .ab-tag.A{background:var(--accent);color:var(--on-accent)}
+.ab-slot .ab-tag.B{background:var(--accent2);color:var(--on-accent2)}
+.ab-mid{display:flex;flex-direction:column;align-items:center;gap:3px;flex:none}
+.ab-mid .sw-icon{color:var(--text3)}
+.ab-mid .sw-icon svg{width:15px;height:15px}
+.ab-mid .lbl{font-family:var(--font-num);font-size:8.5px;color:var(--text3)}
+.ab-ctrl{display:flex;align-items:center;gap:10px;margin-top:13px}
+.ab-seg{display:flex;gap:3px;background:var(--bg3);border-radius:10px;padding:3px;flex:none}
+.ab-seg button{width:52px;padding:6px 0;border-radius:8px;font-size:11px;font-weight:800;color:var(--text2);font-family:var(--font-num);transition:all .2s}
+.ab-seg button.on{background:var(--accent);color:var(--on-accent)}
+.ab-play{width:44px;height:44px;border-radius:50%;background:var(--accent);color:var(--on-accent);display:flex;align-items:center;justify-content:center;flex:none;box-shadow:var(--shadow)}
+.ab-play svg{width:19px;height:19px;margin-left:1px}
+.ab-progress{flex:1;min-width:0}
+.ab-bar{height:3px;border-radius:2px;background:var(--out1);margin-top:7px;overflow:hidden}
+.ab-bar i{display:block;height:100%;width:46%;background:var(--accent);transition:background .35s}
+.ab-times{display:flex;justify-content:space-between;font-family:var(--font-num);font-size:9px;color:var(--text3);margin-top:4px}
+.ab-note{display:flex;align-items:center;gap:6px;margin-top:10px;font-size:10px;color:var(--text3)}
+.ab-note svg{width:12px;height:12px;color:var(--accent)}
+.ab-note b{color:var(--text2)}
+
+/* A/B 全屏页 */
+.ab-full{padding:0 18px}
+.ab-hero{display:flex;align-items:center;gap:12px;padding:4px 0 14px}
+.ab-hero-cover{width:56px;height:56px;border-radius:14px;background:radial-gradient(120% 120% at 30% 25%,var(--cover1),var(--cover2) 72%);display:flex;align-items:center;justify-content:center;color:var(--cover-note);box-shadow:var(--shadow);flex:none}
+.ab-hero-cover svg{width:22px;height:22px}
+.ab-hero-meta{flex:1;min-width:0}
+.ab-hero-title{font-size:17px;font-weight:800}
+.ab-hero-sub{font-size:11.5px;color:var(--text3);margin-top:2px}
+.ab-full-card{background:var(--bg1);border:1px solid var(--out1);border-radius:var(--r-l);padding:16px;position:relative;transition:background .35s}
+.ab-full-slot{display:flex;align-items:center;gap:12px;background:var(--bg2);border:1px solid var(--out1);border-radius:14px;padding:12px;cursor:pointer;position:relative;transition:all .2s}
+.ab-full-slot.on{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.ab-full-slot.A{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.ab-thumb-lg{width:44px;height:44px;border-radius:10px;background:radial-gradient(120% 120% at 30% 25%,var(--cover1),var(--cover2) 72%);display:flex;align-items:center;justify-content:center;color:var(--cover-note);flex:none}
+.ab-thumb-lg svg{width:18px;height:18px}
+.ab-meta-lg{flex:1;min-width:0}
+.ab-meta-lg .ab-name{font-size:13px;font-weight:800}
+.ab-meta-lg .ab-sub{font-size:10.5px;color:var(--text3);margin-top:2px;font-family:var(--font-num)}
+.ab-meta-lg .mini-q{width:120px;margin-top:7px}
+.ab-tap{width:30px;height:30px;border-radius:50%;background:var(--bg3);color:var(--text3);display:flex;align-items:center;justify-content:center;flex:none}
+.ab-tap svg{width:15px;height:15px}
+.ab-full-slot.on .ab-tap{background:var(--accent);color:var(--on-accent)}
+.ab-or{display:flex;align-items:center;justify-content:center;padding:8px 0;color:var(--text3);font-size:10px;letter-spacing:3px}
+.ab-listen{flex:none;margin:0}
+.ab-tips{display:flex;flex-direction:column;gap:8px;padding:16px 0 4px}
+.tip{display:flex;align-items:center;gap:8px;font-size:11.5px;color:var(--text3);line-height:1.6}
+.tip svg{width:13px;height:13px;color:var(--accent);flex:none}
+.tip b{color:var(--text2);font-weight:700}
+
+/* 版本管理页 · 对比入口 */
+.vg-card{flex:none;margin:6px 14px;background:var(--bg1);border:1px solid var(--out1);border-radius:var(--r-m);overflow:hidden;transition:background .35s}
+.vg-head{display:flex;align-items:center;gap:10px;padding:11px 12px}
+.vg-cover{width:42px;height:42px;border-radius:9px;background:radial-gradient(120% 120% at 30% 25%,var(--cover1),var(--cover2) 72%);display:flex;align-items:center;justify-content:center;color:var(--cover-note);flex:none}
+.vg-cover svg{width:17px;height:17px}
+.vg-mid{flex:1;min-width:0}
+.vg-title{font-size:14px;font-weight:700;display:flex;align-items:center;gap:6px}
+.vg-title .now{font-size:9.5px;font-weight:700;color:var(--accent);background:var(--tint);border:1px solid var(--tint-strong);padding:2px 6px;border-radius:999px}
+.vg-sub{font-size:11px;color:var(--text3);margin-top:2px;display:flex;align-items:center;gap:6px}
+.vg-sub .diff-line{display:inline-flex;align-items:center;gap:4px;color:var(--accent);font-weight:600}
+.vg-sub .diff-line svg{width:11px;height:11px}
+.btn.compare{height:30px;padding:0 12px;border-radius:15px;font-size:11.5px;border:1px solid var(--accent);color:var(--accent);background:var(--tint)}
+.btn.compare svg{width:13px;height:13px}
+.btn.compare:hover{background:var(--tint-strong)}
+.vg-list{border-top:1px solid var(--out1)}
+.vg-item{display:flex;align-items:center;gap:10px;padding:8px 12px}
+.vg-item + .vg-item{border-top:1px solid color-mix(in srgb,var(--out1) 55%, transparent)}
+.vg-play{width:28px;height:28px;border-radius:50%;background:var(--bg3);color:var(--text3);display:flex;align-items:center;justify-content:center;flex:none}
+.vg-item:first-child .vg-play{background:var(--accent);color:var(--on-accent)}
+.vg-play svg{width:13px;height:13px}
+.vg-item .li-mid{flex:1;min-width:0;font-size:12.5px;font-weight:600;display:flex;align-items:center;gap:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vg-item .li-mid em{font-style:normal;font-size:10px;color:var(--accent);font-weight:700}
+.vg-more{display:flex;align-items:center;gap:6px;color:var(--text3);flex:none}
+.vg-more .meta{font-family:var(--font-num);font-size:10px}
+
+/* ============================================================
+   删除（本地文件）· 弹窗 / 危险按钮 / Toast
+   ============================================================ */
+.backdrop{position:absolute;inset:0;background:var(--scrim);z-index:30;display:flex;align-items:center;justify-content:center;padding:0 24px}
+.backdrop .dim{opacity:.32;pointer-events:none}
+.dialog{width:100%;max-width:302px;background:var(--bg4);border-radius:var(--r-l);padding:22px 20px 12px;box-shadow:var(--shadow);border:1px solid var(--out1)}
+.dialog-title{font-size:16px;font-weight:800;color:var(--err);display:flex;align-items:center;gap:7px}
+.dialog-title svg{width:17px;height:17px}
+.dialog-sub{font-size:12.5px;color:var(--text2);margin-top:8px;line-height:1.7}
+.del-target{display:flex;align-items:center;gap:11px;background:var(--bg3);border:1px solid var(--out1);border-radius:12px;padding:10px;margin-top:13px}
+.del-target .del-thumb{width:38px;height:38px;border-radius:9px;background:radial-gradient(120% 120% at 30% 25%,var(--cover1),var(--cover2) 72%);display:flex;align-items:center;justify-content:center;color:var(--cover-note);flex:none}
+.del-target .del-thumb svg{width:15px;height:15px}
+.del-target .t{font-size:13px;font-weight:800}
+.del-target .s{font-size:10.5px;color:var(--text3);font-family:var(--font-num);margin-top:1px}
+.del-warn{display:flex;gap:8px;align-items:flex-start;background:var(--err-soft);border:1px solid var(--err-border);border-radius:10px;padding:9px 11px;margin-top:13px;font-size:11px;color:var(--text2);line-height:1.7}
+.del-warn svg{width:13px;height:13px;flex:none;margin-top:2px;color:var(--err)}
+.del-warn b{color:var(--err);font-weight:800}
+.dialog .acts{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}
+.btn.danger{background:var(--err);color:var(--on-err)}
+.del-tip{display:flex;align-items:center;gap:6px;margin-top:11px;font-size:10px;color:var(--text3);justify-content:center}
+.del-tip svg{width:12px;height:12px;color:var(--accent)}
+.toast{position:absolute;top:52px;left:50%;transform:translateX(-50%);z-index:40;display:inline-flex;align-items:center;gap:8px;background:var(--text1);color:var(--bg0);padding:9px 15px;border-radius:10px;font-size:12px;box-shadow:var(--shadow);white-space:nowrap}
+.toast svg{width:14px;height:14px;color:var(--accent)}
+.toast b{font-weight:800}
+.del-done{border-top:1px solid var(--out1);margin-top:12px;padding-top:11px}
+.del-done .t{font-size:12px;font-weight:700;display:flex;align-items:center;gap:6px}
+.del-done .t svg{width:13px;height:13px;color:var(--accent)}
+.del-done .s{font-size:10px;color:var(--text3);margin-top:2px;line-height:1.6}
+.del-chip{display:inline-flex;align-items:center;gap:4px;font-size:9.5px;font-weight:700;padding:3px 7px;border-radius:999px;background:var(--bg3);border:1px solid var(--out1);color:var(--text3);font-family:var(--font-num)}
+.del-chip svg{width:10px;height:10px}
+
+/* 版本卡上的更多按钮（删除入口） */
+.strip-zone{position:relative}
+.vcard .more-btn{position:absolute;top:4px;right:4px;width:20px;height:20px;border-radius:50%;background:rgba(0,0,0,.5);color:#fff;display:flex;align-items:center;justify-content:center;z-index:3;opacity:0;transition:opacity .2s}
+.vcard:hover .more-btn{opacity:1}
+.vcard .more-btn svg{width:13px;height:13px}
+.vcard .more-btn.show{opacity:1}
+.card-menu{position:absolute;top:132px;z-index:6;background:var(--bg4);border:1px solid var(--out1);border-radius:12px;box-shadow:var(--shadow);padding:4px;min-width:158px}
+.card-menu .mi{display:flex;align-items:center;gap:9px;padding:9px 11px;border-radius:8px;font-size:12.5px;color:var(--text1);cursor:pointer}
+.card-menu .mi:hover{background:var(--hover)}
+.card-menu .mi svg{width:15px;height:15px;color:var(--text3)}
+.card-menu .mi.danger{color:var(--err)}
+.card-menu .mi.danger svg{color:var(--err)}
+.card-menu .sep{height:1px;background:var(--out1);margin:4px 6px}
+
+/* 底部操作条 */
+.action-bar{flex:none;display:flex;align-items:center;gap:8px;padding:10px 18px;border-top:1px solid var(--out1);background:var(--bg1);margin-top:auto;transition:background .35s}
+.btn{display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 14px;border-radius:18px;font-size:12px;font-weight:700;letter-spacing:.2px;transition:all .2s}
+.btn.filled{background:var(--accent);color:var(--on-accent)}
+.btn.outlined{border:1px solid var(--out2);color:var(--text1)}
+.btn svg{width:14px;height:14px}
+.btn:active{transform:scale(.97)}
+.btn .spacer{flex:1}
+
+/* ---------- 平板 · 大屏 ---------- */
+.tablet{width:100%;max-width:660px;height:540px;background:#000;border-radius:34px;padding:10px;flex:none;box-shadow:0 30px 70px -30px rgba(0,0,0,.65)}
+.tablet-screen{width:100%;height:100%;background:var(--bg0);border-radius:26px;overflow:hidden;display:flex;flex-direction:column;color:var(--text1);transition:background .35s,color .35s}
+.t-body{flex:1;overflow:hidden;padding:0 14px}
+.t-strip{display:flex;gap:10px;padding:8px 0 6px}
+.t-strip .vcard{width:auto;flex:1;display:flex;flex-direction:row;align-items:center;gap:10px;padding:8px}
+.t-strip .vcard-cover{width:40px;aspect-ratio:1;flex:none}
+.t-strip .vcard-name{font-size:11px;margin-top:0}
+.t-strip .vcard-meta{flex-wrap:wrap}
+.t-strip .badge{position:static;margin-left:auto}
+.t-strip .mini-q{width:74px;margin-top:4px}
+.t-table-wrap{background:var(--bg1);border:1px solid var(--out1);border-radius:var(--r-m);overflow:hidden;transition:background .35s}
+.t-table-wrap .cmp-head{padding:10px 14px 6px}
+.t-table-wrap .ctable .c-label{width:110px}
+.t-action{display:flex;align-items:center;gap:8px;padding:10px 14px;border-top:1px solid var(--out1);background:var(--bg1)}
+.t-action .btn{flex:none}
+.t-action .spacer{flex:1}
+
+/* ---------- 说明区 ---------- */
+.notes{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px;margin-top:30px}
+.note{background:var(--bg1);border:1px solid var(--out1);border-radius:var(--r-xl);padding:22px}
+.note h3{font-size:16px;font-weight:800;display:flex;align-items:center;gap:10px}
+.note h3 svg{width:19px;height:19px;color:var(--accent)}
+.note .idx{font-family:var(--font-num);color:var(--accent);font-size:12px;font-weight:700;letter-spacing:2px}
+.note p{font-size:13.5px;color:var(--text2);line-height:1.85;margin-top:10px}
+.note ul{list-style:none;margin-top:12px}
+.note li{font-size:12.5px;color:var(--text2);padding:4px 0 4px 18px;position:relative;line-height:1.7}
+.note li::before{content:"—";position:absolute;left:0;color:var(--accent)}
+.note table{width:100%;border-collapse:collapse;margin-top:12px;font-size:11.5px}
+.note th{text-align:left;color:var(--text3);font-weight:600;padding:6px 8px;border-bottom:1px solid var(--out1)}
+.note td{padding:7px 8px;border-bottom:1px solid var(--out1);color:var(--text2)}
+.note td code{font-family:var(--font-num);font-size:10.5px;background:var(--bg3);padding:1px 5px;border-radius:4px;color:var(--text1)}
+
+/* 组件放大 */
+.comp-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:18px;margin-top:30px}
+.comp{background:var(--bg1);border:1px solid var(--out1);border-radius:var(--r-m);padding:22px;transition:background .35s}
+.comp h4{font-size:13px;font-weight:700;color:var(--text2);letter-spacing:1px;margin-bottom:16px}
+.comp .row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.comp .row + .row{margin-top:14px}
+.cell-demo{font-family:var(--font-num);font-size:12px;font-weight:700;padding:6px 10px;border-radius:7px}
+.cell-demo.diff{color:var(--accent);background:var(--tint);border:1px solid var(--tint-strong)}
+.cell-demo.same{color:var(--text3);background:var(--bg3);border:1px solid var(--out1)}
+.cell-demo.best{color:var(--accent)}
+
+footer{margin-top:90px;padding-top:24px;border-top:1px solid var(--out1);display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;color:var(--text3);font-size:12px}
+footer .mono{font-family:var(--font-num)}
+
+.note-chip{display:inline-flex;align-items:center;gap:6px;background:var(--tint);color:var(--accent);border:1px solid var(--tint-strong);padding:4px 10px;border-radius:999px;font-size:11.5px;font-weight:600}
+
+@media (max-width:720px){
+  .page{padding:0 16px 70px}
+  .hero-title{font-size:40px}
+  .phones{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body data-theme="mono-dark">
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" fill="currentColor"/></symbol>
+  <symbol id="i-pause" viewBox="0 0 24 24"><path d="M6 4h4v16H6zM14 4h4v16h-4z" fill="currentColor"/></symbol>
+  <symbol id="i-back" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-note" viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" fill="currentColor"/></symbol>
+  <symbol id="i-dots" viewBox="0 0 24 24"><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" fill="currentColor"/></symbol>
+  <symbol id="i-caret" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-chev-r" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z" fill="currentColor"/></symbol>
+  <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/><path d="M21 21l-4.3-4.3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="i-compare" viewBox="0 0 24 24"><path d="M6 4h12M6 8h12M6 12h12M6 16h12M6 20h12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M4.5 10l-2 2 2 2M19.5 10l2 2-2 2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-ear" viewBox="0 0 24 24"><path d="M4 14a8 8 0 0 1 16 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><rect x="3" y="13" width="4" height="7" rx="2" fill="currentColor"/><rect x="17" y="13" width="4" height="7" rx="2" fill="currentColor"/></symbol>
+  <symbol id="i-trophy" viewBox="0 0 24 24"><path d="M6 4h12v3a6 6 0 0 1-12 0V4zm-2 0v3c0 3 2 5.4 4.7 6.2A6.5 6.5 0 0 0 12 16a6.5 6.5 0 0 0 3.3-2.8C18 12.4 20 10 20 7V4h-2v3a4 4 0 0 1-8 0V4H4zm8 14a8.5 8.5 0 0 1-5-1.6V20a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-3.6A8.5 8.5 0 0 1 12 18z" fill="currentColor"/></symbol>
+  <symbol id="i-swap" viewBox="0 0 24 24"><path d="M7 5v12M7 17l-3-3M7 17l3-3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M17 19V7M17 7l-3 3M17 7l3 3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-diff" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 12h8M12 8v8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="i-layer" viewBox="0 0 24 24"><path d="M12 3l9 5-9 5-9-5 9-5z" fill="currentColor"/><path d="M3 13l9 5 9-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-musical" viewBox="0 0 24 24"><path d="M9 18V5l12-2v13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="6" cy="18" r="3" fill="currentColor"/><circle cx="18" cy="16" r="3" fill="currentColor"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 8h.01M12 11v5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-1 3h2v5.6l4.2 2.5-1 1.7-5.2-3.1V7z" fill="currentColor"/></symbol>
+  <symbol id="i-trash" viewBox="0 0 24 24"><path d="M9 3h6l1 2h4v2H4V5h4l1-2zM6 9h12l-1 12a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L6 9zm5 2v9h2v-9h-2zm-4 0v9h2v-9H7zm8 0v9h2v-9h-2z" fill="currentColor"/></symbol>
+</svg>
+
+<div class="page">
+
+  <!-- ===================== 顶栏 ===================== -->
+  <header class="topbar">
+    <div class="brand">
+      <svg class="logo" viewBox="0 0 64 64" fill="none">
+        <path d="M32 55C32 55 10 42 10 24 10 15 17 9 24 9c4 0 7 2 8 5 1-3 4-5 8-5 7 0 14 6 14 15 0 18-22 31-22 31z" stroke="currentColor" stroke-width="3.4" stroke-linejoin="round"/>
+        <path d="M27 33l4-12M27 33l-4 6M31 21l4 12M35 33l3-8" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="27" cy="33" r="4.6" fill="currentColor"/>
+        <circle cx="35" cy="33" r="4.6" fill="currentColor"/>
+      </svg>
+      <div>
+        <div class="brand-name">心有乐章</div>
+        <div class="brand-sub">MELODY IN HEART</div>
+      </div>
+    </div>
+    <div class="theme-ctl">
+      <div class="theme-pills">
+        <button class="pill" data-pill="mono-light"><span class="dot" style="background:#141414"></span>墨 · 浅</button>
+        <button class="pill active" data-pill="mono-dark"><span class="dot" style="background:#D0D0D0"></span>墨 · 深 (OLED)</button>
+        <button class="pill" data-pill="vermilion-day"><span class="dot" style="background:#A32E25"></span>朱砂 · 昼</button>
+        <button class="pill" data-pill="vermilion-night"><span class="dot" style="background:#C04F42"></span>朱砂 · 夜</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===================== Hero ===================== -->
+  <section class="hero">
+    <div class="kicker">FEATURE · VERSION COMPARISON · v1</div>
+    <h1 class="hero-title">版本对比<span class="grad">，差异一眼可见</span><span class="en">Version Comparison</span></h1>
+    <p class="hero-sub">
+      多版本管理从「能看出有几个版本」升级到<strong>「一眼看出差别在哪」</strong>。同名歌曲的多个版本以<strong>规格对比表</strong>呈现：
+      相同信息折叠收起、差异单元高亮、可选<strong>对比基准</strong>、音质条一眼辨高低，并支持<strong>A/B 盲听</strong>。
+      针对 4 个版本左右的歌曲，首列固定 + 横滑 + 折叠共同项，手机上依然不拥挤。
+    </p>
+    <div class="hero-facts">
+      <span class="fact"><svg class="ic ic-stroke"><use href="#i-compare"/></svg>共同折叠 · 差异高亮</span>
+      <span class="fact"><svg class="ic ic-stroke"><use href="#i-diff"/></svg>基准切换 · 音质条对比</span>
+      <span class="fact"><svg class="ic ic-stroke"><use href="#i-ear"/></svg>A/B 盲听对比</span>
+      <span class="fact"><svg class="ic ic-stroke"><use href="#i-trash"/></svg>对比完删除 · 二次确认</span>
+    </div>
+
+    <div class="pillars">
+      <div class="pillar">
+        <div class="num">01 / 折叠</div>
+        <h3>共同项先收起来</h3>
+        <p>歌名、艺术家、封面等所有版本一致的字段折叠进一张「各版本一致」卡片，表格里只留真正有差异的行——注意力不浪费在重复信息上。</p>
+        <div class="sw">对比表 · 仅差异行</div>
+      </div>
+      <div class="pillar">
+        <div class="num">02 / 基准</div>
+        <h3>选一个基准再比对</h3>
+        <p>默认以音质最高的版本为基准，点击版本卡可随时换基准；与基准相同的值灰化、不同的值以朱砂高亮，差异关系一目了然。</p>
+        <div class="sw">高亮 = 与基准不同</div>
+      </div>
+      <div class="pillar">
+        <div class="num">03 / 4 版</div>
+        <h3>4 个版本也不挤</h3>
+        <p>规格表首列固定、横向滑动；≤3 版本自动收窄无需滚动，4+ 版本横滑保底。音质条独立呈现，每个版本的规格高低一眼可读。</p>
+        <div class="sw">首列固定 · 横滑 · 音质条</div>
+      </div>
+      <div class="pillar">
+        <div class="num">04 / 删除</div>
+        <h3>选完就清理，释放空间</h3>
+        <p>确定保留的版本后，可直接删除其余本地文件。每个版本卡提供「⋯」入口，删除前弹窗明确展示将删除的文件与占用空间，强调不可撤销。</p>
+        <div class="sw">删除本地文件 · 移除歌单引用</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== 手机稿 ===================== -->
+  <div class="sec sec-head" id="mockups">
+    <span class="idx">01</span>
+    <div>
+      <h2>界面稿 · 手机</h2>
+      <div class="sub">四张稿子：多版本管理页新增「对比」入口、版本对比主页面（基准 + 差异表 + 折叠共同项）、A/B 盲听对比、删除本地文件的确认弹窗。左上角切换主题，全部稿子即时换肤。</div>
+    </div>
+  </div>
+
+  <div class="phones">
+
+    <!-- 01 版本管理 · 对比入口 -->
+    <div class="phone-wrap">
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="screen">
+          <div class="statusbar"><span>21:05</span><span class="sb-icons">▮▮ ▮● ♪</span></div>
+          <div class="appbar">
+            <div class="appbar-left">
+              <button class="icon-btn"><svg class="ic ic-stroke"><use href="#i-back"/></svg></button>
+              <div><div class="t">多版本管理</div><div class="appbar-sub">4 组 · 11 首</div></div>
+            </div>
+            <div class="appbar-right">
+              <button class="icon-btn"><svg class="ic ic-stroke"><use href="#i-search"/></svg></button>
+            </div>
+          </div>
+          <div class="scroll" style="padding-top:6px">
+
+            <!-- 海阔天空 组 -->
+            <div class="vg-card">
+              <div class="vg-head">
+                <div class="vg-cover"><svg class="ic ic-fill"><use href="#i-note"/></svg></div>
+                <div class="vg-mid">
+                  <div class="vg-title">海阔天空<span class="now">播放中</span></div>
+                  <div class="vg-sub">4 个版本 · <span class="diff-line"><svg class="ic ic-stroke"><use href="#i-diff"/></svg>规格不同</span></div>
+                </div>
+                <button class="btn compare"><svg class="ic ic-stroke"><use href="#i-compare"/></svg>对比</button>
+                <button class="icon-btn sm"><svg class="ic ic-stroke"><use href="#i-caret"/></svg></button>
+              </div>
+              <div class="vg-list">
+                <div class="vg-item">
+                  <div class="vg-play"><svg class="ic ic-fill"><use href="#i-pause"/></svg></div>
+                  <div class="li-mid"><span class="fmt lossless">FLAC</span> 96kHz · 24bit <em>Hi-Res</em></div>
+                  <div class="vg-more"><span class="eq"><i></i><i></i><i></i><i></i></span><button class="icon-btn sm"><svg class="ic ic-fill"><use href="#i-dots"/></svg></button></div>
+                </div>
+                <div class="vg-item">
+                  <div class="vg-play"><svg class="ic ic-fill"><use href="#i-play"/></svg></div>
+                  <div class="li-mid"><span class="fmt lossless">WAV</span> 44.1kHz · 16bit</div>
+                  <div class="vg-more"><span class="meta">42MB</span><button class="icon-btn sm"><svg class="ic ic-fill"><use href="#i-dots"/></svg></button></div>
+                </div>
+                <div class="vg-item">
+                  <div class="vg-play"><svg class="ic ic-fill"><use href="#i-play"/></svg></div>
+                  <div class="li-mid"><span class="fmt lossy">MP3</span> 48kHz · 320k</div>
+                  <div class="vg-more"><span class="meta">12MB</span><button class="icon-btn sm"><svg class="ic ic-fill"><use href="#i-dots"/></svg></button></div>
+                </div>
+                <div class="vg-item">
+                  <div class="vg-play"><svg class="ic ic-fill"><use href="#i-play"/></svg></div>
+                  <div class="li-mid"><span class="fmt lossless">FLAC</span> 44.1kHz · 16bit <em>现场版</em></div>
+                  <div class="vg-more"><button class="icon-btn sm"><svg class="ic ic-fill"><use href="#i-dots"/></svg></button></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 夜曲 组 -->
+            <div class="vg-card">
+              <div class="vg-head">
+                <div class="vg-cover"><svg class="ic ic-fill"><use href="#i-note"/></svg></div>
+                <div class="vg-mid">
+                  <div class="vg-title">夜曲</div>
+                  <div class="vg-sub">2 个版本 · <span class="diff-line"><svg class="ic ic-stroke"><use href="#i-diff"/></svg>采样率不同</span></div>
+                </div>
+                <button class="btn compare"><svg class="ic ic-stroke"><use href="#i-compare"/></svg>对比</button>
+                <button class="icon-btn sm"><svg class="ic ic-stroke"><use href="#i-caret"/></svg></button>
+              </div>
+            </div>
+          </div>
+          <div class="minibar">
+            <div class="minibar-thumb"><svg class="ic ic-fill"><use href="#i-note"/></svg></div>
+            <div class="minibar-mid">
+              <div class="minibar-title">海阔天空</div>
+              <div class="minibar-progress"><i style="width:33%"></i></div>
+            </div>
+            <button class="minibar-btn"><svg class="ic ic-fill"><use href="#i-play"/></svg></button>
+          </div>
+        </div>
+      </div>
+      <div class="phone-label">01 · <b>多版本管理</b> · 每个分组新增「<b>对比</b>」入口，副标题直接提示差异点（规格 / 采样率 / 时长不同），未展开也先感知差异</div>
+    </div>
+
+    <!-- 02 版本对比 · 主页面 -->
+    <div class="phone-wrap">
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="screen">
+          <div class="statusbar"><span>21:05</span><span class="sb-icons">▮▮ ▮● ♪</span></div>
+          <div class="appbar">
+            <div class="appbar-left">
+              <button class="icon-btn"><svg class="ic ic-stroke"><use href="#i-back"/></svg></button>
+              <div><div class="t">版本对比</div><div class="appbar-sub">海阔天空 · Beyond · 4 版</div></div>
+            </div>
+            <div class="appbar-right">
+              <button class="icon-btn"><svg class="ic ic-stroke"><use href="#i-ear"/></svg></button>
+              <button class="icon-btn"><svg class="ic ic-fill"><use href="#i-dots"/></svg></button>
+            </div>
+          </div>
+
+          <div class="scroll">
+            <!-- 版本横滑条 -->
+            <div class="strip-zone">
+              <div class="strip-title"><span>选择对比基准</span><span class="hint">点击卡片切换基准 · 卡片「⋯」可删除</span></div>
+              <div class="vstrip">
+                <div class="vcard sel" data-v="0">
+                  <span class="badge ref">基准</span>
+                  <span class="badge best"><svg class="ic ic-fill"><use href="#i-trophy"/></svg>最佳</span>
+                  <div class="vcard-cover"><svg class="ic ic-fill"><use href="#i-note"/></svg><span class="play-ov"><svg class="ic ic-fill"><use href="#i-play"/></svg></span></div>
+                  <div class="vcard-name">FLAC 96k</div>
+                  <div class="vcard-meta"><span class="fmt lossless">FLAC</span><span class="vcard-rate">96k · 24b</span></div>
+                  <div class="mini-q"><i style="width:100%"></i></div>
+                </div>
+                <div class="vcard" data-v="1">
+                  <button class="more-btn show"><svg class="ic ic-fill"><use href="#i-dots"/></svg></button>
+                  <div class="vcard-cover"><svg class="ic ic-fill"><use href="#i-note"/></svg></div>
+                  <div class="vcard-name">WAV 44.1k</div>
+                  <div class="vcard-meta"><span class="fmt lossless">WAV</span><span class="vcard-rate">44.1k · 16b</span></div>
+                  <div class="mini-q"><i style="width:62%"></i></div>
+                </div>
+                <div class="vcard" data-v="2">
+                  <div class="vcard-cover"><svg class="ic ic-fill"><use href="#i-note"/></svg></div>
+                  <div class="vcard-name">MP3 320k</div>
+                  <div class="vcard-meta"><span class="fmt lossy">MP3</span><span class="vcard-rate">320kbps</span></div>
+                  <div class="mini-q"><i style="width:34%"></i></div>
+                </div>
+                <div class="vcard" data-v="3">
+                  <div class="vcard-cover"><svg class="ic ic-fill"><use href="#i-note"/></svg></div>
+                  <div class="vcard-name">FLAC 现场</div>
+                  <div class="vcard-meta"><span class="fmt lossless">FLAC</span><span class="vcard-rate">44.1k · 16b</span></div>
+                  <div class="mini-q"><i style="width:60%"></i></div>
+                </div>
+              </div>
+              <div class="card-menu" style="right:10px">
+                <div class="mi"><svg class="ic ic-stroke"><use href="#i-ear"/></svg>A/B 试听</div>
+                <div class="mi"><svg class="ic ic-stroke"><use href="#i-compare"/></svg>设为基准</div>
+                <div class="sep"></div>
+                <div class="mi danger"><svg class="ic ic-fill"><use href="#i-trash"/></svg>删除本地文件</div>
+              </div>
+            </div>
+
+            <!-- 差异总览 -->
+            <div class="card diff-sum">
+              <div class="sum-big"><b>4</b><span>个版本</span></div>
+              <div class="sum-mid">
+                <div class="sum-tags">
+                  <span class="tag same"><svg class="ic ic-fill"><use href="#i-layer"/></svg>共同 3 项</span>
+                  <span class="tag diff"><svg class="ic ic-stroke"><use href="#i-diff"/></svg>差异 6 项</span>
+                </div>
+                <div class="sum-note">基准 · FLAC 96k · 高亮即差异</div>
+              </div>
+              <div class="rec-card">
+                <svg class="ic ic-fill"><use href="#i-trophy"/></svg>
+                <div><div class="t">推荐</div><div class="s">96kHz 24bit</div></div>
+              </div>
+            </div>
+
+            <!-- 共同信息（折叠） -->
+            <div class="common-card open">
+              <div class="common-head">
+                <div class="t"><svg class="ic ic-fill"><use href="#i-layer"/></svg>各版本一致</div>
+                <span class="cnt">3 项</span>
+                <span class="arr"><svg class="ic ic-stroke"><use href="#i-caret"/></svg></span>
+              </div>
+              <div class="common-body">
+                <div class="common-kv">
+                  <div class="kv"><b>歌名</b><span>海阔天空</span></div>
+                  <div class="kv"><b>艺术家</b><span>Beyond</span></div>
+                  <div class="kv"><b>专辑</b><span>乐与怒</span></div>
+                  <div class="kv"><b>封面</b><span>均有</span></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 差异对比表 -->
+            <div class="cmp-card cmp-edge">
+              <div class="cmp-head">
+                <div class="cmp-title"><svg class="ic ic-fill"><use href="#i-compare"/></svg>规格对比</div>
+                <span class="cmp-hint"><svg class="ic ic-stroke"><use href="#i-chev-r"/></svg>左右滑动</span>
+              </div>
+              <div class="legend">
+                <span><i class="d"></i>与基准不同</span>
+                <span><i class="s"></i>与基准相同</span>
+                <span><i class="s" style="background:var(--grad)"></i>音质条</span>
+              </div>
+              <div class="cmp-scroll">
+                <table class="ctable">
+                  <thead>
+                    <tr>
+                      <th class="c-label">规格</th>
+                      <th class="ref" data-col="0"><div class="th-chip"><div class="th-cover"><svg class="ic ic-fill"><use href="#i-note"/></svg></div><div class="th-name">FLAC 96k</div><div class="th-sub">基准</div></div></th>
+                      <th data-col="1"><div class="th-chip"><div class="th-cover"><svg class="ic ic-fill"><use href="#i-note"/></svg></div><div class="th-name">WAV</div><div class="th-sub">44.1k</div></div></th>
+                      <th data-col="2"><div class="th-chip"><div class="th-cover"><svg class="ic ic-fill"><use href="#i-note"/></svg></div><div class="th-name">MP3</div><div class="th-sub">320k</div></div></th>
+                      <th data-col="3"><div class="th-chip"><div class="th-cover"><svg class="ic ic-fill"><use href="#i-note"/></svg></div><div class="th-name">FLAC</div><div class="th-sub">现场</div></div></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td class="c-label">格式</td>
+                      <td class="cell best" data-col="0"><span class="fmt lossless">FLAC</span></td>
+                      <td class="cell diff" data-col="1"><span class="fmt lossless">WAV</span></td>
+                      <td class="cell diff" data-col="2"><span class="fmt lossy">MP3</span></td>
+                      <td class="cell same" data-col="3"><span class="fmt lossless">FLAC</span></td>
+                    </tr>
+                    <tr>
+                      <td class="c-label">采样率</td>
+                      <td class="cell best" data-col="0">96kHz<div class="bar-mini on"><i style="width:100%"></i></div></td>
+                      <td class="cell diff" data-col="1">44.1kHz<div class="bar-mini"><i style="width:46%"></i></div></td>
+                      <td class="cell diff" data-col="2">48kHz<div class="bar-mini"><i style="width:50%"></i></div></td>
+                      <td class="cell diff" data-col="3">44.1kHz<div class="bar-mini"><i style="width:46%"></i></div></td>
+                    </tr>
+                    <tr>
+                      <td class="c-label">位深</td>
+                      <td class="cell best" data-col="0">24bit</td>
+                      <td class="cell diff" data-col="1">16bit</td>
+                      <td class="cell dash" data-col="2">—</td>
+                      <td class="cell diff" data-col="3">16bit</td>
+                    </tr>
+                    <tr>
+                      <td class="c-label">文件大小</td>
+                      <td class="cell best" data-col="0">98.6MB<div class="bar-mini on"><i style="width:100%"></i></div></td>
+                      <td class="cell diff" data-col="1">42.1MB<div class="bar-mini"><i style="width:43%"></i></div></td>
+                      <td class="cell diff" data-col="2">12.3MB<div class="bar-mini"><i style="width:12%"></i></div></td>
+                      <td class="cell diff" data-col="3">45.8MB<div class="bar-mini"><i style="width:46%"></i></div></td>
+                    </tr>
+                    <tr>
+                      <td class="c-label">时长</td>
+                      <td class="cell" data-col="0">5:10</td>
+                      <td class="cell diff" data-col="1">5:12</td>
+                      <td class="cell same" data-col="2">5:10</td>
+                      <td class="cell diff" data-col="3">5:16</td>
+                    </tr>
+                    <tr>
+                      <td class="c-label">歌词</td>
+                      <td class="cell same" data-col="0"><span class="presence yes"><svg class="ic ic-fill"><use href="#i-check"/></svg>有</span></td>
+                      <td class="cell same" data-col="1"><span class="presence yes"><svg class="ic ic-fill"><use href="#i-check"/></svg>有</span></td>
+                      <td class="cell diff" data-col="2"><span class="presence no"><svg class="ic ic-stroke"><use href="#i-close"/></svg>无</span></td>
+                      <td class="cell same" data-col="3"><span class="presence yes"><svg class="ic ic-fill"><use href="#i-check"/></svg>有</span></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="hscroll-note"><svg class="ic ic-stroke"><use href="#i-chev-r"/></svg>规格超过 3 列时横向滑动 · 首列固定</div>
+            </div>
+
+            <!-- A/B 试听（入口） -->
+            <div class="ab-zone">
+              <div class="ab-card">
+                <div class="ab-title">
+                  <div class="t"><svg class="ic ic-stroke"><use href="#i-ear"/></svg>对比聆听</div>
+                  <label class="ab-blind"><input type="checkbox">盲听模式</label>
+                </div>
+                <div class="ab-pair">
+                  <div class="ab-slot on">
+                    <span class="ab-tag A">A</span>
+                    <div class="ab-thumb"><svg class="ic ic-fill"><use href="#i-note"/></svg></div>
+                    <div class="ab-meta"><div class="ab-name">FLAC 96kHz</div><div class="ab-sub">24bit · Hi-Res</div></div>
+                  </div>
+                  <div class="ab-mid">
+                    <span class="sw-icon"><svg class="ic ic-stroke"><use href="#i-swap"/></svg></span>
+                    <span class="lbl">A↔B</span>
+                  </div>
+                  <div class="ab-slot">
+                    <span class="ab-tag B">B</span>
+                    <div class="ab-thumb"><svg class="ic ic-fill"><use href="#i-note"/></svg></div>
+                    <div class="ab-meta"><div class="ab-name">MP3 320k</div><div class="ab-sub">48kHz · 压缩</div></div>
+                  </div>
+                </div>
+                <div class="ab-ctrl">
+                  <div class="ab-seg">
+                    <button class="on" data-ab="A">A</button>
+                    <button data-ab="B">B</button>
+                  </div>
+                  <button class="ab-play"><svg class="ic ic-fill"><use href="#i-play"/></svg></button>
+                  <div class="ab-progress">
+                    <div class="ab-bar"><i></i></div>
+                    <div class="ab-times"><span>1:24</span><span>5:10</span></div>
+                  </div>
+                </div>
+                <div class="ab-note"><svg class="ic ic-stroke"><use href="#i-swap"/></svg>连点 A/B 即时切换 · 进度与播放状态共享保留</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="action-bar">
+            <button class="btn outlined"><svg class="ic ic-fill"><use href="#i-note"/></svg>加入队列</button>
+            <span class="spacer"></span>
+            <button class="btn filled"><svg class="ic ic-fill"><use href="#i-play"/></svg>播放基准</button>
+          </div>
+        </div>
+      </div>
+      <div class="phone-label">02 · <b>版本对比 · 主页面</b> · 横滑版本条选基准 · 差异总览 · 「各版本一致」折叠 · 规格对比表（首列固定 + 横滑 + 音质条 + 差异高亮）· 底部 A/B 试听 + 操作条</div>
+    </div>
+
+    <!-- 03 A/B 盲听 -->
+    <div class="phone-wrap">
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="screen">
+          <div class="statusbar"><span>21:05</span><span class="sb-icons">▮▮ ▮● ♪</span></div>
+          <div class="appbar">
+            <div class="appbar-left">
+              <button class="icon-btn"><svg class="ic ic-stroke"><use href="#i-back"/></svg></button>
+              <div><div class="t">对比聆听</div><div class="appbar-sub">A · FLAC 96k vs B · MP3 320k</div></div>
+            </div>
+            <div class="appbar-right">
+              <button class="icon-btn"><svg class="ic ic-fill"><use href="#i-dots"/></svg></button>
+            </div>
+          </div>
+          <div class="scroll" style="padding-top:10px">
+            <div class="ab-full">
+              <div class="ab-hero">
+                <div class="ab-hero-cover"><svg class="ic ic-fill"><use href="#i-note"/></svg></div>
+                <div class="ab-hero-meta">
+                  <div class="ab-hero-title">海阔天空</div>
+                  <div class="ab-hero-sub">Beyond · 乐与怒</div>
+                </div>
+                <span class="tag diff"><svg class="ic ic-stroke"><use href="#i-ear"/></svg>盲听</span>
+              </div>
+
+              <div class="ab-full-card">
+                <div class="ab-full-slot A">
+                  <span class="ab-tag A">A</span>
+                  <div class="ab-thumb-lg"><svg class="ic ic-fill"><use href="#i-note"/></svg></div>
+                  <div class="ab-meta-lg">
+                    <div class="ab-name">FLAC 96kHz · 24bit</div>
+                    <div class="ab-sub">Hi-Res · 98.6MB · 有歌词</div>
+                    <div class="mini-q"><i style="width:100%"></i></div>
+                  </div>
+                  <button class="ab-tap"><svg class="ic ic-fill"><use href="#i-check"/></svg></button>
+                </div>
+                <div class="ab-or"><span>或</span></div>
+                <div class="ab-full-slot">
+                  <span class="ab-tag B">B</span>
+                  <div class="ab-thumb-lg"><svg class="ic ic-fill"><use href="#i-note"/></svg></div>
+                  <div class="ab-meta-lg">
+                    <div class="ab-name">MP3 320kbps · 48kHz</div>
+                    <div class="ab-sub">压缩 · 12.3MB · 无歌词</div>
+                    <div class="mini-q"><i style="width:34%"></i></div>
+                  </div>
+                  <button class="ab-tap"><svg class="ic ic-stroke"><use href="#i-play"/></svg></button>
+                </div>
+              </div>
+
+              <div class="card ab-listen" style="margin-top:10px">
+                <div class="ab-ctrl" style="margin-top:0">
+                  <div class="ab-seg"><button class="on" data-ab="A">A</button><button data-ab="B">B</button></div>
+                  <button class="ab-play"><svg class="ic ic-fill"><use href="#i-play"/></svg></button>
+                  <div class="ab-progress">
+                    <div class="ab-bar"><i style="width:58%"></i></div>
+                    <div class="ab-times"><span>2:24</span><span>5:10</span></div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="ab-tips">
+                <div class="tip"><svg class="ic ic-stroke"><use href="#i-swap"/></svg><b>快速切换</b>双指连点或点击 A/B，无需暂停</div>
+                <div class="tip"><svg class="ic ic-stroke"><use href="#i-clock"/></svg><b>进度共享</b>切换后从同一位置继续播放，方便定位听感差异段落</div>
+                <div class="tip"><svg class="ic ic-fill"><use href="#i-trophy"/></svg><b>盲听模式</b>隐藏规格标签，凭耳朵判断后再揭晓</div>
+              </div>
+            </div>
+          </div>
+          <div class="minibar">
+            <div class="minibar-thumb"><svg class="ic ic-fill"><use href="#i-note"/></svg></div>
+            <div class="minibar-mid">
+              <div class="minibar-title">海阔天空</div>
+              <div class="minibar-progress"><i style="width:58%"></i></div>
+            </div>
+            <button class="minibar-btn"><svg class="ic ic-fill"><use href="#i-pause"/></svg></button>
+          </div>
+        </div>
+      </div>
+      <div class="phone-label">03 · <b>A/B 盲听对比</b> · 同一首歌曲在两版本间秒切，进度共享；盲听模式隐藏规格，先听后看，减少「心理暗示」对听感的干扰</div>
+    </div>
+
+    <!-- 04 删除本地文件 · 确认弹窗 -->
+    <div class="phone-wrap">
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="screen">
+          <div class="statusbar"><span>21:05</span><span class="sb-icons">▮▮ ▮● ♪</span></div>
+          <div class="appbar">
+            <div class="appbar-left">
+              <button class="icon-btn"><svg class="ic ic-stroke"><use href="#i-back"/></svg></button>
+              <div><div class="t">版本对比</div><div class="appbar-sub">海阔天空 · Beyond · 4 版</div></div>
+            </div>
+            <div class="appbar-right">
+              <button class="icon-btn"><svg class="ic ic-stroke"><use href="#i-ear"/></svg></button>
+              <button class="icon-btn"><svg class="ic ic-fill"><use href="#i-dots"/></svg></button>
+            </div>
+          </div>
+          <div class="scroll">
+            <div class="strip-zone dim">
+              <div class="strip-title"><span>选择对比基准</span><span class="hint">点击卡片切换基准</span></div>
+              <div class="vstrip">
+                <div class="vcard sel"><div class="vcard-cover"><svg class="ic ic-fill"><use href="#i-note"/></svg></div><div class="vcard-name">FLAC 96k</div><div class="vcard-meta"><span class="fmt lossless">FLAC</span><span class="vcard-rate">96k · 24b</span></div><div class="mini-q"><i style="width:100%"></i></div></div>
+                <div class="vcard"><button class="more-btn show"><svg class="ic ic-fill"><use href="#i-dots"/></svg></button><div class="vcard-cover"><svg class="ic ic-fill"><use href="#i-note"/></svg></div><div class="vcard-name">WAV 44.1k</div><div class="vcard-meta"><span class="fmt lossless">WAV</span><span class="vcard-rate">44.1k · 16b</span></div><div class="mini-q"><i style="width:62%"></i></div></div>
+                <div class="vcard"><div class="vcard-cover"><svg class="ic ic-fill"><use href="#i-note"/></svg></div><div class="vcard-name">MP3 320k</div><div class="vcard-meta"><span class="fmt lossy">MP3</span><span class="vcard-rate">320kbps</span></div><div class="mini-q"><i style="width:34%"></i></div></div>
+              </div>
+            </div>
+            <div class="card diff-sum dim">
+              <div class="sum-big"><b>4</b><span>个版本</span></div>
+              <div class="sum-mid">
+                <div class="sum-tags"><span class="tag same">共同 3 项</span><span class="tag diff">差异 6 项</span></div>
+                <div class="sum-note">基准 · FLAC 96k</div>
+              </div>
+              <div class="rec-card"><svg class="ic ic-fill"><use href="#i-trophy"/></svg><div><div class="t">推荐</div><div class="s">96kHz 24bit</div></div></div>
+            </div>
+          </div>
+
+          <div class="backdrop">
+            <div class="dialog">
+              <div class="dialog-title"><svg class="ic ic-fill"><use href="#i-trash"/></svg>删除该版本</div>
+              <div class="dialog-sub">将从本地文件中删除以下版本：</div>
+              <div class="del-target">
+                <div class="del-thumb"><svg class="ic ic-fill"><use href="#i-note"/></svg></div>
+                <div><div class="t">WAV · 44.1kHz · 16bit</div><div class="s">海阔天空 · 42.1MB</div></div>
+              </div>
+              <div class="del-warn">
+                <svg class="ic ic-stroke"><use href="#i-info"/></svg>
+                <span>此操作将<b>删除本地音频文件</b>，并从所有歌单中移除该版本。<b>不可撤销</b>。</span>
+              </div>
+              <div class="del-tip"><svg class="ic ic-stroke"><use href="#i-ear"/></svg>拿不准？可先 A/B 试听再决定</div>
+              <div class="acts">
+                <button class="btn outlined">取消</button>
+                <button class="btn danger"><svg class="ic ic-fill"><use href="#i-trash"/></svg>删除文件</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="phone-label">04 · <b>删除本地文件 · 确认弹窗</b> · 明确展示将删除的文件规格与占用空间，红色强调「删除本地文件 + 移除歌单引用 + 不可撤销」；确认后版本卡与表格列一并移除，Toast 反馈</div>
+    </div>
+  </div>
+
+  <!-- ===================== 平板 · 大屏 ===================== -->
+  <div class="sec sec-head" id="tablet">
+    <span class="idx">02</span>
+    <div>
+      <h2>界面稿 · 平板 / 大屏</h2>
+      <div class="sub">4 个版本全列并排、无需横滑：版本卡平铺为质量条 + 完整规格对比表 + 底部操作条。点版本卡可切换基准（表格实时高亮）。</div>
+    </div>
+  </div>
+
+  <div class="phone-wrap" style="margin-top:26px">
+    <div class="tablet">
+      <div class="tablet-screen">
+        <div class="statusbar"><span>21:05</span><span class="sb-icons">▮▮ ▮● ♪</span></div>
+        <div class="appbar" style="padding:6px 8px 2px">
+          <div class="appbar-left">
+            <button class="icon-btn"><svg class="ic ic-stroke"><use href="#i-back"/></svg></button>
+            <div><div class="t">版本对比</div><div class="appbar-sub">海阔天空 · Beyond · 4 版</div></div>
+          </div>
+          <div class="appbar-right">
+            <button class="icon-btn"><svg class="ic ic-stroke"><use href="#i-ear"/></svg></button>
+            <button class="icon-btn"><svg class="ic ic-fill"><use href="#i-dots"/></svg></button>
+          </div>
+        </div>
+        <div class="t-body">
+          <div class="t-strip">
+            <div class="vcard sel" data-v="0">
+              <div class="vcard-cover"><svg class="ic ic-fill"><use href="#i-note"/></svg></div>
+              <div style="flex:1;min-width:0"><div class="vcard-name">FLAC 96kHz</div><div class="vcard-meta"><span class="fmt lossless">FLAC</span><span class="vcard-rate">24bit</span></div><div class="mini-q"><i style="width:100%"></i></div></div>
+              <span class="badge ref">基准</span>
+            </div>
+            <div class="vcard" data-v="1">
+              <div class="vcard-cover"><svg class="ic ic-fill"><use href="#i-note"/></svg></div>
+              <div style="flex:1;min-width:0"><div class="vcard-name">WAV 44.1kHz</div><div class="vcard-meta"><span class="fmt lossless">WAV</span><span class="vcard-rate">16bit</span></div><div class="mini-q"><i style="width:62%"></i></div></div>
+            </div>
+            <div class="vcard" data-v="2">
+              <div class="vcard-cover"><svg class="ic ic-fill"><use href="#i-note"/></svg></div>
+              <div style="flex:1;min-width:0"><div class="vcard-name">MP3 320kbps</div><div class="vcard-meta"><span class="fmt lossy">MP3</span><span class="vcard-rate">48kHz</span></div><div class="mini-q"><i style="width:34%"></i></div></div>
+            </div>
+            <div class="vcard" data-v="3">
+              <div class="vcard-cover"><svg class="ic ic-fill"><use href="#i-note"/></svg></div>
+              <div style="flex:1;min-width:0"><div class="vcard-name">FLAC 现场版</div><div class="vcard-meta"><span class="fmt lossless">FLAC</span><span class="vcard-rate">44.1kHz</span></div><div class="mini-q"><i style="width:60%"></i></div></div>
+            </div>
+          </div>
+
+          <div class="t-table-wrap">
+            <div class="cmp-head">
+              <div class="cmp-title"><svg class="ic ic-fill"><use href="#i-compare"/></svg>规格对比</div>
+              <div class="legend" style="padding:0"><span><i class="d"></i>与基准不同</span><span><i class="s"></i>相同</span></div>
+            </div>
+            <table class="ctable">
+              <thead>
+                <tr>
+                  <th class="c-label">规格</th>
+                  <th class="ref" data-col="0"><div class="th-chip"><div class="th-cover"><svg class="ic ic-fill"><use href="#i-note"/></svg></div><div class="th-name">FLAC 96k</div><div class="th-sub">基准 · 最佳</div></div></th>
+                  <th data-col="1"><div class="th-chip"><div class="th-cover"><svg class="ic ic-fill"><use href="#i-note"/></svg></div><div class="th-name">WAV</div><div class="th-sub">44.1k</div></div></th>
+                  <th data-col="2"><div class="th-chip"><div class="th-cover"><svg class="ic ic-fill"><use href="#i-note"/></svg></div><div class="th-name">MP3</div><div class="th-sub">320k</div></div></th>
+                  <th data-col="3"><div class="th-chip"><div class="th-cover"><svg class="ic ic-fill"><use href="#i-note"/></svg></div><div class="th-name">FLAC</div><div class="th-sub">现场</div></div></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="c-label">格式</td>
+                  <td class="cell best" data-col="0"><span class="fmt lossless">FLAC</span></td>
+                  <td class="cell diff" data-col="1"><span class="fmt lossless">WAV</span></td>
+                  <td class="cell diff" data-col="2"><span class="fmt lossy">MP3</span></td>
+                  <td class="cell same" data-col="3"><span class="fmt lossless">FLAC</span></td>
+                </tr>
+                <tr>
+                  <td class="c-label">采样率</td>
+                  <td class="cell best" data-col="0">96kHz<div class="bar-mini on"><i style="width:100%"></i></div></td>
+                  <td class="cell diff" data-col="1">44.1kHz<div class="bar-mini"><i style="width:46%"></i></div></td>
+                  <td class="cell diff" data-col="2">48kHz<div class="bar-mini"><i style="width:50%"></i></div></td>
+                  <td class="cell diff" data-col="3">44.1kHz<div class="bar-mini"><i style="width:46%"></i></div></td>
+                </tr>
+                <tr>
+                  <td class="c-label">位深</td>
+                  <td class="cell best" data-col="0">24bit</td>
+                  <td class="cell diff" data-col="1">16bit</td>
+                  <td class="cell dash" data-col="2">—</td>
+                  <td class="cell diff" data-col="3">16bit</td>
+                </tr>
+                <tr>
+                  <td class="c-label">文件大小</td>
+                  <td class="cell best" data-col="0">98.6MB</td>
+                  <td class="cell diff" data-col="1">42.1MB</td>
+                  <td class="cell diff" data-col="2">12.3MB</td>
+                  <td class="cell diff" data-col="3">45.8MB</td>
+                </tr>
+                <tr>
+                  <td class="c-label">时长</td>
+                  <td class="cell" data-col="0">5:10</td>
+                  <td class="cell diff" data-col="1">5:12</td>
+                  <td class="cell same" data-col="2">5:10</td>
+                  <td class="cell diff" data-col="3">5:16</td>
+                </tr>
+                <tr>
+                  <td class="c-label">歌词</td>
+                  <td class="cell same" data-col="0"><span class="presence yes"><svg class="ic ic-fill"><use href="#i-check"/></svg>有</span></td>
+                  <td class="cell same" data-col="1"><span class="presence yes"><svg class="ic ic-fill"><use href="#i-check"/></svg>有</span></td>
+                  <td class="cell diff" data-col="2"><span class="presence no"><svg class="ic ic-stroke"><use href="#i-close"/></svg>无</span></td>
+                  <td class="cell same" data-col="3"><span class="presence yes"><svg class="ic ic-fill"><use href="#i-check"/></svg>有</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="t-action">
+          <button class="btn outlined"><svg class="ic ic-fill"><use href="#i-note"/></svg>加入队列</button>
+          <button class="btn outlined"><svg class="ic ic-stroke"><use href="#i-ear"/></svg>A/B 试听</button>
+          <span class="spacer"></span>
+          <button class="btn outlined" style="border-color:var(--err);color:var(--err)"><svg class="ic ic-fill"><use href="#i-trash"/></svg>删除版本</button>
+          <button class="btn filled"><svg class="ic ic-fill"><use href="#i-play"/></svg>播放基准 FLAC 96k</button>
+        </div>
+      </div>
+    </div>
+    <div class="phone-label" style="max-width:560px">平板 / 大屏 · 4 个版本并排全显，规格表无横滑；版本卡即音质条，点卡切换基准，底部操作条承载主要动作</div>
+  </div>
+
+  <!-- ===================== 设计说明 ===================== -->
+  <div class="sec sec-head" id="notes">
+    <span class="idx">03</span>
+    <div>
+      <h2>设计说明 · 差异如何被突出</h2>
+      <div class="sub">四条规则保证「差异一眼可见」且「4 版本不拥挤」，落地时严格按规则计算。</div>
+    </div>
+  </div>
+
+  <div class="notes">
+    <div class="note">
+      <h3><span class="idx">N1</span> 折叠相同，只留差异</h3>
+      <p>对所有版本一致的属性（歌名、艺术家、专辑、封面等）自动折叠进「各版本一致」卡片，对比表只渲染<strong>至少存在一处差异</strong>的行。版本越多，折叠收益越大——4 个版本时通常只剩 6–8 行。</p>
+    </div>
+    <div class="note">
+      <h3><span class="idx">N2</span> 基准比对，高亮不同</h3>
+      <p>基准默认取音质评分最高者（推荐值）。每行以基准值为参照：<strong>相同 → 灰化弱化；不同 → 朱砂描边浅底 + 加粗</strong>。点版本卡换基准，全表即时重算高亮，前后对比稳定可预测。</p>
+      <ul>
+        <li>音质评分 = 格式(无损优先) × 采样率 × 位深 综合</li>
+        <li>数值行（采样率 / 位深 / 大小）配迷你音质条，大小即量级</li>
+      </ul>
+    </div>
+    <div class="note">
+      <h3><span class="idx">N3</span> 4 版本的三道保障</h3>
+      <p>「首列固定 + 横向滑动」让 4–6 列也有保底；≤3 列自动收窄、零滚动；音质条独立于文字，规格高低一眼读。大屏（平板）直接全列并排。</p>
+      <table>
+        <tr><th>版本数</th><th>手机</th><th>平板</th></tr>
+        <tr><td>2–3</td><td>全列并排，无需滑动</td><td>并排 + 操作条</td></tr>
+        <tr><td>4–6</td><td>首列固定 + 横滑</td><td>全列并排</td></tr>
+        <tr><td>7+</td><td>横滑 + 可切「两两对比」</td><td>横滑</td></tr>
+      </table>
+    </div>
+    <div class="note">
+      <h3><span class="idx">N4</span> 听感也要对比</h3>
+      <p>规格差异只是纸面，听感差异才决定选择。A/B 盲听把对比限制在<strong>两个版本之间</strong>，避免多版本同时试听的认知负担；进度共享、秒切、盲听模式，让用户凭耳朵做决定。</p>
+      <ul>
+        <li>连点 A/B 即切，无需暂停</li>
+        <li>切换后进度共享，可反复听同一段落</li>
+        <li>盲听模式隐藏规格，先听后揭晓</li>
+      </ul>
+    </div>
+    <div class="note">
+      <h3><span class="idx">N5</span> 删除本地文件 · 全链路容错</h3>
+      <p>对比的终点是取舍：保留哪个版本，其余本地文件可以清掉释放空间。删除不是常规操作，因此链路刻意「重」，杜绝误删。</p>
+      <ul>
+        <li><b>入口克制</b>：藏在版本卡「⋯」菜单内，不占主操作位</li>
+        <li><b>目标明确</b>：弹窗展示被删版本封面 / 格式 / 规格 / 占用空间</li>
+        <li><b>措辞锋利</b>：红色强调「删除本地文件 + 移除歌单引用 + 不可撤销」</li>
+        <li><b>反馈闭环</b>：删除后版本卡与对比列移除、计数 4→3、Toast 提示释放空间</li>
+        <li>删除进行中（文件较大时）版本卡显示进度态，失败则回滚并 Toast 报错</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ===================== 组件 ===================== -->
+  <div class="sec sec-head" id="components">
+    <span class="idx">04</span>
+    <div>
+      <h2>组件放大 · 关键视觉</h2>
+      <div class="sub">版本卡、差异单元、音质条、A/B 分段控件、删除（本地文件）弹窗与 Toast 的单独演示。</div>
+    </div>
+  </div>
+
+  <div class="comp-grid">
+    <div class="comp">
+      <h4>版本卡 · VERSION CARD</h4>
+      <div class="row">
+        <div class="vcard" style="position:relative">
+          <span class="badge ref">基准</span>
+          <span class="badge best"><svg class="ic ic-fill"><use href="#i-trophy"/></svg>最佳</span>
+          <div class="vcard-cover"><svg class="ic ic-fill"><use href="#i-note"/></svg></div>
+          <div class="vcard-name">FLAC 96k</div>
+          <div class="vcard-meta"><span class="fmt lossless">FLAC</span><span class="vcard-rate">24bit</span></div>
+          <div class="mini-q"><i style="width:100%"></i></div>
+        </div>
+        <div class="vcard">
+          <div class="vcard-cover"><svg class="ic ic-fill"><use href="#i-note"/></svg></div>
+          <div class="vcard-name">MP3 320k</div>
+          <div class="vcard-meta"><span class="fmt lossy">MP3</span><span class="vcard-rate">48kHz</span></div>
+          <div class="mini-q"><i style="width:34%"></i></div>
+        </div>
+      </div>
+      <div class="row" style="margin-top:14px">
+        <span class="note-chip">基准 = 当前高亮列 · 最佳 = 音质评分最高 · 底端音质条 = 规格量级</span>
+      </div>
+    </div>
+
+    <div class="comp">
+      <h4>差异单元 · DIFF CELL</h4>
+      <div class="row">
+        <span class="cell-demo diff">44.1kHz <span style="font-size:9px">与基准不同</span></span>
+        <span class="cell-demo same">96kHz <span style="font-size:9px">与基准相同</span></span>
+        <span class="cell-demo best">24bit <span style="font-size:9px">基准 · 最佳</span></span>
+      </div>
+      <div class="row">
+        <span class="tag diff"><svg class="ic ic-stroke"><use href="#i-diff"/></svg>差异 6 项</span>
+        <span class="tag same"><svg class="ic ic-fill"><use href="#i-layer"/></svg>共同 3 项</span>
+      </div>
+      <div class="row" style="margin-top:14px">
+        <span style="font-size:12px;color:var(--text2)">不同值：朱砂描边浅底 + 加粗 · 相同值：灰化 · 最佳值：朱砂色加粗。</span>
+      </div>
+    </div>
+
+    <div class="comp">
+      <h4>音质条 · QUALITY BAR</h4>
+      <div class="row" style="flex-direction:column;align-items:stretch">
+        <div style="display:flex;align-items:center;gap:10px"><span class="fmt lossless">FLAC</span><span style="width:180px;height:5px;border-radius:3px;background:var(--bg3);overflow:hidden"><i style="display:block;height:100%;width:100%;background:var(--grad)"></i></span><span style="font-family:var(--font-num);font-size:11px;color:var(--text2)">96k · 24bit</span></div>
+        <div style="display:flex;align-items:center;gap:10px;margin-top:8px"><span class="fmt lossless">WAV</span><span style="width:180px;height:5px;border-radius:3px;background:var(--bg3);overflow:hidden"><i style="display:block;height:100%;width:62%;background:var(--bg3)"></i></span><span style="font-family:var(--font-num);font-size:11px;color:var(--text3)">44.1k · 16bit</span></div>
+        <div style="display:flex;align-items:center;gap:10px;margin-top:8px"><span class="fmt lossy">MP3</span><span style="width:180px;height:5px;border-radius:3px;background:var(--bg3);overflow:hidden"><i style="display:block;height:100%;width:34%;background:var(--bg3)"></i></span><span style="font-family:var(--font-num);font-size:11px;color:var(--text3)">320kbps</span></div>
+      </div>
+      <div class="row" style="margin-top:12px">
+        <span class="note-chip">最高规格用渐变填充，其余用中性填充，一眼可比</span>
+      </div>
+    </div>
+
+    <div class="comp">
+      <h4>A/B 分段 · BLIND A/B</h4>
+      <div class="row">
+        <div class="ab-seg"><button class="on" data-ab="A">A</button><button data-ab="B">B</button></div>
+        <button class="ab-play"><svg class="ic ic-fill"><use href="#i-play"/></svg></button>
+      </div>
+      <div class="row" style="margin-top:14px">
+        <label class="ab-blind"><input type="checkbox">盲听模式（隐藏规格标签）</label>
+      </div>
+      <div class="row" style="margin-top:14px">
+        <span style="font-size:12px;color:var(--text2)">A/B 只在两个版本间切换，共享进度；盲听关闭标签显示，避免心理暗示。</span>
+      </div>
+    </div>
+
+    <div class="comp">
+      <h4>删除本地文件 · DELETE</h4>
+      <div class="row">
+        <button class="btn danger"><svg class="ic ic-fill"><use href="#i-trash"/></svg>删除文件</button>
+        <button class="btn outlined">取消</button>
+      </div>
+      <div class="row" style="margin-top:14px;position:relative">
+        <div class="dialog" style="max-width:280px">
+          <div class="dialog-title"><svg class="ic ic-fill"><use href="#i-trash"/></svg>删除该版本</div>
+          <div class="dialog-sub">将从本地文件中删除：</div>
+          <div class="del-target">
+            <div class="del-thumb"><svg class="ic ic-fill"><use href="#i-note"/></svg></div>
+            <div><div class="t">MP3 · 320kbps</div><div class="s">海阔天空 · 12.3MB</div></div>
+          </div>
+          <div class="del-warn"><svg class="ic ic-stroke"><use href="#i-info"/></svg><span>将<b>删除本地文件</b>并从所有歌单移除，<b>不可撤销</b>。</span></div>
+          <div class="acts">
+            <button class="btn outlined">取消</button>
+            <button class="btn danger"><svg class="ic ic-fill"><use href="#i-trash"/></svg>删除文件</button>
+          </div>
+        </div>
+      </div>
+      <div class="row" style="margin-top:14px">
+        <span class="toast" style="position:static;transform:none"><svg class="ic ic-fill"><use href="#i-check"/></svg>已删除 <b>MP3 320k</b> · 本地文件已移除 · 释放 12.3MB</span>
+      </div>
+      <div class="row" style="margin-top:14px">
+        <span style="font-size:12px;color:var(--text2)">危险按钮用错误色（<code style="font-family:var(--font-num);color:var(--err)">--err</code>）；Toast 汇报释放空间，形成闭环反馈。</span>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <div>Melody in Heart · 版本对比 · UI 设计 · 心有乐章</div>
+    <div class="mono">docs/ui-design/version-comparison.html · 设计稿待落地到 Compose · 未改动项目代码</div>
+  </footer>
+</div>
+
+<script>
+(function(){
+  /* 主题切换 */
+  var pills = document.querySelectorAll('.pill[data-pill]');
+  function paint(theme){
+    document.body.dataset.theme = theme;
+    pills.forEach(function(p){
+      p.classList.toggle('active', p.getAttribute('data-pill') === theme);
+    });
+  }
+  pills.forEach(function(p){
+    p.addEventListener('click', function(){
+      paint(p.getAttribute('data-pill'));
+    });
+  });
+  paint('mono-dark');
+
+  /* 对比表：切基准 */
+  var CELLS = {
+    0:['best','best','best','best','norm','same'],
+    1:['diff','diff','diff','diff','diff','same'],
+    2:['diff','diff','dash','diff','same','diff'],
+    3:['same','diff','diff','diff','diff','same']
+  };
+
+  function applyRef(idx){
+    /* 版本卡 */
+    document.querySelectorAll('.vcard[data-v]').forEach(function(c){
+      c.classList.toggle('sel', c.getAttribute('data-v') === String(idx));
+    });
+    /* 表格 */
+    document.querySelectorAll('.ctable').forEach(function(tbl){
+      tbl.querySelectorAll('thead th[data-col]').forEach(function(th){
+        th.classList.toggle('ref', th.getAttribute('data-col') === String(idx));
+      });
+    });
+    document.querySelectorAll('.ctable tbody tr').forEach(function(tr){
+      var r = CELLS[idx];
+      tr.querySelectorAll('td[data-col]').forEach(function(td){
+        var ci = Number(td.getAttribute('data-col'));
+        var cls = r[ci] || 'norm';
+        td.classList.remove('diff','same','best','dash');
+        if(cls !== 'norm') td.classList.add(cls);
+      });
+    });
+  }
+
+  document.querySelectorAll('.vcard[data-v]').forEach(function(c){
+    c.addEventListener('click', function(){
+      applyRef(Number(c.getAttribute('data-v')));
+    });
+  });
+
+  /* A/B 分段 */
+  document.querySelectorAll('.ab-seg').forEach(function(seg){
+    seg.querySelectorAll('button').forEach(function(b){
+      b.addEventListener('click', function(){
+        seg.querySelectorAll('button').forEach(function(x){x.classList.remove('on')});
+        b.classList.add('on');
+      });
+    });
+  });
+})();
+</script>
+</body>
+</html>

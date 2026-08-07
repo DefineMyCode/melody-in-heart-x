@@ -17,7 +17,7 @@ class PlayerErrorFacade(
         if (isPlayable(song)) {
             startQueuePlayback(queue, index)
         } else {
-            updateState { it.copy(errorMessage = "${song.title} has no local file") }
+            updateState { it.copy(errorMessage = "「${song.title}」的本地文件不存在，无法播放") }
         }
     }
 }

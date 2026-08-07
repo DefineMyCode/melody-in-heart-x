@@ -16,6 +16,7 @@ object AppRoutes {
     const val VERSION_GROUP_ID = "groupId"
     const val VERSION_COMPARISON = "version-comparison/{$VERSION_GROUP_ID}"
     const val PLAYBACK_STATS = "playback-stats"
+    const val FILE_CHECK = "file-check"
     const val SONG_TOP_LIST = "song-top-list"
     const val SONG_TOP_PERIOD = "period"
     const val SONG_TOP_LIST_FULL = "song-top-list?period={$SONG_TOP_PERIOD}"

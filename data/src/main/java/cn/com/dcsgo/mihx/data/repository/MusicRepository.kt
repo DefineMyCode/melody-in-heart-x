@@ -18,6 +18,7 @@ import cn.com.dcsgo.mihx.data.util.AlbumArtExtractor
 import cn.com.dcsgo.mihx.data.util.AudioFileUtils
 import cn.com.dcsgo.mihx.data.util.AudioMetadataExtractor
 import cn.com.dcsgo.mihx.domain.model.DeleteSongResult
+import cn.com.dcsgo.mihx.domain.model.LocalFileValidationResult
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -700,6 +701,94 @@ class MusicRepository(
         // 通知 UI 刷新（歌曲、歌单、曲库歌手/专辑目录）
         onSongsChanged?.invoke()
         return result
+    }
+
+    /**
+     * 校验本地歌曲文件有效性（后台执行，不阻塞 UI）。
+     *
+     * 扫描每首歌曲对应的本地文件是否可打开；对文件已缺失的歌曲：
+     * 1. 从歌曲列表与所有歌单中移除（songIds 引用一并清除）
+     * 2. 清理其在播放统计 / 秒切 / 播放事件等关联持久化数据中的记录
+     * 3. 触发曲库刷新（歌曲、歌单、歌手/专辑目录）
+     *
+     * @return 处理汇总（含被清理歌曲 id 列表）
+     */
+    suspend fun validateAndCleanupLocalFiles(): LocalFileValidationResult = withContext(Dispatchers.IO) {
+        val snapshot = lock.read { songs.toList() }
+        if (snapshot.isEmpty()) {
+            return@withContext LocalFileValidationResult(
+                totalSongs = 0,
+                missingCount = 0,
+                removedPlaylistRefs = 0,
+                removedSongIds = emptyList(),
+            )
+        }
+
+        val missingIds = snapshot
+            .filter { it.uri != null && !fileExists(it.uri!!) }
+            .mapTo(mutableSetOf()) { it.id }
+
+        if (missingIds.isEmpty()) {
+            AppLog.info(TAG, "validateAndCleanupLocalFiles: all ${snapshot.size} local files exist")
+            return@withContext LocalFileValidationResult(
+                totalSongs = snapshot.size,
+                missingCount = 0,
+                removedPlaylistRefs = 0,
+                removedSongIds = emptyList(),
+            )
+        }
+
+        var removedPlaylistRefs = 0
+        lock.write {
+            for (index in playlists.indices) {
+                val playlist = playlists[index]
+                val kept = playlist.songIds.filterNot { it in missingIds }
+                if (kept.size != playlist.songIds.size) {
+                    playlists[index] = playlist.copy(songIds = kept)
+                    removedPlaylistRefs += playlist.songIds.size - kept.size
+                    updatePlaylistSongCount(playlist.id)
+                }
+            }
+            songs.removeAll { it.id in missingIds }
+            persistSongs()
+            persistPlaylists()
+        }
+
+        cleanupMissingSongAssociations(missingIds)
+        onSongsChanged?.invoke()
+        AppLog.info(
+            TAG,
+            "validateAndCleanupLocalFiles: removed ${missingIds.size} missing songs, $removedPlaylistRefs playlist refs",
+        )
+        LocalFileValidationResult(
+            totalSongs = snapshot.size,
+            missingCount = missingIds.size,
+            removedPlaylistRefs = removedPlaylistRefs,
+            removedSongIds = missingIds.toList(),
+        )
+    }
+
+    /** 清理文件缺失歌曲在播放统计 / 秒切 / 播放事件等表中的关联数据 */
+    private suspend fun cleanupMissingSongAssociations(songIds: Set<Int>) {
+        val dao = melodyDao ?: return
+        val ids = songIds.toList()
+        dao.deletePlayStatsForSongs(ids)
+        dao.deletePlaybackEventsForSongs(ids)
+        dao.deleteQuickSkipSongsFor(ids)
+        dao.deleteQuickSkipShortPlaysFor(ids)
+        dao.deleteOrphanArtists()
+        dao.deleteOrphanAlbums()
+    }
+
+    /** 判断 SAF / file URI 对应的文件是否可打开（文件存在） */
+    private fun fileExists(uri: Uri): Boolean {
+        val ctx = context ?: return true
+        return try {
+            ctx.contentResolver.openFileDescriptor(uri, "r")?.use { true } ?: false
+        } catch (e: Exception) {
+            AppLog.debug(TAG, "fileExists: ${uri} -> ${e.javaClass.simpleName}: ${e.message}")
+            false
+        }
     }
 
     private fun deleteBackingFile(song: Song): BackingFileDeleteResult {

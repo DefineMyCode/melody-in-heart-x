@@ -11,6 +11,7 @@ internal class PlayerMediaControllerGraph(
     private val controllerStateAdapter: PlayerControllerStateAdapter,
     private val handleMediaItemEnded: (Int?, Boolean) -> Unit,
     private val handlePlaybackEnded: () -> Unit,
+    private val handlePlayerError: (Int?) -> Unit = {},
 ) {
     val playbackController = playbackControllerPortFactory.create(
         PlaybackControllerCallbacks(
@@ -18,6 +19,7 @@ internal class PlayerMediaControllerGraph(
             onMediaItemEnded = handleMediaItemEnded,
             onPlaybackSnapshot = controllerStateAdapter::sync,
             onPlaybackEnded = handlePlaybackEnded,
+            onPlayerError = handlePlayerError,
         )
     )
 

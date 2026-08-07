@@ -232,6 +232,18 @@ interface MelodyDao {
     @Query("DELETE FROM quick_skip_short_play_counts WHERE songId = :songId")
     suspend fun deleteQuickSkipShortPlay(songId: Int)
 
+    @Query("DELETE FROM play_stats WHERE songId IN (:songIds)")
+    suspend fun deletePlayStatsForSongs(songIds: List<Int>)
+
+    @Query("DELETE FROM playback_events WHERE songId IN (:songIds)")
+    suspend fun deletePlaybackEventsForSongs(songIds: List<Int>)
+
+    @Query("DELETE FROM quick_skip_songs WHERE songId IN (:songIds)")
+    suspend fun deleteQuickSkipSongsFor(songIds: List<Int>)
+
+    @Query("DELETE FROM quick_skip_short_play_counts WHERE songId IN (:songIds)")
+    suspend fun deleteQuickSkipShortPlaysFor(songIds: List<Int>)
+
     @Query("DELETE FROM song_artist_cross_ref")
     suspend fun deleteAllSongArtistRefs()
 

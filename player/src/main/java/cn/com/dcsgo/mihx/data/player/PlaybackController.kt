@@ -81,6 +81,11 @@ class PlaybackController(
                 callbacks.onPlaybackEnded()
             }
         }
+
+        override fun onPlayerError(error: androidx.media3.common.PlaybackException) {
+            AppLog.error(TAG, "onPlayerError: ${error.errorCodeName} ${error.message}", error)
+            callbacks.onPlayerError(controller?.currentMediaItem?.mediaId?.toIntOrNull())
+        }
     }
 
     override fun startService() {

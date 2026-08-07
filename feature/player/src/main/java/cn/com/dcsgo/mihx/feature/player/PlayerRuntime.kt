@@ -11,6 +11,7 @@ import cn.com.dcsgo.mihx.domain.playback.BluetoothPlaybackMonitorFactory
 import cn.com.dcsgo.mihx.domain.playback.ControllerPlaybackStateSynchronizer
 import cn.com.dcsgo.mihx.domain.playback.PlaybackDurationMonitorFactory
 import cn.com.dcsgo.mihx.domain.model.DeleteSongResult
+import cn.com.dcsgo.mihx.domain.model.LocalFileValidationResult
 import cn.com.dcsgo.mihx.domain.playback.ControllerQueuePlannerPort
 import cn.com.dcsgo.mihx.domain.playback.PlaybackControllerPortFactory
 import cn.com.dcsgo.mihx.domain.playback.PlaybackStateStorageFactory
@@ -81,6 +82,7 @@ internal class PlayerRuntime(
             controllerStateAdapter = controllerStateAdapter,
             handleMediaItemEnded = mediaEventFacade::handleMediaItemEnded,
             handlePlaybackEnded = mediaEventFacade::handlePlaybackEnded,
+            handlePlayerError = ::handlePlayerSourceError,
         )
     }
     private val playbackController by lazy { mediaControllerGraph.playbackController }
@@ -125,6 +127,14 @@ internal class PlayerRuntime(
 
     private val _uiState = MutableStateFlow(PlayerUiState())
     val uiState: StateFlow<PlayerUiState> = _uiState.asStateFlow()
+
+    /** 本地歌曲文件校验结果（未确认前保留，供结果页重复进入） */
+    private val _validationResult = MutableStateFlow<LocalFileValidationResult?>(null)
+    val validationResult: StateFlow<LocalFileValidationResult?> = _validationResult.asStateFlow()
+
+    /** 本地歌曲文件校验是否正在后台运行 */
+    private val _isValidating = MutableStateFlow(false)
+    val isValidating: StateFlow<Boolean> = _isValidating.asStateFlow()
 
     /** 播放位置（毫秒）独立窄流：仅驱动进度条/歌词等需要实时位置的组件，避免整壳重组 */
     private val _positionMs = MutableStateFlow(0L)
@@ -321,8 +331,7 @@ internal class PlayerRuntime(
         updateState = ::updateUiState,
         startQueuePlayback = playbackSessionGraph::startQueuePlayback,
     )
-    private val playbackBridgeFacade: PlayerPlaybackBridgeFacade by lazy {
-        PlayerPlaybackBridgeFacade(
+    private val playbackBridgeFacade: PlayerPlaybackBridgeFacade by lazy {        PlayerPlaybackBridgeFacade(
             remainingMediaItems = controllerQueueFacade::remainingMediaItems,
             pausePlayback = playbackSessionGraph::pausePlayback,
             resumePlayback = playbackSessionGraph::resumePlayback,
@@ -530,6 +539,41 @@ internal class PlayerRuntime(
 
     fun clearError() {
         errorFacade.clearError()
+    }
+
+    /** 播放源错误（如本地文件缺失）时给用户可读的提示 */
+    private fun handlePlayerSourceError(songId: Int?) {
+        val song = _uiState.value.songs.firstOrNull { it.id == songId }
+            ?: _uiState.value.playQueue.songs.firstOrNull { it.id == songId }
+        val title = song?.title ?: "当前歌曲"
+        updateUiState { it.copy(errorMessage = "「$title」的本地文件不存在或无法播放") }
+    }
+
+    /**
+     * 在后台校验本地歌曲文件有效性：扫描文件缺失的歌曲并清理其关联数据。
+     * 不阻塞播放与页面浏览；完成后结果保存在 [validationResult]，直到用户确认。
+     */
+    fun validateLocalFiles() {
+        if (_isValidating.value) return
+        _isValidating.value = true
+        scope.launch {
+            try {
+                val result = withContext(dispatchers.io) {
+                    songRepository.validateAndCleanupLocalFiles()
+                }
+                _validationResult.value = result
+                AppLog.info(TAG, "validateLocalFiles done: ${result.missingCount} missing")
+            } catch (e: Exception) {
+                AppLog.error(TAG, "validateLocalFiles failed", e)
+            } finally {
+                _isValidating.value = false
+            }
+        }
+    }
+
+    /** 用户确认校验结果后清除，入口徽标消失 */
+    fun acknowledgeValidationResult() {
+        _validationResult.value = null
     }
 
     fun importFolder(treeUri: Uri, onResult: (Int) -> Unit) {

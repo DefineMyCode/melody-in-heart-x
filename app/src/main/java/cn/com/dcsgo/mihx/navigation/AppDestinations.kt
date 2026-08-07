@@ -19,6 +19,7 @@ enum class AppDestinations(
                 route == USER.route ||
                     route == AppRoutes.SETTINGS ||
                     route == AppRoutes.PLAYBACK_STATS ||
+                    route == AppRoutes.FILE_CHECK ||
                     route == AppRoutes.RAW_PLAY_STATS ||
                     route == AppRoutes.EFFECTIVE_PLAY_STATS ||
                     route == AppRoutes.SONG_TOP_LIST_FULL -> USER

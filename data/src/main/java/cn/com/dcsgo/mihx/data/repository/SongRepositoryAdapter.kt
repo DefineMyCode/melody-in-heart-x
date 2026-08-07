@@ -4,6 +4,7 @@ import cn.com.dcsgo.mihx.core.model.AlbumEntry
 import cn.com.dcsgo.mihx.core.model.ArtistEntry
 import cn.com.dcsgo.mihx.core.model.Song
 import cn.com.dcsgo.mihx.domain.model.DeleteSongResult
+import cn.com.dcsgo.mihx.domain.model.LocalFileValidationResult
 import cn.com.dcsgo.mihx.domain.repository.SongRepository
 import javax.inject.Inject
 
@@ -26,4 +27,7 @@ class SongRepositoryAdapter @Inject constructor(
         musicRepository.updateSongTitleOverride(songId, titleOverride)
 
     override fun deleteSong(songId: Int): DeleteSongResult = musicRepository.deleteSong(songId)
+
+    override suspend fun validateAndCleanupLocalFiles(): LocalFileValidationResult =
+        musicRepository.validateAndCleanupLocalFiles()
 }

@@ -10,6 +10,8 @@ data class PlaybackControllerCallbacks(
     val onMediaItemEnded: (songId: Int?, wrapped: Boolean) -> Unit,
     val onPlaybackSnapshot: (ControllerPlaybackSnapshot) -> Unit,
     val onPlaybackEnded: () -> Unit,
+    /** 播放源错误（如本地文件缺失），传当前媒体项对应的歌曲 id */
+    val onPlayerError: (songId: Int?) -> Unit = {},
 )
 
 interface PlaybackControllerPort : PlaybackSessionController {

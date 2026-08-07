@@ -44,7 +44,7 @@ class PlayerErrorFacadeTest {
         facade.playFromQueue(queue, index = 0)
 
         assertEquals(null, startedIndex)
-        assertEquals("Missing has no local file", state.errorMessage)
+        assertEquals("「Missing」的本地文件不存在，无法播放", state.errorMessage)
     }
 
     private fun song(

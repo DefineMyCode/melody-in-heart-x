@@ -203,6 +203,22 @@ class QuickSkipSongsRepositoryRoomTest {
             quickSkipShortPlayCounts.removeIf { it.songId == songId }
         }
 
+        override suspend fun deletePlayStatsForSongs(songIds: List<Int>) {
+            playStats.removeIf { it.songId in songIds }
+        }
+
+        override suspend fun deletePlaybackEventsForSongs(songIds: List<Int>) {
+            // 测试 Fake 不建模 playback_events 表
+        }
+
+        override suspend fun deleteQuickSkipSongsFor(songIds: List<Int>) {
+            quickSkipSongs.removeIf { it.songId in songIds }
+        }
+
+        override suspend fun deleteQuickSkipShortPlaysFor(songIds: List<Int>) {
+            quickSkipShortPlayCounts.removeIf { it.songId in songIds }
+        }
+
         override suspend fun deleteAllSongArtistRefs() {
             songArtistRefs.clear()
         }

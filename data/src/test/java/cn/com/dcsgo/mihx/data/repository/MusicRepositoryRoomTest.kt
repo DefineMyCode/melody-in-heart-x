@@ -86,6 +86,23 @@ class MusicRepositoryRoomTest {
     }
 
     @Test
+    fun validateAndCleanupLocalFilesKeepsAllWhenNoContext() = runBlocking {
+        val dao = FakeMelodyDao().apply {
+            songs += listOf(songEntity(1), songEntity(2))
+        }
+        val repository = MusicRepository(melodyDao = dao)
+        repository.loadSongs()
+
+        val result = repository.validateAndCleanupLocalFiles()
+
+        assertEquals(2, result.totalSongs)
+        assertEquals(0, result.missingCount)
+        assertEquals(0, result.removedPlaylistRefs)
+        assertTrue(result.removedSongIds.isEmpty())
+        assertEquals(listOf(1, 2), repository.getSongs().map { it.id })
+    }
+
+    @Test
     fun updateSongTitleOverridePersistsAndClearsRoomOverride() = runBlocking {
         val dao = FakeMelodyDao().apply {
             songs += listOf(songEntity(1))
@@ -336,6 +353,22 @@ class MusicRepositoryRoomTest {
 
         override suspend fun deleteQuickSkipShortPlay(songId: Int) {
             quickSkipShortPlayCounts.removeIf { it.songId == songId }
+        }
+
+        override suspend fun deletePlayStatsForSongs(songIds: List<Int>) {
+            playStats.removeIf { it.songId in songIds }
+        }
+
+        override suspend fun deletePlaybackEventsForSongs(songIds: List<Int>) {
+            // 测试 Fake 不建模 playback_events 表
+        }
+
+        override suspend fun deleteQuickSkipSongsFor(songIds: List<Int>) {
+            quickSkipSongs.removeIf { it.songId in songIds }
+        }
+
+        override suspend fun deleteQuickSkipShortPlaysFor(songIds: List<Int>) {
+            quickSkipShortPlayCounts.removeIf { it.songId in songIds }
         }
 
         override suspend fun deleteAllSongArtistRefs() {

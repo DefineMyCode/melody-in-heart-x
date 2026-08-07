@@ -8,6 +8,7 @@ import cn.com.dcsgo.mihx.core.model.PlayQueue
 import cn.com.dcsgo.mihx.core.model.Playlist
 import cn.com.dcsgo.mihx.core.model.Song
 import cn.com.dcsgo.mihx.domain.model.DeleteSongResult
+import cn.com.dcsgo.mihx.domain.model.LocalFileValidationResult
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.StateFlow
@@ -33,6 +34,12 @@ class PlayerViewModel @Inject constructor(
 
     /** 播放位置（毫秒）窄流：播放中每 ~500ms 更新，仅供进度条/歌词等局部订阅，避免整壳重组。 */
     val positionMs: StateFlow<Long> = runtime.positionMs
+
+    /** 本地歌曲文件校验结果（未确认前保留，供结果页重复进入）。 */
+    val validationResult: StateFlow<LocalFileValidationResult?> = runtime.validationResult
+
+    /** 本地歌曲文件校验是否正在后台运行。 */
+    val isValidating: StateFlow<Boolean> = runtime.isValidating
 
     /** Current playback queue. */
     val playQueue: PlayQueue get() = runtime.playQueue
@@ -171,6 +178,16 @@ class PlayerViewModel @Inject constructor(
     /** Clears the current error message after it is shown. */
     fun clearError() {
         runtime.clearError()
+    }
+
+    /** 在后台校验本地歌曲文件有效性并清理失效数据。 */
+    fun validateLocalFiles() {
+        runtime.validateLocalFiles()
+    }
+
+    /** 用户确认校验结果后清除（结果页徽标消失）。 */
+    fun acknowledgeValidationResult() {
+        runtime.acknowledgeValidationResult()
     }
 
     /**

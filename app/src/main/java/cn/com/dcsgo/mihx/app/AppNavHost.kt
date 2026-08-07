@@ -54,6 +54,9 @@ import cn.com.dcsgo.mihx.feature.playlist.PlaylistRouteState
 import cn.com.dcsgo.mihx.feature.settings.SettingsRoute
 import cn.com.dcsgo.mihx.feature.settings.SettingsRouteActions
 import cn.com.dcsgo.mihx.feature.settings.SettingsRouteState
+import cn.com.dcsgo.mihx.feature.user.FileCheckRoute
+import cn.com.dcsgo.mihx.feature.user.FileCheckRouteActions
+import cn.com.dcsgo.mihx.feature.user.FileCheckRouteState
 import cn.com.dcsgo.mihx.feature.user.PlaybackStatsRoute
 import cn.com.dcsgo.mihx.feature.user.PlaybackStatsRouteActions
 import cn.com.dcsgo.mihx.feature.user.PlaybackStatsRouteState
@@ -299,9 +302,34 @@ fun AppNavHost(
         }
 
         composable(AppRoutes.USER) {
+            val validationResult by playerViewModel.validationResult.collectAsStateWithLifecycle()
+            val isValidating by playerViewModel.isValidating.collectAsStateWithLifecycle()
             UserRoute(
-                state = userRouteState(playerViewModel),
+                state = userRouteState(
+                    playerViewModel = playerViewModel,
+                    validationResult = validationResult,
+                    isValidating = isValidating,
+                ),
                 actions = userRouteActions(navController),
+            )
+        }
+
+        composable(AppRoutes.FILE_CHECK) {
+            val validationResult by playerViewModel.validationResult.collectAsStateWithLifecycle()
+            val isValidating by playerViewModel.isValidating.collectAsStateWithLifecycle()
+            FileCheckRoute(
+                state = FileCheckRouteState(
+                    validationResult = validationResult,
+                    isValidating = isValidating,
+                ),
+                actions = FileCheckRouteActions(
+                    onBack = navController::navigateUp,
+                    onRunValidation = playerViewModel::validateLocalFiles,
+                    onAcknowledge = {
+                        playerViewModel.acknowledgeValidationResult()
+                        navController.navigateUp()
+                    },
+                ),
             )
         }
 
@@ -580,11 +608,17 @@ private fun playlistRouteActions(
     onAddSongToNextPlay = playerViewModel::addSongToNextPlay,
 )
 
-private fun userRouteState(playerViewModel: PlayerViewModel): UserRouteState {
+private fun userRouteState(
+    playerViewModel: PlayerViewModel,
+    validationResult: cn.com.dcsgo.mihx.domain.model.LocalFileValidationResult? = null,
+    isValidating: Boolean = false,
+): UserRouteState {
     val snapshot = playerViewModel.playStatsRepository.playbackStatsSnapshot()
     return UserRouteState(
         todayDurationMs = snapshot.todayDurationMs,
         weekTotalMs = snapshot.weekTotalMs,
+        validationResult = validationResult,
+        isValidating = isValidating,
     )
 }
 
@@ -644,6 +678,7 @@ private fun userRouteActions(
 ): UserRouteActions = UserRouteActions(
     onShowSettings = { navController.navigate(AppRoutes.SETTINGS) },
     onShowPlaybackStats = { navController.navigate(AppRoutes.PLAYBACK_STATS) },
+    onOpenFileCheck = { navController.navigate(AppRoutes.FILE_CHECK) },
 )
 
 private fun playbackStatsRouteState(

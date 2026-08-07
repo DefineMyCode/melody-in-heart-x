@@ -21,6 +21,7 @@ import androidx.navigation.navArgument
 import cn.com.dcsgo.mihx.app.permissions.PermissionCoordinator
 import cn.com.dcsgo.mihx.app.player.SongPlaybackStrategy
 import cn.com.dcsgo.mihx.app.player.playWith
+import cn.com.dcsgo.mihx.app.playlist.PlaylistResumeViewModel
 import cn.com.dcsgo.mihx.core.model.Lyrics
 import cn.com.dcsgo.mihx.core.model.PlayMode
 import cn.com.dcsgo.mihx.core.model.Playlist
@@ -28,6 +29,7 @@ import cn.com.dcsgo.mihx.core.model.Song
 import cn.com.dcsgo.mihx.core.model.SongInfo
 import cn.com.dcsgo.mihx.core.model.ThemeMode
 import cn.com.dcsgo.mihx.core.model.ThemeVariant
+import cn.com.dcsgo.mihx.domain.model.PlaylistResume
 import cn.com.dcsgo.mihx.feature.home.HomeRoute
 import cn.com.dcsgo.mihx.feature.home.HomeRouteActions
 import cn.com.dcsgo.mihx.feature.home.HomeRouteState
@@ -95,6 +97,7 @@ fun AppNavHost(
     loadSongInfo: suspend (Song) -> SongInfo?,
     showToast: (String) -> Unit,
     deleteSongWithToast: (Int) -> Unit,
+    playlistResumeViewModel: PlaylistResumeViewModel,
 ) {
     NavHost(
         navController = navController,
@@ -167,11 +170,20 @@ fun AppNavHost(
                     onAlbumClick = { albumName ->
                         navController.navigate(AppRoutes.albumDetail(albumName))
                     },
-                    onLuckyPlayClick = playerViewModel::playRandomQueue,
-                    onStartInfinitePlay = playerViewModel::startInfinitePlay,
+                    onLuckyPlayClick = {
+                        val started = playerViewModel.playRandomQueue()
+                        playlistResumeViewModel.switchSource(null, uiState.currentSong?.id)
+                        started
+                    },
+                    onStartInfinitePlay = {
+                        val started = playerViewModel.startInfinitePlay()
+                        playlistResumeViewModel.switchSource(null, uiState.currentSong?.id)
+                        started
+                    },
                     onStopInfinitePlay = playerViewModel::stopInfinitePlay,
                     onRelatedPlayClick = { song ->
                         val added = playerViewModel.playRelatedSongs(song)
+                        playlistResumeViewModel.switchSource(null, uiState.currentSong?.id)
                         if (added > 0) {
                             showToast("已关联 $added 首歌曲")
                         } else {
@@ -211,9 +223,22 @@ fun AppNavHost(
         }
 
         composable(AppRoutes.PLAYLIST) {
+            val actions = playlistRouteActions(
+                navController,
+                playerViewModel,
+                permissionCoordinator,
+                deleteSongWithToast,
+                playlistResumeViewModel,
+            )
             PlaylistRoute(
                 state = playlistRouteState(uiState, playerViewModel, selectedPlaylist = null),
-                actions = playlistRouteActions(navController, playerViewModel, permissionCoordinator, deleteSongWithToast),
+                // 列表页点歌(全曲库范围):非歌单来源,先结算旧歌单
+                actions = actions.copy(
+                    onSongClick = { song, contextSongs ->
+                        actions.onSongClick(song, contextSongs)
+                        playlistResumeViewModel.switchSource(null, uiState.currentSong?.id)
+                    },
+                ),
                 loadSongInfo = loadSongInfo,
                 showToast = showToast,
             )
@@ -225,9 +250,48 @@ fun AppNavHost(
         ) { backStackEntry ->
             val playlistId = backStackEntry.arguments?.getInt(AppRoutes.PLAYLIST_ID)
             val selectedPlaylist = uiState.playlists.firstOrNull { playlist -> playlist.id == playlistId }
+            val resume by playlistResumeViewModel
+                .observeResume(playlistId ?: -1)
+                .collectAsStateWithLifecycle(initialValue = null)
+            // 解析 + 过滤:记录的歌不在歌单里/文件不可播(uri==null)则不显示
+            val resumeSong = selectedPlaylist?.let { playlist ->
+                resolveResumeSong(resume, uiState.songs, playlist.songIds.toSet())
+            }
+            val actions = playlistRouteActions(
+                navController,
+                playerViewModel,
+                permissionCoordinator,
+                deleteSongWithToast,
+                playlistResumeViewModel,
+            )
             PlaylistRoute(
-                state = playlistRouteState(uiState, playerViewModel, selectedPlaylist),
-                actions = playlistRouteActions(navController, playerViewModel, permissionCoordinator, deleteSongWithToast),
+                state = playlistRouteState(uiState, playerViewModel, selectedPlaylist, resumeSong),
+                actions = actions.copy(
+                    // 歌单内点歌:仅更新来源标记,不立即写记录;记录在退出应用/切换播放源时结算
+                    onSongClick = { song, contextSongs ->
+                        actions.onSongClick(song, contextSongs)
+                        val inPlaylist = selectedPlaylist?.songIds?.contains(song.id) == true
+                        playlistResumeViewModel.switchSource(
+                            if (inPlaylist) selectedPlaylist.id else null,
+                            uiState.currentSong?.id,
+                        )
+                    },
+                    onResumePlaylist = { resumeSongInner, songs ->
+                        playerViewModel.playWith(resumeSongInner, SongPlaybackStrategy.scope(songs))
+                        playlistResumeViewModel.switchSource(selectedPlaylist?.id, uiState.currentSong?.id)
+                        // 继续播放后横幅消失(用户决策)
+                        selectedPlaylist?.let { playlistResumeViewModel.clear(it.id) }
+                    },
+                    onDismissResume = { selectedPlaylist?.let { playlistResumeViewModel.clear(it.id) } },
+                    onPlayAllInPlaylist = { playlistSongs ->
+                        actions.onPlayAllInPlaylist(playlistSongs)
+                        playlistResumeViewModel.switchSource(selectedPlaylist?.id, uiState.currentSong?.id)
+                    },
+                    onPlayAllFromEndInPlaylist = { playlistSongs ->
+                        actions.onPlayAllFromEndInPlaylist(playlistSongs)
+                        playlistResumeViewModel.switchSource(selectedPlaylist?.id, uiState.currentSong?.id)
+                    },
+                ),
                 loadSongInfo = loadSongInfo,
                 showToast = showToast,
             )
@@ -250,6 +314,7 @@ fun AppNavHost(
                     onBack = navController::navigateUp,
                     onSongClick = { song, contextSongs ->
                         playerViewModel.playWith(song, SongPlaybackStrategy.scope(contextSongs))
+                        playlistResumeViewModel.switchSource(null, uiState.currentSong?.id)
                     },
                     onAlbumClick = { albumName ->
                         navController.navigate(AppRoutes.albumDetail(albumName))
@@ -284,6 +349,7 @@ fun AppNavHost(
                     onBack = navController::navigateUp,
                     onSongClick = { song, contextSongs ->
                         playerViewModel.playWith(song, SongPlaybackStrategy.scope(contextSongs))
+                        playlistResumeViewModel.switchSource(null, uiState.currentSong?.id)
                     },
                     onAlbumClick = { albumName ->
                         navController.navigate(AppRoutes.albumDetail(albumName))
@@ -336,7 +402,7 @@ fun AppNavHost(
         composable(AppRoutes.PLAYBACK_STATS) {
             PlaybackStatsRoute(
                 state = playbackStatsRouteState(uiState, playerViewModel),
-                actions = playbackStatsRouteActions(navController, playerViewModel),
+                actions = playbackStatsRouteActions(navController, playerViewModel, playlistResumeViewModel),
             )
         }
 
@@ -352,7 +418,7 @@ fun AppNavHost(
             val period = backStackEntry.arguments?.getString(AppRoutes.SONG_TOP_PERIOD) ?: "week"
             SongTopListRoute(
                 state = songTopListRouteState(uiState, playerViewModel, period),
-                actions = songTopListRouteActions(navController, playerViewModel),
+                actions = songTopListRouteActions(navController, playerViewModel, playlistResumeViewModel),
             )
         }
 
@@ -375,6 +441,7 @@ fun AppNavHost(
                             song,
                             SongPlaybackStrategy.scope(playerViewModel.getSongsWithSameName(song, allSongs)),
                         )
+                        playlistResumeViewModel.switchSource(null, uiState.currentSong?.id)
                     },
                     onAddToQueue = playerViewModel::addToPlayQueue,
                     onDeleteSong = { song -> deleteSongWithToast(song.id) },
@@ -420,6 +487,7 @@ fun AppNavHost(
                             song,
                             SongPlaybackStrategy.scope(playerViewModel.getSongsWithSameName(song, allSongs)),
                         )
+                        playlistResumeViewModel.switchSource(null, uiState.currentSong?.id)
                     },
                     onSeekTo = playerViewModel::seekTo,
                     onDeleteSong = { song -> deleteSongWithToast(song.id) },
@@ -437,7 +505,7 @@ fun AppNavHost(
                     playerViewModel = playerViewModel,
                     useRawCounts = true,
                 ),
-                actions = playStatsRouteActions(navController, playerViewModel),
+                actions = playStatsRouteActions(navController, playerViewModel, playlistResumeViewModel),
             )
         }
 
@@ -449,7 +517,7 @@ fun AppNavHost(
                     playerViewModel = playerViewModel,
                     useRawCounts = false,
                 ),
-                actions = playStatsRouteActions(navController, playerViewModel),
+                actions = playStatsRouteActions(navController, playerViewModel, playlistResumeViewModel),
             )
         }
 
@@ -464,6 +532,7 @@ fun AppNavHost(
                     // 点击秒切歌曲：清空队列，只播放这一首，停留在秒切歌曲页面
                     onSongClick = { song ->
                         playerViewModel.playWith(song, SongPlaybackStrategy.single())
+                        playlistResumeViewModel.switchSource(null, uiState.currentSong?.id)
                     },
                     onDeleteSong = { song -> deleteSongWithToast(song.id) },
                     onSyncToPlaylist = {
@@ -536,12 +605,14 @@ private fun playlistRouteState(
     uiState: PlayerUiState,
     playerViewModel: PlayerViewModel,
     selectedPlaylist: Playlist?,
+    resumeSong: Song? = null,
 ): PlaylistRouteState = PlaylistRouteState(
     playlists = uiState.playlists,
     librarySongs = playerViewModel.getGroupedSongs(uiState.songs).flatten(),
     libraryArtists = uiState.libraryArtists,
     libraryAlbums = uiState.libraryAlbums,
     selectedPlaylist = selectedPlaylist,
+    resumeSong = resumeSong,
     selectedPlaylistSongs = selectedPlaylist?.let { playlist ->
         playerViewModel.getGroupedSongs(
             playerViewModel.getSongsByPlaylist(playlist),
@@ -559,6 +630,7 @@ private fun playlistRouteActions(
     playerViewModel: PlayerViewModel,
     permissionCoordinator: PermissionCoordinator,
     deleteSongWithToast: (Int) -> Unit,
+    playlistResumeViewModel: PlaylistResumeViewModel,
 ): PlaylistRouteActions = PlaylistRouteActions(
     onPlaylistClick = { playlist -> navController.navigate(AppRoutes.playlistDetail(playlist.id)) },
     // 点击歌单中的歌曲：将整个歌单按列表顺序入队，从点击的歌曲开始顺序播放（替换并清空原队列）
@@ -568,6 +640,7 @@ private fun playlistRouteActions(
     // 点击本地音乐中的歌曲：清空队列，只播放这一首
     onLocalSongClick = { song ->
         playerViewModel.playWith(song, SongPlaybackStrategy.single())
+        playlistResumeViewModel.switchSource(null, playerViewModel.uiState.value.currentSong?.id)
     },
     onArtistClick = { artistName -> navController.navigate(AppRoutes.artistDetail(artistName)) },
     onAlbumClick = { albumName ->
@@ -575,7 +648,10 @@ private fun playlistRouteActions(
     },
     onBackClick = navController::navigateUp,
     onCreatePlaylist = playerViewModel::createPlaylist,
-    onDeletePlaylist = { playlist -> playerViewModel.deletePlaylist(playlist.id) },
+    onDeletePlaylist = { playlist ->
+        playerViewModel.deletePlaylist(playlist.id)
+        playlistResumeViewModel.clear(playlist.id)
+    },
     onRenamePlaylist = { playlist, newName -> playerViewModel.renamePlaylist(playlist.id, newName) },
     onAddSongToPlaylist = { song, playlist -> playerViewModel.addSongToPlaylist(playlist.id, song.id) },
     onRemoveSongFromPlaylist = { song, playlist -> playerViewModel.removeSongFromPlaylist(playlist.id, song.id) },
@@ -649,11 +725,13 @@ private fun playStatsRouteState(
 private fun playStatsRouteActions(
     navController: NavHostController,
     playerViewModel: PlayerViewModel,
+    playlistResumeViewModel: PlaylistResumeViewModel,
 ): PlayStatsRouteActions = PlayStatsRouteActions(
     onBack = navController::navigateUp,
     // 点击统计页歌曲：队列只包含被点击的这一首，不返回上一页
     onSongClick = { song ->
         playerViewModel.playWith(song, SongPlaybackStrategy.single())
+        playlistResumeViewModel.switchSource(null, playerViewModel.uiState.value.currentSong?.id)
         // 点击歌曲后停留在当前页，不返回上一页
     },
 )
@@ -698,11 +776,13 @@ private fun playbackStatsRouteState(
 private fun playbackStatsRouteActions(
     navController: NavHostController,
     playerViewModel: PlayerViewModel,
+    playlistResumeViewModel: PlaylistResumeViewModel,
 ): PlaybackStatsRouteActions = PlaybackStatsRouteActions(
     onBack = navController::navigateUp,
     // 点击统计总览预览歌曲：队列只包含被点击的这一首，不返回上一页
     onSongClick = { song ->
         playerViewModel.playWith(song, SongPlaybackStrategy.single())
+        playlistResumeViewModel.switchSource(null, playerViewModel.uiState.value.currentSong?.id)
         // 点击歌曲后停留在当前页，不返回上一页
     },
     onOpenPlayCounts = { navController.navigate(AppRoutes.RAW_PLAY_STATS) },
@@ -730,11 +810,25 @@ private fun songTopListRouteState(
 private fun songTopListRouteActions(
     navController: NavHostController,
     playerViewModel: PlayerViewModel,
+    playlistResumeViewModel: PlaylistResumeViewModel,
 ): SongTopListRouteActions = SongTopListRouteActions(
     onBack = navController::navigateUp,
     // 点击TOP榜歌曲：把当前时间段（周/月）的整个榜单入队，从被点击歌曲开始播放，不返回上一页
     onSongClick = { song, topSongs ->
         playerViewModel.playWith(song, SongPlaybackStrategy.scope(topSongs))
+        playlistResumeViewModel.switchSource(null, playerViewModel.uiState.value.currentSong?.id)
         // 点击歌曲后停留在当前页，不返回上一页
     },
 )
+
+/** 解析续播记录对应的可播放歌曲：不在歌单里/文件不可播(uri==null)时返回 null */
+fun resolveResumeSong(
+    resume: PlaylistResume?,
+    allSongs: List<Song>,
+    playlistSongIds: Set<Int>,
+    isPlayable: (Song) -> Boolean = { it.uri != null },
+): Song? = resume?.let { r ->
+    allSongs.firstOrNull { it.id == r.songId }
+        ?.takeIf(isPlayable)
+        ?.takeIf { it.id in playlistSongIds }
+}

@@ -6,6 +6,21 @@ plugins {
     alias(libs.plugins.hilt)
 }
 
+import java.util.Properties
+
+/**
+ * 读取根目录 keystore.properties(已 gitignore):storeFile/storePassword/keyAlias/keyPassword。
+ * 文件不存在时返回 null,release 将回退使用 debug 签名(便于无密钥环境构建)。
+ */
+fun loadKeystoreProperties(): Map<String, String>? {
+    val propsFile = rootProject.file("keystore.properties")
+    if (!propsFile.exists()) return null
+    val props = Properties().apply {
+        propsFile.inputStream().use { load(it) }
+    }
+    return props.stringPropertyNames().associateWith { props.getProperty(it) }
+}
+
 android {
     namespace = "cn.com.dcsgo.mihx"
     compileSdk = 36
@@ -14,13 +29,25 @@ android {
         applicationId = "cn.com.dcsgo.mihx"
         minSdk = 33
         targetSdk = 36
-        versionCode = 21
-        versionName = "3.2.0"
+        versionCode = 22
+        versionName = "3.3.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         // 应用仅中文界面，裁剪依赖库翻译资源，显著缩小 resources.arsc
         resConfigs("zh", "en")
+    }
+
+    signingConfigs {
+        create("release") {
+            val keystore = loadKeystoreProperties()
+            if (keystore != null) {
+                storeFile = rootProject.file(keystore["storeFile"]!!)
+                storePassword = keystore["storePassword"]
+                keyAlias = keystore["keyAlias"]
+                keyPassword = keystore["keyPassword"]
+            }
+        }
     }
 
     buildTypes {
@@ -30,6 +57,12 @@ android {
             versionNameSuffix = "-debug"
         }
         release {
+            // 有 keystore.properties 时用正式签名;否则回退 debug 签名(便于无密钥环境构建)
+            signingConfig = if (signingConfigs.getByName("release").storeFile != null) {
+                signingConfigs.getByName("release")
+            } else {
+                signingConfigs.getByName("debug")
+            }
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(

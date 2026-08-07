@@ -8,6 +8,7 @@ import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.session.MediaSession
 import androidx.media3.session.MediaSessionService
 import cn.com.dcsgo.mihx.core.common.AppLogger
+import cn.com.dcsgo.mihx.domain.repository.PlaylistResumeRepository
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
@@ -34,6 +35,9 @@ class AppMediaSessionService : MediaSessionService() {
 
     @Inject
     lateinit var playbackStateStore: PlaybackStateStore
+
+    @Inject
+    lateinit var playlistResumeRepository: PlaylistResumeRepository
 
     override fun onCreate() {
         super.onCreate()
@@ -114,6 +118,10 @@ class AppMediaSessionService : MediaSessionService() {
             songId = songId,
             positionMs = player.currentPosition,
         )
+        // 歌单续播:若当前队列来自某个歌单,记录"实际在播"的歌曲并清除来源标记
+        if (playlistResumeRepository.recordCurrentSourceBlocking(songId)) {
+            logger.debug(TAG, "recordPlaylistResume: song=$songId")
+        }
         logger.debug(TAG, "saveCurrentPlaybackSnapshot: song=$songId position=${player.currentPosition}ms")
     }
 }

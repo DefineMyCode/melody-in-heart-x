@@ -30,6 +30,7 @@ app/release/
 
 # Local secrets and scratch files
 key/
+keystore.properties
 tmp/
 *.log
 log.txt

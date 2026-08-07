@@ -18,6 +18,7 @@ data class PlaylistRouteState(
     val selectedPlaylistSongs: List<Song>?,
     val currentSong: Song?,
     val isPlaying: Boolean,
+    val resumeSong: Song? = null,
     val isImporting: Boolean = false,
     val importProgress: Int = 0,
     val importTotal: Int = 0,
@@ -49,6 +50,8 @@ data class PlaylistRouteActions(
     val onAddAllToNextPlayInPlaylist: (List<Song>) -> Int,
     val onAddSongToQueue: (Song) -> Boolean,
     val onAddSongToNextPlay: (Song) -> Unit,
+    val onResumePlaylist: (Song, List<Song>) -> Unit = { _, _ -> },
+    val onDismissResume: () -> Unit = {},
 )
 
 @Composable
@@ -68,6 +71,7 @@ fun PlaylistRoute(
         selectedPlaylist = state.selectedPlaylist,
         currentSong = state.currentSong,
         isPlaying = state.isPlaying,
+        resumeSong = state.resumeSong,
         onPlaylistClick = actions.onPlaylistClick,
         onSongClick = { song -> actions.onSongClick(song, visibleSongs) },
         onLocalSongClick = actions.onLocalSongClick,
@@ -129,5 +133,7 @@ fun PlaylistRoute(
             actions.onAddSongToNextPlay(song)
             showToast("已将「${song.title}」设为下一首播放")
         },
+        onResumePlaylist = actions.onResumePlaylist,
+        onDismissResume = actions.onDismissResume,
     )
 }

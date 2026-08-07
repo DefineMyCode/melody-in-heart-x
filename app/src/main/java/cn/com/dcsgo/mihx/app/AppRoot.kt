@@ -29,6 +29,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.core.view.WindowCompat
 import cn.com.dcsgo.mihx.app.permissions.rememberPermissionCoordinator
 import cn.com.dcsgo.mihx.app.player.PlayerQueueSheetHost
+import cn.com.dcsgo.mihx.app.playlist.PlaylistResumeViewModel
 import cn.com.dcsgo.mihx.app.theme.SettingsViewModel
 import cn.com.dcsgo.mihx.core.model.ThemeMode
 import cn.com.dcsgo.mihx.core.model.ThemeVariant
@@ -46,6 +47,7 @@ fun AppRoot(
     playerViewModel: PlayerViewModel = viewModel(),
     settingsViewModel: SettingsViewModel = viewModel(),
     mediaMetadataViewModel: AppMediaMetadataViewModel = viewModel(),
+    playlistResumeViewModel: PlaylistResumeViewModel = viewModel(),
 ) {
     val toastHost = rememberToastHost()
     val navController = rememberNavController()
@@ -161,6 +163,7 @@ fun AppRoot(
                     loadSongInfo = mediaMetadataViewModel::songInfo,
                     showToast = toastHost::showToast,
                     deleteSongWithToast = ::deleteSongWithToast,
+                    playlistResumeViewModel = playlistResumeViewModel,
                 )
             }
 

@@ -75,6 +75,7 @@ fun PlaylistScreen(
     selectedPlaylist: Playlist?,
     currentSong: Song? = null,
     isPlaying: Boolean = false,
+    resumeSong: Song? = null,
     onPlaylistClick: (Playlist) -> Unit,
     onSongClick: (Song) -> Unit,
     onLocalSongClick: (Song) -> Unit = {},
@@ -105,6 +106,8 @@ fun PlaylistScreen(
     onAddAllToNextPlayInPlaylist: (Playlist, List<Song>) -> Unit = { _, _ -> },
     onAddSongToQueue: (Song) -> Unit = {},
     onAddSongToNextPlay: (Song) -> Unit = {},
+    onResumePlaylist: (Song, List<Song>) -> Unit = { _, _ -> },
+    onDismissResume: () -> Unit = {},
 ) {
     // ── 本地音乐视图切换 ──
     // 用 rememberSaveable 保存，进入多版本管理/秒切歌单等子页面返回后仍停留在本地音乐视图
@@ -270,6 +273,7 @@ fun PlaylistScreen(
                     playlists = playlists,
                     currentSong = currentSong,
                     isPlaying = isPlaying,
+                    resumeSong = resumeSong,
                     onSongClick = onSongClick,
                     onShowAddToPlaylist = { showAddToPlaylistDialog = it },
                     onShowRemoveConfirm = { song -> showRemoveConfirm = song to selectedPlaylist },
@@ -285,6 +289,8 @@ fun PlaylistScreen(
                     },
                     onAddSongsToPlaylist = onAddSongsToPlaylist,
                     onCreatePlaylistWithResult = onCreatePlaylistWithResult,
+                    onResumePlaylist = onResumePlaylist,
+                    onDismissResume = onDismissResume,
                 )
             } else if (showLocalMusic) {
                 // ── 本地音乐管理页 ──
@@ -382,6 +388,7 @@ private fun PlaylistDetailView(
     playlists: List<Playlist>,
     currentSong: Song?,
     isPlaying: Boolean,
+    resumeSong: Song? = null,
     onSongClick: (Song) -> Unit,
     onShowAddToPlaylist: (Song) -> Unit,
     onShowRemoveConfirm: (Song) -> Unit,
@@ -395,6 +402,8 @@ private fun PlaylistDetailView(
     onReorderSongs: (List<Int>) -> Unit,
     onAddSongsToPlaylist: (List<Song>, Playlist) -> Unit,
     onCreatePlaylistWithResult: (String) -> Playlist?,
+    onResumePlaylist: (Song, List<Song>) -> Unit = { _, _ -> },
+    onDismissResume: () -> Unit = {},
 ) {
     // 歌曲条目按歌单顺序展示，长按拖拽排序，外部变化（移除等）时同步
     val songsById = remember(songs) { songs.associateBy { it.id } }
@@ -547,6 +556,15 @@ private fun PlaylistDetailView(
             if (songs.isEmpty()) {
                 EmptyPlaylistDetailHint()
             } else {
+                if (resumeSong != null) {
+                    PlaylistResumeBanner(
+                        resumeSong = resumeSong,
+                        onResumePlaylist = { onResumePlaylist(resumeSong, songs) },
+                        onDismiss = onDismissResume,
+                        modifier = Modifier.padding(horizontal = 16.dp),
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+                }
                 SongListActionBar(
                     title = "歌曲列表",
                     totalCount = songs.size,

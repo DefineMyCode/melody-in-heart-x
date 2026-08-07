@@ -201,4 +201,84 @@ class PlaylistScreenComposeTest {
         composeRule.onNodeWithContentDescription("返回").performClick()
         assertEquals(1, backCount)
     }
+
+    @Test
+    fun playlistDetailShowsResumeBannerAndHandlesResumeAndDismiss() {
+        val songs = listOf(
+            Song(id = 1, title = "晴天", artist = "周杰伦"),
+            Song(id = 2, title = "倒带", artist = "蔡依林"),
+        )
+        val playlist = Playlist(
+            id = 8,
+            name = "夜间收藏",
+            songCount = songs.size,
+            songIds = songs.mapTo(mutableListOf()) { it.id },
+        )
+        var resumed: Pair<Song, List<Song>>? = null
+        var dismissed = 0
+
+        composeRule.setContent {
+            MusicplayerTheme(dynamicColor = false) {
+                PlaylistScreen(
+                    playlists = listOf(playlist),
+                    songs = songs,
+                    selectedPlaylist = playlist,
+                    resumeSong = songs.first(),
+                    onPlaylistClick = {},
+                    onSongClick = {},
+                    onBackClick = {},
+                    onCreatePlaylist = {},
+                    onDeletePlaylist = {},
+                    onRenamePlaylist = { _, _ -> },
+                    onAddSongToPlaylist = { _, _ -> },
+                    onRemoveSongFromPlaylist = { _, _ -> },
+                    onResumePlaylist = { song, contextSongs -> resumed = song to contextSongs },
+                    onDismissResume = { dismissed += 1 },
+                )
+            }
+        }
+
+        composeRule.onNodeWithText("继续播放 · 从《晴天》开始").assertIsDisplayed()
+        composeRule.onNodeWithText("周杰伦").assertIsDisplayed()
+
+        composeRule.onNodeWithText("继续播放 · 从《晴天》开始").performClick()
+        assertEquals(songs.first() to songs, resumed)
+
+        composeRule.onNodeWithContentDescription("关闭续播横幅").performClick()
+        assertEquals(1, dismissed)
+    }
+
+    @Test
+    fun playlistDetailHidesResumeBannerWhenResumeSongIsNull() {
+        val songs = listOf(
+            Song(id = 1, title = "晴天", artist = "周杰伦"),
+        )
+        val playlist = Playlist(
+            id = 8,
+            name = "夜间收藏",
+            songCount = songs.size,
+            songIds = songs.mapTo(mutableListOf()) { it.id },
+        )
+
+        composeRule.setContent {
+            MusicplayerTheme(dynamicColor = false) {
+                PlaylistScreen(
+                    playlists = listOf(playlist),
+                    songs = songs,
+                    selectedPlaylist = playlist,
+                    resumeSong = null,
+                    onPlaylistClick = {},
+                    onSongClick = {},
+                    onBackClick = {},
+                    onCreatePlaylist = {},
+                    onDeletePlaylist = {},
+                    onRenamePlaylist = { _, _ -> },
+                    onAddSongToPlaylist = { _, _ -> },
+                    onRemoveSongFromPlaylist = { _, _ -> },
+                )
+            }
+        }
+
+        composeRule.onNodeWithText("继续播放 · 从《晴天》开始").assertDoesNotExist()
+    }
 }

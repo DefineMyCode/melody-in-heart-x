@@ -14,7 +14,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 | Room | 2.6.1 | Schema export in `data/schemas/` |
 | Hilt | 2.52 | |
 | minSdk / targetSdk | 33 / 36 | Java 11 bytecode |
-| versionName | 3.3.0 (versionCode 22) | |
+| versionName | 3.3.1 (versionCode 23) | |
 
 ## Build / Test / Lint Commands
 

@@ -30,8 +30,8 @@ android {
         applicationId = "cn.com.dcsgo.mihx"
         minSdk = 33
         targetSdk = 36
-        versionCode = 22
-        versionName = "3.3.0"
+        versionCode = 23
+        versionName = "3.3.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
@@ -51,6 +51,28 @@ android {
         }
     }
 
+    // release 签名决策与 requireReleaseSigning 开关放在 buildTypes 之外：
+    // verifyProductArchitecture 用正则按首个闭合花括号截断 release 块，块内嵌套花括号会把 isMinifyEnabled 检查截断
+    val requireReleaseSigning = (project.findProperty("requireReleaseSigning") as? String)
+        ?.toBooleanStrictOrNull() ?: false
+    val releaseSigningConfig = run {
+        val releaseConfig = signingConfigs.getByName("release")
+        when {
+            releaseConfig.storeFile != null -> releaseConfig
+            requireReleaseSigning -> throw org.gradle.api.GradleException(
+                "发布构建要求正式签名，但未找到 keystore.properties。" +
+                    "请在发布/CI 环境提供签名配置，或本地用 ./gradlew assembleRelease -PrequireReleaseSigning=false 跳过。",
+            )
+            else -> {
+                project.logger.warn(
+                    "未找到 keystore.properties，release 回退使用 debug 签名（仅限本地验证，产物不可发布）。" +
+                        "正式发布请传 -PrequireReleaseSigning=true。",
+                )
+                signingConfigs.getByName("debug")
+            }
+        }
+    }
+
     buildTypes {
         debug {
             // debug 使用独立包名，可和 release 同时安装在同一台设备上
@@ -58,29 +80,9 @@ android {
             versionNameSuffix = "-debug"
         }
         release {
-            // 正式签名策略（P3-13）：
-            // - 提供 keystore.properties → 使用正式签名；
-            // - 未提供且未强制要求 → 回退 debug 签名，仅用于本地验证（打印告警，产物不可发布）；
-            // - 未提供但开启了 requireReleaseSigning（-PrequireReleaseSigning=true，发布/CI 用）→ 构建失败，避免误出 debug 签名的“正式包”。
-            val requireReleaseSigning = (project.findProperty("requireReleaseSigning") as? String)
-                ?.toBooleanStrictOrNull() ?: false
-            signingConfig = run {
-                val releaseConfig = signingConfigs.getByName("release")
-                when {
-                    releaseConfig.storeFile != null -> releaseConfig
-                    requireReleaseSigning -> throw org.gradle.api.GradleException(
-                        "发布构建要求正式签名，但未找到 keystore.properties。" +
-                            "请在发布/CI 环境提供签名配置，或本地用 ./gradlew assembleRelease -PrequireReleaseSigning=false 跳过。",
-                    )
-                    else -> {
-                        project.logger.warn(
-                            "未找到 keystore.properties，release 回退使用 debug 签名（仅限本地验证，产物不可发布）。" +
-                                "正式发布请传 -PrequireReleaseSigning=true。",
-                        )
-                        signingConfigs.getByName("debug")
-                    }
-                }
-            }
+            // 正式签名策略（P3-13）：决策逻辑在 release 块外（见上方 releaseSigningConfig），
+            // 块内仅一行赋值——嵌套花括号会导致 verifyProductArchitecture 的正则检查截断失败
+            signingConfig = releaseSigningConfig
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(

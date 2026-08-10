@@ -149,7 +149,7 @@ class PlaylistResumeDataStoreTest {
         try {
             repository.setSourcePlaylist(3)
 
-            val recorded = repository.recordCurrentSourceBlocking(88)
+            val recorded = repository.recordCurrentSource(88)
 
             assertTrue(recorded)
             assertEquals(88, repository.observeResume(3).first()?.songId)
@@ -171,10 +171,80 @@ class PlaylistResumeDataStoreTest {
         val repository = PlaylistResumeDataStore(store)
 
         try {
-            val recorded = repository.recordCurrentSourceBlocking(88)
+            val recorded = repository.recordCurrentSource(88)
 
             assertFalse(recorded)
             assertNull(repository.observeResume(3).first())
+        } finally {
+            scope.cancel()
+            file.delete()
+        }
+    }
+
+    @Test
+    fun switchSourceSettlesOldPlaylistAndWritesNewSource() = runBlocking {
+        val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+        val file = tempDataStoreFile()
+        val store = PreferenceDataStoreFactory.create(
+            scope = scope,
+            produceFile = { file },
+        )
+        val repository = PlaylistResumeDataStore(store)
+
+        try {
+            repository.setSourcePlaylist(1)
+
+            repository.switchSourcePlaylist(newSource = 2, currentSongId = 42)
+
+            assertEquals(42, repository.observeResume(1).first()?.songId)
+            assertEquals(2, repository.currentSourcePlaylistId())
+            assertNull(repository.observeResume(2).first())
+        } finally {
+            scope.cancel()
+            file.delete()
+        }
+    }
+
+    @Test
+    fun switchSourceToSamePlaylistDoesNotSettle() = runBlocking {
+        val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+        val file = tempDataStoreFile()
+        val store = PreferenceDataStoreFactory.create(
+            scope = scope,
+            produceFile = { file },
+        )
+        val repository = PlaylistResumeDataStore(store)
+
+        try {
+            repository.setSourcePlaylist(1)
+
+            repository.switchSourcePlaylist(newSource = 1, currentSongId = 42)
+
+            assertNull(repository.observeResume(1).first())
+            assertEquals(1, repository.currentSourcePlaylistId())
+        } finally {
+            scope.cancel()
+            file.delete()
+        }
+    }
+
+    @Test
+    fun switchSourceToNonPlaylistSettlesOldPlaylistAndClearsSource() = runBlocking {
+        val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+        val file = tempDataStoreFile()
+        val store = PreferenceDataStoreFactory.create(
+            scope = scope,
+            produceFile = { file },
+        )
+        val repository = PlaylistResumeDataStore(store)
+
+        try {
+            repository.setSourcePlaylist(3)
+
+            repository.switchSourcePlaylist(newSource = null, currentSongId = 7)
+
+            assertEquals(7, repository.observeResume(3).first()?.songId)
+            assertNull(repository.currentSourcePlaylistId())
         } finally {
             scope.cancel()
             file.delete()

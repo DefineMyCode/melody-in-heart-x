@@ -9,6 +9,7 @@ import cn.com.dcsgo.mihx.core.model.Playlist
 import cn.com.dcsgo.mihx.core.model.Song
 import cn.com.dcsgo.mihx.domain.model.DeleteSongResult
 import cn.com.dcsgo.mihx.domain.model.LocalFileValidationResult
+import cn.com.dcsgo.mihx.domain.repository.PlaybackStatsSnapshot
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.StateFlow
@@ -189,6 +190,19 @@ class PlayerViewModel @Inject constructor(
     fun acknowledgeValidationResult() {
         runtime.acknowledgeValidationResult()
     }
+
+    /**
+     * 加载播放统计快照（周/月 Top、总时长等），供 USER / 播放统计 / 歌曲榜单路由展示。
+     */
+    suspend fun loadPlaybackStatsSnapshot(): PlaybackStatsSnapshot =
+        playStatsRepository.playbackStatsSnapshot()
+
+    /**
+     * 加载按播放次数降序排序的歌曲计数列表（songId, count）。
+     * @param useRawCounts true 取原始播放次数，false 取有效播放次数。
+     */
+    suspend fun loadRankedCounts(useRawCounts: Boolean): List<Pair<Int, Int>> =
+        playStatsRepository.getRankedCounts(useRawCounts = useRawCounts, descending = true)
 
     /**
      * Imports a folder from an SAF tree URI and reports progress to UI.

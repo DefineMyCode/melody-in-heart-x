@@ -83,6 +83,7 @@ internal class PlayerRuntime(
             handleMediaItemEnded = mediaEventFacade::handleMediaItemEnded,
             handlePlaybackEnded = mediaEventFacade::handlePlaybackEnded,
             handlePlayerError = ::handlePlayerSourceError,
+            handleControllerUnavailable = ::handleControllerUnavailable,
         )
     }
     private val playbackController by lazy { mediaControllerGraph.playbackController }
@@ -153,6 +154,16 @@ internal class PlayerRuntime(
             }
             next
         }
+    }
+
+    /**
+     * 播放控制器不可用时的兜底处理（例如待执行操作队列超限被限流丢弃）。
+     * 经 [updateUiState] 把原因与丢弃计数写入 [PlayerUiState.errorMessage]，供 UI 提示。
+     */
+    private fun handleControllerUnavailable(droppedActionCount: Int, reason: String) {
+        AppLog.warning(TAG, "Playback controller unavailable: $reason, dropped=$droppedActionCount")
+        val suffix = if (droppedActionCount > 0) "，已取消 $droppedActionCount 个待执行操作" else ""
+        updateUiState { it.copy(errorMessage = "$reason$suffix，请稍后重试") }
     }
 
     val playQueue: PlayQueue get() = _uiState.value.playQueue

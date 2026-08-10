@@ -448,6 +448,28 @@ tasks.register("verifyProductArchitecture") {
                 windowLayerImplementationImports.joinToString("\n") { it.relativeTo(rootDir).path })
         }
 
+        val coreModelResFiles = file("core/model/src/main/res")
+            .takeIf { it.exists() }
+            ?.let { resDir -> projectFiles(resDir, setOf("xml")).toList() }
+            .orEmpty()
+        if (coreModelResFiles.isNotEmpty()) {
+            fail(":core:model must stay a pure data-model module without Android resources; move them to :core:ui or the owning feature:\n" +
+                coreModelResFiles.joinToString("\n") { it.relativeTo(rootDir).path })
+        }
+        val uiResourceIdRegex = Regex("""\bR\.(drawable|string|color|dimen|raw)\.|\bandroid\.R\.""")
+        val coreModelResourceIds = file("core/model/src/main")
+            .takeIf { it.exists() }
+            ?.let { modelDir ->
+                projectFiles(modelDir, setOf("kt", "java")).filter { source ->
+                    uiResourceIdRegex.containsMatchIn(source.readText())
+                }.toList()
+            }
+            .orEmpty()
+        if (coreModelResourceIds.isNotEmpty()) {
+            fail(":core:model must not carry UI resource ids; map them in :core:ui (e.g. PlayMode.iconRes()) or the owning feature:\n" +
+                coreModelResourceIds.joinToString("\n") { it.relativeTo(rootDir).path })
+        }
+
         val directAndroidLogRegex = Regex("""\bLog\.(d|i|w|e|v|wtf)\s*\(""")
         val directAndroidLogs = textFiles.filter { file ->
             val relativePath = file.relativeTo(rootDir).path.replace(File.separatorChar, '/')

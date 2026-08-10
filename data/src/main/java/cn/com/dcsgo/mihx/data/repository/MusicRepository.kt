@@ -1,7 +1,6 @@
 package cn.com.dcsgo.mihx.data.repository
 
 import android.content.Context
-import android.content.SharedPreferences
 import android.net.Uri
 import androidx.annotation.VisibleForTesting
 import androidx.documentfile.provider.DocumentFile
@@ -29,8 +28,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.withContext
-import org.json.JSONArray
-import org.json.JSONObject
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.locks.ReentrantReadWriteLock
@@ -38,9 +35,6 @@ import kotlin.concurrent.read
 import kotlin.concurrent.write
 
 private const val TAG = "MusicRepository"
-private const val PREFS_NAME = "music_player_prefs"
-private const val KEY_PLAYLISTS_JSON = "playlists_json"
-private const val KEY_SONGS_JSON = "songs_json"
 
 private sealed class BackingFileDeleteResult {
     data object Deleted : BackingFileDeleteResult()
@@ -75,11 +69,6 @@ class MusicRepository(
         persistScope.coroutineContext[Job]?.children?.forEach { it.join() }
     }
 
-    // SharedPreferences 用于持久化歌单数据
-    private val prefs: SharedPreferences? by lazy {
-        context?.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-    }
-
     // 回调：歌曲列表变更通知
     var onSongsChanged: (() -> Unit)? = null
 
@@ -88,20 +77,15 @@ class MusicRepository(
     }
 
     // ─────────────────────────────────────────────────────────────
-    // 启动恢复：歌单数据直接序列化/反序列化
+    // 启动恢复：Room 为唯一持久化来源；旧版 JSON 只在迁移时只读消费
     // ─────────────────────────────────────────────────────────────
 
-    /** 启动时恢复歌单和歌曲（从 JSON 持久化数据） */
+    /** 启动时恢复歌单和歌曲（先跑一次旧 JSON 只读迁移，再从 Room 读取） */
     suspend fun loadPersistedSongs() {
         withContext(Dispatchers.IO) {
             try {
                 legacyJsonMigration?.migrateIfNeeded()
-                if (melodyDao != null) {
-                    restoreFromRoom(melodyDao)
-                } else {
-                    restoreSongs()
-                    restorePlaylists()
-                }
+                melodyDao?.let { restoreFromRoom(it) }
             } catch (e: Exception) {
                 AppLog.error(TAG, "loadPersistedSongs: failed: ${e.message}", e)
             }
@@ -143,122 +127,28 @@ class MusicRepository(
         onFinished?.invoke()
     }
 
-    /** 从 JSON 恢复歌曲列表 */
-    private fun restoreSongs() {
-        val json = prefs?.getString(KEY_SONGS_JSON, null) ?: return
-        try {
-            val jsonArray = JSONArray(json)
-            lock.write {
-                for (i in 0 until jsonArray.length()) {
-                    val obj = jsonArray.getJSONObject(i)
-                    val id = obj.getInt("id")
-                    val title = obj.getString("title")
-                    val artist = obj.optString("artist", "未知艺术家")
-                    val sampleRate = if (obj.has("sampleRate")) obj.getInt("sampleRate") else 0
-                    val uriString = obj.getString("uri")
-                    val uri = Uri.parse(uriString)
-                    val albumArtUriString = if (obj.has("albumArtUri")) obj.getString("albumArtUri") else null
-                    val albumArtUri = albumArtUriString?.let { Uri.parse(it) }
-                    val lrcUriString = if (obj.has("lrcUri")) obj.getString("lrcUri") else null
-                    val lrcUri = lrcUriString?.let { Uri.parse(it) }
-                    val titleOverride = if (obj.has("titleOverride")) obj.optString("titleOverride", "").ifEmpty { null } else null
-                    val album = if (obj.has("album")) obj.optString("album", "") else ""
-                    val durationMs = if (obj.has("durationMs")) obj.optLong("durationMs", 0L) else 0L
-
-                    songs.add(Song(id = id, title = title, artist = artist, album = album, sampleRate = sampleRate, durationMs = durationMs, uri = uri, albumArtUri = albumArtUri, lrcUri = lrcUri, titleOverride = titleOverride))
-                    if (id >= nextId) nextId = id + 1
-                }
-            }
-            AppLog.info(TAG, "restoreSongs: restored ${songs.size} songs")
-        } catch (e: Exception) {
-            AppLog.error(TAG, "restoreSongs: JSON parse failed: ${e.message}", e)
-        }
-    }
-
-    /** 持久化所有歌曲数据到 JSON */
+    /** 快照当前歌曲列表并排入 Room 落盘队列（无 Room 时为空操作，仅出现在纯内存测试中）。 */
     private fun persistSongs() {
+        val room = roomDataSource ?: return
         val snapshot: List<Song>
         lock.read { snapshot = songs.toList() }
-        val room = roomDataSource
-        if (room != null) {
-            val now = System.currentTimeMillis()
-            persistScope.launch {
-                room.persistSongs(snapshot, importedAt = now)
-            }
-            AppLog.debug(TAG, "persistSongs: queued ${snapshot.size} songs to Room")
-            return
+        val now = System.currentTimeMillis()
+        persistScope.launch {
+            room.persistSongs(snapshot, importedAt = now)
         }
-        val jsonArray = JSONArray()
-        for (song in snapshot) {
-            val obj = JSONObject()
-            obj.put("id", song.id)
-            obj.put("title", song.title)
-            obj.put("artist", song.artist)
-            obj.put("album", song.album)
-            obj.put("sampleRate", song.sampleRate)
-            obj.put("durationMs", song.durationMs)
-            obj.put("uri", song.uri.toString())
-            song.albumArtUri?.let { obj.put("albumArtUri", it.toString()) }
-            song.lrcUri?.let { obj.put("lrcUri", it.toString()) }
-            song.titleOverride?.let { obj.put("titleOverride", it) }
-            jsonArray.put(obj)
-        }
-        prefs?.edit()?.putString(KEY_SONGS_JSON, jsonArray.toString())?.apply()
-        AppLog.debug(TAG, "persistSongs: saved ${snapshot.size} songs")
+        AppLog.debug(TAG, "persistSongs: queued ${snapshot.size} songs to Room")
     }
 
-    /** 从 JSON 恢复歌单（不依赖 folder name 解析） */
-    private fun restorePlaylists() {
-        val json = prefs?.getString(KEY_PLAYLISTS_JSON, null) ?: return
-        try {
-            val jsonArray = JSONArray(json)
-            lock.write {
-                for (i in 0 until jsonArray.length()) {
-                    val obj = jsonArray.getJSONObject(i)
-                    val id = obj.getInt("id")
-                    val name = obj.getString("name")
-                    val songIdsArray = obj.getJSONArray("songIds")
-                    val songIds = mutableListOf<Int>()
-                    for (j in 0 until songIdsArray.length()) {
-                        songIds.add(songIdsArray.getInt(j))
-                    }
-                    playlists.add(Playlist(id = id, name = name, songCount = songIds.size, songIds = songIds))
-                    if (id >= nextPlaylistId) nextPlaylistId = id + 1
-                }
-            }
-            AppLog.info(TAG, "restorePlaylists: restored ${playlists.size} playlists")
-        } catch (e: Exception) {
-            AppLog.error(TAG, "restorePlaylists: JSON parse failed: ${e.message}", e)
-        }
-    }
-
-    /** 持久化所有歌单数据到 JSON */
+    /** 快照当前歌单列表并排入 Room 落盘队列（无 Room 时为空操作，仅出现在纯内存测试中）。 */
     private fun persistPlaylists() {
+        val room = roomDataSource ?: return
         val snapshot: List<Playlist>
         lock.read { snapshot = playlists.toList() }
-        val room = roomDataSource
-        if (room != null) {
-            val now = System.currentTimeMillis()
-            persistScope.launch {
-                room.persistPlaylists(snapshot, updatedAt = now)
-            }
-            AppLog.debug(TAG, "persistPlaylists: queued ${snapshot.size} playlists to Room")
-            return
+        val now = System.currentTimeMillis()
+        persistScope.launch {
+            room.persistPlaylists(snapshot, updatedAt = now)
         }
-        val jsonArray = JSONArray()
-        for (playlist in snapshot) {
-            val obj = JSONObject()
-            obj.put("id", playlist.id)
-            obj.put("name", playlist.name)
-            val songIdsArray = JSONArray()
-            for (songId in playlist.songIds) {
-                songIdsArray.put(songId)
-            }
-            obj.put("songIds", songIdsArray)
-            jsonArray.put(obj)
-        }
-        prefs?.edit()?.putString(KEY_PLAYLISTS_JSON, jsonArray.toString())?.apply()
-        AppLog.debug(TAG, "persistPlaylists: saved ${snapshot.size} playlists")
+        AppLog.debug(TAG, "persistPlaylists: queued ${snapshot.size} playlists to Room")
     }
 
     fun getSongs(): List<Song> = lock.read { songs.toList() }

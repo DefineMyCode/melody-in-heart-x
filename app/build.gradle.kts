@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -6,11 +8,10 @@ plugins {
     alias(libs.plugins.hilt)
 }
 
-import java.util.Properties
-
 /**
  * 读取根目录 keystore.properties(已 gitignore):storeFile/storePassword/keyAlias/keyPassword。
- * 文件不存在时返回 null,release 将回退使用 debug 签名(便于无密钥环境构建)。
+ * 文件不存在时返回 null。release 默认回退 debug 签名以方便无密钥环境构建；
+ * 若构建时传入 -PrequireReleaseSigning=true（发布/CI 场景），缺失密钥将直接构建失败，避免误出 debug 签名的“正式包”。
  */
 fun loadKeystoreProperties(): Map<String, String>? {
     val propsFile = rootProject.file("keystore.properties")
@@ -57,11 +58,28 @@ android {
             versionNameSuffix = "-debug"
         }
         release {
-            // 有 keystore.properties 时用正式签名;否则回退 debug 签名(便于无密钥环境构建)
-            signingConfig = if (signingConfigs.getByName("release").storeFile != null) {
-                signingConfigs.getByName("release")
-            } else {
-                signingConfigs.getByName("debug")
+            // 正式签名策略（P3-13）：
+            // - 提供 keystore.properties → 使用正式签名；
+            // - 未提供且未强制要求 → 回退 debug 签名，仅用于本地验证（打印告警，产物不可发布）；
+            // - 未提供但开启了 requireReleaseSigning（-PrequireReleaseSigning=true，发布/CI 用）→ 构建失败，避免误出 debug 签名的“正式包”。
+            val requireReleaseSigning = (project.findProperty("requireReleaseSigning") as? String)
+                ?.toBooleanStrictOrNull() ?: false
+            signingConfig = run {
+                val releaseConfig = signingConfigs.getByName("release")
+                when {
+                    releaseConfig.storeFile != null -> releaseConfig
+                    requireReleaseSigning -> throw org.gradle.api.GradleException(
+                        "发布构建要求正式签名，但未找到 keystore.properties。" +
+                            "请在发布/CI 环境提供签名配置，或本地用 ./gradlew assembleRelease -PrequireReleaseSigning=false 跳过。",
+                    )
+                    else -> {
+                        project.logger.warn(
+                            "未找到 keystore.properties，release 回退使用 debug 签名（仅限本地验证，产物不可发布）。" +
+                                "正式发布请传 -PrequireReleaseSigning=true。",
+                        )
+                        signingConfigs.getByName("debug")
+                    }
+                }
             }
             isMinifyEnabled = true
             isShrinkResources = true

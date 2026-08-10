@@ -75,6 +75,9 @@ interface MelodyDao {
     @Query("SELECT * FROM play_stats WHERE songId = :songId")
     suspend fun playStat(songId: Int): PlayStatsEntity?
 
+    @Query("SELECT * FROM play_stats WHERE songId IN (:songIds)")
+    suspend fun playStatsIn(songIds: List<Int>): List<PlayStatsEntity>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertPlaybackEvent(event: PlaybackEventEntity)
 
@@ -322,16 +325,15 @@ interface MelodyDao {
         }
         if (refs.isNotEmpty()) insertSongArtistRefs(refs)
 
-        songs.forEach { song ->
+        // 专辑外键回填:一次性读入歌曲实体后批量 upsert。
+        // 早期实现是「逐首歌全表查询 + 单条写入」,曲库规模上千首时会退化成上千次查询(N+1)。
+        val songEntityById = songs().associateBy { it.id }
+        val albumIdUpdates = songs.mapNotNull { song ->
             val newAlbumId = song.album.takeIf { it.isNotBlank() }?.let { albumIdByName[it] }
-            if (newAlbumId != song.albumId) {
-                upsertSongs(
-                    listOf(
-                        songs().first { it.id == song.id }.copy(albumId = newAlbumId),
-                    ),
-                )
-            }
+            if (newAlbumId == song.albumId) return@mapNotNull null
+            songEntityById[song.id]?.copy(albumId = newAlbumId)
         }
+        if (albumIdUpdates.isNotEmpty()) upsertSongs(albumIdUpdates)
 
         deleteOrphanArtists()
         deleteOrphanAlbums()

@@ -3,7 +3,7 @@ package cn.com.dcsgo.mihx.domain.repository
 interface PlayStatsRepository {
     fun getCounts(songIds: List<Int>): Map<Int, Int>
     fun getRawPlayCounts(songIds: List<Int>): Map<Int, Int>
-    fun getRankedCounts(useRawCounts: Boolean = false, descending: Boolean = true): List<Pair<Int, Int>>
+    suspend fun getRankedCounts(useRawCounts: Boolean = false, descending: Boolean = true): List<Pair<Int, Int>>
     fun increment(songId: Int): Int
     fun incrementRawPlayCount(songId: Int): Int
     fun recordCompletedPlay(songId: Int)
@@ -19,5 +19,5 @@ interface PlayStatsRepository {
     fun recordPlaybackSession(songId: Int, startedAtMs: Long, durationMs: Long, isEffectivePlay: Boolean)
 
     /** 播放统计中心快照：今日 / 本周逐日 / 本周榜 / 本月榜 */
-    fun playbackStatsSnapshot(): PlaybackStatsSnapshot
+    suspend fun playbackStatsSnapshot(): PlaybackStatsSnapshot
 }

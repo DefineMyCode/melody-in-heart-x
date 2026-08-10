@@ -88,6 +88,8 @@ class QuickSkipSongsRepositoryRoomTest {
         override suspend fun playlistSongRefs(): List<PlaylistSongCrossRef> = playlistSongRefs
         override suspend fun songGroupOverrides(): List<SongGroupOverrideEntity> = songGroupOverrides
         override suspend fun playStats(): List<PlayStatsEntity> = playStats
+        override suspend fun playStatsIn(songIds: List<Int>): List<PlayStatsEntity> =
+            playStats.filter { it.songId in songIds }
         override suspend fun insertPlaybackEvent(
             event: cn.com.dcsgo.mihx.data.local.entity.PlaybackEventEntity,
         ) = Unit

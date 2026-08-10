@@ -46,16 +46,14 @@ object RepositoryModule {
     @Provides
     @Singleton
     fun providePlayStatsRepository(
-        @ApplicationContext context: Context,
         melodyDao: MelodyDao,
-    ): PlayStatsRepository = PlayStatsRepository(context, melodyDao)
+    ): PlayStatsRepository = PlayStatsRepository(melodyDao)
 
     @Provides
     @Singleton
     fun provideQuickSkipSongsRepository(
-        @ApplicationContext context: Context,
         melodyDao: MelodyDao,
-    ): QuickSkipSongsRepository = QuickSkipSongsRepository(context, melodyDao)
+    ): QuickSkipSongsRepository = QuickSkipSongsRepository(melodyDao)
 
     @Provides
     @Singleton

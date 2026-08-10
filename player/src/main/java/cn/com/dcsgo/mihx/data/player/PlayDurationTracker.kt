@@ -76,7 +76,8 @@ class PlayDurationTracker(
         lastUpdateTimeMs.set(System.currentTimeMillis())
         isPlaying.set(true)
 
-        playStatsRepository.incrementRawPlayCount(songId)
+        // 原始播放次数 +1 移到 IO 协程，避免在主线程（Media3 监听器）上阻塞。
+        scope.launch { playStatsRepository.incrementRawPlayCount(songId) }
 
         // 开始计时
         startTracking()
@@ -114,66 +115,10 @@ class PlayDurationTracker(
         isPlaying.set(false)
         isTracking.set(false)
 
-        // 结算当前歌曲的播放时长
-        currentSongId?.let { songId ->
-            val totalDuration = currentPlayDurationMs.get()
-            val startedAtMs = System.currentTimeMillis() - totalDuration
-            var isEffective = false
-
-            // 检查是否达到播放次数计数条件：完播率达标或长歌播放超过5分钟
-            if (currentSongDurationMs > 0) {
-                val completionThreshold = (currentSongDurationMs * COMPLETION_RATE_THRESHOLD).toLong()
-                val isCompletionReached = totalDuration >= completionThreshold
-                val isLongPlayReached = totalDuration >= LONG_PLAY_THRESHOLD_MS
-                isEffective = isCompletionReached || isLongPlayReached
-                if (isEffective) {
-                    playStatsRepository.increment(songId)
-
-                    // 如果歌曲在秒切歌曲列表中，播放次数加1后自动移除
-                    if (quickSkipRepository.contains(songId)) {
-                        quickSkipRepository.remove(songId)
-                        AppLog.debug(TAG, "秒切歌曲播放计数达标，已移除: song=$songId")
-                    }
-
-                    // 重置短时长播放计数（因为正常播放完了）
-                    quickSkipRepository.resetShortPlayCount(songId)
-
-                    AppLog.debug(
-                        TAG,
-                        "播放计数 +1: song=$songId, 播放时长=${totalDuration}ms, " +
-                            "90%阈值=${completionThreshold}ms, 5分钟阈值=${LONG_PLAY_THRESHOLD_MS}ms"
-                    )
-                } else {
-                    // 如果播放时长小于5秒，增加短时长播放计数
-                    if (totalDuration < SHORT_PLAY_THRESHOLD_MS && !quickSkipRepository.contains(songId)) {
-                        val shortPlayCount = quickSkipRepository.incrementShortPlayCount(songId)
-                        AppLog.debug(TAG, "短时长播放检测: song=$songId, 播放时长=${totalDuration}ms, 短时长次数=$shortPlayCount")
-
-                        // 如果短时长播放次数累计超过2次，自动添加到秒切列表
-                        if (shortPlayCount >= SHORT_PLAY_COUNT_THRESHOLD) {
-                            quickSkipRepository.add(songId)
-                            AppLog.debug(TAG, "短时长播放次数超标，自动添加到秒切列表: song=$songId")
-                        }
-                    }
-
-                    AppLog.debug(
-                        TAG,
-                        "播放时长未达到阈值: song=$songId, 播放时长=${totalDuration}ms, " +
-                            "90%阈值=${completionThreshold}ms, 5分钟阈值=${LONG_PLAY_THRESHOLD_MS}ms"
-                    )
-                }
-            }
-
-            // 记录本次播放会话（供今日/本周/本月统计聚合）
-            if (totalDuration > 0L) {
-                playStatsRepository.recordPlaybackSession(
-                    songId = songId,
-                    startedAtMs = startedAtMs,
-                    durationMs = totalDuration,
-                    isEffectivePlay = isEffective,
-                )
-            }
-        }
+        // 捕获待结算数据并同步重置状态，结算整体搬到 IO 协程，避免在主线程阻塞 Room 事务。
+        val songId = currentSongId
+        val totalDuration = currentPlayDurationMs.get()
+        val songDurationMs = currentSongDurationMs
 
         // 重置状态
         currentSongId = null
@@ -182,7 +127,74 @@ class PlayDurationTracker(
         lastUpdateTimeMs.set(0L)
         isSeeking.set(false)
 
+        if (songId != null) {
+            scope.launch { settlePlayback(songId, songDurationMs, totalDuration) }
+        }
+
         AppLog.debug(TAG, "停止播放")
+    }
+
+    /**
+     * 在 [scope]（Dispatchers.IO）中结算单曲播放统计：有效/原始播放次数、秒切列表维护、播放会话记录。
+     * 全部为 Room 写操作，故放在后台执行，主线程不再被阻塞。
+     */
+    private fun settlePlayback(songId: Int, songDurationMs: Long, totalDuration: Long) {
+        var isEffective = false
+
+        // 检查是否达到播放次数计数条件：完播率达标或长歌播放超过5分钟
+        if (songDurationMs > 0) {
+            val completionThreshold = (songDurationMs * COMPLETION_RATE_THRESHOLD).toLong()
+            val isCompletionReached = totalDuration >= completionThreshold
+            val isLongPlayReached = totalDuration >= LONG_PLAY_THRESHOLD_MS
+            isEffective = isCompletionReached || isLongPlayReached
+            if (isEffective) {
+                playStatsRepository.increment(songId)
+
+                // 如果歌曲在秒切歌曲列表中，播放次数加1后自动移除
+                if (quickSkipRepository.contains(songId)) {
+                    quickSkipRepository.remove(songId)
+                    AppLog.debug(TAG, "秒切歌曲播放计数达标，已移除: song=$songId")
+                }
+
+                // 重置短时长播放计数（因为正常播放完了）
+                quickSkipRepository.resetShortPlayCount(songId)
+
+                AppLog.debug(
+                    TAG,
+                    "播放计数 +1: song=$songId, 播放时长=${totalDuration}ms, " +
+                        "90%阈值=${completionThreshold}ms, 5分钟阈值=${LONG_PLAY_THRESHOLD_MS}ms"
+                )
+            } else {
+                // 如果播放时长小于5秒，增加短时长播放计数
+                if (totalDuration < SHORT_PLAY_THRESHOLD_MS && !quickSkipRepository.contains(songId)) {
+                    val shortPlayCount = quickSkipRepository.incrementShortPlayCount(songId)
+                    AppLog.debug(TAG, "短时长播放检测: song=$songId, 播放时长=${totalDuration}ms, 短时长次数=$shortPlayCount")
+
+                    // 如果短时长播放次数累计超过2次，自动添加到秒切列表
+                    if (shortPlayCount >= SHORT_PLAY_COUNT_THRESHOLD) {
+                        quickSkipRepository.add(songId)
+                        AppLog.debug(TAG, "短时长播放次数超标，自动添加到秒切列表: song=$songId")
+                    }
+                }
+
+                AppLog.debug(
+                    TAG,
+                    "播放时长未达到阈值: song=$songId, 播放时长=${totalDuration}ms, " +
+                        "90%阈值=${completionThreshold}ms, 5分钟阈值=${LONG_PLAY_THRESHOLD_MS}ms"
+                )
+            }
+        }
+
+        // 记录本次播放会话（供今日/本周/本月统计聚合）
+        if (totalDuration > 0L) {
+            val startedAtMs = System.currentTimeMillis() - totalDuration
+            playStatsRepository.recordPlaybackSession(
+                songId = songId,
+                startedAtMs = startedAtMs,
+                durationMs = totalDuration,
+                isEffectivePlay = isEffective,
+            )
+        }
     }
 
     /**

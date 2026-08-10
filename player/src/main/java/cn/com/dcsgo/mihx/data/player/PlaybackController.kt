@@ -21,6 +21,15 @@ import java.util.concurrent.ExecutionException
 
 private const val TAG = "PlaybackController"
 
+/**
+ * 未连接期间允许缓存的待执行动作上限。
+ *
+ * MediaController 连接失败或长时间未就绪时，UI 每次点击都会追加一个 pending action。
+ * 没有上限会持续持有 lambda（及其捕获的歌曲列表）造成内存增长，
+ * 因此这里按 FIFO 丢弃最早的动作，并通过 [PlaybackControllerCallbacks.onControllerUnavailable] 上报。
+ */
+private const val MAX_PENDING_ACTIONS = 64
+
 class PlaybackController(
     private val context: Context,
     private val serviceClass: Class<*>,
@@ -110,8 +119,10 @@ class PlaybackController(
                     AppLog.info(TAG, "MediaController connected")
                 } catch (e: ExecutionException) {
                     AppLog.error(TAG, "MediaController connection failed", e.cause ?: e)
+                    abortPendingActions("播放服务连接失败")
                 } catch (e: Exception) {
                     AppLog.error(TAG, "MediaController connection failed", e)
+                    abortPendingActions("播放服务连接失败")
                 }
             },
             ContextCompat.getMainExecutor(context)
@@ -154,6 +165,15 @@ class PlaybackController(
         controller?.let {
             action(it)
             return true
+        }
+        if (pendingActions.size >= MAX_PENDING_ACTIONS) {
+            // 队列已满说明控制器长时间未就绪：丢弃最早的动作，保证队列有界。
+            pendingActions.removeFirst()
+            AppLog.warning(
+                TAG,
+                "Pending action queue overflow (max=$MAX_PENDING_ACTIONS), dropped the oldest action",
+            )
+            callbacks.onControllerUnavailable(1, "播放服务尚未就绪")
         }
         pendingActions.addLast(action)
         return false
@@ -289,6 +309,21 @@ class PlaybackController(
                 AppLog.error(TAG, "Pending MediaController action failed", e)
             }
         }
+    }
+
+    /**
+     * 连接失败时清空待执行队列并回调错误。
+     *
+     * 若继续保留这些动作，它们会在下一次连接成功时被批量重放，
+     * 产生用户早已放弃的播放/切歌行为，因此这里选择丢弃并显式告知上层。
+     */
+    private fun abortPendingActions(reason: String) {
+        val dropped = pendingActions.size
+        pendingActions.clear()
+        if (dropped > 0) {
+            AppLog.warning(TAG, "Dropped $dropped pending MediaController action(s): $reason")
+        }
+        callbacks.onControllerUnavailable(dropped, reason)
     }
 
     private fun ControllerQueuePlan.toMediaItems(): List<MediaItem> {

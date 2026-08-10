@@ -31,14 +31,12 @@ class PlaylistResumeViewModel @Inject constructor(
      * 切换播放来源歌单。
      * 切换前若旧来源是某歌单且与新的不同,先以 [currentSongId](旧来源实际在播的歌曲)记录该歌单,
      * 再更新来源标记。非歌单播放([newSource] 为 null)同样会先结算旧歌单。
+     *
+     * 结算与写入由仓库在单次事务内完成,ViewModel 只做转发。
      */
     fun switchSource(newSource: Int?, currentSongId: Int?) {
         viewModelScope.launch {
-            val oldSource = resumeRepository.currentSourcePlaylistId()
-            if (oldSource != null && oldSource != newSource && currentSongId != null) {
-                resumeRepository.record(oldSource, currentSongId)
-            }
-            resumeRepository.setSourcePlaylist(newSource)
+            resumeRepository.switchSourcePlaylist(newSource, currentSongId)
         }
     }
 }

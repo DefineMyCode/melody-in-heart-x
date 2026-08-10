@@ -50,6 +50,7 @@ import coil.compose.AsyncImage
 import cn.com.dcsgo.mihx.core.common.time.formatDurationTime
 import cn.com.dcsgo.mihx.core.model.PlayMode
 import cn.com.dcsgo.mihx.core.model.Song
+import cn.com.dcsgo.mihx.ui.icons.iconRes
 
 /**
  * 首页（播放器主界面）
@@ -537,7 +538,7 @@ private fun SongInfoSection(
             // 播放模式切换（暂停按钮右侧）
             IconButton(onClick = onTogglePlayMode) {
                 Icon(
-                    painter = painterResource(id = playMode.icon),
+                    painter = painterResource(id = playMode.iconRes()),
                     contentDescription = "播放模式: ${playMode.label}",
                     modifier = Modifier.size(24.dp),
                     tint = MaterialTheme.colorScheme.onSurfaceVariant

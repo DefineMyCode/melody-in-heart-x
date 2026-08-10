@@ -1,23 +1,25 @@
 package cn.com.dcsgo.mihx.core.model
 
 import androidx.compose.runtime.Stable
-import cn.com.dcsgo.mihx.core.model.R
 
 /**
  * 播放模式枚举
  *
  * 定义播放队列的顺序策略。所有模式均支持首尾循环。
+ *
+ * 注意：本模块是纯数据模型层，不持有任何 UI 资源 id。
+ * 「播放模式 → 图标」的映射由 `:core:ui` 的 `PlayMode.iconRes()` 提供。
  */
-enum class PlayMode(val label: String, val icon: Int) {
+enum class PlayMode(val label: String) {
 
     /** 顺序播放：从索引 0 → 末尾 → 0 循环 */
-    SEQUENTIAL("顺序播放", R.drawable.forward_media_24),
+    SEQUENTIAL("顺序播放"),
 
     /** 倒序播放：从末尾 → 索引 0 → 末尾循环 */
-    REVERSE("倒序播放", R.drawable.replay_24),
+    REVERSE("倒序播放"),
 
     /** 随机播放：排除当前歌曲，随机选下一首 */
-    SHUFFLE("随机播放", R.drawable.shuffle_24);
+    SHUFFLE("随机播放");
 
     /** 循环切换到下一个模式 */
     fun next(): PlayMode = entries[(ordinal + 1) % entries.size]

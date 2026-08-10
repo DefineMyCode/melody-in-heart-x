@@ -1,7 +1,5 @@
 package cn.com.dcsgo.mihx.data.repository
 
-import android.content.Context
-import android.content.SharedPreferences
 import cn.com.dcsgo.mihx.core.common.AppLog
 import cn.com.dcsgo.mihx.data.local.dao.MelodyDao
 import cn.com.dcsgo.mihx.data.local.entity.PlaybackEventEntity
@@ -10,22 +8,19 @@ import cn.com.dcsgo.mihx.domain.repository.DayDuration
 import cn.com.dcsgo.mihx.domain.repository.PlaybackStatsSnapshot
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.temporal.TemporalAdjusters
 
 private const val TAG = "PlayStatsRepository"
-private const val PREFS_NAME = "play_stats_prefs"
-private const val KEY_PREFIX = "play_count_"
-private const val KEY_RAW_PLAY_COUNT_PREFIX = "raw_play_count_"
-private const val KEY_PLAY_DURATION_PREFIX = "play_duration_"
 
 /**
  * 播放统计仓库
  *
- * 以 song.id 为键，独立存储每首歌曲的播放统计。
- * 与 songs JSON 分离，避免修改 Song 数据模型。
+ * 以 song.id 为键，独立存储每首歌曲的播放统计，唯一数据源为 Room。
+ * 旧版 SharedPreferences 数据由 SharedPreferencesLegacyJsonMigration 一次性只读迁移。
  *
  * 有效播放次数规则（由调用方判断后调用 [increment]）：
  * - 歌曲已播放超过总时长的 90%，或
@@ -37,13 +32,8 @@ private const val KEY_PLAY_DURATION_PREFIX = "play_duration_"
  * - 暂停后恢复不重复计数
  */
 class PlayStatsRepository(
-    context: Context? = null,
-    private val melodyDao: MelodyDao? = null,
+    private val melodyDao: MelodyDao,
 ) : cn.com.dcsgo.mihx.domain.repository.PlayStatsRepository {
-
-    private val prefs: SharedPreferences? by lazy {
-        context?.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-    }
 
     /** 获取指定歌曲的播放次数 */
     fun getCount(songId: Int): Int =
@@ -96,16 +86,20 @@ class PlayStatsRepository(
      * @param songIds 歌曲 ID 列表
      * @return Map<songId, playCount>
      */
-    override fun getCounts(songIds: List<Int>): Map<Int, Int> =
-        songIds.associateWith { getCount(it) }
+    override fun getCounts(songIds: List<Int>): Map<Int, Int> = runBlocking(Dispatchers.IO) {
+        val fromDb = melodyDao.playStatsIn(songIds).associate { it.songId to it.playCount }
+        songIds.associateWith { fromDb[it] ?: 0 }
+    }
 
     /**
      * 批量获取原始播放次数
      * @param songIds 歌曲 ID 列表
      * @return Map<songId, rawPlayCount>
      */
-    override fun getRawPlayCounts(songIds: List<Int>): Map<Int, Int> =
-        songIds.associateWith { getRawPlayCount(it) }
+    override fun getRawPlayCounts(songIds: List<Int>): Map<Int, Int> = runBlocking(Dispatchers.IO) {
+        val fromDb = melodyDao.playStatsIn(songIds).associate { it.songId to it.rawPlayCount }
+        songIds.associateWith { fromDb[it] ?: 0 }
+    }
 
     override fun recordCompletedPlay(songId: Int) {
         increment(songId)
@@ -117,9 +111,8 @@ class PlayStatsRepository(
         durationMs: Long,
         isEffectivePlay: Boolean,
     ) {
-        val dao = melodyDao ?: return
         runBlocking(Dispatchers.IO) {
-            dao.insertPlaybackEvent(
+            melodyDao.insertPlaybackEvent(
                 PlaybackEventEntity(
                     songId = songId,
                     startedAtMs = startedAtMs,
@@ -130,8 +123,7 @@ class PlayStatsRepository(
         }
     }
 
-    override fun playbackStatsSnapshot(): PlaybackStatsSnapshot {
-        val dao = melodyDao ?: return PlaybackStatsSnapshot.EMPTY
+    override suspend fun playbackStatsSnapshot(): PlaybackStatsSnapshot {
         val zone = ZoneId.systemDefault()
         val today = LocalDate.now(zone)
         val weekStart = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
@@ -143,30 +135,32 @@ class PlayStatsRepository(
         fun endOfDay(date: LocalDate): Long =
             date.plusDays(1).atStartOfDay(zone).toInstant().toEpochMilli()
 
-        return runBlocking(Dispatchers.IO) {
-            val todayDurationMs = dao.totalDurationBetween(startOfDay(today), endOfDay(today))
-            val todaySongCount = dao.distinctSongsBetween(startOfDay(today), endOfDay(today))
-            val yesterdayDurationMs =
-                dao.totalDurationBetween(startOfDay(today.minusDays(1)), endOfDay(today.minusDays(1)))
-            val lastWeekSameDayDurationMs = dao.totalDurationBetween(
+        return withContext(Dispatchers.IO) {
+            val todayDurationMs = melodyDao.totalDurationBetween(startOfDay(today), endOfDay(today))
+            val todaySongCount = melodyDao.distinctSongsBetween(startOfDay(today), endOfDay(today))
+            val yesterdayDurationMs = melodyDao.totalDurationBetween(
+                startOfDay(today.minusDays(1)),
+                endOfDay(today.minusDays(1)),
+            )
+            val lastWeekSameDayDurationMs = melodyDao.totalDurationBetween(
                 startOfDay(today.minusWeeks(1)),
                 endOfDay(today.minusWeeks(1)),
             )
-            val weekTotalMs = dao.totalDurationBetween(startOfDay(weekStart), nowMs)
-            val lastWeekTotalMs = dao.totalDurationBetween(
+            val weekTotalMs = melodyDao.totalDurationBetween(startOfDay(weekStart), nowMs)
+            val lastWeekTotalMs = melodyDao.totalDurationBetween(
                 startOfDay(weekStart.minusWeeks(1)),
                 startOfDay(weekStart),
             )
-            val daily = dao.dailyDurationsBetween(startOfDay(weekStart), nowMs)
+            val daily = melodyDao.dailyDurationsBetween(startOfDay(weekStart), nowMs)
                 .associate { it.day to it.totalMs }
             val weekDays = (0..6).map { offset ->
                 val day = weekStart.plusDays(offset.toLong())
                 DayDuration(day, daily[day.toString()] ?: 0L)
             }
-            val weeklyTop = dao.playCountsBetween(startOfDay(weekStart), nowMs)
+            val weeklyTop = melodyDao.playCountsBetween(startOfDay(weekStart), nowMs)
                 .take(PlaybackStatsSnapshot.WEEKLY_TOP_SIZE)
                 .map { it.songId to it.playCount }
-            val monthlyTop = dao.playCountsBetween(startOfDay(monthStart), nowMs)
+            val monthlyTop = melodyDao.playCountsBetween(startOfDay(monthStart), nowMs)
                 .take(PlaybackStatsSnapshot.MONTHLY_TOP_SIZE)
                 .map { it.songId to it.playCount }
 
@@ -185,91 +179,41 @@ class PlayStatsRepository(
     }
 
     /** 获取所有已有播放记录的 Map<songId, count> */
-    fun getAllCounts(): Map<Int, Int> {
-        val dao = melodyDao
-        if (dao != null) {
-            return runBlocking(Dispatchers.IO) {
-                dao.playStats().associate { it.songId to it.playCount }
-            }
-        }
-        return prefs?.all.orEmpty()
-            .filterKeys { it.startsWith(KEY_PREFIX) }
-            .mapKeys { it.key.removePrefix(KEY_PREFIX).toIntOrNull() ?: -1 }
-            .filterKeys { it >= 0 }
-            .mapValues { (it.value as? Int) ?: 0 }
+    fun getAllCounts(): Map<Int, Int> = runBlocking(Dispatchers.IO) {
+        melodyDao.playStats().associate { it.songId to it.playCount }
     }
 
-    override fun getRankedCounts(
+    override suspend fun getRankedCounts(
         useRawCounts: Boolean,
         descending: Boolean,
     ): List<Pair<Int, Int>> {
-        val stats = melodyDao?.let { dao ->
-            runBlocking(Dispatchers.IO) { dao.playStats() }
-        } ?: legacyStats()
+        val stats = withContext(Dispatchers.IO) { melodyDao.playStats() }
 
         val comparator = if (descending) {
             compareByDescending<Pair<Int, Int>> { it.second }.thenBy { it.first }
         } else {
             compareBy<Pair<Int, Int>> { it.second }.thenBy { it.first }
         }
-        val ranked = stats
+        return stats
             .map { stat ->
                 stat.songId to if (useRawCounts) stat.rawPlayCount else stat.playCount
             }
             .filter { (_, count) -> count > 0 }
             .sortedWith(comparator)
-
-        return ranked
     }
 
-    private fun readStat(songId: Int): PlayStatsEntity {
-        val dao = melodyDao
-        if (dao != null) {
-            return runBlocking(Dispatchers.IO) {
-                dao.playStat(songId)
-            } ?: legacyStat(songId)
-        }
-        return legacyStat(songId)
-    }
+    private fun readStat(songId: Int): PlayStatsEntity =
+        runBlocking(Dispatchers.IO) { melodyDao.playStat(songId) } ?: emptyStat(songId)
 
     private fun writeStat(stat: PlayStatsEntity) {
-        val dao = melodyDao
-        if (dao != null) {
-            runBlocking(Dispatchers.IO) {
-                dao.upsertPlayStat(stat)
-            }
-        } else {
-            requireNotNull(prefs) {
-                "PlayStatsRepository requires Context when no MelodyDao is provided."
-            }.edit()
-                .putInt("$KEY_PREFIX${stat.songId}", stat.playCount)
-                .putInt("$KEY_RAW_PLAY_COUNT_PREFIX${stat.songId}", stat.rawPlayCount)
-                .putLong("$KEY_PLAY_DURATION_PREFIX${stat.songId}", stat.totalDurationMs)
-                .apply()
-        }
+        runBlocking(Dispatchers.IO) { melodyDao.upsertPlayStat(stat) }
     }
 
-    private fun legacyStat(songId: Int): PlayStatsEntity = PlayStatsEntity(
+    private fun emptyStat(songId: Int): PlayStatsEntity = PlayStatsEntity(
         songId = songId,
-        playCount = prefs?.getInt("$KEY_PREFIX$songId", 0) ?: 0,
-        rawPlayCount = prefs?.getInt("$KEY_RAW_PLAY_COUNT_PREFIX$songId", 0) ?: 0,
-        totalDurationMs = prefs?.getLong("$KEY_PLAY_DURATION_PREFIX$songId", 0L) ?: 0L,
+        playCount = 0,
+        rawPlayCount = 0,
+        totalDurationMs = 0L,
         lastPlayedAt = null,
     )
-
-    private fun legacyStats(): List<PlayStatsEntity> {
-        val preferences = prefs ?: return emptyList()
-        val songIds = preferences.all.keys
-            .mapNotNull { key ->
-                when {
-                    key.startsWith(KEY_PREFIX) -> key.removePrefix(KEY_PREFIX).toIntOrNull()
-                    key.startsWith(KEY_RAW_PLAY_COUNT_PREFIX) -> key.removePrefix(KEY_RAW_PLAY_COUNT_PREFIX).toIntOrNull()
-                    key.startsWith(KEY_PLAY_DURATION_PREFIX) -> key.removePrefix(KEY_PLAY_DURATION_PREFIX).toIntOrNull()
-                    else -> null
-                }
-            }
-            .toSet()
-
-        return songIds.map(::legacyStat)
-    }
 }

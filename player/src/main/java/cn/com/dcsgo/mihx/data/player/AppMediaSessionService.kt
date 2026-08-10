@@ -8,9 +8,12 @@ import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.session.MediaSession
 import androidx.media3.session.MediaSessionService
 import cn.com.dcsgo.mihx.core.common.AppLogger
+import cn.com.dcsgo.mihx.data.player.di.ApplicationScope
 import cn.com.dcsgo.mihx.domain.repository.PlaylistResumeRepository
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 
 /**
  * Media3 playback service.
@@ -38,6 +41,11 @@ class AppMediaSessionService : MediaSessionService() {
 
     @Inject
     lateinit var playlistResumeRepository: PlaylistResumeRepository
+
+    /** 进程级作用域:服务实例销毁后落盘协程仍需跑完,不能挂在服务自身的生命周期上。 */
+    @Inject
+    @ApplicationScope
+    lateinit var applicationScope: CoroutineScope
 
     override fun onCreate() {
         super.onCreate()
@@ -111,17 +119,27 @@ class AppMediaSessionService : MediaSessionService() {
         exoPlayer?.addListener(playerListener!!)
     }
 
+    /**
+     * 记录退出时的播放快照。
+     *
+     * 快照(歌曲与进度)必须在调用线程同步读取——ExoPlayer 只能在其应用线程访问;而 DataStore 落盘一律
+     * 交给进程级作用域异步执行,避免 onDestroy / onTaskRemoved 在主线程上等待磁盘 IO。
+     */
     private fun saveCurrentPlaybackSnapshot() {
         val player = exoPlayer ?: return
         val songId = player.currentMediaItem?.mediaId?.toIntOrNull() ?: return
-        playbackStateStore.saveCurrentPlaybackSnapshot(
-            songId = songId,
-            positionMs = player.currentPosition,
-        )
-        // 歌单续播:若当前队列来自某个歌单,记录"实际在播"的歌曲并清除来源标记
-        if (playlistResumeRepository.recordCurrentSourceBlocking(songId)) {
-            logger.debug(TAG, "recordPlaylistResume: song=$songId")
+        val positionMs = player.currentPosition
+        logger.debug(TAG, "saveCurrentPlaybackSnapshot: song=$songId position=${positionMs}ms")
+
+        applicationScope.launch {
+            playbackStateStore.persistCurrentPlaybackSnapshot(
+                songId = songId,
+                positionMs = positionMs,
+            )
+            // 歌单续播:若当前队列来自某个歌单,记录"实际在播"的歌曲并清除来源标记
+            if (playlistResumeRepository.recordCurrentSource(songId)) {
+                logger.debug(TAG, "recordPlaylistResume: song=$songId")
+            }
         }
-        logger.debug(TAG, "saveCurrentPlaybackSnapshot: song=$songId position=${player.currentPosition}ms")
     }
 }

@@ -11,6 +11,7 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
@@ -23,19 +24,15 @@ import cn.com.dcsgo.mihx.app.player.SongPlaybackStrategy
 import cn.com.dcsgo.mihx.app.player.playWith
 import cn.com.dcsgo.mihx.app.playlist.PlaylistResumeViewModel
 import cn.com.dcsgo.mihx.core.model.Lyrics
-import cn.com.dcsgo.mihx.core.model.PlayMode
-import cn.com.dcsgo.mihx.core.model.Playlist
 import cn.com.dcsgo.mihx.core.model.Song
 import cn.com.dcsgo.mihx.core.model.SongInfo
 import cn.com.dcsgo.mihx.core.model.ThemeMode
 import cn.com.dcsgo.mihx.core.model.ThemeVariant
-import cn.com.dcsgo.mihx.domain.model.PlaylistResume
+import cn.com.dcsgo.mihx.domain.repository.PlaybackStatsSnapshot
 import cn.com.dcsgo.mihx.feature.home.HomeRoute
 import cn.com.dcsgo.mihx.feature.home.HomeRouteActions
 import cn.com.dcsgo.mihx.feature.home.HomeRouteState
 import cn.com.dcsgo.mihx.feature.home.PlayStatsRoute
-import cn.com.dcsgo.mihx.feature.home.PlayStatsRouteActions
-import cn.com.dcsgo.mihx.feature.home.PlayStatsRouteState
 import cn.com.dcsgo.mihx.feature.home.QuickSkipSongsRoute
 import cn.com.dcsgo.mihx.feature.home.QuickSkipSongsRouteActions
 import cn.com.dcsgo.mihx.feature.home.QuickSkipSongsRouteState
@@ -51,8 +48,6 @@ import cn.com.dcsgo.mihx.feature.playlist.ArtistDetailRoute
 import cn.com.dcsgo.mihx.feature.playlist.ArtistDetailRouteActions
 import cn.com.dcsgo.mihx.feature.playlist.ArtistDetailRouteState
 import cn.com.dcsgo.mihx.feature.playlist.PlaylistRoute
-import cn.com.dcsgo.mihx.feature.playlist.PlaylistRouteActions
-import cn.com.dcsgo.mihx.feature.playlist.PlaylistRouteState
 import cn.com.dcsgo.mihx.feature.settings.SettingsRoute
 import cn.com.dcsgo.mihx.feature.settings.SettingsRouteActions
 import cn.com.dcsgo.mihx.feature.settings.SettingsRouteState
@@ -60,14 +55,8 @@ import cn.com.dcsgo.mihx.feature.user.FileCheckRoute
 import cn.com.dcsgo.mihx.feature.user.FileCheckRouteActions
 import cn.com.dcsgo.mihx.feature.user.FileCheckRouteState
 import cn.com.dcsgo.mihx.feature.user.PlaybackStatsRoute
-import cn.com.dcsgo.mihx.feature.user.PlaybackStatsRouteActions
-import cn.com.dcsgo.mihx.feature.user.PlaybackStatsRouteState
 import cn.com.dcsgo.mihx.feature.user.SongTopListRoute
-import cn.com.dcsgo.mihx.feature.user.SongTopListRouteActions
-import cn.com.dcsgo.mihx.feature.user.SongTopListRouteState
 import cn.com.dcsgo.mihx.feature.user.UserRoute
-import cn.com.dcsgo.mihx.feature.user.UserRouteActions
-import cn.com.dcsgo.mihx.feature.user.UserRouteState
 import cn.com.dcsgo.mihx.feature.user.VersionComparisonRoute
 import cn.com.dcsgo.mihx.feature.user.VersionComparisonRouteActions
 import cn.com.dcsgo.mihx.feature.user.VersionComparisonRouteState
@@ -370,9 +359,12 @@ fun AppNavHost(
         composable(AppRoutes.USER) {
             val validationResult by playerViewModel.validationResult.collectAsStateWithLifecycle()
             val isValidating by playerViewModel.isValidating.collectAsStateWithLifecycle()
+            val snapshot by produceState(PlaybackStatsSnapshot.EMPTY) {
+                value = playerViewModel.loadPlaybackStatsSnapshot()
+            }
             UserRoute(
                 state = userRouteState(
-                    playerViewModel = playerViewModel,
+                    snapshot = snapshot,
                     validationResult = validationResult,
                     isValidating = isValidating,
                 ),
@@ -400,8 +392,11 @@ fun AppNavHost(
         }
 
         composable(AppRoutes.PLAYBACK_STATS) {
+            val snapshot by produceState(PlaybackStatsSnapshot.EMPTY) {
+                value = playerViewModel.loadPlaybackStatsSnapshot()
+            }
             PlaybackStatsRoute(
-                state = playbackStatsRouteState(uiState, playerViewModel),
+                state = playbackStatsRouteState(uiState, playerViewModel, snapshot),
                 actions = playbackStatsRouteActions(navController, playerViewModel, playlistResumeViewModel),
             )
         }
@@ -416,8 +411,11 @@ fun AppNavHost(
             ),
         ) { backStackEntry ->
             val period = backStackEntry.arguments?.getString(AppRoutes.SONG_TOP_PERIOD) ?: "week"
+            val snapshot by produceState(PlaybackStatsSnapshot.EMPTY) {
+                value = playerViewModel.loadPlaybackStatsSnapshot()
+            }
             SongTopListRoute(
-                state = songTopListRouteState(uiState, playerViewModel, period),
+                state = songTopListRouteState(uiState, playerViewModel, snapshot, period),
                 actions = songTopListRouteActions(navController, playerViewModel, playlistResumeViewModel),
             )
         }
@@ -498,24 +496,30 @@ fun AppNavHost(
         }
 
         composable(AppRoutes.RAW_PLAY_STATS) {
+            val rankedCounts by produceState(emptyList<Pair<Int, Int>>(), true) {
+                value = playerViewModel.loadRankedCounts(useRawCounts = true)
+            }
             PlayStatsRoute(
                 state = playStatsRouteState(
                     title = "播放次数统计",
                     uiState = uiState,
                     playerViewModel = playerViewModel,
-                    useRawCounts = true,
+                    rankedCounts = rankedCounts,
                 ),
                 actions = playStatsRouteActions(navController, playerViewModel, playlistResumeViewModel),
             )
         }
 
         composable(AppRoutes.EFFECTIVE_PLAY_STATS) {
+            val rankedCounts by produceState(emptyList<Pair<Int, Int>>(), false) {
+                value = playerViewModel.loadRankedCounts(useRawCounts = false)
+            }
             PlayStatsRoute(
                 state = playStatsRouteState(
                     title = "有效播放统计",
                     uiState = uiState,
                     playerViewModel = playerViewModel,
-                    useRawCounts = false,
+                    rankedCounts = rankedCounts,
                 ),
                 actions = playStatsRouteActions(navController, playerViewModel, playlistResumeViewModel),
             )
@@ -599,236 +603,4 @@ fun AppNavHost(
             )
         }
     }
-}
-
-private fun playlistRouteState(
-    uiState: PlayerUiState,
-    playerViewModel: PlayerViewModel,
-    selectedPlaylist: Playlist?,
-    resumeSong: Song? = null,
-): PlaylistRouteState = PlaylistRouteState(
-    playlists = uiState.playlists,
-    librarySongs = playerViewModel.getGroupedSongs(uiState.songs).flatten(),
-    libraryArtists = uiState.libraryArtists,
-    libraryAlbums = uiState.libraryAlbums,
-    selectedPlaylist = selectedPlaylist,
-    resumeSong = resumeSong,
-    selectedPlaylistSongs = selectedPlaylist?.let { playlist ->
-        playerViewModel.getGroupedSongs(
-            playerViewModel.getSongsByPlaylist(playlist),
-        ).flatten()
-    },
-    currentSong = uiState.currentSong,
-    isPlaying = uiState.isPlaying,
-    isImporting = uiState.isImporting,
-    importProgress = uiState.importProgress,
-    importTotal = uiState.importTotal,
-)
-
-private fun playlistRouteActions(
-    navController: NavHostController,
-    playerViewModel: PlayerViewModel,
-    permissionCoordinator: PermissionCoordinator,
-    deleteSongWithToast: (Int) -> Unit,
-    playlistResumeViewModel: PlaylistResumeViewModel,
-): PlaylistRouteActions = PlaylistRouteActions(
-    onPlaylistClick = { playlist -> navController.navigate(AppRoutes.playlistDetail(playlist.id)) },
-    // 点击歌单中的歌曲：将整个歌单按列表顺序入队，从点击的歌曲开始顺序播放（替换并清空原队列）
-    onSongClick = { song, contextSongs ->
-        playerViewModel.playWith(song, SongPlaybackStrategy.scope(contextSongs))
-    },
-    // 点击本地音乐中的歌曲：清空队列，只播放这一首
-    onLocalSongClick = { song ->
-        playerViewModel.playWith(song, SongPlaybackStrategy.single())
-        playlistResumeViewModel.switchSource(null, playerViewModel.uiState.value.currentSong?.id)
-    },
-    onArtistClick = { artistName -> navController.navigate(AppRoutes.artistDetail(artistName)) },
-    onAlbumClick = { albumName ->
-        navController.navigate(AppRoutes.albumDetail(albumName))
-    },
-    onBackClick = navController::navigateUp,
-    onCreatePlaylist = playerViewModel::createPlaylist,
-    onDeletePlaylist = { playlist ->
-        playerViewModel.deletePlaylist(playlist.id)
-        playlistResumeViewModel.clear(playlist.id)
-    },
-    onRenamePlaylist = { playlist, newName -> playerViewModel.renamePlaylist(playlist.id, newName) },
-    onAddSongToPlaylist = { song, playlist -> playerViewModel.addSongToPlaylist(playlist.id, song.id) },
-    onRemoveSongFromPlaylist = { song, playlist -> playerViewModel.removeSongFromPlaylist(playlist.id, song.id) },
-    onReorderPlaylist = playerViewModel::reorderPlaylist,
-    onAddFolderClick = permissionCoordinator::requestAudioFolderAccess,
-    onAddSongsToPlaylist = { songs, playlist ->
-        songs.count { song -> playerViewModel.addSongToPlaylist(playlist.id, song.id) }
-    },
-    onDeleteSong = { song -> deleteSongWithToast(song.id) },
-    onCreatePlaylistWithResult = playerViewModel::createPlaylist,
-    onShowVersionManagement = { navController.navigate(AppRoutes.VERSION_MANAGEMENT) },
-    onShowQuickSkipSongs = { navController.navigate(AppRoutes.QUICK_SKIP_SONGS) },
-    onPlayAllInPlaylist = { playlistSongs ->
-        playerViewModel.setPlayQueue(
-            playlistSongs,
-            startIndex = 0,
-            mode = PlayMode.SEQUENTIAL,
-        )
-    },
-    onPlayAllFromEndInPlaylist = { playlistSongs ->
-        playerViewModel.setPlayQueue(
-            playlistSongs,
-            startIndex = playlistSongs.size - 1,
-            mode = PlayMode.REVERSE,
-        )
-    },
-    onAddAllToQueueInPlaylist = playerViewModel::addToPlayQueue,
-    onAddAllToNextPlayInPlaylist = playerViewModel::addSongsToNextPlay,
-    onAddSongToQueue = playerViewModel::addToPlayQueue,
-    onAddSongToNextPlay = playerViewModel::addSongToNextPlay,
-)
-
-private fun userRouteState(
-    playerViewModel: PlayerViewModel,
-    validationResult: cn.com.dcsgo.mihx.domain.model.LocalFileValidationResult? = null,
-    isValidating: Boolean = false,
-): UserRouteState {
-    val snapshot = playerViewModel.playStatsRepository.playbackStatsSnapshot()
-    return UserRouteState(
-        todayDurationMs = snapshot.todayDurationMs,
-        weekTotalMs = snapshot.weekTotalMs,
-        validationResult = validationResult,
-        isValidating = isValidating,
-    )
-}
-
-private data class RankedStatsContent(
-    val songs: List<Song>,
-    val playCounts: Map<Int, Int>,
-)
-
-private fun playStatsRouteState(
-    title: String,
-    uiState: PlayerUiState,
-    playerViewModel: PlayerViewModel,
-    useRawCounts: Boolean,
-): PlayStatsRouteState {
-    val allSongs = playerViewModel.getGroupedSongs(uiState.songs).flatten()
-    val statsContent = rankedStatsContent(
-        songs = allSongs,
-        rankedCounts = playerViewModel.playStatsRepository.getRankedCounts(useRawCounts = useRawCounts),
-    )
-    return PlayStatsRouteState(
-        title = title,
-        songs = statsContent.songs,
-        playCounts = statsContent.playCounts,
-        currentSong = uiState.currentSong,
-    )
-}
-
-private fun playStatsRouteActions(
-    navController: NavHostController,
-    playerViewModel: PlayerViewModel,
-    playlistResumeViewModel: PlaylistResumeViewModel,
-): PlayStatsRouteActions = PlayStatsRouteActions(
-    onBack = navController::navigateUp,
-    // 点击统计页歌曲：队列只包含被点击的这一首，不返回上一页
-    onSongClick = { song ->
-        playerViewModel.playWith(song, SongPlaybackStrategy.single())
-        playlistResumeViewModel.switchSource(null, playerViewModel.uiState.value.currentSong?.id)
-        // 点击歌曲后停留在当前页，不返回上一页
-    },
-)
-
-private fun rankedStatsContent(
-    songs: List<Song>,
-    rankedCounts: List<Pair<Int, Int>>,
-): RankedStatsContent {
-    val rankedSongIds = rankedCounts.mapTo(mutableSetOf()) { it.first }
-    val songsById = songs.associateBy { it.id }
-    val rankedSongs = rankedCounts.mapNotNull { (songId, _) -> songsById[songId] }
-    val unplayedSongs = songs.filterNot { it.id in rankedSongIds }
-
-    return RankedStatsContent(
-        songs = rankedSongs + unplayedSongs,
-        playCounts = rankedCounts.toMap(),
-    )
-}
-
-private fun userRouteActions(
-    navController: NavHostController,
-): UserRouteActions = UserRouteActions(
-    onShowSettings = { navController.navigate(AppRoutes.SETTINGS) },
-    onShowPlaybackStats = { navController.navigate(AppRoutes.PLAYBACK_STATS) },
-    onOpenFileCheck = { navController.navigate(AppRoutes.FILE_CHECK) },
-)
-
-private fun playbackStatsRouteState(
-    uiState: PlayerUiState,
-    playerViewModel: PlayerViewModel,
-): PlaybackStatsRouteState {
-    val allSongs = playerViewModel.getGroupedSongs(uiState.songs).flatten()
-    return PlaybackStatsRouteState(
-        snapshot = playerViewModel.playStatsRepository.playbackStatsSnapshot(),
-        songs = allSongs,
-        currentSong = uiState.currentSong,
-        isPlaying = uiState.isPlaying,
-        dailyListeningGoalMinutes = uiState.dailyListeningGoalMinutes,
-    )
-}
-
-private fun playbackStatsRouteActions(
-    navController: NavHostController,
-    playerViewModel: PlayerViewModel,
-    playlistResumeViewModel: PlaylistResumeViewModel,
-): PlaybackStatsRouteActions = PlaybackStatsRouteActions(
-    onBack = navController::navigateUp,
-    // 点击统计总览预览歌曲：队列只包含被点击的这一首，不返回上一页
-    onSongClick = { song ->
-        playerViewModel.playWith(song, SongPlaybackStrategy.single())
-        playlistResumeViewModel.switchSource(null, playerViewModel.uiState.value.currentSong?.id)
-        // 点击歌曲后停留在当前页，不返回上一页
-    },
-    onOpenPlayCounts = { navController.navigate(AppRoutes.RAW_PLAY_STATS) },
-    onOpenEffectivePlayCounts = { navController.navigate(AppRoutes.EFFECTIVE_PLAY_STATS) },
-    onOpenWeeklyTop = { navController.navigate(AppRoutes.songTopList("week")) },
-    onOpenMonthlyTop = { navController.navigate(AppRoutes.songTopList("month")) },
-)
-
-private fun songTopListRouteState(
-    uiState: PlayerUiState,
-    playerViewModel: PlayerViewModel,
-    initialPeriod: String = "week",
-): SongTopListRouteState {
-    val allSongs = playerViewModel.getGroupedSongs(uiState.songs).flatten()
-    val snapshot = playerViewModel.playStatsRepository.playbackStatsSnapshot()
-    return SongTopListRouteState(
-        weeklyTop = snapshot.weeklyTop,
-        monthlyTop = snapshot.monthlyTop,
-        songs = allSongs,
-        currentSong = uiState.currentSong,
-        initialPeriod = initialPeriod,
-    )
-}
-
-private fun songTopListRouteActions(
-    navController: NavHostController,
-    playerViewModel: PlayerViewModel,
-    playlistResumeViewModel: PlaylistResumeViewModel,
-): SongTopListRouteActions = SongTopListRouteActions(
-    onBack = navController::navigateUp,
-    // 点击TOP榜歌曲：把当前时间段（周/月）的整个榜单入队，从被点击歌曲开始播放，不返回上一页
-    onSongClick = { song, topSongs ->
-        playerViewModel.playWith(song, SongPlaybackStrategy.scope(topSongs))
-        playlistResumeViewModel.switchSource(null, playerViewModel.uiState.value.currentSong?.id)
-        // 点击歌曲后停留在当前页，不返回上一页
-    },
-)
-
-/** 解析续播记录对应的可播放歌曲：不在歌单里/文件不可播(uri==null)时返回 null */
-fun resolveResumeSong(
-    resume: PlaylistResume?,
-    allSongs: List<Song>,
-    playlistSongIds: Set<Int>,
-    isPlayable: (Song) -> Boolean = { it.uri != null },
-): Song? = resume?.let { r ->
-    allSongs.firstOrNull { it.id == r.songId }
-        ?.takeIf(isPlayable)
-        ?.takeIf { it.id in playlistSongIds }
 }

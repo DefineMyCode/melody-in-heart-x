@@ -19,11 +19,18 @@ class PerformanceTraceTest {
         val logger = RecordingLogger()
         AppLog.install(logger)
 
-        PerformanceTrace.log(
-            operation = "queue_sync",
-            elapsedMs = 12,
-            metadata = mapOf("songCount" to 70, "uri" to "content://media/song/1"),
-        )
+        // 性能痕迹默认受 isEnabled 控制（release 下关闭），此处显式开启以验证日志内容。
+        val previousEnabled = PerformanceTrace.isEnabled
+        PerformanceTrace.isEnabled = true
+        try {
+            PerformanceTrace.log(
+                operation = "queue_sync",
+                elapsedMs = 12,
+                metadata = mapOf("songCount" to 70, "uri" to "content://media/song/1"),
+            )
+        } finally {
+            PerformanceTrace.isEnabled = previousEnabled
+        }
 
         assertEquals("PerformanceTrace", logger.tag)
         assertTrue(logger.message.contains("operation=queue_sync"))
@@ -31,6 +38,23 @@ class PerformanceTraceTest {
         assertTrue(logger.message.contains("songCount=70"))
         assertTrue(logger.message.contains("uri=content://<redacted>"))
         AppLog.install(AndroidAppLogger(debugLoggingEnabled = false))
+    }
+
+    @Test
+    fun `allow registers operation for release tracing`() {
+        val previousEnabled = PerformanceTrace.isEnabled
+        val logger = RecordingLogger()
+        AppLog.install(logger)
+        PerformanceTrace.isEnabled = false
+        try {
+            PerformanceTrace.allow("critical_path")
+            PerformanceTrace.log(operation = "critical_path", elapsedMs = 5)
+            assertTrue(logger.message.contains("operation=critical_path"))
+        } finally {
+            PerformanceTrace.disallow("critical_path")
+            PerformanceTrace.isEnabled = previousEnabled
+            AppLog.install(AndroidAppLogger(debugLoggingEnabled = false))
+        }
     }
 
     private class RecordingLogger : AppLogger {

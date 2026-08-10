@@ -18,6 +18,7 @@ import cn.com.dcsgo.mihx.data.local.entity.SongGroupOverrideEntity
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Test
+import kotlinx.coroutines.runBlocking
 
 class PlayStatsRepositoryRoomTest {
 
@@ -73,18 +74,20 @@ class PlayStatsRepositoryRoomTest {
         }
         val repository = PlayStatsRepository(melodyDao = dao)
 
-        assertEquals(
-            listOf(1 to 7, 3 to 7, 2 to 1),
-            repository.getRankedCounts(useRawCounts = false, descending = true),
-        )
-        assertEquals(
-            listOf(2 to 1, 1 to 7, 3 to 7),
-            repository.getRankedCounts(useRawCounts = false, descending = false),
-        )
-        assertEquals(
-            listOf(1 to 9, 2 to 9, 3 to 1),
-            repository.getRankedCounts(useRawCounts = true, descending = true),
-        )
+        runBlocking {
+            assertEquals(
+                listOf(1 to 7, 3 to 7, 2 to 1),
+                repository.getRankedCounts(useRawCounts = false, descending = true),
+            )
+            assertEquals(
+                listOf(2 to 1, 1 to 7, 3 to 7),
+                repository.getRankedCounts(useRawCounts = false, descending = false),
+            )
+            assertEquals(
+                listOf(1 to 9, 2 to 9, 3 to 1),
+                repository.getRankedCounts(useRawCounts = true, descending = true),
+            )
+        }
     }
 
     private class FakeMelodyDao : MelodyDao {
@@ -105,6 +108,8 @@ class PlayStatsRepositoryRoomTest {
         override suspend fun playlistSongRefs(): List<PlaylistSongCrossRef> = playlistSongRefs
         override suspend fun songGroupOverrides(): List<SongGroupOverrideEntity> = songGroupOverrides
         override suspend fun playStats(): List<PlayStatsEntity> = playStats.sortedBy { it.songId }
+        override suspend fun playStatsIn(songIds: List<Int>): List<PlayStatsEntity> =
+            playStats.filter { it.songId in songIds }
         override suspend fun insertPlaybackEvent(
             event: cn.com.dcsgo.mihx.data.local.entity.PlaybackEventEntity,
         ) = Unit

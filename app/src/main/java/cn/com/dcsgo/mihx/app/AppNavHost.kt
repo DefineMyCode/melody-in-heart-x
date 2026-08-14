@@ -10,9 +10,12 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -47,7 +50,9 @@ import cn.com.dcsgo.mihx.feature.playlist.AlbumDetailRouteState
 import cn.com.dcsgo.mihx.feature.playlist.ArtistDetailRoute
 import cn.com.dcsgo.mihx.feature.playlist.ArtistDetailRouteActions
 import cn.com.dcsgo.mihx.feature.playlist.ArtistDetailRouteState
+import cn.com.dcsgo.mihx.feature.playlist.DeleteSongConfirmDialog
 import cn.com.dcsgo.mihx.feature.playlist.PlaylistRoute
+import cn.com.dcsgo.mihx.feature.playlist.SingleSongAddToPlaylistDialog
 import cn.com.dcsgo.mihx.feature.settings.SettingsRoute
 import cn.com.dcsgo.mihx.feature.settings.SettingsRouteActions
 import cn.com.dcsgo.mihx.feature.settings.SettingsRouteState
@@ -65,6 +70,7 @@ import cn.com.dcsgo.mihx.feature.user.VersionManagementRouteActions
 import cn.com.dcsgo.mihx.feature.user.VersionManagementRouteState
 import cn.com.dcsgo.mihx.navigation.AppDestinations
 import cn.com.dcsgo.mihx.navigation.AppRoutes
+import cn.com.dcsgo.mihx.ui.components.SongInfoDialog
 
 /** 路由 → 其所属底部 Tab 的序号（嵌套路由如设置/统计也映射到所属 Tab，同一 Tab 内序号相同则无转场） */
 private fun tabOrdinal(route: String?): Int = AppDestinations.fromRoute(route).ordinal
@@ -125,6 +131,17 @@ fun AppNavHost(
         composable(AppRoutes.HOME) {
             // 播放位置窄流：只在当前目的地（播放页）订阅，不驱动整壳重组
             val positionMs by playerViewModel.positionMs.collectAsStateWithLifecycle()
+            // 播放页"更多"功能对话框状态
+            var songForInfo by remember { mutableStateOf<Song?>(null) }
+            var songInfo by remember { mutableStateOf<SongInfo?>(null) }
+            var songForAddToPlaylist by remember { mutableStateOf<Song?>(null) }
+            var songForDelete by remember { mutableStateOf<Song?>(null) }
+            LaunchedEffect(songForInfo) {
+                val uri = songForInfo?.uri
+                if (uri != null) {
+                    songInfo = songForInfo?.let { loadSongInfo(it) }
+                }
+            }
             HomeRoute(
                 state = HomeRouteState(
                     currentSong = uiState.currentSong,
@@ -187,9 +204,53 @@ fun AppNavHost(
                         playerViewModel.cancelSleepTimer()
                         showToast("已取消定时关闭")
                     },
+                    onShowSongInfo = { song ->
+                        songForInfo = song
+                        songInfo = null
+                    },
+                    onAddToPlaylist = { song -> songForAddToPlaylist = song },
+                    onDeleteSong = { song -> songForDelete = song },
                 ),
                 showToast = showToast,
             )
+            // 歌曲详细信息对话框（更多菜单 → 查看歌曲详细信息）
+            val infoSong = songForInfo
+            val currentSongInfo = songInfo
+            if (infoSong != null && currentSongInfo != null) {
+                SongInfoDialog(
+                    song = infoSong,
+                    songInfo = currentSongInfo,
+                    onDismiss = {
+                        songForInfo = null
+                        songInfo = null
+                    },
+                )
+            }
+            // 添加到歌单对话框（更多菜单 → 添加到歌单）
+            songForAddToPlaylist?.let { song ->
+                SingleSongAddToPlaylistDialog(
+                    song = song,
+                    playlists = uiState.playlists,
+                    onDismiss = { songForAddToPlaylist = null },
+                    onSelectPlaylist = { playlist ->
+                        playerViewModel.addSongToPlaylist(playlist.id, song.id)
+                        showToast("已添加到歌单「${playlist.name}」")
+                        songForAddToPlaylist = null
+                    },
+                    onCreatePlaylist = playerViewModel::createPlaylist,
+                )
+            }
+            // 删除确认对话框（更多菜单 → 删除，与本地音乐交互一致）
+            songForDelete?.let { song ->
+                DeleteSongConfirmDialog(
+                    song = song,
+                    onDismiss = { songForDelete = null },
+                    onConfirm = {
+                        songForDelete = null
+                        deleteSongWithToast(song.id)
+                    },
+                )
+            }
         }
 
         composable(AppRoutes.LYRICS) {

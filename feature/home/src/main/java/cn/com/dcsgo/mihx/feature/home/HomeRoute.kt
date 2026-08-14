@@ -39,6 +39,9 @@ data class HomeRouteActions(
     val onRelatedPlayClick: (Song) -> Unit = {},
     val onSleepTimerStart: (Int, Boolean) -> Unit = { _, _ -> },
     val onSleepTimerCancel: () -> Unit = {},
+    val onShowSongInfo: (Song) -> Unit = {},
+    val onAddToPlaylist: (Song) -> Unit = {},
+    val onDeleteSong: (Song) -> Unit = {},
 )
 
 @Composable
@@ -61,6 +64,9 @@ fun HomeRoute(
         sleepTimerPausePending = state.sleepTimerPausePending,
         onSleepTimerStart = actions.onSleepTimerStart,
         onSleepTimerCancel = actions.onSleepTimerCancel,
+        onShowSongInfo = actions.onShowSongInfo,
+        onAddToPlaylist = actions.onAddToPlaylist,
+        onDeleteSong = actions.onDeleteSong,
         onPlayPauseClick = actions.onPlayPauseClick,
         onPreviousClick = actions.onPreviousClick,
         onNextClick = actions.onNextClick,

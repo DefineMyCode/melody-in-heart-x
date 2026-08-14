@@ -21,8 +21,13 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -50,6 +55,7 @@ import coil.compose.AsyncImage
 import cn.com.dcsgo.mihx.core.common.time.formatDurationTime
 import cn.com.dcsgo.mihx.core.model.PlayMode
 import cn.com.dcsgo.mihx.core.model.Song
+import cn.com.dcsgo.mihx.ui.components.SongItemAction
 import cn.com.dcsgo.mihx.ui.icons.iconRes
 
 /**
@@ -89,6 +95,9 @@ fun HomeScreen(
     sleepTimerPausePending: Boolean = false,
     onSleepTimerStart: (Int, Boolean) -> Unit = { _, _ -> },
     onSleepTimerCancel: () -> Unit = {},
+    onShowSongInfo: (Song) -> Unit = {},
+    onAddToPlaylist: (Song) -> Unit = {},
+    onDeleteSong: (Song) -> Unit = {},
 ) {
     if (currentSong == null) {
         // 空状态：没有任何音乐，仍显示 FAB
@@ -151,6 +160,9 @@ fun HomeScreen(
                         sleepTimerPausePending = sleepTimerPausePending,
                         onSleepTimerStart = onSleepTimerStart,
                         onSleepTimerCancel = onSleepTimerCancel,
+                        onShowSongInfo = onShowSongInfo,
+                        onAddToPlaylist = onAddToPlaylist,
+                        onDeleteSong = onDeleteSong,
                     )
                 }
             }
@@ -358,6 +370,9 @@ private fun SongInfoSection(
     sleepTimerPausePending: Boolean,
     onSleepTimerStart: (Int, Boolean) -> Unit,
     onSleepTimerCancel: () -> Unit,
+    onShowSongInfo: (Song) -> Unit,
+    onAddToPlaylist: (Song) -> Unit,
+    onDeleteSong: (Song) -> Unit,
 ) {
     // 专辑名直接来自 Song 模型（导入时已记录）
     val albumName = currentSong.album.takeIf { it.isNotBlank() }
@@ -365,6 +380,7 @@ private fun SongInfoSection(
     val artists = currentSong.parsedArtists
     // 是否弹出多歌手选择
     var showArtistPicker by remember { mutableStateOf(false) }
+    var showMoreMenu by remember { mutableStateOf(false) }
     // 是否弹出定时关闭设置弹窗
     var showSleepTimerDialog by remember { mutableStateOf(false) }
 
@@ -603,6 +619,78 @@ private fun SongInfoSection(
                 pausePending = sleepTimerPausePending,
                 onClick = { showSleepTimerDialog = true }
             )
+
+            // 更多功能按钮：菜单项与本地音乐「更多」菜单保持一致（共享 SongItemAction）
+            val moreActions = listOf(
+                SongItemAction(
+                    label = "歌曲信息",
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.Info,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp),
+                        )
+                    },
+                    onClick = { onShowSongInfo(currentSong) },
+                ),
+                SongItemAction(
+                    label = "添加到歌单",
+                    leadingIcon = {
+                        Icon(
+                            painter = painterResource(id = R.drawable.list_alt_add_24),
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp),
+                        )
+                    },
+                    onClick = { onAddToPlaylist(currentSong) },
+                ),
+                SongItemAction(
+                    label = "删除",
+                    destructive = true,
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.Delete,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp),
+                            tint = MaterialTheme.colorScheme.error,
+                        )
+                    },
+                    onClick = { onDeleteSong(currentSong) },
+                ),
+            )
+            Box {
+                IconButton(onClick = { showMoreMenu = true }) {
+                    Icon(
+                        imageVector = Icons.Default.MoreVert,
+                        contentDescription = "更多功能",
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                DropdownMenu(
+                    expanded = showMoreMenu,
+                    onDismissRequest = { showMoreMenu = false }
+                ) {
+                    moreActions.forEach { action ->
+                        DropdownMenuItem(
+                            text = {
+                                Text(
+                                    text = action.label,
+                                    color = if (action.destructive) {
+                                        MaterialTheme.colorScheme.error
+                                    } else {
+                                        Color.Unspecified
+                                    },
+                                )
+                            },
+                            onClick = {
+                                showMoreMenu = false
+                                action.onClick()
+                            },
+                            leadingIcon = action.leadingIcon,
+                        )
+                    }
+                }
+            }
         }
     }
 

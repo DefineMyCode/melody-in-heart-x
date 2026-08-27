@@ -15,23 +15,32 @@ class UniformRandomPlanner(
         if (songs.isEmpty() || neededSize <= 0) return emptyList()
         if (!uniformRandomEnabled) return shuffle(songs).take(neededSize)
 
-        val targetPoolSize = minOf(
-            songs.size,
-            maxOf(MIN_UNIFORM_POOL_SIZE, neededSize * POOL_SIZE_MULTIPLIER),
-        )
-        val candidatePool = songs
+        // 动态分层（按播放次数值分组，次数最小的组为最高优先层）：
+        // 阈值随曲库分布自适应——任何分布下最低层都非空（除非全体次数相同，此时等价纯随机），
+        // 避免固定阈值（如"0 次优先"）在曲库全部播放过后分层失效。
+        val groups = songs
             .groupBy { playCounts[it.id] ?: 0 }
             .toSortedMap()
             .values
-            .fold(emptyList<Song>()) { pool, group ->
-                if (pool.size >= targetPoolSize) {
-                    pool
-                } else {
-                    pool + group
-                }
-            }
+            .toList()
 
-        return shuffle(candidatePool).take(neededSize)
+        // 层0 = 最小次数组；层1 = 次小次数组；其余合并为兜底层。组数不足时自然退化。
+        val tiered = listOf(
+            groups.getOrElse(0) { emptyList() },
+            groups.getOrElse(1) { emptyList() },
+            groups.drop(2).flatten(),
+        )
+
+        // 名额逐层抢占：层内随机，层间按优先级，低层有货就不碰高层。
+        val result = mutableListOf<Song>()
+        var remaining = neededSize
+        for (tier in tiered) {
+            if (remaining <= 0) break
+            val taken = shuffle(tier).take(minOf(remaining, tier.size))
+            result += taken
+            remaining -= taken.size
+        }
+        return result
     }
 
     fun orderSongs(
@@ -69,10 +78,5 @@ class UniformRandomPlanner(
             }
         }
         return ordered.map { it.id }
-    }
-
-    companion object {
-        const val MIN_UNIFORM_POOL_SIZE = 60
-        const val POOL_SIZE_MULTIPLIER = 3
     }
 }

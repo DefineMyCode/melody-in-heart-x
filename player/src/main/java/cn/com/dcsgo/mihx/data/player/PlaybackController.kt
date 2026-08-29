@@ -22,6 +22,15 @@ import java.util.concurrent.ExecutionException
 private const val TAG = "PlaybackController"
 
 /**
+ * 单项队列循环回绕识别阈值：AUTO discontinuity 且新位置不高于此值，视为回到开头。
+ * 旧位置优先按「时长 - 容差」精确判定接近结尾；时长未知时回退 [LOOP_REWIND_MIN_POSITION_MS]
+ * 保守阈值（远大于 seek 缓冲抖动，也排除缓冲重连：buffering 恢复从原位置继续，不产生回 0 的 AUTO 间断）。
+ */
+private const val LOOP_REWIND_END_TOLERANCE_MS = 5_000L
+private const val LOOP_REWIND_NEW_POSITION_MAX_MS = 2_000L
+private const val LOOP_REWIND_MIN_POSITION_MS = 30_000L
+
+/**
  * 未连接期间允许缓存的待执行动作上限。
  *
  * MediaController 连接失败或长时间未就绪时，UI 每次点击都会追加一个 pending action。
@@ -51,6 +60,30 @@ class PlaybackController(
         override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
             if (!playWhenReady && reason == Player.PLAY_WHEN_READY_CHANGE_REASON_END_OF_MEDIA_ITEM) {
                 callbacks.onMediaItemEnded(null, false)
+            }
+        }
+
+        override fun onPositionDiscontinuity(
+            oldPosition: Player.PositionInfo,
+            newPosition: Player.PositionInfo,
+            reason: Int,
+        ) {
+            // REPEAT_MODE_ALL 下单项队列（秒切/歌单/专辑/歌手只剩一首）自然播完回绕到同一项时，
+            // 窗口索引不变（0→0），Media3 不触发 onMediaItemTransition，导致结算逻辑（有效播放+1、
+            // 移出秒切列表）永远不执行，且计时器跨循环累计。该场景唯一可见信号是 AUTO discontinuity
+            // 的位置回跳，识别后主动按一次播完结算，之后以新会话继续循环计时。
+            val current = controller ?: return
+            if (isSingleItemLoopRewind(
+                    oldIndex = oldPosition.mediaItemIndex,
+                    newIndex = newPosition.mediaItemIndex,
+                    reason = reason,
+                    mediaItemCount = current.mediaItemCount,
+                    oldPositionMs = oldPosition.positionMs,
+                    newPositionMs = newPosition.positionMs,
+                    durationMs = current.duration,
+                )
+            ) {
+                callbacks.onMediaItemEnded(current.currentMediaItem?.mediaId?.toIntOrNull(), false)
             }
         }
 
@@ -381,4 +414,38 @@ internal fun isMediaItemWrap(
         previousIndex != C.INDEX_UNSET &&
         previousIndex >= mediaItemCount - 1 &&
         previousIndex > newIndex
+}
+
+/**
+ * 判断某次 position 间断是否为「单项队列的循环回绕」：
+ * REPEAT_MODE_ALL 下队列只有一首歌时，自然播完从尾部回到同一项开头，
+ * 索引不变（0→0），不会触发 onMediaItemTransition，只能靠 AUTO discontinuity
+ * 且位置明显回跳（接近结尾 → 接近 0）来识别。
+ *
+ * @param oldIndex/newIndex 间断前后的媒体项索引
+ * @param reason [androidx.media3.common.Player.DISCONTINUITY_REASON_AUTO_TRANSITION]
+ * @param mediaItemCount 当前队列项数（必须恰为 1）
+ * @param oldPositionMs/newPositionMs 间断前后的播放位置
+ * @param durationMs 当前媒体项时长；>0 时按其精确判定"接近结尾"，未知（-1）时回退保守阈值
+ */
+internal fun isSingleItemLoopRewind(
+    oldIndex: Int,
+    newIndex: Int,
+    reason: Int,
+    mediaItemCount: Int,
+    oldPositionMs: Long,
+    newPositionMs: Long,
+    durationMs: Long,
+): Boolean {
+    val nearEndOfTrack = if (durationMs > 0L) {
+        oldPositionMs >= durationMs - LOOP_REWIND_END_TOLERANCE_MS
+    } else {
+        oldPositionMs >= LOOP_REWIND_MIN_POSITION_MS
+    }
+    return reason == Player.DISCONTINUITY_REASON_AUTO_TRANSITION &&
+        mediaItemCount == 1 &&
+        oldIndex == 0 &&
+        newIndex == 0 &&
+        newPositionMs <= LOOP_REWIND_NEW_POSITION_MAX_MS &&
+        nearEndOfTrack
 }

@@ -15,7 +15,7 @@ class PlayerControllerStateFacadeTest {
     private var state = PlayerUiState()
     private var trackedSongId: Int? = null
     private var durationUpdate: Pair<Int, Long>? = null
-    private var playbackStart: Pair<Int, Long>? = null
+    private var playbackStart: Triple<Int, Long, Long>? = null
     private var pausedTracking = false
     private var resumedTracking = false
     private var saved = false
@@ -30,7 +30,7 @@ class PlayerControllerStateFacadeTest {
         trackedSongId = { trackedSongId },
         setTrackedSongId = { trackedSongId = it },
         updateDuration = { songId, durationMs -> durationUpdate = songId to durationMs },
-        startPlayback = { songId, durationMs -> playbackStart = songId to durationMs },
+        startPlayback = { songId, durationMs, initialPlayedMs -> playbackStart = Triple(songId, durationMs, initialPlayedMs) },
         pausePlaybackTracking = { pausedTracking = true },
         resumePlaybackTracking = { resumedTracking = true },
         savePlaybackState = { saved = true },
@@ -70,7 +70,7 @@ class PlayerControllerStateFacadeTest {
         assertEquals(listOf(1, 2), state.sameNameSongs.map { it.id })
         assertEquals(2, trackedSongId)
         assertEquals(2 to 100L, durationUpdate)
-        assertEquals(2 to 100L, playbackStart)
+        assertEquals(Triple(2, 100L, 42L), playbackStart)
         assertEquals(1, syncedState?.playQueue?.currentIndex)
     }
 

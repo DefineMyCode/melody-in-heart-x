@@ -18,7 +18,12 @@ interface PlaybackSessionController {
 }
 
 interface PlaybackDurationTracker {
-    fun startPlayback(songId: Int, durationMs: Long)
+    /**
+     * 开始播放新歌曲。
+     * @param initialPlayedMs 本次会话开始前已播放的时长（杀进程恢复播放时传入恢复点进度，
+     *                        使被杀前已播部分计入统计；正常从头播放为 0）
+     */
+    fun startPlayback(songId: Int, durationMs: Long, initialPlayedMs: Long = 0L)
     fun pausePlayback()
     fun resumePlayback()
     fun startSeeking()

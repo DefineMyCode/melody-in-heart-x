@@ -102,7 +102,7 @@ class PlayerPlaybackSessionGraphTest {
         var startedSongId: Int? = null
         var paused = false
 
-        override fun startPlayback(songId: Int, durationMs: Long) {
+        override fun startPlayback(songId: Int, durationMs: Long, initialPlayedMs: Long) {
             startedSongId = songId
         }
 

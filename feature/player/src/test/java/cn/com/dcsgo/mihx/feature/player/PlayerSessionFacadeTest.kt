@@ -148,7 +148,7 @@ class PlayerSessionFacadeTest {
         var paused = false
         var resumed = false
 
-        override fun startPlayback(songId: Int, durationMs: Long) = Unit
+        override fun startPlayback(songId: Int, durationMs: Long, initialPlayedMs: Long) = Unit
 
         override fun pausePlayback() {
             paused = true

@@ -145,7 +145,7 @@ class PlaybackSessionCoordinatorTest {
         var startedSeeking = false
         var endedSeeking = false
 
-        override fun startPlayback(songId: Int, durationMs: Long) {
+        override fun startPlayback(songId: Int, durationMs: Long, initialPlayedMs: Long) {
             startedSongId = songId
             startedDuration = durationMs
         }

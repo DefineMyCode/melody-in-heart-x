@@ -11,7 +11,7 @@ class PlayerControllerStateFacade(
     private val trackedSongId: () -> Int?,
     private val setTrackedSongId: (Int?) -> Unit,
     private val updateDuration: (Int, Long) -> Unit,
-    private val startPlayback: (Int, Long) -> Unit,
+    private val startPlayback: (Int, Long, Long) -> Unit,
     private val pausePlaybackTracking: () -> Unit,
     private val resumePlaybackTracking: () -> Unit,
     private val savePlaybackState: () -> Unit,
@@ -29,7 +29,10 @@ class PlayerControllerStateFacade(
             updateDuration(update.songId, update.durationMs)
         }
         result.playbackStart?.let { start ->
-            startPlayback(start.songId, start.durationMs)
+            // 杀进程恢复播放时 snapshot 携带恢复点进度：作为已播时长基数计入统计，
+            // 避免"被杀前已播 + 恢复后听完"却因计时器归零不满足 90% 阈值。
+            // 正常切歌时新歌位置为 0，不受影响。
+            startPlayback(start.songId, start.durationMs, snapshot.currentPositionMs)
         }
         setTrackedSongId(result.trackedSongId)
         updateState { it.applyControllerPlaybackState(result.state) }

@@ -30,8 +30,8 @@ android {
         applicationId = "cn.com.dcsgo.mihx"
         minSdk = 33
         targetSdk = 36
-        versionCode = 25
-        versionName = "3.4.1"
+        versionCode = 26
+        versionName = "3.4.2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 

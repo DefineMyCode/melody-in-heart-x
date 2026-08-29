@@ -64,15 +64,18 @@ class PlayDurationTracker(
      *
      * @param songId 歌曲ID
      * @param durationMs 歌曲总时长（毫秒）
+     * @param initialPlayedMs 会话开始前已播放的时长（毫秒）：杀进程恢复播放时传入恢复点进度，
+     *                        被杀前已播的部分计入累计，避免"听完整首却因计时器归零不计数"；
+     *                        正常从头播放为 0
      */
-    override fun startPlayback(songId: Int, durationMs: Long) {
+    override fun startPlayback(songId: Int, durationMs: Long, initialPlayedMs: Long) {
         // 停止当前播放的歌曲计时
         stopPlayback()
 
-        // 初始化新歌曲的计时，从0开始
+        // 初始化新歌曲的计时：从 0 或恢复点开始
         currentSongId = songId
         currentSongDurationMs = durationMs
-        currentPlayDurationMs.set(0L)
+        currentPlayDurationMs.set(initialPlayedMs.coerceIn(0L, durationMs))
         lastUpdateTimeMs.set(System.currentTimeMillis())
         isPlaying.set(true)
 

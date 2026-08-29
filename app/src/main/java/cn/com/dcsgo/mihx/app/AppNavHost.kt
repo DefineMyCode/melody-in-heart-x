@@ -594,9 +594,9 @@ fun AppNavHost(
                 ),
                 actions = QuickSkipSongsRouteActions(
                     onBack = navController::navigateUp,
-                    // 点击秒切歌曲：清空队列，只播放这一首，停留在秒切歌曲页面
+                    // 点击秒切歌曲：整个秒切列表作为队列，从被点歌曲开始顺序播放
                     onSongClick = { song ->
-                        playerViewModel.playWith(song, SongPlaybackStrategy.single())
+                        playerViewModel.playWith(song, SongPlaybackStrategy.scope(playerViewModel.getQuickSkipSongs()))
                         playlistResumeViewModel.switchSource(null, uiState.currentSong?.id)
                     },
                     onDeleteSong = { song -> deleteSongWithToast(song.id) },

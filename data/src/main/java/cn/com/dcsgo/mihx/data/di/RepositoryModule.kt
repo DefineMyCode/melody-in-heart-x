@@ -57,6 +57,13 @@ object RepositoryModule {
 
     @Provides
     @Singleton
+    fun provideSongEmotionRepository(
+        melodyDao: MelodyDao,
+    ): cn.com.dcsgo.mihx.domain.repository.SongEmotionRepository =
+        cn.com.dcsgo.mihx.data.repository.SongEmotionsRepository(melodyDao)
+
+    @Provides
+    @Singleton
     fun providePlayerSettingsRepository(
         @PlayerSettingsStore settingsStore: DataStore<Preferences>,
         @LegacyMusicPlayerPreferences legacyPrefs: android.content.SharedPreferences,
@@ -70,8 +77,10 @@ object RepositoryModule {
 
     @Provides
     @Singleton
-    fun provideMediaMetadataRepository(@ApplicationContext context: Context): MediaMetadataRepository =
-        MediaMetadataRepository(context)
+    fun provideMediaMetadataRepository(
+        @ApplicationContext context: Context,
+        emotionRepository: cn.com.dcsgo.mihx.domain.repository.SongEmotionRepository,
+    ): MediaMetadataRepository = MediaMetadataRepository(context, emotionRepository)
 
     @Provides
     fun provideSongRepository(repository: SongRepositoryAdapter): SongRepository = repository

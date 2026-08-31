@@ -127,6 +127,11 @@ fun SongInfoDialog(
                 InfoRow(label = "采样率", value = songInfo.sampleRate)
                 InfoRow(label = "文件大小", value = songInfo.fileSize)
                 InfoRow(label = "文件路径", value = songInfo.filePath, isPath = true)
+
+                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+                SongEmotionSection(
+                    emotion = songInfo.emotion,
+                )
             }
         },
         confirmButton = {

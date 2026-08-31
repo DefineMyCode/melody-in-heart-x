@@ -22,6 +22,12 @@ fun UserScreen(
     validationResult: LocalFileValidationResult? = null,
     isValidating: Boolean = false,
     onOpenFileCheck: () -> Unit = {},
+    emotionAnalyzedCount: Int = 0,
+    emotionTotalCount: Int = 0,
+    emotionScanning: Boolean = false,
+    emotionPaused: Boolean = false,
+    onEmotionScanNow: () -> Unit = {},
+    onOpenEmotionAnalysis: () -> Unit = {},
 ) {
     Box(
         modifier = Modifier
@@ -44,6 +50,17 @@ fun UserScreen(
                     todayDurationMs = todayDurationMs,
                     weekTotalMs = weekTotalMs,
                     onOpenPlaybackStats = onOpenPlaybackStats
+                )
+            }
+
+            item(key = "emotion_scan", contentType = "header") {
+                EmotionScanSection(
+                    analyzedCount = emotionAnalyzedCount,
+                    totalCount = emotionTotalCount,
+                    scanning = emotionScanning,
+                    paused = emotionPaused,
+                    onScanNow = onEmotionScanNow,
+                    onOpenDetail = onOpenEmotionAnalysis,
                 )
             }
 

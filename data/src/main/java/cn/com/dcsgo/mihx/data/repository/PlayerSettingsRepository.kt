@@ -67,6 +67,20 @@ class PlayerSettingsRepository(
         preferences[PlayerSettingsKeys.DAILY_LISTENING_GOAL_MINUTES] ?: 120
     }
 
+    override val emotionScanPaused: Flow<Boolean> = settingsStore.data.map { preferences ->
+        preferences[PlayerSettingsKeys.EMOTION_SCAN_PAUSED] == true
+    }
+
+    override fun currentEmotionScanPaused(): Boolean = runBlocking(Dispatchers.IO) {
+        emotionScanPaused.first()
+    }
+
+    override suspend fun setEmotionScanPaused(paused: Boolean) {
+        settingsStore.edit { preferences ->
+            preferences[PlayerSettingsKeys.EMOTION_SCAN_PAUSED] = paused
+        }
+    }
+
     override fun currentGlobalUniformRandomEnabled(): Boolean {
         return runBlocking(Dispatchers.IO) {
             globalUniformRandomEnabled.first()

@@ -38,6 +38,8 @@ import androidx.compose.ui.unit.dp
 import cn.com.dcsgo.mihx.core.model.Playlist
 import cn.com.dcsgo.mihx.core.model.Song
 import cn.com.dcsgo.mihx.core.model.SongInfo
+import cn.com.dcsgo.mihx.ui.components.BatchAddToPlaylistDialog
+import cn.com.dcsgo.mihx.ui.components.SingleSongAddToPlaylistDialog
 import cn.com.dcsgo.mihx.ui.components.SongInfoDialog
 import cn.com.dcsgo.mihx.ui.components.locateHighlightFlash
 import cn.com.dcsgo.mihx.ui.components.rememberLocateHighlightState

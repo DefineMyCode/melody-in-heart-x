@@ -3,6 +3,7 @@ package cn.com.dcsgo.mihx.feature.playlist
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import cn.com.dcsgo.mihx.core.model.AlbumEntry
+import cn.com.dcsgo.mihx.core.model.EmotionSongUiRow
 import cn.com.dcsgo.mihx.core.model.ArtistEntry
 import cn.com.dcsgo.mihx.core.model.Playlist
 import cn.com.dcsgo.mihx.core.model.Song
@@ -14,6 +15,8 @@ data class PlaylistRouteState(
     val librarySongs: List<Song>,
     val libraryArtists: List<ArtistEntry>,
     val libraryAlbums: List<AlbumEntry>,
+    /** 曲库「情绪」Tab: 已分析歌曲行 */
+    val emotionRows: List<EmotionSongUiRow> = emptyList(),
     val selectedPlaylist: Playlist?,
     val selectedPlaylistSongs: List<Song>?,
     val currentSong: Song?,
@@ -68,6 +71,7 @@ fun PlaylistRoute(
         songs = visibleSongs,
         libraryArtists = state.libraryArtists,
         libraryAlbums = state.libraryAlbums,
+        emotionRows = state.emotionRows,
         selectedPlaylist = state.selectedPlaylist,
         currentSong = state.currentSong,
         isPlaying = state.isPlaying,

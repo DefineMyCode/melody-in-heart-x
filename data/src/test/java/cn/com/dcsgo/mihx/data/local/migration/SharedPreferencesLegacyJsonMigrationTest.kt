@@ -5,6 +5,8 @@ import cn.com.dcsgo.mihx.data.local.dao.AlbumArtistNameRow
 import cn.com.dcsgo.mihx.data.local.dao.AlbumCatalogRow
 import cn.com.dcsgo.mihx.data.local.dao.ArtistCatalogRow
 import cn.com.dcsgo.mihx.data.local.dao.MelodyDao
+import cn.com.dcsgo.mihx.data.local.dao.SongEmotionVersion
+import cn.com.dcsgo.mihx.data.local.entity.SongEmotionEntity
 import cn.com.dcsgo.mihx.data.local.entity.AlbumEntity
 import cn.com.dcsgo.mihx.data.local.entity.ArtistEntity
 import cn.com.dcsgo.mihx.data.local.entity.MigrationStateEntity
@@ -174,6 +176,8 @@ class SharedPreferencesLegacyJsonMigrationTest {
         var migrationStateWriteCount = 0
 
         override suspend fun songs(): List<SongEntity> = songs
+
+        override suspend fun songCount(): Int = songs.size
         override suspend fun playlists(): List<PlaylistEntity> = playlists
         override suspend fun playlistSongRefs(): List<PlaylistSongCrossRef> = playlistSongRefs
         override suspend fun songGroupOverrides(): List<SongGroupOverrideEntity> = songGroupOverrides
@@ -338,6 +342,42 @@ class SharedPreferencesLegacyJsonMigrationTest {
             migrationStates[state.name] = state
             migrationStateWriteCount++
         }
+
+        val songEmotions = mutableMapOf<Int, SongEmotionEntity>()
+
+        override suspend fun songEmotion(songId: Int): SongEmotionEntity? =
+            songEmotions[songId]
+
+        override suspend fun allSongEmotions(): List<SongEmotionEntity> =
+            songEmotions.values.toList()
+
+        override suspend fun songEmotionVersions(): List<SongEmotionVersion> =
+            songEmotions.values.map { SongEmotionVersion(it.songId, it.modelVersion) }
+
+        override suspend fun emotionAnalyzedTimeline(): List<Long> =
+            songEmotions.values.filter { it.windowsAnalyzed > 0 }
+                .sortedBy { it.analyzedAt }.map { it.analyzedAt }
+
+        override suspend fun emotionCorrectionCount(): Int =
+            songEmotions.values.count { it.userValence != null }
+
+
+        override suspend fun upsertSongEmotion(emotion: SongEmotionEntity) {
+            songEmotions[emotion.songId] = emotion
+        }
+
+        override suspend fun deleteSongEmotion(songId: Int) {
+            songEmotions.remove(songId)
+        }
+
+        override suspend fun updateSongEmotionCorrection(songId: Int, v: Float, a: Float, tags: String) {
+            songEmotions[songId]?.let {
+                songEmotions[songId] = it.copy(userValence = v, userArousal = a, userTags = tags)
+            }
+        }
+
+        override suspend fun correctedSongEmotions(): List<SongEmotionEntity> =
+            songEmotions.values.filter { it.userValence != null && it.embeddingB64 != null }
     }
 
     private companion object {

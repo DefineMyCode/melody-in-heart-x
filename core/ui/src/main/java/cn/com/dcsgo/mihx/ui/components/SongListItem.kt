@@ -65,6 +65,7 @@ data class SongItemAction(
  * @param onClick           整行点击回调
  * @param leading           行首插槽（多选指示 / 序号等）
  * @param cover             封面插槽，默认用 [DefaultSongCover]；参数为 isCurrentPlaying
+ * @param subline           歌手下方的附加子行插槽（如情绪词条）
  * @param trailing          行尾插槽（更多菜单 / 删除 / 移除等）
  */
 @Composable
@@ -77,6 +78,7 @@ fun SongListItem(
     onClick: () -> Unit = {},
     leading: (@Composable () -> Unit)? = null,
     cover: (@Composable (isCurrentPlaying: Boolean) -> Unit)? = null,
+    subline: (@Composable () -> Unit)? = null,
     trailing: (@Composable () -> Unit)? = null,
 ) {
     Row(
@@ -110,6 +112,7 @@ fun SongListItem(
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
+            subline?.invoke()
         }
         // 播放中 EQ 动画指示器（内部强制 16dp，各变体视觉一致）
         if (isCurrentPlaying) {

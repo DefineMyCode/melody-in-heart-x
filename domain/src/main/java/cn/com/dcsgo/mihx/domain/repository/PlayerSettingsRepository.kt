@@ -35,4 +35,9 @@ interface PlayerSettingsRepository {
     fun currentSleepTimerPlayLastSong(): Boolean
     fun setSleepTimerEndAtMsBlocking(endAtMs: Long)
     fun setSleepTimerPlayLastSongBlocking(enabled: Boolean)
+
+    /** 情绪批扫手动暂停（详情页可暂停/继续） */
+    val emotionScanPaused: Flow<Boolean>
+    fun currentEmotionScanPaused(): Boolean
+    suspend fun setEmotionScanPaused(paused: Boolean)
 }

@@ -37,4 +37,7 @@ object PlayerSettingsKeys {
 
     // 每日听歌时长目标（分钟，0 = 未设置）
     val DAILY_LISTENING_GOAL_MINUTES = intPreferencesKey("daily_listening_goal_minutes")
+
+    // 情绪批扫手动暂停（详情页可暂停/继续）
+    val EMOTION_SCAN_PAUSED = booleanPreferencesKey("emotion_scan_paused")
 }

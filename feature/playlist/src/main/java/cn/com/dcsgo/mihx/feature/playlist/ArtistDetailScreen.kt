@@ -47,6 +47,8 @@ import cn.com.dcsgo.mihx.core.model.LibraryCatalog
 import cn.com.dcsgo.mihx.core.model.Playlist
 import cn.com.dcsgo.mihx.core.model.Song
 import cn.com.dcsgo.mihx.core.model.SongInfo
+import cn.com.dcsgo.mihx.ui.components.BatchAddToPlaylistDialog
+import cn.com.dcsgo.mihx.ui.components.SingleSongAddToPlaylistDialog
 import cn.com.dcsgo.mihx.ui.components.SongInfoDialog
 
 /**

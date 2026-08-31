@@ -5,6 +5,7 @@ import coil.ImageLoader
 import coil.ImageLoaderFactory
 import coil.disk.DiskCache
 import coil.memory.MemoryCache
+import cn.com.dcsgo.mihx.app.emotion.EmotionScanScheduler
 import cn.com.dcsgo.mihx.core.common.AndroidAppLogger
 import cn.com.dcsgo.mihx.core.common.AppLog
 import dagger.hilt.android.HiltAndroidApp
@@ -15,6 +16,7 @@ class MelodyApplication : Application(), ImageLoaderFactory {
         super.onCreate()
         AppLog.install(AndroidAppLogger(BuildConfig.DEBUG))
         installUncaughtExceptionHandler()
+        EmotionScanScheduler.schedule(this)
     }
 
     /**

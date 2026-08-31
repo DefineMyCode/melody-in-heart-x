@@ -8,6 +8,9 @@ import cn.com.dcsgo.mihx.domain.model.LocalFileValidationResult
 
 interface SongRepository {
     suspend fun loadSongs(): List<Song>
+
+    /** 曲库歌曲数(轻量, 不触发全库恢复) */
+    suspend fun countSongs(): Int
     fun observeSongsSnapshot(): List<Song>
     fun setSongsChangedListener(listener: (() -> Unit)?)
 

@@ -52,13 +52,17 @@ import cn.com.dcsgo.mihx.feature.playlist.ArtistDetailRouteActions
 import cn.com.dcsgo.mihx.feature.playlist.ArtistDetailRouteState
 import cn.com.dcsgo.mihx.feature.playlist.DeleteSongConfirmDialog
 import cn.com.dcsgo.mihx.feature.playlist.PlaylistRoute
-import cn.com.dcsgo.mihx.feature.playlist.SingleSongAddToPlaylistDialog
+import cn.com.dcsgo.mihx.ui.components.SingleSongAddToPlaylistDialog
 import cn.com.dcsgo.mihx.feature.settings.SettingsRoute
 import cn.com.dcsgo.mihx.feature.settings.SettingsRouteActions
 import cn.com.dcsgo.mihx.feature.settings.SettingsRouteState
 import cn.com.dcsgo.mihx.feature.user.FileCheckRoute
 import cn.com.dcsgo.mihx.feature.user.FileCheckRouteActions
 import cn.com.dcsgo.mihx.feature.user.FileCheckRouteState
+import cn.com.dcsgo.mihx.feature.user.EmotionAnalysisActions
+import cn.com.dcsgo.mihx.feature.user.EmotionAnalysisRoute
+import cn.com.dcsgo.mihx.feature.user.EmotionAnalysisState
+import cn.com.dcsgo.mihx.core.model.EmotionSongUiRow
 import cn.com.dcsgo.mihx.feature.user.PlaybackStatsRoute
 import cn.com.dcsgo.mihx.feature.user.SongTopListRoute
 import cn.com.dcsgo.mihx.feature.user.UserRoute
@@ -93,6 +97,7 @@ fun AppNavHost(
     showToast: (String) -> Unit,
     deleteSongWithToast: (Int) -> Unit,
     playlistResumeViewModel: PlaylistResumeViewModel,
+    emotionViewModel: cn.com.dcsgo.mihx.app.emotion.EmotionViewModel,
 ) {
     NavHost(
         navController = navController,
@@ -280,8 +285,16 @@ fun AppNavHost(
                 deleteSongWithToast,
                 playlistResumeViewModel,
             )
+            val emotionRowsUi by emotionViewModel.rows.collectAsStateWithLifecycle()
             PlaylistRoute(
-                state = playlistRouteState(uiState, playerViewModel, selectedPlaylist = null),
+                state = playlistRouteState(
+                    uiState,
+                    playerViewModel,
+                    selectedPlaylist = null,
+                    emotionRows = emotionRowsUi.map {
+                        EmotionSongUiRow(song = it.song, tags = it.tags, corrected = it.corrected)
+                    },
+                ),
                 // 列表页点歌(全曲库范围):非歌单来源,先结算旧歌单
                 actions = actions.copy(
                     onSongClick = { song, contextSongs ->
@@ -314,8 +327,17 @@ fun AppNavHost(
                 deleteSongWithToast,
                 playlistResumeViewModel,
             )
+            val emotionRowsUi by emotionViewModel.rows.collectAsStateWithLifecycle()
             PlaylistRoute(
-                state = playlistRouteState(uiState, playerViewModel, selectedPlaylist, resumeSong),
+                state = playlistRouteState(
+                    uiState,
+                    playerViewModel,
+                    selectedPlaylist,
+                    resumeSong,
+                    emotionRows = emotionRowsUi.map {
+                        EmotionSongUiRow(song = it.song, tags = it.tags, corrected = it.corrected)
+                    },
+                ),
                 actions = actions.copy(
                     // 歌单内点歌:仅更新来源标记,不立即写记录;记录在退出应用/切换播放源时结算
                     onSongClick = { song, contextSongs ->
@@ -420,6 +442,8 @@ fun AppNavHost(
         composable(AppRoutes.USER) {
             val validationResult by playerViewModel.validationResult.collectAsStateWithLifecycle()
             val isValidating by playerViewModel.isValidating.collectAsStateWithLifecycle()
+            val emotionStatus by emotionViewModel.status.collectAsStateWithLifecycle()
+            LaunchedEffect(Unit) { emotionViewModel.refresh() }
             val snapshot by produceState(PlaybackStatsSnapshot.EMPTY) {
                 value = playerViewModel.loadPlaybackStatsSnapshot()
             }
@@ -428,8 +452,15 @@ fun AppNavHost(
                     snapshot = snapshot,
                     validationResult = validationResult,
                     isValidating = isValidating,
+                    emotionStatus = emotionStatus,
                 ),
-                actions = userRouteActions(navController),
+                actions = userRouteActions(
+                    navController = navController,
+                    onEmotionScanNow = {
+                        emotionViewModel.startManualScan()
+                        showToast("已开始扫描，可离开本页，后台继续")
+                    },
+                ),
             )
         }
 
@@ -603,6 +634,39 @@ fun AppNavHost(
                     onSyncToPlaylist = {
                         playerViewModel.syncQuickSkipSongsToPlaylist()
                         showToast("已同步到秒切歌曲歌单")
+                    },
+                ),
+            )
+        }
+
+        composable(AppRoutes.EMOTION_ANALYSIS) {
+            val emotionStatus by emotionViewModel.status.collectAsStateWithLifecycle()
+            LaunchedEffect(Unit) {
+                emotionViewModel.refresh()
+            }
+            EmotionAnalysisRoute(
+                state = EmotionAnalysisState(
+                    analyzedCount = emotionStatus.analyzedCount,
+                    totalCount = emotionStatus.totalCount,
+                    scanning = emotionStatus.scanning,
+                    paused = emotionStatus.paused,
+                    currentSongTitle = emotionStatus.currentSongTitle,
+                    doneInBatch = emotionStatus.doneInBatch,
+                    pendingCount = emotionStatus.pendingCount,
+                    lastSongMs = emotionStatus.lastSongMs,
+                    avgSongMs = emotionStatus.avgSongMs,
+                    correctedCount = emotionStatus.correctedCount,
+                ),
+                actions = EmotionAnalysisActions(
+                    onBack = navController::navigateUp,
+                    onTogglePause = {
+                        if (emotionStatus.scanning) {
+                            emotionViewModel.pauseScan()
+                            showToast("将在当前歌曲分析完后暂停")
+                        } else {
+                            emotionViewModel.resumeScan()
+                            showToast("已继续分析")
+                        }
                     },
                 ),
             )

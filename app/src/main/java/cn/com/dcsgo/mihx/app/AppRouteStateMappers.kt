@@ -1,5 +1,6 @@
 package cn.com.dcsgo.mihx.app
 
+import cn.com.dcsgo.mihx.core.model.EmotionSongUiRow
 import cn.com.dcsgo.mihx.core.model.Playlist
 import cn.com.dcsgo.mihx.core.model.Song
 import cn.com.dcsgo.mihx.domain.model.LocalFileValidationResult
@@ -26,8 +27,11 @@ internal fun playlistRouteState(
     playerViewModel: PlayerViewModel,
     selectedPlaylist: Playlist?,
     resumeSong: Song? = null,
+    /** 曲库「情绪」Tab 数据 */
+    emotionRows: List<EmotionSongUiRow> = emptyList(),
 ): PlaylistRouteState = PlaylistRouteState(
     playlists = uiState.playlists,
+    emotionRows = emotionRows,
     librarySongs = playerViewModel.getGroupedSongs(uiState.songs).flatten(),
     libraryArtists = uiState.libraryArtists,
     libraryAlbums = uiState.libraryAlbums,
@@ -49,11 +53,17 @@ internal fun userRouteState(
     snapshot: PlaybackStatsSnapshot,
     validationResult: LocalFileValidationResult? = null,
     isValidating: Boolean = false,
+    emotionStatus: cn.com.dcsgo.mihx.app.emotion.EmotionScanUiStatus =
+        cn.com.dcsgo.mihx.app.emotion.EmotionScanUiStatus(),
 ): UserRouteState = UserRouteState(
     todayDurationMs = snapshot.todayDurationMs,
     weekTotalMs = snapshot.weekTotalMs,
     validationResult = validationResult,
     isValidating = isValidating,
+    emotionAnalyzedCount = emotionStatus.analyzedCount,
+    emotionTotalCount = emotionStatus.totalCount,
+    emotionScanning = emotionStatus.scanning,
+    emotionPaused = emotionStatus.paused,
 )
 
 internal fun playStatsRouteState(

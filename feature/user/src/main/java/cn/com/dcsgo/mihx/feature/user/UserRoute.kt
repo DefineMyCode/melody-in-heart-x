@@ -14,12 +14,20 @@ data class UserRouteState(
     val validationResult: LocalFileValidationResult? = null,
     /** 校验是否正在后台运行 */
     val isValidating: Boolean = false,
+    /** 情绪分析: 已分析数/总数/是否扫描中 */
+    val emotionAnalyzedCount: Int = 0,
+    val emotionTotalCount: Int = 0,
+    val emotionScanning: Boolean = false,
+    /** 用户手动暂停批扫 */
+    val emotionPaused: Boolean = false,
 )
 
 data class UserRouteActions(
     val onShowSettings: () -> Unit,
     val onShowPlaybackStats: () -> Unit,
     val onOpenFileCheck: () -> Unit,
+    val onEmotionScanNow: () -> Unit = {},
+    val onOpenEmotionAnalysis: () -> Unit = {},
 )
 
 @Composable
@@ -35,5 +43,11 @@ fun UserRoute(
         validationResult = state.validationResult,
         isValidating = state.isValidating,
         onOpenFileCheck = actions.onOpenFileCheck,
+        emotionAnalyzedCount = state.emotionAnalyzedCount,
+        emotionTotalCount = state.emotionTotalCount,
+        emotionScanning = state.emotionScanning,
+        emotionPaused = state.emotionPaused,
+        onEmotionScanNow = actions.onEmotionScanNow,
+        onOpenEmotionAnalysis = actions.onOpenEmotionAnalysis,
     )
 }

@@ -56,10 +56,13 @@ import androidx.activity.compose.BackHandler
 import kotlinx.coroutines.launch
 import cn.com.dcsgo.mihx.core.common.time.formatHoursMinutes
 import cn.com.dcsgo.mihx.core.model.AlbumEntry
+import cn.com.dcsgo.mihx.core.model.EmotionSongUiRow
 import cn.com.dcsgo.mihx.core.model.ArtistEntry
 import cn.com.dcsgo.mihx.core.model.Playlist
 import cn.com.dcsgo.mihx.core.model.Song
 import cn.com.dcsgo.mihx.core.model.SongInfo
+import cn.com.dcsgo.mihx.ui.components.BatchAddToPlaylistDialog
+import cn.com.dcsgo.mihx.ui.components.SingleSongAddToPlaylistDialog
 import cn.com.dcsgo.mihx.ui.components.SongInfoDialog
 import cn.com.dcsgo.mihx.ui.components.locateHighlightFlash
 import cn.com.dcsgo.mihx.ui.components.rememberLocateHighlightState
@@ -72,6 +75,8 @@ fun PlaylistScreen(
     songs: List<Song>,
     libraryArtists: List<ArtistEntry> = emptyList(),
     libraryAlbums: List<AlbumEntry> = emptyList(),
+    /** 曲库「情绪」Tab 数据(已分析歌 + 词条) */
+    emotionRows: List<EmotionSongUiRow> = emptyList(),
     selectedPlaylist: Playlist?,
     currentSong: Song? = null,
     isPlaying: Boolean = false,
@@ -354,6 +359,17 @@ fun PlaylistScreen(
                             hideSingleSongAlbums = librarySearchQuery.isBlank() && hideSingleSongAlbums,
                             onHideSingleSongAlbumsChange = { hideSingleSongAlbums = it },
                             onAlbumClick = onAlbumClick,
+                        )
+                        LibraryTab.EMOTIONS -> EmotionLibraryView(
+                            rows = emotionRows,
+                            playlists = playlists,
+                            currentSong = currentSong,
+                            isPlaying = isPlaying,
+                            searchQuery = librarySearchQuery,
+                            onSongClick = onLocalSongClick,
+                            onAddSongsToPlaylist = onAddSongsToPlaylist,
+                            onCreatePlaylist = onCreatePlaylistWithResult,
+                            loadSongInfo = loadSongInfo,
                         )
                     }
                 }

@@ -97,6 +97,11 @@ class MusicRepository(
         return getSongs()
     }
 
+    /** 轻量计数(不触发全库恢复), 供进度类 UI 使用. */
+    suspend fun countSongs(): Int = withContext(Dispatchers.IO) {
+        melodyDao?.songCount() ?: 0
+    }
+
     private suspend fun restoreFromRoom(dao: MelodyDao) {
         val restoredLibrary = RoomMusicLibraryDataSource(dao).restore()
 

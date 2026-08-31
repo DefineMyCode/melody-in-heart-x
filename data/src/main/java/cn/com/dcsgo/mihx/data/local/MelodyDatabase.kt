@@ -13,6 +13,7 @@ import cn.com.dcsgo.mihx.data.local.entity.PlaylistSongCrossRef
 import cn.com.dcsgo.mihx.data.local.entity.QuickSkipSongEntity
 import cn.com.dcsgo.mihx.data.local.entity.QuickSkipShortPlayEntity
 import cn.com.dcsgo.mihx.data.local.entity.SongArtistCrossRef
+import cn.com.dcsgo.mihx.data.local.entity.SongEmotionEntity
 import cn.com.dcsgo.mihx.data.local.entity.SongEntity
 import cn.com.dcsgo.mihx.data.local.entity.SongGroupOverrideEntity
 
@@ -30,8 +31,9 @@ import cn.com.dcsgo.mihx.data.local.entity.SongGroupOverrideEntity
         ArtistEntity::class,
         AlbumEntity::class,
         SongArtistCrossRef::class,
+        SongEmotionEntity::class,
     ],
-    version = 8,
+    version = 10,
     exportSchema = true,
 )
 abstract class MelodyDatabase : RoomDatabase() {

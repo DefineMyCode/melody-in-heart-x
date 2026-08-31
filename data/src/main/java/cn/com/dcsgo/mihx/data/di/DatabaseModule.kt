@@ -29,7 +29,10 @@ object DatabaseModule {
             "melody.db",
         )
             .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
-            .addMigrations(MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8)
+            .addMigrations(
+                MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6,
+                MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10
+            )
             .build()
     }
 
@@ -134,6 +137,35 @@ object DatabaseModule {
                 "CREATE INDEX IF NOT EXISTS `index_playback_events_startedAtMs_isEffectivePlay_songId` " +
                     "ON `playback_events` (`startedAtMs`, `isEffectivePlay`, `songId`)"
             )
+        }
+    }
+
+    private val MIGRATION_8_9 = object : Migration(8, 9) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            // 歌曲情绪分析结果表（整曲逐窗 V/A 曲线）
+            db.execSQL(
+                "CREATE TABLE IF NOT EXISTS `song_emotions` (" +
+                    "`songId` INTEGER NOT NULL, " +
+                    "`valence` REAL NOT NULL, " +
+                    "`arousal` REAL NOT NULL, " +
+                    "`curveJson` TEXT NOT NULL, " +
+                    "`peakSec` REAL NOT NULL, " +
+                    "`windowsAnalyzed` INTEGER NOT NULL, " +
+                    "`durationSec` REAL NOT NULL, " +
+                    "`modelVersion` TEXT NOT NULL, " +
+                    "`analyzedAt` INTEGER NOT NULL, " +
+                    "PRIMARY KEY(`songId`))"
+            )
+        }
+    }
+
+    private val MIGRATION_9_10 = object : Migration(9, 10) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            // 个性化闭环: embedding(端侧kNN泛化) + 用户校准坐标/词条
+            db.execSQL("ALTER TABLE `song_emotions` ADD COLUMN `embeddingB64` TEXT")
+            db.execSQL("ALTER TABLE `song_emotions` ADD COLUMN `userValence` REAL")
+            db.execSQL("ALTER TABLE `song_emotions` ADD COLUMN `userArousal` REAL")
+            db.execSQL("ALTER TABLE `song_emotions` ADD COLUMN `userTags` TEXT")
         }
     }
 }

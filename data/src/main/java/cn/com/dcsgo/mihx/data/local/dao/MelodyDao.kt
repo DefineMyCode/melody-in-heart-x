@@ -17,6 +17,7 @@ import cn.com.dcsgo.mihx.data.local.entity.PlaylistSongCrossRef
 import cn.com.dcsgo.mihx.data.local.entity.QuickSkipSongEntity
 import cn.com.dcsgo.mihx.data.local.entity.QuickSkipShortPlayEntity
 import cn.com.dcsgo.mihx.data.local.entity.SongArtistCrossRef
+import cn.com.dcsgo.mihx.data.local.entity.SongEmotionEntity
 import cn.com.dcsgo.mihx.data.local.entity.SongEntity
 import cn.com.dcsgo.mihx.data.local.entity.SongGroupOverrideEntity
 
@@ -59,6 +60,9 @@ data class SongPlayCountRow(
 interface MelodyDao {
     @Query("SELECT * FROM songs ORDER BY id")
     suspend fun songs(): List<SongEntity>
+
+    @Query("SELECT COUNT(*) FROM songs")
+    suspend fun songCount(): Int
 
     @Query("SELECT * FROM playlists ORDER BY id")
     suspend fun playlists(): List<PlaylistEntity>
@@ -344,4 +348,49 @@ interface MelodyDao {
 
     @Upsert
     suspend fun upsertMigrationState(state: MigrationStateEntity)
+
+    // ---------- song_emotions ----------
+
+    @Query("SELECT * FROM song_emotions WHERE songId = :songId")
+    suspend fun songEmotion(songId: Int): SongEmotionEntity?
+
+    @Query("SELECT * FROM song_emotions")
+    suspend fun allSongEmotions(): List<SongEmotionEntity>
+
+    @Query("SELECT songId, modelVersion FROM song_emotions")
+    suspend fun songEmotionVersions(): List<SongEmotionVersion>
+
+    /** 已用户校准的歌曲数 */
+    @Query("SELECT COUNT(*) FROM song_emotions WHERE userValence IS NOT NULL")
+    suspend fun emotionCorrectionCount(): Int
+
+    /** 逐首完成时间(ms), 仅成功记录, 升序——相邻差值即单首耗时近似 */
+    @Query(
+        "SELECT analyzedAt FROM song_emotions WHERE windowsAnalyzed > 0 ORDER BY analyzedAt ASC"
+    )
+    suspend fun emotionAnalyzedTimeline(): List<Long>
+
+    @Upsert
+    suspend fun upsertSongEmotion(emotion: SongEmotionEntity)
+
+    @Query(
+        "UPDATE song_emotions SET userValence = :v, userArousal = :a, userTags = :tags " +
+            "WHERE songId = :songId"
+    )
+    suspend fun updateSongEmotionCorrection(songId: Int, v: Float, a: Float, tags: String)
+
+    @Query(
+        "SELECT * FROM song_emotions " +
+            "WHERE userValence IS NOT NULL AND embeddingB64 IS NOT NULL"
+    )
+    suspend fun correctedSongEmotions(): List<SongEmotionEntity>
+
+    @Query("DELETE FROM song_emotions WHERE songId = :songId")
+    suspend fun deleteSongEmotion(songId: Int)
 }
+
+/** analyzedVersions() 的轻量投影. */
+data class SongEmotionVersion(
+    val songId: Int,
+    val modelVersion: String,
+)

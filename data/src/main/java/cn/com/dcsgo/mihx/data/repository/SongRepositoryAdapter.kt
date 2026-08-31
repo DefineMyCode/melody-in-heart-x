@@ -13,6 +13,8 @@ class SongRepositoryAdapter @Inject constructor(
 ) : SongRepository {
     override suspend fun loadSongs(): List<Song> = musicRepository.loadSongs()
 
+    override suspend fun countSongs(): Int = musicRepository.countSongs()
+
     override fun observeSongsSnapshot(): List<Song> = musicRepository.observeSongsSnapshot()
 
     override fun setSongsChangedListener(listener: (() -> Unit)?) {

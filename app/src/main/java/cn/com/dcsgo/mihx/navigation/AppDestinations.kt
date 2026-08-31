@@ -22,7 +22,8 @@ enum class AppDestinations(
                     route == AppRoutes.FILE_CHECK ||
                     route == AppRoutes.RAW_PLAY_STATS ||
                     route == AppRoutes.EFFECTIVE_PLAY_STATS ||
-                    route == AppRoutes.SONG_TOP_LIST_FULL -> USER
+                    route == AppRoutes.SONG_TOP_LIST_FULL ||
+                    route == AppRoutes.EMOTION_ANALYSIS -> USER
                 // 曲库页及其子页面（歌单详情、歌手/专辑详情、多版本管理、秒切歌曲）
                 route == PLAYLIST.route ||
                     route?.startsWith("${PLAYLIST.route}/") == true ||

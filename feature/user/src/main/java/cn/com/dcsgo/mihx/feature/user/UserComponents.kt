@@ -19,12 +19,14 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Psychology
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -166,6 +168,98 @@ fun PlayStatsSection(
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.onSurfaceVariant
             )
+        }
+    }
+}
+
+// ─────────────────────────────────────────────────────────────────
+// 情绪分析区域
+// ─────────────────────────────────────────────────────────────────
+
+/**
+ * 歌曲情绪分析入口卡（照搬文件校验卡视觉）。
+ *
+ * 周期任务在充电+空闲时自动批扫；本卡提供「立即扫描」手动触发。
+ *
+ * @param analyzedCount 已分析歌曲数
+ * @param totalCount    曲库歌曲总数
+ * @param scanning      是否有扫描任务进行中
+ * @param onScanNow     点击「立即扫描」
+ */
+@Composable
+fun EmotionScanSection(
+    analyzedCount: Int,
+    totalCount: Int,
+    scanning: Boolean,
+    paused: Boolean = false,
+    onScanNow: () -> Unit,
+    onOpenDetail: () -> Unit = {},
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onOpenDetail),
+        shape = RoundedCornerShape(14.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerLowest
+        ),
+        border = BorderStroke(0.5.dp, MaterialTheme.colorScheme.outlineVariant),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    ) {
+        Row(
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(44.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.primaryContainer),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Psychology,
+                    contentDescription = "情绪分析",
+                    modifier = Modifier.size(22.dp),
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            }
+            Spacer(modifier = Modifier.width(12.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = "歌曲情绪分析",
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Text(
+                    text = when {
+                        scanning -> "正在分析 $analyzedCount/$totalCount，点卡片看进度…"
+                        paused -> "已暂停，待分析 ${totalCount - analyzedCount} 首，点卡片继续"
+                        totalCount == 0 -> "先导入歌曲，再分析整曲情绪曲线"
+                        analyzedCount >= totalCount -> "全部 $totalCount 首已分析完成"
+                        else -> "已分析 $analyzedCount/$totalCount · 充电时自动补扫"
+                    },
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+            Spacer(modifier = Modifier.width(8.dp))
+            TextButton(
+                onClick = onScanNow,
+                enabled = !scanning && totalCount > 0,
+            ) {
+                Text(
+                    text = when {
+                        scanning -> "扫描中"
+                        paused -> "继续"
+                        else -> "立即扫描"
+                    },
+                    style = MaterialTheme.typography.labelLarge,
+                )
+            }
         }
     }
 }

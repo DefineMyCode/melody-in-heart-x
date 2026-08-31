@@ -3,16 +3,20 @@ package cn.com.dcsgo.mihx.data.repository
 import android.content.Context
 import cn.com.dcsgo.mihx.core.model.Lyrics
 import cn.com.dcsgo.mihx.core.model.Song
+import cn.com.dcsgo.mihx.core.model.SongEmotion
 import cn.com.dcsgo.mihx.core.model.SongInfo
 import cn.com.dcsgo.mihx.data.util.AudioMetadataExtractor
 import cn.com.dcsgo.mihx.data.util.LyricsExtractor
+import cn.com.dcsgo.mihx.domain.emotion.EmotionPersonalizer
 import cn.com.dcsgo.mihx.domain.repository.LyricsRepository
+import cn.com.dcsgo.mihx.domain.repository.SongEmotionRepository
 import cn.com.dcsgo.mihx.domain.repository.SongMetadataRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 class MediaMetadataRepository(
     private val context: Context,
+    private val emotionRepository: SongEmotionRepository,
 ) : LyricsRepository,
     SongMetadataRepository {
 
@@ -21,6 +25,18 @@ class MediaMetadataRepository(
     }
 
     override suspend fun songInfo(song: Song): SongInfo? = withContext(Dispatchers.IO) {
-        song.uri?.let { uri -> AudioMetadataExtractor.extractFullMetadata(context, uri) }
+        song.uri?.let { uri ->
+            AudioMetadataExtractor.extractFullMetadata(context, uri)
+                ?.copy(emotion = personalizedEmotion(song.id))
+        }
+    }
+
+    /** 情绪数据 + 端侧 kNN 个性化(未校准歌用已校准锚点预测). */
+    private fun personalizedEmotion(songId: Int): SongEmotion? {
+        val e = emotionRepository.get(songId) ?: return null
+        if (e.userCorrected) return e
+        return runCatching {
+            EmotionPersonalizer.predict(e, emotionRepository.correctedWithEmbedding())
+        }.getOrNull() ?: e
     }
 }

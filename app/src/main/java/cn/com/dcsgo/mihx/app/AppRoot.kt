@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
@@ -38,6 +39,8 @@ import cn.com.dcsgo.mihx.feature.player.PlayerViewModel
 import cn.com.dcsgo.mihx.navigation.AppDestinations
 import cn.com.dcsgo.mihx.navigation.AppRoutes
 import cn.com.dcsgo.mihx.ui.components.AutoDismissToasts
+import cn.com.dcsgo.mihx.ui.components.EmotionCorrectionController
+import cn.com.dcsgo.mihx.ui.components.LocalEmotionCorrectionController
 import cn.com.dcsgo.mihx.ui.components.ToastHost
 import cn.com.dcsgo.mihx.ui.components.rememberToastHost
 import cn.com.dcsgo.mihx.ui.theme.MusicplayerTheme
@@ -48,6 +51,7 @@ fun AppRoot(
     settingsViewModel: SettingsViewModel = viewModel(),
     mediaMetadataViewModel: AppMediaMetadataViewModel = viewModel(),
     playlistResumeViewModel: PlaylistResumeViewModel = viewModel(),
+    emotionViewModel: cn.com.dcsgo.mihx.app.emotion.EmotionViewModel = viewModel(),
 ) {
     val toastHost = rememberToastHost()
     val navController = rememberNavController()
@@ -112,6 +116,24 @@ fun AppRoot(
 
     MusicplayerTheme(darkTheme = isDarkTheme, variant = themeVariant) {
         SyncSystemBarsAppearance(isDarkTheme)
+        // 全站统一的"情绪校准"入口: 任何渲染歌曲详情对话框的页面
+        // (曲库/歌手/专辑/本地音乐/播放页/详情页)自动获得"不像？标记"能力
+        CompositionLocalProvider(
+            LocalEmotionCorrectionController provides remember(emotionViewModel) {
+                object : EmotionCorrectionController {
+                    override fun save(songId: Int, words: Set<String>): Boolean {
+                        val ok = mediaMetadataViewModel.saveEmotionCorrection(songId, words)
+                        if (ok) {
+                            emotionViewModel.refresh()
+                            toastHost.showToast("已记录你的标记，相似歌曲同步更新")
+                        } else {
+                            toastHost.showToast("这首歌还没完成分析")
+                        }
+                        return ok
+                    }
+                }
+            },
+        ) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -164,6 +186,7 @@ fun AppRoot(
                     showToast = toastHost::showToast,
                     deleteSongWithToast = ::deleteSongWithToast,
                     playlistResumeViewModel = playlistResumeViewModel,
+                    emotionViewModel = emotionViewModel,
                 )
             }
 
@@ -188,6 +211,7 @@ fun AppRoot(
 
             ToastHost(toastHost = toastHost)
             AutoDismissToasts(toastHost = toastHost, durationMs = 2000L)
+        }
         }
     }
 }

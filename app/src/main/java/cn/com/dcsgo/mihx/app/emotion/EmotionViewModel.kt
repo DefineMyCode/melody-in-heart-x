@@ -166,7 +166,7 @@ class EmotionViewModel @Inject constructor(
         }
     }
 
-    /** 拍平列表数据(详情页用): 已分析的歌 + 展示词条. */
+    /** 拍平列表数据(情绪 Tab 用): 已分析的歌 + 展示词条(用户词 > 曲线投票). */
     private suspend fun buildRows(): List<EmotionSongRow> {
         val emotions = emotionRepository.getAll()
         return songRepository.loadSongs().mapNotNull { song ->

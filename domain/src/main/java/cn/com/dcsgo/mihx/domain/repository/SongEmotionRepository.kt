@@ -25,8 +25,6 @@ interface SongEmotionRepository {
     /** 用户校准: 只写 user 三字段, 不动模型数据 */
     fun saveCorrection(songId: Int, valence: Float, arousal: Float, tags: List<String>)
 
-    /** 已校准且有 embedding 的记录 (端侧 kNN 锚点集) */
-    fun correctedWithEmbedding(): List<SongEmotion>
 
     fun delete(songId: Int)
 }

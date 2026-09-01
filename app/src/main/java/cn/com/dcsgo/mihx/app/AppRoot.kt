@@ -125,7 +125,6 @@ fun AppRoot(
                         val ok = mediaMetadataViewModel.saveEmotionCorrection(songId, words)
                         if (ok) {
                             emotionViewModel.refresh()
-                            toastHost.showToast("已记录你的标记，相似歌曲同步更新")
                         } else {
                             toastHost.showToast("这首歌还没完成分析")
                         }

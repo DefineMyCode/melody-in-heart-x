@@ -62,10 +62,6 @@ class SongEmotionsRepository(
         }
     }
 
-    override fun correctedWithEmbedding(): List<SongEmotion> = runBlocking(Dispatchers.IO) {
-        melodyDao.correctedSongEmotions().map { it.toDomain() }
-    }
-
     override fun delete(songId: Int) {
         runBlocking(Dispatchers.IO) {
             melodyDao.deleteSongEmotion(songId)

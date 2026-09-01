@@ -76,14 +76,6 @@ fun hasSignificantPeak(curve: List<Pair<Float, Float>>): Boolean {
     return a.max() > a.average().toFloat() + PEAK_MARGIN
 }
 
-/** 有效坐标 -> 展示词条: 用户勾选优先; 否则曲线投票(组代表词); 近零无词条. */
-fun emotionTagsOf(emotion: SongEmotion): List<String> {
-    if (emotion.userTags.isNotEmpty()) return emotion.userTags
-    // 不再用 lowConfidence 整曲一票否决(4 类时代遗留, 误杀大量单轴弱的歌):
-    // 逐窗弃权 + 占比门槛在 categoriesFor 内已自带, 让曲线自己说话
-    return EmotionGroup.headlineTagsFor(emotion.curve)
-}
-
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun SongEmotionSection(

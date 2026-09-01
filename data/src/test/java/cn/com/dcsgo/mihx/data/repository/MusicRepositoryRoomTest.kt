@@ -438,9 +438,6 @@ class MusicRepositoryRoomTest {
                 userValence = v, userArousal = a, userTags = tags
             )
         }
-
-        override suspend fun correctedSongEmotions(): List<SongEmotionEntity> =
-            songEmotions.filter { it.userValence != null && it.embeddingB64 != null }
     }
 
     private fun songEntity(id: Int): SongEntity {

@@ -288,9 +288,6 @@ class QuickSkipSongsRepositoryRoomTest {
             )
         }
 
-        override suspend fun correctedSongEmotions(): List<SongEmotionEntity> =
-            songEmotions.filter { it.userValence != null && it.embeddingB64 != null }
-
         private fun <T, K> MutableList<T>.upsertItems(
             values: List<T>,
             key: (T) -> K,

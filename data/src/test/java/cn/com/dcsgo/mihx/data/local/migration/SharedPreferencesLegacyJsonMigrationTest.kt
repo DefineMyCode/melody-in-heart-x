@@ -375,9 +375,6 @@ class SharedPreferencesLegacyJsonMigrationTest {
                 songEmotions[songId] = it.copy(userValence = v, userArousal = a, userTags = tags)
             }
         }
-
-        override suspend fun correctedSongEmotions(): List<SongEmotionEntity> =
-            songEmotions.values.filter { it.userValence != null && it.embeddingB64 != null }
     }
 
     private companion object {

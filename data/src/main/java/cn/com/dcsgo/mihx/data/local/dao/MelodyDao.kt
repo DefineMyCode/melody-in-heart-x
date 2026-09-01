@@ -379,12 +379,6 @@ interface MelodyDao {
     )
     suspend fun updateSongEmotionCorrection(songId: Int, v: Float, a: Float, tags: String)
 
-    @Query(
-        "SELECT * FROM song_emotions " +
-            "WHERE userValence IS NOT NULL AND embeddingB64 IS NOT NULL"
-    )
-    suspend fun correctedSongEmotions(): List<SongEmotionEntity>
-
     @Query("DELETE FROM song_emotions WHERE songId = :songId")
     suspend fun deleteSongEmotion(songId: Int)
 }

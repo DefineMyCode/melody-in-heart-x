@@ -84,30 +84,35 @@ class EmotionAnalyzer @Inject constructor(
             val yamOut = mapOf(embIdx to embArr, otherIdx to scoreArr)
             val songEmb = DoubleArray(1024) // 整曲 embedding 累加器(kNN 锚点用)
             var s = 0
-            while (s + WINDOW_SAMPLES <= pcm.size) {
-                val acc = FloatArray(1024)
-                var nf = 0
-                var st = s
-                while (st + FRAME <= s + WINDOW_SAMPLES) {
-                    inBuf.rewind()
-                    inBuf.asFloatBuffer().put(pcm, st, FRAME)
-                    inBuf.rewind()
-                    yam.runForMultipleInputsOutputs(arrayOf(inBuf), yamOut)
-                    for (fr in embArr) for (j in 0 until 1024) acc[j] += fr[j]
-                    nf += 2
-                    st += FRAME
+            // 解码在锁外(纯 CPU, 无共享状态); 推理全程持锁: 周期/手动是两个不同
+            // unique 任务, WorkManager 可并发跑两个 Worker, TFLite Interpreter
+            // 非线程安全, 并发 invoke 会 native 崩溃 — 与 close() 同一把 lock 串行化.
+            synchronized(lock) {
+                while (s + WINDOW_SAMPLES <= pcm.size) {
+                    val acc = FloatArray(1024)
+                    var nf = 0
+                    var st = s
+                    while (st + FRAME <= s + WINDOW_SAMPLES) {
+                        inBuf.rewind()
+                        inBuf.asFloatBuffer().put(pcm, st, FRAME)
+                        inBuf.rewind()
+                        yam.runForMultipleInputsOutputs(arrayOf(inBuf), yamOut)
+                        for (fr in embArr) for (j in 0 until 1024) acc[j] += fr[j]
+                        nf += 2
+                        st += FRAME
+                    }
+                    check(nf > 0)
+                    for (j in 0 until 1024) acc[j] /= nf
+                    for (j in 0 until 1024) songEmb[j] += acc[j]
+                    headIn.rewind()
+                    headIn.asFloatBuffer().put(acc)
+                    headIn.rewind()
+                    head.run(headIn, headOut)
+                    series.add(headOut[0][0] to headOut[0][1])
+                    s += HOP_SAMPLES
                 }
-                check(nf > 0)
-                for (j in 0 until 1024) acc[j] /= nf
-                for (j in 0 until 1024) songEmb[j] += acc[j]
-                headIn.rewind()
-                headIn.asFloatBuffer().put(acc)
-                headIn.rewind()
-                head.run(headIn, headOut)
-                series.add(headOut[0][0] to headOut[0][1])
-                s += HOP_SAMPLES
-                onProgress(s.toFloat() / (pcm.size - WINDOW_SAMPLES).coerceAtLeast(1))
             }
+            onProgress(s.toFloat() / (pcm.size - WINDOW_SAMPLES).coerceAtLeast(1))
             var peak = 0
             // 高潮 = A(能量)正向峰值
             for (i in series.indices) if (series[i].second > series[peak].second) peak = i
@@ -137,6 +142,7 @@ class EmotionAnalyzer @Inject constructor(
             extractor.setDataSource(context, uri, null)
         } catch (e: Exception) {
             AppLog.warning(TAG, "extractor open failed: ${e.message}", e)
+            extractor.release()
             return null
         }
         var track = -1

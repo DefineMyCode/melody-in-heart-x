@@ -370,6 +370,18 @@ class SharedPreferencesLegacyJsonMigrationTest {
             songEmotions.remove(songId)
         }
 
+        override suspend fun clearSongEmotionCorrection(songId: Int) {
+            songEmotions[songId]?.let {
+                songEmotions[songId] = it.copy(
+                    userValence = null, userArousal = null, userTags = null
+                )
+            }
+        }
+
+        override suspend fun deleteSongEmotionsFor(songIds: List<Int>) {
+            songEmotions.keys.removeAll(songIds.toSet())
+        }
+
         override suspend fun updateSongEmotionCorrection(songId: Int, v: Float, a: Float, tags: String) {
             songEmotions[songId]?.let {
                 songEmotions[songId] = it.copy(userValence = v, userArousal = a, userTags = tags)

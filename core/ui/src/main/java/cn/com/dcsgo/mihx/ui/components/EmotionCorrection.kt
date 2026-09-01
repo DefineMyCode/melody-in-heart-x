@@ -10,7 +10,7 @@ import androidx.compose.runtime.compositionLocalOf
  */
 interface EmotionCorrectionController {
     /** 保存校准(词条集合). 返回 false 表示该歌尚未分析, 无法校准. */
-    fun save(songId: Int, words: Set<String>): Boolean
+    suspend fun save(songId: Int, words: Set<String>): Boolean
 }
 
 val LocalEmotionCorrectionController: ProvidableCompositionLocal<EmotionCorrectionController?> =

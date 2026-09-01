@@ -2,6 +2,7 @@ package cn.com.dcsgo.mihx.app.emotion
 
 import android.content.Context
 import androidx.work.CoroutineWorker
+import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
@@ -59,13 +60,7 @@ class EmotionScanWorker(
             }
             val uri = song.uri ?: continue
             attempted++
-            setProgress(
-                workDataOf(
-                    KEY_PROGRESS_CURRENT to song.title,
-                    KEY_PROGRESS_DONE to done,
-                    KEY_PROGRESS_PENDING to pending.size - attempted,
-                )
-            )
+            setProgress(workDataOf(KEY_PROGRESS_CURRENT to song.title))
             val t0 = System.currentTimeMillis()
             AppLog.info(TAG, "analyzing [$attempted]: ${song.title} (songId=${song.id})")
             val emotion = runCatching {
@@ -97,8 +92,10 @@ class EmotionScanWorker(
             return Result.success()
         }
         if (manual && !pausedMidway && pending.size - done > 0) {
+            // APPEND 语义: 同名 unique 任务链, 新批次排在当前(正在跑的)这一轮之后;
+            // cancelUniqueWork(emotion_manual_scan) 会取消整条链 — 暂停正依赖这一点.
             WorkManager.getInstance(applicationContext)
-                .enqueueUniqueManualScan()
+                .enqueueUniqueManualScan(ExistingWorkPolicy.APPEND)
         }
         return Result.success()
     }
@@ -116,21 +113,19 @@ class EmotionScanWorker(
         private const val MANUAL_BATCH_SONGS = 300
         const val KEY_MANUAL = "manual"
         const val KEY_PROGRESS_CURRENT = "current"
-        const val KEY_PROGRESS_DONE = "done"
-        const val KEY_PROGRESS_PENDING = "pending"
         const val UNIQUE_MANUAL = "emotion_manual_scan"
     }
 }
 
 /** 手动立即扫描: 一次性任务, 不受充电约束; 已在跑则不重复排. */
-fun WorkManager.enqueueUniqueManualScan() {
+fun WorkManager.enqueueUniqueManualScan(policy: ExistingWorkPolicy = ExistingWorkPolicy.KEEP) {
     val request = OneTimeWorkRequestBuilder<EmotionScanWorker>()
         .setInputData(workDataOf(EmotionScanWorker.KEY_MANUAL to true))
         .build()
     enqueueUniqueWork(
         EmotionScanWorker.UNIQUE_MANUAL,
-        androidx.work.ExistingWorkPolicy.KEEP,
+        policy,
         request,
     )
-    AppLog.info("EmotionScan", "manual scan enqueued")
+    AppLog.info("EmotionScan", "manual scan enqueued (policy=$policy)")
 }

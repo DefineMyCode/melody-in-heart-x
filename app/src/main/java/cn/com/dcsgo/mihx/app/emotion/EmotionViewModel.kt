@@ -11,10 +11,11 @@ import cn.com.dcsgo.mihx.core.model.SongEmotion
 import cn.com.dcsgo.mihx.domain.repository.PlayerSettingsRepository
 import cn.com.dcsgo.mihx.domain.repository.SongEmotionRepository
 import cn.com.dcsgo.mihx.domain.repository.SongRepository
-import cn.com.dcsgo.mihx.ui.components.emotionTagsOf
+import cn.com.dcsgo.mihx.core.model.emotionTagsOf
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -27,6 +28,7 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 /** 情绪分析详情页一行(拍平的歌+情绪). */
 data class EmotionSongRow(
@@ -45,16 +47,12 @@ data class EmotionScanUiStatus(
     val paused: Boolean = false,
     /** 本轮批扫进度快照 */
     val currentSongTitle: String? = null,
-    val doneInBatch: Int = 0,
-    val pendingCount: Int = 0,
     /** 上一首分析耗时 ms(成功记录时间线近似) */
     val lastSongMs: Long = 0L,
     /** 平均分析耗时 ms */
     val avgSongMs: Long = 0L,
     val correctedCount: Int = 0,
-) {
-    val pendingTotal: Int get() = (totalCount - analyzedCount).coerceAtLeast(0)
-}
+)
 
 /**
  * 情绪批扫状态机.
@@ -137,39 +135,54 @@ class EmotionViewModel @Inject constructor(
     }
 
     private suspend fun buildStatus(sig: ScanSignal): Pair<EmotionScanUiStatus, List<EmotionSongRow>?> {
-        val total = runCatching { songRepository.countSongs() }.getOrDefault(0)
-        val versions = runCatching { emotionRepository.analyzedVersions() }
-            .getOrDefault(emptyMap())
-        val timeline = runCatching { emotionRepository.analyzedTimeline() }
-            .getOrDefault(emptyList())
+        // 仓库读是 runBlocking(IO) 桥, 主线程直调会卡 UI — 整体搬到 Default 线程
+        val (total, versions, timeline, correctedCount) = withContext(Dispatchers.Default) {
+            val total = runCatching { songRepository.countSongs() }.getOrDefault(0)
+            val versions = runCatching { emotionRepository.analyzedVersions() }
+                .getOrDefault(emptyMap())
+            val timeline = runCatching { emotionRepository.analyzedTimeline() }
+                .getOrDefault(emptyList())
+            val correctedCount = runCatching { emotionRepository.correctionCount() }.getOrDefault(0)
+            RowSources(total, versions, timeline, correctedCount)
+        }
         // 相邻成功时间差=单首耗时近似; 间隔>10min 视为批次间空闲, 剔除
         val durations = timeline.zipWithNext { a, b -> b - a }.filter { it in 1..600_000 }
-        val correctedCount = runCatching { emotionRepository.correctionCount() }.getOrDefault(0)
         val status = EmotionScanUiStatus(
             analyzedCount = minOf(versions.size, total),
             totalCount = total,
             scanning = sig.manualRunning || sig.periodicRunning,
             paused = sig.paused,
             currentSongTitle = sig.progress?.getString(EmotionScanWorker.KEY_PROGRESS_CURRENT),
-            doneInBatch = sig.progress?.getInt(EmotionScanWorker.KEY_PROGRESS_DONE, 0) ?: 0,
-            pendingCount = sig.progress?.getInt(EmotionScanWorker.KEY_PROGRESS_PENDING, 0) ?: 0,
             lastSongMs = durations.lastOrNull() ?: 0L,
             avgSongMs = if (durations.isNotEmpty()) durations.average().toLong() else 0L,
             correctedCount = correctedCount,
         )
-        val key = "$total|${versions.size}|$correctedCount|${sig.paused}|${tick.value}"
+        // 指纹含情绪内容: versions(map 指纹=逐首 songId→modelVersion, 顺序无关)
+        // + timeline(逐首 analyzedAt). 重扫后计数不变但内容更新也能触发重建.
+        val contentFingerprint = "${versions.hashCode()}|${timeline.hashCode()}"
+        val key = "$total|${versions.size}|$correctedCount|${sig.paused}|${tick.value}|$contentFingerprint"
         return if (key != lastRowsKey) {
-            lastRowsKey = key
-            status to runCatching { buildRows() }.getOrDefault(null)
+            val rowList = runCatching { buildRows() }.getOrDefault(null)
+            // 只有构建成功才提交新指纹: 失败保留旧 key, 下一个 tick 自动重试
+            if (rowList != null) lastRowsKey = key
+            status to rowList
         } else {
             status to null
         }
     }
 
+    /** buildStatus 的仓库读取结果(集中在一个 withContext 里减少线程切换). */
+    private data class RowSources(
+        val total: Int,
+        val versions: Map<Int, String>,
+        val timeline: List<Long>,
+        val correctedCount: Int,
+    )
+
     /** 拍平列表数据(情绪 Tab 用): 已分析的歌 + 展示词条(用户词 > 曲线投票). */
-    private suspend fun buildRows(): List<EmotionSongRow> {
+    private suspend fun buildRows(): List<EmotionSongRow> = withContext(Dispatchers.Default) {
         val emotions = emotionRepository.getAll()
-        return songRepository.loadSongs().mapNotNull { song ->
+        songRepository.loadSongs().mapNotNull { song ->
             val e = emotions[song.id] ?: return@mapNotNull null
             EmotionSongRow(
                 song = song,

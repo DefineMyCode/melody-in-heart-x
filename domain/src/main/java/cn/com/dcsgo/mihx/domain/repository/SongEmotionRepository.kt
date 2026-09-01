@@ -25,6 +25,9 @@ interface SongEmotionRepository {
     /** 用户校准: 只写 user 三字段, 不动模型数据 */
     fun saveCorrection(songId: Int, valence: Float, arousal: Float, tags: List<String>)
 
+    /** 清除用户校准(值列置 NULL), 该歌回落到曲线自动词条 */
+    fun clearCorrection(songId: Int)
+
 
     fun delete(songId: Int)
 }

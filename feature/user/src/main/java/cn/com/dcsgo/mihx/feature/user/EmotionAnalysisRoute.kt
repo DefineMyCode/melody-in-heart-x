@@ -14,8 +14,6 @@ data class EmotionAnalysisState(
     val scanning: Boolean = false,
     val paused: Boolean = false,
     val currentSongTitle: String? = null,
-    val doneInBatch: Int = 0,
-    val pendingCount: Int = 0,
     val lastSongMs: Long = 0L,
     val avgSongMs: Long = 0L,
     val correctedCount: Int = 0,

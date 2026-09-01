@@ -651,8 +651,6 @@ fun AppNavHost(
                     scanning = emotionStatus.scanning,
                     paused = emotionStatus.paused,
                     currentSongTitle = emotionStatus.currentSongTitle,
-                    doneInBatch = emotionStatus.doneInBatch,
-                    pendingCount = emotionStatus.pendingCount,
                     lastSongMs = emotionStatus.lastSongMs,
                     avgSongMs = emotionStatus.avgSongMs,
                     correctedCount = emotionStatus.correctedCount,

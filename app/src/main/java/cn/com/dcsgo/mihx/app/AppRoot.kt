@@ -121,7 +121,7 @@ fun AppRoot(
         CompositionLocalProvider(
             LocalEmotionCorrectionController provides remember(emotionViewModel) {
                 object : EmotionCorrectionController {
-                    override fun save(songId: Int, words: Set<String>): Boolean {
+                    override suspend fun save(songId: Int, words: Set<String>): Boolean {
                         val ok = mediaMetadataViewModel.saveEmotionCorrection(songId, words)
                         if (ok) {
                             emotionViewModel.refresh()

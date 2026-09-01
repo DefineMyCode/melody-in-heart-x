@@ -161,7 +161,6 @@ typealias SongItemAction = cn.com.dcsgo.mihx.ui.components.SongItemAction
  * @param isSelected        是否已选中（仅多选模式下生效）
  * @param onSongClick       点击回调（多选模式下由调用方传入选中切换逻辑）
  * @param menuActions       更多操作菜单项（非空则在条目末尾显示「⋯」菜单）
- * @param extra             行尾附加插槽（在 ⋮ 菜单之前，如情绪词条展示）
  */
 @Composable
 fun SongItem(
@@ -173,7 +172,6 @@ fun SongItem(
     isSelected: Boolean = false,
     onSongClick: (Song) -> Unit,
     menuActions: List<SongItemAction> = emptyList(),
-    extra: (@Composable () -> Unit)? = null,
     subline: (@Composable () -> Unit)? = null,
 ) {
     SongListItem(
@@ -208,15 +206,8 @@ fun SongItem(
         } else {
             null
         },
-        trailing = if (!isSelectMode && (menuActions.isNotEmpty() || extra != null)) {
-            {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    extra?.invoke()
-                    if (menuActions.isNotEmpty()) {
-                        SongItemMenu(menuActions)
-                    }
-                }
-            }
+        trailing = if (!isSelectMode && menuActions.isNotEmpty()) {
+            { SongItemMenu(menuActions) }
         } else {
             null
         },

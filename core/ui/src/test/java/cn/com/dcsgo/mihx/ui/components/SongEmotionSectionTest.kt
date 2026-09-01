@@ -2,6 +2,7 @@ package cn.com.dcsgo.mihx.ui.components
 
 import cn.com.dcsgo.mihx.core.model.EmotionGroup
 import cn.com.dcsgo.mihx.core.model.SongEmotion
+import cn.com.dcsgo.mihx.core.model.emotionTagsOf
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test

@@ -251,6 +251,9 @@ interface MelodyDao {
     @Query("DELETE FROM quick_skip_short_play_counts WHERE songId IN (:songIds)")
     suspend fun deleteQuickSkipShortPlaysFor(songIds: List<Int>)
 
+    @Query("DELETE FROM song_emotions WHERE songId IN (:songIds)")
+    suspend fun deleteSongEmotionsFor(songIds: List<Int>)
+
     @Query("DELETE FROM song_artist_cross_ref")
     suspend fun deleteAllSongArtistRefs()
 
@@ -381,6 +384,12 @@ interface MelodyDao {
 
     @Query("DELETE FROM song_emotions WHERE songId = :songId")
     suspend fun deleteSongEmotion(songId: Int)
+
+    @Query(
+        "UPDATE song_emotions SET userValence = NULL, userArousal = NULL, userTags = NULL " +
+            "WHERE songId = :songId"
+    )
+    suspend fun clearSongEmotionCorrection(songId: Int)
 }
 
 /** analyzedVersions() 的轻量投影. */

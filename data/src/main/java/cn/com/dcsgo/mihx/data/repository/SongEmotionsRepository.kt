@@ -62,6 +62,12 @@ class SongEmotionsRepository(
         }
     }
 
+    override fun clearCorrection(songId: Int) {
+        runBlocking(Dispatchers.IO) {
+            melodyDao.clearSongEmotionCorrection(songId)
+        }
+    }
+
     override fun delete(songId: Int) {
         runBlocking(Dispatchers.IO) {
             melodyDao.deleteSongEmotion(songId)

@@ -31,6 +31,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.runtime.toMutableStateList
@@ -45,7 +46,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import cn.com.dcsgo.mihx.core.model.EmotionGroup
 import cn.com.dcsgo.mihx.core.model.SongEmotion
+import cn.com.dcsgo.mihx.core.model.emotionTagsOf
 import kotlin.math.abs
+import kotlinx.coroutines.launch
 
 // ─────────────────────────────────────────────────────────────────
 // 歌曲情绪区（整曲 V/A 曲线 + 中文词条 + 用户校准）
@@ -94,6 +97,8 @@ fun SongEmotionSection(
     val vColor = Color(0xFF42A5F5)
     val aColor = Color(0xFFFFB74D)
     val peakColor = Color(0xFFE57373)
+    // 保存走 suspend 控制器(仓库桥在 Default 线程执行), 用组合作用域拉起
+    val scope = rememberCoroutineScope()
     var showCalibrate by remember { mutableStateOf(false) }
     // 保存成功后本地覆盖展示(对话框内立即可见), 下次打开从库重载
     val controller = LocalEmotionCorrectionController.current
@@ -232,12 +237,24 @@ fun SongEmotionSection(
             // 打开时预勾选当前展示标签: 用户可点掉/增补, 上限 4
             initial = tags.toSet(),
             originals = tags,
+            hasUserTags = shown.userCorrected,
             onDismiss = { showCalibrate = false },
             onConfirm = { words ->
-                if (controller.save(shown.songId, words)) {
-                    overrideEmotion = shown.copy(userTags = words.toList())
+                scope.launch {
+                    if (controller.save(shown.songId, words)) {
+                        // 空词 = 恢复自动: 本地覆盖立即回到曲线词
+                        overrideEmotion = if (words.isEmpty()) {
+                            shown.copy(
+                                userTags = emptyList(),
+                                userValence = null,
+                                userArousal = null,
+                            )
+                        } else {
+                            shown.copy(userTags = words.toList())
+                        }
+                    }
+                    showCalibrate = false
                 }
-                showCalibrate = false
             },
         )
     }
@@ -254,10 +271,13 @@ fun EmotionCalibrateDialog(
     initial: Set<String>,
     /** 这首歌当前展示的标签(自动投票或校准结果), "原有"排 */
     originals: List<String>,
+    /** 是否已有用户标记(决定"恢复自动"出口是否可见) */
+    hasUserTags: Boolean,
     onDismiss: () -> Unit,
     onConfirm: (Set<String>) -> Unit,
 ) {
-    val selected: SnapshotStateList<String> = initial.toMutableStateList()
+    // 选中态挂在歌身份上 remember: 弹窗开着时父级重组不能重置用户进行中的选择
+    val selected: SnapshotStateList<String> = remember(initial) { initial.toMutableStateList() }
     Dialog(onDismissRequest = onDismiss) {
         Column(
             modifier = Modifier
@@ -277,7 +297,7 @@ fun EmotionCalibrateDialog(
                 fontWeight = FontWeight.Bold,
             )
             Text(
-                text = "最多选 ${EmotionGroup.MAX_TAGS} 个词，你的标记会立即生效并教会其他相似的歌",
+                text = "最多选 ${EmotionGroup.MAX_TAGS} 个词，已记录你的标记，这首歌将显示你选择的词条",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -349,15 +369,22 @@ fun EmotionCalibrateDialog(
             Spacer(modifier = Modifier.height(16.dp))
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End,
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
             ) {
-                TextButton(onClick = onDismiss) { Text("取消") }
-                Spacer(modifier = Modifier.width(8.dp))
-                Button(
-                    enabled = selected.isNotEmpty(),
-                    onClick = { onConfirm(selected.toSet()) },
-                ) {
-                    Text("保存")
+                // 该歌已有用户标记时, 提供"恢复自动"出口: 空词保存即清标记
+                if (hasUserTags) {
+                    TextButton(onClick = { onConfirm(emptySet()) }) { Text("恢复自动") }
+                }
+                Row(horizontalArrangement = Arrangement.End) {
+                    TextButton(onClick = onDismiss) { Text("取消") }
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Button(
+                        enabled = selected.isNotEmpty(),
+                        onClick = { onConfirm(selected.toSet()) },
+                    ) {
+                        Text("保存")
+                    }
                 }
             }
         }

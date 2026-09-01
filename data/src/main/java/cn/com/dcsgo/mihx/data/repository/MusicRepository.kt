@@ -583,6 +583,10 @@ class MusicRepository(
 
             persistSongs()
             persistPlaylists()
+            // 情绪行(含 ~4KB embedding)一并清理, 防删除歌曲在 song_emotions 留孤儿
+            melodyDao?.let { dao ->
+                persistScope.launch { dao.deleteSongEmotionsFor(listOf(songId)) }
+            }
             AppLog.info(TAG, "deleteSong: deleted song id=$songId")
             DeleteSongResult.Success(
                 song = song,
@@ -671,6 +675,7 @@ class MusicRepository(
         dao.deletePlaybackEventsForSongs(ids)
         dao.deleteQuickSkipSongsFor(ids)
         dao.deleteQuickSkipShortPlaysFor(ids)
+        dao.deleteSongEmotionsFor(ids)
         dao.deleteOrphanArtists()
         dao.deleteOrphanAlbums()
     }

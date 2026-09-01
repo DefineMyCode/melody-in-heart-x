@@ -1,7 +1,4 @@
-package cn.com.dcsgo.mihx.ui.components
-
-import cn.com.dcsgo.mihx.core.model.EmotionGroup
-import cn.com.dcsgo.mihx.core.model.SongEmotion
+package cn.com.dcsgo.mihx.core.model
 
 /**
  * 展示词条: 用户手动标记词最高优先, 否则逐窗曲线投票.

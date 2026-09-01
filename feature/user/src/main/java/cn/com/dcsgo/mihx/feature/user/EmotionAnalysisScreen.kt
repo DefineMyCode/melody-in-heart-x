@@ -101,6 +101,7 @@ private fun ProgressCard(
                     state.scanning -> "正在分析 ${state.analyzedCount}/${state.totalCount} 首" +
                         "（待分析 $pending）"
                     state.paused -> "已暂停：待分析 $pending 首"
+                    state.totalCount == 0 -> "曲库还没有歌曲，导入后再分析情绪"
                     pending > 0 -> "已分析 ${state.analyzedCount}/${state.totalCount} 首，待分析 $pending 首"
                     else -> "全部 ${state.totalCount} 首分析完成"
                 },

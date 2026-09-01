@@ -316,6 +316,8 @@ fun EmotionLibraryView(
 
     val infoSong = songForInfo
     LaunchedEffect(infoSong) {
+        // 先清上一首的旧信息: 不清的话换歌瞬间弹窗会用新标题配旧歌的 SongInfo
+        songInfo = null
         if (infoSong != null) songInfo = loadSongInfo(infoSong)
     }
     val currentSongInfo = songInfo

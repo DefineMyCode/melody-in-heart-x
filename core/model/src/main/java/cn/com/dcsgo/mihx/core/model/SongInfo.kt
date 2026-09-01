@@ -16,8 +16,6 @@ data class SongInfo(
     val format: String = "",
     val fileSize: String = "",
     val filePath: String = "",
-    /** 整曲情绪分析结果（未分析时为 null） */
+    /** 整曲情绪分析结果(未分析时为 null) */
     val emotion: SongEmotion? = null,
-    /** 校准保存后自增, 触发 UI 重载 songInfo 刷新情绪区 */
-    val emotionRefreshKey: Int = 0,
 )

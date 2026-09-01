@@ -301,6 +301,17 @@ class PlayStatsRepositoryRoomTest {
             songEmotions.removeAll { it.songId == songId }
         }
 
+        override suspend fun clearSongEmotionCorrection(songId: Int) {
+            val idx = songEmotions.indexOfFirst { it.songId == songId }
+            if (idx >= 0) songEmotions[idx] = songEmotions[idx].copy(
+                userValence = null, userArousal = null, userTags = null
+            )
+        }
+
+        override suspend fun deleteSongEmotionsFor(songIds: List<Int>) {
+            songEmotions.removeAll { it.songId in songIds }
+        }
+
         override suspend fun updateSongEmotionCorrection(songId: Int, v: Float, a: Float, tags: String) {
             val idx = songEmotions.indexOfFirst { it.songId == songId }
             if (idx >= 0) songEmotions[idx] = songEmotions[idx].copy(

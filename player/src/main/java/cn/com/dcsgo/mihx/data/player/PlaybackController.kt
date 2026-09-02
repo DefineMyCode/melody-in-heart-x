@@ -263,6 +263,12 @@ class PlaybackController(
 
     override fun playQueue(plan: ControllerQueuePlan) {
         runWhenConnected { controller ->
+            // 服务端 ExoPlayer 已有正在播放的媒体项(息屏/后台回来,服务活着),
+            // 不覆盖 live session —— connect 的 sync 会把真实状态同步给 UI.
+            if (controller.mediaItemCount > 0) {
+                AppLog.info(TAG, "playQueue skipped: live session active (items=${controller.mediaItemCount})")
+                return@runWhenConnected
+            }
             val startedAt = PerformanceTrace.nowMs()
             lastSyncedQueueFingerprint = plan.fingerprint()
             controller.repeatMode = Player.REPEAT_MODE_ALL
@@ -279,6 +285,10 @@ class PlaybackController(
 
     override fun prepareQueue(plan: ControllerQueuePlan, positionMs: Long) {
         runWhenConnected { controller ->
+            if (controller.mediaItemCount > 0) {
+                AppLog.info(TAG, "prepareQueue skipped: live session active (items=${controller.mediaItemCount})")
+                return@runWhenConnected
+            }
             val startedAt = PerformanceTrace.nowMs()
             lastSyncedQueueFingerprint = plan.fingerprint()
             controller.repeatMode = Player.REPEAT_MODE_ALL

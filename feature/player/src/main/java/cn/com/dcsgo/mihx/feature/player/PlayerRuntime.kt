@@ -122,6 +122,7 @@ internal class PlayerRuntime(
             prepareControllerQueue = { queue, index, positionMs ->
                 playbackBridgeFacade.prepareControllerQueue(queue, index, positionMs)
             },
+            hasLiveSession = { playbackBridgeFacade.currentPlaybackPositionMs() > 0L },
             log = { message -> AppLog.debug(TAG, message) },
         )
     }

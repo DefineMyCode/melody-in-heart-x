@@ -554,6 +554,7 @@ fun AppNavHost(
                     tagCounts = moodTagCounts.associate { it.tag to it.songCount },
                     librarySize = moodLibrarySize,
                     nowMinuteOfDay = moodNowMinute,
+                    dialogVisible = editingSlot != null || showAddDialog,
                 ),
                 actions = MoodTimeSlotRouteActions(
                     onBack = navController::navigateUp,

@@ -5,6 +5,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -44,7 +46,7 @@ import cn.com.dcsgo.mihx.core.model.TimeSlotConfig
  * MoodSlotResolver.validate 在保存时执行，冲突信息以 message 返回。
  * 时间选择用系统 TimePicker（跟随系统 12/24h 制），存储统一换算为当日分钟数。
  */
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun MoodSlotEditDialog(
     editing: TimeSlotConfig?,           // null = 新增
@@ -145,7 +147,12 @@ fun MoodSlotEditDialog(
             FieldLabel("情绪词条")
             Explainer("只有带有这些词条的歌曲会被随机到；词条来自情绪分析与你对歌曲的手动标记")
             Spacer(Modifier.height(8.dp))
-            Row(horizontalArrangement = Arrangement.spacedBy(7.dp)) {
+            // FlowRow 自动换行：词条数量随曲库增长，Row 不换行会横向溢出屏幕（2026-09-04 布局修复）
+            FlowRow(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(7.dp),
+                verticalArrangement = Arrangement.spacedBy(7.dp),
+            ) {
                 availableTags.take(12).forEach { tag ->
                     MoodTagChip(
                         label = tag,
@@ -159,7 +166,7 @@ fun MoodSlotEditDialog(
                 }
             }
             if (manualOnlyTags.isNotEmpty()) {
-                Spacer(Modifier.height(8.dp))
+                Spacer(Modifier.height(10.dp))
                 Text(
                     "仅手动标记计入",
                     style = MaterialTheme.typography.labelSmall,
@@ -167,7 +174,11 @@ fun MoodSlotEditDialog(
                     color = MaterialTheme.colorScheme.tertiary,
                 )
                 Spacer(Modifier.height(6.dp))
-                Row(horizontalArrangement = Arrangement.spacedBy(7.dp)) {
+                FlowRow(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(7.dp),
+                    verticalArrangement = Arrangement.spacedBy(7.dp),
+                ) {
                     manualOnlyTags.forEach { tag ->
                         MoodTagChip(
                             label = tag,
@@ -304,12 +315,14 @@ private fun FieldLabel(text: String) {
 
 @Composable
 private fun Explainer(text: String, warn: Boolean = false) {
-    Spacer(Modifier.height(5.dp))
+    Spacer(Modifier.height(6.dp))
     Text(
         text = text,
         style = MaterialTheme.typography.labelSmall,
-        color = if (warn) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.outline,
-        lineHeight = MaterialTheme.typography.labelSmall.lineHeight,
+        // 截图反馈（2026-09-04）：outline 色在深色主题过淡导致"文字看不清"，
+        // 提升为 onSurfaceVariant；warn 走 tertiary 保持警示层级
+        color = if (warn) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.onSurfaceVariant,
+        lineHeight = MaterialTheme.typography.labelSmall.lineHeight * 1.35,
     )
 }
 

@@ -15,6 +15,8 @@ data class MoodTimeSlotRouteState(
     val librarySize: Int,
     /** 当前时刻分钟数（0–1439，用于“生效中”徽标；由调用方定时刷新） */
     val nowMinuteOfDay: Int,
+    /** 编辑/添加弹层是否打开：打开时隐藏列表页 FAB，避免悬浮在弹层上（2026-09-04 布局修复） */
+    val dialogVisible: Boolean = false,
 )
 
 /** 情境化随心播放配置列表页公共操作 */

@@ -291,14 +291,17 @@ internal fun MoodTimeSlotScreen(
             )
         },
         floatingActionButton = {
-            androidx.compose.material3.ExtendedFloatingActionButton(
-                onClick = actions.onAddSlot,
-                containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = MaterialTheme.colorScheme.onPrimary,
-            ) {
-                Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(17.dp))
-                Spacer(Modifier.width(7.dp))
-                Text("添加时段", fontWeight = FontWeight.Bold)
+            // 弹层打开时隐藏 FAB：否则悬浮在弹层上遮挡底部操作按钮（2026-09-04 布局修复）
+            if (!state.dialogVisible) {
+                androidx.compose.material3.ExtendedFloatingActionButton(
+                    onClick = actions.onAddSlot,
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary,
+                ) {
+                    Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(17.dp))
+                    Spacer(Modifier.width(7.dp))
+                    Text("添加时段", fontWeight = FontWeight.Bold)
+                }
             }
         },
     ) { padding ->

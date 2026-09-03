@@ -68,7 +68,22 @@ class PlaybackStateStore(
         try {
             val playbackSongId = currentSongId ?: queue.currentSong?.id
             if (queue.isEmpty && !isInfinitePlay && playbackSongId == null) {
-                clear()
+                // 空会话保存：跳过写入，但**不再清空已有快照**。
+                //
+                // 背景（2026-09-03 真机回归）：UI 重建窗口（新 ViewModel 尚未完成
+                // restore/初始数据加载）存在瞬时「全空」状态（queue=0, currentSongId=null），
+                // autosaver/事件保存在这个窗口一拍，若按旧逻辑 clear()，会把之前 5s 落盘的
+                // 有效快照删掉，随后 restore 读到「无快照」、播放队列恒为空。
+                // 显式清空（用户清队列/结束播放）走 clearPlaybackState()，语义不受影响。
+                runBlocking(Dispatchers.IO) {
+                    val hasExisting =
+                        currentPreferences()[PlaybackStateKeys.PLAY_QUEUE_JSON] != null
+                    logger.info(
+                        TAG,
+                        "save skip empty session: existingSnapshot=$hasExisting" +
+                            if (hasExisting) " (kept)" else ""
+                    )
+                }
                 return
             }
 

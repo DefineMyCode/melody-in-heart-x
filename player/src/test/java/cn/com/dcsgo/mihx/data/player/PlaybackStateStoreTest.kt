@@ -125,9 +125,20 @@ class PlaybackStateStoreTest {
     }
 
     @Test
-    fun emptyQueueClearsSavedState() = runStoreTest { store, _ ->
+    fun emptySessionSaveKeepsExistingSnapshot() = runStoreTest { store, _ ->
         store.save(PlayQueue().setQueue(songs(1), startIndex = 0), positionMs = 100L)
 
+        // UI 重建窗口的瞬时全空状态（queue 空 + 无 currentSongId）不得清掉已有快照，
+        // 否则重启 restore 读到"无快照"、播放队列恒为空（2026-09-03 回归）。
+        store.save(PlayQueue(), positionMs = 200L)
+
+        val restored = store.restore(songs(1))
+        assertEquals(listOf(1), restored?.queue?.songs?.map { it.id })
+        assertEquals(100L, restored?.positionMs)
+    }
+
+    @Test
+    fun emptySessionSaveWithoutExistingSnapshotWritesNothing() = runStoreTest { store, _ ->
         store.save(PlayQueue(), positionMs = 200L)
 
         assertNull(store.restore(songs(1)))

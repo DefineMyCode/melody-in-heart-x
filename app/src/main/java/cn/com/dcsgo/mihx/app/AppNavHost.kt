@@ -110,6 +110,7 @@ fun AppNavHost(
     deleteSongWithToast: (Int) -> Unit,
     playlistResumeViewModel: PlaylistResumeViewModel,
     emotionViewModel: cn.com.dcsgo.mihx.app.emotion.EmotionViewModel,
+    moodTimeSlotViewModel: cn.com.dcsgo.mihx.app.mood.MoodTimeSlotViewModel,
 ) {
     NavHost(
         navController = navController,
@@ -500,7 +501,6 @@ fun AppNavHost(
                         AppLog.error("AppNavHost", "loadPlaybackStatsSnapshot failed: ${it.message}", it)
                     }
             }
-            val moodTimeSlotViewModel: cn.com.dcsgo.mihx.app.mood.MoodTimeSlotViewModel = viewModel()
             val moodConfigs by moodTimeSlotViewModel.configs.collectAsStateWithLifecycle()
             val moodEnabled by moodTimeSlotViewModel.moodTimeSlotEnabled.collectAsStateWithLifecycle()
             // 入口卡"生效中"态的当前时刻：分钟级刷新即可（不必每秒）
@@ -533,7 +533,6 @@ fun AppNavHost(
         }
 
         composable(AppRoutes.MOOD_TIME_SLOT) {
-            val moodTimeSlotViewModel: cn.com.dcsgo.mihx.app.mood.MoodTimeSlotViewModel = viewModel()
             val moodConfigs by moodTimeSlotViewModel.configs.collectAsStateWithLifecycle()
             val moodEnabled by moodTimeSlotViewModel.moodTimeSlotEnabled.collectAsStateWithLifecycle()
             val moodTagCounts by moodTimeSlotViewModel.tagCounts.collectAsStateWithLifecycle()

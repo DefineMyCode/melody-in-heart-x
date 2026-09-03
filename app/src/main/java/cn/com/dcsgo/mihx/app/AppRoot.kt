@@ -54,6 +54,11 @@ fun AppRoot(
     mediaMetadataViewModel: AppMediaMetadataViewModel = viewModel(),
     playlistResumeViewModel: PlaylistResumeViewModel = viewModel(),
     emotionViewModel: cn.com.dcsgo.mihx.app.emotion.EmotionViewModel = viewModel(),
+    // 情境化随心播放：必须在 Activity 作用域（AppRoot）创建——Hilt @HiltViewModel 依赖
+    // Activity 级 Hilt ViewModelFactory；在 NavHost composable{} 内用 viewModel() 会回落到
+    // 非 Hilt 的 SavedStateViewModelFactory 而反射空参构造失败（2026-09-04 崩溃回归）。
+    // 与 SettingsViewModel/EmotionViewModel 同模式：顶层创建、经参数传入 AppNavHost。
+    moodTimeSlotViewModel: cn.com.dcsgo.mihx.app.mood.MoodTimeSlotViewModel = viewModel(),
 ) {
     val toastHost = rememberToastHost()
     val toastHostCoroutine = rememberCoroutineScope()
@@ -193,6 +198,7 @@ fun AppRoot(
                     deleteSongWithToast = ::deleteSongWithToast,
                     playlistResumeViewModel = playlistResumeViewModel,
                     emotionViewModel = emotionViewModel,
+                    moodTimeSlotViewModel = moodTimeSlotViewModel,
                 )
             }
 

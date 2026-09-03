@@ -235,7 +235,7 @@ fun EmotionScanSection(
                 Text(
                     text = when {
                         scanning -> "正在分析 $analyzedCount/$totalCount，点卡片看进度…"
-                        paused -> "已暂停，待分析 ${totalCount - analyzedCount} 首，点卡片继续"
+                        paused -> "已暂停，待分析 ${totalCount - analyzedCount} 首"
                         totalCount == 0 -> "先导入歌曲，再分析整曲情绪曲线"
                         analyzedCount >= totalCount -> "全部 $totalCount 首已分析完成"
                         else -> "已分析 $analyzedCount/$totalCount · 充电时自动补扫"

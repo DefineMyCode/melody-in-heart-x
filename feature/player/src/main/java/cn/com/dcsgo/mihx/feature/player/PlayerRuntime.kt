@@ -166,19 +166,19 @@ internal class PlayerRuntime(
      * 保证 UI 立即反映到目标位置。播放期间的逐 tick 更新走 [positionMs] 直写，不经过这里。
      */
     private fun updateUiState(transform: (PlayerUiState) -> PlayerUiState) {
-        // M-8（评审 2026-09-03）：MutableStateFlow.update 的变换 lambda 必须是纯函数
-        // （CAS 竞争下会重试），副作用（窄流同步）移到 update 之外，避免被重复执行。
-        var next: PlayerUiState = _uiState.value
-        _uiState.update { current ->
-            next = transform(current)
-            next
-        }
-        if (next.currentPositionMs != _positionMs.value) {
-            _positionMs.value = next.currentPositionMs
-        }
-        if (next.sleepTimerRemainingMs != _sleepTimerRemainingMs.value) {
-            _sleepTimerRemainingMs.value = next.sleepTimerRemainingMs
-        }
+        narrowFlowSync.update(transform)
+    }
+
+    /** 窄流同步器：主 UiState 更新 + 离散位置/倒计时事件向窄流的单向传播（可测） */
+    private val narrowFlowSync = NarrowFlowSync(
+        uiState = _uiState,
+        positionMs = _positionMs,
+        sleepTimerRemainingMs = _sleepTimerRemainingMs,
+    )
+
+    /** 定时关闭取消/到点：倒计时窄流显式归零（M-6 后 uiState 不再承载 tick 值） */
+    private fun resetSleepTimerNarrowFlow() {
+        narrowFlowSync.resetSleepTimerNarrowFlow()
     }
 
     /**
@@ -309,6 +309,7 @@ internal class PlayerRuntime(
         state = { _uiState.value },
         updateState = ::updateUiState,
         updateRemainingMs = { _sleepTimerRemainingMs.value = it },
+        resetRemainingMs = ::resetSleepTimerNarrowFlow,
         pausePlayback = { playbackBridgeFacade.pausePlayback() },
     )
     private val mediaEventFacade = PlayerMediaEventFacade(
@@ -767,3 +768,45 @@ private data class StartupSettings(
     val playbackNotificationEnabled: Boolean,
     val dailyListeningGoalMinutes: Int,
 )
+
+/**
+ * 主 UiState 与高频窄流（positionMs / sleepTimerRemainingMs）的同步器。
+ *
+ * 设计要点（2026-09-03 回归修复，M-8 首版引入）：
+ * - [MutableStateFlow.update] 的变换 lambda 必须是纯函数（CAS 竞争下会重试），
+ *   所以 lambda 只做变换，窄流同步移到 update 之外；
+ * - 窄流同步的对比基线是「update 前的 uiState 旧值」，绝不是窄流当前值：
+ *   播放中 ticker 每 500ms 直写窄流，而 uiState 的对应字段只在离散事件时更新
+ *   （其余 update 刻意 copy 保留旧值）。若拿 uiState 新值与窄流值对比，二者因
+ *   节拍不同必然不等，每次离散更新都会把陈旧位置/归零的倒计时刷回窄流——
+ *   表现为进度条每 ~5s 回跳抽搐、倒计时闪 00:00。
+ *
+ * 已知边界：M-6 后倒计时 tick 只写窄流，uiState.sleepTimerRemainingMs 与窄流
+ * 可能长期不同步（uiState 恒 0）。因此「写 0 到 uiState」的取消路径无法被
+ * [update] 的 uiState 对比感知，需调用方显式调用 [resetSleepTimerNarrowFlow]。
+ */
+internal class NarrowFlowSync(
+    private val uiState: MutableStateFlow<PlayerUiState>,
+    private val positionMs: MutableStateFlow<Long>,
+    private val sleepTimerRemainingMs: MutableStateFlow<Long>,
+) {
+    fun update(transform: (PlayerUiState) -> PlayerUiState) {
+        val previous = uiState.value
+        var next: PlayerUiState = previous
+        uiState.update { current ->
+            next = transform(current)
+            next
+        }
+        if (next.currentPositionMs != previous.currentPositionMs) {
+            positionMs.value = next.currentPositionMs
+        }
+        if (next.sleepTimerRemainingMs != previous.sleepTimerRemainingMs) {
+            sleepTimerRemainingMs.value = next.sleepTimerRemainingMs
+        }
+    }
+
+    /** 显式复位倒计时窄流：cancel / fire 等把 uiState 归零的离散事件必须调用 */
+    fun resetSleepTimerNarrowFlow() {
+        sleepTimerRemainingMs.value = 0L
+    }
+}

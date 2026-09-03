@@ -26,6 +26,7 @@ class PlayerSleepTimerCoordinator(
     private val state: () -> PlayerUiState,
     private val updateState: ((PlayerUiState) -> PlayerUiState) -> Unit,
     private val updateRemainingMs: (Long) -> Unit,
+    private val resetRemainingMs: () -> Unit,
     private val pausePlayback: () -> Unit,
 ) {
     private var tickerJob: Job? = null
@@ -72,6 +73,9 @@ class PlayerSleepTimerCoordinator(
         settings.setSleepTimerEndAtMsBlocking(0L)
         tickerJob?.cancel()
         tickerJob = null
+        // M-6 后倒计时 tick 只写窄流，uiState 值已不代表窄流——取消必须显式复位窄流，
+        // 否则 Chip 上残留的倒计时不会消失（2026-09-03 回归修复）。
+        resetRemainingMs()
         updateState {
             it.copy(
                 isSleepTimerActive = false,
@@ -117,7 +121,9 @@ class PlayerSleepTimerCoordinator(
             current.isPlaying &&
             current.currentSong != null
         if (shouldFinishLastSong) {
-            // 离散事件：pending 状态进主 UiState（低频），剩余值同时归零窄流
+            // 离散事件：pending 状态进主 UiState（低频）；倒计时窄流显式归零
+            // （tick 一直写窄流、uiState 恒 0，值对比感知不到，必须显式复位）
+            resetRemainingMs()
             updateState {
                 it.copy(sleepTimerRemainingMs = 0L, sleepTimerPausePending = true)
             }

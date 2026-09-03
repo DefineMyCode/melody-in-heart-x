@@ -87,16 +87,15 @@ fun LyricsView(
         lyrics.lines.any { it.timeMs > 0 }
     }
 
-    // 获取当前高亮的歌词行索引
+    // 当前行索引：getCurrentLineIndex 内置 HIGHLIGHT_LEAD_MS 提前量——
+    // 行开始唱时恰好滚动到位、高亮过渡完成，而非唱过 ~300ms 后才反应
     val currentLineIndex = lyrics.getCurrentLineIndex(currentTimeMs)
 
-    // 当当前行索引变化时，自动滚动到该行
+    // 当前行索引变化时，自动滚动到该行
     LaunchedEffect(currentLineIndex) {
         if (currentLineIndex >= 0 && lyrics.lines.isNotEmpty()) {
-            // 让当前行大致居中，仅保留前一行在屏幕上
-            val targetIndex = currentLineIndex.coerceAtLeast(0)
             listState.animateScrollToItem(
-                index = targetIndex,
+                index = currentLineIndex,
                 scrollOffset = 0
             )
         }

@@ -294,6 +294,9 @@ object LrcParser {
         val lines = mutableListOf<LyricLine>()
         var title = ""
         var artist = ""
+        // [offset:] 全局时间偏移（毫秒）：正值表示歌词整体提前（按 LRC 规范，
+        // 大多数播放器实现为 timeMs += offset），此前被直接丢弃造成系统性滞后。
+        var offsetMs = 0L
 
         val lrcLines = content.split("\n")
         val timeRegex = Regex("""\[(\d{2}):(\d{2})(?:\.(\d{2,3}))?]""")
@@ -312,7 +315,14 @@ object LrcParser {
                 }
                 trimmedLine.startsWith("[al:") -> {} // 专辑，忽略
                 trimmedLine.startsWith("[by:") -> {} // 作者，忽略
-                trimmedLine.startsWith("[offset:") -> {} // 偏移，忽略
+                trimmedLine.startsWith("[offset:") -> {
+                    // 2026-09-03：解析全局偏移，修正歌词整体滞后/超前
+                    offsetMs = trimmedLine
+                        .substringAfter("[offset:")
+                        .substringBefore("]")
+                        .trim()
+                        .toLongOrNull() ?: 0L
+                }
                 else -> {
                     // 解析时间戳
                     val matches = timeRegex.findAll(trimmedLine)
@@ -331,7 +341,8 @@ object LrcParser {
 
                             val timeMs = TimeUnit.MINUTES.toMillis(minutes) +
                                     TimeUnit.SECONDS.toMillis(seconds) +
-                                    millis
+                                    millis +
+                                    offsetMs
 
                             lines.add(LyricLine(timeMs, text))
                         }

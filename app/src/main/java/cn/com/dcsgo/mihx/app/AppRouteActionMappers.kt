@@ -82,12 +82,14 @@ internal fun playlistRouteActions(
 internal fun userRouteActions(
     navController: NavHostController,
     onEmotionScanNow: () -> Unit = {},
+    onOpenMoodTimeSlot: () -> Unit = {},
 ): UserRouteActions = UserRouteActions(
     onShowSettings = { navController.navigate(AppRoutes.SETTINGS) },
     onShowPlaybackStats = { navController.navigate(AppRoutes.PLAYBACK_STATS) },
     onOpenFileCheck = { navController.navigate(AppRoutes.FILE_CHECK) },
     onEmotionScanNow = onEmotionScanNow,
     onOpenEmotionAnalysis = { navController.navigate(AppRoutes.EMOTION_ANALYSIS) },
+    onOpenMoodTimeSlot = onOpenMoodTimeSlot,
 )
 
 internal fun playStatsRouteActions(

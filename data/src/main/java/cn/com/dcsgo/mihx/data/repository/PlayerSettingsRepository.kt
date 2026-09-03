@@ -81,6 +81,20 @@ class PlayerSettingsRepository(
         }
     }
 
+    override val moodTimeSlotEnabled: Flow<Boolean> = settingsStore.data.map { preferences ->
+        preferences[PlayerSettingsKeys.MOOD_TIME_SLOT_ENABLED] == true
+    }
+
+    override fun currentMoodTimeSlotEnabled(): Boolean = runBlocking(Dispatchers.IO) {
+        moodTimeSlotEnabled.first()
+    }
+
+    override suspend fun setMoodTimeSlotEnabled(enabled: Boolean) {
+        settingsStore.edit { preferences ->
+            preferences[PlayerSettingsKeys.MOOD_TIME_SLOT_ENABLED] = enabled
+        }
+    }
+
     override fun currentGlobalUniformRandomEnabled(): Boolean {
         return runBlocking(Dispatchers.IO) {
             globalUniformRandomEnabled.first()

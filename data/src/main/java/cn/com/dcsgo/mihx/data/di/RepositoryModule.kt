@@ -15,6 +15,7 @@ import cn.com.dcsgo.mihx.data.repository.PlaylistResumeDataStore
 import cn.com.dcsgo.mihx.data.repository.PlaylistRepositoryAdapter
 import cn.com.dcsgo.mihx.data.repository.QuickSkipSongsRepository
 import cn.com.dcsgo.mihx.data.repository.SongRepositoryAdapter
+import cn.com.dcsgo.mihx.data.repository.TimeSlotConfigStore
 import cn.com.dcsgo.mihx.domain.repository.AlbumArtRepository
 import cn.com.dcsgo.mihx.domain.repository.LyricsRepository
 import cn.com.dcsgo.mihx.domain.repository.MusicImportRepository
@@ -31,6 +32,7 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
+import cn.com.dcsgo.mihx.data.di.TimeSlotConfigStore as TimeSlotConfigStoreQualifier
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -110,4 +112,15 @@ object RepositoryModule {
     fun provideDomainPlayerSettingsRepository(
         repository: PlayerSettingsRepository,
     ): DomainPlayerSettingsRepository = repository
+
+    @Provides
+    @Singleton
+    fun provideTimeSlotConfigStore(
+        @TimeSlotConfigStoreQualifier store: DataStore<Preferences>,
+    ): TimeSlotConfigStore = TimeSlotConfigStore(store)
+
+    @Provides
+    fun provideTimeSlotConfigRepository(
+        store: TimeSlotConfigStore,
+    ): cn.com.dcsgo.mihx.domain.repository.TimeSlotConfigRepository = store
 }

@@ -40,4 +40,12 @@ interface PlayerSettingsRepository {
     val emotionScanPaused: Flow<Boolean>
     fun currentEmotionScanPaused(): Boolean
     suspend fun setEmotionScanPaused(paused: Boolean)
+
+    /**
+     * 情境化随心播放增强总开关（默认关闭）。
+     * 开启后随心播放/无限随机在命中时段内只从时段配置的情绪词条歌曲中随机。
+     */
+    val moodTimeSlotEnabled: Flow<Boolean>
+    fun currentMoodTimeSlotEnabled(): Boolean
+    suspend fun setMoodTimeSlotEnabled(enabled: Boolean)
 }

@@ -15,7 +15,7 @@ enum class AppDestinations(
     companion object {
         fun fromRoute(route: String?): AppDestinations {
             return when {
-                // 我的页及其子页面（设置、播放统计、统计子页、歌曲 TOP 榜）
+                // 我的页及其子页面（设置、播放统计、统计子页、歌曲 TOP 榜、随心播放增强）
                 route == USER.route ||
                     route == AppRoutes.SETTINGS ||
                     route == AppRoutes.PLAYBACK_STATS ||
@@ -23,7 +23,8 @@ enum class AppDestinations(
                     route == AppRoutes.RAW_PLAY_STATS ||
                     route == AppRoutes.EFFECTIVE_PLAY_STATS ||
                     route == AppRoutes.SONG_TOP_LIST_FULL ||
-                    route == AppRoutes.EMOTION_ANALYSIS -> USER
+                    route == AppRoutes.EMOTION_ANALYSIS ||
+                    route == AppRoutes.MOOD_TIME_SLOT -> USER
                 // 曲库页及其子页面（歌单详情、歌手/专辑详情、多版本管理、秒切歌曲）
                 route == PLAYLIST.route ||
                     route?.startsWith("${PLAYLIST.route}/") == true ||

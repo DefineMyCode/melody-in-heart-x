@@ -43,6 +43,8 @@ class PlayerRuntimeFactory @Inject constructor(
     private val bluetoothPlaybackMonitorFactory: BluetoothPlaybackMonitorFactory,
     private val playerQueueServicesFactory: PlayerQueueServicesFactory,
     private val dispatchers: CoroutineDispatchers,
+    private val timeSlotConfigRepository: cn.com.dcsgo.mihx.domain.repository.TimeSlotConfigRepository,
+    private val songEmotionRepository: cn.com.dcsgo.mihx.domain.repository.SongEmotionRepository,
 ) {
     internal fun create(scope: CoroutineScope): PlayerRuntime {
         return PlayerRuntime(
@@ -58,6 +60,8 @@ class PlayerRuntimeFactory @Inject constructor(
             bluetoothPlaybackMonitorFactory = bluetoothPlaybackMonitorFactory,
             playerQueueServicesFactory = playerQueueServicesFactory,
             dispatchers = dispatchers,
+            timeSlotConfigRepository = timeSlotConfigRepository,
+            songEmotionRepository = songEmotionRepository,
         )
     }
 }
@@ -75,6 +79,8 @@ internal class PlayerRuntime(
     private val bluetoothPlaybackMonitorFactory: BluetoothPlaybackMonitorFactory,
     private val playerQueueServicesFactory: PlayerQueueServicesFactory,
     private val dispatchers: CoroutineDispatchers,
+    private val timeSlotConfigRepository: cn.com.dcsgo.mihx.domain.repository.TimeSlotConfigRepository,
+    private val songEmotionRepository: cn.com.dcsgo.mihx.domain.repository.SongEmotionRepository,
 ) {
     private val mediaControllerGraph: PlayerMediaControllerGraph by lazy {
         PlayerMediaControllerGraph(
@@ -348,6 +354,30 @@ internal class PlayerRuntime(
             planControllerQueue = controllerQueuePlanner::plan,
         )
     }
+    // ── 情境化随心播放（一期）数据源 ──
+    // 时段配置量级小，启动时快照 + 配置页变更后主动刷新（refreshMoodSlotCache）；
+    // 情绪词条映射同样快照（getAll 全量，随歌曲导入/校准低频变化）。
+    @Volatile
+    private var moodSlotConfigsCache: List<cn.com.dcsgo.mihx.core.model.TimeSlotConfig> = emptyList()
+    @Volatile
+    private var moodEmotionTagsCache: Map<Int, List<String>> = emptyMap()
+
+    private fun refreshMoodSlotCache() {
+        scope.launch {
+            runCatching {
+                moodSlotConfigsCache = timeSlotConfigRepository.currentConfigs()
+                moodEmotionTagsCache = songEmotionRepository.getAll().mapValues { (_, emotion) ->
+                    cn.com.dcsgo.mihx.core.model.emotionTagsOf(emotion)
+                }
+            }.onFailure { AppLog.warning(TAG, "refreshMoodSlotCache failed: ${it.message}") }
+        }
+    }
+
+    /** 供配置页保存/删除后立即刷新缓存（否则判定仍用旧配置直到下次冷启动） */
+    fun refreshMoodSlots() {
+        refreshMoodSlotCache()
+    }
+
     private val randomQueueFacade = PlayerRandomQueueFacade(
         state = { _uiState.value },
         updateState = ::updateUiState,
@@ -357,6 +387,9 @@ internal class PlayerRuntime(
         playFromQueue = { queue, index -> playbackBridgeFacade.playFromQueue(queue, index) },
         rawPlayCounts = playStatsRepository::getRawPlayCounts,
         log = { message -> AppLog.debug(TAG, message) },
+        moodSlotConfigs = { moodSlotConfigsCache },
+        moodSlotEnabled = { playerSettingsRepository.currentMoodTimeSlotEnabled() },
+        moodEmotionTagsOf = { song -> moodEmotionTagsCache[song.id].orEmpty() },
     )
     private val lifecycleFacade = PlayerLifecycleFacade(
         startMediaSessionService = { mediaControllerGraph.startService() },
@@ -426,6 +459,8 @@ internal class PlayerRuntime(
                 sleepTimerCoordinator.restore()
             }
             startupFacade.start()
+            // 情境化随心播放：启动后异步拉取时段配置与情绪词条快照（低频，不阻塞启动）
+            refreshMoodSlotCache()
             if (startupSettings.bluetoothPlaybackMonitoringEnabled) {
                 bluetoothGraph.initialize()
             }
@@ -677,6 +712,11 @@ internal class PlayerRuntime(
 
     fun playRandomQueue(): Boolean {
         return randomQueueFacade.playRandomQueue()
+    }
+
+    /** 当前生效的情境时段（供 UI 归因 toast；与 facade 判定同源） */
+    internal fun currentMoodSlot(): MoodSlotState? {
+        return randomQueueFacade.currentMoodSlot()
     }
 
     fun startInfinitePlay(): Boolean {

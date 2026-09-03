@@ -40,6 +40,7 @@ class PlayerSleepTimerCoordinatorTest {
         override val lyricFontScale: Flow<Float> = emptyFlow()
         override val dailyListeningGoalMinutes: Flow<Int> = emptyFlow()
         override val emotionScanPaused: Flow<Boolean> = emptyFlow()
+        override val moodTimeSlotEnabled: Flow<Boolean> = emptyFlow()
         override fun currentGlobalUniformRandomEnabled(): Boolean = false
         override fun currentBluetoothPlaybackMonitoringEnabled(): Boolean = false
         override fun currentPlaybackNotificationEnabled(): Boolean = false
@@ -54,6 +55,8 @@ class PlayerSleepTimerCoordinatorTest {
         override fun setSleepTimerPlayLastSongBlocking(enabled: Boolean) { playLastSong = enabled }
         override fun currentEmotionScanPaused(): Boolean = false
         override suspend fun setEmotionScanPaused(paused: Boolean) = Unit
+        override fun currentMoodTimeSlotEnabled(): Boolean = false
+        override suspend fun setMoodTimeSlotEnabled(enabled: Boolean) = Unit
         override suspend fun setThemeMode(mode: cn.com.dcsgo.mihx.core.model.ThemeMode) = Unit
         override suspend fun setThemeVariant(variant: cn.com.dcsgo.mihx.core.model.ThemeVariant) = Unit
         override suspend fun setGlobalUniformRandomEnabled(enabled: Boolean) = Unit

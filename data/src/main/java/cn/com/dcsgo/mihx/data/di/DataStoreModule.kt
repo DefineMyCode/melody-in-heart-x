@@ -6,6 +6,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import cn.com.dcsgo.mihx.data.repository.PlayerSettingsKeys
 import cn.com.dcsgo.mihx.data.repository.playerSettingsDataStore
+import cn.com.dcsgo.mihx.data.repository.timeSlotConfigDataStore
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -20,6 +21,10 @@ annotation class PlayerSettingsStore
 
 @Qualifier
 @Retention(AnnotationRetention.BINARY)
+annotation class TimeSlotConfigStore
+
+@Qualifier
+@Retention(AnnotationRetention.BINARY)
 annotation class LegacyMusicPlayerPreferences
 
 @Module
@@ -31,6 +36,13 @@ object DataStoreModule {
     fun providePlayerSettingsDataStore(
         @ApplicationContext context: Context,
     ): DataStore<Preferences> = context.applicationContext.playerSettingsDataStore
+
+    @Provides
+    @Singleton
+    @TimeSlotConfigStore
+    fun provideTimeSlotConfigDataStore(
+        @ApplicationContext context: Context,
+    ): DataStore<Preferences> = context.applicationContext.timeSlotConfigDataStore
 
     @Provides
     @Singleton

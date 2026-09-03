@@ -3,7 +3,20 @@ package cn.com.dcsgo.mihx.feature.player
 import cn.com.dcsgo.mihx.core.model.PlayMode
 import cn.com.dcsgo.mihx.core.model.PlayQueue
 import cn.com.dcsgo.mihx.core.model.Song
+import cn.com.dcsgo.mihx.core.model.emotionTagsOf
+import cn.com.dcsgo.mihx.domain.playback.MoodSlotPolicy
+import cn.com.dcsgo.mihx.domain.playback.MoodSlotResolver
 import cn.com.dcsgo.mihx.domain.playback.RandomQueuePlanner
+
+/**
+ * 情境化随心播放的判定结果（设计文档 §4.2/§4.3）：
+ * [tags] 为 null 表示增强未生效；非 null 时随机只从带这些词条的歌曲中选。
+ * [slotName] 用于 toast 归因。
+ */
+data class MoodSlotState(
+    val slotName: String,
+    val tags: Set<String>,
+)
 
 class PlayerRandomQueueFacade(
     private val state: () -> PlayerUiState,
@@ -15,19 +28,65 @@ class PlayerRandomQueueFacade(
     private val rawPlayCounts: (List<Int>) -> Map<Int, Int> = { emptyMap() },
     private val log: (String) -> Unit,
     private val planner: RandomQueuePlanner = RandomQueuePlanner(),
+    // 情境化随心播放（一期）：每次随机时即时判定当前生效时段。
+    // null = 未生效（开关关 / 无配置 / 无命中时段），随机行为与现状完全一致。
+    private val moodSlotResolver: MoodSlotResolver = MoodSlotResolver(),
+    private val moodSlotConfigs: () -> List<cn.com.dcsgo.mihx.core.model.TimeSlotConfig> = { emptyList() },
+    private val moodSlotEnabled: () -> Boolean = { false },
+    private val moodEmotionTagsOf: (Song) -> List<String> = { emptyList() },
+    // 当前时刻（当日分钟数）；注入以便单测脱离真实时钟
+    private val nowMinuteOfDay: () -> Int = {
+        java.util.Calendar.getInstance().let { calendar ->
+            calendar.get(java.util.Calendar.HOUR_OF_DAY) * 60 + calendar.get(java.util.Calendar.MINUTE)
+        }
+    },
 ) {
     private val recentPlayedSongIds = mutableSetOf<Int>()
+
+    /** 暴露当前生效的情境时段（供 UI 归因 toast；与 playRandomQueue 内部判定同源） */
+    internal fun currentMoodSlot(): MoodSlotState? = activeMoodSlot()
+
+    /** 当前生效的情境时段；null = 增强未生效 */
+    private fun activeMoodSlot(): MoodSlotState? {
+        if (!moodSlotEnabled()) return null
+        val hit = moodSlotResolver.hitSlot(moodSlotConfigs(), nowMinuteOfDay()) ?: return null
+        return MoodSlotState(slotName = hit.name, tags = hit.tags.toSet())
+    }
+
+    /**
+     * 按生效时段的情绪词条过滤候选池（§4.2）。
+     * 过滤发生在 planner 入口：分层抢占（低播放优先）与最近播放淘汰零改动复用。
+     * 词条组合 0 首时返回 null → 调用方回退全库随机（§4.3 降级）。
+     */
+    private fun filterByMoodTags(
+        songs: List<Song>,
+        mood: MoodSlotState,
+    ): List<Song>? {
+        val filtered = songs.filter { song ->
+            moodEmotionTagsOf(song).any { it in mood.tags }
+        }
+        if (filtered.isEmpty()) {
+            log("moodSlot: no songs for tags=${mood.tags}, fall back to full library")
+            return null
+        }
+        if (filtered.size < MoodSlotPolicy.POOL_WARN_THRESHOLD) {
+            log("moodSlot: small pool (${filtered.size}) for tags=${mood.tags}, will loop")
+        }
+        return filtered
+    }
 
     /**
      * 生成随机队列并开始顺序播放。
      * @return true 表示已生成队列并开始播放；false 表示库中无可播放歌曲，未开始播放。
      */
     fun playRandomQueue(): Boolean {
+        val mood = activeMoodSlot()
+        val candidates = mood?.let { filterByMoodTags(state().songs, it) } ?: state().songs
         val plan = planner.planRandomQueue(
-            songs = state().songs,
+            songs = candidates,
             recentSongIds = recentPlayedSongIds,
             uniformRandomEnabled = state().globalUniformRandomEnabled,
-            playCounts = rawPlayCounts(state().songs.map { it.id }),
+            playCounts = rawPlayCounts(candidates.map { it.id }),
         ) ?: return false
 
         updateState { it.copy(isInfinitePlay = false, infinitePlayedSongIds = emptySet()) }
@@ -38,7 +97,7 @@ class PlayerRandomQueueFacade(
         }
 
         setPlayQueue(plan.songs, 0, PlayMode.SEQUENTIAL)
-        log("playRandomQueue: songs=${plan.songs.size}, recent=${recentPlayedSongIds.size}")
+        log("playRandomQueue: songs=${plan.songs.size}, recent=${recentPlayedSongIds.size}, mood=${mood?.slotName}")
         return true
     }
 
@@ -88,13 +147,15 @@ class PlayerRandomQueueFacade(
         val current = state()
         if (!current.isInfinitePlay) return
 
+        val mood = activeMoodSlot()
+        val candidates = mood?.let { filterByMoodTags(current.songs, it) } ?: current.songs
         val queue = current.playQueue.withCurrentSongId(startedSongId)
         val plan = planner.planInfiniteRefill(
-            allSongs = current.songs,
+            allSongs = candidates,
             queue = queue,
             playedSongIds = current.infinitePlayedSongIds,
             uniformRandomEnabled = current.globalUniformRandomEnabled,
-            playCounts = rawPlayCounts(current.songs.map { it.id }),
+            playCounts = rawPlayCounts(candidates.map { it.id }),
         ) ?: return
         if (plan.addedSongs.isEmpty()) return
 

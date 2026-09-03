@@ -40,4 +40,7 @@ object PlayerSettingsKeys {
 
     // 情绪批扫手动暂停（详情页可暂停/继续）
     val EMOTION_SCAN_PAUSED = booleanPreferencesKey("emotion_scan_paused")
+
+    // 情境化随心播放增强总开关（默认关闭）
+    val MOOD_TIME_SLOT_ENABLED = booleanPreferencesKey("mood_time_slot_enabled")
 }

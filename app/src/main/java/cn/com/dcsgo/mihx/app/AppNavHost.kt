@@ -67,6 +67,10 @@ import cn.com.dcsgo.mihx.core.model.EmotionSongUiRow
 import cn.com.dcsgo.mihx.feature.user.PlaybackStatsRoute
 import cn.com.dcsgo.mihx.feature.user.SongTopListRoute
 import cn.com.dcsgo.mihx.feature.user.UserRoute
+import cn.com.dcsgo.mihx.feature.user.MoodTimeSlotRoute
+import cn.com.dcsgo.mihx.feature.user.MoodTimeSlotRouteActions
+import cn.com.dcsgo.mihx.feature.user.MoodTimeSlotRouteState
+import cn.com.dcsgo.mihx.feature.user.MoodSlotEditDialog
 import cn.com.dcsgo.mihx.feature.user.VersionComparisonRoute
 import cn.com.dcsgo.mihx.feature.user.VersionComparisonRouteActions
 import cn.com.dcsgo.mihx.feature.user.VersionComparisonRouteState
@@ -76,9 +80,16 @@ import cn.com.dcsgo.mihx.feature.user.VersionManagementRouteState
 import cn.com.dcsgo.mihx.navigation.AppDestinations
 import cn.com.dcsgo.mihx.navigation.AppRoutes
 import cn.com.dcsgo.mihx.ui.components.SongInfoDialog
+import androidx.lifecycle.viewmodel.compose.viewModel
 
 /** 路由 → 其所属底部 Tab 的序号（嵌套路由如设置/统计也映射到所属 Tab，同一 Tab 内序号相同则无转场） */
 private fun tabOrdinal(route: String?): Int = AppDestinations.fromRoute(route).ordinal
+
+/** 当前时刻的当日分钟数（0–1439），供情境化随心播放入口卡/配置页判定"生效中" */
+private fun currentMinuteOfDay(): Int =
+    java.util.Calendar.getInstance().let { calendar ->
+        calendar.get(java.util.Calendar.HOUR_OF_DAY) * 60 + calendar.get(java.util.Calendar.MINUTE)
+    }
 
 @Composable
 fun AppNavHost(
@@ -192,11 +203,24 @@ fun AppNavHost(
                     },
                     onLuckyPlayClick = {
                         val started = playerViewModel.playRandomQueue()
+                        if (started) {
+                            // 情境化随心播放归因（§4.5）：让"这首歌为什么被选中"可解释
+                            playerViewModel.currentMoodSlotName()?.let { slotName ->
+                                showToast("已按「$slotName」为你随机播放")
+                            }
+                        } else {
+                            showToast("还没有可播放的音乐，请先导入歌曲吧~")
+                        }
                         playlistResumeViewModel.switchSource(null, uiState.currentSong?.id)
                         started
                     },
                     onStartInfinitePlay = {
                         val started = playerViewModel.startInfinitePlay()
+                        if (started) {
+                            playerViewModel.currentMoodSlotName()?.let { slotName ->
+                                showToast("已按「$slotName」开启无限随机播放")
+                            }
+                        }
                         playlistResumeViewModel.switchSource(null, uiState.currentSong?.id)
                         started
                     },
@@ -476,12 +500,26 @@ fun AppNavHost(
                         AppLog.error("AppNavHost", "loadPlaybackStatsSnapshot failed: ${it.message}", it)
                     }
             }
+            val moodTimeSlotViewModel: cn.com.dcsgo.mihx.app.mood.MoodTimeSlotViewModel = viewModel()
+            val moodConfigs by moodTimeSlotViewModel.configs.collectAsStateWithLifecycle()
+            val moodEnabled by moodTimeSlotViewModel.moodTimeSlotEnabled.collectAsStateWithLifecycle()
+            // 入口卡"生效中"态的当前时刻：分钟级刷新即可（不必每秒）
+            var moodNowMinute by remember { mutableStateOf(currentMinuteOfDay()) }
+            LaunchedEffect(Unit) {
+                while (true) {
+                    moodNowMinute = currentMinuteOfDay()
+                    kotlinx.coroutines.delay(30_000L)
+                }
+            }
             UserRoute(
                 state = userRouteState(
                     snapshot = snapshot,
                     validationResult = validationResult,
                     isValidating = isValidating,
                     emotionStatus = emotionStatus,
+                    moodSlotConfigs = moodConfigs,
+                    moodSlotEnabled = moodEnabled,
+                    nowMinuteOfDay = moodNowMinute,
                 ),
                 actions = userRouteActions(
                     navController = navController,
@@ -489,8 +527,73 @@ fun AppNavHost(
                         emotionViewModel.startManualScan()
                         showToast("已开始扫描，可离开本页，后台继续")
                     },
+                    onOpenMoodTimeSlot = { navController.navigate(AppRoutes.MOOD_TIME_SLOT) },
                 ),
             )
+        }
+
+        composable(AppRoutes.MOOD_TIME_SLOT) {
+            val moodTimeSlotViewModel: cn.com.dcsgo.mihx.app.mood.MoodTimeSlotViewModel = viewModel()
+            val moodConfigs by moodTimeSlotViewModel.configs.collectAsStateWithLifecycle()
+            val moodEnabled by moodTimeSlotViewModel.moodTimeSlotEnabled.collectAsStateWithLifecycle()
+            val moodTagCounts by moodTimeSlotViewModel.tagCounts.collectAsStateWithLifecycle()
+            val moodLibrarySize by moodTimeSlotViewModel.librarySize.collectAsStateWithLifecycle()
+            LaunchedEffect(Unit) { moodTimeSlotViewModel.loadStats() }
+            var editingSlot by remember { mutableStateOf<cn.com.dcsgo.mihx.core.model.TimeSlotConfig?>(null) }
+            var showAddDialog by remember { mutableStateOf(false) }
+            var moodNowMinute by remember { mutableStateOf(currentMinuteOfDay()) }
+            LaunchedEffect(Unit) {
+                while (true) {
+                    moodNowMinute = currentMinuteOfDay()
+                    kotlinx.coroutines.delay(30_000L)
+                }
+            }
+            MoodTimeSlotRoute(
+                state = MoodTimeSlotRouteState(
+                    configs = moodConfigs,
+                    enabled = moodEnabled,
+                    tagCounts = moodTagCounts.associate { it.tag to it.songCount },
+                    librarySize = moodLibrarySize,
+                    nowMinuteOfDay = moodNowMinute,
+                ),
+                actions = MoodTimeSlotRouteActions(
+                    onBack = navController::navigateUp,
+                    onToggleEnabled = { moodTimeSlotViewModel.setEnabled(it) },
+                    onEditSlot = { editingSlot = it },
+                    onDeleteSlot = { id ->
+                        moodTimeSlotViewModel.delete(id)
+                        showToast("已删除时段配置")
+                    },
+                    onAddSlot = { showAddDialog = true },
+                ),
+                showToast = showToast,
+            )
+            val editing = editingSlot
+            if (editing != null || showAddDialog) {
+                MoodSlotEditDialog(
+                    editing = editing,
+                    existingConfigs = moodConfigs,
+                    tagCounts = moodTagCounts.associate { it.tag to it.songCount },
+                    librarySize = moodLibrarySize,
+                    availableTags = moodTagCounts.map { it.tag },
+                    manualOnlyTags = listOf("鬼畜", "沙雕", "戏谑", "荒诞"),
+                    onDismiss = {
+                        editingSlot = null
+                        showAddDialog = false
+                    },
+                    onSave = { config ->
+                        moodTimeSlotViewModel.save(config) { success, message ->
+                            if (success) {
+                                editingSlot = null
+                                showAddDialog = false
+                                showToast("已保存时段配置")
+                            } else {
+                                showToast(message ?: "保存失败")
+                            }
+                        }
+                    },
+                )
+            }
         }
 
         composable(AppRoutes.FILE_CHECK) {

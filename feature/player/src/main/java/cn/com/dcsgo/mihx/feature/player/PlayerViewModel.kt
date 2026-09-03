@@ -275,6 +275,9 @@ class PlayerViewModel @Inject constructor(
         return runtime.playRandomQueue()
     }
 
+    /** 当前生效的情境时段名（null = 增强未生效）；供 UI 归因 toast，与随机判定同源 */
+    fun currentMoodSlotName(): String? = runtime.currentMoodSlot()?.slotName
+
     /**
      * 关联播放：清空播放队列，仅保留当前歌曲，再追加其关联专辑歌曲与关联歌手的所有歌曲（去重随机）。
      * @return 实际追加的关联歌曲数量

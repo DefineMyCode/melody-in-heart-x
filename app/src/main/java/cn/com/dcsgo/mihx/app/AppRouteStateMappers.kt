@@ -72,6 +72,10 @@ internal fun userRouteState(
     isValidating: Boolean = false,
     emotionStatus: cn.com.dcsgo.mihx.app.emotion.EmotionScanUiStatus =
         cn.com.dcsgo.mihx.app.emotion.EmotionScanUiStatus(),
+    /** 情境化随心播放：入口卡状态 */
+    moodSlotConfigs: List<cn.com.dcsgo.mihx.core.model.TimeSlotConfig> = emptyList(),
+    moodSlotEnabled: Boolean = false,
+    nowMinuteOfDay: Int = 0,
 ): UserRouteState = UserRouteState(
     todayDurationMs = snapshot.todayDurationMs,
     weekTotalMs = snapshot.weekTotalMs,
@@ -81,6 +85,9 @@ internal fun userRouteState(
     emotionTotalCount = emotionStatus.totalCount,
     emotionScanning = emotionStatus.scanning,
     emotionPaused = emotionStatus.paused,
+    moodSlotConfigs = moodSlotConfigs,
+    moodSlotEnabled = moodSlotEnabled,
+    nowMinuteOfDay = nowMinuteOfDay,
 )
 
 internal fun playStatsRouteState(

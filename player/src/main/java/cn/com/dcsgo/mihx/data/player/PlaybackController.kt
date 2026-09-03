@@ -131,9 +131,15 @@ class PlaybackController(
     }
 
     override fun startService() {
-        // M-12（评审 2026-09-03）：API 26+ 应用在后台时直接 startService 会抛
-        // IllegalStateException；startForegroundService 才是服务启动的安全路径。
-        ContextCompat.startForegroundService(context, Intent(context, serviceClass))
+        // 2026-09-03 ANR 回归修复（M-12 整改引入）：
+        // startForegroundService() 强制要求服务 5s 内调用 startForeground()，
+        // 而 MediaSessionService 只在 player 有媒体项/激活播放时才发布通知并
+        // startForeground()——冷启动空会话永不触发 → 系统判定 FGS 超时 ANR
+        // （真机日志 "did not then call Service.startForeground()"）。
+        // 本方法唯一调用链是 UI 冷启动（Activity 前台），startService 合法且无
+        // FGS 契约；本项目亦无 WorkManager 等后台拉起路径，即使出现，
+        // connect() 的 SessionToken 机制同样能拉起服务。
+        context.startService(Intent(context, serviceClass))
     }
 
     override fun connect(onConnected: (ControllerPlaybackSnapshot) -> Unit) {

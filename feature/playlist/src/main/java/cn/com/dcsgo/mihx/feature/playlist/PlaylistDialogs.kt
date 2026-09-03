@@ -87,7 +87,7 @@ fun DeletePlaylistDialog(
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("删除歌单") },
-        text = { Text("确定要删除「$playlistName」吗？歌单内的歌曲不会被删除。") },
+        text = { Text("确定要删除「$playlistName」吗？歌单内的歌曲不会被删除，仍可在曲库的「本地音乐」中找到。") },
         confirmButton = {
             TextButton(onClick = onConfirm) {
                 Text("删除", color = MaterialTheme.colorScheme.error)
@@ -110,7 +110,7 @@ fun RemoveSongConfirmDialog(
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("从歌单移除") },
-        text = { Text("确定要将「$songTitle」从「$playlistName」中移除吗？\n\n歌曲本身不会被删除，仍可在其他歌单或「我的」中找到。") },
+        text = { Text("确定要将「$songTitle」从「$playlistName」中移除吗？\n\n歌曲本身不会被删除，仍可在曲库的「本地音乐」中找到。") },
         confirmButton = {
             TextButton(onClick = onConfirm) {
                 Text("移除", color = MaterialTheme.colorScheme.error)

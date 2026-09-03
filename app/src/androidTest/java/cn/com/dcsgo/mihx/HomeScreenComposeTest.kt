@@ -39,7 +39,7 @@ class HomeScreenComposeTest {
         }
 
         composeRule.onNodeWithText("还没有音乐可播放").assertIsDisplayed()
-        composeRule.onNodeWithText("前往「我的」页面，\n添加本地音乐文件或导入文件夹吧~").assertIsDisplayed()
+        composeRule.onNodeWithText("前往「曲库」页面，\n添加本地音乐文件或添加歌曲到播放队列吧~").assertIsDisplayed()
         composeRule.onNodeWithContentDescription("随机播放低播放量歌曲").assertIsDisplayed()
     }
 

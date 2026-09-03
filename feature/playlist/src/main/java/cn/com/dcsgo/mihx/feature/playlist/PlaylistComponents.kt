@@ -122,8 +122,11 @@ fun EmptyPlaylistDetailHint() {
             fontWeight = FontWeight.Medium
         )
         Spacer(modifier = Modifier.height(6.dp))
+        // 加歌入口是本地音乐/歌手/专辑/情绪页歌曲菜单的「添加到歌单」；
+        // 歌单详情页内长按已用于拖拽排序（PlaylistScreen.kt L459），旧提示
+        // 「长按任意歌曲即可添加」与现交互冲突，2026-09-03 文案同步。
         Text(
-            text = "长按任意歌曲即可添加到这个歌单",
+            text = "在曲库的「本地音乐」等页面点击歌曲菜单的「添加到歌单」即可加入",
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.outline,
             textAlign = TextAlign.Center

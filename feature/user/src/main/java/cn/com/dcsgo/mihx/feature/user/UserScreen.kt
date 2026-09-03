@@ -17,7 +17,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.MusicNote
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -134,19 +134,23 @@ internal fun MoodTimeSlotSection(
                 modifier = Modifier.weight(1f),
             )
             Icon(
-                Icons.Default.ChevronRight,
+                // 与播放统计/文件校验卡同款细箭头（ChevronRight 过粗，视觉不统一，2026-09-04）
+                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                 contentDescription = null,
-                modifier = Modifier.size(18.dp),
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
         Spacer(Modifier.height(5.dp))
         Text(
             text = when {
-                !enabled && configs.isEmpty() -> "未配置，点击添加"
+                // 总开关关闭时功能整体未启用——即使恰好在某时段内也不算"生效中"
+                // （生效 = 开关开 + 时刻命中时段；与设计文档 §3.3 一致，2026-09-04 修正）
+                !enabled -> when {
+                    configs.isEmpty() -> "未配置，点击添加"
+                    else -> "功能未启用 · ${configs.size} 个时段已配置"
+                }
                 active != null -> "「${active.name}」生效中 · ${active.timeRangeText}"
-                configs.isNotEmpty() -> "${configs.size} 个时段已配置 · 未在时段内"
-                else -> "已配置但开关未开启"
+                else -> "${configs.size} 个时段已配置 · 未在时段内"
             },
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,

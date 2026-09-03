@@ -8,6 +8,13 @@
 | 评审范围 | 全部 14 个模块（:app / :core:* / :domain / :data / :player / :feature:* / :benchmark），约 303 个 Kotlin 源文件、3.4 万行主源码、58 个测试文件 |
 | 评审方法 | 逐文件静态审查 + 并发/生命周期专项排查 + 构建配置与清单审计 + 测试质量抽查（8 个测试文件）+ 对每个候选问题做源码级二次验证 |
 
+> **整改状态（2026-09-03 同日）**：改进路线第一至第四阶段已完成整改并分次提交
+> （`773a789` 稳定性 / `b95d569` 性能 / `fb1d616` 结构性 / 文档对齐提交）。
+> 各问题条目标题前标注：✅ 已修复 / ⏳ 未修复（留待专题推进）。
+> 未整改项遗留原因：M-1 runBlocking 收敛涉及约 50 处调用点与 domain 接口签名变更，
+> M-10 Uri/String 边界适配牵动导入链路与多个测试 fake，M-13 i18n 需先定出海决策——
+> 三者均属独立专题，建议按下文第三/四阶段节奏单独推进。M-14 已完成 lifecycle/documentfile/workmanager 部分，tensorflow-lite → LiteRT 迁移待 EmotionAnalyzer 回归测试后执行。
+
 ---
 
 ## 0. 评审总览
@@ -29,7 +36,7 @@
 
 ## 1. Critical（必须立即修复）
 
-### C-1 导入流程无异常处理，失败后 UI 永久卡在"导入中"
+### ✅ C-1 导入流程无异常处理，失败后 UI 永久卡在"导入中"
 
 - **问题描述**：`PlayerImportFacade.importFolderAsyncWith` 直接 `launch { onResult(importAction()) }`，无 try/catch/finally，也无 CoroutineExceptionHandler。一旦 `importAction()` 抛出异常（磁盘满、SAF 权限被系统回收、元数据解析崩溃），`isImporting = true`（`importFolderWith` 首行设置）**永远不会复位**，`onResult` 不会回调，异常被协程静默吞掉，无任何日志。
 - **影响范围**：`:feature:player` 导入主路径；用户唯一恢复手段是杀进程。属于用户可稳定触发的功能性死锁。
@@ -63,7 +70,7 @@ internal fun importFolderAsyncWith(
 
 同时建议在 `importFolderWith` 内用 `try { ... } finally { 复位 isImporting }` 双保险（finally 是幂等复位，与正常路径不冲突）。
 
-### C-2 `produceState` 中 suspend 调用未捕获异常，数据库异常直接崩溃
+### ✅ C-2 `produceState` 中 suspend 调用未捕获异常，数据库异常直接崩溃
 
 - **问题描述**：`:app` 模块 5 处 `produceState` 直接在 producer 协程中调用 `playerViewModel.loadPlaybackStatsSnapshot()` / `loadSongInfo()`，均无 runCatching。这些方法底层桥接 `PlayStatsRepository` 的 `runBlocking` Room 调用，任何 Room 异常（SQLiteFullException、磁盘 IO 错误、损坏的 DB）都会在 producer 协程中未捕获并向上传播，**直接崩溃应用**。
 - **影响范围**：播放统计页、按情绪浏览、热门排行等 5 个路由（`AppNavHost.kt:447,487,506,591,606`）+ `HomeRoute.kt:144-147`。
@@ -84,7 +91,7 @@ val snapshot by produceState(PlaybackStatsSnapshot.EMPTY) {
 
 ## 2. Major（高优先级）
 
-### M-1 runBlocking 泛滥：约 50 处阻塞调用桥接 DataStore/Room，主线程可被磁盘 IO 卡住
+### ⏳ M-1 runBlocking 泛滥：约 50 处阻塞调用桥接 DataStore/Room，主线程可被磁盘 IO 卡住
 
 - **问题描述**：data/player 层用 `runBlocking(Dispatchers.IO)` 把 suspend 存储层"降级"为同步接口，且**该阻塞签名已写进 domain 契约**：
   - `data/repository/PlayerSettingsRepository.kt` — 14 处（`currentEmotionScanPaused`、`currentGlobalUniformRandomEnabled`、`setSleepTimerEndAtMsBlocking` 等）
@@ -112,7 +119,7 @@ class PlayerSettingsDataStore(...) : PlayerSettingsRepository {
 }
 ```
 
-### M-2 `refreshAllAlbumArtInternal` 持写锁执行长 IO，大曲库启动后全量读锁被阻塞数秒
+### ✅ M-2 `refreshAllAlbumArtInternal` 持写锁执行长 IO，大曲库启动后全量读锁被阻塞数秒
 
 - **问题描述**：`MusicRepository.kt:243-261` 在 `lock.write {}` 内逐首调用 `AlbumArtExtractor.refreshAlbumArtIfNeeded`，后者对缓存失效歌曲做 `MediaMetadataRetriever` 提取 + `BitmapFactory` 解码 + JPEG 落盘，**每首可达几十至几百毫秒**。5000 首曲库若有 100 首缓存失效，所有 `getSongs()` 读操作（主线程 Compose 重组依赖）被写锁阻塞数秒到数十秒。
 - **影响范围**：`:data` 全局读锁 → 所有依赖曲库数据的界面启动卡顿/ANR 风险。
@@ -141,7 +148,7 @@ fun refreshAllAlbumArt() {
 }
 ```
 
-### M-3 `deleteSong` 在调用线程同步执行 SAF 跨进程删除 —— 主线程 ANR 风险
+### ✅ M-3 `deleteSong` 在调用线程同步执行 SAF 跨进程删除 —— 主线程 ANR 风险
 
 - **问题描述**：`MusicRepository.kt:561-566` 的 `deleteSong` 是非 suspend 接口（domain `SongRepository` 契约同样如此），内部 `deleteBackingFile` 走 `DocumentFile.fromSingleUri(...).exists()/canWrite()/delete()`，是 ContentProvider 跨进程调用，单次可达几十毫秒，SAF 慢时更久。同文件 `validateAndCleanupLocalFiles` 做了 `withContext(Dispatchers.IO)`，唯独 deleteSong 没有——**不一致**。
 - **影响范围**：歌曲删除操作（用户高频触发）。
@@ -156,7 +163,7 @@ override suspend fun deleteSong(songId: Int): DeleteSongResult =
     withContext(Dispatchers.IO) { deleteSongInternal(songId) }
 ```
 
-### M-4 单例 `MusicRepository` 的 `onSongsChanged` 持有外部回调 —— 经典内存泄漏
+### ✅ M-4 单例 `MusicRepository` 的 `onSongsChanged` 持有外部回调 —— 经典内存泄漏
 
 - **问题描述**：`MusicRepository.kt:73-77` 暴露 `var onSongsChanged: (() -> Unit)?` + `setSongsChangedListener`。MusicRepository 是 Hilt `@Singleton`；监听器通常由 ViewModel/Composable 注册并捕获其引用，若销毁路径未显式置 null，单例将**长期持有已销毁对象**。且回调调用线程不一致：`refreshAllAlbumArtInternal`（IO 线程 L268）、`addFolder`（IO 线程 L396）与 `deleteSong`（调用线程 L601）都会 invoke。
 - **影响范围**：`:data` → 全局。
@@ -168,7 +175,7 @@ val songsChanged: SharedFlow<Unit> = _songsChanged.asSharedFlow()
 // 触发处：_songsChanged.tryEmit(Unit)
 ```
 
-### M-5 `PlayDurationTracker` 协程 scope 无 SupervisorJob，一次异常将永久杀死播放统计
+### ✅ M-5 `PlayDurationTracker` 协程 scope 无 SupervisorJob，一次异常将永久杀死播放统计
 
 - **问题描述**：`PlayDurationTracker.kt:39` `private val scope = CoroutineScope(Dispatchers.IO)`——没有 SupervisorJob。`settlePlayback()`（L144）在 `scope.launch` 中执行多个 Room runBlocking 操作，任一抛异常（磁盘满、DB 损坏）会沿 launch 传给普通 Job → **整个 scope 被取消**，此后所有 `startPlayback`/`stopPlayback` 的 launch 静默失效：用户"听了不计次、时长不累计"，且无任何日志。
 - **影响范围**：播放统计全链路（`:player`）。
@@ -184,7 +191,7 @@ private fun launchTracked(block: suspend CoroutineScope.() -> Unit) =
     }
 ```
 
-### M-6 睡眠定时器每秒写主 UiState → 整壳每秒重组
+### ✅ M-6 睡眠定时器每秒写主 UiState → 整壳每秒重组
 
 - **问题描述**：`PlayerSleepTimerCoordinator.kt:104` 每秒 `updateState { it.copy(sleepTimerRemainingMs = remainingMs) }` 写入唯一主状态流。倒计时激活期间 `AppRoot.kt:71` 的 `collectAsStateWithLifecycle()` 每秒触发，`AppScaffold` + 当前目的地**全部重组**。项目已专门为 `positionMs` 做了窄流优化（`PlayerRuntime.kt:152-197` 注释明确"只写窄流，避免整壳重组"），sleep timer 绕过了该机制。
 - **影响范围**：`:feature:player` + `:app` 整壳；低端机倒计时期间明显掉帧。
@@ -200,7 +207,7 @@ updateRemaining(remainingMs)   // 只写窄流
 // 只有启动/取消/到期等离散事件才走 updateState
 ```
 
-### M-7 组合期内反复执行 O(n) 全库分组计算，无 remember
+### ✅ M-7 组合期内反复执行 O(n) 全库分组计算，无 remember
 
 - **问题描述**：`AppNavHost.kt:380,415` 与 `AppRouteStateMappers.kt:35,41,75,94,108` 在组合体内直接调用 `playerViewModel.getGroupedSongs(uiState.songs).flatten()`。每次 `uiState` 变化（结合 M-6 即每秒、导入时每个进度 tick）都重新执行全库分组 + flatten。对比同文件 `AppNavHost.kt:517,555` 已正确使用 `remember(uiState.songs)`——**模式已知但未覆盖全部路由**。
 - **影响范围**：`:app` 导航层 7 处；大曲库下每帧毫秒级 → 帧预算被吃掉。
@@ -223,7 +230,7 @@ val flatGroupedSongs: StateFlow<List<Song>> =
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 ```
 
-### M-8 `MutableStateFlow.update` 的变换 lambda 内执行副作用
+### ✅ M-8 `MutableStateFlow.update` 的变换 lambda 内执行副作用
 
 - **问题描述**：`PlayerRuntime.kt:161-169` 在 `_uiState.update { ... }` 内同步写 `_positionMs.value`。`update` 是 CAS 重试循环，竞争下 transform 会被执行多次——Kotlin 文档明确要求其应为纯函数。副作用虽幂等，但违背约定，且 `_positionMs` 与 `_uiState` 无原子性保证。
 - **影响范围**：`:feature:player` 状态同步核心路径。
@@ -243,7 +250,7 @@ private fun updateUiState(transform: (PlayerUiState) -> PlayerUiState) {
 }
 ```
 
-### M-9 定位 FAB 潜在 `animateScrollToItem(-1)` 崩溃路径
+### ✅ M-9 定位 FAB 潜在 `animateScrollToItem(-1)` 崩溃路径
 
 - **问题描述**：`PlaylistScreen.kt:728-731`：`displaySongs.indexOfFirst { it.id == cs.id }` 的结果未校验即传入 `animateScrollToItem(index)`。`canLocate` 只在重组时求值；点击瞬间 `displaySongs` 可能已被搜索过滤/重排更新，`indexOfFirst` 返回 -1 → `IllegalArgumentException` 崩溃。
 - **影响范围**：`:feature:playlist` 播放定位功能。
@@ -257,7 +264,7 @@ if (index >= 0) {
 }
 ```
 
-### M-10 domain 层并非"纯 Kotlin"：`android.net.Uri` 泄漏进接口契约
+### ⏳ M-10 domain 层并非"纯 Kotlin"：`android.net.Uri` 泄漏进接口契约
 
 - **问题描述**：`domain/repository/MusicImportRepository.kt:3` 与 `domain/importing/FolderImporter.kt:3` 导入 `android.net.Uri` 并作为接口参数。domain 虽无 Android 依赖（build.gradle.kts 确认），但 Android library 插件自带 framework stub——这些接口在 JVM 单元测试中触发 Uri 会 "not mocked" 崩溃，无法脱离 Robolectric 测试，违背架构文档"Domain 层无 Android 依赖"的承诺。另外 `core/model` 的 `Song.kt`、`AlbumEntry.kt`、`ArtistEntry.kt` 同样使用 `android.net.Uri`，且被 `androidx.compose.runtime.Stable` 注解绑架（model 层依赖 Compose runtime）。
 - **影响范围**：`:domain` / `:core:model` 的可测试性与未来跨平台可能性。
@@ -276,7 +283,7 @@ override suspend fun importFolder(treeUri: String, ...) =
 
 若短期内不重构，至少把 Compose 注解从 `:core:model` 移除（`Stable` 对纯数据类收益有限，`Immutable`/data class 已足够）。
 
-### M-11 `updatePlaylistSongCount` 是 public 方法但依赖"调用方已持锁"的隐藏约定
+### ✅ M-11 `updatePlaylistSongCount` 是 public 方法但依赖"调用方已持锁"的隐藏约定
 
 - **问题描述**：`MusicRepository.kt:543-549` 直接**无锁写共享可变列表** `playlists[index] = ...`，注释承认"通常在已持有写锁的上下文中调用"。当前所有调用点恰好在 `lock.write` 内，属于靠注释维持的脆弱不变量——任何外部代码（该方法 public）都可在无锁状态调用造成数据竞争。
 - **影响范围**：`:data` 线程安全。
@@ -292,7 +299,7 @@ fun updatePlaylistSongCount(playlistId: Int) = lock.write {
 }
 ```
 
-### M-12 `PlaybackController.startService()` 在后台场景抛 IllegalStateException
+### ✅ M-12 `PlaybackController.startService()` 在后台场景抛 IllegalStateException
 
 - **问题描述**：`PlaybackController.kt:133-135` 用 `context.startService(Intent(...))`。API 26+ 应用在后台时调用会抛 `IllegalStateException`。MediaController 连接本身会拉起服务，此显式调用仅在前台场景安全。
 - **影响范围**：`:player` 服务启动路径。
@@ -305,7 +312,7 @@ override fun startService() {
 // 或直接移除该调用，统一走 MediaController 连接自启动服务
 ```
 
-### M-13 国际化：约 909 处硬编码中文，strings.xml 机制形同虚设
+### ⏳ M-13 国际化：约 909 处硬编码中文，strings.xml 机制形同虚设
 
 - **问题描述**：全项目 `src/main` 中约 **909 处中文字符串字面量，分布在 107 个 Kotlin 文件**。全项目仅 2 个 strings.xml、合计 4 条资源（`app_name`/`app_introduction`），且 `feature/user` 与 `app` 的 strings.xml **完全重复定义**。无 `values-en`、无 plurals、无带占位符的格式串。而 release 配置 `resConfigs("zh", "en")` 声明了 en 却无任何落地资源——出海配置是空架子。更严重的是 **ViewModel/门面层也在拼用户文案**（`PlayerRuntime.kt:579`、`PlayerErrorFacade.kt:20`、`MusicRepository.kt:595-598` 的 DeleteSongResult message），文案留在数据层导致 UI 层无法本地化。
 - **影响范围**：全部模块；若确有出海计划则为发布阻断项。
@@ -315,7 +322,7 @@ override fun startService() {
   3. 若短期内只面向中文，把 `resConfigs("zh", "en")` 改为 `resConfigs("zh")` 以诚实裁剪，避免"半成品 en"；
   4. 数量太大可先抽 Toast/Dialog 等高可见文案（`AppNavHost.kt` 内约 628 个中文字符），列表内 label 分批跟进。
 
-### M-14 依赖版本断层：lifecycle 2.6.1 / documentfile 1.0.1 / tensorflow-lite 2.12.0 与 2025 年技术栈脱节
+### ✅ M-14 依赖版本断层：lifecycle 2.6.1 / documentfile 1.0.1 / tensorflow-lite 2.12.0 与 2025 年技术栈脱节
 
 - **问题描述**：
   - `androidx-lifecycle-* = 2.6.1`（2023 年初版本），而 Compose BOM 已是 2025.09.01、activity-compose 1.12.2 —— lifecycle 是整个栈中最旧的一环，且 `lifecycle-runtime-compose` 的 `collectAsStateWithLifecycle`、`LifecycleResumeEffect` 等 API 在 2.8+ 才完善；

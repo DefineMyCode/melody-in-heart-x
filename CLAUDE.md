@@ -14,7 +14,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 | Room | 2.6.1 | Schema export in `data/schemas/` |
 | Hilt | 2.52 | |
 | minSdk / targetSdk | 33 / 36 | Java 11 bytecode |
-| versionName | 3.5.0-alpha (versionCode 28) | |
+| versionName | 3.5.1 (versionCode 29) | |
 
 ## Build / Test / Lint Commands
 
@@ -85,7 +85,7 @@ The `check` lifecycle task aggregates `spotlessCheck` + `verifyProductArchitectu
 ### Build Config Notes
 
 - Kotlin compilation runs **in-process** (`kotlin.compiler.execution.strategy=in-process`) for deterministic Windows builds.
-- JVM heap is set to 2048 MB.
+- JVM heap is set to 3072 MB (`org.gradle.jvmargs` in `gradle.properties`).
 - `android.nonTransitiveRClass=true` — do not reference resources across module boundaries by R class.
 - Compose compiler is the Kotlin 2.0+ **compose compiler plugin** (`org.jetbrains.kotlin.plugin.compose`). Do NOT add the old `composeOptions { kotlinCompilerExtensionVersion }` block — it won't work.
 - Release builds are **arm64-v8a only** (`minSdk 33` 全是 64 位设备) with `resConfigs("zh", "en")`; debug/benchmark 保留全 ABI 以兼容模拟器。
@@ -167,7 +167,7 @@ Canonical states: `idle → preparing → ready → playing ↔ paused/buffering
 
 ### Data Persistence
 
-- **Room** (`MelodyDatabase`, v8): songs, playlists, playlist-song refs, play stats, quick-skip songs, short-play counts, song group overrides, migration state, artists, albums. Schema exports in `data/schemas/`.
+- **Room** (`MelodyDatabase`, v10): songs, playlists, playlist-song refs, play stats, quick-skip songs, short-play counts, song group overrides, migration state, artists, albums. Schema exports in `data/schemas/`.
 - **DataStore Preferences**: player settings (theme, random mode, Bluetooth, notifications) and playback state snapshots.
 - **Legacy migration**: `SharedPreferencesLegacyJsonMigration` handles v1 JSON → Room migration on first launch. Legacy SharedPreferences readers remain only for that path.
 

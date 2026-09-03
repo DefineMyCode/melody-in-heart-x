@@ -36,6 +36,9 @@ class PlayerViewModel @Inject constructor(
     /** 播放位置（毫秒）窄流：播放中每 ~500ms 更新，仅供进度条/歌词等局部订阅，避免整壳重组。 */
     val positionMs: StateFlow<Long> = runtime.positionMs
 
+    /** 定时关闭剩余毫秒窄流：倒计时每秒更新，仅供定时关闭 Chip 局部订阅，避免整壳重组（M-6）。 */
+    val sleepTimerRemainingMs: StateFlow<Long> = runtime.sleepTimerRemainingMs
+
     /** 本地歌曲文件校验结果（未确认前保留，供结果页重复进入）。 */
     val validationResult: StateFlow<LocalFileValidationResult?> = runtime.validationResult
 
@@ -251,7 +254,7 @@ class PlayerViewModel @Inject constructor(
     }
 
     /** Deletes a song and removes it from UI state after the physical file is deleted. */
-    fun deleteSong(songId: Int): DeleteSongResult = runtime.deleteSong(songId)
+    suspend fun deleteSong(songId: Int): DeleteSongResult = runtime.deleteSong(songId)
 
     /** Detaches a song from its current version group by assigning a unique title override. */
     fun detachSongFromGroup(song: Song): Boolean = runtime.detachSongFromGroup(song)

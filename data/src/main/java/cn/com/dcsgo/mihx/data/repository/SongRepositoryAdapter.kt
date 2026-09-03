@@ -28,7 +28,7 @@ class SongRepositoryAdapter @Inject constructor(
     override fun updateSongTitleOverride(songId: Int, titleOverride: String?): Boolean =
         musicRepository.updateSongTitleOverride(songId, titleOverride)
 
-    override fun deleteSong(songId: Int): DeleteSongResult = musicRepository.deleteSong(songId)
+    override suspend fun deleteSong(songId: Int): DeleteSongResult = musicRepository.deleteSong(songId)
 
     override suspend fun validateAndCleanupLocalFiles(): LocalFileValidationResult =
         musicRepository.validateAndCleanupLocalFiles()

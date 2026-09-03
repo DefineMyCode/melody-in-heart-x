@@ -19,7 +19,7 @@ class SongDeletionCoordinatorTest {
     }
 
     @Test
-    fun successfulDeleteRequestsQueueRemovalAndRefresh() {
+    fun successfulDeleteRequestsQueueRemovalAndRefresh() = kotlinx.coroutines.runBlocking {
         val result = DeleteSongResult.Success(song(7), message = "deleted")
         deleteResult = result
 
@@ -32,7 +32,7 @@ class SongDeletionCoordinatorTest {
     }
 
     @Test
-    fun failedDeleteDoesNotRequestFollowUpActions() {
+    fun failedDeleteDoesNotRequestFollowUpActions() = kotlinx.coroutines.runBlocking {
         val result = DeleteSongResult.Failure("no permission")
         deleteResult = result
 

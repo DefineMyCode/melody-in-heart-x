@@ -22,6 +22,18 @@ import cn.com.dcsgo.mihx.feature.user.UserRouteState
  * 本文件中的函数均为纯函数（无导航副作用），可独立测试。
  */
 
+/**
+ * 全库分组展平结果（M-7，评审 2026-09-03）。
+ *
+ * `getGroupedSongs(...).flatten()` 是 O(n) 计算；此前各路由在组合体内重复执行，
+ * 每次 uiState 变化（含导入进度 tick）都白白重算。现在统一由调用方
+ * `remember(uiState.songs)` 计算后传入 mapper，组合期零重复开销。
+ */
+internal fun flatGroupedSongs(
+    uiState: PlayerUiState,
+    playerViewModel: PlayerViewModel,
+): List<Song> = playerViewModel.getGroupedSongs(uiState.songs).flatten()
+
 internal fun playlistRouteState(
     uiState: PlayerUiState,
     playerViewModel: PlayerViewModel,
@@ -29,25 +41,30 @@ internal fun playlistRouteState(
     resumeSong: Song? = null,
     /** 曲库「情绪」Tab 数据 */
     emotionRows: List<EmotionSongUiRow> = emptyList(),
-): PlaylistRouteState = PlaylistRouteState(
-    playlists = uiState.playlists,
-    emotionRows = emotionRows,
-    librarySongs = playerViewModel.getGroupedSongs(uiState.songs).flatten(),
-    libraryArtists = uiState.libraryArtists,
-    libraryAlbums = uiState.libraryAlbums,
-    selectedPlaylist = selectedPlaylist,
-    resumeSong = resumeSong,
-    selectedPlaylistSongs = selectedPlaylist?.let { playlist ->
-        playerViewModel.getGroupedSongs(
-            playerViewModel.getSongsByPlaylist(playlist),
-        ).flatten()
-    },
-    currentSong = uiState.currentSong,
-    isPlaying = uiState.isPlaying,
-    isImporting = uiState.isImporting,
-    importProgress = uiState.importProgress,
-    importTotal = uiState.importTotal,
-)
+    /** 预计算的 [flatGroupedSongs] 结果；为 null 时回退为内部计算（仅供旧调用方/测试） */
+    precomputedLibrarySongs: List<Song>? = null,
+): PlaylistRouteState {
+    val librarySongs = precomputedLibrarySongs ?: flatGroupedSongs(uiState, playerViewModel)
+    return PlaylistRouteState(
+        playlists = uiState.playlists,
+        emotionRows = emotionRows,
+        librarySongs = librarySongs,
+        libraryArtists = uiState.libraryArtists,
+        libraryAlbums = uiState.libraryAlbums,
+        selectedPlaylist = selectedPlaylist,
+        resumeSong = resumeSong,
+        selectedPlaylistSongs = selectedPlaylist?.let { playlist ->
+            playerViewModel.getGroupedSongs(
+                playerViewModel.getSongsByPlaylist(playlist),
+            ).flatten()
+        },
+        currentSong = uiState.currentSong,
+        isPlaying = uiState.isPlaying,
+        isImporting = uiState.isImporting,
+        importProgress = uiState.importProgress,
+        importTotal = uiState.importTotal,
+    )
+}
 
 internal fun userRouteState(
     snapshot: PlaybackStatsSnapshot,
@@ -71,8 +88,9 @@ internal fun playStatsRouteState(
     uiState: PlayerUiState,
     playerViewModel: PlayerViewModel,
     rankedCounts: List<Pair<Int, Int>>,
+    precomputedLibrarySongs: List<Song>? = null,
 ): PlayStatsRouteState {
-    val allSongs = playerViewModel.getGroupedSongs(uiState.songs).flatten()
+    val allSongs = precomputedLibrarySongs ?: flatGroupedSongs(uiState, playerViewModel)
     val statsContent = rankedStatsContent(
         songs = allSongs,
         rankedCounts = rankedCounts,
@@ -89,9 +107,10 @@ internal fun playbackStatsRouteState(
     uiState: PlayerUiState,
     playerViewModel: PlayerViewModel,
     snapshot: PlaybackStatsSnapshot,
+    precomputedLibrarySongs: List<Song>? = null,
 ): PlaybackStatsRouteState = PlaybackStatsRouteState(
     snapshot = snapshot,
-    songs = playerViewModel.getGroupedSongs(uiState.songs).flatten(),
+    songs = precomputedLibrarySongs ?: flatGroupedSongs(uiState, playerViewModel),
     currentSong = uiState.currentSong,
     isPlaying = uiState.isPlaying,
     dailyListeningGoalMinutes = uiState.dailyListeningGoalMinutes,
@@ -102,10 +121,11 @@ internal fun songTopListRouteState(
     playerViewModel: PlayerViewModel,
     snapshot: PlaybackStatsSnapshot,
     initialPeriod: String = "week",
+    precomputedLibrarySongs: List<Song>? = null,
 ): SongTopListRouteState = SongTopListRouteState(
     weeklyTop = snapshot.weeklyTop,
     monthlyTop = snapshot.monthlyTop,
-    songs = playerViewModel.getGroupedSongs(uiState.songs).flatten(),
+    songs = precomputedLibrarySongs ?: flatGroupedSongs(uiState, playerViewModel),
     currentSong = uiState.currentSong,
     initialPeriod = initialPeriod,
 )

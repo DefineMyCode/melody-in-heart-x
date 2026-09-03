@@ -44,6 +44,8 @@ import cn.com.dcsgo.mihx.ui.components.LocalEmotionCorrectionController
 import cn.com.dcsgo.mihx.ui.components.ToastHost
 import cn.com.dcsgo.mihx.ui.components.rememberToastHost
 import cn.com.dcsgo.mihx.ui.theme.MusicplayerTheme
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
 
 @Composable
 fun AppRoot(
@@ -54,6 +56,7 @@ fun AppRoot(
     emotionViewModel: cn.com.dcsgo.mihx.app.emotion.EmotionViewModel = viewModel(),
 ) {
     val toastHost = rememberToastHost()
+    val toastHostCoroutine = rememberCoroutineScope()
     val navController = rememberNavController()
     val backStackEntry by navController.currentBackStackEntryAsState()
     val activeRoute = backStackEntry?.destination?.route
@@ -108,9 +111,13 @@ fun AppRoot(
     )
 
     fun deleteSongWithToast(songId: Int) {
-        when (val result = playerViewModel.deleteSong(songId)) {
-            is DeleteSongResult.Success -> toastHost.showToast(result.message)
-            is DeleteSongResult.Failure -> toastHost.showToast(result.reason)
+        // M-3（评审 2026-09-03）：deleteSong 现为 suspend（底层 SAF 跨进程删除已调度到 IO），
+        // 调用链整体挂起，避免主线程被 ContentProvider 调用阻塞导致 ANR。
+        toastHostCoroutine.launch {
+            when (val result = playerViewModel.deleteSong(songId)) {
+                is DeleteSongResult.Success -> toastHost.showToast(result.message)
+                is DeleteSongResult.Failure -> toastHost.showToast(result.reason)
+            }
         }
     }
 

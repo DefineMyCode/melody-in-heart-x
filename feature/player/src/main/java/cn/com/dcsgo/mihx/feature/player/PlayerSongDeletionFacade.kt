@@ -9,7 +9,7 @@ class PlayerSongDeletionFacade(
     private val removeFromPlayQueue: (Int) -> Unit,
     private val refreshPlaylists: () -> Unit,
 ) {
-    fun deleteSong(songId: Int): DeleteSongResult {
+    suspend fun deleteSong(songId: Int): DeleteSongResult {
         val plan = songDeletionCoordinator.delete(songId)
         applySongDeletionPlan(plan)
         return plan.result

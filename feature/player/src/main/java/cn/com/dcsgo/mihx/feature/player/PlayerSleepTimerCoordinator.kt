@@ -16,7 +16,8 @@ private const val TICK_INTERVAL_MS = 1_000L
  *
  * - 设置倒计时，到点后暂停播放；
  * - 支持「播完最后一曲」：到点后若正在播放，等待当前歌曲自然结束再暂停；
- * - 倒计时期间以 [PlayerUiState.sleepTimerRemainingMs] 展示进度；
+ * - 倒计时期间每秒 tick 只写剩余毫秒窄流（[updateRemainingMs]，见 PlayerRuntime.sleepTimerRemainingMs），
+ *   不触碰主 UiState；启动/取消/到期等离散事件才走 [updateState]；
  * - 结束时间与「播完最后一曲」持久化，应用重启后可恢复。
  */
 class PlayerSleepTimerCoordinator(
@@ -24,6 +25,7 @@ class PlayerSleepTimerCoordinator(
     private val settings: PlayerSettingsRepository,
     private val state: () -> PlayerUiState,
     private val updateState: ((PlayerUiState) -> PlayerUiState) -> Unit,
+    private val updateRemainingMs: (Long) -> Unit,
     private val pausePlayback: () -> Unit,
 ) {
     private var tickerJob: Job? = null
@@ -101,7 +103,9 @@ class PlayerSleepTimerCoordinator(
                     fire()
                     break
                 }
-                updateState { it.copy(sleepTimerRemainingMs = remainingMs) }
+                // M-6（评审 2026-09-03）：每秒 tick 只写窄流（sleepTimerRemainingMs），
+                // 不再写主 UiState——否则倒计时激活期间整壳每秒重组。
+                updateRemainingMs(remainingMs)
                 delay(TICK_INTERVAL_MS)
             }
         }
@@ -113,6 +117,7 @@ class PlayerSleepTimerCoordinator(
             current.isPlaying &&
             current.currentSong != null
         if (shouldFinishLastSong) {
+            // 离散事件：pending 状态进主 UiState（低频），剩余值同时归零窄流
             updateState {
                 it.copy(sleepTimerRemainingMs = 0L, sleepTimerPausePending = true)
             }

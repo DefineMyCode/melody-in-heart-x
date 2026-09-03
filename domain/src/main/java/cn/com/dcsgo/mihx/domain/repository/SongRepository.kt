@@ -21,7 +21,12 @@ interface SongRepository {
     suspend fun loadLibraryAlbums(): List<AlbumEntry>
 
     fun updateSongTitleOverride(songId: Int, titleOverride: String?): Boolean
-    fun deleteSong(songId: Int): DeleteSongResult
+
+    /**
+     * 删除歌曲（M-3，评审 2026-09-03）：SAF 物理文件删除是 ContentProvider 跨进程调用，
+     * 必须以 suspend 暴露并由实现侧调度到 IO，禁止在主线程同步执行。
+     */
+    suspend fun deleteSong(songId: Int): DeleteSongResult
 
     /**
      * 校验本地歌曲文件有效性：扫描每首歌曲对应的文件是否存在，

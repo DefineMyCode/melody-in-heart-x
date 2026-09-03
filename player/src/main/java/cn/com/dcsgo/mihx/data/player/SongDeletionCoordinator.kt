@@ -5,9 +5,9 @@ import cn.com.dcsgo.mihx.domain.model.SongDeletionActions
 import cn.com.dcsgo.mihx.domain.model.SongDeletionPlan
 
 class SongDeletionCoordinator(
-    private val deleteSong: (songId: Int) -> DeleteSongResult,
+    private val deleteSong: suspend (songId: Int) -> DeleteSongResult,
 ) : SongDeletionActions {
-    override fun delete(songId: Int): SongDeletionPlan {
+    override suspend fun delete(songId: Int): SongDeletionPlan {
         val result = deleteSong(songId)
         return when (result) {
             is DeleteSongResult.Success -> SongDeletionPlan(

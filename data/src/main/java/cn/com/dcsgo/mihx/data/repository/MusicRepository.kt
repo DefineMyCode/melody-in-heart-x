@@ -52,6 +52,14 @@ class MusicRepository(
     private val playlists = mutableListOf<Playlist>()
     private var nextId = 1
     private var nextPlaylistId = 1
+
+    /**
+     * m7（评审 2026-09-03）：全库恢复短路标志——loadSongs 只在首次调用时做
+     * 全量 Room 恢复 + 目录同步，后续调用直接返回内存快照。
+     */
+    @Volatile
+    private var libraryLoaded = false
+
     private val roomDataSource = melodyDao?.let(::RoomMusicLibraryDataSource)
 
     // 读写锁：保护 songs / playlists / nextId / nextPlaylistId 的并发访问。
@@ -82,6 +90,7 @@ class MusicRepository(
 
     /** 启动时恢复歌单和歌曲（先跑一次旧 JSON 只读迁移，再从 Room 读取） */
     suspend fun loadPersistedSongs() {
+        libraryLoaded = true
         withContext(Dispatchers.IO) {
             try {
                 legacyJsonMigration?.migrateIfNeeded()
@@ -92,9 +101,23 @@ class MusicRepository(
         }
     }
 
+    /**
+     * 恢复并返回全库歌曲。
+     * m7（评审 2026-09-03）：启动后首次调用做全量 Room 恢复 + 目录同步；
+     * 之后再调用（如情绪扫描 Worker）只返回当前快照，避免每次都清空重灌全表。
+     */
     suspend fun loadSongs(): List<Song> {
-        loadPersistedSongs()
+        if (!libraryLoaded) {
+            loadPersistedSongs()
+            libraryLoaded = true
+        }
         return getSongs()
+    }
+
+    /** 测试用：重置「已加载」标志，使下一次 [loadSongs] 重新走全量恢复 */
+    @VisibleForTesting
+    fun resetLibraryLoadedFlag() {
+        libraryLoaded = false
     }
 
     /** 轻量计数(不触发全库恢复), 供进度类 UI 使用. */
@@ -236,33 +259,34 @@ class MusicRepository(
         val ctx = context ?: return
         if (lock.read { songs.isEmpty() }) return
 
-        AppLog.info(TAG, "refreshAllAlbumArt: checking ${songs.size} songs...")
-        var refreshed = 0
+        // M-2（评审 2026-09-03）：封面提取（MediaMetadataRetriever + 解码 + 落盘）单首可达
+        // 几十~几百 ms，绝不能在写锁内执行——否则大曲库下所有 getSongs() 读锁被阻塞数秒。
+        // 改为：读锁快照 → 锁外逐首提取 → 短写锁批量回写。
+        val snapshot = lock.read { songs.toList() }
+        AppLog.info(TAG, "refreshAllAlbumArt: checking ${snapshot.size} songs...")
+        data class AlbumArtUpdate(val songId: Int, val newUri: android.net.Uri?)
+        val updates = mutableListOf<AlbumArtUpdate>()
 
         // 串行逐个检查即可，启动时执行一次
-        lock.write {
-            for (song in songs) {
-                val newUri = AlbumArtExtractor.refreshAlbumArtIfNeeded(ctx, song)
-                if (newUri != null && newUri != song.albumArtUri) {
-                    // 封面发生了变化（之前为 null 或缓存失效被重新提取）
-                    val idx = songs.indexOfFirst { it.id == song.id }
-                    if (idx >= 0) {
-                        songs[idx] = song.copy(albumArtUri = newUri)
-                        refreshed++
-                    }
-                } else if (newUri == null && song.albumArtUri != null) {
-                    // 之前有封面但现在提取不到了，清除无效引用
-                    val idx = songs.indexOfFirst { it.id == song.id }
-                    if (idx >= 0) {
-                        songs[idx] = song.copy(albumArtUri = null)
-                    }
-                }
+        for (song in snapshot) {
+            val newUri = AlbumArtExtractor.refreshAlbumArtIfNeeded(ctx, song)
+            if (newUri != song.albumArtUri) {
+                // 封面发生变化（之前为 null、缓存失效被重新提取，或旧引用失效被清除）
+                updates += AlbumArtUpdate(song.id, newUri)
             }
         }
 
-        if (refreshed > 0) {
-            persistSongs()
-            AppLog.info(TAG, "refreshAllAlbumArt: refreshed $refreshed covers")
+        if (updates.isNotEmpty()) {
+            lock.write {
+                for (update in updates) {
+                    val idx = songs.indexOfFirst { it.id == update.songId }
+                    if (idx >= 0) {
+                        songs[idx] = songs[idx].copy(albumArtUri = update.newUri)
+                    }
+                }
+                persistSongs()
+            }
+            AppLog.info(TAG, "refreshAllAlbumArt: updated ${updates.size} covers")
         }
         // 通知 UI 刷新
         onSongsChanged?.invoke()
@@ -537,7 +561,9 @@ class MusicRepository(
 
     fun getSongsByPlaylistId(playlistId: Int): List<Song> = lock.read {
         val playlist = playlists.find { it.id == playlistId } ?: return@read emptyList()
-        playlist.songIds.mapNotNull { id -> songs.find { it.id == id } }
+        // m8（评审 2026-09-03）：先建索引再映射，避免 songIds × songs 的 O(n²) find
+        val songsById = songs.associateBy { it.id }
+        playlist.songIds.mapNotNull(songsById::get)
     }
 
     fun updatePlaylistSongCount(playlistId: Int) {
@@ -554,18 +580,19 @@ class MusicRepository(
 
     /**
      * 删除歌曲：
-     * 1. 先删除 SAF 指向的物理文件
+     * 1. 先删除 SAF 指向的物理文件（M-3，评审 2026-09-03：DocumentFile 跨进程调用，
+     *    挂起在 Dispatchers.IO 执行，不再阻塞调用线程）
      * 2. 文件删除成功后，再从歌曲列表和所有歌单中移除
      * 3. 持久化更新后的数据
      */
-    fun deleteSong(songId: Int): DeleteSongResult {
+    suspend fun deleteSong(songId: Int): DeleteSongResult = withContext(Dispatchers.IO) {
         val song = lock.read {
             songs.firstOrNull { it.id == songId }
-        } ?: return DeleteSongResult.Failure("歌曲不存在或已被删除")
+        } ?: return@withContext DeleteSongResult.Failure("歌曲不存在或已被删除")
 
         val fileDeleteResult = deleteBackingFile(song)
         if (fileDeleteResult is BackingFileDeleteResult.Failure) {
-            return DeleteSongResult.Failure(fileDeleteResult.reason)
+            return@withContext DeleteSongResult.Failure(fileDeleteResult.reason)
         }
 
         val result = lock.write {
@@ -599,7 +626,7 @@ class MusicRepository(
         }
         // 通知 UI 刷新（歌曲、歌单、曲库歌手/专辑目录）
         onSongsChanged?.invoke()
-        return result
+        result
     }
 
     /**
@@ -719,7 +746,9 @@ class MusicRepository(
     fun getFavoriteSongs(): List<Song> = lock.read {
         playlists.firstOrNull { it.name == "我的最爱" }
             ?.let { playlist ->
-                playlist.songIds.mapNotNull { id -> songs.find { it.id == id } }
+                // m8（评审 2026-09-03）：同 getSongsByPlaylistId，O(n²) → O(n)
+                val songsById = songs.associateBy { it.id }
+                playlist.songIds.mapNotNull(songsById::get)
             }
             ?: emptyList()
     }

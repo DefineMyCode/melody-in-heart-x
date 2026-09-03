@@ -14,5 +14,6 @@ data class SongDeletionPlan(
 )
 
 interface SongDeletionActions {
-    fun delete(songId: Int): SongDeletionPlan
+    /** M-3（评审 2026-09-03）：底层为 SAF 跨进程删除，必须挂起执行，避免阻塞主线程 */
+    suspend fun delete(songId: Int): SongDeletionPlan
 }

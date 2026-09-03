@@ -18,7 +18,7 @@ class PlayerSongDeletionFacadeTest {
     private var refreshed = false
     private val facade = PlayerSongDeletionFacade(
         songDeletionCoordinator = object : SongDeletionActions {
-            override fun delete(songId: Int): SongDeletionPlan {
+            override suspend fun delete(songId: Int): SongDeletionPlan {
                 deletedSongIds += songId
                 return when (deleteResult) {
                     is DeleteSongResult.Success -> SongDeletionPlan(
@@ -35,7 +35,7 @@ class PlayerSongDeletionFacadeTest {
     )
 
     @Test
-    fun successfulDeleteRemovesQueueItemAndRefreshesPlaylists() {
+    fun successfulDeleteRemovesQueueItemAndRefreshesPlaylists() = kotlinx.coroutines.runBlocking {
         val result = DeleteSongResult.Success(song(7), message = "deleted")
         deleteResult = result
 
@@ -48,7 +48,7 @@ class PlayerSongDeletionFacadeTest {
     }
 
     @Test
-    fun failedDeleteReturnsFailureWithoutFollowUpActions() {
+    fun failedDeleteReturnsFailureWithoutFollowUpActions() = kotlinx.coroutines.runBlocking {
         val result = DeleteSongResult.Failure("no permission")
         deleteResult = result
 

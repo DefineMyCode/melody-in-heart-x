@@ -154,17 +154,30 @@ internal class PlayerRuntime(
     val positionMs: StateFlow<Long> = _positionMs.asStateFlow()
 
     /**
+     * 定时关闭剩余毫秒独立窄流（M-6，评审 2026-09-03）：倒计时每秒 tick 只写这里，
+     * 仅由定时关闭 Chip 局部订阅，避免每秒写主 UiState 导致整壳重组。
+     */
+    private val _sleepTimerRemainingMs = MutableStateFlow(0L)
+    val sleepTimerRemainingMs: StateFlow<Long> = _sleepTimerRemainingMs.asStateFlow()
+
+    /**
      * 统一的状态更新入口。当离散事件（seek、切歌、恢复、暂停等）写入
      * [PlayerUiState.currentPositionMs] 时，同步到 [positionMs] 窄流，
      * 保证 UI 立即反映到目标位置。播放期间的逐 tick 更新走 [positionMs] 直写，不经过这里。
      */
     private fun updateUiState(transform: (PlayerUiState) -> PlayerUiState) {
+        // M-8（评审 2026-09-03）：MutableStateFlow.update 的变换 lambda 必须是纯函数
+        // （CAS 竞争下会重试），副作用（窄流同步）移到 update 之外，避免被重复执行。
+        var next: PlayerUiState = _uiState.value
         _uiState.update { current ->
-            val next = transform(current)
-            if (next.currentPositionMs != current.currentPositionMs) {
-                _positionMs.value = next.currentPositionMs
-            }
+            next = transform(current)
             next
+        }
+        if (next.currentPositionMs != _positionMs.value) {
+            _positionMs.value = next.currentPositionMs
+        }
+        if (next.sleepTimerRemainingMs != _sleepTimerRemainingMs.value) {
+            _sleepTimerRemainingMs.value = next.sleepTimerRemainingMs
         }
     }
 
@@ -295,6 +308,7 @@ internal class PlayerRuntime(
         settings = playerSettingsRepository,
         state = { _uiState.value },
         updateState = ::updateUiState,
+        updateRemainingMs = { _sleepTimerRemainingMs.value = it },
         pausePlayback = { playbackBridgeFacade.pausePlayback() },
     )
     private val mediaEventFacade = PlayerMediaEventFacade(
@@ -644,7 +658,7 @@ internal class PlayerRuntime(
         return playlistFacade.isSongInPlaylist(playlistId, songId)
     }
 
-    fun deleteSong(songId: Int): DeleteSongResult {
+    suspend fun deleteSong(songId: Int): DeleteSongResult {
         return songDeletionFacade.deleteSong(songId)
     }
 

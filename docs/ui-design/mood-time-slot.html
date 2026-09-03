@@ -1,0 +1,924 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>心有乐章 · 情境化随心播放 · UI 设计</title>
+<style>
+/* ============================================================
+   心有乐章 · 情境化随心播放增强（时段 × 情绪词条） · UI 设计
+   复用主设计系统：墨（黑白灰）明暗 / 朱砂 明暗，四套主题
+   设计依据：docs/architecture/MOOD_TIME_SLOT_PLAYBACK.md
+   ============================================================ */
+
+:root{
+  --font-ui:"SF Pro Text",-apple-system,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans CJK SC",sans-serif;
+  --font-num:"SF Mono","JetBrains Mono",Consolas,"Courier New",monospace;
+  --r-s:8px; --r-m:14px; --r-l:20px; --r-xl:26px;
+}
+
+body[data-theme="mono-light"]{
+  --bg0:#F4F4F4; --bg1:#FFFFFF; --bg2:#FAFAFA; --bg3:#EFEFEF; --bg4:#E6E6E6;
+  --out1:#E7E7E7; --out2:#CFCFCF;
+  --text1:#141414; --text2:#575757; --text3:#989898;
+  --accent:#161616; --on-accent:#FFFFFF; --accent2:#575757; --on-accent2:#FFFFFF;
+  --grad:linear-gradient(90deg,#161616,#6B6B6B);
+  --cover1:#E9E9E9; --cover2:#C7C7C7; --cover-note:#161616;
+  --scrim:rgba(20,20,20,.45); --hover:rgba(20,20,20,.06);
+  --shadow:0 20px 44px -22px rgba(20,20,20,.28);
+  --tint:rgba(20,20,20,.08); --tint-strong:rgba(20,20,20,.14);
+  --ok:#2E7D46; --warn:#A96A12; --err:#A32E25;
+}
+
+body[data-theme="mono-dark"]{
+  --bg0:#000000; --bg1:#0A0A0A; --bg2:#121212; --bg3:#1B1B1B; --bg4:#252525;
+  --out1:#1C1C1C; --out2:#2C2C2C;
+  --text1:#D0D0D0; --text2:#9A9A9A; --text3:#6B6B6B;
+  --accent:#E6E6E6; --on-accent:#0A0A0A; --accent2:#9A9A9A; --on-accent2:#0A0A0A;
+  --grad:linear-gradient(90deg,#E6E6E6,#9A9A9A);
+  --cover1:#242424; --cover2:#0D0D0D; --cover-note:#E6E6E6;
+  --scrim:rgba(0,0,0,.6); --hover:rgba(255,255,255,.06);
+  --shadow:0 24px 50px -24px rgba(0,0,0,.9);
+  --tint:rgba(255,255,255,.10); --tint-strong:rgba(255,255,255,.18);
+  --ok:#6FBF8B; --warn:#D9A441; --err:#E08A80;
+}
+
+body[data-theme="vermilion-day"]{
+  --bg0:#FAF5F2; --bg1:#FFFFFF; --bg2:#FBF4F0; --bg3:#F1E7E1; --bg4:#E9DAD2;
+  --out1:#EFE0D9; --out2:#DFC4B9;
+  --text1:#2B1A16; --text2:#6B534B; --text3:#A2877D;
+  --accent:#A32E25; --on-accent:#FFFFFF; --accent2:#D4786C; --on-accent2:#FFFFFF;
+  --grad:linear-gradient(90deg,#A32E25,#D4786C);
+  --cover1:#B04A36; --cover2:#7E2218; --cover-note:#FFFFFF;
+  --scrim:rgba(43,26,22,.45); --hover:rgba(163,46,37,.10);
+  --shadow:0 20px 44px -22px rgba(163,46,37,.35);
+  --tint:rgba(163,46,37,.10); --tint-strong:rgba(163,46,37,.18);
+  --ok:#2E7D46; --warn:#A96A12; --err:#A32E25;
+}
+
+body[data-theme="vermilion-night"]{
+  --bg0:#000000; --bg1:#140B09; --bg2:#1D110E; --bg3:#251814; --bg4:#2E1D18;
+  --out1:#2B1813; --out2:#3E241E;
+  --text1:#EADAD5; --text2:#B79A92; --text3:#7F5E56;
+  --accent:#C04F42; --on-accent:#FFFFFF; --accent2:#8F3B32; --on-accent2:#FFFFFF;
+  --grad:linear-gradient(90deg,#C04F42,#7E3028);
+  --cover1:#B5493D; --cover2:#4A1610; --cover-note:#F2D9D2;
+  --scrim:rgba(0,0,0,.6); --hover:rgba(192,79,66,.12);
+  --shadow:0 24px 50px -24px rgba(0,0,0,.9);
+  --tint:rgba(192,79,66,.12); --tint-strong:rgba(192,79,66,.22);
+  --ok:#6FBF8B; --warn:#D9A441; --err:#E08A80;
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{
+  font-family:var(--font-ui);
+  background:var(--bg0);
+  color:var(--text1);
+  transition:background .35s ease,color .35s ease;
+  line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+button{font-family:inherit;border:none;background:none;color:inherit;cursor:pointer}
+svg{display:block}
+.ic{width:1.15em;height:1.15em;flex:none}
+.ic-fill{fill:currentColor;stroke:none}
+.ic-stroke{fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.mono{font-family:var(--font-num)}
+
+.page{max-width:1280px;margin:0 auto;padding:0 28px 90px}
+
+/* ---------- 顶栏 ---------- */
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;padding:26px 0 10px}
+.brand{display:flex;align-items:center;gap:14px}
+.logo{width:40px;height:40px;color:var(--accent);transition:color .35s}
+.brand-name{font-weight:800;font-size:18px;letter-spacing:.3px}
+.brand-sub{font-size:12px;color:var(--text2);letter-spacing:2px}
+.theme-ctl{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.theme-pills{display:flex;gap:4px;background:var(--bg1);border:1px solid var(--out1);padding:4px;border-radius:999px;box-shadow:var(--shadow);transition:background .35s}
+.pill{padding:7px 15px;border-radius:999px;font-size:13px;color:var(--text2);transition:all .2s;white-space:nowrap}
+.pill:hover{color:var(--text1)}
+.pill.active{background:var(--accent);color:var(--on-accent)}
+.pill .dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;vertical-align:1px}
+
+/* ---------- Hero ---------- */
+.hero{padding:46px 0 8px}
+.kicker{color:var(--accent);font-weight:700;letter-spacing:6px;font-size:12px;transition:color .35s}
+.hero-title{font-size:clamp(36px,5.6vw,62px);font-weight:800;line-height:1.08;letter-spacing:1px;margin-top:14px}
+.hero-title .grad{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;transition:background .35s}
+.hero-title .en{display:block;font-size:clamp(12px,1.7vw,17px);font-weight:600;letter-spacing:7px;color:var(--text3);margin-top:14px;text-transform:uppercase}
+.hero-sub{color:var(--text2);max-width:700px;margin-top:20px;font-size:15.5px;line-height:1.9}
+.hero-sub b{color:var(--text1)}
+.hero-facts{display:flex;gap:10px;flex-wrap:wrap;margin-top:26px}
+.fact{display:flex;align-items:center;gap:8px;background:var(--bg1);border:1px solid var(--out1);padding:8px 14px;border-radius:999px;font-size:13px;color:var(--text2)}
+.fact svg{color:var(--accent)}
+
+.pillars{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px;margin-top:44px}
+.pillar{background:var(--bg1);border:1px solid var(--out1);border-radius:var(--r-xl);padding:24px;transition:background .35s}
+.pillar .num{font-family:var(--font-num);color:var(--accent);font-weight:800;font-size:14px;letter-spacing:2px}
+.pillar h3{font-size:17px;font-weight:800;margin:12px 0 8px}
+.pillar p{font-size:13.5px;color:var(--text2);line-height:1.8}
+.pillar .sw{padding:9px 0 2px;font-family:var(--font-num);font-size:12px;color:var(--text3)}
+
+/* ---------- 章节标题 ---------- */
+.sec{margin:84px 0 8px}
+.sec h2{font-size:26px;font-weight:800;letter-spacing:.5px}
+.sec .sub{color:var(--text2);margin-top:6px;font-size:14px;max-width:740px;line-height:1.8}
+.sec .sub code{font-family:var(--font-num);font-size:12px;color:var(--text1);background:var(--bg3);padding:1px 6px;border-radius:5px}
+.sec-head{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.sec-head .idx{font-family:var(--font-num);color:var(--accent);font-size:13px;font-weight:700;letter-spacing:2px}
+
+/* ---------- 手机稿 ---------- */
+.phones{display:grid;grid-template-columns:repeat(auto-fill,minmax(350px,1fr));gap:44px 32px;margin-top:34px}
+.phone-wrap{display:flex;flex-direction:column;align-items:center;gap:14px}
+.phone-label{font-size:12.5px;color:var(--text2);letter-spacing:1.5px;font-weight:600;text-align:center;max-width:360px;line-height:1.7}
+.phone-label b{color:var(--text1)}
+
+.phone{width:332px;height:700px;background:#000;border-radius:46px;padding:11px;box-shadow:0 30px 70px -30px rgba(0,0,0,.65);flex:none;position:relative}
+.notch{position:absolute;top:11px;left:50%;transform:translateX(-50%);width:118px;height:25px;background:#000;border-radius:0 0 18px 18px;z-index:20}
+.screen{position:relative;width:100%;height:100%;background:var(--bg0);border-radius:36px;overflow:hidden;display:flex;flex-direction:column;color:var(--text1);transition:background .35s,color .35s}
+.statusbar{height:34px;flex:none;display:flex;align-items:flex-end;justify-content:space-between;padding:0 22px 4px;color:var(--text3);font-size:12px;font-family:var(--font-num)}
+.sb-icons{letter-spacing:3px;font-size:10px}
+.scroll{flex:1;overflow:hidden;position:relative}
+.scroll:hover{overflow-y:auto;scrollbar-width:thin}
+.scroll::-webkit-scrollbar{width:3px}
+.scroll::-webkit-scrollbar-thumb{background:var(--out2);border-radius:3px}
+
+/* 迷你播放栏 */
+.minibar{flex:none;display:flex;align-items:center;gap:11px;background:var(--bg1);border-top:1px solid var(--out1);padding:10px 16px;margin-top:auto;transition:background .35s}
+.minibar-thumb{width:40px;height:40px;border-radius:9px;background:radial-gradient(120% 120% at 30% 25%,var(--cover1),var(--cover2) 70%);display:flex;align-items:center;justify-content:center;color:var(--cover-note);flex:none}
+.minibar-thumb svg{width:16px;height:16px}
+.minibar-mid{flex:1;min-width:0}
+.minibar-title{font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.minibar-progress{height:2.5px;background:var(--out1);border-radius:2px;margin-top:6px;overflow:hidden}
+.minibar-progress i{display:block;height:100%;background:var(--accent);transition:background .35s}
+.minibar-btn{width:36px;height:36px;border-radius:50%;background:var(--accent);color:var(--on-accent);display:flex;align-items:center;justify-content:center;flex:none}
+.minibar-btn svg{width:16px;height:16px}
+
+/* 图标按钮 */
+.icon-btn{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--text2)}
+.icon-btn.sm{width:28px;height:28px}
+.icon-btn:hover{background:var(--hover);color:var(--text1)}
+
+/* 顶栏(appbar) */
+.appbar{flex:none;display:flex;align-items:center;justify-content:space-between;padding:8px 12px 4px 8px}
+.appbar .t{font-size:17px;font-weight:800;letter-spacing:.3px}
+.appbar-left,.appbar-right{display:flex;align-items:center;gap:4px}
+.appbar .back-title{display:flex;align-items:center;gap:2px}
+.appbar .subtitle{font-size:10.5px;color:var(--text3);font-weight:400;letter-spacing:1px;margin-top:1px}
+
+/* 卡片 */
+.card{flex:none;background:var(--bg1);border:1px solid var(--out1);border-radius:var(--r-l);padding:16px;margin:8px 18px 0;transition:background .35s}
+
+/* 开关 */
+.switch{width:46px;height:26px;border-radius:13px;background:var(--bg3);border:1px solid var(--out2);position:relative;flex:none;transition:background .25s,border-color .25s}
+.switch::after{content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:var(--text3);transition:all .25s}
+.switch.on{background:var(--accent);border-color:var(--accent)}
+.switch.on::after{left:23px;background:var(--on-accent)}
+.switch.lg{transform:scale(1.15);margin:2px}
+
+/* chips */
+.chip{display:inline-flex;align-items:center;gap:5px;padding:5px 11px;border-radius:999px;border:1px solid var(--out2);font-size:11.5px;color:var(--text2);white-space:nowrap}
+.chip .cnt{font-family:var(--font-num);font-size:10px;color:var(--text3)}
+.chip.sel{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.chip.sel .cnt{color:var(--on-accent);opacity:.75}
+.chip.dim{opacity:.42;border-style:dashed}
+.chip-row{display:flex;flex-wrap:wrap;gap:7px}
+.chip-group-label{font-size:10.5px;color:var(--text3);letter-spacing:.5px;margin:10px 0 6px;font-weight:600}
+
+/* 设置行 */
+.set-row{display:flex;align-items:center;gap:12px;padding:11px 0}
+.set-row + .set-row{border-top:1px solid var(--out1)}
+.set-mid{flex:1;min-width:0}
+.set-t{font-size:13.5px;font-weight:600}
+.set-s{font-size:11px;color:var(--text3);margin-top:2px;line-height:1.6}
+.info-dot{width:15px;height:15px;border-radius:50%;border:1.4px solid var(--text3);color:var(--text3);font-size:9.5px;font-weight:800;display:inline-flex;align-items:center;justify-content:center;font-family:var(--font-num);flex:none}
+
+/* 文本输入 */
+.field{background:var(--bg2);border:1px solid var(--out1);border-radius:var(--r-m);padding:9px 13px;font-size:13.5px;color:var(--text1);transition:border-color .2s}
+.field .ph{color:var(--text3)}
+.field.err{border-color:var(--err)}
+.field-label{font-size:11.5px;font-weight:700;color:var(--text2);letter-spacing:.5px;display:flex;align-items:center;gap:6px;margin-bottom:7px}
+.field-label .info-dot{width:13px;height:13px;font-size:8.5px}
+
+/* 时间行 */
+.time-row{display:flex;align-items:center;gap:9px}
+.time-box{flex:1;display:flex;align-items:center;justify-content:space-between;background:var(--bg2);border:1px solid var(--out1);border-radius:var(--r-m);padding:10px 12px}
+.time-box .t{font-family:var(--font-num);font-size:16px;font-weight:700;letter-spacing:1px}
+.time-box .apm{font-size:10px;color:var(--text3);letter-spacing:1px}
+.time-box.err{border-color:var(--err);background:color-mix(in srgb,var(--err) 7%, var(--bg2))}
+.time-sep{font-family:var(--font-num);color:var(--text3);font-size:15px}
+
+/* 时段卡 */
+.slot-card{background:var(--bg1);border:1px solid var(--out1);border-radius:var(--r-l);padding:15px 16px;margin:10px 18px 0;transition:background .35s}
+.slot-head{display:flex;align-items:center;gap:10px}
+.slot-name{font-size:14.5px;font-weight:800;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.slot-time{font-family:var(--font-num);font-size:12.5px;font-weight:700;color:var(--accent);letter-spacing:.5px}
+.slot-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.slot-foot{display:flex;align-items:center;justify-content:space-between;margin-top:11px;padding-top:10px;border-top:1px solid var(--out1);font-size:11px;color:var(--text3)}
+.slot-foot .songs{display:flex;align-items:center;gap:5px}
+.slot-foot .songs svg{width:12px;height:12px;color:var(--text3)}
+.slot-foot .songs b{font-family:var(--font-num);color:var(--text2);font-weight:800}
+.slot-foot .warn{color:var(--warn);display:flex;align-items:center;gap:4px}
+.slot-foot .warn svg{width:12px;height:12px}
+.live-dot{width:7px;height:7px;border-radius:50%;background:var(--ok);flex:none;box-shadow:0 0 0 3px color-mix(in srgb,var(--ok) 22%, transparent)}
+.live-tag{display:inline-flex;align-items:center;gap:6px;font-size:10.5px;font-weight:700;color:var(--ok);letter-spacing:.5px}
+
+/* 时间轴示意（24h bar） */
+.daybar{position:relative;height:26px;border-radius:7px;background:var(--bg3);margin-top:12px;overflow:hidden}
+.daybar .seg-fill{position:absolute;top:0;bottom:0;background:var(--tint-strong)}
+.daybar .seg-fill.cur{background:var(--grad)}
+.daybar .tick{position:absolute;top:0;bottom:0;width:1px;background:var(--bg1);opacity:.7}
+.daybar-scale{display:flex;justify-content:space-between;margin-top:5px;font-family:var(--font-num);font-size:9px;color:var(--text3)}
+
+/* 错误提示 */
+.err-note{display:flex;align-items:flex-start;gap:7px;margin-top:10px;font-size:11.5px;color:var(--err);line-height:1.6}
+.err-note svg{width:13px;height:13px;flex:none;margin-top:2px}
+
+/* 按钮 */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;height:38px;padding:0 18px;border-radius:19px;font-size:13px;font-weight:700;transition:all .2s}
+.btn.filled{background:var(--accent);color:var(--on-accent)}
+.btn.outlined{border:1px solid var(--out2);color:var(--text1)}
+.btn.text{color:var(--accent);padding:0 10px}
+.btn.block{width:100%}
+.btn svg{width:15px;height:15px}
+
+/* 空态 */
+.empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:40px 30px;color:var(--text3);text-align:center}
+.empty svg{width:46px;height:46px;opacity:.5}
+.empty .t{font-size:14px;font-weight:700;color:var(--text2)}
+.empty .s{font-size:12px;line-height:1.8}
+
+/* Toast */
+.toast{position:absolute;left:50%;bottom:76px;transform:translateX(-50%);background:var(--text1);color:var(--bg0);border-radius:10px;padding:9px 15px;font-size:12px;display:flex;align-items:center;gap:7px;box-shadow:var(--shadow);white-space:nowrap;z-index:15}
+.toast svg{width:13px;height:13px;color:var(--accent)}
+.toast .b{font-weight:800}
+
+/* 播放页元素（第 5 张稿复用） */
+.cover-hero{width:196px;height:196px;border-radius:22px;background:radial-gradient(120% 120% at 30% 25%,var(--cover1),var(--cover2) 72%);display:flex;align-items:center;justify-content:center;color:var(--cover-note);margin:14px auto 0}
+.cover-hero svg{width:58px;height:58px;opacity:.9}
+.song-title{font-size:21px;font-weight:800;text-align:center;margin-top:16px}
+.song-artist{font-size:12.5px;color:var(--text2);text-align:center;margin-top:4px}
+.progress-row{display:flex;align-items:center;gap:9px;padding:0 26px;margin-top:18px;font-family:var(--font-num);font-size:10.5px;color:var(--text3)}
+.progress-track{flex:1;height:4px;border-radius:2px;background:var(--out1);overflow:hidden}
+.progress-track i{display:block;height:100%;width:38%;background:var(--accent)}
+.mood-banner{display:flex;align-items:center;gap:8px;margin:12px 18px 0;background:var(--tint);border:1px solid var(--tint-strong);border-radius:var(--r-m);padding:9px 13px;font-size:11.5px;color:var(--text2)}
+.mood-banner svg{width:14px;height:14px;color:var(--accent);flex:none}
+.mood-banner b{color:var(--text1);font-weight:800}
+.mood-banner .live-dot{width:6px;height:6px;box-shadow:0 0 0 3px color-mix(in srgb,var(--ok) 25%, transparent)}
+
+/* FAB（随心播放） */
+.lucky-fab{position:absolute;right:16px;bottom:74px;height:50px;padding:0 20px 0 16px;border-radius:25px;background:var(--accent);color:var(--on-accent);display:flex;align-items:center;gap:8px;font-size:13px;font-weight:800;box-shadow:var(--shadow);z-index:10}
+.lucky-fab svg{width:17px;height:17px}
+.lucky-fab .sub{display:block;font-size:9px;font-weight:600;opacity:.8;letter-spacing:.5px;text-align:left;line-height:1.2}
+
+/* 弹层 */
+.overlay{position:absolute;inset:0;background:var(--scrim);z-index:12}
+.sheet{position:absolute;left:0;right:0;bottom:0;background:var(--bg4);border-radius:22px 22px 0 0;padding:14px 18px 20px;z-index:13}
+.sheet .grab{width:34px;height:4px;border-radius:2px;background:var(--out2);margin:0 auto 12px}
+
+/* 说明展开 */
+.exp{font-size:11px;color:var(--text3);line-height:1.7;margin-top:6px;padding-left:2px}
+
+/* footer */
+footer{margin-top:90px;padding-top:22px;border-top:1px solid var(--out1);display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;color:var(--text3);font-size:12px}
+footer .mono{font-size:11px}
+
+@media (max-width:720px){
+  .page{padding:0 16px 70px}
+  .hero-title{font-size:38px}
+  .phones{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body data-theme="mono-dark">
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" fill="currentColor"/></symbol>
+  <symbol id="i-pause" viewBox="0 0 24 24"><path d="M6 4h4v16H6zM14 4h4v16h-4z" fill="currentColor"/></symbol>
+  <symbol id="i-back" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-note" viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" fill="currentColor"/></symbol>
+  <symbol id="i-dots" viewBox="0 0 24 24"><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" fill="currentColor"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-1 3h2v5.6l4.2 2.5-1 1.7-5.2-3.1V7z" fill="currentColor"/></symbol>
+  <symbol id="i-chev-r" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-shuffle" viewBox="0 0 24 24"><path d="M10.59 9.17 5.41 4 4 5.41l5.17 5.17 1.42-1.41zM14.5 4l2.04 2.04L4 18.59 5.41 20 17.96 7.46 20 9.5V4h-5.5zm.33 9.41-1.41 1.41 3.13 3.13L14.5 20H20v-5.5l-2.04 2.04-3.13-3.13z" fill="currentColor"/></symbol>
+  <symbol id="i-sliders" viewBox="0 0 24 24"><path d="M3 17v2h6v-2H3zM3 5v2h10V5H3zm10 16v-2h8v-2h-8v-2h-2v6h2zM7 9v2H3v2h4v2h2V9H7zm14 4v-2H11v2h10zm-6-4h2V7h4V5h-4V3h-2v6z" fill="currentColor"/></symbol>
+  <symbol id="i-infinite" viewBox="0 0 24 24"><path d="M8 8c-2.2 0-4 1.8-4 4s1.8 4 4 4c2.4 0 4.2-8 8-8 2.2 0 4 1.8 4 4s-1.8 4-4 4c-2.4 0-4.2-8-8-8z" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24"><path d="M21 12.8A8.6 8.6 0 0 1 11.2 3a8.6 8.6 0 1 0 9.8 9.8z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
+  <symbol id="i-sun" viewBox="0 0 24 24"><path d="M12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10zm0-5v2m0 16v2M4.2 4.2l1.4 1.4m12.8 12.8 1.4 1.4M2 12h2m16 0h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="12" r="3.2" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></symbol>
+  <symbol id="i-pencil" viewBox="0 0 24 24"><path d="M4 20h4L19.5 8.5a2.1 2.1 0 0 0-3-3L5 17v3z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
+  <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2m3 0-1 13a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1L6 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 3 2.5 20h19L12 3zm0 6v5m0 3.5v.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 2l1.9 6.1L20 10l-6.1 1.9L12 18l-1.9-6.1L4 10l6.1-1.9L12 2z" fill="currentColor"/></symbol>
+  <symbol id="i-heart" viewBox="0 0 24 24"><path d="M12 21C7 16.5 3 13 3 8.8 3 6 5.2 4 7.8 4c1.7 0 3.2.9 4.2 2.3C13 4.9 14.5 4 16.2 4 18.8 4 21 6 21 8.8c0 4.2-4 7.7-9 12.2z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 11v6m0-9.5v.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+</svg>
+
+<div class="page">
+
+  <!-- ===================== 顶栏 ===================== -->
+  <header class="topbar">
+    <div class="brand">
+      <svg class="logo" viewBox="0 0 64 64" fill="none">
+        <path d="M32 55C32 55 10 42 10 24 10 15 17 9 24 9c4 0 7 2 8 5 1-3 4-5 8-5 7 0 14 6 14 15 0 18-22 31-22 31z" stroke="currentColor" stroke-width="3.4" stroke-linejoin="round"/>
+        <path d="M27 33l4-12M27 33l-4 6M31 21l4 12M35 33l3-8" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="27" cy="33" r="4.6" fill="currentColor"/>
+        <circle cx="35" cy="33" r="4.6" fill="currentColor"/>
+      </svg>
+      <div>
+        <div class="brand-name">心有乐章</div>
+        <div class="brand-sub">MELODY IN HEART</div>
+      </div>
+    </div>
+    <div class="theme-ctl">
+      <div class="theme-pills">
+        <button class="pill" data-pill="mono-light"><span class="dot" style="background:#141414"></span>墨 · 浅</button>
+        <button class="pill active" data-pill="mono-dark"><span class="dot" style="background:#D0D0D0"></span>墨 · 深 (OLED)</button>
+        <button class="pill" data-pill="vermilion-day"><span class="dot" style="background:#A32E25"></span>朱砂 · 昼</button>
+        <button class="pill" data-pill="vermilion-night"><span class="dot" style="background:#C04F42"></span>朱砂 · 夜</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===================== Hero ===================== -->
+  <section class="hero">
+    <div class="kicker">FEATURE · MOOD TIME SLOT · v1</div>
+    <h1 class="hero-title">情境化随心播放<span class="grad">，时段懂你</span><span class="en">Mood Time Slot Playback</span></h1>
+    <p class="hero-sub">
+      在「我的」页新增<strong>随心播放增强</strong>：用户按时段配置情绪词条，随心播放与无限随机在命中时段内
+      <strong>只从带有这些词条的歌曲中随机</strong>，与全局均匀随机（低播放优先）完全兼容。时段采用左闭右开区间、
+      支持跨午夜、两两不重叠；每个词条实时展示关联歌曲数，配置即可预见随机池规模。
+    </p>
+    <div class="hero-facts">
+      <span class="fact"><svg class="ic ic-fill"><use href="#i-clock"/></svg>左闭右开 · 跨午夜</span>
+      <span class="fact"><svg class="ic ic-fill"><use href="#i-spark"/></svg>词条过滤 · 计数可见</span>
+      <span class="fact"><svg class="ic ic-fill"><use href="#i-shuffle"/></svg>均匀随机兼容</span>
+      <span class="fact"><svg class="ic ic-fill"><use href="#i-heart"/></svg>默认关闭 · 行为不变</span>
+    </div>
+
+    <div class="pillars">
+      <div class="pillar">
+        <div class="num">01 / 入口</div>
+        <h3>我的页 · 第 5 张卡</h3>
+        <p>入口卡实时反映状态：生效中的时段与剩余时间一目了然；全局开关默认关闭，关闭时随心播放行为与现状完全一致。</p>
+        <div class="sw">数据源 · PlayerSettingsRepository.moodTimeSlotEnabled</div>
+      </div>
+      <div class="pillar">
+        <div class="num">02 / 配置</div>
+        <h3>时段 × 情绪词条</h3>
+        <p>时段名 + 时间段（左闭右开，结束早于开始即跨午夜）+ 多选情绪词条。词条按自动分析 / 仅手动标记分组，带歌曲数角标。</p>
+        <div class="sw">存储 · DataStore JSON（time_slot_configs）</div>
+      </div>
+      <div class="pillar">
+        <div class="num">03 / 生效</div>
+        <h3>互斥与归因</h3>
+        <p>同一时刻至多一个时段生效；随心播放启动时 toast 明确归因「已按『深夜静谧』为你随机播放」，杜绝"这首为什么被选中"的困惑。</p>
+        <div class="sw">判定 · MoodSlotResolver（域层纯函数）</div>
+      </div>
+      <div class="pillar">
+        <div class="num">04 / 兜底</div>
+        <h3>小候选池策略</h3>
+        <p>词条组合下歌曲为 0 → 回退全库随机并提示；&lt;10 首提示"将循环播放"；配置页词条角标让用户在保存前就看到随机池规模。</p>
+        <div class="sw">阈值 · MoodSlotPolicy.POOL_WARN_THRESHOLD</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== 界面稿 ===================== -->
+  <section class="sec">
+    <div class="sec-head"><span class="idx">SECTION 01</span></div>
+    <div>
+      <h2>界面稿 · 手机</h2>
+      <div class="sub">六张稿子：我的页入口卡（三态）、配置列表页（含 24h 时间轴与全局开关）、编辑页（词条选择器）、重叠校验错误态、播放页归因横幅与 toast、添加时段底部弹层。左上角切换主题，全部稿子即时换肤。</div>
+    </div>
+  </section>
+
+  <div class="phones">
+
+    <!-- ================ 00 我的页 · 入口卡（三态演示：生效中） ================ -->
+    <div class="phone-wrap">
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="screen">
+          <div class="statusbar"><span>23:41</span><span class="sb-icons">▮▮ ▮● ♪</span></div>
+          <div class="appbar">
+            <div class="appbar-left"><span class="t">我的</span></div>
+            <div class="appbar-right"><button class="icon-btn"><svg class="ic ic-fill"><use href="#i-sliders"/></svg></button></div>
+          </div>
+          <div class="scroll">
+            <div class="card" style="margin-top:10px">
+              <div class="set-row" style="padding-top:2px">
+                <div class="set-mid">
+                  <div class="set-t">播放统计</div>
+                  <div class="set-s">今日 1 小时 05 分 · 本周 9 小时 42 分</div>
+                </div>
+                <svg class="ic ic-stroke" style="color:var(--text3)"><use href="#i-chev-r"/></svg>
+              </div>
+            </div>
+
+            <!-- 随心播放增强入口卡（生效中态） -->
+            <div class="card" style="border-color:var(--tint-strong);cursor:pointer">
+              <div style="display:flex;align-items:center;gap:12px">
+                <div style="width:40px;height:40px;border-radius:12px;background:var(--tint);display:flex;align-items:center;justify-content:center;color:var(--accent);flex:none">
+                  <svg class="ic ic-fill" style="width:19px;height:19px"><use href="#i-moon"/></svg>
+                </div>
+                <div style="flex:1;min-width:0">
+                  <div style="font-size:14.5px;font-weight:800">随心播放增强</div>
+                  <div style="display:flex;align-items:center;gap:6px;margin-top:3px">
+                    <span class="live-dot"></span>
+                    <span style="font-size:11px;color:var(--text2)">深夜静谧 · 生效中 22:00–06:00</span>
+                  </div>
+                </div>
+                <div class="switch on"></div>
+              </div>
+              <div style="display:flex;gap:6px;margin-top:12px">
+                <span class="chip sel">静谧<span class="cnt">128</span></span>
+                <span class="chip sel">空灵<span class="cnt">46</span></span>
+                <span class="chip sel">禅<span class="cnt">31</span></span>
+                <span class="chip" style="border-style:dashed;color:var(--text3)">+3</span>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="set-row" style="padding-top:2px">
+                <div class="set-mid">
+                  <div class="set-t">歌曲情绪分析</div>
+                  <div class="set-s">已分析 412/1280 · 充电时自动补扫</div>
+                </div>
+                <svg class="ic ic-stroke" style="color:var(--text3)"><use href="#i-chev-r"/></svg>
+              </div>
+              <div class="set-row">
+                <div class="set-mid">
+                  <div class="set-t">文件校验</div>
+                  <div class="set-s">未发现失效文件，本地数据一致</div>
+                </div>
+                <svg class="ic ic-stroke" style="color:var(--text3)"><use href="#i-chev-r"/></svg>
+              </div>
+            </div>
+          </div>
+          <div class="minibar">
+            <div class="minibar-thumb"><svg class="ic ic-fill"><use href="#i-note"/></svg></div>
+            <div class="minibar-mid">
+              <div class="minibar-title">Weightless</div>
+              <div class="minibar-progress"><i style="width:62%"></i></div>
+            </div>
+            <button class="minibar-btn"><svg class="ic ic-fill"><use href="#i-pause"/></svg></button>
+          </div>
+        </div>
+      </div>
+      <div class="phone-label">00 · <b>我的页 · 入口卡（生效中态）</b> · 第 5 张卡：状态行（绿点 + 时段名 + 生效区间）+ 词条 chips 预览 + 全局开关直达。开关关闭时绿点与 chips 隐藏，副标题变「未在时段内 / 未配置」</div>
+    </div>
+
+    <!-- ================ 01 配置列表页 ================ -->
+    <div class="phone-wrap">
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="screen">
+          <div class="statusbar"><span>23:41</span><span class="sb-icons">▮▮ ▮● ♪</span></div>
+          <div class="appbar">
+            <div class="appbar-left back-title">
+              <button class="icon-btn"><svg class="ic ic-stroke"><use href="#i-back"/></svg></button>
+              <div>
+                <div class="t">随心播放增强</div>
+                <div class="subtitle">MOOD TIME SLOT</div>
+              </div>
+            </div>
+            <div class="appbar-right"></div>
+          </div>
+          <div class="scroll">
+            <!-- 全局开关 + 说明 -->
+            <div class="card" style="margin-top:10px">
+              <div class="set-row" style="padding-top:2px">
+                <div class="set-mid">
+                  <div class="set-t" style="display:flex;align-items:center;gap:7px">启用增强 <span class="info-dot">i</span></div>
+                  <div class="set-s">开启后，随心播放与无限随机将优先从当前时段配置的情绪歌曲中随机；未命中任何时段时保持原有随机</div>
+                </div>
+                <div class="switch on lg"></div>
+              </div>
+            </div>
+
+            <!-- 24h 时间轴（当前 23:41，深夜静谧生效中） -->
+            <div class="card">
+              <div style="display:flex;align-items:center;justify-content:space-between">
+                <div style="font-size:12px;font-weight:700;color:var(--text2);display:flex;align-items:center;gap:6px">
+                  <svg class="ic ic-fill" style="width:13px;height:13px;color:var(--accent)"><use href="#i-clock"/></svg>今日时段
+                </div>
+                <div class="mono" style="font-size:10.5px;color:var(--text3)">now 23:41</div>
+              </div>
+              <div class="daybar">
+                <div class="seg-fill" style="left:0;width:25%"></div>
+                <div class="seg-fill cur" style="left:91.7%;width:8.3%"></div>
+                <div class="tick" style="left:25%"></div>
+                <div class="tick" style="left:50%"></div>
+                <div class="tick" style="left:75%"></div>
+              </div>
+              <div class="daybar-scale"><span>0</span><span>6</span><span>12</span><span>18</span><span>24</span></div>
+              <div class="exp" style="margin-top:8px">色块 = 时段覆盖区间（22:00–06:00 跨午夜被拆为两段渲染）；深色为当前命中。同一时刻至多命中一个时段。</div>
+            </div>
+
+            <!-- 时段卡 1：生效中 -->
+            <div class="slot-card" style="border-color:var(--tint-strong)">
+              <div class="slot-head">
+                <span class="live-dot"></span>
+                <div class="slot-name">深夜静谧</div>
+                <div class="slot-time">22:00 – 06:00</div>
+                <button class="icon-btn sm"><svg class="ic ic-stroke" style="width:15px;height:15px"><use href="#i-pencil"/></svg></button>
+                <button class="icon-btn sm"><svg class="ic ic-stroke" style="width:15px;height:15px;color:var(--err)"><use href="#i-trash"/></svg></button>
+              </div>
+              <div class="slot-tags">
+                <span class="chip sel">静谧<span class="cnt">128</span></span>
+                <span class="chip sel">空灵<span class="cnt">46</span></span>
+                <span class="chip sel">禅<span class="cnt">31</span></span>
+              </div>
+              <div class="slot-foot">
+                <div class="songs"><svg><use href="#i-note"/></svg>合计 <b>168</b> 首可随机</div>
+                <span class="live-tag">生效中</span>
+              </div>
+            </div>
+
+            <!-- 时段卡 2：未命中 -->
+            <div class="slot-card">
+              <div class="slot-head">
+                <span style="width:7px;height:7px;border-radius:50%;background:var(--out2);flex:none"></span>
+                <div class="slot-name">通勤提神</div>
+                <div class="slot-time">07:30 – 09:30</div>
+                <button class="icon-btn sm"><svg class="ic ic-stroke" style="width:15px;height:15px"><use href="#i-pencil"/></svg></button>
+                <button class="icon-btn sm"><svg class="ic ic-stroke" style="width:15px;height:15px;color:var(--err)"><use href="#i-trash"/></svg></button>
+              </div>
+              <div class="slot-tags">
+                <span class="chip sel">元气<span class="cnt">204</span></span>
+                <span class="chip sel">燃<span class="cnt">97</span></span>
+              </div>
+              <div class="slot-foot">
+                <div class="songs"><svg><use href="#i-note"/></svg>合计 <b>262</b> 首可随机</div>
+                <span style="font-size:10.5px;color:var(--text3)">07:30 生效</span>
+              </div>
+            </div>
+
+            <!-- 时段卡 3：小池子预警 -->
+            <div class="slot-card">
+              <div class="slot-head">
+                <span style="width:7px;height:7px;border-radius:50%;background:var(--out2);flex:none"></span>
+                <div class="slot-name">午后小憩</div>
+                <div class="slot-time">13:00 – 14:00</div>
+                <button class="icon-btn sm"><svg class="ic ic-stroke" style="width:15px;height:15px"><use href="#i-pencil"/></svg></button>
+                <button class="icon-btn sm"><svg class="ic ic-stroke" style="width:15px;height:15px;color:var(--err)"><use href="#i-trash"/></svg></button>
+              </div>
+              <div class="slot-tags">
+                <span class="chip sel">慵懒<span class="cnt">18</span></span>
+                <span class="chip sel">微醺<span class="cnt">9</span></span>
+              </div>
+              <div class="slot-foot">
+                <div class="songs"><svg><use href="#i-note"/></svg>合计 <b>24</b> 首可随机</div>
+                <span class="warn"><svg><use href="#i-alert"/></svg>歌曲较少，将循环播放</span>
+              </div>
+            </div>
+
+            <div style="margin:14px 18px 8px">
+              <button class="btn outlined block"><svg class="ic ic-stroke"><use href="#i-plus"/></svg>添加时段</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="phone-label">01 · <b>配置列表页</b> · 全局开关 + 24h 时间轴（当前命中深色高亮）+ 时段卡（词条 chips 带歌曲数角标 / 合计可随机数 / 小池子预警 / 编辑删除）</div>
+    </div>
+
+    <!-- ================ 02 编辑页 · 词条选择器 ================ -->
+    <div class="phone-wrap">
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="screen">
+          <div class="statusbar"><span>23:41</span><span class="sb-icons">▮▮ ▮● ♪</span></div>
+          <div class="appbar">
+            <div class="appbar-left back-title">
+              <button class="icon-btn"><svg class="ic ic-stroke"><use href="#i-back"/></svg></button>
+              <div class="t">编辑时段</div>
+            </div>
+            <div class="appbar-right"><button class="btn text" style="font-weight:800"><svg class="ic ic-stroke"><use href="#i-check"/></svg>保存</button></div>
+          </div>
+          <div class="scroll">
+            <!-- 时段名 -->
+            <div style="margin:12px 18px 0">
+              <div class="field-label">时段名 <span class="info-dot">i</span></div>
+              <div class="field">深夜静谧</div>
+              <div class="exp">给这个时段起个名字，如「深夜静谧」「通勤提神」</div>
+            </div>
+
+            <!-- 时间段 -->
+            <div style="margin:16px 18px 0">
+              <div class="field-label">时间段 <span class="info-dot">i</span></div>
+              <div class="time-row">
+                <div class="time-box"><span class="t">22:00</span><span class="apm">PM · 开始</span></div>
+                <span class="time-sep">→</span>
+                <div class="time-box"><span class="t">06:00</span><span class="apm">AM · 结束</span></div>
+              </div>
+              <div class="exp" style="display:flex;align-items:center;gap:5px"><svg style="width:12px;height:12px;color:var(--accent)" class="ic ic-fill"><use href="#i-moon"/></svg>结束早于开始：跨午夜，覆盖 22:00–次日 06:00（左闭右开）</div>
+            </div>
+
+            <!-- 词条选择器 -->
+            <div style="margin:16px 18px 0">
+              <div class="field-label">情绪词条 <span class="info-dot">i</span></div>
+              <div class="exp" style="margin:0 0 10px">只有带有这些词条的歌曲会被随机到；词条来自情绪分析与你对歌曲的手动标记</div>
+
+              <div class="chip-group-label">自动分析可用</div>
+              <div class="chip-row">
+                <span class="chip sel">静谧<span class="cnt">128</span></span>
+                <span class="chip sel">空灵<span class="cnt">46</span></span>
+                <span class="chip sel">禅<span class="cnt">31</span></span>
+                <span class="chip">治愈<span class="cnt">86</span></span>
+                <span class="chip">放松<span class="cnt">122</span></span>
+                <span class="chip">慵懒<span class="cnt">18</span></span>
+                <span class="chip">微醺<span class="cnt">9</span></span>
+                <span class="chip">元气<span class="cnt">204</span></span>
+                <span class="chip">快乐<span class="cnt">143</span></span>
+                <span class="chip">轻快<span class="cnt">77</span></span>
+                <span class="chip">燃<span class="cnt">97</span></span>
+                <span class="chip">伤感<span class="cnt">55</span></span>
+                <span class="chip">emo<span class="cnt">41</span></span>
+                <span class="chip">专注<span class="cnt">28</span></span>
+                <span class="chip">史诗<span class="cnt">16</span></span>
+              </div>
+
+              <div class="chip-group-label" style="color:var(--warn)">仅手动标记计入</div>
+              <div class="chip-row">
+                <span class="chip dim">鬼畜<span class="cnt">0</span></span>
+                <span class="chip dim">沙雕<span class="cnt">0</span></span>
+                <span class="chip dim">戏谑<span class="cnt">6</span></span>
+                <span class="chip dim">荒诞<span class="cnt">2</span></span>
+              </div>
+              <div class="exp" style="color:var(--warn)">这组词条不参与自动分析，只有你手动标记过的歌曲会计入（鬼畜 / 沙雕当前 0 首，选中将无法随机到歌曲）</div>
+            </div>
+
+            <!-- 合计预览 -->
+            <div style="margin:16px 18px 0;background:var(--bg1);border:1px solid var(--out1);border-radius:var(--r-m);padding:13px 15px;display:flex;align-items:center;gap:10px">
+              <svg class="ic ic-fill" style="color:var(--accent);width:16px;height:16px"><use href="#i-shuffle"/></svg>
+              <div style="flex:1;font-size:12px;color:var(--text2)">该组合下可随机的歌曲</div>
+              <div class="mono" style="font-size:17px;font-weight:800;color:var(--text1)">168 <span style="font-size:10px;color:var(--text3);font-weight:400">/ 1280 首</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="phone-label">02 · <b>编辑页 · 词条选择器</b> · 词条 chip 带歌曲数角标；「仅手动标记计入」组单独分色提示；底部合计条实时预览随机池规模（N / 曲库总数）</div>
+    </div>
+
+    <!-- ================ 03 重叠校验错误态 ================ -->
+    <div class="phone-wrap">
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="screen">
+          <div class="statusbar"><span>23:41</span><span class="sb-icons">▮▮ ▮● ♪</span></div>
+          <div class="appbar">
+            <div class="appbar-left back-title">
+              <button class="icon-btn"><svg class="ic ic-stroke"><use href="#i-back"/></svg></button>
+              <div class="t">编辑时段</div>
+            </div>
+            <div class="appbar-right">
+              <button class="btn text" style="color:var(--text3);opacity:.55" disabled>保存</button>
+            </div>
+          </div>
+          <div class="scroll">
+            <div style="margin:12px 18px 0">
+              <div class="field-label">时段名 <span class="info-dot">i</span></div>
+              <div class="field">晚间放松</div>
+            </div>
+
+            <div style="margin:16px 18px 0">
+              <div class="field-label">时间段 <span class="info-dot">i</span></div>
+              <div class="time-row">
+                <div class="time-box err"><span class="t" style="color:var(--err)">20:00</span><span class="apm">PM · 开始</span></div>
+                <span class="time-sep">→</span>
+                <div class="time-box err"><span class="t" style="color:var(--err)">23:30</span><span class="apm">PM · 结束</span></div>
+              </div>
+              <div class="err-note">
+                <svg><use href="#i-alert"/></svg>
+                <span>时间段与「<b>深夜静谧</b>」（22:00 – 06:00）重叠，请调整。各时段之间不能有重合部分。</span>
+              </div>
+            </div>
+
+            <!-- 冲突可视化时间轴 -->
+            <div style="margin:18px 18px 0">
+              <div style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:8px">冲突预览（20:00 – 24:00 区段）</div>
+              <div class="daybar" style="height:34px">
+                <div class="seg-fill" style="left:83.3%;width:12.5%;background:color-mix(in srgb,var(--ok) 26%, transparent)"></div>
+                <div class="seg-fill" style="left:91.7%;width:8.3%;background:color-mix(in srgb,var(--err) 30%, transparent)"></div>
+                <div class="daybar-scale" style="position:absolute;left:0;right:0;bottom:-16px"><span style="position:absolute;left:83.3%">20:00</span><span style="position:absolute;left:91.7%">22:00</span><span style="position:absolute;right:0">24:00</span></div>
+              </div>
+              <div style="display:flex;gap:14px;margin-top:24px;font-size:10px;color:var(--text3)">
+                <span style="display:flex;align-items:center;gap:5px"><i style="width:9px;height:9px;border-radius:3px;background:color-mix(in srgb,var(--ok) 26%, transparent);display:inline-block"></i>深夜静谧（已有）</span>
+                <span style="display:flex;align-items:center;gap:5px"><i style="width:9px;height:9px;border-radius:3px;background:color-mix(in srgb,var(--err) 30%, transparent);display:inline-block"></i>晚间放松（重叠区 22:00–23:30）</span>
+              </div>
+            </div>
+
+            <!-- 词条区（已选，保持可编辑） -->
+            <div style="margin:22px 18px 0">
+              <div class="field-label">情绪词条 <span class="info-dot">i</span></div>
+              <div class="chip-row">
+                <span class="chip sel">放松<span class="cnt">122</span></span>
+                <span class="chip sel">慵懒<span class="cnt">18</span></span>
+              </div>
+            </div>
+          </div>
+          <!-- 底部操作条（保存禁用） -->
+          <div style="flex:none;padding:12px 18px 18px;border-top:1px solid var(--out1);display:flex;gap:10px">
+            <button class="btn outlined" style="flex:1">取消</button>
+            <button class="btn filled" style="flex:1;opacity:.45" disabled>保存时段</button>
+          </div>
+        </div>
+      </div>
+      <div class="phone-label">03 · <b>编辑页 · 重叠校验错误态</b> · 冲突时间框标红 + 错误说明指向冲突时段 + 冲突区段可视化时间轴；保存按钮禁用（校验前置到输入时，而非保存后报错）</div>
+    </div>
+
+    <!-- ================ 04 播放页 · 归因横幅 + toast ================ -->
+    <div class="phone-wrap">
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="screen">
+          <div class="statusbar"><span>23:42</span><span class="sb-icons">▮▮ ▮● ♪</span></div>
+          <div class="appbar">
+            <div class="appbar-left"><span class="t" style="visibility:hidden">.</span></div>
+            <div class="appbar-right">
+              <span class="chip" style="border-color:var(--out2)"><svg class="ic ic-fill" style="width:11px;height:11px;color:var(--accent)"><use href="#i-note"/></svg>Hi-Res</span>
+            </div>
+          </div>
+
+          <div class="scroll" style="display:flex;flex-direction:column">
+            <!-- 归因横幅：增强生效中 -->
+            <div class="mood-banner">
+              <span class="live-dot"></span>
+              <svg class="ic ic-fill"><use href="#i-moon"/></svg>
+              <span>按<b>「深夜静谧」</b>随机 · 静谧 空灵 禅</span>
+            </div>
+
+            <div class="cover-hero"><svg><use href="#i-note"/></svg></div>
+            <div class="song-title">Weightless</div>
+            <div class="song-artist">Marconi Union · 静谧</div>
+
+            <div class="progress-row">
+              <span>01:47</span>
+              <div class="progress-track"><i></i></div>
+              <span>04:32</span>
+            </div>
+
+            <!-- 播放控制 -->
+            <div style="display:flex;align-items:center;justify-content:center;gap:24px;margin-top:18px">
+              <button class="icon-btn" style="color:var(--accent)"><svg class="ic ic-fill" style="width:20px;height:20px"><use href="#i-shuffle"/></svg></button>
+              <button class="icon-btn" style="width:46px;height:46px;border:1px solid var(--out2)"><svg class="ic ic-fill" style="transform:rotate(180deg)"><use href="#i-play"/></svg></button>
+              <button style="width:62px;height:62px;border-radius:50%;background:var(--accent);color:var(--on-accent);display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow)"><svg class="ic ic-fill" style="width:24px;height:24px"><use href="#i-pause"/></svg></button>
+              <button class="icon-btn" style="width:46px;height:46px;border:1px solid var(--out2)"><svg class="ic ic-fill"><use href="#i-play"/></svg></button>
+              <button class="icon-btn"><svg class="ic ic-stroke" style="width:20px;height:20px"><use href="#i-infinite"/></svg></button>
+            </div>
+
+            <!-- 归因 toast -->
+            <div class="toast">
+              <svg><use href="#i-spark"/></svg>
+              已按<b class="b">「深夜静谧」</b>为你随机播放
+            </div>
+          </div>
+
+          <!-- FAB -->
+          <div class="lucky-fab">
+            <svg class="ic ic-fill"><use href="#i-shuffle"/></svg>
+            <div>随心播放<span class="sub">深夜静谧 · 生效中</span></div>
+          </div>
+
+          <div class="minibar">
+            <div class="minibar-thumb"><svg class="ic ic-fill"><use href="#i-note"/></svg></div>
+            <div class="minibar-mid">
+              <div class="minibar-title">Weightless</div>
+              <div class="minibar-progress"><i style="width:38%"></i></div>
+            </div>
+            <button class="minibar-btn"><svg class="ic ic-fill"><use href="#i-pause"/></svg></button>
+          </div>
+        </div>
+      </div>
+      <div class="phone-label">04 · <b>播放页 · 归因</b> · 封面上方常驻归因横幅（生效时段 + 词条）；启动 toast 一次性归因；FAB 加副标题行预告当前将按哪个时段随机</div>
+    </div>
+
+    <!-- ================ 05 添加时段底部弹层 + 空态 ================ -->
+    <div class="phone-wrap">
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="screen">
+          <div class="statusbar"><span>23:41</span><span class="sb-icons">▮▮ ▮● ♪</span></div>
+          <div class="appbar">
+            <div class="appbar-left back-title">
+              <button class="icon-btn"><svg class="ic ic-stroke"><use href="#i-back"/></svg></button>
+              <div class="t">随心播放增强</div>
+            </div>
+            <div class="appbar-right"></div>
+          </div>
+          <div class="scroll">
+            <!-- 全局开关（关） -->
+            <div class="card" style="margin-top:10px">
+              <div class="set-row" style="padding-top:2px">
+                <div class="set-mid">
+                  <div class="set-t" style="display:flex;align-items:center;gap:7px">启用增强 <span class="info-dot">i</span></div>
+                  <div class="set-s">未配置时段：开启后随心播放仍保持原有随机，直到命中你添加的时段</div>
+                </div>
+                <div class="switch lg"></div>
+              </div>
+            </div>
+
+            <!-- 空态 -->
+            <div class="empty">
+              <svg><use href="#i-moon"/></svg>
+              <div class="t">还没有时段配置</div>
+              <div class="s">添加一个时段并选择情绪词条，<br>让随心播放跟着一天的心情走~</div>
+            </div>
+          </div>
+
+          <!-- 底部弹层：快速添加 -->
+          <div class="overlay"></div>
+          <div class="sheet">
+            <div class="grab"></div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+              <div style="font-size:15px;font-weight:800">添加时段</div>
+              <button class="icon-btn sm"><svg class="ic ic-stroke" style="width:14px;height:14px;transform:rotate(-90deg)"><use href="#i-back"/></svg></button>
+            </div>
+            <div class="field-label">时段名 <span class="info-dot">i</span></div>
+            <div class="field"><span class="ph">如：深夜静谧 / 通勤提神 / 午后小憩</span></div>
+            <div class="field-label" style="margin-top:13px">时间段 <span class="info-dot">i</span></div>
+            <div class="time-row">
+              <div class="time-box"><span class="t">22:00</span><span class="apm">PM</span></div>
+              <span class="time-sep">→</span>
+              <div class="time-box"><span class="t">06:00</span><span class="apm">AM</span></div>
+            </div>
+            <div class="field-label" style="margin-top:13px">情绪词条（可多选）<span class="info-dot">i</span></div>
+            <div class="chip-row">
+              <span class="chip sel">静谧<span class="cnt">128</span></span>
+              <span class="chip">空灵<span class="cnt">46</span></span>
+              <span class="chip sel">禅<span class="cnt">31</span></span>
+              <span class="chip">放松<span class="cnt">122</span></span>
+              <span class="chip">专注<span class="cnt">28</span></span>
+            </div>
+            <div style="display:flex;gap:10px;margin-top:16px">
+              <button class="btn outlined" style="flex:1">取消</button>
+              <button class="btn filled" style="flex:1"><svg class="ic ic-stroke"><use href="#i-check"/></svg>保存时段</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="phone-label">05 · <b>空态 + 快速添加弹层</b> · 空态说明引导首次配置；底部弹层承载全部字段，词条选择即点即选、角标即时更新；开关说明在未配置时如实告知"开启暂无效果"</div>
+    </div>
+
+  </div>
+
+  <!-- ===================== 交互规则 ===================== -->
+  <section class="sec">
+    <div class="sec-head"><span class="idx">SECTION 02</span></div>
+    <div>
+      <h2>交互与状态规则</h2>
+      <div class="sub">与 <code>docs/architecture/MOOD_TIME_SLOT_PLAYBACK.md</code> 的生效规则一一对应，实现时以此为准。</div>
+    </div>
+
+    <div class="pillars" style="margin-top:28px">
+      <div class="pillar">
+        <div class="num">规则 01 / 互斥</div>
+        <h3>同时至多一个时段生效</h3>
+        <p>区间左闭右开 <code>[start, end)</code>，配置时两两不重叠（编辑页即时校验 + 时间框标红 + 保存禁用）。跨午夜时段在 24h 时间轴上拆两段渲染。</p>
+      </div>
+      <div class="pillar">
+        <div class="num">规则 02 / 降级</div>
+        <h3>候选池不足时的三档行为</h3>
+        <p>词条组合 0 首 → 回退全库随机 + toast；&lt;10 首 → 正常生效 + "将循环播放"预警；正常 → 启动 toast 归因一次。列表卡与编辑页合计条均展示可随机数。</p>
+      </div>
+      <div class="pillar">
+        <div class="num">规则 03 / 开关</div>
+        <h3>全局一个开关，默认关闭</h3>
+        <p>时段互斥已保证同时至多一个生效，开关只回答"这套自动化整体开不开"。空配置时开关可开但无效果（说明文案如实告知），现有随机行为不受任何影响。</p>
+      </div>
+      <div class="pillar">
+        <div class="num">规则 04 / 兼容</div>
+        <h3>与全局均匀随机叠加</h3>
+        <p>增强仅替换随机候选池，分层抢占（低播放优先）与最近播放淘汰照常工作。归因横幅让"这首歌为什么被选中"始终可解释。</p>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div>Melody in Heart · 情境化随心播放增强 · UI 设计 · 心有乐章</div>
+    <div class="mono">docs/ui-design/mood-time-slot.html · 设计依据 docs/architecture/MOOD_TIME_SLOT_PLAYBACK.md · 设计稿待落地到 Compose · 未改动项目代码</div>
+  </footer>
+</div>
+
+<script>
+(function(){
+  var pills = document.querySelectorAll('.pill[data-pill]');
+  function paint(theme){
+    document.body.dataset.theme = theme;
+    pills.forEach(function(p){
+      p.classList.toggle('active', p.getAttribute('data-pill') === theme);
+    });
+  }
+  pills.forEach(function(p){
+    p.addEventListener('click', function(){
+      paint(p.getAttribute('data-pill'));
+    });
+  });
+  paint('mono-dark');
+})();
+</script>
+</body>
+</html>

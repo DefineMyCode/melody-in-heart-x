@@ -486,6 +486,7 @@ RoundedCornerShape(26.dp)  // --r-xl Hero板块
 |------|------|
 | `docs/ui-design/index.html` | 主设计稿（本文档源） |
 | `docs/ui-design/playback-statistics.html` | 播放统计页设计稿 |
+| `docs/ui-design/mood-time-slot.html` | 情境化随心播放增强设计稿（时段 × 情绪词条；设计依据 `docs/architecture/MOOD_TIME_SLOT_PLAYBACK.md`） |
 | `core/ui/.../theme/` | Compose 主题实现 |
 | `feature/settings/.../SettingsScreen.kt` | 设置页 UI（主题切换） |
 

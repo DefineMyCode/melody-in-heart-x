@@ -18,6 +18,7 @@ Melody in Heart（心有乐章）的文档按主题归入 `docs/` 子目录。�
 - [设计系统](ui-design/DESIGN_SYSTEM.md)：心有乐章 UI 实现参考（颜色 / 字体 / 组件规范）。
 - [主设计稿](ui-design/index.html)：Compose 实现对照的 HTML 设计稿。
 - [播放统计页设计稿](ui-design/playback-statistics.html)。
+- [情境化随心播放设计稿](ui-design/mood-time-slot.html)：时段 × 情绪词条增强的六屏手机稿（设计依据 [功能设计文档](architecture/MOOD_TIME_SLOT_PLAYBACK.md)）。
 
 ## 编码指引（仓库根目录）
 

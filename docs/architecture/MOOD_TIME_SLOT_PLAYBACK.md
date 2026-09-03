@@ -5,6 +5,7 @@
 | 状态 | 设计评审通过，待排期实施 |
 | 提出 | 2026-09-03 |
 | 文档性质 | 产品评审结论 + 一期技术方案 |
+| UI 设计稿 | `docs/ui-design/mood-time-slot.html`（六屏手机稿，四主题即时换肤） |
 | 关联模块 | `:feature:user`（配置 UI）、`:feature:home`（随心播放入口）、`:domain`（时段判定 / planner 过滤）、`:core:model`（配置模型） |
 
 ---
@@ -130,6 +131,8 @@ data class TimeSlotConfig(
 
 ### 3.4 UI 结构
 
+> 视觉稿见 `docs/ui-design/mood-time-slot.html`（六屏：入口卡三态 / 配置列表 + 24h 时间轴 / 编辑页词条选择器 / 重叠校验错误态 / 播放页归因横幅 / 空态 + 快速添加弹层），交互规则对照其 SECTION 02。
+
 **「我的」页第 5 张入口卡**（`feature/user`，沿用现有卡片视觉）：
 
 ```
@@ -249,6 +252,19 @@ class MoodSlotResolver {
 - 与 `EmotionLibraryView` 的 `tagOptions` 同源同算法，保证两处计数一致；
 - 组合期零计算（评审 M-7 模式）。
 
+### 4.7 UI 设计稿要点（与实现对照）
+
+设计稿 `docs/ui-design/mood-time-slot.html` 沿用主设计系统四主题令牌，六个屏的落地要点：
+
+| 屏 | 落地要点 |
+|----|----------|
+| 入口卡 | 40dp 圆角图标 + 状态行（生效中：绿点 + 时段名 + 区间；未配置/未命中为灰字）+ 词条 chips 预览（`+N` 折叠）；开关直达 |
+| 配置列表 | 全局开关卡（含说明）；24h 时间轴（时段区间色块、跨午夜拆两段、当前命中渐变高亮、整点刻度）；时段卡 = 名称 + mono 时间 + 词条 chips（歌曲数角标）+ 合计可随机数 + 小池子预警（warn 色）；编辑/删除 icon；底部「添加时段」描边按钮 |
+| 编辑页 | 字段标签带 info 点（点击展开说明）；时间框 mono 数字 + AM/PM 角标；跨午夜提示 moon 图标行；词条 chips 分「自动分析可用」/「仅手动标记计入」两组，后者 warn 色提示；底部合计条「N / 曲库总数」 |
+| 错误态 | 冲突时间框红边红字 + 错误说明点名冲突时段 + 冲突区段时间轴可视化；保存按钮禁用（校验前置） |
+| 播放页 | 封面上方归因横幅（live-dot + 时段名 + 词条摘要）；启动 toast 一次性归因；FAB 副标题行预告当前时段 |
+| 空态 + 弹层 | 空态引导文案；底部弹层承载全部字段，即点即选、角标即时更新；未配置时开关说明如实告知"开启暂无效果" |
+
 ---
 
 ## 5. 文案表（配置项说明，即需求中的"为所有配置项提供适当的说明"）
@@ -291,7 +307,7 @@ class MoodSlotResolver {
 2. `:domain` `MoodSlotResolver`（含环形重叠校验纯函数）+ `MoodSlotPolicy` 常量 + 全边角单测；
 3. `:data` `TimeSlotConfigStore`（DataStore JSON）+ `PlayerSettingsRepository` 新增 `moodTimeSlotEnabled`（含 DataStore 键、读写、测试）；
 4. `:feature:player` 随机链路接过滤（playRandomQueue / infinite start / refill 三处同一候选池来源）+ 归因 toast；
-5. `:feature:user` 入口卡 + 配置列表页 + 编辑页（Route/Screen 模式，词条选择器复用 EmotionLibraryView 交互模式，歌曲数派生流走 `stateIn`）；
+5. `:feature:user` 入口卡 + 配置列表页 + 编辑页（Route/Screen 模式，词条选择器复用 EmotionLibraryView 交互模式，歌曲数派生流走 `stateIn`，视觉对照 `docs/ui-design/mood-time-slot.html`）；
 6. `:app` 导航接线；
 7. 回归项：关闭开关后随心播放行为与现状逐位一致（`RandomQueuePlanner` 既有测试全部不动且必须全绿）；`check` 全绿。
 

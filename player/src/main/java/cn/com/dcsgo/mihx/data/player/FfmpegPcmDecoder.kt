@@ -2,9 +2,11 @@ package cn.com.dcsgo.mihx.data.player
 
 import android.media.MediaExtractor
 import android.media.MediaFormat
+import androidx.annotation.OptIn
 import androidx.media3.common.C
 import androidx.media3.common.Format
 import androidx.media3.common.MimeTypes
+import androidx.media3.common.util.UnstableApi
 import androidx.media3.decoder.Decoder
 import androidx.media3.decoder.DecoderException
 import androidx.media3.decoder.DecoderInputBuffer
@@ -41,10 +43,16 @@ class FfmpegPcmDecoder @Inject constructor() {
     /**
      * FFmpeg 解码 extractor 当前选中音轨.
      *
+     * 直驱 media3 FFmpeg 扩展的 package-private 解码器与 Format.Builder,
+     * 属 UnstableApi 面(经反射隔离在 [FfmpegLibraryProbe]);lint 的
+     * UnsafeOptInUsageError 在此处显式 opt-in 收敛(评审 2026-09-03 持续建议:
+     * lint 纳入 check 管控后暴露的既有债务).
+     *
      * @param format 该音轨的 MediaFormat(调用方已 selectTrack)
      * @param deadline 墙钟截止, 超时放弃(与调用方看门狗同款)
      * @return null = 扩展不可用 / native 初始化失败 / 解码出错 / 超时, 调用方决定回退
      */
+    @OptIn(UnstableApi::class)
     internal fun decode(extractor: MediaExtractor, format: MediaFormat, deadline: Long): Pcm16Mono? {
         val mime = format.getString(MediaFormat.KEY_MIME) ?: return null
         val sampleMimeType = ffmpegMime(mime) ?: return null

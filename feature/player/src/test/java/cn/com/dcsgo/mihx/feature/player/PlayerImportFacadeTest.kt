@@ -75,6 +75,48 @@ class PlayerImportFacadeTest {
         assertEquals(listOf(1, 2, 3, 4), state.songs.map { it.id })
     }
 
+    @Test
+    fun `importFolderAsyncWith failure resets importing state and reports zero`() {
+        // C-1 回归（评审 2026-09-03）：导入抛异常时 isImporting 必须复位、
+        // onResult 必须收到 0，否则 UI 永久卡在"导入中"。
+        val results = mutableListOf<Int>()
+
+        facade.importFolderAsyncWith(
+            onResult = { results += it },
+            importAction = {
+                facade.importFolderWith {
+                    throw IllegalStateException("disk full")
+                }
+            },
+        )
+        kotlinx.coroutines.runBlocking {
+            launchedTasks.single().invoke()
+        }
+
+        assertEquals(listOf(0), results)
+        assertFalse(state.isImporting)
+        assertEquals(0, state.importProgress)
+        assertEquals(0, state.importTotal)
+        assertTrue(state.errorMessage.orEmpty().contains("导入失败"))
+    }
+
+    @Test
+    fun `importFolderWith failure resets importing state and rethrows`() {
+        // C-1 双保险回归：suspend 直接调用路径的异常同样要复位导入态，并原样上抛。
+        val thrown = runCatching {
+            kotlinx.coroutines.runBlocking {
+                facade.importFolderWith {
+                    throw IllegalStateException("saf revoked")
+                }
+            }
+        }.exceptionOrNull()
+
+        assertTrue(thrown is IllegalStateException)
+        assertFalse(state.isImporting)
+        assertEquals(0, state.importProgress)
+        assertEquals(0, state.importTotal)
+    }
+
     private class FakeFolderImporter : FolderImporter {
         var result = ImportResult(
             addedCount = 0,

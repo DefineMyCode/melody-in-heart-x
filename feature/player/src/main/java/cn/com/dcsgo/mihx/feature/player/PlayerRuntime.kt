@@ -214,6 +214,7 @@ internal class PlayerRuntime(
         updateState = ::updateUiState,
         importer = importCoordinator,
         launch = { task -> scope.launch { task() } },
+        logError = { message, error -> AppLog.error("PlayerImportFacade", message, error) },
     )
     private val playlistFacade = PlayerPlaylistFacade(
         state = { _uiState.value },

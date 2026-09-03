@@ -100,12 +100,14 @@ object AlbumArtExtractor {
                 retriever.setDataSource(ctx, songUri)
             } catch (e: Exception) {
                 AppLog.warning(TAG, "setDataSource(uri) failed, trying fd: ${e.message}")
-                // 方式2：通过 ContentResolver 打开 fd（适用于 SAF content:// URI）
+                // 方式2：通过 ContentResolver 打开 fd（适用于 SAF content:// URI）。
+                // m1（评审 2026-09-03）：必须 use{} —— setDataSource 抛异常时 fd 会泄漏。
                 try {
                     val fd = ctx.contentResolver.openFileDescriptor(songUri, "r")
                     if (fd != null) {
-                        retriever.setDataSource(fd.fileDescriptor)
-                        fd.close()
+                        fd.use { parcel ->
+                            retriever.setDataSource(parcel.fileDescriptor)
+                        }
                     } else {
                         AppLog.warning(TAG, "openFileDescriptor returned null for $songUri")
                         return null

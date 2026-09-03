@@ -87,7 +87,10 @@ class PlayerPersistenceFacadeTest {
         assertEquals(state.playQueue, preparedQueue)
         assertEquals(0, preparedIndex)
         assertEquals(123L, preparedPositionMs)
-        assertTrue(logs.single().startsWith("Playback state restored: 2 songs"))
+        // savePlaybackState 的诊断日志也在 logs 里，这里只断言恢复日志存在且形态正确
+        assertTrue(
+            logs.any { it.startsWith("Playback state restored: 2 songs") },
+        )
     }
 
     @Test
@@ -124,7 +127,10 @@ class PlayerPersistenceFacadeTest {
         assertNull(preparedPositionMs)
         assertEquals(58_993L, state.currentPositionMs)
         assertTrue(state.isPlaying)
-        assertTrue(logs.single().startsWith("Playback state restored to UI only"))
+        // savePlaybackState 的诊断日志也在 logs 里，这里只断言恢复日志存在且形态正确
+        assertTrue(
+            logs.any { it.startsWith("Playback state restored to UI only") },
+        )
     }
 
     @Test

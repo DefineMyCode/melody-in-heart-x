@@ -62,6 +62,7 @@ import cn.com.dcsgo.mihx.feature.user.FileCheckRouteState
 import cn.com.dcsgo.mihx.feature.user.EmotionAnalysisActions
 import cn.com.dcsgo.mihx.feature.user.EmotionAnalysisRoute
 import cn.com.dcsgo.mihx.feature.user.EmotionAnalysisState
+import cn.com.dcsgo.mihx.core.common.AppLog
 import cn.com.dcsgo.mihx.core.model.EmotionSongUiRow
 import cn.com.dcsgo.mihx.feature.user.PlaybackStatsRoute
 import cn.com.dcsgo.mihx.feature.user.SongTopListRoute
@@ -144,7 +145,12 @@ fun AppNavHost(
             LaunchedEffect(songForInfo) {
                 val uri = songForInfo?.uri
                 if (uri != null) {
-                    songInfo = songForInfo?.let { loadSongInfo(it) }
+                    // m6（评审 2026-09-03）：底层走 Room runBlocking 桥，DB 异常会让协程崩溃，这里兜底。
+                    songInfo = runCatching { songForInfo?.let { loadSongInfo(it) } }
+                        .onFailure {
+                            AppLog.error("AppNavHost", "loadSongInfo failed: ${it.message}", it)
+                        }
+                        .getOrNull()
                 }
             }
             HomeRoute(
@@ -445,7 +451,13 @@ fun AppNavHost(
             val emotionStatus by emotionViewModel.status.collectAsStateWithLifecycle()
             LaunchedEffect(Unit) { emotionViewModel.refresh() }
             val snapshot by produceState(PlaybackStatsSnapshot.EMPTY) {
-                value = playerViewModel.loadPlaybackStatsSnapshot()
+                // C-2（评审 2026-09-03）：底层是 Room runBlocking 桥，DB 异常会在 producer 协程
+                // 中未捕获并直接崩溃应用；这里统一兜底为空快照 + 日志。
+                runCatching { playerViewModel.loadPlaybackStatsSnapshot() }
+                    .onSuccess { value = it }
+                    .onFailure {
+                        AppLog.error("AppNavHost", "loadPlaybackStatsSnapshot failed: ${it.message}", it)
+                    }
             }
             UserRoute(
                 state = userRouteState(
@@ -485,7 +497,11 @@ fun AppNavHost(
 
         composable(AppRoutes.PLAYBACK_STATS) {
             val snapshot by produceState(PlaybackStatsSnapshot.EMPTY) {
-                value = playerViewModel.loadPlaybackStatsSnapshot()
+                runCatching { playerViewModel.loadPlaybackStatsSnapshot() }
+                    .onSuccess { value = it }
+                    .onFailure {
+                        AppLog.error("AppNavHost", "loadPlaybackStatsSnapshot failed: ${it.message}", it)
+                    }
             }
             PlaybackStatsRoute(
                 state = playbackStatsRouteState(uiState, playerViewModel, snapshot),
@@ -504,7 +520,11 @@ fun AppNavHost(
         ) { backStackEntry ->
             val period = backStackEntry.arguments?.getString(AppRoutes.SONG_TOP_PERIOD) ?: "week"
             val snapshot by produceState(PlaybackStatsSnapshot.EMPTY) {
-                value = playerViewModel.loadPlaybackStatsSnapshot()
+                runCatching { playerViewModel.loadPlaybackStatsSnapshot() }
+                    .onSuccess { value = it }
+                    .onFailure {
+                        AppLog.error("AppNavHost", "loadPlaybackStatsSnapshot failed: ${it.message}", it)
+                    }
             }
             SongTopListRoute(
                 state = songTopListRouteState(uiState, playerViewModel, snapshot, period),
@@ -589,7 +609,11 @@ fun AppNavHost(
 
         composable(AppRoutes.RAW_PLAY_STATS) {
             val rankedCounts by produceState(emptyList<Pair<Int, Int>>(), true) {
-                value = playerViewModel.loadRankedCounts(useRawCounts = true)
+                runCatching { playerViewModel.loadRankedCounts(useRawCounts = true) }
+                    .onSuccess { value = it }
+                    .onFailure {
+                        AppLog.error("AppNavHost", "loadRankedCounts(raw) failed: ${it.message}", it)
+                    }
             }
             PlayStatsRoute(
                 state = playStatsRouteState(
@@ -604,7 +628,11 @@ fun AppNavHost(
 
         composable(AppRoutes.EFFECTIVE_PLAY_STATS) {
             val rankedCounts by produceState(emptyList<Pair<Int, Int>>(), false) {
-                value = playerViewModel.loadRankedCounts(useRawCounts = false)
+                runCatching { playerViewModel.loadRankedCounts(useRawCounts = false) }
+                    .onSuccess { value = it }
+                    .onFailure {
+                        AppLog.error("AppNavHost", "loadRankedCounts(effective) failed: ${it.message}", it)
+                    }
             }
             PlayStatsRoute(
                 state = playStatsRouteState(

@@ -4,8 +4,10 @@ import cn.com.dcsgo.mihx.core.common.AppLog
 import cn.com.dcsgo.mihx.domain.playback.PlaybackDurationMonitor
 import cn.com.dcsgo.mihx.domain.repository.PlayStatsRepository
 import cn.com.dcsgo.mihx.domain.repository.QuickSkipRepository
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.util.concurrent.atomic.AtomicBoolean
@@ -35,8 +37,10 @@ class PlayDurationTracker(
     private val quickSkipRepository: QuickSkipRepository
 ) : PlaybackDurationMonitor {
 
-    // 协程作用域，用于在后台线程中计时
-    private val scope = CoroutineScope(Dispatchers.IO)
+    // 协程作用域，用于在后台线程中计时。
+    // M-5（评审 2026-09-03）：必须用 SupervisorJob —— 普通 Job 下任一次 settle/increment 的
+    // Room 异常会取消整个 scope，之后"播放不计次、时长不累计"且无日志，静默死亡。
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     // 当前正在播放的歌曲ID
     private var currentSongId: Int? = null
@@ -80,7 +84,7 @@ class PlayDurationTracker(
         isPlaying.set(true)
 
         // 原始播放次数 +1 移到 IO 协程，避免在主线程（Media3 监听器）上阻塞。
-        scope.launch { playStatsRepository.incrementRawPlayCount(songId) }
+        launchTracked("incrementRawPlayCount") { playStatsRepository.incrementRawPlayCount(songId) }
 
         // 开始计时
         startTracking()
@@ -131,7 +135,7 @@ class PlayDurationTracker(
         isSeeking.set(false)
 
         if (songId != null) {
-            scope.launch { settlePlayback(songId, songDurationMs, totalDuration) }
+            launchTracked("settlePlayback") { settlePlayback(songId, songDurationMs, totalDuration) }
         }
 
         AppLog.debug(TAG, "停止播放")
@@ -141,7 +145,7 @@ class PlayDurationTracker(
      * 在 [scope]（Dispatchers.IO）中结算单曲播放统计：有效/原始播放次数、秒切列表维护、播放会话记录。
      * 全部为 Room 写操作，故放在后台执行，主线程不再被阻塞。
      */
-    private fun settlePlayback(songId: Int, songDurationMs: Long, totalDuration: Long) {
+    private suspend fun settlePlayback(songId: Int, songDurationMs: Long, totalDuration: Long) {
         var isEffective = false
 
         // 检查是否达到播放次数计数条件：完播率达标或长歌播放超过5分钟
@@ -201,11 +205,11 @@ class PlayDurationTracker(
     }
 
     /**
-     * 开始计时任务
+     * 计时任务：while 循环中定时累计播放时长，配合 [isTracking] 停止。
      */
     private fun startTracking() {
         if (isTracking.compareAndSet(false, true)) {
-            scope.launch {
+            launchTracked("trackingLoop") {
                 while (isTracking.get()) {
                     if (isPlaying.get() && !isSeeking.get()) {
                         val currentTime = System.currentTimeMillis()
@@ -219,6 +223,22 @@ class PlayDurationTracker(
 
                     delay(UPDATE_INTERVAL_MS)
                 }
+            }
+        }
+    }
+
+    /**
+     * M-5（评审 2026-09-03）：统一的后台执行入口 —— SupervisorJob 防止单次异常取消整个 scope，
+     * try/catch 保证 Room/IO 异常有日志、不再静默吞掉（取消异常必须原样上抛）。
+     */
+    private fun launchTracked(what: String, block: suspend () -> Unit) {
+        scope.launch {
+            try {
+                block()
+            } catch (ce: CancellationException) {
+                throw ce
+            } catch (t: Throwable) {
+                AppLog.error(TAG, "$what failed: ${t.message}", t)
             }
         }
     }

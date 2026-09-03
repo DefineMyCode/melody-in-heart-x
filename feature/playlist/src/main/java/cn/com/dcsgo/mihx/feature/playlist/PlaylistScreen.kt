@@ -725,10 +725,14 @@ private fun PlaylistDetailView(
             FloatingActionButton(
                 onClick = {
                     currentSong?.let { cs ->
+                        // M-9（评审 2026-09-03）：点击瞬间 displaySongs 可能已被搜索过滤/重排，
+                        // indexOfFirst 返回 -1 时 animateScrollToItem 会抛 IllegalArgumentException。
                         val index = displaySongs.indexOfFirst { it.id == cs.id }
-                        locateHighlight.trigger(cs.id)
-                        coroutineScope.launch {
-                            listState.animateScrollToItem(index)
+                        if (index >= 0) {
+                            locateHighlight.trigger(cs.id)
+                            coroutineScope.launch {
+                                listState.animateScrollToItem(index)
+                            }
                         }
                     }
                 },

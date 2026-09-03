@@ -131,7 +131,9 @@ class PlaybackController(
     }
 
     override fun startService() {
-        context.startService(Intent(context, serviceClass))
+        // M-12（评审 2026-09-03）：API 26+ 应用在后台时直接 startService 会抛
+        // IllegalStateException；startForegroundService 才是服务启动的安全路径。
+        ContextCompat.startForegroundService(context, Intent(context, serviceClass))
     }
 
     override fun connect(onConnected: (ControllerPlaybackSnapshot) -> Unit) {

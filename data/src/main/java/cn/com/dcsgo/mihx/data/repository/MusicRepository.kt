@@ -24,6 +24,9 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Semaphore
@@ -77,11 +80,29 @@ class MusicRepository(
         persistScope.coroutineContext[Job]?.children?.forEach { it.join() }
     }
 
-    // 回调：歌曲列表变更通知
-    var onSongsChanged: (() -> Unit)? = null
+    /**
+     * M-4（评审 2026-09-03）：歌曲变更通知改为 SharedFlow 单向广播。
+     * 单例 repository 的可变回调字段是经典内存泄漏源（监听者销毁时未置 null 即被长期持有），
+     * 且各触发点线程不一致（IO/调用线程）。SharedFlow 由订阅方管理收集生命周期，无反向强引用；
+     * extraBufferCapacity=1 保证无订阅者时 tryEmit 也不挂起。
+     * 旧回调式 [setSongsChangedListener] 保留为兼容桥（PlayerLibraryFacade 现用路径）。
+     */
+    @Volatile
+    private var onSongsChanged: (() -> Unit)? = null
+    private val songsChangedFlow = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
 
+    /** 流式订阅歌曲变更：由订阅方控制收集生命周期（推荐入口） */
+    val songsChanged: SharedFlow<Unit> = songsChangedFlow.asSharedFlow()
+
+    /** 兼容旧回调式订阅：listener 传 null 注销。调用方须在销毁路径显式清理。 */
     fun setSongsChangedListener(listener: (() -> Unit)?) {
         onSongsChanged = listener
+    }
+
+    private fun notifySongsChanged() {
+        val listener = onSongsChanged
+        songsChangedFlow.tryEmit(Unit)
+        listener?.invoke()
     }
 
     // ─────────────────────────────────────────────────────────────
@@ -289,7 +310,7 @@ class MusicRepository(
             AppLog.info(TAG, "refreshAllAlbumArt: updated ${updates.size} covers")
         }
         // 通知 UI 刷新
-        onSongsChanged?.invoke()
+        notifySongsChanged()
     }
 
     fun getPlaylists(): List<Playlist> = lock.read { playlists.toList() }
@@ -417,7 +438,7 @@ class MusicRepository(
         persistSongs()
         persistPlaylists()
         // 通知 UI 刷新（歌曲、歌单、曲库歌手/专辑目录）
-        onSongsChanged?.invoke()
+        notifySongsChanged()
         val finalAddedCount = addedCount.get()
         AppLog.info(TAG, "addFolder: added $finalAddedCount songs (skipped ${audioFiles.size - finalAddedCount})")
         PerformanceTrace.log(
@@ -566,10 +587,14 @@ class MusicRepository(
         playlist.songIds.mapNotNull(songsById::get)
     }
 
-    fun updatePlaylistSongCount(playlistId: Int) {
-        // 注意：此方法通常在已持有写锁的上下文中调用，不额外加锁
+    /**
+     * M-11（评审 2026-09-03）：改为 private 并利用 ReentrantReadWriteLock 可重入特性补写锁。
+     * 此前该方法是 public 且直接无锁写共享列表，靠"调用方已持锁"的注释维持不变量；
+     * 补锁后锁内/锁外调用均安全（重入不死锁），外部不再有绕过锁的入口。
+     */
+    private fun updatePlaylistSongCount(playlistId: Int) = lock.write {
         val index = playlists.indexOfFirst { it.id == playlistId }
-        if (index < 0) return
+        if (index < 0) return@write
         val old = playlists[index]
         playlists[index] = old.copy(songCount = old.songIds.size)
     }
@@ -625,7 +650,7 @@ class MusicRepository(
             )
         }
         // 通知 UI 刷新（歌曲、歌单、曲库歌手/专辑目录）
-        onSongsChanged?.invoke()
+        notifySongsChanged()
         result
     }
 
@@ -681,7 +706,7 @@ class MusicRepository(
         }
 
         cleanupMissingSongAssociations(missingIds)
-        onSongsChanged?.invoke()
+        notifySongsChanged()
         AppLog.info(
             TAG,
             "validateAndCleanupLocalFiles: removed ${missingIds.size} missing songs, $removedPlaylistRefs playlist refs",

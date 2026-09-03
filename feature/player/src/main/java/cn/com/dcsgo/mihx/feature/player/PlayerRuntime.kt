@@ -122,10 +122,21 @@ internal class PlayerRuntime(
             prepareControllerQueue = { queue, index, positionMs ->
                 playbackBridgeFacade.prepareControllerQueue(queue, index, positionMs)
             },
-            hasLiveSession = { playbackBridgeFacade.currentPlaybackPositionMs() > 0L },
+            hasLiveSession = { liveSessionActive() },
             log = { message -> AppLog.debug(TAG, message) },
         )
     }
+
+    /**
+     * live session 判据：controller 已连接且队列里有媒体项。
+     *
+     * 不用「播放位置 > 0」猜——restore 的 IO 读取可能先于 MediaController 连接完成
+     * （buildAsync 异步跨进程绑定），此时 [PlaybackBridgeFacade.currentPlaybackPositionMs]
+     * 会退化成 UI 状态值（重建后恒为 0），把 live session 误判成无会话，进而走完整
+     * restore 覆盖正在播放的会话。
+     */
+    private fun liveSessionActive(): Boolean =
+        (mediaControllerGraph.controllerQueueInfo()?.mediaItemCount ?: 0) > 0
 
     private val _uiState = MutableStateFlow(PlayerUiState())
     val uiState: StateFlow<PlayerUiState> = _uiState.asStateFlow()
@@ -163,6 +174,9 @@ internal class PlayerRuntime(
      */
     private fun handleControllerUnavailable(droppedActionCount: Int, reason: String) {
         AppLog.warning(TAG, "Playback controller unavailable: $reason, dropped=$droppedActionCount")
+        // 启动期连接失败（controller 视为空）也放行 restore 决策，否则 pendingRestore 会
+        // 永久悬挂、UI 队列永不恢复。播放中不可用时 pendingRestore 早已消费，此处无副作用。
+        persistenceGraph.onControllerReady()
         val suffix = if (droppedActionCount > 0) "，已取消 $droppedActionCount 个待执行操作" else ""
         updateUiState { it.copy(errorMessage = "$reason$suffix，请稍后重试") }
     }
@@ -361,7 +375,11 @@ internal class PlayerRuntime(
     }
     private val startupFacade = PlayerStartupFacade(
         startService = lifecycleFacade::startService,
-        connectMediaController = { mediaControllerGraph.connect() },
+        connectMediaController = {
+            mediaControllerGraph.connect(
+                onConnected = { persistenceGraph.onControllerReady() }
+            )
+        },
         loadInitialData = ::loadInitialData,
         listenForSongChanges = libraryFacade::listenForSongChanges,
         restorePlaybackState = ::restorePlaybackState,

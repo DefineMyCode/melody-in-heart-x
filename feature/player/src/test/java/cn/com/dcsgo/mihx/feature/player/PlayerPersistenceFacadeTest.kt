@@ -8,6 +8,7 @@ import cn.com.dcsgo.mihx.domain.playback.RestoredPlaybackState
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -87,6 +88,43 @@ class PlayerPersistenceFacadeTest {
         assertEquals(0, preparedIndex)
         assertEquals(123L, preparedPositionMs)
         assertTrue(logs.single().startsWith("Playback state restored: 2 songs"))
+    }
+
+    @Test
+    fun applyRestoreResultRestoresUiQueueButSkipsControllerWhenLiveSessionActive() {
+        // live session 场景（息屏/后台回来、服务仍在播）：不得重建控制器队列，
+        // 否则会把正在播放的会话覆盖成快照位置、进度回退。
+        // 但 UI 侧的队列与歌曲数据**仍必须恢复**——controller 的 snapshot 同步只调整
+        // currentIndex、不填充 songs，整个跳过会让 UI 播放队列一直是空的。
+        val allSongs = listOf(
+            song(1, title = "Song", sampleRate = 44_100),
+            song(2, title = "Song", sampleRate = 96_000),
+        )
+        val queue = PlayQueue().setQueue(allSongs, startIndex = 0)
+        state = state.copy(songs = allSongs, playQueue = queue)
+        facade.savePlaybackState(positionMs = 123L)
+        state = state.copy(
+            playQueue = PlayQueue(),
+            currentSong = null,
+            currentPositionMs = 58_993L,
+            isPlaying = true,
+        )
+
+        val result = facade.restorePlaybackState()
+        assertNotNull(result)
+        facade.applyRestoreResult(result!!, restoreController = false)
+
+        // UI 侧数据照常恢复
+        assertEquals(listOf(1, 2), state.playQueue.songs.map { it.id })
+        assertEquals(1, state.currentSong?.id)
+        assertEquals(listOf(2, 1), state.sameNameSongs.map { it.id })
+        // 控制器完全不被触动，live session 的位置与播放状态不被覆盖
+        assertNull(preparedQueue)
+        assertNull(preparedIndex)
+        assertNull(preparedPositionMs)
+        assertEquals(58_993L, state.currentPositionMs)
+        assertTrue(state.isPlaying)
+        assertTrue(logs.single().startsWith("Playback state restored to UI only"))
     }
 
     @Test

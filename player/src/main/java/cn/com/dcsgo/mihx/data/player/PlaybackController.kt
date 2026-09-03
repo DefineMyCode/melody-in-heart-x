@@ -261,14 +261,15 @@ class PlaybackController(
         runWhenConnected { it.seekTo(positionMs.coerceAtLeast(0L)) }
     }
 
+    /**
+     * 用户主动播放入口（点歌 / 切队列 / 错误恢复重播）。
+     *
+     * **禁止在此加 live session 守卫**：只要服务在播 mediaItemCount 就 > 0，
+     * 加了会让所有用户点歌请求被静默吞掉、服务继续放旧歌。
+     * 保护 live session 的职责属于恢复路径（[prepareQueue] 与其上层调用方）。
+     */
     override fun playQueue(plan: ControllerQueuePlan) {
         runWhenConnected { controller ->
-            // 服务端 ExoPlayer 已有正在播放的媒体项(息屏/后台回来,服务活着),
-            // 不覆盖 live session —— connect 的 sync 会把真实状态同步给 UI.
-            if (controller.mediaItemCount > 0) {
-                AppLog.info(TAG, "playQueue skipped: live session active (items=${controller.mediaItemCount})")
-                return@runWhenConnected
-            }
             val startedAt = PerformanceTrace.nowMs()
             lastSyncedQueueFingerprint = plan.fingerprint()
             controller.repeatMode = Player.REPEAT_MODE_ALL
@@ -283,6 +284,14 @@ class PlaybackController(
         }
     }
 
+    /**
+     * 恢复路径专用（唯一业务调用方是 [PlayerPersistenceFacade.applyRestoreResult]），
+     * 用于把 DataStore 里的队列与位置重新灌回控制器但**不自动播放**。
+     *
+     * live session 守卫只在**这里**成立：恢复时若服务端已有媒体项，重建队列会覆盖
+     * 正在播放的会话（进度回退到快照位置），此时只应补齐 UI 侧队列数据，
+     * 真实位置交给 connect 后的 syncControllerPlaybackState 同步。
+     */
     override fun prepareQueue(plan: ControllerQueuePlan, positionMs: Long) {
         runWhenConnected { controller ->
             if (controller.mediaItemCount > 0) {

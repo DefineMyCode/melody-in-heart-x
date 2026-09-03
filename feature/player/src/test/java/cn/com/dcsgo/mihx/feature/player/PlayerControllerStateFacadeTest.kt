@@ -72,6 +72,84 @@ class PlayerControllerStateFacadeTest {
         assertEquals(2 to 100L, durationUpdate)
         assertEquals(Triple(2, 100L, 42L), playbackStart)
         assertEquals(1, syncedState?.playQueue?.currentIndex)
+        // false -> true 的跃变会顺带通知 ticker
+        assertEquals(1, isPlayingChanges)
+    }
+
+    @Test
+    fun syncControllerPlaybackStateNotifiesTickerWhenAdoptingLiveSession() {
+        // live session 场景：UI 状态全新（息屏/后台回来、配置变更、ViewModel 重建），
+        // 而服务端 ExoPlayer 仍在播放。Media3 只在 isPlaying 变化时回调 onIsPlayingChanged，
+        // 新建的 MediaController 注册 listener 时不会补发，只能靠 sync 的跃变通知把
+        // 进度 ticker 拉起 —— 缺失这一步进度会恒为 0 而歌曲实际在播。
+        val songs = listOf(song(1))
+        state = state.copy(
+            songs = songs,
+            playQueue = PlayQueue().setQueue(songs, startIndex = 0),
+            currentSong = songs[0],
+            isPlaying = false,
+        )
+
+        facade.syncControllerPlaybackState(
+            snapshot(
+                mediaId = "1",
+                isPlaying = true,
+                currentPositionMs = 58_993L,
+                durationMs = 240_000L,
+            )
+        )
+
+        assertTrue(state.isPlaying)
+        assertEquals(1, isPlayingChanges)
+    }
+
+    @Test
+    fun syncControllerPlaybackStateNotifiesTickerWhenLiveSessionPauses() {
+        val songs = listOf(song(1))
+        state = state.copy(
+            songs = songs,
+            playQueue = PlayQueue().setQueue(songs, startIndex = 0),
+            currentSong = songs[0],
+            isPlaying = true,
+        )
+
+        facade.syncControllerPlaybackState(
+            snapshot(
+                mediaId = "1",
+                isPlaying = false,
+                currentPositionMs = 12_000L,
+                durationMs = 240_000L,
+            )
+        )
+
+        assertFalse(state.isPlaying)
+        assertEquals(1, isPlayingChanges)
+    }
+
+    @Test
+    fun syncControllerPlaybackStateDoesNotNotifyTickerWhenPlayingStateUnchanged() {
+        // PlaybackController 的 listener.onEvents 把 onPlaybackSnapshot 接成了高频回调，
+        // 播放稳态下的重复 sync 不应反复通知 ticker。
+        val songs = listOf(song(1))
+        state = state.copy(
+            songs = songs,
+            playQueue = PlayQueue().setQueue(songs, startIndex = 0),
+            currentSong = songs[0],
+            isPlaying = true,
+        )
+
+        repeat(5) { index ->
+            facade.syncControllerPlaybackState(
+                snapshot(
+                    mediaId = "1",
+                    isPlaying = true,
+                    currentPositionMs = index * 500L,
+                    durationMs = 240_000L,
+                )
+            )
+        }
+
+        assertEquals(0, isPlayingChanges)
     }
 
     @Test

@@ -29,8 +29,13 @@ internal class PlayerMediaControllerGraph(
         playbackController.startService()
     }
 
-    fun connect() {
-        playbackController.connect(controllerStateAdapter::sync)
+    fun connect(onConnected: () -> Unit = {}) {
+        // onConnected 在 controller 连接成功、完成首次状态同步之后回调一次，
+        // 供恢复流程等「依赖 controller 真实状态」的决策使用（见 PlayerPersistenceGraph）。
+        playbackController.connect { snapshot ->
+            controllerStateAdapter.sync(snapshot)
+            onConnected()
+        }
     }
 
     fun controllerQueueInfo(): ControllerQueueInfo? {

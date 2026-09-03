@@ -19,6 +19,7 @@ class PlayerControllerStateFacade(
     private val onControllerPlaybackSynced: (ControllerPlaybackState) -> Unit = {},
 ) {
     fun syncControllerPlaybackState(snapshot: ControllerPlaybackSnapshot) {
+        val wasPlaying = state().isPlaying
         val result = synchronizer.sync(
             current = state().toControllerPlaybackState(),
             snapshot = snapshot,
@@ -36,6 +37,18 @@ class PlayerControllerStateFacade(
         }
         setTrackedSongId(result.trackedSongId)
         updateState { it.applyControllerPlaybackState(result.state) }
+        // 播放状态因本次同步发生跃变时，把进度 ticker 拉到一致状态。
+        //
+        // live session 场景（息屏/后台回来、配置变更、ViewModel 重建）下 UI 状态是全新的，
+        // 而服务端 ExoPlayer 仍在播放：Media3 只在 isPlaying 变化时回调 onIsPlayingChanged，
+        // 新建的 MediaController 注册 listener 时不会补发，于是 ticker 永不启动、进度恒为 0。
+        // 这里补上这次跃变通知；ticker 启动后协程体立即写一次真实位置，无需等待首个间隔。
+        //
+        // 跃变判断不可省略：PlaybackController 的 listener.onEvents 把 onPlaybackSnapshot
+        // 接成了高频回调，无条件调用会让 updateRunningState() 在播放稳态下被反复执行。
+        if (wasPlaying != result.state.isPlaying) {
+            onIsPlayingChanged()
+        }
         onControllerPlaybackSynced(result.state)
     }
 

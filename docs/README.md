@@ -6,6 +6,7 @@ Melody in Heart（心有乐章）的文档按主题归入 `docs/` 子目录。�
 
 - [播放队列架构](architecture/PLAYBACK_QUEUE_ARCHITECTURE.md)：`PlayQueue` / `MediaController` / 窗口化规划层三者的职责边界与同步规则，避免队列各走各路。
 - [播放状态机](architecture/PLAYBACK_STATE_MACHINE.md)：Media3 与 UI / 持久化之间的产品级状态模型（`idle/preparing/ready/playing/paused/buffering/ended/error`）及转移规则。
+- [情境化随心播放增强](architecture/MOOD_TIME_SLOT_PLAYBACK.md)：时段 × 情绪词条的随心播放增强功能设计（产品评审结论 + 一期技术方案）。
 
 ## 重构与产品化（`docs/refactor/`）
 

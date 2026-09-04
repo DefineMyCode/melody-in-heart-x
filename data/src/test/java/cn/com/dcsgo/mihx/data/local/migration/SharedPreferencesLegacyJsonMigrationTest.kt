@@ -362,7 +362,11 @@ class SharedPreferencesLegacyJsonMigrationTest {
             songEmotions.values.count { it.userValence != null }
 
 
-        override suspend fun upsertSongEmotion(emotion: SongEmotionEntity) {
+        override suspend fun upsertUserOnlyCorrection(emotion: SongEmotionEntity) {
+        songEmotions[emotion.songId] = emotion
+    }
+
+    override suspend fun upsertSongEmotion(emotion: SongEmotionEntity) {
             songEmotions[emotion.songId] = emotion
         }
 

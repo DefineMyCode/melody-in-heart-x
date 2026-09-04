@@ -382,6 +382,15 @@ interface MelodyDao {
     )
     suspend fun updateSongEmotionCorrection(songId: Int, v: Float, a: Float, tags: String)
 
+    /**
+     * 用户-only 校准 upsert（2026-09-04）：分析失败的歌曲没有 emotion 行，
+     * UPDATE 语句静默无效——用户手动标记需要无记录时 INSERT 一条仅含 user 字段的行
+     * （valence/arousal 由词条锚点均值换算，曲线/embedding 留空，modelVersion 记 "user-only"）。
+     * 已有行时与 updateSongEmotionCorrection 等价（@Upsert 按 songId 主键替换）。
+     */
+    @Upsert
+    suspend fun upsertUserOnlyCorrection(emotion: SongEmotionEntity)
+
     @Query("DELETE FROM song_emotions WHERE songId = :songId")
     suspend fun deleteSongEmotion(songId: Int)
 

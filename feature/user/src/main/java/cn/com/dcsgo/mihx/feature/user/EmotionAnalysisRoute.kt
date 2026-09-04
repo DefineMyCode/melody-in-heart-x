@@ -2,7 +2,8 @@ package cn.com.dcsgo.mihx.feature.user
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
-import cn.com.dcsgo.mihx.domain.repository.EmotionFailure
+import cn.com.dcsgo.mihx.core.model.Playlist
+import cn.com.dcsgo.mihx.core.model.Song
 
 /**
  * 歌曲情绪分析"进度页": 批扫进度/统计 + 暂停/继续.
@@ -18,8 +19,12 @@ data class EmotionAnalysisState(
     val lastSongMs: Long = 0L,
     val avgSongMs: Long = 0L,
     val correctedCount: Int = 0,
-    /** 分析失败歌曲（songId → 标题 + 失败记录），UI 展示"无法分析"分区（2026-09-04） */
+    /** 分析失败歌曲（标题 + 失败记录），UI 展示"无法分析"分区（2026-09-04） */
     val failures: List<FailedEmotionSong> = emptyList(),
+    /** 失败歌曲 songId → Song（标记/加歌单需要 Song 对象；反查由调用方完成） */
+    val failedSongMap: Map<Int, Song> = emptyMap(),
+    /** 全部歌单（批量加入歌单弹窗） */
+    val playlists: List<Playlist> = emptyList(),
 )
 
 /** 失败歌曲行（songId + 标题 + 记录），详情页直接渲染 */
@@ -37,6 +42,12 @@ data class EmotionAnalysisActions(
     val onTogglePause: () -> Unit,
     /** 手动重试全部失败歌曲（清记录 + 重新入队） */
     val onRetryFailed: () -> Unit = {},
+    /** 手动标记失败歌曲的情绪词条（分析失败歌无曲线，标记即用户结论） */
+    val onCalibrateSong: (Int, Set<String>) -> Unit = { _, _ -> },
+    /** 批量加入歌单 */
+    val onAddSongsToPlaylist: (List<Song>, Playlist) -> Unit = { _, _ -> },
+    /** 新建歌单（弹窗内联创建） */
+    val onCreatePlaylistWithResult: (String) -> Playlist? = { _ -> null },
 )
 
 @Composable

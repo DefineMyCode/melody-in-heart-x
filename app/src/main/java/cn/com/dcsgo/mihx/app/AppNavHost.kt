@@ -80,7 +80,10 @@ import cn.com.dcsgo.mihx.feature.user.VersionManagementRouteState
 import cn.com.dcsgo.mihx.navigation.AppDestinations
 import cn.com.dcsgo.mihx.navigation.AppRoutes
 import cn.com.dcsgo.mihx.ui.components.SongInfoDialog
+import cn.com.dcsgo.mihx.ui.components.LocalEmotionCorrectionController
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.lifecycle.viewmodel.compose.viewModel
+import kotlinx.coroutines.launch
 
 /** 路由 → 其所属底部 Tab 的序号（嵌套路由如设置/统计也映射到所属 Tab，同一 Tab 内序号相同则无转场） */
 private fun tabOrdinal(route: String?): Int = AppDestinations.fromRoute(route).ordinal
@@ -112,6 +115,8 @@ fun AppNavHost(
     emotionViewModel: cn.com.dcsgo.mihx.app.emotion.EmotionViewModel,
     moodTimeSlotViewModel: cn.com.dcsgo.mihx.app.mood.MoodTimeSlotViewModel,
 ) {
+    // 失败歌曲手动标记等 suspend 回调的协程作用域
+    val navCoroutineScope = rememberCoroutineScope()
     NavHost(
         navController = navController,
         startDestination = AppRoutes.HOME,
@@ -795,10 +800,12 @@ fun AppNavHost(
 
         composable(AppRoutes.EMOTION_ANALYSIS) {
             val emotionStatus by emotionViewModel.status.collectAsStateWithLifecycle()
+            // 校准控制器必须在 composable 上下文读取（CompositionLocal）
+            val emotionCorrectionController = LocalEmotionCorrectionController.current
             LaunchedEffect(Unit) {
                 emotionViewModel.refresh()
             }
-            // 失败歌曲行：songId → 标题映射（2026-09-04 失败标记 UI）
+            // 失败歌曲行：songId → 标题/Song 映射（2026-09-04 失败标记 UI）
             val failedRows = emotionStatus.failures.mapNotNull { (songId, failure) ->
                 val song = uiState.songs.firstOrNull { it.id == songId } ?: return@mapNotNull null
                 cn.com.dcsgo.mihx.feature.user.FailedEmotionSong(
@@ -808,6 +815,9 @@ fun AppNavHost(
                     attempts = failure.attempts,
                 )
             }
+            val failedSongMap = emotionStatus.failures.keys
+                .mapNotNull { id -> uiState.songs.firstOrNull { it.id == id }?.let { id to it } }
+                .toMap()
             EmotionAnalysisRoute(
                 state = EmotionAnalysisState(
                     analyzedCount = emotionStatus.analyzedCount,
@@ -819,6 +829,8 @@ fun AppNavHost(
                     avgSongMs = emotionStatus.avgSongMs,
                     correctedCount = emotionStatus.correctedCount,
                     failures = failedRows,
+                    failedSongMap = failedSongMap,
+                    playlists = uiState.playlists,
                 ),
                 actions = EmotionAnalysisActions(
                     onBack = navController::navigateUp,
@@ -835,6 +847,26 @@ fun AppNavHost(
                         emotionViewModel.retryFailedSongs()
                         showToast("已重新排队分析失败歌曲")
                     },
+                    onCalibrateSong = { songId, words ->
+                        // 全站"不像？标记"控制器（AppRoot CompositionLocal 提供），
+                        // 2026-09-04 起失败歌曲(无分析行)标记会创建 user-only 记录
+                        navCoroutineScope.launch {
+                            val ok = emotionCorrectionController?.save(songId, words) ?: false
+                            showToast(if (ok) "已记录你的标记" else "标记失败，请重试")
+                            if (ok) emotionViewModel.refresh()
+                        }
+                    },
+                    onAddSongsToPlaylist = { songs, playlist ->
+                        var added = 0
+                        songs.forEach { song ->
+                            if (playerViewModel.addSongToPlaylist(playlist.id, song.id)) added++
+                        }
+                        showToast(
+                            if (added > 0) "已将 $added 首歌曲添加到「${playlist.name}」"
+                            else "这些歌曲已在「${playlist.name}」中",
+                        )
+                    },
+                    onCreatePlaylistWithResult = playerViewModel::createPlaylist,
                 ),
             )
         }

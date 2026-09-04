@@ -423,6 +423,11 @@ class MusicRepositoryRoomTest {
             songEmotions.count { it.userValence != null }
 
 
+        override suspend fun upsertUserOnlyCorrection(emotion: SongEmotionEntity) {
+            songEmotions.removeAll { it.songId == emotion.songId }
+            songEmotions.add(emotion)
+        }
+
         override suspend fun upsertSongEmotion(emotion: SongEmotionEntity) {
             songEmotions.removeAll { it.songId == emotion.songId }
             songEmotions.add(emotion)

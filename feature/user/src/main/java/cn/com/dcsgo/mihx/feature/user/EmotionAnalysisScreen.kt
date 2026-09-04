@@ -2,6 +2,8 @@ package cn.com.dcsgo.mihx.feature.user
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -18,20 +20,25 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import cn.com.dcsgo.mihx.ui.components.BatchAddToPlaylistDialog
+import cn.com.dcsgo.mihx.ui.components.EmotionCalibrateDialog
 
 /**
  * 歌曲情绪分析"进度页": 批扫进度/耗时统计 + 暂停/继续.
@@ -44,6 +51,9 @@ fun EmotionAnalysisScreen(
     actions: EmotionAnalysisActions,
 ) {
     val scheme = MaterialTheme.colorScheme
+    // 失败歌曲的弹层状态（2026-09-04）：手动标记 / 批量加入歌单
+    var calibratingSong by remember { mutableStateOf<FailedEmotionSong?>(null) }
+    var addingSongsToPlaylist by remember { mutableStateOf(false) }
     Scaffold(
         topBar = {
             TopAppBar(
@@ -70,7 +80,89 @@ fun EmotionAnalysisScreen(
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            ProgressCard(state = state, onTogglePause = actions.onTogglePause, actions = actions)
+            ProgressCard(state = state, onTogglePause = actions.onTogglePause)
+
+            // ── 无法分析分区（2026-09-04）：失败歌曲 + 原因 + 手动标记/加歌单/重试 ──
+            if (state.failures.isNotEmpty()) {
+                Text(
+                    text = "无法分析（${state.failures.size} 首）",
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.error,
+                )
+                Text(
+                    text = "以下歌曲已跳过分析并停止自动重试；修复问题后可手动重试。",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                state.failures.forEach { failed ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 5.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = failed.title,
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.Medium,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                            )
+                            Text(
+                                text = failed.reason.userMessage +
+                                    if (failed.attempts > 1) "（失败 ${failed.attempts} 次）" else "",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                        // 手动标记情绪（校准弹窗）；失败歌无曲线，弹窗走词条-only 模式
+                        TextButton(onClick = { calibratingSong = failed }) {
+                            Text("标记")
+                        }
+                        // 加入歌单（与其他列表页的歌曲菜单一致）
+                        TextButton(onClick = { addingSongsToPlaylist = true }) {
+                            Text("加入歌单")
+                        }
+                    }
+                }
+                Button(
+                    onClick = actions.onRetryFailed,
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Text("重试失败歌曲")
+                }
+            }
+
+            // ── 手动标记情绪弹窗（失败歌曲无曲线，originals 传空、"恢复自动"不可见） ──
+            calibratingSong?.let { failed ->
+                EmotionCalibrateDialog(
+                    initial = emptySet(),
+                    originals = emptyList(),
+                    hasUserTags = false,
+                    onDismiss = { calibratingSong = null },
+                    onConfirm = { words ->
+                        actions.onCalibrateSong(failed.songId, words)
+                        calibratingSong = null
+                    },
+                )
+            }
+
+            // ── 批量加入歌单弹窗（全部失败歌曲一并加入，与其他列表页一致） ──
+            if (addingSongsToPlaylist && state.failures.isNotEmpty()) {
+                val songs = state.failures.mapNotNull { state.failedSongMap[it.songId] }
+                BatchAddToPlaylistDialog(
+                    songs = songs,
+                    playlists = state.playlists,
+                    onDismiss = { addingSongsToPlaylist = false },
+                    onSelectPlaylist = { playlist ->
+                        actions.onAddSongsToPlaylist(songs, playlist)
+                        addingSongsToPlaylist = false
+                    },
+                    onCreatePlaylist = actions.onCreatePlaylistWithResult,
+                )
+            }
             Spacer(modifier = Modifier.height(24.dp))
         }
     }
@@ -80,7 +172,6 @@ fun EmotionAnalysisScreen(
 private fun ProgressCard(
     state: EmotionAnalysisState,
     onTogglePause: () -> Unit,
-    actions: EmotionAnalysisActions,
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -149,55 +240,6 @@ private fun ProgressCard(
                     modifier = Modifier.fillMaxWidth(),
                 ) {
                     Text(if (state.scanning) "暂停分析" else "继续分析")
-                }
-            }
-
-            // 无法分析分区（2026-09-04）：失败歌曲 + 原因 + 重试入口。
-            // 空列表不渲染——大多数用户曲库全部可分析。
-            if (state.failures.isNotEmpty()) {
-                Spacer(modifier = Modifier.height(14.dp))
-                Text(
-                    text = "无法分析（${state.failures.size} 首）",
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.error,
-                )
-                Text(
-                    text = "以下歌曲已跳过分析并停止自动重试；修复问题后可手动重试。",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                Spacer(modifier = Modifier.height(6.dp))
-                state.failures.forEach { failed ->
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 5.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                text = failed.title,
-                                style = MaterialTheme.typography.bodyMedium,
-                                fontWeight = FontWeight.Medium,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                            )
-                            Text(
-                                text = failed.reason.userMessage +
-                                    if (failed.attempts > 1) "（失败 ${failed.attempts} 次）" else "",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
-                        }
-                    }
-                }
-                Spacer(modifier = Modifier.height(8.dp))
-                Button(
-                    onClick = actions.onRetryFailed,
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    Text("重试失败歌曲")
                 }
             }
         }

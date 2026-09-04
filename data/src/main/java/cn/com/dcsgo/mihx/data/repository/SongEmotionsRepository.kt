@@ -56,15 +56,49 @@ class SongEmotionsRepository(
         }
     }
 
+        /**
+     * 保存用户校准（2026-09-04 支持"分析失败歌曲"手动标记）：
+     * 已有分析行 → UPDATE user 三字段（不动模型数据）；
+     * 无分析行（分析失败/未分析）→ INSERT 仅含 user 字段的行
+     * （曲线空、modelVersion="user-only"），读侧 emotionTagsOf 以 userTags 优先，
+     * 渲染端对空曲线显示词条列表而非曲线图。
+     */
     override fun saveCorrection(songId: Int, valence: Float, arousal: Float, tags: List<String>) {
         runBlocking(Dispatchers.IO) {
-            melodyDao.updateSongEmotionCorrection(songId, valence, arousal, tags.joinToString(","))
+            val tagsText = tags.joinToString(",")
+            if (melodyDao.songEmotion(songId) != null) {
+                melodyDao.updateSongEmotionCorrection(songId, valence, arousal, tagsText)
+            } else {
+                melodyDao.upsertUserOnlyCorrection(
+                    SongEmotionEntity(
+                        songId = songId,
+                        valence = valence,
+                        arousal = arousal,
+                        curveJson = "[]",
+                        peakSec = 0f,
+                        windowsAnalyzed = 0,
+                        durationSec = 0f,
+                        modelVersion = "user-only",
+                        analyzedAt = System.currentTimeMillis(),
+                        embeddingB64 = null,
+                        userValence = valence,
+                        userArousal = arousal,
+                        userTags = tagsText,
+                    ),
+                )
+            }
         }
     }
 
     override fun clearCorrection(songId: Int) {
         runBlocking(Dispatchers.IO) {
             melodyDao.clearSongEmotionCorrection(songId)
+            // user-only 行（分析失败歌曲的手动标记）清空后是全空行，
+            // 会被误判为"已分析"（buildRows 以 emotion 非空判定）——直接删行
+            val row = melodyDao.songEmotion(songId)
+            if (row != null && row.windowsAnalyzed == 0 && row.embeddingB64 == null) {
+                melodyDao.deleteSongEmotion(songId)
+            }
         }
     }
 

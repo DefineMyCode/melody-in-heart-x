@@ -27,14 +27,18 @@ data class EmotionAnalysisState(
     val playlists: List<Playlist> = emptyList(),
 )
 
-/** 失败歌曲行（songId + 标题 + 记录），详情页直接渲染 */
+/** 失败歌曲行（songId + 标题 + 记录 + 用户标记），详情页直接渲染 */
 @Stable
 data class FailedEmotionSong(
     val songId: Int,
     val title: String,
     val reason: cn.com.dcsgo.mihx.domain.repository.EmotionFailureReason,
     val attempts: Int,
-)
+    /** 用户手动标记的词条（空 = 尚未标记），区分已标记/未标记 */
+    val calibratedTags: List<String> = emptyList(),
+) {
+    val calibrated: Boolean get() = calibratedTags.isNotEmpty()
+}
 
 data class EmotionAnalysisActions(
     val onBack: () -> Unit,

@@ -9,11 +9,14 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -96,35 +99,8 @@ fun EmotionAnalysisScreen(
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
-                state.failures.forEach { failed ->
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 5.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                text = failed.title,
-                                style = MaterialTheme.typography.bodyMedium,
-                                fontWeight = FontWeight.Medium,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                            )
-                            Text(
-                                text = failed.reason.userMessage +
-                                    if (failed.attempts > 1) "（失败 ${failed.attempts} 次）" else "",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
-                        }
-                        // 手动标记情绪（校准弹窗）；失败歌无曲线，弹窗走词条-only 模式
-                        TextButton(onClick = { calibratingSong = failed }) {
-                            Text("标记")
-                        }
-                    }
-                }
-                // 同行并列的双操作：批量加歌单（描边）+ 重试失败歌曲（实心）
+                // 同行并列的双操作置于列表上方（2026-09-04 截图反馈）：
+                // 批量加歌单（描边）+ 重试失败歌曲（实心）
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(10.dp),
@@ -146,12 +122,60 @@ fun EmotionAnalysisScreen(
                         Text("重试失败歌曲")
                     }
                 }
+                state.failures.forEach { failed ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 5.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                // 已手动标记的对勾角标：与未标记歌曲一眼可分
+                                if (failed.calibrated) {
+                                    Icon(
+                                        imageVector = Icons.Default.CheckCircle,
+                                        contentDescription = "已手动标记",
+                                        modifier = Modifier.size(14.dp),
+                                        tint = MaterialTheme.colorScheme.primary,
+                                    )
+                                    Spacer(Modifier.width(5.dp))
+                                }
+                                Text(
+                                    text = failed.title,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    fontWeight = FontWeight.Medium,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                )
+                            }
+                            Text(
+                                text = failed.reason.userMessage +
+                                    if (failed.attempts > 1) "（失败 ${failed.attempts} 次）" else "",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                            if (failed.calibrated) {
+                                Text(
+                                    text = "已标记：" + failed.calibratedTags.joinToString("、"),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.primary,
+                                )
+                            }
+                        }
+                        // 手动标记情绪（校准弹窗）；失败歌无曲线，弹窗走词条-only 模式。
+                        // 已标记的歌按钮文案为「修改」
+                        TextButton(onClick = { calibratingSong = failed }) {
+                            Text(if (failed.calibrated) "修改" else "标记")
+                        }
+                    }
+                }
             }
 
             // ── 手动标记情绪弹窗（失败歌曲无曲线，originals 传空、"恢复自动"不可见） ──
             calibratingSong?.let { failed ->
                 EmotionCalibrateDialog(
-                    initial = emptySet(),
+                    initial = failed.calibratedTags.toSet(),
                     originals = emptyList(),
                     hasUserTags = false,
                     onDismiss = { calibratingSong = null },

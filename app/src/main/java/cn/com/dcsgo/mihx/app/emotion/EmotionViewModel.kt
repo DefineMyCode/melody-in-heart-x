@@ -225,6 +225,16 @@ class EmotionViewModel @Inject constructor(
         }
     }
 
+    /**
+     * 查询歌曲的用户标记词条（2026-09-04 失败标记 UI）：用于区分
+     * 失败列表中"已标记/未标记"的歌曲。失败数通常为个位数，逐首查询成本可忽略。
+     */
+    suspend fun calibratedTagsOf(songId: Int): List<String> =
+        withContext(Dispatchers.IO) {
+            runCatching { emotionRepository.get(songId)?.userTags.orEmpty() }
+                .getOrDefault(emptyList())
+        }
+
     /** 暂停: 协作式, 当前歌曲跑完即停; 排队中的续扫任务直接清掉. */
     fun pauseScan() {
         viewModelScope.launch {

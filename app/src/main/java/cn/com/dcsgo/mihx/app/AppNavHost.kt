@@ -805,15 +805,29 @@ fun AppNavHost(
             LaunchedEffect(Unit) {
                 emotionViewModel.refresh()
             }
-            // 失败歌曲行：songId → 标题映射（2026-09-04 失败标记 UI）
-            val failedRows = emotionStatus.failures.mapNotNull { (songId, failure) ->
-                val song = uiState.songs.firstOrNull { it.id == songId } ?: return@mapNotNull null
-                cn.com.dcsgo.mihx.feature.user.FailedEmotionSong(
-                    songId = songId,
-                    title = song.title,
-                    reason = failure.reason,
-                    attempts = failure.attempts,
-                )
+            // 失败歌曲行：songId → 标题/标记状态映射（2026-09-04 失败标记 UI）。
+            // calibratedTags 走 suspend 查询（逐首，失败数个位数），produceState 驱动；
+            // key = failures 指纹（数量+最近失败时间），标记/重扫后自动重查。
+            val failuresFingerprint = emotionStatus.failures.entries
+                .joinToString("|") { "${it.key}:${it.value.attempts}:${it.value.failedAt}" }
+            val failedRows by produceState<List<cn.com.dcsgo.mihx.feature.user.FailedEmotionSong>>(
+                initialValue = emptyList(),
+                key1 = failuresFingerprint,
+                key2 = uiState.songs,
+            ) {
+                value = emotionStatus.failures.mapNotNull { (songId, failure) ->
+                    val song = uiState.songs.firstOrNull { it.id == songId }
+                        ?: return@mapNotNull null
+                    val tags = runCatching { emotionViewModel.calibratedTagsOf(songId) }
+                        .getOrDefault(emptyList())
+                    cn.com.dcsgo.mihx.feature.user.FailedEmotionSong(
+                        songId = songId,
+                        title = song.title,
+                        reason = failure.reason,
+                        attempts = failure.attempts,
+                        calibratedTags = tags,
+                    )
+                }
             }
             // 失败歌曲行 + songId → Song 映射（批量加歌单需要 Song 对象）
             val failedSongMap = emotionStatus.failures.keys

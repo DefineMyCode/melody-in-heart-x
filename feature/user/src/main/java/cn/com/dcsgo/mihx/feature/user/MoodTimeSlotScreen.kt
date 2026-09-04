@@ -351,18 +351,24 @@ internal fun MoodTimeSlotScreen(
                         .background(MaterialTheme.colorScheme.surfaceContainerLow, RoundedCornerShape(20.dp))
                         .padding(15.dp),
                 ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
+                    // 标题紧贴开关：中间留 10dp 间距、不加 weight 撑满（2026-09-04 截图反馈）
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.End,
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
                         Text(
                             "启用增强",
                             style = MaterialTheme.typography.titleSmall,
                             fontWeight = FontWeight.Bold,
-                            modifier = Modifier.weight(1f),
                         )
+                        Spacer(Modifier.width(10.dp))
                         Switch(
                             checked = state.enabled,
                             onCheckedChange = actions.onToggleEnabled,
                         )
                     }
+                    Spacer(Modifier.height(4.dp))
                     Text(
                         "开启后，随心播放与无限随机将优先从当前时段配置的情绪歌曲中随机；未命中任何时段时保持原有随机",
                         style = MaterialTheme.typography.bodySmall,

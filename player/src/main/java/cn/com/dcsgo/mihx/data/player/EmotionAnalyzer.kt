@@ -135,6 +135,12 @@ class EmotionAnalyzer @Inject constructor(
                     embedding = FloatArray(1024) { j -> (songEmb[j] / nWin).toFloat() },
                 ),
             )
+        } catch (oom: OutOfMemoryError) {
+            // OOM 是 Error 不走 Exception 分支（2026-09-04 真机日志: 超长合集解码
+            // ShortAccum 扩容 245MB 失败, 曾被 Worker 兜底误标为 INFERENCE_ERROR）。
+            // 解码前已按时长熔断, 走到这里通常是时长未知(durationUs<=0)的极端文件。
+            AppLog.warning(TAG, "analyze OOM songId=$songId: ${oom.message}", oom)
+            EmotionAnalysisResult.Failure(EmotionFailureReason.TOO_LONG)
         } catch (e: Exception) {
             AppLog.warning(TAG, "analyze failed songId=$songId: ${e.message}", e)
             EmotionAnalysisResult.Failure(EmotionFailureReason.INFERENCE_ERROR)
@@ -181,6 +187,26 @@ class EmotionAnalyzer @Inject constructor(
         val srcCh = format.getInteger(MediaFormat.KEY_CHANNEL_COUNT)
         val deadline = System.currentTimeMillis() + MAX_DECODE_MS
 
+        // 超长熔断前置（2026-09-04）: 解码前就能拿到轨道时长。此前依赖 MAX_SAMPLES 事后
+        // 熔断, 但内存消耗只与实际样本数线性相关——44.1kHz 立体声下 36 分钟合集解码出
+        // ~9500 万样本, 远低于按 192kHz 最坏情况设的熔断线(2.3 亿), 熔断永远没机会触发
+        // 就先 OOM(ShortAccum 扩容 245MB 失败), OOM 是 Error 穿透 catch(Exception) 被
+        // Worker 兜底误标为 INFERENCE_ERROR。durationUs <= 0(未知)时不拦, 交给事后熔断。
+        val durationUs = try {
+            format.getLong(MediaFormat.KEY_DURATION) // key = "durationUs"
+        } catch (e: Exception) {
+            0L
+        }
+        if (durationUs > MAX_DURATION_US) {
+            AppLog.warning(
+                TAG,
+                "song too long (${durationUs / 60000000}min > ${MAX_SECONDS / 60}min), skip before decode",
+                null,
+            )
+            extractor.release()
+            return null to EmotionFailureReason.TOO_LONG
+        }
+
         // FFmpeg 优先(与播放链路同款解码器): 厂商软解组件在部分 ROM 上 native 崩溃/死循环,
         // 见 FfmpegPcmDecoder KDoc. 危险 mime(仅厂商软解可用)失败后禁止回退 MediaCodec.
         if (FfmpegPcmDecoder.handles(mime)) {
@@ -225,7 +251,7 @@ class EmotionAnalyzer @Inject constructor(
         return try {
             codec.configure(format, null, null, 0)
             codec.start()
-            val pcm = ShortAccum()
+            val pcm = ShortAccum(maxCapacity = maxSamplesForSrc(srcSr).toInt())
             val info = MediaCodec.BufferInfo()
             var eosIn = false
             var eosOut = false
@@ -267,8 +293,14 @@ class EmotionAnalyzer @Inject constructor(
                             for (c in 0 until srcCh) sum += bb.short
                             pcm.add((sum / srcCh).toShort())
                         }
-                        if (pcm.size > MAX_SAMPLES) {
-                            AppLog.warning(TAG, "song too long (>${MAX_SECONDS / 60}min), skip", null)
+                        // 事后熔断上限按实际源采样率算（srcSr 已知）：
+                        // MAX_SAMPLES 静态常量按 192kHz 最坏情况设定，44.1kHz 下形同虚设
+                        if (pcm.size > maxSamplesForSrc(srcSr)) {
+                            AppLog.warning(
+                                TAG,
+                                "song too long (>${MAX_SECONDS / 60}min @${srcSr}Hz), skip mid-decode",
+                                null,
+                            )
                             return null to EmotionFailureReason.TOO_LONG
                         }
                     }
@@ -294,7 +326,7 @@ class EmotionAnalyzer @Inject constructor(
         deadline: Long,
     ): Pair<FloatArray?, EmotionFailureReason?> {
         return try {
-            val pcm = ShortAccum()
+            val pcm = ShortAccum(maxCapacity = maxSamplesForSrc(srcSr).toInt())
             val buf = ByteBuffer.allocate(1 shl 16).order(ByteOrder.LITTLE_ENDIAN)
             while (true) {
                 if (System.currentTimeMillis() > deadline) {
@@ -314,8 +346,8 @@ class EmotionAnalyzer @Inject constructor(
                         for (c in 0 until srcCh) sum += buf.short
                         pcm.add((sum / srcCh).toShort())
                     }
-                    if (pcm.size > MAX_SAMPLES) {
-                        AppLog.warning(TAG, "raw song too long, skip", null)
+                    if (pcm.size > maxSamplesForSrc(srcSr)) {
+                        AppLog.warning(TAG, "raw song too long (>${MAX_SECONDS / 60}min @${srcSr}Hz), skip", null)
                         return null to EmotionFailureReason.TOO_LONG
                     }
                 }
@@ -365,8 +397,17 @@ class EmotionAnalyzer @Inject constructor(
         /** 单曲解码看门狗: 正常 <10s, 卡死时 60s 强制放弃该曲 */
         private const val MAX_DECODE_MS = 60_000L
 
-        /** 超长曲熔断(源采样率侧样本数上限, 20min@192k 最坏 ≈46M 样本): 防解码异常回环烧内存 */
+        /** 超长曲熔断: 20 分钟。解码前置用 [MAX_DURATION_US]（轨道时长），事后熔断按实际采样率算样本数 */
         const val MAX_SECONDS = 20 * 60
-        const val MAX_SAMPLES = MAX_SECONDS * 192_000
+
+        /** 解码前置熔断阈值（微秒）：轨道时长超过即跳过，不启动解码 */
+        const val MAX_DURATION_US = MAX_SECONDS * 1_000_000L
+
+        /**
+         * 事后熔断样本数上限：按实际源采样率换算。
+         * 旧静态 [MAX_SAMPLES] 按 192kHz 最坏情况设定，44.1kHz 立体声下形同虚设
+         * （36 分钟合集远未触线就先 OOM，2026-09-04 真机日志）。
+         */
+        fun maxSamplesForSrc(srcSampleRate: Int): Long = MAX_SECONDS.toLong() * srcSampleRate
     }
 }

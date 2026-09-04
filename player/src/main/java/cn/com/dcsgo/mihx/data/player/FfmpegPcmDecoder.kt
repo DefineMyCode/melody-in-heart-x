@@ -87,7 +87,8 @@ class FfmpegPcmDecoder @Inject constructor() {
                 return null
             }
 
-        val pcm = ShortAccum()
+        // 按实际源采样率换算熔断上限（静态 192k 常量在 44.1k 下形同虚设，2026-09-04）
+        val pcm = ShortAccum(maxCapacity = EmotionAnalyzer.maxSamplesForSrc(srcSr).toInt())
         var eosIn = false
         var outCh = srcCh // 首帧输出后以解码器实际声道数为准
         var outChResolved = false
@@ -141,10 +142,10 @@ class FfmpegPcmDecoder @Inject constructor() {
                     val data = outBuf.data
                     if (!outBuf.shouldBeSkipped && data != null && data.limit() > 0) {
                         consumeOutput(data, outCh, pcm)
-                        if (pcm.size > EmotionAnalyzer.MAX_SAMPLES) {
+                        if (pcm.size > EmotionAnalyzer.maxSamplesForSrc(srcSr)) {
                             AppLog.warning(
                                 TAG,
-                                "ffmpeg song too long (>${EmotionAnalyzer.MAX_SECONDS / 60}min), skip",
+                                "ffmpeg song too long (>${EmotionAnalyzer.MAX_SECONDS / 60}min @${srcSr}Hz), skip",
                                 null,
                             )
                             return null

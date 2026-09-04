@@ -805,7 +805,7 @@ fun AppNavHost(
             LaunchedEffect(Unit) {
                 emotionViewModel.refresh()
             }
-            // 失败歌曲行：songId → 标题/Song 映射（2026-09-04 失败标记 UI）
+            // 失败歌曲行：songId → 标题映射（2026-09-04 失败标记 UI）
             val failedRows = emotionStatus.failures.mapNotNull { (songId, failure) ->
                 val song = uiState.songs.firstOrNull { it.id == songId } ?: return@mapNotNull null
                 cn.com.dcsgo.mihx.feature.user.FailedEmotionSong(
@@ -815,9 +815,6 @@ fun AppNavHost(
                     attempts = failure.attempts,
                 )
             }
-            val failedSongMap = emotionStatus.failures.keys
-                .mapNotNull { id -> uiState.songs.firstOrNull { it.id == id }?.let { id to it } }
-                .toMap()
             EmotionAnalysisRoute(
                 state = EmotionAnalysisState(
                     analyzedCount = emotionStatus.analyzedCount,
@@ -829,8 +826,6 @@ fun AppNavHost(
                     avgSongMs = emotionStatus.avgSongMs,
                     correctedCount = emotionStatus.correctedCount,
                     failures = failedRows,
-                    failedSongMap = failedSongMap,
-                    playlists = uiState.playlists,
                 ),
                 actions = EmotionAnalysisActions(
                     onBack = navController::navigateUp,
@@ -856,17 +851,6 @@ fun AppNavHost(
                             if (ok) emotionViewModel.refresh()
                         }
                     },
-                    onAddSongsToPlaylist = { songs, playlist ->
-                        var added = 0
-                        songs.forEach { song ->
-                            if (playerViewModel.addSongToPlaylist(playlist.id, song.id)) added++
-                        }
-                        showToast(
-                            if (added > 0) "已将 $added 首歌曲添加到「${playlist.name}」"
-                            else "这些歌曲已在「${playlist.name}」中",
-                        )
-                    },
-                    onCreatePlaylistWithResult = playerViewModel::createPlaylist,
                 ),
             )
         }

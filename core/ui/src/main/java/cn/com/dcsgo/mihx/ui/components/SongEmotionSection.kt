@@ -84,7 +84,36 @@ fun hasSignificantPeak(curve: List<Pair<Float, Float>>): Boolean {
 fun SongEmotionSection(
     emotion: SongEmotion?,
 ) {
-    if (emotion == null || emotion.curve.size < 2) {
+    // 2026-09-04: user-only 行(分析失败歌曲的手动标记, 曲线为空但有 userTags)
+    // 不再 early-return——显示词条列表 + 标记按钮, 仅曲线图部分以占位文案替代
+    if (emotion != null && emotion.curve.size < 2) {
+        Column(modifier = Modifier.fillMaxWidth()) {
+            Text(
+                text = "情绪",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                emotionTagsOf(emotion).forEach { t ->
+                    AssistChip(
+                        onClick = {},
+                        label = { Text(t, style = MaterialTheme.typography.labelMedium) },
+                    )
+                }
+            }
+            if (emotion.userTags.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = "已由你标记（自动分析失败，词条以你的标记为准）",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.primary,
+                )
+            }
+        }
+        return
+    }
+    if (emotion == null) {
         Text(
             text = "情绪分析：尚未完成（充电时自动分析曲库）",
             style = MaterialTheme.typography.bodySmall,

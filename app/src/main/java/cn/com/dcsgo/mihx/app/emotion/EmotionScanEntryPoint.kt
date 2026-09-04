@@ -15,4 +15,5 @@ interface EmotionScanEntryPoint {
     fun emotionRepository(): SongEmotionRepository
     fun emotionAnalyzer(): EmotionAnalyzer
     fun settingsRepository(): cn.com.dcsgo.mihx.domain.repository.PlayerSettingsRepository
+    fun emotionFailureRepository(): cn.com.dcsgo.mihx.domain.repository.EmotionFailureRepository
 }

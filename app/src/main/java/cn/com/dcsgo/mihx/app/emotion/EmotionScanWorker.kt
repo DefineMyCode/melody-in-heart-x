@@ -38,16 +38,30 @@ class EmotionScanWorker(
         }
         val songs = ep.musicRepository().loadSongs()
         val analyzed = ep.emotionRepository().analyzedVersions()
+        val failures = ep.emotionFailureRepository().currentFailures()
+        // pending = 未按当前模型分析过、有本地文件、且不是"反复失败"的歌曲。
+        // 失败 >=3 次的歌曲不再自动重试——否则每轮扫描都在同一批坏文件上空转，
+        // 用户看到的永远是"差几首没分析"却永远扫不完（2026-09-04 失败标记）。
+        val retryableFailures = failures.filterValues { it.attempts < MAX_ATTEMPTS }
         val pending = songs.filter {
-            analyzed[it.id] != EmotionAnalyzer.MODEL_VERSION && it.uri != null
+            analyzed[it.id] != EmotionAnalyzer.MODEL_VERSION &&
+                it.uri != null &&
+                failures[it.id]?.attempts?.let { it >= MAX_ATTEMPTS } != true
         }
+        val failedCount = failures.count { it.value.attempts >= MAX_ATTEMPTS }
         if (pending.isEmpty()) {
-            AppLog.info(TAG, "scan: library up-to-date (${songs.size} songs)")
+            val failureNote = if (failedCount > 0) "，$failedCount 首因反复失败已跳过（见详情页）" else ""
+            AppLog.info(TAG, "scan: library up-to-date (${songs.size} songs$failureNote)")
             return Result.success()
         }
         val batch = if (manual) MANUAL_BATCH_SONGS else BATCH_SONGS
-        AppLog.info(TAG, "scan: ${pending.size}/${songs.size} pending, batch=$batch manual=$manual")
+        AppLog.info(
+            TAG,
+            "scan: ${pending.size}/${songs.size} pending, batch=$batch manual=$manual, " +
+                "excludedFailures=${failures.size - retryableFailures.size}",
+        )
         val analyzer = ep.emotionAnalyzer()
+        val failureRepo = ep.emotionFailureRepository()
         var done = 0
         var attempted = 0
         var pausedMidway = false
@@ -63,24 +77,36 @@ class EmotionScanWorker(
             setProgress(workDataOf(KEY_PROGRESS_CURRENT to song.title))
             val t0 = System.currentTimeMillis()
             AppLog.info(TAG, "analyzing [$attempted]: ${song.title} (songId=${song.id})")
-            val emotion = runCatching {
+            val result = runCatching {
                 analyzer.analyze(
                     songId = song.id,
                     uri = uri,
                     modelVersion = EmotionAnalyzer.MODEL_VERSION,
                 )
-            }.getOrNull()
-            if (emotion != null) {
-                ep.emotionRepository().upsert(emotion)
-                done++
-                AppLog.info(
-                    TAG,
-                    "analyzed [$attempted]: ${song.title} ok in " +
-                        "${(System.currentTimeMillis() - t0) / 1000}s, ${emotion.windowsAnalyzed}w"
-                )
-            } else {
-                AppLog.warning(TAG, "analyzed [$attempted]: ${song.title} FAILED in " +
-                    "${(System.currentTimeMillis() - t0) / 1000}s", null)
+            }.getOrElse { cn.com.dcsgo.mihx.domain.repository.EmotionAnalysisResult.Failure(
+                cn.com.dcsgo.mihx.domain.repository.EmotionFailureReason.INFERENCE_ERROR,
+            ) }
+            when (result) {
+                is cn.com.dcsgo.mihx.domain.repository.EmotionAnalysisResult.Success -> {
+                    ep.emotionRepository().upsert(result.emotion)
+                    failureRepo.clear(song.id)
+                    done++
+                    AppLog.info(
+                        TAG,
+                        "analyzed [$attempted]: ${song.title} ok in " +
+                            "${(System.currentTimeMillis() - t0) / 1000}s, " +
+                            "${result.emotion.windowsAnalyzed}w",
+                    )
+                }
+                is cn.com.dcsgo.mihx.domain.repository.EmotionAnalysisResult.Failure -> {
+                    failureRepo.record(song.id, result.reason)
+                    AppLog.warning(
+                        TAG,
+                        "analyzed [$attempted]: ${song.title} FAILED(${result.reason.name}) in " +
+                            "${(System.currentTimeMillis() - t0) / 1000}s",
+                        null,
+                    )
+                }
             }
         }
         AppLog.info(TAG, "scan batch done: $done/$attempted analyzed")
@@ -114,6 +140,9 @@ class EmotionScanWorker(
         const val KEY_MANUAL = "manual"
         const val KEY_PROGRESS_CURRENT = "current"
         const val UNIQUE_MANUAL = "emotion_manual_scan"
+
+        /** 同一首歌累计失败达到该次数后不再自动重试（详情页仍可手动重试单首） */
+        const val MAX_ATTEMPTS = 3
     }
 }
 

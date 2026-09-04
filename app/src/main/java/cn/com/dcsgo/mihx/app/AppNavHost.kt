@@ -798,6 +798,16 @@ fun AppNavHost(
             LaunchedEffect(Unit) {
                 emotionViewModel.refresh()
             }
+            // 失败歌曲行：songId → 标题映射（2026-09-04 失败标记 UI）
+            val failedRows = emotionStatus.failures.mapNotNull { (songId, failure) ->
+                val song = uiState.songs.firstOrNull { it.id == songId } ?: return@mapNotNull null
+                cn.com.dcsgo.mihx.feature.user.FailedEmotionSong(
+                    songId = songId,
+                    title = song.title,
+                    reason = failure.reason,
+                    attempts = failure.attempts,
+                )
+            }
             EmotionAnalysisRoute(
                 state = EmotionAnalysisState(
                     analyzedCount = emotionStatus.analyzedCount,
@@ -808,6 +818,7 @@ fun AppNavHost(
                     lastSongMs = emotionStatus.lastSongMs,
                     avgSongMs = emotionStatus.avgSongMs,
                     correctedCount = emotionStatus.correctedCount,
+                    failures = failedRows,
                 ),
                 actions = EmotionAnalysisActions(
                     onBack = navController::navigateUp,
@@ -819,6 +830,10 @@ fun AppNavHost(
                             emotionViewModel.resumeScan()
                             showToast("已继续分析")
                         }
+                    },
+                    onRetryFailed = {
+                        emotionViewModel.retryFailedSongs()
+                        showToast("已重新排队分析失败歌曲")
                     },
                 ),
             )

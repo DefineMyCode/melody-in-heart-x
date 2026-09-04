@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.work.Data
+import androidx.work.ExistingWorkPolicy
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import cn.com.dcsgo.mihx.core.model.Song
@@ -52,6 +53,8 @@ data class EmotionScanUiStatus(
     /** 平均分析耗时 ms */
     val avgSongMs: Long = 0L,
     val correctedCount: Int = 0,
+    /** 分析失败歌曲（songId → 记录），UI 展示"无法分析"分区与原因（2026-09-04） */
+    val failures: Map<Int, cn.com.dcsgo.mihx.domain.repository.EmotionFailure> = emptyMap(),
 )
 
 /**
@@ -68,6 +71,7 @@ class EmotionViewModel @Inject constructor(
     private val songRepository: SongRepository,
     private val emotionRepository: SongEmotionRepository,
     private val settingsRepository: PlayerSettingsRepository,
+    private val failureRepository: cn.com.dcsgo.mihx.domain.repository.EmotionFailureRepository,
 ) : ViewModel() {
 
     private data class ScanSignal(
@@ -136,14 +140,16 @@ class EmotionViewModel @Inject constructor(
 
     private suspend fun buildStatus(sig: ScanSignal): Pair<EmotionScanUiStatus, List<EmotionSongRow>?> {
         // 仓库读是 runBlocking(IO) 桥, 主线程直调会卡 UI — 整体搬到 Default 线程
-        val (total, versions, timeline, correctedCount) = withContext(Dispatchers.Default) {
+        val (total, versions, timeline, correctedCount, failures) = withContext(Dispatchers.Default) {
             val total = runCatching { songRepository.countSongs() }.getOrDefault(0)
             val versions = runCatching { emotionRepository.analyzedVersions() }
                 .getOrDefault(emptyMap())
             val timeline = runCatching { emotionRepository.analyzedTimeline() }
                 .getOrDefault(emptyList())
             val correctedCount = runCatching { emotionRepository.correctionCount() }.getOrDefault(0)
-            RowSources(total, versions, timeline, correctedCount)
+            val failures = runCatching { failureRepository.currentFailures() }
+                .getOrDefault(emptyMap())
+            RowSources(total, versions, timeline, correctedCount, failures)
         }
         // 相邻成功时间差=单首耗时近似; 间隔>10min 视为批次间空闲, 剔除
         val durations = timeline.zipWithNext { a, b -> b - a }.filter { it in 1..600_000 }
@@ -156,10 +162,11 @@ class EmotionViewModel @Inject constructor(
             lastSongMs = durations.lastOrNull() ?: 0L,
             avgSongMs = if (durations.isNotEmpty()) durations.average().toLong() else 0L,
             correctedCount = correctedCount,
+            failures = failures,
         )
         // 指纹含情绪内容: versions(map 指纹=逐首 songId→modelVersion, 顺序无关)
-        // + timeline(逐首 analyzedAt). 重扫后计数不变但内容更新也能触发重建.
-        val contentFingerprint = "${versions.hashCode()}|${timeline.hashCode()}"
+        // + timeline(逐首 analyzedAt) + failures(失败记录变化也要推到 UI)
+        val contentFingerprint = "${versions.hashCode()}|${timeline.hashCode()}|${failures.hashCode()}"
         val key = "$total|${versions.size}|$correctedCount|${sig.paused}|${tick.value}|$contentFingerprint"
         return if (key != lastRowsKey) {
             val rowList = runCatching { buildRows() }.getOrDefault(null)
@@ -177,6 +184,7 @@ class EmotionViewModel @Inject constructor(
         val versions: Map<Int, String>,
         val timeline: List<Long>,
         val correctedCount: Int,
+        val failures: Map<Int, cn.com.dcsgo.mihx.domain.repository.EmotionFailure>,
     )
 
     /** 拍平列表数据(情绪 Tab 用): 已分析的歌 + 展示词条(用户词 > 曲线投票). */
@@ -198,6 +206,22 @@ class EmotionViewModel @Inject constructor(
         viewModelScope.launch {
             runCatching { settingsRepository.setEmotionScanPaused(false) }
             WorkManager.getInstance(context).enqueueUniqueManualScan()
+        }
+    }
+
+    /**
+     * 手动重试失败歌曲（2026-09-04）：清除失败记录后重新排队，
+     * Worker 的 pending 过滤会重新纳入这批歌曲。
+     */
+    fun retryFailedSongs() {
+        viewModelScope.launch {
+            runCatching {
+                failureRepository.clearForRetry(failureRepository.currentFailures().keys.toList())
+                settingsRepository.setEmotionScanPaused(false)
+                WorkManager.getInstance(context).enqueueUniqueManualScan(
+                    ExistingWorkPolicy.APPEND,
+                )
+            }
         }
     }
 

@@ -6,6 +6,7 @@ import androidx.datastore.preferences.core.Preferences
 import cn.com.dcsgo.mihx.data.local.dao.MelodyDao
 import cn.com.dcsgo.mihx.data.local.migration.LegacyJsonMigration
 import cn.com.dcsgo.mihx.data.repository.AlbumArtRepositoryAdapter
+import cn.com.dcsgo.mihx.data.repository.EmotionFailureStore
 import cn.com.dcsgo.mihx.data.repository.MediaMetadataRepository
 import cn.com.dcsgo.mihx.data.repository.MusicImportRepositoryAdapter
 import cn.com.dcsgo.mihx.data.repository.MusicRepository
@@ -16,6 +17,7 @@ import cn.com.dcsgo.mihx.data.repository.PlaylistRepositoryAdapter
 import cn.com.dcsgo.mihx.data.repository.QuickSkipSongsRepository
 import cn.com.dcsgo.mihx.data.repository.SongRepositoryAdapter
 import cn.com.dcsgo.mihx.data.repository.TimeSlotConfigStore
+import cn.com.dcsgo.mihx.domain.repository.EmotionFailureRepository
 import cn.com.dcsgo.mihx.domain.repository.AlbumArtRepository
 import cn.com.dcsgo.mihx.domain.repository.LyricsRepository
 import cn.com.dcsgo.mihx.domain.repository.MusicImportRepository
@@ -76,6 +78,12 @@ object RepositoryModule {
     fun providePlaylistResumeRepository(
         @ApplicationContext context: Context,
     ): PlaylistResumeRepository = PlaylistResumeDataStore(context)
+
+    @Provides
+    @Singleton
+    fun provideEmotionFailureRepository(
+        @ApplicationContext context: Context,
+    ): EmotionFailureRepository = EmotionFailureStore(context)
 
     @Provides
     @Singleton

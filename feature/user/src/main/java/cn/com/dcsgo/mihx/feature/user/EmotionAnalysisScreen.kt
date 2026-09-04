@@ -18,6 +18,8 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -68,7 +70,7 @@ fun EmotionAnalysisScreen(
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            ProgressCard(state = state, onTogglePause = actions.onTogglePause)
+            ProgressCard(state = state, onTogglePause = actions.onTogglePause, actions = actions)
             Spacer(modifier = Modifier.height(24.dp))
         }
     }
@@ -78,6 +80,7 @@ fun EmotionAnalysisScreen(
 private fun ProgressCard(
     state: EmotionAnalysisState,
     onTogglePause: () -> Unit,
+    actions: EmotionAnalysisActions,
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -146,6 +149,55 @@ private fun ProgressCard(
                     modifier = Modifier.fillMaxWidth(),
                 ) {
                     Text(if (state.scanning) "暂停分析" else "继续分析")
+                }
+            }
+
+            // 无法分析分区（2026-09-04）：失败歌曲 + 原因 + 重试入口。
+            // 空列表不渲染——大多数用户曲库全部可分析。
+            if (state.failures.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(14.dp))
+                Text(
+                    text = "无法分析（${state.failures.size} 首）",
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.error,
+                )
+                Text(
+                    text = "以下歌曲已跳过分析并停止自动重试；修复问题后可手动重试。",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Spacer(modifier = Modifier.height(6.dp))
+                state.failures.forEach { failed ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 5.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = failed.title,
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.Medium,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                            )
+                            Text(
+                                text = failed.reason.userMessage +
+                                    if (failed.attempts > 1) "（失败 ${failed.attempts} 次）" else "",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                    }
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+                Button(
+                    onClick = actions.onRetryFailed,
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Text("重试失败歌曲")
                 }
             }
         }

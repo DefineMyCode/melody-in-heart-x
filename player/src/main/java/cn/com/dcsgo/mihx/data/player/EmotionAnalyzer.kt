@@ -7,6 +7,8 @@ import android.media.MediaFormat
 import android.net.Uri
 import cn.com.dcsgo.mihx.core.common.AppLog
 import cn.com.dcsgo.mihx.core.model.SongEmotion
+import cn.com.dcsgo.mihx.domain.repository.EmotionAnalysisResult
+import cn.com.dcsgo.mihx.domain.repository.EmotionFailureReason
 import dagger.hilt.android.qualifiers.ApplicationContext
 import org.tensorflow.lite.Interpreter
 import java.nio.ByteBuffer
@@ -58,19 +60,21 @@ class EmotionAnalyzer @Inject constructor(
 
     /**
      * 分析整曲. 耗时 CPU 密集(实测 ~120ms/窗), 调用方须放后台线程.
-     * @return null 表示解码/推理失败(内部已记日志)
+     * @return Failure 携带可展示的失败原因(内部已记日志), 由调用方持久化
      */
     fun analyze(
         songId: Int,
         uri: Uri,
         modelVersion: String,
         onProgress: (Float) -> Unit = {},
-    ): SongEmotion? {
+    ): EmotionAnalysisResult {
         return try {
-            val pcm = decodeToPcm16kMono(uri) ?: return null
-            if (pcm.size < WINDOW_SAMPLES) {
+            val pcm = decodeToPcm16kMono(uri)
+            if (pcm.second != null) return EmotionAnalysisResult.Failure(pcm.second!!)
+            val pcmData = pcm.first ?: return EmotionAnalysisResult.Failure(EmotionFailureReason.EXTRACT_FAILED)
+            if (pcmData.size < WINDOW_SAMPLES) {
                 AppLog.warning(TAG, "analyze skip: too short songId=$songId", null)
-                return null
+                return EmotionAnalysisResult.Failure(EmotionFailureReason.TOO_SHORT)
             }
             val series = ArrayList<Pair<Float, Float>>()
             val inBuf = ByteBuffer.allocateDirect(FRAME * 4).order(ByteOrder.nativeOrder())
@@ -88,13 +92,13 @@ class EmotionAnalyzer @Inject constructor(
             // unique 任务, WorkManager 可并发跑两个 Worker, TFLite Interpreter
             // 非线程安全, 并发 invoke 会 native 崩溃 — 与 close() 同一把 lock 串行化.
             synchronized(lock) {
-                while (s + WINDOW_SAMPLES <= pcm.size) {
+                while (s + WINDOW_SAMPLES <= pcmData.size) {
                     val acc = FloatArray(1024)
                     var nf = 0
                     var st = s
                     while (st + FRAME <= s + WINDOW_SAMPLES) {
                         inBuf.rewind()
-                        inBuf.asFloatBuffer().put(pcm, st, FRAME)
+                        inBuf.asFloatBuffer().put(pcmData, st, FRAME)
                         inBuf.rewind()
                         yam.runForMultipleInputsOutputs(arrayOf(inBuf), yamOut)
                         for (fr in embArr) for (j in 0 until 1024) acc[j] += fr[j]
@@ -112,38 +116,43 @@ class EmotionAnalyzer @Inject constructor(
                     s += HOP_SAMPLES
                 }
             }
-            onProgress(s.toFloat() / (pcm.size - WINDOW_SAMPLES).coerceAtLeast(1))
+            onProgress(s.toFloat() / (pcmData.size - WINDOW_SAMPLES).coerceAtLeast(1))
             var peak = 0
             // 高潮 = A(能量)正向峰值
             for (i in series.indices) if (series[i].second > series[peak].second) peak = i
             val nWin = series.size.coerceAtLeast(1)
-            SongEmotion(
-                songId = songId,
-                valence = series.map { it.first }.average().toFloat(),
-                arousal = series.map { it.second }.average().toFloat(),
-                curve = series,
-                peakSec = peak * HOP_SEC,
-                windowsAnalyzed = series.size,
-                durationSec = pcm.size / SR.toFloat(),
-                modelVersion = modelVersion,
-                analyzedAt = System.currentTimeMillis(),
-                embedding = FloatArray(1024) { j -> (songEmb[j] / nWin).toFloat() },
+            EmotionAnalysisResult.Success(
+                SongEmotion(
+                    songId = songId,
+                    valence = series.map { it.first }.average().toFloat(),
+                    arousal = series.map { it.second }.average().toFloat(),
+                    curve = series,
+                    peakSec = peak * HOP_SEC,
+                    windowsAnalyzed = series.size,
+                    durationSec = pcmData.size / SR.toFloat(),
+                    modelVersion = modelVersion,
+                    analyzedAt = System.currentTimeMillis(),
+                    embedding = FloatArray(1024) { j -> (songEmb[j] / nWin).toFloat() },
+                ),
             )
         } catch (e: Exception) {
             AppLog.warning(TAG, "analyze failed songId=$songId: ${e.message}", e)
-            null
+            EmotionAnalysisResult.Failure(EmotionFailureReason.INFERENCE_ERROR)
         }
     }
 
-    /** MediaExtractor + MediaCodec 解码为 16k mono Float PCM. */
-    private fun decodeToPcm16kMono(uri: Uri): FloatArray? {
+    /**
+     * MediaExtractor + MediaCodec 解码为 16k mono Float PCM.
+     * 返回 (PCM, 失败原因)；失败原因非 null 时 PCM 为 null（2026-09-04 失败标记）。
+     */
+    private fun decodeToPcm16kMono(uri: Uri): Pair<FloatArray?, EmotionFailureReason?> {
         val extractor = MediaExtractor()
         try {
             extractor.setDataSource(context, uri, null)
         } catch (e: Exception) {
             AppLog.warning(TAG, "extractor open failed: ${e.message}", e)
             extractor.release()
-            return null
+            return null to EmotionFailureReason.EXTRACT_FAILED
         }
         var track = -1
         var format: MediaFormat? = null
@@ -164,7 +173,7 @@ class EmotionAnalyzer @Inject constructor(
         if (track < 0) {
             AppLog.warning(TAG, "no audio track uri=$uri", null)
             extractor.release()
-            return null
+            return null to EmotionFailureReason.NO_AUDIO_TRACK
         }
         extractor.selectTrack(track)
         val mime = format!!.getString(MediaFormat.KEY_MIME)!!
@@ -178,7 +187,7 @@ class EmotionAnalyzer @Inject constructor(
             val res = ffmpegDecoder.decode(extractor, format, deadline)
             if (res != null) {
                 try {
-                    return resampleTo16k(res.pcm, res.sampleRate)
+                    return resampleTo16k(res.pcm, res.sampleRate) to null
                 } finally {
                     extractor.release()
                 }
@@ -186,7 +195,7 @@ class EmotionAnalyzer @Inject constructor(
             if (!FfmpegPcmDecoder.mediaCodecFallbackSafe(mime)) {
                 AppLog.warning(TAG, "decode gave up (ffmpeg-only mime=$mime failed)", null)
                 extractor.release()
-                return null
+                return null to EmotionFailureReason.DECODE_UNSUPPORTED_FORMAT
             }
             // 回退厂商解码前 rewind: FFmpeg 路径已消费过部分样本
             extractor.seekTo(0, MediaExtractor.SEEK_TO_PREVIOUS_SYNC)
@@ -198,14 +207,20 @@ class EmotionAnalyzer @Inject constructor(
             // raw 轨无对应解码器: 直接按 PCM s16 读
             if (mime == "audio/raw") {
                 return try {
-                    readRawPcm(extractor, srcSr, srcCh, deadline)
+                    // readRawPcm 内部已完成重采样，外层不再二次重采样
+                    val raw = readRawPcm(extractor, srcSr, srcCh, deadline)
+                    if (raw.first != null) {
+                        raw.first to null
+                    } else {
+                        null to (raw.second ?: EmotionFailureReason.DECODE_UNSUPPORTED_FORMAT)
+                    }
                 } finally {
                     extractor.release()
                 }
             }
             AppLog.warning(TAG, "no decoder for $mime: ${e.message}", e)
             extractor.release()
-            return null
+            return null to EmotionFailureReason.DECODE_UNSUPPORTED_FORMAT
         }
         return try {
             codec.configure(format, null, null, 0)
@@ -217,7 +232,7 @@ class EmotionAnalyzer @Inject constructor(
             while (!eosOut) {
                 if (System.currentTimeMillis() > deadline) {
                     AppLog.warning(TAG, "decode timeout after ${MAX_DECODE_MS}ms, abort", null)
-                    return null
+                    return null to EmotionFailureReason.DECODE_TIMEOUT
                 }
                 if (!eosIn) {
                     val inIdx = codec.dequeueInputBuffer(10000)
@@ -254,17 +269,17 @@ class EmotionAnalyzer @Inject constructor(
                         }
                         if (pcm.size > MAX_SAMPLES) {
                             AppLog.warning(TAG, "song too long (>${MAX_SECONDS / 60}min), skip", null)
-                            return null
+                            return null to EmotionFailureReason.TOO_LONG
                         }
                     }
                     codec.releaseOutputBuffer(outIdx, false)
                 }
             }
             codec.stop()
-            resampleTo16k(pcm, srcSr)
+            resampleTo16k(pcm, srcSr) to null
         } catch (e: Exception) {
             AppLog.warning(TAG, "decode failed: ${e.message}", e)
-            null
+            null to EmotionFailureReason.DECODE_UNSUPPORTED_FORMAT
         } finally {
             codec.release()
             extractor.release()
@@ -277,14 +292,14 @@ class EmotionAnalyzer @Inject constructor(
         srcSr: Int,
         srcCh: Int,
         deadline: Long,
-    ): FloatArray? {
+    ): Pair<FloatArray?, EmotionFailureReason?> {
         return try {
             val pcm = ShortAccum()
             val buf = ByteBuffer.allocate(1 shl 16).order(ByteOrder.LITTLE_ENDIAN)
             while (true) {
                 if (System.currentTimeMillis() > deadline) {
                     AppLog.warning(TAG, "raw read timeout, abort", null)
-                    return null
+                    return null to EmotionFailureReason.DECODE_TIMEOUT
                 }
                 buf.clear()
                 val size = extractor.readSampleData(buf, 0)
@@ -301,16 +316,16 @@ class EmotionAnalyzer @Inject constructor(
                     }
                     if (pcm.size > MAX_SAMPLES) {
                         AppLog.warning(TAG, "raw song too long, skip", null)
-                        return null
+                        return null to EmotionFailureReason.TOO_LONG
                     }
                 }
                 buf.rewind()
                 extractor.advance()
             }
-            resampleTo16k(pcm, srcSr)
+            resampleTo16k(pcm, srcSr) to null
         } catch (e: Exception) {
             AppLog.warning(TAG, "raw pcm failed: ${e.message}", e)
-            null
+            null to EmotionFailureReason.DECODE_UNSUPPORTED_FORMAT
         }
     }
 

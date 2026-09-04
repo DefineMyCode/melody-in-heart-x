@@ -6,6 +6,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -31,9 +33,14 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -98,6 +105,7 @@ private fun SlotCard(
     onEdit: () -> Unit,
     onDelete: () -> Unit,
 ) {
+    var showDeleteConfirm by remember { mutableStateOf(false) }
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -128,7 +136,7 @@ private fun SlotCard(
             IconButton(onClick = onEdit, modifier = Modifier.size(30.dp)) {
                 Icon(Icons.Default.Edit, contentDescription = "编辑时段", modifier = Modifier.size(15.dp))
             }
-            IconButton(onClick = onDelete, modifier = Modifier.size(30.dp)) {
+            IconButton(onClick = { showDeleteConfirm = true }, modifier = Modifier.size(30.dp)) {
                 Icon(
                     Icons.Default.Delete,
                     contentDescription = "删除时段",
@@ -138,9 +146,38 @@ private fun SlotCard(
             }
         }
 
+        // 删除确认对话框（对齐 PlaylistDialogs.DeletePlaylistDialog 惯例：error 色确认按钮）
+        if (showDeleteConfirm) {
+            androidx.compose.material3.AlertDialog(
+                onDismissRequest = { showDeleteConfirm = false },
+                title = { Text("删除时段") },
+                text = {
+                    Text(
+                        "确定要删除「${config.name}」吗？\n\n" +
+                            "仅移除此时段配置，歌曲与情绪数据不受影响。",
+                    )
+                },
+                confirmButton = {
+                    TextButton(onClick = {
+                        onDelete()
+                        showDeleteConfirm = false
+                    }) {
+                        Text("删除", color = MaterialTheme.colorScheme.error)
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showDeleteConfirm = false }) { Text("取消") }
+                },
+            )
+        }
+
         Spacer(Modifier.height(10.dp))
-        // 词条 chips：带各自的歌曲数角标（与编辑页同源计数）
-        Row(horizontalArrangement = Arrangement.spacedBy(7.dp)) {
+        // 词条 chips：FlowRow 自动换行（词条多时 Row 不换行会横向溢出屏幕，2026-09-04）
+        FlowRow(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(7.dp),
+            verticalArrangement = Arrangement.spacedBy(7.dp),
+        ) {
             config.tags.take(6).forEach { tag ->
                 MoodTagChip(label = tag, songCount = tagCounts[tag] ?: 0, selected = true)
             }
@@ -259,7 +296,7 @@ private fun DayTimeline(
 }
 
 /** 配置列表页（内部） */
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 internal fun MoodTimeSlotScreen(
     state: MoodTimeSlotRouteState,

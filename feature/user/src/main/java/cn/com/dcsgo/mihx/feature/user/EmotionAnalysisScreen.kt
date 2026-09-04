@@ -15,6 +15,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -37,6 +38,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import cn.com.dcsgo.mihx.ui.components.BatchAddToPlaylistDialog
 import cn.com.dcsgo.mihx.ui.components.EmotionCalibrateDialog
 
 /**
@@ -52,6 +54,7 @@ fun EmotionAnalysisScreen(
     val scheme = MaterialTheme.colorScheme
     // 失败歌曲的弹层状态（2026-09-04）：手动标记 / 批量加入歌单
     var calibratingSong by remember { mutableStateOf<FailedEmotionSong?>(null) }
+    var addingSongsToPlaylist by remember { mutableStateOf(false) }
     Scaffold(
         topBar = {
             TopAppBar(
@@ -121,11 +124,27 @@ fun EmotionAnalysisScreen(
                         }
                     }
                 }
-                Button(
-                    onClick = actions.onRetryFailed,
+                // 同行并列的双操作：批量加歌单（描边）+ 重试失败歌曲（实心）
+                Row(
                     modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
                 ) {
-                    Text("重试失败歌曲")
+                    Button(
+                        onClick = { addingSongsToPlaylist = true },
+                        modifier = Modifier.weight(1f),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+                            contentColor = MaterialTheme.colorScheme.onSurface,
+                        ),
+                    ) {
+                        Text("添加到歌单")
+                    }
+                    Button(
+                        onClick = actions.onRetryFailed,
+                        modifier = Modifier.weight(1f),
+                    ) {
+                        Text("重试失败歌曲")
+                    }
                 }
             }
 
@@ -140,6 +159,21 @@ fun EmotionAnalysisScreen(
                         actions.onCalibrateSong(failed.songId, words)
                         calibratingSong = null
                     },
+                )
+            }
+
+            // ── 批量加入歌单弹窗（全部失败歌曲一并加入，与其他列表页一致） ──
+            if (addingSongsToPlaylist && state.failures.isNotEmpty()) {
+                val songs = state.failures.mapNotNull { state.failedSongMap[it.songId] }
+                BatchAddToPlaylistDialog(
+                    songs = songs,
+                    playlists = state.playlists,
+                    onDismiss = { addingSongsToPlaylist = false },
+                    onSelectPlaylist = { playlist ->
+                        actions.onAddSongsToPlaylist(songs, playlist)
+                        addingSongsToPlaylist = false
+                    },
+                    onCreatePlaylist = actions.onCreatePlaylistWithResult,
                 )
             }
             Spacer(modifier = Modifier.height(24.dp))

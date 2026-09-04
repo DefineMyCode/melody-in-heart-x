@@ -807,13 +807,17 @@ fun AppNavHost(
             }
             // 失败歌曲行：songId → 标题/标记状态映射（2026-09-04 失败标记 UI）。
             // calibratedTags 走 suspend 查询（逐首，失败数个位数），produceState 驱动；
-            // key = failures 指纹（数量+最近失败时间），标记/重扫后自动重查。
+            // key = failures 指纹（数量+最近失败时间）+ calibrationVersion——
+            // 手动标记不改变失败记录本身（attempts/failedAt 不变），若只看失败指纹
+            // 标记后 UI 不会刷新（2026-09-04 回归），故标记成功时递增版本号强制重查。
+            var calibrationVersion by remember { mutableStateOf(0) }
             val failuresFingerprint = emotionStatus.failures.entries
                 .joinToString("|") { "${it.key}:${it.value.attempts}:${it.value.failedAt}" }
             val failedRows by produceState<List<cn.com.dcsgo.mihx.feature.user.FailedEmotionSong>>(
                 initialValue = emptyList(),
                 key1 = failuresFingerprint,
                 key2 = uiState.songs,
+                key3 = calibrationVersion,
             ) {
                 value = emotionStatus.failures.mapNotNull { (songId, failure) ->
                     val song = uiState.songs.firstOrNull { it.id == songId }
@@ -867,8 +871,15 @@ fun AppNavHost(
                         // 2026-09-04 起失败歌曲(无分析行)标记会创建 user-only 记录
                         navCoroutineScope.launch {
                             val ok = emotionCorrectionController?.save(songId, words) ?: false
-                            showToast(if (ok) "已记录你的标记" else "标记失败，请重试")
-                            if (ok) emotionViewModel.refresh()
+                            if (ok) {
+                                // 标记不改变失败记录指纹，必须递增版本号触发 failedRows 重查，
+                                // 否则列表 UI 不更新、返回页面才可见（2026-09-04 回归）
+                                calibrationVersion++
+                                emotionViewModel.refresh()
+                                showToast("已记录你的标记")
+                            } else {
+                                showToast("标记失败，请重试")
+                            }
                         }
                     },
                     onAddSongsToPlaylist = { songs, playlist ->

@@ -10,7 +10,7 @@ import cn.com.dcsgo.mihx.core.model.SongEmotion
 import cn.com.dcsgo.mihx.domain.repository.EmotionAnalysisResult
 import cn.com.dcsgo.mihx.domain.repository.EmotionFailureReason
 import dagger.hilt.android.qualifiers.ApplicationContext
-import org.tensorflow.lite.Interpreter
+import org.tensorflow.lite.Interpreter // LiteRT(坐标已更名)保留原 Java 包名, 见官方迁移指南
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import javax.inject.Inject

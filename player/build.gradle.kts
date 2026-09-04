@@ -32,7 +32,7 @@ dependencies {
     implementation(libs.media3.session)
     implementation(libs.exoplayer)
     implementation(libs.media3.ffmpeg.decoder)
-    implementation(libs.tensorflow.lite)
+    implementation(libs.litert)
     implementation(libs.hilt.android)
     implementation(libs.org.json)
     ksp(libs.hilt.compiler)

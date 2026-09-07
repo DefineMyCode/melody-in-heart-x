@@ -18,6 +18,7 @@ import javax.inject.Inject
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.sync.withLock
 
 /**
  * Main ViewModel for the music player screen.
@@ -225,11 +226,26 @@ class PlayerViewModel @Inject constructor(
         runtime.acknowledgeValidationResult()
     }
 
+    // ── 播放统计快照缓存（stale-while-revalidate）──
+    // USER/统计页进入时先取缓存(切页零 DB 等待),再后台刷新。
+    // 快照查询含 8 个 Room 全扫,1100+ 首歌库每次进页都跑会掉帧。
+    private var cachedStatsSnapshot: PlaybackStatsSnapshot? = null
+    private val statsSnapshotMutex = kotlinx.coroutines.sync.Mutex()
+
     /**
      * 加载播放统计快照（周/月 Top、总时长等），供 USER / 播放统计 / 歌曲榜单路由展示。
+     *
+     * 有缓存时立即返回旧值（调用方可继续调用 [refreshPlaybackStatsSnapshot] 后台刷新），
+     * 无缓存时才真正等 DB。
      */
     suspend fun loadPlaybackStatsSnapshot(): PlaybackStatsSnapshot =
-        playStatsRepository.playbackStatsSnapshot()
+        cachedStatsSnapshot ?: refreshPlaybackStatsSnapshot()
+
+    /** 强制从 DB 重取快照并更新缓存（USER 页 onRefresh / 手动下拉时用） */
+    suspend fun refreshPlaybackStatsSnapshot(): PlaybackStatsSnapshot =
+        statsSnapshotMutex.withLock {
+            playStatsRepository.playbackStatsSnapshot().also { cachedStatsSnapshot = it }
+        }
 
     /**
      * 加载按播放次数降序排序的歌曲计数列表（songId, count）。

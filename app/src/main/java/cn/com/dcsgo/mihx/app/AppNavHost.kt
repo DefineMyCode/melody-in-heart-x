@@ -117,6 +117,14 @@ fun AppNavHost(
 ) {
     // 失败歌曲手动标记等 suspend 回调的协程作用域
     val navCoroutineScope = rememberCoroutineScope()
+
+    // 全库分组结果 AppRoot 级共享：曲库/歌单详情/歌手/专辑/榜单/版本管理等路由
+    // 原先各自 remember(uiState.songs) 重复执行 O(n) 分组，1100+ 首曲库下切页即重算。
+    // 提升到 NavHost 层只算一次，按 songs 列表实例失效。
+    val sharedLibrarySongs = remember(uiState.songs) {
+        flatGroupedSongs(uiState, playerViewModel)
+    }
+
     NavHost(
         navController = navController,
         startDestination = AppRoutes.HOME,
@@ -335,9 +343,7 @@ fun AppNavHost(
                     emotionRows = emotionRowsUi.map {
                         EmotionSongUiRow(song = it.song, tags = it.tags, corrected = it.corrected)
                     },
-                    precomputedLibrarySongs = remember(uiState.songs) {
-                        flatGroupedSongs(uiState, playerViewModel)
-                    },
+                    precomputedLibrarySongs = sharedLibrarySongs,
                     sortMode = songSortMode,
                     sortAscending = songSortAscending,
                 ),
@@ -383,9 +389,7 @@ fun AppNavHost(
                     emotionRows = emotionRowsUi.map {
                         EmotionSongUiRow(song = it.song, tags = it.tags, corrected = it.corrected)
                     },
-                    precomputedLibrarySongs = remember(uiState.songs) {
-                        flatGroupedSongs(uiState, playerViewModel)
-                    },
+                    precomputedLibrarySongs = sharedLibrarySongs,
                 ),
                 actions = actions.copy(
                     // 歌单内点歌:仅更新来源标记,不立即写记录;记录在退出应用/切换播放源时结算
@@ -424,9 +428,7 @@ fun AppNavHost(
         ) { backStackEntry ->
             val artistName = backStackEntry.arguments?.getString(AppRoutes.ARTIST_NAME).orEmpty()
             // M-7（评审 2026-09-03）：全库分组只在曲库变化时重算，避免每次重组都 O(n) 分组
-            val allSongs = remember(uiState.songs) {
-                playerViewModel.getGroupedSongs(uiState.songs).flatten()
-            }
+            val allSongs = sharedLibrarySongs
             ArtistDetailRoute(
                 state = ArtistDetailRouteState(
                     artistName = artistName,
@@ -463,9 +465,7 @@ fun AppNavHost(
         ) { backStackEntry ->
             val albumName = backStackEntry.arguments?.getString(AppRoutes.ALBUM_NAME).orEmpty()
             // M-7（评审 2026-09-03）：同 ARTIST_DETAIL，分组结果 remember 化
-            val allSongs = remember(uiState.songs) {
-                playerViewModel.getGroupedSongs(uiState.songs).flatten()
-            }
+            val allSongs = sharedLibrarySongs
             AlbumDetailRoute(
                 state = AlbumDetailRouteState(
                     albumName = albumName,
@@ -502,12 +502,17 @@ fun AppNavHost(
             val emotionStatus by emotionViewModel.status.collectAsStateWithLifecycle()
             LaunchedEffect(Unit) { emotionViewModel.refresh() }
             val snapshot by produceState(PlaybackStatsSnapshot.EMPTY) {
-                // C-2（评审 2026-09-03）：底层是 Room runBlocking 桥，DB 异常会在 producer 协程
-                // 中未捕获并直接崩溃应用；这里统一兜底为空快照 + 日志。
+                // C-2（评审 2026-09-03）：底层是 Room runBlocking 桥，DB 异常统一兜底空快照。
+                // 性能：先取缓存立即渲染（切页零等待），再后台刷新替换为新值。
                 runCatching { playerViewModel.loadPlaybackStatsSnapshot() }
                     .onSuccess { value = it }
                     .onFailure {
                         AppLog.error("AppNavHost", "loadPlaybackStatsSnapshot failed: ${it.message}", it)
+                    }
+                runCatching { playerViewModel.refreshPlaybackStatsSnapshot() }
+                    .onSuccess { if (it != value) value = it }
+                    .onFailure {
+                        AppLog.error("AppNavHost", "refreshPlaybackStatsSnapshot failed: ${it.message}", it)
                     }
             }
             val moodConfigs by moodTimeSlotViewModel.configs.collectAsStateWithLifecycle()
@@ -631,8 +636,13 @@ fun AppNavHost(
                     .onFailure {
                         AppLog.error("AppNavHost", "loadPlaybackStatsSnapshot failed: ${it.message}", it)
                     }
+                runCatching { playerViewModel.refreshPlaybackStatsSnapshot() }
+                    .onSuccess { if (it != value) value = it }
+                    .onFailure {
+                        AppLog.error("AppNavHost", "refreshPlaybackStatsSnapshot failed: ${it.message}", it)
+                    }
             }
-            val librarySongs = remember(uiState.songs) { flatGroupedSongs(uiState, playerViewModel) }
+            val librarySongs = sharedLibrarySongs
             PlaybackStatsRoute(
                 state = playbackStatsRouteState(uiState, playerViewModel, snapshot, librarySongs),
                 actions = playbackStatsRouteActions(navController, playerViewModel, playlistResumeViewModel),
@@ -656,7 +666,7 @@ fun AppNavHost(
                         AppLog.error("AppNavHost", "loadPlaybackStatsSnapshot failed: ${it.message}", it)
                     }
             }
-            val librarySongs = remember(uiState.songs) { flatGroupedSongs(uiState, playerViewModel) }
+            val librarySongs = sharedLibrarySongs
             SongTopListRoute(
                 state = songTopListRouteState(uiState, playerViewModel, snapshot, period, librarySongs),
                 actions = songTopListRouteActions(navController, playerViewModel, playlistResumeViewModel),
@@ -665,9 +675,7 @@ fun AppNavHost(
 
         composable(AppRoutes.VERSION_MANAGEMENT) {
             // 全库分组只在曲库变化时重算，避免每次重组都 O(n) 过滤+分组
-            val allSongs = remember(uiState.songs) {
-                playerViewModel.getGroupedSongs(uiState.songs).flatten()
-            }
+            val allSongs = sharedLibrarySongs
             VersionManagementRoute(
                 state = VersionManagementRouteState(
                     songs = allSongs,
@@ -703,9 +711,7 @@ fun AppNavHost(
             arguments = listOf(navArgument(AppRoutes.VERSION_GROUP_ID) { type = NavType.StringType }),
         ) { backStackEntry ->
             val groupId = backStackEntry.arguments?.getString(AppRoutes.VERSION_GROUP_ID).orEmpty()
-            val allSongs = remember(uiState.songs) {
-                playerViewModel.getGroupedSongs(uiState.songs).flatten()
-            }
+            val allSongs = sharedLibrarySongs
             val groupSongs = remember(groupId, allSongs) {
                 allSongs.filter { it.groupKey == groupId }
             }
@@ -746,7 +752,7 @@ fun AppNavHost(
                         AppLog.error("AppNavHost", "loadRankedCounts(raw) failed: ${it.message}", it)
                     }
             }
-            val librarySongs = remember(uiState.songs) { flatGroupedSongs(uiState, playerViewModel) }
+            val librarySongs = sharedLibrarySongs
             PlayStatsRoute(
                 state = playStatsRouteState(
                     title = "播放次数统计",
@@ -767,7 +773,7 @@ fun AppNavHost(
                         AppLog.error("AppNavHost", "loadRankedCounts(effective) failed: ${it.message}", it)
                     }
             }
-            val librarySongs = remember(uiState.songs) { flatGroupedSongs(uiState, playerViewModel) }
+            val librarySongs = sharedLibrarySongs
             PlayStatsRoute(
                 state = playStatsRouteState(
                     title = "有效播放统计",

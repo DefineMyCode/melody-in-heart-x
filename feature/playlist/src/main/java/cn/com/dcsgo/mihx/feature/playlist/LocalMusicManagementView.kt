@@ -82,7 +82,11 @@ fun LocalMusicManagementView(
     val localSongs = remember(songs) { songs.filter { it.uri != null } }
 
     // ── 排序状态（由调用方传入持久化值） ──
-    val displaySortedSongs = remember(localSongs, sortMode, sortAscending, playCounts, lastPlayedAt) {
+    // 指纹键：Map 每次刷新都是新实例，直接放 remember 键会无谓重排全列表；
+    // 改用内容摘要做失效键，内容不变则复用上次排序结果。
+    val playCountsKey = remember(playCounts) { playCounts.entries.sortedBy { it.key }.hashCode() }
+    val lastPlayedKey = remember(lastPlayedAt) { lastPlayedAt.entries.sortedBy { it.key }.hashCode() }
+    val displaySortedSongs = remember(localSongs, sortMode, sortAscending, playCountsKey, lastPlayedKey) {
         SongSorter.sort(localSongs, sortMode, sortAscending, playCounts, lastPlayedAt)
     }
 

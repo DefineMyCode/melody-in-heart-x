@@ -38,6 +38,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import cn.com.dcsgo.mihx.domain.model.FileCheckMode
 import cn.com.dcsgo.mihx.domain.model.LocalFileValidationResult
 
 /**
@@ -52,7 +53,7 @@ fun FileCheckScreen(
     validationResult: LocalFileValidationResult?,
     isValidating: Boolean,
     onBack: () -> Unit,
-    onRunValidation: () -> Unit,
+    onRunValidation: (FileCheckMode) -> Unit,
     onAcknowledge: () -> Unit,
 ) {
     Scaffold(
@@ -125,7 +126,7 @@ private fun ValidatingContent() {
 }
 
 @Composable
-private fun IdleContent(onRunValidation: () -> Unit) {
+private fun IdleContent(onRunValidation: (FileCheckMode) -> Unit) {
     Spacer(modifier = Modifier.height(40.dp))
     Box(
         modifier = Modifier
@@ -147,24 +148,31 @@ private fun IdleContent(onRunValidation: () -> Unit) {
     )
     Spacer(modifier = Modifier.height(8.dp))
     Text(
-        text = "扫描每首歌曲对应的本地文件是否存在，并检查与数据库是否一致。\n文件已缺失（如被外部删除）的歌曲将从曲库与歌单中移除，\n同时清理播放统计、秒切、播放事件等关联数据。",
+        text = "扫描每首歌曲对应的本地文件是否存在，并检查与数据库是否一致。\n文件已缺失（如被外部删除）的歌曲将从曲库与歌单中移除，\n同时清理播放统计、秒切、播放事件等关联数据。\n\n快速校验还会按文件指纹（大小+修改时间）预筛，重新提取有变化歌曲的元数据（歌手/专辑/封面），歌曲的播放统计与情绪标记保留。\n深度校验则对全部歌曲重新提取元数据，耗时更长。",
         style = MaterialTheme.typography.bodyMedium,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
         textAlign = TextAlign.Center,
     )
     Spacer(modifier = Modifier.height(28.dp))
     Button(
-        onClick = onRunValidation,
+        onClick = { onRunValidation(FileCheckMode.QUICK) },
         modifier = Modifier.fillMaxWidth(),
     ) {
-        Text("开始校验")
+        Text("快速校验")
+    }
+    Spacer(modifier = Modifier.height(10.dp))
+    OutlinedButton(
+        onClick = { onRunValidation(FileCheckMode.DEEP) },
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Text("深度校验（全库重新读取元数据）")
     }
 }
 
 @Composable
 private fun ResultContent(
     result: LocalFileValidationResult,
-    onRerun: () -> Unit,
+    onRerun: (FileCheckMode) -> Unit,
     onAcknowledge: () -> Unit,
 ) {
     Spacer(modifier = Modifier.height(32.dp))
@@ -203,6 +211,13 @@ private fun ResultContent(
             ResultRow(label = "扫描歌曲", value = "${result.totalSongs} 首")
             ResultRow(label = "文件缺失", value = "${result.missingCount} 首", emphasized = result.hasMissingFiles)
             ResultRow(label = "歌单引用清理", value = "${result.removedPlaylistRefs} 处")
+            if (result.hasMetadataUpdates) {
+                ResultRow(
+                    label = "元数据更新",
+                    value = "${result.metadataUpdatedCount} 首",
+                    emphasized = true,
+                )
+            }
             if (result.hasMissingFiles) {
                 ResultRow(label = "关联数据清理", value = "播放统计 / 秒切 / 播放事件")
             }
@@ -218,7 +233,7 @@ private fun ResultContent(
     }
     Spacer(modifier = Modifier.height(10.dp))
     OutlinedButton(
-        onClick = onRerun,
+        onClick = { onRerun(FileCheckMode.QUICK) },
         modifier = Modifier.fillMaxWidth(),
     ) {
         Icon(
@@ -227,7 +242,14 @@ private fun ResultContent(
             modifier = Modifier.size(16.dp),
         )
         Spacer(modifier = Modifier.width(6.dp))
-        Text("重新校验")
+        Text("重新快速校验")
+    }
+    Spacer(modifier = Modifier.height(10.dp))
+    OutlinedButton(
+        onClick = { onRerun(FileCheckMode.DEEP) },
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Text("深度校验（全库重新读取元数据）")
     }
 }
 

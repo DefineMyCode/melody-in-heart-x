@@ -52,6 +52,14 @@ object AlbumArtExtractor {
         return if (file.exists()) Uri.fromFile(file) else null
     }
 
+    /** 元数据刷新时清除指定歌曲的封面缓存，下次 [getAlbumArtUri] 会重新从文件提取 */
+    fun invalidateCache(ctx: Context, songId: Int) {
+        val file = File(File(ctx.cacheDir, CACHE_DIR_NAME), "album_$songId.jpg")
+        if (file.exists() && !file.delete()) {
+            AppLog.debug(TAG, "invalidateCache: failed to delete ${file.name}")
+        }
+    }
+
     /**
      * 如果 URI 来自 MediaStore，尝试从专辑表读取封面
      */

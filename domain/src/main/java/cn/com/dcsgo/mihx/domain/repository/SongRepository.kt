@@ -4,6 +4,7 @@ import cn.com.dcsgo.mihx.core.model.AlbumEntry
 import cn.com.dcsgo.mihx.core.model.ArtistEntry
 import cn.com.dcsgo.mihx.core.model.Song
 import cn.com.dcsgo.mihx.domain.model.DeleteSongResult
+import cn.com.dcsgo.mihx.domain.model.FileCheckMode
 import cn.com.dcsgo.mihx.domain.model.LocalFileValidationResult
 
 interface SongRepository {
@@ -33,4 +34,12 @@ interface SongRepository {
      * 清理文件已缺失的歌曲及其关联数据，返回处理汇总。
      */
     suspend fun validateAndCleanupLocalFiles(): LocalFileValidationResult
+
+    /**
+     * 带元数据刷新的文件校验。
+     *
+     * QUICK：URI 存活的歌曲按「文件大小 + 最后修改时间」指纹预筛，仅重新提取变化者；
+     * DEEP：URI 存活的全部歌曲重新提取。更新就地保留 songId（统计/情绪/歌单关联不断）。
+     */
+    suspend fun validateAndCleanupLocalFiles(mode: FileCheckMode): LocalFileValidationResult
 }

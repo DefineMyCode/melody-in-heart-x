@@ -8,6 +8,7 @@ import cn.com.dcsgo.mihx.core.model.PlayQueue
 import cn.com.dcsgo.mihx.core.model.Playlist
 import cn.com.dcsgo.mihx.core.model.Song
 import cn.com.dcsgo.mihx.domain.model.DeleteSongResult
+import cn.com.dcsgo.mihx.domain.model.FileCheckMode
 import cn.com.dcsgo.mihx.domain.model.LocalFileValidationResult
 import cn.com.dcsgo.mihx.domain.repository.PlaybackStatsSnapshot
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -184,9 +185,9 @@ class PlayerViewModel @Inject constructor(
         runtime.clearError()
     }
 
-    /** 在后台校验本地歌曲文件有效性并清理失效数据。 */
-    fun validateLocalFiles() {
-        runtime.validateLocalFiles()
+    /** 在后台校验本地歌曲文件有效性并清理失效数据（mode 决定元数据刷新范围）。 */
+    fun validateLocalFiles(mode: FileCheckMode = FileCheckMode.QUICK) {
+        runtime.validateLocalFiles(mode)
     }
 
     /** 用户确认校验结果后清除（结果页徽标消失）。 */

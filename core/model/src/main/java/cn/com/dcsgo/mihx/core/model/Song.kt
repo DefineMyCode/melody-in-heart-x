@@ -34,6 +34,8 @@ data class Song(
     val artistIds: List<Int> = emptyList(),
     /** 歌曲总时长（毫秒），导入时从元数据提取并持久化；未知时为 0 */
     val durationMs: Long = 0L,
+    /** 文件指纹「size:mtime」，快速校验预筛用；null 表示尚未记录（视为未变化） */
+    val fileFingerprint: String? = null,
 ) {
     /** 采样率格式化字符串，用于 UI 展示（如 "44kHz"） */
     val sampleRateDisplay: String

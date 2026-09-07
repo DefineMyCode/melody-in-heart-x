@@ -11,6 +11,7 @@ import cn.com.dcsgo.mihx.domain.playback.BluetoothPlaybackMonitorFactory
 import cn.com.dcsgo.mihx.domain.playback.ControllerPlaybackStateSynchronizer
 import cn.com.dcsgo.mihx.domain.playback.PlaybackDurationMonitorFactory
 import cn.com.dcsgo.mihx.domain.model.DeleteSongResult
+import cn.com.dcsgo.mihx.domain.model.FileCheckMode
 import cn.com.dcsgo.mihx.domain.model.LocalFileValidationResult
 import cn.com.dcsgo.mihx.domain.playback.ControllerQueuePlannerPort
 import cn.com.dcsgo.mihx.domain.playback.PlaybackControllerPortFactory
@@ -634,18 +635,22 @@ internal class PlayerRuntime(
      * 在后台校验本地歌曲文件有效性：扫描文件缺失的歌曲并清理其关联数据。
      * 不阻塞播放与页面浏览；完成后结果保存在 [validationResult]，直到用户确认。
      */
-    fun validateLocalFiles() {
+    fun validateLocalFiles(mode: FileCheckMode = FileCheckMode.QUICK) {
         if (_isValidating.value) return
         _isValidating.value = true
         scope.launch {
             try {
                 val result = withContext(dispatchers.io) {
-                    songRepository.validateAndCleanupLocalFiles()
+                    songRepository.validateAndCleanupLocalFiles(mode)
                 }
                 _validationResult.value = result
-                AppLog.info(TAG, "validateLocalFiles done: ${result.missingCount} missing")
+                AppLog.info(
+                    TAG,
+                    "validateLocalFiles($mode) done: ${result.missingCount} missing, " +
+                        "${result.metadataUpdatedCount} metadata updated",
+                )
             } catch (e: Exception) {
-                AppLog.error(TAG, "validateLocalFiles failed", e)
+                AppLog.error(TAG, "validateLocalFiles($mode) failed", e)
             } finally {
                 _isValidating.value = false
             }

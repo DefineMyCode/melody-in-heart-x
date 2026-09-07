@@ -17,6 +17,7 @@ import cn.com.dcsgo.mihx.data.util.AlbumArtExtractor
 import cn.com.dcsgo.mihx.data.util.AudioFileUtils
 import cn.com.dcsgo.mihx.data.util.AudioMetadataExtractor
 import cn.com.dcsgo.mihx.domain.model.DeleteSongResult
+import cn.com.dcsgo.mihx.domain.model.FileCheckMode
 import cn.com.dcsgo.mihx.domain.model.LocalFileValidationResult
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -664,7 +665,21 @@ class MusicRepository(
      *
      * @return 处理汇总（含被清理歌曲 id 列表）
      */
-    suspend fun validateAndCleanupLocalFiles(): LocalFileValidationResult = withContext(Dispatchers.IO) {
+    suspend fun validateAndCleanupLocalFiles(): LocalFileValidationResult =
+        validateAndCleanupLocalFiles(FileCheckMode.QUICK)
+
+    /**
+     * 带元数据刷新的文件校验。
+     *
+     * 流程：
+     * 1. 缺失检测：URI 打不开的歌曲移除并清理关联数据（原有逻辑不变）
+     * 2. 元数据刷新：
+     *    - [FileCheckMode.QUICK] 按「文件大小 + 最后修改时间」指纹预筛，仅重新提取变化者；
+     *    - [FileCheckMode.DEEP] 对 URI 存活的全部歌曲重新提取。
+     *    变化的歌就地更新 title/artist/album/sampleRate/durationMs/封面，保留 songId，
+     *    播放统计 / 秒切 / 情绪 / 歌单关联全部延续。
+     */
+    suspend fun validateAndCleanupLocalFiles(mode: FileCheckMode): LocalFileValidationResult = withContext(Dispatchers.IO) {
         val snapshot = lock.read { songs.toList() }
         if (snapshot.isEmpty()) {
             return@withContext LocalFileValidationResult(
@@ -672,6 +687,8 @@ class MusicRepository(
                 missingCount = 0,
                 removedPlaylistRefs = 0,
                 removedSongIds = emptyList(),
+                metadataUpdatedCount = 0,
+                mode = mode,
             )
         }
 
@@ -679,44 +696,169 @@ class MusicRepository(
             .filter { it.uri != null && !fileExists(it.uri!!) }
             .mapTo(mutableSetOf()) { it.id }
 
-        if (missingIds.isEmpty()) {
-            AppLog.info(TAG, "validateAndCleanupLocalFiles: all ${snapshot.size} local files exist")
-            return@withContext LocalFileValidationResult(
-                totalSongs = snapshot.size,
-                missingCount = 0,
-                removedPlaylistRefs = 0,
-                removedSongIds = emptyList(),
+        var removedPlaylistRefs = 0
+        if (missingIds.isNotEmpty()) {
+            lock.write {
+                for (index in playlists.indices) {
+                    val playlist = playlists[index]
+                    val kept = playlist.songIds.filterNot { it in missingIds }
+                    if (kept.size != playlist.songIds.size) {
+                        playlists[index] = playlist.copy(songIds = kept)
+                        removedPlaylistRefs += playlist.songIds.size - kept.size
+                        updatePlaylistSongCount(playlist.id)
+                    }
+                }
+                songs.removeAll { it.id in missingIds }
+                persistSongs()
+                persistPlaylists()
+            }
+
+            cleanupMissingSongAssociations(missingIds)
+        }
+
+        // ── 元数据刷新（URI 存活的歌曲） ──
+        val aliveSongs = snapshot.filter { it.uri != null && it.id !in missingIds }
+        val candidates: List<Song> = when (mode) {
+            FileCheckMode.DEEP -> aliveSongs
+            FileCheckMode.QUICK -> aliveSongs.filter { hasFileFingerprintChanged(it) }
+        }
+        val updatedCount = if (candidates.isEmpty()) {
+            0
+        } else {
+            refreshMetadata(candidates)
+        }
+
+        if (missingIds.isEmpty() && updatedCount == 0) {
+            AppLog.info(TAG, "validateAndCleanupLocalFiles($mode): all ${snapshot.size} songs clean")
+        } else {
+            AppLog.info(
+                TAG,
+                "validateAndCleanupLocalFiles($mode): removed ${missingIds.size} missing, " +
+                    "$removedPlaylistRefs playlist refs, $updatedCount/${candidates.size} metadata updated",
             )
         }
-
-        var removedPlaylistRefs = 0
-        lock.write {
-            for (index in playlists.indices) {
-                val playlist = playlists[index]
-                val kept = playlist.songIds.filterNot { it in missingIds }
-                if (kept.size != playlist.songIds.size) {
-                    playlists[index] = playlist.copy(songIds = kept)
-                    removedPlaylistRefs += playlist.songIds.size - kept.size
-                    updatePlaylistSongCount(playlist.id)
-                }
-            }
-            songs.removeAll { it.id in missingIds }
-            persistSongs()
-            persistPlaylists()
+        // 任何变化(删歌或元数据更新)都要通知 UI 刷新快照, 否则元数据更新要重启才可见
+        if (missingIds.isNotEmpty() || updatedCount > 0) {
+            notifySongsChanged()
         }
-
-        cleanupMissingSongAssociations(missingIds)
-        notifySongsChanged()
-        AppLog.info(
-            TAG,
-            "validateAndCleanupLocalFiles: removed ${missingIds.size} missing songs, $removedPlaylistRefs playlist refs",
-        )
         LocalFileValidationResult(
             totalSongs = snapshot.size,
             missingCount = missingIds.size,
             removedPlaylistRefs = removedPlaylistRefs,
             removedSongIds = missingIds.toList(),
+            metadataUpdatedCount = updatedCount,
+            mode = mode,
         )
+    }
+
+    /** 快速校验指纹：文件大小 + 最后修改时间。任一变化即视为可能变化。 */
+    private fun hasFileFingerprintChanged(song: Song): Boolean {
+        val uri = song.uri ?: return false
+        val ctx = context ?: return false
+        return try {
+            ctx.contentResolver.openFileDescriptor(uri, "r")?.use { pfd ->
+                val size = pfd.statSize
+                val mtime = try {
+                    ctx.contentResolver.query(
+                        uri,
+                        arrayOf(android.provider.DocumentsContract.Document.COLUMN_LAST_MODIFIED),
+                        null, null, null,
+                    )?.use { c ->
+                        if (c.moveToFirst()) c.getLong(0) else 0L
+                    } ?: 0L
+                } catch (_: Exception) {
+                    0L
+                }
+                // 指纹存 Room SongEntity 的 size + lastModified 列; 两者都为 null(旧数据未记录)视为未变化,
+                // 避免 Quick 首跑就对全库重提取
+                val stored = song.fileFingerprint
+                stored == null || stored != "$size:$mtime"
+            } ?: true
+        } catch (e: Exception) {
+            AppLog.debug(TAG, "fingerprint: ${song.id} -> ${e.javaClass.simpleName}: ${e.message}")
+            true
+        }
+    }
+
+    /**
+     * 重新提取并就地更新元数据。并行度 8（与 addFolder 一致），仅写有实际变化的行。
+     * 封面缓存按 songId 命名：元数据变了但封面通常不变（同一首歌），故只在提取出的
+     * 歌名/歌手/专辑与旧值不同时才删除旧封面缓存重新提取。
+     */
+    private suspend fun refreshMetadata(candidates: List<Song>): Int = withContext(Dispatchers.IO) {
+        val ctx = context ?: return@withContext 0
+        var updated = 0
+        kotlinx.coroutines.coroutineScope {
+            candidates.map { song ->
+                async(Dispatchers.IO) {
+                    val uri = song.uri ?: return@async false
+                    val displayName = try {
+                        DocumentFile.fromSingleUri(ctx, uri)?.name
+                    } catch (_: Exception) {
+                        null
+                    } ?: song.title
+                    val fallbackTitle = AudioFileUtils.stripAudioExtension(displayName)
+                    val meta = AudioMetadataExtractor.extractMetadata(ctx, uri, fallbackTitle)
+
+                    val changed = meta.title != song.title ||
+                        meta.artist != song.artist ||
+                        meta.album != song.album ||
+                        (meta.sampleRate != 0 && meta.sampleRate != song.sampleRate) ||
+                        (meta.durationMs > 0L && meta.durationMs != song.durationMs)
+                    if (!changed) return@async false
+
+                    // 封面：仅当专辑/歌手变化时重取（同一首歌换封面极少见; 重取前清缓存）
+                    var newArtUri = song.albumArtUri
+                    if (meta.album != song.album || meta.artist != song.artist) {
+                        try {
+                            AlbumArtExtractor.invalidateCache(ctx, song.id)
+                            newArtUri = AlbumArtExtractor.getAlbumArtUri(ctx, uri, song.id)
+                        } catch (e: Exception) {
+                            AppLog.debug(TAG, "art refresh failed song=${song.id}: ${e.message}")
+                        }
+                    }
+
+                    lock.write {
+                        val idx = songs.indexOfFirst { it.id == song.id }
+                        if (idx >= 0) {
+                            // 顺手把本次打开时的文件指纹写回, 下次 Quick 预筛即以此为准
+                            val newFingerprint = try {
+                                ctx.contentResolver.openFileDescriptor(uri, "r")?.use { pfd ->
+                                    val size = pfd.statSize
+                                    val mtime = try {
+                                        ctx.contentResolver.query(
+                                            uri,
+                                            arrayOf(android.provider.DocumentsContract.Document.COLUMN_LAST_MODIFIED),
+                                            null, null, null,
+                                        )?.use { c ->
+                                            if (c.moveToFirst()) c.getLong(0) else 0L
+                                        } ?: 0L
+                                    } catch (_: Exception) {
+                                        0L
+                                    }
+                                    "$size:$mtime"
+                                }
+                            } catch (_: Exception) {
+                                null
+                            }
+                            songs[idx] = songs[idx].copy(
+                                title = meta.title,
+                                artist = meta.artist,
+                                album = meta.album,
+                                sampleRate = if (meta.sampleRate != 0) meta.sampleRate else songs[idx].sampleRate,
+                                durationMs = if (meta.durationMs > 0L) meta.durationMs else songs[idx].durationMs,
+                                albumArtUri = newArtUri,
+                                fileFingerprint = newFingerprint ?: songs[idx].fileFingerprint,
+                            )
+                        }
+                    }
+                    AppLog.info(TAG, "metadata refreshed: id=${song.id} '${song.title}' -> '${meta.title}'")
+                    true
+                }
+            }.awaitAll().count { it }
+        }.also { updated = it }
+        persistSongs()
+        updated
     }
 
     /** 清理文件缺失歌曲在播放统计 / 秒切 / 播放事件等表中的关联数据 */

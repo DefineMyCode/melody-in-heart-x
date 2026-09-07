@@ -2,6 +2,7 @@ package cn.com.dcsgo.mihx.feature.user
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
+import cn.com.dcsgo.mihx.domain.model.FileCheckMode
 import cn.com.dcsgo.mihx.domain.model.LocalFileValidationResult
 
 @Stable
@@ -14,8 +15,8 @@ data class FileCheckRouteState(
 
 data class FileCheckRouteActions(
     val onBack: () -> Unit,
-    /** 启动后台校验 */
-    val onRunValidation: () -> Unit,
+    /** 启动后台校验（快速/深度由 UI 按钮决定） */
+    val onRunValidation: (FileCheckMode) -> Unit,
     /** 确认结果完成（清除结果并返回） */
     val onAcknowledge: () -> Unit,
 )

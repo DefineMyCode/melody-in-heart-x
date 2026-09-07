@@ -611,7 +611,7 @@ fun AppNavHost(
                 ),
                 actions = FileCheckRouteActions(
                     onBack = navController::navigateUp,
-                    onRunValidation = playerViewModel::validateLocalFiles,
+                    onRunValidation = { mode -> playerViewModel.validateLocalFiles(mode) },
                     onAcknowledge = {
                         playerViewModel.acknowledgeValidationResult()
                         navController.navigateUp()

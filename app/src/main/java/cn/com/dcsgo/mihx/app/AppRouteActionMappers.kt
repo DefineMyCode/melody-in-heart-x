@@ -59,6 +59,10 @@ internal fun playlistRouteActions(
     onCreatePlaylistWithResult = playerViewModel::createPlaylist,
     onShowVersionManagement = { navController.navigate(AppRoutes.VERSION_MANAGEMENT) },
     onShowQuickSkipSongs = { navController.navigate(AppRoutes.QUICK_SKIP_SONGS) },
+    onSortModeSelected = playerViewModel::setSongSortMode,
+    onSortDirectionToggled = {
+        playerViewModel.setSongSortAscending(!playerViewModel.songSortAscending.value)
+    },
     onPlayAllInPlaylist = { playlistSongs ->
         playerViewModel.setPlayQueue(
             playlistSongs,

@@ -21,6 +21,7 @@ class PlayerLibraryFacade(
     private val refreshAllAlbumArt: suspend (onFinished: (() -> Unit)?) -> Unit,
     private val snapshot: () -> PlaylistSnapshot,
     private val setSongsChangedListener: (() -> Unit) -> Unit,
+    private val loadPlayStatsForSort: suspend () -> Pair<Map<Int, Int>, Map<Int, Long>>,
     private val catalogScope: CoroutineScope,
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
     private val albumArtRefreshDelayMs: Long = ALBUM_ART_REFRESH_DELAY_MS,
@@ -66,6 +67,17 @@ class PlayerLibraryFacade(
                 playlists = currentSnapshot.playlists,
                 isLoading = isLoading ?: state.isLoading,
             )
+        }
+        // 同步刷新播放统计（排序数据源，从持久化表查询）
+        catalogScope.launch {
+            try {
+                val (playCounts, lastPlayedAt) = loadPlayStatsForSort()
+                updateState { state ->
+                    state.copy(playCounts = playCounts, lastPlayedAt = lastPlayedAt)
+                }
+            } catch (e: Exception) {
+                AppLog.error("PlayerLibraryFacade", "loadPlayStatsForSort failed", e)
+            }
         }
         // 同步刷新曲库歌手/专辑目录（从持久化表查询）
         catalogScope.launch {

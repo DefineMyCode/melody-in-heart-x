@@ -3,6 +3,7 @@ package cn.com.dcsgo.mihx.app
 import cn.com.dcsgo.mihx.core.model.EmotionSongUiRow
 import cn.com.dcsgo.mihx.core.model.Playlist
 import cn.com.dcsgo.mihx.core.model.Song
+import cn.com.dcsgo.mihx.domain.model.SongSortMode
 import cn.com.dcsgo.mihx.domain.model.LocalFileValidationResult
 import cn.com.dcsgo.mihx.domain.model.PlaylistResume
 import cn.com.dcsgo.mihx.domain.repository.PlaybackStatsSnapshot
@@ -43,6 +44,9 @@ internal fun playlistRouteState(
     emotionRows: List<EmotionSongUiRow> = emptyList(),
     /** 预计算的 [flatGroupedSongs] 结果；为 null 时回退为内部计算（仅供旧调用方/测试） */
     precomputedLibrarySongs: List<Song>? = null,
+    /** 本地音乐排序（持久化设置） */
+    sortMode: SongSortMode = SongSortMode.IMPORT_ORDER,
+    sortAscending: Boolean = true,
 ): PlaylistRouteState {
     val librarySongs = precomputedLibrarySongs ?: flatGroupedSongs(uiState, playerViewModel)
     return PlaylistRouteState(
@@ -51,6 +55,10 @@ internal fun playlistRouteState(
         librarySongs = librarySongs,
         libraryArtists = uiState.libraryArtists,
         libraryAlbums = uiState.libraryAlbums,
+        sortMode = sortMode,
+        sortAscending = sortAscending,
+        playCounts = uiState.playCounts,
+        lastPlayedAt = uiState.lastPlayedAt,
         selectedPlaylist = selectedPlaylist,
         resumeSong = resumeSong,
         selectedPlaylistSongs = selectedPlaylist?.let { playlist ->

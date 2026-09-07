@@ -325,6 +325,8 @@ fun AppNavHost(
                 playlistResumeViewModel,
             )
             val emotionRowsUi by emotionViewModel.rows.collectAsStateWithLifecycle()
+            val songSortMode by playerViewModel.songSortMode.collectAsStateWithLifecycle()
+            val songSortAscending by playerViewModel.songSortAscending.collectAsStateWithLifecycle()
             PlaylistRoute(
                 state = playlistRouteState(
                     uiState,
@@ -336,6 +338,8 @@ fun AppNavHost(
                     precomputedLibrarySongs = remember(uiState.songs) {
                         flatGroupedSongs(uiState, playerViewModel)
                     },
+                    sortMode = songSortMode,
+                    sortAscending = songSortAscending,
                 ),
                 // 列表页点歌(全曲库范围):非歌单来源,先结算旧歌单
                 actions = actions.copy(

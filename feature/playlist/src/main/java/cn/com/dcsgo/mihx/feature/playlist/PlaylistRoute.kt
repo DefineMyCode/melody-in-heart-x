@@ -8,6 +8,7 @@ import cn.com.dcsgo.mihx.core.model.ArtistEntry
 import cn.com.dcsgo.mihx.core.model.Playlist
 import cn.com.dcsgo.mihx.core.model.Song
 import cn.com.dcsgo.mihx.core.model.SongInfo
+import cn.com.dcsgo.mihx.domain.model.SongSortMode
 
 @Stable
 data class PlaylistRouteState(
@@ -25,6 +26,11 @@ data class PlaylistRouteState(
     val isImporting: Boolean = false,
     val importProgress: Int = 0,
     val importTotal: Int = 0,
+    /** 本地音乐列表排序（持久化设置，本地音乐视图消费） */
+    val sortMode: SongSortMode = SongSortMode.IMPORT_ORDER,
+    val sortAscending: Boolean = true,
+    val playCounts: Map<Int, Int> = emptyMap(),
+    val lastPlayedAt: Map<Int, Long> = emptyMap(),
 )
 
 data class PlaylistRouteActions(
@@ -47,6 +53,9 @@ data class PlaylistRouteActions(
     val onCreatePlaylistWithResult: (String) -> Playlist?,
     val onShowVersionManagement: () -> Unit,
     val onShowQuickSkipSongs: () -> Unit,
+    /** 本地音乐排序（持久化） */
+    val onSortModeSelected: (SongSortMode) -> Unit = {},
+    val onSortDirectionToggled: () -> Unit = {},
     val onPlayAllInPlaylist: (List<Song>) -> Unit,
     val onPlayAllFromEndInPlaylist: (List<Song>) -> Unit,
     val onAddAllToQueueInPlaylist: (List<Song>) -> Int,
@@ -69,6 +78,12 @@ fun PlaylistRoute(
     PlaylistScreen(
         playlists = state.playlists,
         songs = visibleSongs,
+        sortMode = state.sortMode,
+        sortAscending = state.sortAscending,
+        playCounts = state.playCounts,
+        lastPlayedAt = state.lastPlayedAt,
+        onSortModeSelected = actions.onSortModeSelected,
+        onSortDirectionToggled = actions.onSortDirectionToggled,
         libraryArtists = state.libraryArtists,
         libraryAlbums = state.libraryAlbums,
         emotionRows = state.emotionRows,

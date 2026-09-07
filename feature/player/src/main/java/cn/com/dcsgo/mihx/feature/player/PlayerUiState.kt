@@ -26,6 +26,10 @@ data class PlayerUiState(
     val durationMs: Long = 0L,
     /** 所有歌曲列表（本地导入的） */
     val songs: List<Song> = emptyList(),
+    /** 歌曲 → 有效播放次数（本地音乐排序用；未播放的歌不在 Map 中） */
+    val playCounts: Map<Int, Int> = emptyMap(),
+    /** 歌曲 → 最近播放时间戳 epoch 毫秒（本地音乐排序用；从未播放的歌不在 Map 中） */
+    val lastPlayedAt: Map<Int, Long> = emptyMap(),
     /** 曲库歌手目录（从持久化 artists 表查询） */
     val libraryArtists: List<ArtistEntry> = emptyList(),
     /** 曲库专辑目录（从持久化 albums 表查询） */

@@ -3,6 +3,7 @@ package cn.com.dcsgo.mihx.feature.player
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+
 import cn.com.dcsgo.mihx.core.model.PlayMode
 import cn.com.dcsgo.mihx.core.model.PlayQueue
 import cn.com.dcsgo.mihx.core.model.Playlist
@@ -10,10 +11,13 @@ import cn.com.dcsgo.mihx.core.model.Song
 import cn.com.dcsgo.mihx.domain.model.DeleteSongResult
 import cn.com.dcsgo.mihx.domain.model.FileCheckMode
 import cn.com.dcsgo.mihx.domain.model.LocalFileValidationResult
+import cn.com.dcsgo.mihx.domain.model.SongSortMode
 import cn.com.dcsgo.mihx.domain.repository.PlaybackStatsSnapshot
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.stateIn
 
 /**
  * Main ViewModel for the music player screen.
@@ -188,6 +192,32 @@ class PlayerViewModel @Inject constructor(
     /** 在后台校验本地歌曲文件有效性并清理失效数据（mode 决定元数据刷新范围）。 */
     fun validateLocalFiles(mode: FileCheckMode = FileCheckMode.QUICK) {
         runtime.validateLocalFiles(mode)
+    }
+
+    // ── 本地音乐排序 ──
+
+    /** 排序方式（持久化，跨会话记忆） */
+    val songSortMode: StateFlow<SongSortMode> = runtime.songSortMode
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.Eagerly,
+            initialValue = runtime.currentSongSortMode(),
+        )
+
+    /** 排序方向（true = 升序） */
+    val songSortAscending: StateFlow<Boolean> = runtime.songSortAscending
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.Eagerly,
+            initialValue = runtime.currentSongSortAscending(),
+        )
+
+    fun setSongSortMode(mode: SongSortMode) {
+        runtime.setSongSortMode(mode)
+    }
+
+    fun setSongSortAscending(ascending: Boolean) {
+        runtime.setSongSortAscending(ascending)
     }
 
     /** 用户确认校验结果后清除（结果页徽标消失）。 */

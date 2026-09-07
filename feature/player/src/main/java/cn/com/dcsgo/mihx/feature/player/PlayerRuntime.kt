@@ -13,6 +13,7 @@ import cn.com.dcsgo.mihx.domain.playback.PlaybackDurationMonitorFactory
 import cn.com.dcsgo.mihx.domain.model.DeleteSongResult
 import cn.com.dcsgo.mihx.domain.model.FileCheckMode
 import cn.com.dcsgo.mihx.domain.model.LocalFileValidationResult
+import cn.com.dcsgo.mihx.domain.model.SongSortMode
 import cn.com.dcsgo.mihx.domain.playback.ControllerQueuePlannerPort
 import cn.com.dcsgo.mihx.domain.playback.PlaybackControllerPortFactory
 import cn.com.dcsgo.mihx.domain.playback.PlaybackStateStorageFactory
@@ -23,6 +24,7 @@ import cn.com.dcsgo.mihx.domain.repository.PlayerSettingsRepository
 import cn.com.dcsgo.mihx.domain.repository.SongRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -156,6 +158,22 @@ internal class PlayerRuntime(
     private val _isValidating = MutableStateFlow(false)
     val isValidating: StateFlow<Boolean> = _isValidating.asStateFlow()
 
+    // ── 本地音乐排序（持久化设置流） ──
+
+    val songSortMode: Flow<SongSortMode> = playerSettingsRepository.songSortMode
+    val songSortAscending: Flow<Boolean> = playerSettingsRepository.songSortAscending
+
+    fun currentSongSortMode(): SongSortMode = playerSettingsRepository.currentSongSortMode()
+    fun currentSongSortAscending(): Boolean = playerSettingsRepository.currentSongSortAscending()
+
+    fun setSongSortMode(mode: SongSortMode) {
+        scope.launch { playerSettingsRepository.setSongSortMode(mode) }
+    }
+
+    fun setSongSortAscending(ascending: Boolean) {
+        scope.launch { playerSettingsRepository.setSongSortAscending(ascending) }
+    }
+
     /** 播放位置（毫秒）独立窄流：仅驱动进度条/歌词等需要实时位置的组件，避免整壳重组 */
     private val _positionMs = MutableStateFlow(0L)
     val positionMs: StateFlow<Long> = _positionMs.asStateFlow()
@@ -228,6 +246,9 @@ internal class PlayerRuntime(
         },
         snapshot = playlistManager::snapshot,
         setSongsChangedListener = songRepository::setSongsChangedListener,
+        loadPlayStatsForSort = {
+            playStatsRepository.getPlayCountsForSort() to playStatsRepository.getLastPlayedAtForSort()
+        },
         catalogScope = scope,
     )
     private val importFacade = PlayerImportFacade(

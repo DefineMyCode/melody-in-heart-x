@@ -183,6 +183,18 @@ class PlayStatsRepository(
         melodyDao.playStats().associate { it.songId to it.playCount }
     }
 
+    /** 批量取有效播放次数（排序用） */
+    override suspend fun getPlayCountsForSort(): Map<Int, Int> = withContext(Dispatchers.IO) {
+        melodyDao.playStats().associate { it.songId to it.playCount }
+    }
+
+    /** 批量取最近播放时间戳（排序用，null 不返回） */
+    override suspend fun getLastPlayedAtForSort(): Map<Int, Long> = withContext(Dispatchers.IO) {
+        melodyDao.playStats().mapNotNull { stat ->
+            stat.lastPlayedAt?.let { stat.songId to it }
+        }.toMap()
+    }
+
     override suspend fun getRankedCounts(
         useRawCounts: Boolean,
         descending: Boolean,

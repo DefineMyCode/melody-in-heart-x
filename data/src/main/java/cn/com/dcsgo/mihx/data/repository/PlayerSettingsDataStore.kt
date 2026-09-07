@@ -43,4 +43,8 @@ object PlayerSettingsKeys {
 
     // 情境化随心播放增强总开关（默认关闭）
     val MOOD_TIME_SLOT_ENABLED = booleanPreferencesKey("mood_time_slot_enabled")
+
+    // 本地音乐列表排序（mode 存枚举名，方向默认升序）
+    val SONG_SORT_MODE = stringPreferencesKey("song_sort_mode")
+    val SONG_SORT_ASCENDING = booleanPreferencesKey("song_sort_ascending")
 }

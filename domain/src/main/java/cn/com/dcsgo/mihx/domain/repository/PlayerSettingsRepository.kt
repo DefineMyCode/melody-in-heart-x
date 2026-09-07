@@ -2,6 +2,7 @@ package cn.com.dcsgo.mihx.domain.repository
 
 import cn.com.dcsgo.mihx.core.model.ThemeMode
 import cn.com.dcsgo.mihx.core.model.ThemeVariant
+import cn.com.dcsgo.mihx.domain.model.SongSortMode
 import kotlinx.coroutines.flow.Flow
 
 interface PlayerSettingsRepository {
@@ -48,4 +49,14 @@ interface PlayerSettingsRepository {
     val moodTimeSlotEnabled: Flow<Boolean>
     fun currentMoodTimeSlotEnabled(): Boolean
     suspend fun setMoodTimeSlotEnabled(enabled: Boolean)
+
+    /** 本地音乐列表排序方式（默认 IMPORT_ORDER = 导入顺序） */
+    val songSortMode: Flow<SongSortMode>
+    fun currentSongSortMode(): SongSortMode
+    suspend fun setSongSortMode(mode: SongSortMode)
+
+    /** 本地音乐列表排序方向（true = 升序，默认 true） */
+    val songSortAscending: Flow<Boolean>
+    fun currentSongSortAscending(): Boolean
+    suspend fun setSongSortAscending(ascending: Boolean)
 }

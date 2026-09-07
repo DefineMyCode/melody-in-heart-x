@@ -7,6 +7,7 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.Preferences
 import cn.com.dcsgo.mihx.core.model.ThemeMode
 import cn.com.dcsgo.mihx.core.model.ThemeVariant
+import cn.com.dcsgo.mihx.domain.model.SongSortMode
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
@@ -226,6 +227,37 @@ class PlayerSettingsRepository(
             settingsStore.edit { preferences ->
                 preferences[PlayerSettingsKeys.SLEEP_TIMER_PLAY_LAST_SONG] = enabled
             }
+        }
+    }
+
+    // ── 本地音乐排序 ──
+
+    override val songSortMode: Flow<SongSortMode> = settingsStore.data.map { preferences ->
+        val stored = preferences[PlayerSettingsKeys.SONG_SORT_MODE]
+        SongSortMode.entries.firstOrNull { it.name == stored } ?: SongSortMode.IMPORT_ORDER
+    }
+
+    override fun currentSongSortMode(): SongSortMode = runBlocking(Dispatchers.IO) {
+        songSortMode.first()
+    }
+
+    override suspend fun setSongSortMode(mode: SongSortMode) {
+        settingsStore.edit { preferences ->
+            preferences[PlayerSettingsKeys.SONG_SORT_MODE] = mode.name
+        }
+    }
+
+    override val songSortAscending: Flow<Boolean> = settingsStore.data.map { preferences ->
+        preferences[PlayerSettingsKeys.SONG_SORT_ASCENDING] ?: true
+    }
+
+    override fun currentSongSortAscending(): Boolean = runBlocking(Dispatchers.IO) {
+        songSortAscending.first()
+    }
+
+    override suspend fun setSongSortAscending(ascending: Boolean) {
+        settingsStore.edit { preferences ->
+            preferences[PlayerSettingsKeys.SONG_SORT_ASCENDING] = ascending
         }
     }
 }

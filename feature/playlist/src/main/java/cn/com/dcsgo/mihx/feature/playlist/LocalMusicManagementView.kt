@@ -21,6 +21,7 @@ import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -38,6 +39,7 @@ import androidx.compose.ui.unit.dp
 import cn.com.dcsgo.mihx.core.model.Playlist
 import cn.com.dcsgo.mihx.core.model.Song
 import cn.com.dcsgo.mihx.core.model.SongInfo
+import cn.com.dcsgo.mihx.domain.model.SongSortMode
 import cn.com.dcsgo.mihx.ui.components.BatchAddToPlaylistDialog
 import cn.com.dcsgo.mihx.ui.components.SingleSongAddToPlaylistDialog
 import cn.com.dcsgo.mihx.ui.components.SongInfoDialog
@@ -61,6 +63,12 @@ fun LocalMusicManagementView(
     isImporting: Boolean = false,
     importProgress: Int = 0,
     importTotal: Int = 0,
+    sortMode: SongSortMode = SongSortMode.IMPORT_ORDER,
+    sortAscending: Boolean = true,
+    playCounts: Map<Int, Int> = emptyMap(),
+    lastPlayedAt: Map<Int, Long> = emptyMap(),
+    onSortModeSelected: (SongSortMode) -> Unit = {},
+    onSortDirectionToggled: () -> Unit = {},
     onAddFolderClick: () -> Unit,
     onSongClick: (Song) -> Unit = {},
     onAddSongsToPlaylist: (List<Song>, Playlist) -> Unit = { _, _ -> },
@@ -73,6 +81,11 @@ fun LocalMusicManagementView(
     // 只显示有本地 URI 的歌曲（用户真正导入的文件）
     val localSongs = remember(songs) { songs.filter { it.uri != null } }
 
+    // ── 排序状态（由调用方传入持久化值） ──
+    val displaySortedSongs = remember(localSongs, sortMode, sortAscending, playCounts, lastPlayedAt) {
+        SongSorter.sort(localSongs, sortMode, sortAscending, playCounts, lastPlayedAt)
+    }
+
     // ── 搜索 / 多选状态 ──
     val selection = rememberSongSelectionController()
 
@@ -84,7 +97,7 @@ fun LocalMusicManagementView(
     var songForDelete: Song? by remember { mutableStateOf(null) }
 
     // 搜索过滤 + 选中派生
-    val displaySongs = selection.filterSongs(localSongs)
+    val displaySongs = selection.filterSongs(displaySortedSongs)
     val selectedSongs = selection.selectedSongs(displaySongs)
     val isAllSelected = selection.isAllSelected(displaySongs)
 
@@ -198,19 +211,46 @@ fun LocalMusicManagementView(
 
             // 本地音乐标题 + 操作按钮
             item(key = "local_header", contentType = "header") {
-                SongListActionBar(
-                    title = "本地音乐",
-                    totalCount = localSongs.size,
-                    displayCount = displaySongs.size,
-                    isSearching = selection.isSearching,
-                    isSelectMode = selection.isSelectMode,
-                    isAllSelected = isAllSelected,
-                    selectedCount = selection.selectedIds.size,
-                    canSelect = localSongs.isNotEmpty(),
-                    onToggleSearch = selection::toggleSearch,
-                    onToggleSelectMode = selection::toggleSelectMode,
-                    onSelectAll = { selection.setAllSelected(displaySongs) }
-                )
+                var showSortMenu by remember { mutableStateOf(false) }
+                Box {
+                    SongListActionBar(
+                        title = "本地音乐",
+                        totalCount = localSongs.size,
+                        displayCount = displaySongs.size,
+                        isSearching = selection.isSearching,
+                        isSelectMode = selection.isSelectMode,
+                        isAllSelected = isAllSelected,
+                        selectedCount = selection.selectedIds.size,
+                        canSelect = localSongs.isNotEmpty(),
+                        onToggleSearch = selection::toggleSearch,
+                        onToggleSelectMode = selection::toggleSelectMode,
+                        onSelectAll = { selection.setAllSelected(displaySongs) },
+                        trailingContent = {
+                            IconButton(onClick = { showSortMenu = !showSortMenu }) {
+                                Icon(
+                                    painter = painterResource(R.drawable.sort_24),
+                                    contentDescription = "排序",
+                                    modifier = Modifier.size(20.dp),
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            }
+                        },
+                    )
+                    SortModeDropdownMenu(
+                        expanded = showSortMenu,
+                        currentMode = sortMode,
+                        ascending = sortAscending,
+                        onDismiss = { showSortMenu = false },
+                        onModeSelected = { mode ->
+                            showSortMenu = false
+                            onSortModeSelected(mode)
+                        },
+                        onDirectionToggled = {
+                            showSortMenu = false
+                            onSortDirectionToggled()
+                        },
+                    )
+                }
             }
 
             // 搜索框

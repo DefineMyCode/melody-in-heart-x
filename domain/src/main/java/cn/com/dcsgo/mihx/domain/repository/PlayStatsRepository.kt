@@ -4,6 +4,12 @@ interface PlayStatsRepository {
     fun getCounts(songIds: List<Int>): Map<Int, Int>
     fun getRawPlayCounts(songIds: List<Int>): Map<Int, Int>
     suspend fun getRankedCounts(useRawCounts: Boolean = false, descending: Boolean = true): List<Pair<Int, Int>>
+
+    /** 批量取有效播放次数（排序用，未播放的歌不在返回 Map 中） */
+    suspend fun getPlayCountsForSort(): Map<Int, Int>
+
+    /** 批量取最近播放时间戳 epoch 毫秒（排序用，从未播放的歌不在返回 Map 中） */
+    suspend fun getLastPlayedAtForSort(): Map<Int, Long>
     fun increment(songId: Int): Int
     fun incrementRawPlayCount(songId: Int): Int
     fun recordCompletedPlay(songId: Int)

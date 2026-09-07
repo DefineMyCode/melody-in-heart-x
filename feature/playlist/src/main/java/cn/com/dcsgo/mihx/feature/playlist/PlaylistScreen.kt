@@ -58,6 +58,7 @@ import cn.com.dcsgo.mihx.core.common.time.formatHoursMinutes
 import cn.com.dcsgo.mihx.core.model.AlbumEntry
 import cn.com.dcsgo.mihx.core.model.EmotionSongUiRow
 import cn.com.dcsgo.mihx.core.model.ArtistEntry
+import cn.com.dcsgo.mihx.domain.model.SongSortMode
 import cn.com.dcsgo.mihx.core.model.Playlist
 import cn.com.dcsgo.mihx.core.model.Song
 import cn.com.dcsgo.mihx.core.model.SongInfo
@@ -73,6 +74,13 @@ import sh.calvin.reorderable.rememberReorderableLazyListState
 fun PlaylistScreen(
     playlists: List<Playlist>,
     songs: List<Song>,
+    /** 本地音乐列表排序设置 */
+    sortMode: SongSortMode = SongSortMode.IMPORT_ORDER,
+    sortAscending: Boolean = true,
+    playCounts: Map<Int, Int> = emptyMap(),
+    lastPlayedAt: Map<Int, Long> = emptyMap(),
+    onSortModeSelected: (SongSortMode) -> Unit = {},
+    onSortDirectionToggled: () -> Unit = {},
     libraryArtists: List<ArtistEntry> = emptyList(),
     libraryAlbums: List<AlbumEntry> = emptyList(),
     /** 曲库「情绪」Tab 数据(已分析歌 + 词条) */
@@ -307,6 +315,12 @@ fun PlaylistScreen(
                     isImporting = isImporting,
                     importProgress = importProgress,
                     importTotal = importTotal,
+                    sortMode = sortMode,
+                    sortAscending = sortAscending,
+                    playCounts = playCounts,
+                    lastPlayedAt = lastPlayedAt,
+                    onSortModeSelected = onSortModeSelected,
+                    onSortDirectionToggled = onSortDirectionToggled,
                     onAddFolderClick = onAddFolderClick,
                     onSongClick = onLocalSongClick,
                     onAddSongsToPlaylist = onAddSongsToPlaylist,

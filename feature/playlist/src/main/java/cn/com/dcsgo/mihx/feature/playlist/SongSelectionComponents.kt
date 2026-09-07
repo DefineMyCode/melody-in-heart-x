@@ -59,6 +59,8 @@ fun SongListActionBar(
     onToggleSearch: () -> Unit,
     onToggleSelectMode: () -> Unit,
     onSelectAll: () -> Unit,
+    /** 额外的尾部操作插槽（如排序按钮），渲染在搜索按钮之后 */
+    trailingContent: (@Composable () -> Unit)? = null,
 ) {
     Row(
         modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
@@ -104,6 +106,8 @@ fun SongListActionBar(
                     tint = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
+
+            trailingContent?.invoke()
         }
     }
 

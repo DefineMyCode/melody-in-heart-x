@@ -1,0 +1,366 @@
+{
+  "schemaVersion": 1,
+  "pageVersion": "sha256:78d2cde92ef7c82bd01b45f0bc009fccffe9c7a0f6044bd3300edaaee40c2a5e",
+  "claims": [
+    {
+      "id": "claim_466622531e04474fbe41f37e24ac9842",
+      "statement": "The project registers exactly 14 modules in settings.gradle.kts (:app, :core:model, :core:common, :core:ui, :domain, :data, :player, six :feature:* modules, :benchmark), which is the same list verifyProductArchitecture requires.",
+      "evidence": [
+        {
+          "resource": "repo://settings.gradle.kts#L22-L37",
+          "version": "repo-lines-v1:sha256:787428a5d5181e2f997fc99f8c946ff79e8e31ab2019cc2cf2a4b78ed7e95516:eyJzZWxlY3RlZExpbmVDb3VudCI6MTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImRlZDY5YzRlNjFmNjFjYzg0YThhYjgyOWUwYzkwMTJhZjM4YjI4MTg0YjU3ZGJmMDJhNGE5ZTIwZjA3MTEyYjgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjhjMDZiOGM4NTFmZDI0YmMxODEzYzkzYThkYjI2MGM5M2NjODdkNTY4NDk1NTM4YzNkYzU1NDkxMjhiZDgwMzIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjE5ZTc2MzU1Y2YxMTk5NDgwYzNmOTk4MzZiMTQ4NmM4NDFkODkxZmFhZDkwNGM2MDhlMDkzMDIyZDM3NTdhZWUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImZhZmJhMDUyN2MzOTUzYzRiNmUwZTViNTczOWJhODM2MTJmODA1M2JjZGM5NDY2NzMwMTkzY2QxZDU5MGI0MDgifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_7513def36a2b4a7b831c32cb74a816c1",
+      "statement": "Feature modules may depend only on :core:model, :core:common, :core:ui and :domain; no feature build file declares project(\":data\"), project(\":player\") or another project(\":feature:...\"), and verifyProductArchitecture fails any build file that adds them, so cross-feature navigation must be routed through :app.",
+      "evidence": [
+        {
+          "resource": "repo://build.gradle.kts#L270-L290",
+          "version": "repo-lines-v1:sha256:43c03a4d0712539b16794e3422fd2813cfb6d3008f30f90e208215a8d9ce4a10:eyJzZWxlY3RlZExpbmVDb3VudCI6MjEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjA3MjA3ODJkM2IxZDM4MTFhNjgwY2I4NGJiOTUzYzA1NTIxOTVkMGUxMWUzM2VhYTg4ZWMyNGRhYWFhOWJiYmYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImEzNzI3YWMxY2I0ZDBjZjgyYzQ4MTc0OGFkYmZlNTdkODZkODAzMjRkNzcyYjhmMGQyMGViYjgxODZhMzgyNDEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUyZTgxNDNjN2FlZDE2YjcyN2Y4NGVhYTg0MDMxNzNhOTU0MzU0MmNlMGJiMTVkMjdhYTVkMzc3MTljYTlhMjEifQ"
+        },
+        {
+          "resource": "repo://feature/home/build.gradle.kts#L19-L29",
+          "version": "repo-lines-v1:sha256:34baa1729f202240c6d47aa9eef0a283b06174597b74a8ab14e42219fcaac3f9:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImNiYTMxNDVhZWUwZGEwNTkyNGQzYWQwYjFlZWI0YWRlNzc2MWI2NjdkOGE5NjE0NmRlZWYzOWFiZDFjZTQ4Y2IiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjZjODU3YmRlMjJiOGIxMDQxYzkwYjMzMzRmZDhjMGUyNGZlNTkwODYwYTg2NGU3Njk1OTVkZjBkZWQ3NTk5NTciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_9b665fd2da0e44cd9f87e9c2cf4c0061",
+      "statement": ":player and :data are symmetric middle layers that each depend only on :core:model, :core:common and :domain (plus platform libraries such as Media3, Room, DataStore and Hilt); neither depends on the other or on any feature module.",
+      "evidence": [
+        {
+          "resource": "repo://data/build.gradle.kts#L25-L39",
+          "version": "repo-lines-v1:sha256:b8a37deb6c08b2b159b53d1631d078da696aa05daee31f0e43a6d200f1e39175:eyJzZWxlY3RlZExpbmVDb3VudCI6MTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImNiYTMxNDVhZWUwZGEwNTkyNGQzYWQwYjFlZWI0YWRlNzc2MWI2NjdkOGE5NjE0NmRlZWYzOWFiZDFjZTQ4Y2IiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjE5ZTc2MzU1Y2YxMTk5NDgwYzNmOTk4MzZiMTQ4NmM4NDFkODkxZmFhZDkwNGM2MDhlMDkzMDIyZDM3NTdhZWUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImM2MzY3MDRjZGZhYWZiNmMwZWY4Njk3ODA4NjUzMmI1ZTk4ZjUxYmZhNjA5ZDdiMjc5NDBhNjFmNWQyMWE0MDEifQ"
+        },
+        {
+          "resource": "repo://player/build.gradle.kts#L25-L39",
+          "version": "repo-lines-v1:sha256:4ce6749b984eeace2d09dc24bc43b3d4bdb9dc5f0486bf426724d3c6f8244467:eyJzZWxlY3RlZExpbmVDb3VudCI6MTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImNiYTMxNDVhZWUwZGEwNTkyNGQzYWQwYjFlZWI0YWRlNzc2MWI2NjdkOGE5NjE0NmRlZWYzOWFiZDFjZTQ4Y2IiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjJlNzNlYTUzMGIxZDYyMTU0MWI0ZGJhNWRhMjJmMGFlYjdkOGZkZTA4OTk3MDExYWRlMTMyMTBiYjYyNjdmYjIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjE5ZTc2MzU1Y2YxMTk5NDgwYzNmOTk4MzZiMTQ4NmM4NDFkODkxZmFhZDkwNGM2MDhlMDkzMDIyZDM3NTdhZWUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_8805c86b568d45509fa294c784a8a419",
+      "statement": ":domain contains no Android or Compose dependencies at all (no file under domain/src/main/java imports android.* or androidx.*); it api-exposes :core:model and implementation-depends on :core:common, making it a pure interface/policy layer.",
+      "evidence": [
+        {
+          "resource": "repo://domain/build.gradle.kts#L23-L27",
+          "version": "repo-lines-v1:sha256:a7a659511065efecc7f42792482d910156aeca86739928d6b7e067c18acd2a48:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiY2JhMzE0NWFlZTBkYTA1OTI0ZDNhZDBiMWVlYjRhZGU3NzYxYjY2N2Q4YTk2MTQ2ZGVlZjM5YWJkMWNlNDhjYiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDEyY2EzNDVjY2Y3NWJmOWMwODA2YmNlNjk1YmU4ZGU4MDhiNzk5ODQyNTFhN2E1NGQyMDJjZjYxMDFkZDQ1MSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMTllNzYzNTVjZjExOTk0ODBjM2Y5OTgzNmIxNDg2Yzg0MWQ4OTFmYWFkOTA0YzYwOGUwOTMwMjJkMzc1N2FlZSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjAsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSJ9"
+        },
+        {
+          "resource": "repo://domain/src/main/java/cn/com/dcsgo/mihx/domain/playback/ControllerQueuePlannerPort.kt#L1-L7",
+          "version": "repo-lines-v1:sha256:18dd0c62576505bccde1a75556799a2a256c7e8003f25670a5ecd20453e3a711:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiOTI4MmZmNDdiOGJhMzEwNzRiNjA2YmZhOTdhMDgxYzBiOGRlZGJmNTJlNjY2NmI4YTAwYmY1Y2ZhNWRjMGMwMCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDEyY2EzNDVjY2Y3NWJmOWMwODA2YmNlNjk1YmU4ZGU4MDhiNzk5ODQyNTFhN2E1NGQyMDJjZjYxMDFkZDQ1MSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjAsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjAsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_d8fa6557d0c24858bf8b3ddd95ae6ad8",
+      "statement": ":core:model is the dependency-free bottom layer holding pure data types (Song, Playlist, PlayQueue, AlbumEntry, ArtistEntry, LyricLine, SongInfo, SongEmotion, TimeSlotConfig, ThemeMode/ThemeVariant); its only external dependency is compose-runtime for @Stable/@Immutable annotations, and Song itself stores an android.net.Uri.",
+      "evidence": [
+        {
+          "resource": "repo://core/model/build.gradle.kts#L23-L27",
+          "version": "repo-lines-v1:sha256:e1ef7b0d6aef9637dcc2febd8a8f291456004e5462ace1ffaf6fb55bf2fbc853:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiY2JhMzE0NWFlZTBkYTA1OTI0ZDNhZDBiMWVlYjRhZGU3NzYxYjY2N2Q4YTk2MTQ2ZGVlZjM5YWJkMWNlNDhjYiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMmU3M2VhNTMwYjFkNjIxNTQxYjRkYmE1ZGEyMmYwYWViN2Q4ZmRlMDg5OTcwMTFhZGUxMzIxMGJiNjI2N2ZiMiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMTllNzYzNTVjZjExOTk0ODBjM2Y5OTgzNmIxNDg2Yzg0MWQ4OTFmYWFkOTA0YzYwOGUwOTMwMjJkMzc1N2FlZSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjEsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNDEyY2EzNDVjY2Y3NWJmOWMwODA2YmNlNjk1YmU4ZGU4MDhiNzk5ODQyNTFhN2E1NGQyMDJjZjYxMDFkZDQ1MSJ9"
+        },
+        {
+          "resource": "repo://core/model/src/main/java/cn/com/dcsgo/mihx/core/model/Song.kt#L1-L5",
+          "version": "repo-lines-v1:sha256:dc2453552109554dc74b1eb80d75c31d50e8ef891c3018d971a419ace2f20d21:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZDFiMGFmNzNkMzA3ZGI0NjBhOTRhNmFmOTVjZWU3YmEzMTA1MjE3OGVjYjA3ODA1MWNkYTVkNjVkMmMzMDhhZSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMDFiYTQ3MTljODBiNmZlOTExYjA5MWE3YzA1MTI0YjY0ZWVlY2U5NjRlMDljMDU4ZWY4Zjk4MDVkYWNhNTQ2YiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjAsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZjJjOWM2MTAyY2I0MzQzNTM4NWNlY2RjZWU0ZjgwMTAxYjlmYTM1ODgwZjhmYjY4NzRjZWVjNjdhZmQxZWFiOCJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_1d699d6ed44949cc8465584172bedb30",
+      "statement": ":app is the only module that depends on every other module (:core:*, :domain, :data, :player and all six features); AppNavHost.kt is the single composition point that wires feature Route composables together, so no feature renders another feature's UI.",
+      "evidence": [
+        {
+          "resource": "repo://app/build.gradle.kts#L121-L134",
+          "version": "repo-lines-v1:sha256:02641d411d51f6ba64a22d485cbb1a75e5043480d16d852b06c7fa18cfae716a:eyJzZWxlY3RlZExpbmVDb3VudCI6MTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImNiYTMxNDVhZWUwZGEwNTkyNGQzYWQwYjFlZWI0YWRlNzc2MWI2NjdkOGE5NjE0NmRlZWYzOWFiZDFjZTQ4Y2IiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQwNmY5NjU3ZmM2ZWE5NjMzMjcyMDY1MWIzMDJkMDc2YTgwMzExYzQ3NWJmZDBkMTU4ZDE2MjViNGNkNTAyYjMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjE5ZTc2MzU1Y2YxMTk5NDgwYzNmOTk4MzZiMTQ4NmM4NDFkODkxZmFhZDkwNGM2MDhlMDkzMDIyZDM3NTdhZWUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjdjMDc4ZDAyODg3YThkNzRlZjk4MWJjZWEzM2Q4NTRjNDFlOTBkMzc3N2Y1NGExMDUyMWJjMjNmMDM0MTRkZWQifQ"
+        },
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/AppNavHost.kt#L35-L81",
+          "version": "repo-lines-v1:sha256:4562394aafea2093e13bceba23a38eb871f51eb694ff3c0f3eb5b3c1c676bc2c:eyJzZWxlY3RlZExpbmVDb3VudCI6NDcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImViYzQ3OWFjM2JhYWQ5NGM3MDM0NzExYmNjN2JhOTBkYjBhNzljODQwZmM3YmUxYjIzN2VmODI3YjQxNTA4OTgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijc5YjhmMjAxODc2MzY3MWM2NThiZjVkMTEyNjU5OWExM2U2NDU0N2E4NTJlM2JlMmNiN2E4NGZmY2VjYmM0MWUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjJjYmY0Yjg1ZWJkNTUxNGYzOTU3NTVkMzg4YmYwMDU4MmFmMTRjMDM1ZmE2M2Y2ZWQ2NzBlYTNlNDliN2RjYzEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImQyMDhhZmQ3YmYyZTYzZmE5MjZjZTA2M2NjNTRjNjdlODU0NDc3OGQzZTg5YWE1YWRjNzBiMzFmZmMzNGNmMDMifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_8b5a820b7a8d42c89201ee5e8bf4b38d",
+      "statement": "Hilt product assembly is anchored at four verified entry points: MelodyApplication (@HiltAndroidApp), MainActivity (@AndroidEntryPoint), AppMediaSessionService in :player (@AndroidEntryPoint), and PlayerViewModel in :feature:player (@HiltViewModel).",
+      "evidence": [
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/MainActivity.kt#L10-L18",
+          "version": "repo-lines-v1:sha256:d92b7a2bd01556c0dbc367de063c9bbfe7cc03f1ad0631ee3263127ad4e7ee47:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMzY3N2JhNzJhZDEyM2M2MGI1NjhkN2FmZGZiNWUwOTc5MmFiMDMxMTgxZmJlOGI1OWZhMTM5ZWUyMTYyZDczNCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZTZiMDQ0OTE0Njk3MjJlODM2M2E5NGU0MDQ0NTM4ZTAxM2EyYTIxN2UzNmIxZTU2OGJhNjBhY2I3YjRjOGYyZSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNGJkMDUzMzc0MzE2YjBhZDY4ZjRhY2UzMzY5YTA5MTIzZGQ4MzI2ZjNiZjc1NTZhMTQ3ZTAxMzgwMzJmZTMwMyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjIsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMzc5NGQwMmE4MTIxOTQ0ZDE3NmQyNjVlOWJiOWNjNTlmNmFiODkwYmNhZGY4YWVmZGViZGJiYjRmMmVhODQ0NCJ9"
+        },
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/MelodyApplication.kt#L13-L20",
+          "version": "repo-lines-v1:sha256:fdb98a871f47a9936e9fb35ebdfa76a7bbab1d468661d7ddb5a84417c417ac1e:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMGU2ODY5YTlhZGY1Njk5MDA3YjIzMTdhYWE2MjM2ZTY2MjRlZTBiMjlmNDRhOTNkNDk4NDI4ZGI5NTdlMWE0YiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDg5M2Y0MGUzNzgxZWI4OTZjODJkMDQ2YTA4MDY3YTExZTM1Y2RmMmYxZGZhZjI2ZmVhOTBiOGRiNjY3NjQxMyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiOTk0ODgyYWEwNjUzYjE0N2RhMmU0ZGMwZDYxY2U3NTU5MDQ0N2IxODlhYWEwOTU3MDg3OGY5Y2I2MmJiODExNCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiOTU0MmNlMWIxNWJlYjRhNWYwNTNjNTQ1MTM3Y2JjYmMyZmM4ODM4ODhjNjYwZTIwYTIzMmIzZDliZjdjMTA4ZSJ9"
+        },
+        {
+          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerViewModel.kt#L32-L35",
+          "version": "repo-lines-v1:sha256:3bde638720e59fd2db9e628563ac54b1ae090273b50a5e3672838fb401d382a0:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiOWJmYzNjMTlhNTU4OWI5ZTJmMTA2MTFlMWRmNzA0OWUxZDA2MGZiZWY4OGQ2ZDk0NDllZjNjNWM0OGIxNWFmMyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZDlhMDllZTM3ODQzYzQ1NTdiZDgxYTkwNWFmNWNhZmY1ZDhhMDJmOWJiNDhmMDcwNDYyZjA5MGI3ZjMxMTMwZiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNGRiYTg3YzQ0YzRlN2U5MjIyNGEwNzg2M2IwYjU3Nzc0NTExMDFhNmM4ZmRkZjE2ZDczNzc4NmI4YTk5NWVkZSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNWNmMDZjZjA0Y2U5MTJlMDI5MzYyM2Y3MTVkODVlODRjMzNiNTNiMTAxZTI5NDU5NjhjOTFkMjZlYmEyNDYxYiJ9"
+        },
+        {
+          "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/data/player/AppMediaSessionService.kt#L25-L48",
+          "version": "repo-lines-v1:sha256:f557f876d75bcf20d3c7426bc90abe875ab1d1a71a47956c552c2b293d741a49:eyJzZWxlY3RlZExpbmVDb3VudCI6MjQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM2NzdiYTcyYWQxMjNjNjBiNTY4ZDdhZmRmYjVlMDk3OTJhYjAzMTE4MWZiZThiNTlmYTEzOWVlMjE2MmQ3MzQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQzYmNkYzcxNTJjOTRlOWYzMTVlNjJkODFjMTA0NTc4ZjYzMGNhM2UzNDM1ZDRjNzc4YWFkOTQ3ZjY3MmM4YjgiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImNjMjYwZmY4ZGY2NWJjODc0ZGEwOGM3YTkzZmYxOWQ5MDZlMzVkMjI2NTE5Yzc2NTNlYmQzNmVhMmIzODkzOWMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjMyMTAwMjViODcyY2RhNTUyNWMxN2M1MGZjMDU4NGI4Y2RhZmJlOThkZDBiMDk3NmI5YjNmMmNkZWE0ODI4OGQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_b63792425481439fa1d2b6b1413eee5f",
+      "statement": "Seven SingletonComponent Hilt modules exist and are enforced: app/di CoroutineModule, LoggerModule, PlayerModule; data/di DatabaseModule, DataStoreModule, RepositoryModule; plus player's AppCoroutineScopeModule, which provides the @ApplicationScope process-level CoroutineScope so playback-snapshot persistence survives service destruction.",
+      "evidence": [
+        {
+          "resource": "repo://build.gradle.kts#L125-L142",
+          "version": "repo-lines-v1:sha256:6939d64782c6ed466fcf8448d54d94f80d714c00b94b919c48de7c170f125435:eyJzZWxlY3RlZExpbmVDb3VudCI6MTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFjNjIxODYzMDkzODc3NmY4MjAwZDQ1ZWU3ZmU4YzA1OTYyN2MyNjBhMTJhNTNmYTVhNDc2NTY2MTU0NDk5NzMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImRhOWY4NmQyOGU3ODRmOWZkMzFmYjcyZDE1ZjYwY2JjZWFhZmRkNjY5Y2JkNWI2ZGE3ODg4YTAyMzMyMWViYjkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjZkNTJkMDYxYjk0OTkxYWI4NWQ3ZDQxN2ZkOTczNDY1YzZhNWYyOGQ4NDM4ZGM5Y2IyODZlMmRhMGM1NWQzY2IifQ"
+        },
+        {
+          "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/data/player/AppMediaSessionService.kt#L45-L48",
+          "version": "repo-lines-v1:sha256:e301d13574de8c0d8d8ddebbdebe6ac5a6bc62f8adc227d5deb6af39accd8c7e:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNGY5ZjMzNjFiMTRjNmVkZGZiY2I2ODBiZmFjNzg1MjI2MDdjYmQzMTk4Yzc5ZTllMTI1N2I2ODRhNTg5NWE5MyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZDNiY2RjNzE1MmM5NGU5ZjMxNWU2MmQ4MWMxMDQ1NzhmNjMwY2EzZTM0MzVkNGM3NzhhYWQ5NDdmNjcyYzhiOCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiY2RhNGE3ZjMwOTNkOTc4M2RlOGExYTQxOTlmZGMwMTY1YmE5Y2NiMDkzZDA2YmQ5OWVjNzEzOTM3MjIyNjZlOCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMzIxMDAyNWI4NzJjZGE1NTI1YzE3YzUwZmMwNTg0YjhjZGFmYmU5OGRkMGIwOTc2YjliM2YyY2RlYTQ4Mjg4ZCJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_291dd8e2161a4400a4a367422a049323",
+      "statement": "Repository implementations follow a narrow-adapter pattern: MusicRepository is an internal storage coordinator that implements none of the domain repository interfaces; RepositoryModule binds each :domain interface to a dedicated adapter class (SongRepositoryAdapter, PlaylistRepositoryAdapter, MusicImportRepositoryAdapter, AlbumArtRepositoryAdapter) that delegates to it, with MediaMetadataRepository serving both LyricsRepository and SongMetadataRepository.",
+      "evidence": [
+        {
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/di/RepositoryModule.kt#L96-L111",
+          "version": "repo-lines-v1:sha256:93d153dbba0f7d753f9f1290f7bead04b86801dfaefe051488c7658767476045:eyJzZWxlY3RlZExpbmVDb3VudCI6MTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImJkMDNmNmE2MDI0YTQxMmUwMTZkYjg4N2Q5NTdiZjgyMTM0YjBkYjYwN2I4MWEyNTJiYTRhMGUwMGU5N2E5MzUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjViNDMyZTZjNWMyM2E3Y2MzYTk1NWZhNDliYmYyNTdiZWEwNDBmYTJkZTQwYWJmZGNiODk5NjA3NThlNjc3MWQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImI1YjRjYjFmYmUyZTdjODMwYzMwNGMzMjNhZDYxNWVmNzU3MTNmYzQwOTk0OTFmM2YyNzllZGY2NzYyNThjZGUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImQ4OWEwMDYzZDBhYzJlNjIxMGFjYWQ3Zjk3NDBjZjAyZTA0ZTU2M2E1ODI2NGI4NGM5ZmE2YWQ3ZTg4NGNiNjkifQ"
+        },
+        {
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/repository/SongRepositoryAdapter.kt#L12-L38",
+          "version": "repo-lines-v1:sha256:a54da052cead22cf9deb0c40b04595018677394a4cbc667a6ecee8b0394c6a7b:eyJzZWxlY3RlZExpbmVDb3VudCI6MjcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRjYmU4YzhkNTE3YTIxNGVlNjU0NDBiMDMxNzM4ZjNmYzQ3OGM4YzVjZDIzZGE2OTA2MzhhZGU1NTk2YzUzMTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImI3MTgyNGJiYjhmM2I1MTA4Yjk3MTMzYjMxMTVjYzM1ZmQ5NjY3MjU2YzllMDc2ZmI0NzdjOThkMmY0NDgwNTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImRjZDZmNGYyYWMwMjI5OGY1OTY2Mjk4N2NjMWM2NWY5ZDJlMDE0ODNhYWRjNDE5NzU1ZmUxN2FmZjg0NzAzZGMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_f8046afb2550447dbdc2724905dc6068",
+      "statement": "verifyProductArchitecture enforces the adapter pattern in both directions: imports of cn.com.dcsgo.mihx.data.repository.* or cn.com.dcsgo.mihx.data.local.* are banned in feature/, domain/ and player/ sources, MusicRepository must not declare SongRepository/PlaylistRepository/MusicImportRepository/AlbumArtRepository as supertypes, and the four *RepositoryAdapter.kt files must exist and implement their named domain interface.",
+      "evidence": [
+        {
+          "resource": "repo://build.gradle.kts#L405-L437",
+          "version": "repo-lines-v1:sha256:ddec59ead5f72c37a94f8aa031875025e034bc3272355e2113c6b3ed43545e01:eyJzZWxlY3RlZExpbmVDb3VudCI6MzMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQ5YzBiMjZlNjJkODFkN2Y2MmZhMjRiNzk4N2I3NjNjNWFmM2U2YTc2MDIyMGI5ODU3ZTNkZjQ2NGQwMmQyYzMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjYwZGQ0ODk2ZTEwZjUwNDZiMjYwNDJmNzgyNGU4ZTg1NzVhZGMzM2Y2MjVkYzY1NDI5MDI2ZDZjYjRjZjViNzMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImIxNWE0OTQ2NTEyYzg3MWYyY2RkZjA3NjMzN2VlOTMxYzkzMWFmMGZjMzFmMGRlOWViNzY1MjAxYjY2MzMwZTgifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_ecf410efcfcf40a9ba28d604bdee98c8",
+      "statement": "app/di/PlayerModule is the binding point for all playback Ports declared in :domain's cn.com.dcsgo.mihx.domain.playback package: ControllerQueuePlannerPort, PlaybackControllerPortFactory, PlaybackStateStorageFactory, PlaybackStateRepository, BluetoothPlaybackMonitorFactory, PlaybackDurationMonitorFactory and PlayerQueueServicesFactory.",
+      "evidence": [
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/di/PlayerModule.kt#L42-L135",
+          "version": "repo-lines-v1:sha256:aa81cb7beac98e9d124e16d00c3fa7934b1f5302b52aa796dfc6cd7b0af9c15e:eyJzZWxlY3RlZExpbmVDb3VudCI6OTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImEwMDNjZDk4OWM2YjgzOTZiZGFhMTNjNTMxNDA3NDFiZjQ3NDcxMmRjZDI4ZThlM2IxNmI4ODQyNmRjMDk4MTkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjI2YTEyMTExYzRmNDI4ODZiYzMwY2ExZGI2YWE4NzhjOGI3Njg5N2FmYmZkNzY5OWMxYzk0ZmRjOWZhYmYzOTIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        },
+        {
+          "resource": "repo://domain/src/main/java/cn/com/dcsgo/mihx/domain/playback/PlaybackControllerPort.kt#L24-L38",
+          "version": "repo-lines-v1:sha256:645ddfea5af82a56bad010e735edb914649dccc148393f3b56fd13afe95a6875:eyJzZWxlY3RlZExpbmVDb3VudCI6MTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk1ZTZkNTZkZDg3ZDNmNjk0YmJmMDUxOTc1NmJjMWE2MzI2NWQwZDI2ZDZiZDNhZmY5NmU4NmUyMGNhNDcwMDkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjRiYTYyY2JlMzFmYmJkOTIxOGI4OWI5NTk4MGIwNDRjYTljYjczMGVhMGQwYzk4MjEwMTE4ZWJjZDFkMDgxNzQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://domain/src/main/java/cn/com/dcsgo/mihx/domain/playback/PlayerQueueServices.kt#L8-L20",
+          "version": "repo-lines-v1:sha256:ec2463a97e2070440eec2bc77aa44928fcb6a98c54b469dd5d4290af79211466:eyJzZWxlY3RlZExpbmVDb3VudCI6MTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ1MmNjYWNjYTgxOTRkNjM4OWMwODM3MjI0ZDk5YjcwMTM4M2YzZDdkY2IzOWNmOWVhOTAxMDI1NjY4OTlkNTEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjM3YjRiZGI1OWM5YmY1ZDZhNmFiZWI0ZThjMWM0NjA4NzYzMjBlYWQ1NjM5Nzg3ZjExMDhjM2NlMjNkZTIwNzMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_e374c9fe312c4a6ca908d0fb36bd4e7a",
+      "statement": ":feature:player consumes the ports through PlayerRuntimeFactory, whose constructor injects ControllerQueuePlannerPort, PlaybackControllerPortFactory, PlaybackStateStorageFactory, BluetoothPlaybackMonitorFactory, PlaybackDurationMonitorFactory and PlayerQueueServicesFactory and passes them into PlayerRuntime; e.g. PlayerControllerQueueFacade builds windowed sync plans solely via the ControllerQueuePlannerPort abstraction.",
+      "evidence": [
+        {
+          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerControllerQueueFacade.kt#L12-L50",
+          "version": "repo-lines-v1:sha256:ff22f58e5fb5c67487f95d0fee2579b3e877ab958c88d3ff0f746a1a8a00a56a:eyJzZWxlY3RlZExpbmVDb3VudCI6MzksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZlNTJlMTQ5N2ZiZDRlNWYzZDE5NTAxYTEzN2JmZjYwZDZmNzVmYTg2ZTBiNjYzOWY4YTU1YTNlOWY4YTM5NWQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImIzMWJmMzQzNjRmNmI0ZjUxNmEzZjYzN2U5Y2MzMGJiNzY4MWUxYjMxNTFkN2RlOGZhOTc0NzRmNWIzOGQ5NGUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijg4ZGE2ZWUxNmM2MGRjNWI1NjQzZDBjNWIzYTEwNjU0MjY4NDc4MzAyZjY1YTMzNWI2YjFjMDYyZjY3YTRjZGIifQ"
+        },
+        {
+          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRuntime.kt#L37-L70",
+          "version": "repo-lines-v1:sha256:3652a2ea4071c7ffa7f4c54cc32a134b063492358ad7cc44164b5f655787dfaa:eyJzZWxlY3RlZExpbmVDb3VudCI6MzQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY3MjI2YmY3MWNhMTM5NTRhZmRkOTA0ZGFhYzVlMzg0MGJjY2MzMjUyMmY3ODQ2MGU4YThkYmQ0M2FjZTMwOGIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImRlZDcxZjU4YTE1MTNjYjliNmQxMDk3NjdiZWNlMDY1NWM5ZTQ5YzI1NjY5YTE1NTRlY2M3ZDI5YjA4MWZlYmEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImZiOGM2ODg2MTY2NzJiZDQ5NmY4YWY0YWY3MTMzMzUyMTAzNGEzMDUyNGE3NGY5MzIzMTMwMmUwZTU5OWVhN2QifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_2f82ca052e024fe49c95b71fabce855f",
+      "statement": "The :player module supplies WindowedControllerQueuePlanner (in player/window/) as the ControllerQueuePlannerPort implementation; it delegates to ControllerWindowSynchronizer.planControllerQueue, keeping the window algorithm dependent only on :core:model and :domain playback policy.",
+      "evidence": [
+        {
+          "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/player/window/WindowedControllerQueuePlanner.kt#L1-L16",
+          "version": "repo-lines-v1:sha256:5d5671d55140e8a2c1dd7618956a1b9788f5fbefb36ce434c0eebc3f463652d0:eyJzZWxlY3RlZExpbmVDb3VudCI6MTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImViNTYwZDg0ZGEwMjI4N2ExYjQwOGYyN2MwMTEzNzJjNzU0MzMwMDgyMzZmYmRhMGRkNmI0YjVkNDliNTI1YWEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_5bbb3a548128451db4ee32750b76c01f",
+      "statement": "PlaybackStateStore in :player is a single class that implements both the :domain PlaybackStateStorage port and PlaybackStateRepository interface; PlayerModule provides it as the singleton storage and hands it out through both factories, backed by the playback_state DataStore with legacy SharedPreferences fallback.",
+      "evidence": [
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/di/PlayerModule.kt#L55-L71",
+          "version": "repo-lines-v1:sha256:9705148cbbabdb77048d83c12fdfe79fe4312d0a756baa2af2e38db52aef511f:eyJzZWxlY3RlZExpbmVDb3VudCI6MTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImEwMDNjZDk4OWM2YjgzOTZiZGFhMTNjNTMxNDA3NDFiZjQ3NDcxMmRjZDI4ZThlM2IxNmI4ODQyNmRjMDk4MTkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImYwNjkxN2ZjMDU4MTBlNzQzZTEzY2I4Y2JiNjcwYjhlZjJhOWY1OWY2MjFkZmQyNDQ1OTFhODU4YzVjMTc3YzkiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk5OWJkZWZlZWFjYTYzNDBlMDI5MGRjODZlODg5Yzg5ZDVlMTg5YWE1YmE0NGI1ODViM2I3MDczNGY0YTYyZDgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjA3NTlmNWJmMmFiMGEwMDljNGNmODM1ZWNmOTM3YTBiYTgyZWY2MGVlYjMxNDhiNWVhMDA3NzU5M2QwOGNjOWIifQ"
+        },
+        {
+          "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/data/player/PlaybackStateStore.kt#L26-L46",
+          "version": "repo-lines-v1:sha256:18750d4f314e2e6a4d389f365b2b845d2abd4ce06010822d0ef5b11e9bea2595:eyJzZWxlY3RlZExpbmVDb3VudCI6MjEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImJiZDc2Yjg1ZTcyNjMyZDliNzU0YjU5Njg4NmNkZjJjODE3NDFmNDEyZTIyMzM3NWQwNTM5NDYwZTgyM2JkNWUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjMwYzFmMTg4ZjE0MmVkN2E4MjQ2ODBiMjA3MTcyYzU1MTliYzYxNGE0OGZkYTdjZjE2N2VkYjhkZGY3OTk1NmMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImIyMDM3NTEzYTE3YzFmYTI4ZGQwNzA5OTNiNzc4OWU0MmQ0NDhlMzBjMmJiMTZlYmRkYWQ3ZmI0YTFlMTI1MzQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjM3NDhlYzVmZDFiZTM4YzJhNGZjMDk1N2ZmMjU2ZDE0NDE3NjE2MDQ1N2U3NmVhYWM5OTI2OThhYTE4YzA2ZWQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_bbbcfeac5b3d40d7875250241166ec31",
+      "statement": "PlaybackControllerPortFactory creates PlaybackController bound to AppMediaSessionService::class.java, so the Media3 playback control path is UI -> PlaybackControllerPort -> PlaybackController (MediaController client, FIFO pending-action cap 64) -> AppMediaSessionService (MediaSessionService owning ExoPlayer), all cross-module edges via :domain abstractions.",
+      "evidence": [
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/di/PlayerModule.kt#L87-L98",
+          "version": "repo-lines-v1:sha256:38d3b63bf76984f044b451e07042ed65639445a90daf56aa360e9014beb2bed1:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImEwMDNjZDk4OWM2YjgzOTZiZGFhMTNjNTMxNDA3NDFiZjQ3NDcxMmRjZDI4ZThlM2IxNmI4ODQyNmRjMDk4MTkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk5OWJkZWZlZWFjYTYzNDBlMDI5MGRjODZlODg5Yzg5ZDVlMTg5YWE1YmE0NGI1ODViM2I3MDczNGY0YTYyZDgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjNkYzg2NTAyOTdhMzMxZGVkODViMjdlMDZmOTVhODY1N2VhMjQyZTA3ZGQzYzNlNTFiNGExN2YyNjcyMTdjMWEifQ"
+        },
+        {
+          "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/data/player/PlaybackController.kt#L42-L46",
+          "version": "repo-lines-v1:sha256:9713d4adca7a39e10386acd96d499fbcc3c58fb088f837377c5e604d71727c84:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNjQ2OWZiM2FhOWFiNGM5MTQ5ZTY0MzQ0ZDFkN2U3NDBiYmQyOGY2ZTliYmI4OGFiZjYzMmIzMGNiNDYyNGIwMyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMDdjNGRkNzJlZjQxYzY1YTJmNzI3ZDcyYzg0MjA3NmNiMjhhYjNlMzcxOWMxNjdhNjJmMjRlZTczZGM0ODQ2MiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNGMzNzEyYmM2YWNkMzg4NTM4ZWFiZjAxYjI4NTA0OWJmOGIwMDRiNWJjNjJjOWMwOTE4YzNmMDYwZGRhMDQ5NiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTk2NjlmNzYwNjk4ZjNjYjMxOGYzZWE3M2EzMzkwZGI0OTY1OTE5NDhkYmNkY2Y1YTQ5MTEzYTYxMWYyZTNjYiJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_a3f8ea722a1b4362a5f270f0f33345a8",
+      "statement": "verifyProductArchitecture is a custom root Gradle task (group verification) whose ~530-line doLast block walks all kt/kts/java/xml/toml files (excluding build/.gradle/.git/.idea dirs) and throws GradleException on the first violated rule; the root check task depends on spotlessCheck, verifyProductArchitecture and every subproject's check, making it the standard pre-commit gate.",
+      "evidence": [
+        {
+          "resource": "repo://build.gradle.kts#L49-L54",
+          "version": "repo-lines-v1:sha256:326cfb85882c9157d6282c1441992b35c3a992dfbccf603aadcb4c10b603277c:eyJzZWxlY3RlZExpbmVDb3VudCI6NiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiOTIzMWE3NjE5MzNhYjRkMWM3NzljYmIyNmY4YjQzZThjZjc2NTZkNWEyMTZhMmU5N2VkOTkzMjY3MzhlZjUyOSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMTg3NDY3ZjNhN2Q2Yjk1YjUyMzE2YWJiNmVhN2RiMTI2YTQ5OGI1MjA3ZWY0ZDUyYmI3Mzc1ZWU5NjY2OTliYSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMTllNzYzNTVjZjExOTk0ODBjM2Y5OTgzNmIxNDg2Yzg0MWQ4OTFmYWFkOTA0YzYwOGUwOTMwMjJkMzc1N2FlZSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNWRlMmE3ZTgzNzVmZjJhMGRhYTA3MmIxMjkxNDhlNmU3MTdmNjM3Yzk4MWI2YmNmZWVlNTlkMmJkMjgxOWMwYiJ9"
+        },
+        {
+          "resource": "repo://build.gradle.kts#L580-L588",
+          "version": "repo-lines-v1:sha256:2894d8e4dc174385dac4f8403a231b2ba1bc7250e8246cb001e94705c090a98d:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMWY1OGI5ODU2NTI2MDNiYTQwMGNkMzBhMmU1ODA0OGJhMGMzNWEyNjU3YTE0NjBkNDVkNDE3OTBlNGFiZTFmZiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDEyY2EzNDVjY2Y3NWJmOWMwODA2YmNlNjk1YmU4ZGU4MDhiNzk5ODQyNTFhN2E1NGQyMDJjZjYxMDFkZDQ1MSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMTllNzYzNTVjZjExOTk0ODBjM2Y5OTgzNmIxNDg2Yzg0MWQ4OTFmYWFkOTA0YzYwOGUwOTMwMjJkMzc1N2FlZSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjAsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_7934d022eaea4ff0a451a0f6cb768f80",
+      "statement": "The release-build rule extracts the :app release block with a first-closing-brace regex, so nested braces inside that block break the check; app/build.gradle.kts documents this and keeps signingConfig = releaseSigningConfig (resolved outside the block) as its only inner assignment.",
+      "evidence": [
+        {
+          "resource": "repo://app/build.gradle.kts#L54-L56",
+          "version": "repo-lines-v1:sha256:108a5cb3cd656d6a6b446be91450eec5dcc6ac91372ffe5f08ffebfedadef053:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZTgyYTI3ZTU0Mzk0MTQ3ZTg0MjMxMjVlNTBjYjU4MzZjMDQ4NDkxNDI1MjFkNzdmZTQ1NmM1OTA0NjIyMGEyMSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYmZhYmE2N2M2YzhhNzQ1YmYzNTc2ZTExZDdlZmU0NzRkYjM3MWIzODAxZWNjY2E0YzZkNDZmNGYwMmY5M2U4ZCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiOTk5YmRlZmVlYWNhNjM0MGUwMjkwZGM4NmU4ODljODlkNWUxODlhYTViYTQ0YjU4NWIzYjcwNzM0ZjRhNjJkOCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZGMyZjhhZWI5YWRkZWJjOGVjZTMwZWFhNGFkMDcxOGZjNDRmYWEyNmM4MGIwYzQ4NDAzZWNlZWEyN2QxMzJmYiJ9"
+        },
+        {
+          "resource": "repo://build.gradle.kts#L504-L522",
+          "version": "repo-lines-v1:sha256:f1e737581843c12ef1dd25fdb204afef947480146a14a92aea4caf913a612a68:eyJzZWxlY3RlZExpbmVDb3VudCI6MTksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBmMDFhZGEyYjRlMzM3NjNkY2U5MGQzMTM1MGNiYzM1NWYyMjg2YThjMDBlNDcyNDY1MzdmNGYyYmYzNWVjZTEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjQ4ZjU4ZWQwZTE0N2ExYjYyMjI0NzZlNzI1NmQ0YmQ5YjQ3OWJiNDA5OGJlOTRjMzIxYjA5OTVlZWUwYWQ4NjgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjY1YTY2MDRmODJhYmY1NDQ3NWI3ZTQzNTRlNWVlN2Y0MThiZTY1YjQ0NTA4YzBjZTY2NDUzN2JkOTFlYjAwNWIifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_15e5752b052c40a3a30dafc0db3e80fc",
+      "statement": "Room schema history is immutability-checked: 1.json must not contain quick_skip_short_play_counts, 2.json must contain it but not lrcUri, 3.json must contain lrcUri, and DatabaseModule must keep Migration(1,2), Migration(2,3) and addMigrations(MIGRATION_1_2, MIGRATION_2_3) registered.",
+      "evidence": [
+        {
+          "resource": "repo://build.gradle.kts#L548-L576",
+          "version": "repo-lines-v1:sha256:259629c2c74b6bd0ed4d9dfc1851c7a7adc6131aa4c4cbef8c52e60dc328722b:eyJzZWxlY3RlZExpbmVDb3VudCI6MjksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImUyNTA5OTQ3ZmY2ZmZlNTg4ZDVhZmU5ZmU4ZmYyOTVkODkzMzIwYTY5MWZkNGJhYzFlOTQyZjUyOTE2NzlhM2UiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImRhOWY4NmQyOGU3ODRmOWZkMzFmYjcyZDE1ZjYwY2JjZWFhZmRkNjY5Y2JkNWI2ZGE3ODg4YTAyMzMyMWViYjkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjE5ZTc2MzU1Y2YxMTk5NDgwYzNmOTk4MzZiMTQ4NmM4NDFkODkxZmFhZDkwNGM2MDhlMDkzMDIyZDM3NTdhZWUifQ"
+        },
+        {
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/di/DatabaseModule.kt#L49-L68",
+          "version": "repo-lines-v1:sha256:ca951fbdbc9ffd3f138bc0de0e7a2e902271f304d36222f7d715bc85faa91825:eyJzZWxlY3RlZExpbmVDb3VudCI6MjAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjE3YWQ2MTY0NDJhNzVjZjM4MzcwNGJiYzE1NWFlOTMzOGE2MmU4ZWY0OWI3ZWVjM2Y2MDc1ODNiYjA4OTFhMzQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjhjNGNmMmY5N2Q2MWI5ZWQyM2NiNjUzOTYyNDE4ODdjZTJjMjU2NDc1NmVkNTQ4NWJkYTU2YzU5MDgxYWM1NDAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImM5YWM0N2U4ZDNmZGJkYzU2NmE4YzJjMjI4OTM4MzYxZDYwYWU5MmU0MjcxNTcxZDViYjA3NTk2YzMyM2UyZDYifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_309caff45e6846c6b5b7b685ee785e30",
+      "statement": "The exported schema history has grown to 10.json: MelodyDatabase declares version = 10 with 13 entities and DatabaseModule registers all migrations MIGRATION_1_2 through MIGRATION_9_10; the standing rule is to add new snapshots/migrations, never edit existing schema JSON files.",
+      "evidence": [
+        {
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/di/DatabaseModule.kt#L31-L35",
+          "version": "repo-lines-v1:sha256:610a461f65c8e356fe37eecaf2c1a9c3a61981f8e8064de988bc0d3865a491f4:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMjZiOGJlODY1ZmQzMDI0ZGFkYjBmNWJmMjJmMzgwZjEyYWI1NjlmNzFmZDQ0MTVkYjkxNWVlOTMwZmY2MTRiMiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNTUwMzJlOTY0ZDA5MzIzNTFlNWQxODUyNjkyODFiMTcxYTNhMDliMDhiMjg2ZTY2MWVhNDcwMzIzYzgyZWI0ZCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYTllOTJiNGRkZGJmYTc4ZDUxNjJhNGM1NzI2OTgwZmJlMGFiYTk1Yjk2MjY1ZjJmODVmNjc2MzMyZjNlM2Q1OCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMDU4NDE1NTkwYmM0ZTgyYWY0ODQwNTM2YjE5YzBjMDRmY2I4N2U4MDBkNzk4NTI3NDIwZTY3YTA0ZjYyN2JmNiJ9"
+        },
+        {
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/local/MelodyDatabase.kt#L20-L40",
+          "version": "repo-lines-v1:sha256:cf55df3770f67ed1d8df5f29c18ba119a33cb5f10bd4b53c1312414710f99655:eyJzZWxlY3RlZExpbmVDb3VudCI6MjEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQwNmYxZGI1MWFhM2I3OWY5OWM4ZjlhMTc5ZjQxYTcxNmY3YzU4Y2Y4M2ZlYjY1MjcwOGIwOWYxMzZmNGU2M2MiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI5YjZmYTgzNzU2YTUxMWY1ZDgxMTA2MThhMzNkODI2NzMzMDQxM2Q2ZmYzODJlODMwM2E5OWVjMjgyYzM2YmMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjZlZjk1MmNiMTdlMjcwZDU1M2ZhNDJiZDFjNTc3NzVmNTE4YTZjNGY4NTNjYTM3MDQ0ODI1MmVlNGY1ZTBhOTEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_a27de90a2e174ccc9cc4d3f7266ba593",
+      "statement": "Both app/src/main/res/xml/backup_rules.xml and data_extraction_rules.xml must exclude the privacy-sensitive stores (legacy prefs music_player_prefs/play_stats_prefs/quick_skip_songs_prefs, melody.db plus -journal/-shm/-wal, datastore/player_settings.preferences_pb, datastore/playback_state.preferences_pb, cache/album_art/); missing entries fail the build.",
+      "evidence": [
+        {
+          "resource": "repo://build.gradle.kts#L524-L546",
+          "version": "repo-lines-v1:sha256:1389e532acc35378d19d46c8d89b267096047a7fd0006383543f5a25a40e7a2f:eyJzZWxlY3RlZExpbmVDb3VudCI6MjMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU0NTMzNjY4OWFiM2EzODNmMTVjMjY3YTlkYjQ1YTA4YzE2MzU4NTAyNmNhOGU0MzU2MDc2NzFkYzMxNWI3ZjkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImU3YzI3MzRmYTQwNTU0MzU3NWQ3OGE3ZmQ4NTA0NDIzN2Q1ZTAzNmFjNDRlZWY2MTEyYjM3NGYwYmU5ZTk2NmIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjBmMWM1NGVkMDUyNmY0OGVhN2RlY2EwYjdmYTljODljMTljZTNhYzk4ODZiNTlmMmM4ODExZmUxMDVhY2Y3ZDcifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_2e6bc46dbea24e1cbc6943380f7f7e42",
+      "statement": "The gate fixes release build shape and manifest placement: :app release must set isMinifyEnabled = true and isShrinkResources = true, a benchmark build type must inherit release settings, the :app manifest must not declare AppMediaSessionService (it lives in the :player manifest) nor request READ_MEDIA_AUDIO/READ_EXTERNAL_STORAGE (import is SAF document-tree based).",
+      "evidence": [
+        {
+          "resource": "repo://build.gradle.kts#L483-L494",
+          "version": "repo-lines-v1:sha256:8d81bb8ee1dfaabffe5e686f858f007f206b997e2227cffe42746cbb21e456f9:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImMxYzJiNDE2YjhiM2ExZDk3MWRkYWYzYWU4YzIxZTNjYzEwNjQxM2E4NGQxODVmMmU1MTg2YTU4OTYxNTJmODIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjAzODVlYWY1NDRhZGUzZTY3M2M0NmMwZmNkMjlhZjFjOTBjNGYxNjc4MjEwYWMxYTViZWEwNjg1NGJjMTkzZjkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImQxZDMwZjU0NWFkZjgwMzUzZmRjZWJkZThmNTQ3MjVlZGM2NTYxMGI1MzAzMGIzMzQ3YWExNWFiMDRhOTBiODgifQ"
+        },
+        {
+          "resource": "repo://build.gradle.kts#L504-L522",
+          "version": "repo-lines-v1:sha256:f1e737581843c12ef1dd25fdb204afef947480146a14a92aea4caf913a612a68:eyJzZWxlY3RlZExpbmVDb3VudCI6MTksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBmMDFhZGEyYjRlMzM3NjNkY2U5MGQzMTM1MGNiYzM1NWYyMjg2YThjMDBlNDcyNDY1MzdmNGYyYmYzNWVjZTEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjQ4ZjU4ZWQwZTE0N2ExYjYyMjI0NzZlNzI1NmQ0YmQ5YjQ3OWJiNDA5OGJlOTRjMzIxYjA5OTVlZWUwYWQ4NjgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjY1YTY2MDRmODJhYmY1NDQ3NWI3ZTQzNTRlNWVlN2Y0MThiZTY1YjQ0NTA4YzBjZTY2NDUzN2JkOTFlYjAwNWIifQ"
+        },
+        {
+          "resource": "repo://player/src/main/AndroidManifest.xml#L1-L10",
+          "version": "repo-lines-v1:sha256:3358b8efa67184bd624ac8ce6b721f046fd318fa5c48e4cbb49ce59e5dedec97:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQzOGRmYjA5MGQ3YjE5MTgyNjY5OTA4YTg5MTE4NjM2OGQ0YWY1YjAxOWE5ZTcxNjhlNGMwOGM5MjgyN2I1NGQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImJjMzY3NmVjMzcyYjRmN2MxZTViZDY2MjNlYzY1NTdjNDgwNjE1N2ZlNWEwZjAwNTI3Zjg0M2QwYmY0ZjkwMjUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImI4MmJjODkzZDNkNzJiYTEzYWY1YzFiN2Y4ODIwMWFjZTJhZjcwODE4YWU0NzJiNDM5ZjhiODRhN2E2OGI2OTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_43ec3c203ae745c99941ae97e89bf18b",
+      "statement": "Code-quality gates include: every LazyColumn item/items/itemsIndexed call in app, core and feature sources must pass a stable key, and direct android.util.Log calls are banned everywhere except AppLogger.kt in favor of AppLog/AppLogger (which redact URIs/paths in release).",
+      "evidence": [
+        {
+          "resource": "repo://build.gradle.kts#L395-L403",
+          "version": "repo-lines-v1:sha256:f011b1daf7115bc77a9808f3dfe91db9d0dcc9db82b213c039bad29bf6549e80:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYjY5MDkzYjBmODgwNjM0MzU1NDM4NmQ1NjMzNTkyZjhjOTRhZjA0NzMxOWM1Mjc1MTM0ZWI2OWI2ODA0ZjhiNyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZTZiMDQ0OTE0Njk3MjJlODM2M2E5NGU0MDQ0NTM4ZTAxM2EyYTIxN2UzNmIxZTU2OGJhNjBhY2I3YjRjOGYyZSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiOGU1YmZkYWM2M2NkODBiZTAxMDY5YzkzMWFjMWYwYzY4OTc3MDY2ODJhZTg2ZTk2NThmNGM5MmUxNjFjNDYxYiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiN2Y4NWIwNWQ5MGE0MDU4YzE5NjczMzAxODhhMWRmN2M5YzdkZjJhODFlNWYxOTk0MjY1N2ZhYTRjZjBkYjM3YSJ9"
+        },
+        {
+          "resource": "repo://build.gradle.kts#L473-L481",
+          "version": "repo-lines-v1:sha256:343e6aa1dfd0720fbf8d465160b9d62048091e2b33bb0d5afaeab7bd393c22d9:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMjFjNjcwZTk0ODZiZjA1YWFkY2Q3MmQ0ZDIxY2M4MmYxYzcxMmQ3YmMyY2JhNWU1N2YyNzdkYjU1NTdlZTNhMyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZTZiMDQ0OTE0Njk3MjJlODM2M2E5NGU0MDQ0NTM4ZTAxM2EyYTIxN2UzNmIxZTU2OGJhNjBhY2I3YjRjOGYyZSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNDIxMGQ5MmRhMGJkOTcyODg4MjkyNjFkMGY4YmQzMmUwY2UxMDNkYThkZDAyZDE1NmM0MDhjZTVlYjliMmRhMiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNzBlNGYyNjY2ZjU0ODU3MGVjNmNmMGE3ZDMyNWM2MDEwNjFiYmQxYzBlMzI1ZjM4ZTM2N2E4YzIxMGJiNzNiZCJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_327b6066d4c64c2186874988c9009c45",
+      "statement": "Privacy-sensitive startup rules are enforced: Bluetooth playback monitoring must be user-triggered from Settings (PlayerStartupFacade must not mention Bluetooth; SettingsScreen must expose the 蓝牙播放监听/申请蓝牙权限 controls; the setting must flow through PlayerSettingsRepository/DataStore into PlayerUiState), and startup-path files (MainActivity, AppRoot, PlayerRuntime, PlayerStartupFacade) must not request notification or Bluetooth permissions.",
+      "evidence": [
+        {
+          "resource": "repo://build.gradle.kts#L334-L388",
+          "version": "repo-lines-v1:sha256:b55e2b7d59069ffb7cea801cf268dffc4f471b9f0ddd24fd027db3d7e3fad74e:eyJzZWxlY3RlZExpbmVDb3VudCI6NTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQwNDVmNmM0NWRmY2JkMWE1NThmYjcxNjg4OGJjYjhlZTRhNGY3ODQzYmYyZGUxM2IyMmMwOTg5OWQ5ZGZmZGUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImVkMjc3NDJkMTBiZDkzM2IwZTQzYjg0ODlhMzg1ZDhlMmUyMDc2OGU2N2IzZjUxODI1ODRhYjIxOGVmYzhhNTEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjM2YWIyZmU2NGI5NjMwMDgyMDViNTY3MDIwM2ExNWI5YzY3NGU3OTNlZTM0ZGE4ZTI2ZTVjNzlkZTZkY2NkNzYifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_6319e22b84484700aa501fae85207446",
+      "statement": "Observability anchors are enforced: MusicRepository must keep the music_import_scan and music_import_folder PerformanceTrace operations and PlaybackController the controller_play_queue/controller_prepare_queue/controller_sync_queue/play_next_command operations; PlaybackWindowPerformanceShapeTest must keep covering 100/500/1_000/71-song window sizing; :benchmark must remain a Macrobenchmark module targeting :app with a StartupBenchmark using MacrobenchmarkRule, StartupTimingMetric and StartupMode.COLD.",
+      "evidence": [
+        {
+          "resource": "repo://build.gradle.kts#L186-L209",
+          "version": "repo-lines-v1:sha256:8c57aa32692359f939dfcfe46f0408ee004b1ce3d34b744c5eeb837ff3b09c34:eyJzZWxlY3RlZExpbmVDb3VudCI6MjQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjkzZjhlZDNkOWU3ZGQzOTU2NmViYzA0ZmU3MDEzNjQwMmE1NmMwYzJiYzU5NzQxNzlhMjFkZDRkYTJiZDM4NzUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQwYjI4MTZhNDMzNTlkYzBiM2NjNjNjNTM5M2JkMzM3YzM5MmVjOWYxZDkwY2Y3OTFmNWE4N2U3ZDNlZjg0MTQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImJiYWI4NDZkY2NiMjYxMGI0NzdhYmZiZTQ2MGZhNGE2ODRmM2JhOWE2ODY3MmEwYzI1MWIyZjNlMmVjYWU1M2QifQ"
+        },
+        {
+          "resource": "repo://build.gradle.kts#L215-L248",
+          "version": "repo-lines-v1:sha256:c13cb0c8f7461edcd75c2f3784a482c66f24e59869e3b1bde9cd236db7059220:eyJzZWxlY3RlZExpbmVDb3VudCI6MzQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQ2NTE0M2EwZDU0YTg2ZjEwMjVmMmU2N2E0Mzc3N2ExODEzM2VlMWIxYmIyNzgzOWM1YzY4ZThlNmRjNmJmNzkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImJiMTk4OGJkNTY2Zjc3OWI2ZWY4ZWI1NDRkZmQzNTRmNjBmZmI5NjViMWMwZDk1MDE5NGQxMjE0YWZlM2FhZjkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImVmYzNkNDc3MDVlZjMxMzk0OTJkNWIyMTJmZDNkYjIwMzVmMzZhYzE5NGY0YmMyYjcwZGM0OGZhN2Q1NTM3ZTIifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_59dc9b2b2c054a668b8b75cc8dabdaf6",
+      "statement": "Every required module must keep a local .gitignore containing /build/, /.cxx/, /.externalNativeBuild/ and /captures/; the gate fails naming the first module whose ignore file is missing or incomplete.",
+      "evidence": [
+        {
+          "resource": "repo://build.gradle.kts#L97-L110",
+          "version": "repo-lines-v1:sha256:47986625dead90b9f0505d02d88df665220bb841a38687372ffa767223ea3af0:eyJzZWxlY3RlZExpbmVDb3VudCI6MTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFlNDRkMGUzZjExNzI2ZTk0NThlMmU2M2I0OTNlYzg1YTVkNDM2YmQ5MDE2OTMwMWQzNmI0YzkzZjA1OTZjZTgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU1MjJjNDJjZDE5YzZkMDNkODA4YzQ1MjcyMDU1MjgyNWI3ZWExYzViNDkxYjIxODUxMWNhYzc0MTVjZjlkOWIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImY5OGJkZGM3OWFlNjVmMTIzMzU0YjlhZWIxOWM5ZWNlMDk4Nzc1ZmYwMTgwYmJjODQ4YTkzMzc3OWE5NjdlZjkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjY2ZTBmMGEwOTU4ZWFmN2QzMGY2NjVhMjNkNzM3OTc3ZjNjMTg4ZjczZTcxMzMzZDU5M2U1YzZkNzdmMWQ5N2UifQ"
+        },
+        {
+          "resource": "repo://feature/home/.gitignore#L1-L5",
+          "version": "repo-lines-v1:sha256:5dae78f84c2bef2d9794830b1e908864a425d018d89a8681bc347eda309c1700:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiOTZlMGRlNDAxNGNiMmEzZWFhMjM5YTUxNjY1MjA5M2I2M2JiZjhiZjUwNjFhMGU5MWEwMDFkOTFjNGZiMjY0ZiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNjE1ZTBmODA0NjhjYzQ5YmViNzg4MWUwY2NhMjZmNmMxNWUyYWY3MDg5Y2Q2MTIxZmQxZmI1N2M3NDg5MGJiMCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjAsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjAsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_c93aaaeb91244d6bbbf718a45a53444c",
+      "statement": "The port indirection keeps :feature:player logic unit-testable off-device: PlayerControllerQueueFacadeTest substitutes a hand-written fake ControllerQueuePlannerPort instead of any Media3 or :player implementation.",
+      "evidence": [
+        {
+          "resource": "repo://feature/player/src/test/java/cn/com/dcsgo/mihx/feature/player/PlayerControllerQueueFacadeTest.kt#L18-L32",
+          "version": "repo-lines-v1:sha256:028d3523e815fbcda36485c72cfe473b7cc64d6f57f961af38e84cf7318764bd:eyJzZWxlY3RlZExpbmVDb3VudCI6MTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjJjNjM4YmNmMTBiZjg5YTQwYzhmMzVlNmQ5ZDUxMTI4ZmJmZTFmNjRhMDQ4MjlhZDljMTZmMjcxZWJiM2IwN2YiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjMwYzFmMTg4ZjE0MmVkN2E4MjQ2ODBiMjA3MTcyYzU1MTliYzYxNGE0OGZkYTdjZjE2N2VkYjhkZGY3OTk1NmMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjJkOTg1NjJjMWJiOWY2YTUxOTdjMTQwMzNlMjU0YWJkYWYyZjA4NDc1NDIzOTQ4Y2JhYTJjYjQ4OGI5OGNmNDMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijg0MDU5ZjVkNzc0ZDkxZDNiZTJjZDJlZGM1ZGY0YTQ3OGZmMWUyOGM4OTA3MWYzYmVkNmVhNDdjN2VkNTRkNzAifQ"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "by": "openwiki/0.5.0",
+    "at": "2026-09-07T13:49:59.042Z"
+  }
+}

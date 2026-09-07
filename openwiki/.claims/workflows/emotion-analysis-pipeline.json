@@ -1,0 +1,436 @@
+{
+  "schemaVersion": 1,
+  "pageVersion": "sha256:0c3f77297037a864ccaeda51fa489bc697deddfc122a6a68291cf08db9b77610",
+  "claims": [
+    {
+      "id": "claim_47005b718caa43588a20c9e8d0efd384",
+      "statement": "MelodyApplication.onCreate schedules a unique periodic WorkManager job (emotion_periodic_scan) via EmotionScanScheduler.schedule: a PeriodicWorkRequest for EmotionScanWorker every 6 hours with requiresCharging + batteryNotLow constraints, a 30-minute initial delay, ExistingPeriodicWorkPolicy.KEEP, and the enqueue wrapped in runCatching so WorkManager failures never block app startup.",
+      "evidence": [
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/MelodyApplication.kt#L14-L20",
+          "version": "repo-lines-v1:sha256:c94bf80c0e0839e8688072abdda6d509ead33bb5878d46a605299194a2d4dcdc:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZGQ1MjMwNTE5MzI0NTQ0YTc4ZjY5MjIxMjUzOTNlMjlmN2FhY2E1MzFmZTBkMDVhMzE4Y2IwYWU0NmU3ZGUwMyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDg5M2Y0MGUzNzgxZWI4OTZjODJkMDQ2YTA4MDY3YTExZTM1Y2RmMmYxZGZhZjI2ZmVhOTBiOGRiNjY3NjQxMyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYTkwYWNmNzQ4Njc3ZDg3YTdjZGZjOTY5YjA1ZGM1NDQzODM2MDY0MTdhYTA2ZDM3NzQ2OTU4NTAwZDVjNjE1MyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiOTU0MmNlMWIxNWJlYjRhNWYwNTNjNTQ1MTM3Y2JjYmMyZmM4ODM4ODhjNjYwZTIwYTIzMmIzZDliZjdjMTA4ZSJ9"
+        },
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/emotion/EmotionScanScheduler.kt#L12-L39",
+          "version": "repo-lines-v1:sha256:480ad8c4921f72725216de95a0d99bc60e3205bbbdbd5a1caabe10a51bea48bb:eyJzZWxlY3RlZExpbmVDb3VudCI6MjgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQxYWQ3NTBlYmY2Y2ZmM2UyYjRiODU5MDYwNjYyN2E5MzVhM2ZmZTUxNmE0NjcxMTk1NWM3YmYwYTQzNzdjYTMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjczYzg3YTFiYWMwZmYwMmZkOWU1ZmQ2ZWRlODk0ZjJlNDk0ZDAyNTA1MTM3NWVmNDJiMmE2NzAzZmE4YjFkZGUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_7c5f6a2213fb4b0c8e9407b20c950dc5",
+      "statement": "EmotionViewModel.startManualScan clears the paused flag (setEmotionScanPaused(false)) BEFORE enqueueing, so a worker start never reads a stale pause value, then enqueues a one-time manual scan (input KEY_MANUAL=true, unique name emotion_manual_scan, default ExistingWorkPolicy.KEEP) with no charging constraint; the 'My' page entry card triggers this and toasts that the scan continues in background.",
+      "evidence": [
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/AppNavHost.kt#L538-L545",
+          "version": "repo-lines-v1:sha256:a1ead5d06cb1ae6a7ae513e0a232a902559d617e06eed7acb262a1fde12b6b92:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNGM0ZmE4NmM3NjkzZGNlNmVjNWNiOGRhYWE3ZGZmMGNlNWJlYmQ3NGUxZjFlNjNjOTg2YjVhYjg4ODI0YjJjZiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZjBkOWY3MzRiZTVhYTAzOTM1YzQ5OWI3MTQxMTM1NWNlZmFjMmEyYmY1Nzk4OWUxMjQ2ZDM1YTczNTJjN2U5YSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYjM5MzdiZTY3NGExMTYwYzdkOTQwZGEwYWUxMzk5ZGFlOWI5YTRhZGRjZDU5YzAxMjVlN2Y4MTQ2NzllOGU2MCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNmJjYjI4YTA0ZjYwMDVhMGM0MzI3MDUzODhmNGViMmRiOTA5NjczNDdhMjY1ZjhiZjlhMDhkMDg5ODkxNDY4MSJ9"
+        },
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/emotion/EmotionScanWorker.kt#L149-L160",
+          "version": "repo-lines-v1:sha256:8d8b7f72b6c93c058c91ffa33f64b37f397dfda7daf87d6f7102efad200bab75:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQ1Y2JhNDhhMDNhMTU2MTY3Y2E1NWY0MzI3ZGUwMGQyZDlmMGVhZTQ4NjhhOTljY2NlYWMyZTUzNTVkODE4NTUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjE5ZTc2MzU1Y2YxMTk5NDgwYzNmOTk4MzZiMTQ4NmM4NDFkODkxZmFhZDkwNGM2MDhlMDkzMDIyZDM3NTdhZWUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/emotion/EmotionViewModel.kt#L204-L210",
+          "version": "repo-lines-v1:sha256:e5d0196da9ff9c79b235e2a375aff80d7cb2a1786d084020c4094cdc6a4655b9:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMmMzMTBhNTYyYTJjYzgxNTYxMzllZjFkYmQ1NTdhOWJlN2VkZTY2MGY4YmQyNTRiMmFkZjhhODE5OTJhZDMyYiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDg5M2Y0MGUzNzgxZWI4OTZjODJkMDQ2YTA4MDY3YTExZTM1Y2RmMmYxZGZhZjI2ZmVhOTBiOGRiNjY3NjQxMyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiOTk5YmRlZmVlYWNhNjM0MGUwMjkwZGM4NmU4ODljODlkNWUxODlhYTViYTQ0YjU4NWIzYjcwNzM0ZjRhNjJkOCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYjEwNGU3YWE4NGIyZjA2ZTdjYzM3NzI0MWQyNjBhYjVkNzIyMzU0MTNhYmQwNjQ2Nzc1NGFmZTQzNzZkMGNiMCJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_32c4a13d0a8f41858a776b9a9dde4819",
+      "statement": "EmotionScanWorker batches 40 songs per periodic run (BATCH_SONGS) and 300 songs per manual run (MANUAL_BATCH_SONGS); each song is attempted independently so a single failure does not abort the batch.",
+      "evidence": [
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/emotion/EmotionScanWorker.kt#L136-L146",
+          "version": "repo-lines-v1:sha256:5207c0cb170aa391a6fe13c17f8885221fa500f71deb040af25409b1e06d3713:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImJmMzMwMjdiYzIwYjViY2M0YjEzOTBiNjM2YjJhY2E4YjA4NTNiZjUwMjA0YjAyMDlhMTdiOGY0ODQwN2M3OGIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImMyZmI4ZDFiZmY3OWJiYzFiODhlNDE2NDAyM2ZkYzNlMDQyZmFkZGI2OTg0M2EzODIxYTY0YTU4M2IwOGEyZTEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImQxYjI0NGE3MzVmZDNhYmVhMDQxNjc4Njg3ZTk0ZjY3MTg2MGQyZGRhNzllZWE4OWQ0ODMzMDQzNzJjOGZkZjkifQ"
+        },
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/emotion/EmotionScanWorker.kt#L30-L62",
+          "version": "repo-lines-v1:sha256:bbca7c3a3770ba7552edc4a4876b0685c90bee9db7faa19cbaa15b7cbf3ce5e1:eyJzZWxlY3RlZExpbmVDb3VudCI6MzMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4YmU0ZWJiZjE0ZjVlZWZlMTBhZDg3NzkyM2M3ZTRiZTlmZDc3ZjQ2YzUzODM4MmI1NTAyZTIwYzJjZjg3OWQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU5MDlhNTNhNjE4ZDAyOGUxZDMwMDBjMGE3YWJjZWVjYmU1ZmIzN2Y0ZTUxMWVmZTQ2NjQzZmFkNmU2Njg3MmYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjhlNWZlMDNmZGZiNmU2YjBlMjAxZDQ3NjU2MzRkN2M2MzdiODliYzhkNDdhZmEwMDdkZDA2Y2Y5MGM3ZGU2NDgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjhjZDU5NDZkMWE2NGRjNzdlNGUwZTg5ZjIwZDBjZDkyNDE5MGY2YjIwZjBkNGE5OWZjZTVlZGQ1OGEwNGM4NDEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_4e5b5f0d5bf24a9b9113c46b7c3c8fc6",
+      "statement": "EmotionScanWorker selects pending songs by filtering the library to songs whose stored modelVersion differs from EmotionAnalyzer.MODEL_VERSION, that have a non-null uri, and whose EmotionFailureStore attempts have not reached MAX_ATTEMPTS (3); songs with attempts >= 3 are excluded from automatic retries so the batch always converges instead of spinning on the same broken files.",
+      "evidence": [
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/emotion/EmotionScanWorker.kt#L39-L56",
+          "version": "repo-lines-v1:sha256:3f281f75d86ffe8d1f450ad04588adf8ea131205d7e7168e37776c595b4ff764:eyJzZWxlY3RlZExpbmVDb3VudCI6MTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImJiZjI2NjcyOGE3Zjk2NDYzZWE4MWRiOThmMWVjZTNkOWQ2MmUzMDNhY2I1YTkzYjI5MTY5MGE3MTk0MTk1NDciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImI1MmIzMTA4MjRkY2Q2NDU4ZGJmN2Q3YWI0MTE4YmFmYjBlMTE3NzYzNzAwMjdiZDUyZGYzMzU5OWVhODk0YmQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImI3NTE4YTc2OWJjMDVhNWQxYWNhZDVkY2UxM2RjYTFhMGJkMWI2OTAyZTVmNTAwZTNkYmU4YzU0OWEwYzIxYTEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_9f38f6c3888b4c6dbc62a3d446f17c91",
+      "statement": "On each song EmotionScanWorker reports progress (KEY_PROGRESS_CURRENT = song title), then on success calls SongEmotionRepository.upsert and EmotionFailureRepository.clear(songId); on failure it calls EmotionFailureRepository.record(songId, reason); any thrown exception is caught and downgraded to Failure(INFERENCE_ERROR) so the batch continues.",
+      "evidence": [
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/emotion/EmotionScanWorker.kt#L65-L126",
+          "version": "repo-lines-v1:sha256:6bf0c98c4daee3a77d1f9cc9910b795cef06a4fc9663aa3c94ddb5774a497e61:eyJzZWxlY3RlZExpbmVDb3VudCI6NjIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQxODFlNmZkMTc3Y2Y3Zjg1YzAwNDY1MTc5ZDlmZTEwMjYzZDc4ZTcwNzc0YTQ0NThmOTZjMTZkNjU5ZWEzMzQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjEzNzEzZWI0YzZlMThkZWRlZjhmOWFhYTEwYTEyZDcxZTc2MGI5YjZlNTcyOGExOTNiY2VhNDAwNmQ3MjM5MGUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjEzZmZhZGZhMmIwYTIyZmIyYzliYTkwMWQzZTY4ZWQ4YzkxNDU5YjM5ODdhMjI2NGU0MTAzMzQ5NThiNjk2ZTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxYWFlZTUyNjFjNTI3OWE2MzZjNzgxYjM2NGQ3ZmE1ZDIyYzQ3OTAxY2I4NDc1YzVhZGZmMjkyMzQwNjc3ZTYifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_7a277ef480ab4ed7affcd5bd06a2a3d8",
+      "statement": "After a manual batch, EmotionScanWorker re-enqueues the next round with enqueueUniqueManualScan(ExistingWorkPolicy.APPEND) only if not pausedMidway and pending songs remain; it deliberately skips re-enqueueing when the whole batch failed (attempted > 0 but done == 0, indicating a persistent analyzer fault, to prevent an infinite loop) and when the user paused midway (restart comes from the detail page's resume button). APPEND semantics mean cancelUniqueWork(emotion_manual_scan) cancels the whole chain, which is what pausing relies on.",
+      "evidence": [
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/emotion/EmotionScanWorker.kt#L112-L127",
+          "version": "repo-lines-v1:sha256:2a83cfb2b83f0d85c702cbda3ce19b68b33f1845fadd2bc9c4ab3b96c968e6de:eyJzZWxlY3RlZExpbmVDb3VudCI6MTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjFkNTY0OTMyOThmMjg3YTM0NmUzYmUyOTFiNTM2MjY4OWEwYjM1Nzg0ZTA1MTcxODljYTg1MTIzNjNlM2NiNjgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImZjZThkMTM3ZmE0NGFjNjY0OGIzYTRhNmY1NmY1MGJhYmE2NzczNDE0NWQwNDc0YTRlNTU1Njk3ZmQyNmJlYzgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImYyNDU4NWJmZmZhOGZhOWY1M2E4ZGQzYWExZTJjZjI3YmQ0Y2EwN2VjNTM2NzJkMjU1ZjdiMGM0MGI4OTI3ZmUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_59e79413a23844249a31b7f02f395a18",
+      "statement": "Pausing is cooperative: EmotionViewModel.pauseScan sets the emotionScanPaused DataStore flag and cancels the unique manual work chain; the worker checks isPaused() (read via the entry point) before the batch and before each song, so the in-flight song finishes and then the scan stops; resumeScan just calls startManualScan again.",
+      "evidence": [
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/AppNavHost.kt#L864-L874",
+          "version": "repo-lines-v1:sha256:d7109cbb8e9a43f923d81ee49dce92872c2a8bdd2ce9f1a2586b479ddb7065ef:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImNjMzRiZWE2ZGEwNzgzMTI0MzlhZmFiMjQyYWY0Mzc1OGU2MjJlNzRmMjU5NjQ2N2IxNmQzOTRhNTcwYWJiOWUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZlNGNlZmUxOGM2MDRlY2ZjNjNlYzE5NjkxNTU2ZGVkZTNiYTFkY2NiNzhhYmNhYmQyMDI4MjM0YjI3MjE0MTAiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjVlMjg0ODcyZDc5ZjAyZjQ5MzdmYzY5M2RhYWViM2EwMWQzODk0NmUwMjZkMTc3ZmM4OGVmNDBiYmIxZWNkNTQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImRiZDZkNTNmOTY4NmFkYzQ0NjU3YTI5YWQ4NTY3ZTFiZjcwZjkxYjIzNzg2N2E4MjU1MWM4M2JmYTgxMjQwOWIifQ"
+        },
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/emotion/EmotionScanWorker.kt#L129-L146",
+          "version": "repo-lines-v1:sha256:07090eb30d74faacb61f8af3a586f70750e9141f3ae0cc684c4d51f08cbd7d36:eyJzZWxlY3RlZExpbmVDb3VudCI6MTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAwNDgzMGJhMTAxOTIxODRkOWZiMWJlNzEyZmE3ZTFiZWZlNzVmMzdkY2IwMzU0OTQ4M2JjZDZlZGVjNGFjOTEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImU2Y2RiODQwNmFkZTFlNzNjZjM2NTA5YzE4MjkzYzdmNGZmNDNmZTdmYmI4NDMxY2Y1ODE2MDEzYTZjNzVhZTEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImQxYjI0NGE3MzVmZDNhYmVhMDQxNjc4Njg3ZTk0ZjY3MTg2MGQyZGRhNzllZWE4OWQ0ODMzMDQzNzJjOGZkZjkifQ"
+        },
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/emotion/EmotionViewModel.kt#L238-L250",
+          "version": "repo-lines-v1:sha256:df942c1371632baebbcb447fa7fcf4187d0bf97f0707432196dd379791f66bc7:eyJzZWxlY3RlZExpbmVDb3VudCI6MTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjcyMDAyZDU3NjI4Y2M4NTAzMzUxNTBkNWI1YmQ5Y2FjN2VjNzM2ODhmNDk0ZGMzYmI2ZjFmZDk5MDFiMTQ2YzciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjU2ZmU4YWRjZDk2ZmZlZmRjZjgxOTYzNGYxYjdlZWQ4MWMzZGJlMjUwNDQ4NDMxYWZhMmY2YTJjMGFmZjNmZmYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_29190b2f9f65483dbb009e1fc9e5b3c4",
+      "statement": "EmotionScanWorker obtains its dependencies through a Hilt @EntryPoint (EmotionScanEntryPoint) resolved with EntryPointAccessors.fromApplication, exposing SongRepository, SongEmotionRepository, EmotionAnalyzer, PlayerSettingsRepository, and EmotionFailureRepository, because WorkManager instantiates workers outside Hilt's component graph.",
+      "evidence": [
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/emotion/EmotionScanEntryPoint.kt#L10-L19",
+          "version": "repo-lines-v1:sha256:32b83be393fa9c281e778ce42ca31c0e8c9e9a42c58aa4bdd25ff04866f3d676:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM4MDMwZWFkNjM4OTdjYzQ4NTQ5NmExNzlmYzEwYzFjMGE3MjQzNWEyYzM1NzhhNTc2NzI1NzI1ZTc0MmQzNWMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImFlYTQ1M2RlOWE0ZmUwYWFkZTU1ZjdmYTc5N2ZiMDcxNDQ2N2MwYTVmNDNiMGViNDg5NDBlYTRlNjk0Yjg0YTEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/emotion/EmotionScanWorker.kt#L31-L34",
+          "version": "repo-lines-v1:sha256:8add792244c4183ff0d7fb3a9b3f533c8e11a9a713f4e8e4b8d1c1c34c343116:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYjY3Yzc2NTUxZWUwM2VlNGM5MGYwM2VmOTMwNzllZThkNmI5NzJiYzU3ZTFmMzg5NzkxYTE5NmUxNmM1YzAwNyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNTkwOWE1M2E2MThkMDI4ZTFkMzAwMGMwYTdhYmNlZWNiZTVmYjM3ZjRlNTExZWZlNDY2NDNmYWQ2ZTY2ODcyZiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZDEyOTBjNGRlOGQxMTIxMWQ2OTYyYzE2ZDc0NDkxYTdiMjRmYmIyMGU1MmY1OWMzYjQ0YTBiNDczMmJkOTcwYiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYWZlOGY3YWNiMzc2ZmJjNGI2NDc0ZTgxMzRjNjYxYWM5Njc1MTlhNGQ2YjZkNTJjNmIwNTA2NTc0NzJlOWQ0ZCJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_91b756b303e343a3aeee47dc4106c9c4",
+      "statement": "EmotionAnalyzer.analyze turns any audio Uri into a per-window (valence, arousal) curve: decode to 16 kHz mono Float PCM, slide a 5 s window with a 2.5 s hop, within each window mean the 1024-d YAMNet embeddings of 16384-sample frames, feed that mean to the va_head TFLite model to emit one (V, A) pair; the result also carries the song-mean V/A, peakSec = argmax(arousal) * hop seconds, window count, duration, and the whole-song mean YAMNet embedding, while the stored curve keeps raw unsmoothed window values (smoothing belongs to the renderer).",
+      "evidence": [
+        {
+          "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/data/player/EmotionAnalyzer.kt#L19-L38",
+          "version": "repo-lines-v1:sha256:00e83b220abfe86fe044367addbf09747dd5548e2d36f744d198afc2e96cacd0:eyJzZWxlY3RlZExpbmVDb3VudCI6MjAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVhZjIyY2YwNzMyNTkyYzI0NzE0MWNiZTYxZWZhMTEwMTI2MTJmNWEzMTIyYjlhZjliYmFmNTJmNTcyNGQxOTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNmMTYzZjc3ODZjNDJjYTg4OTI3MGY3NTNhNzgwNjI2NDI2YzAzZjk3M2EwNWFkZWFlZGQ0ZmE0ZDI3MGYwZDUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImJjNDE3MzI3ZTM5MTA5MjVmZDE1ODZkNzc2OTBjODdjNjNmODU2ZDA1Y2ViNGIwYmU3YjdmMjE2MTk0NzM1MmMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjE4ZDlkYzYxMWZmZjkxMmQwN2Q4ZTIwNGM0MTQxNzBiZWQ0ZTBmMDc5ZGFmYzNjMTEwMTY3OGE0NjdkZjllNDgifQ"
+        },
+        {
+          "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/data/player/EmotionAnalyzer.kt#L385-L395",
+          "version": "repo-lines-v1:sha256:5331aef37749b4bd748f89ef6ebba0c82821208ec110ff758fa4ae08c128e620:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImJmMzMwMjdiYzIwYjViY2M0YjEzOTBiNjM2YjJhY2E4YjA4NTNiZjUwMjA0YjAyMDlhMTdiOGY0ODQwN2M3OGIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQyN2MyN2YxMDhiZDliNTNiOGNhZWYxYmEyZDE1ZTgxNTUwYWZlZWFkZDNkZDhjMDZmY2JlNTBlNjRhMjBjYjYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjFlNGRlNzYwZDU0ZThhODEzMDRlMjExZTQ5MWFlNzMzOTZlYTBhOThhOWZmNmZiYzhhM2Y0Y2JkNTdjNGFlZWQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijk2YjhhNjdjMDdlYTNlNjZjZDc1NjI0Mjg5YzBhYzc3NTVjMWZjMDE1M2EzZTUyMGI5YzQyMjEzMGFhZGU2ODIifQ"
+        },
+        {
+          "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/data/player/EmotionAnalyzer.kt#L79-L137",
+          "version": "repo-lines-v1:sha256:1c8b2aed4f6cd46b50ad039b4455e872fc6b85302a9f93eae1d62c522e958412:eyJzZWxlY3RlZExpbmVDb3VudCI6NTksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijg2NWY3YjNiM2QzM2VjNDljOTc0MmJjMzM2ZTc3NTI2NmI1Nzg3NzU2MTE1ZmJkYmI5N2JiOWMwNWQzMDgyNWYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU1MDMyZTk2NGQwOTMyMzUxZTVkMTg1MjY5MjgxYjE3MWEzYTA5YjA4YjI4NmU2NjFlYTQ3MDMyM2M4MmViNGQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjY0YTRlMGM5ZTQ1MmI3YjQ0MmZhNmQzOGNlOTMyNThiZDhiYzIzNGU5Zjg3MTRjNzAxNWYyN2Q4MzNlNzY2Y2EiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjllMDA0NjNiMTYwN2E1NzNlMTI1MjQ2ZjQ2YmFmZmJmMTliODEwNDIxMjFlM2RmY2IyODE4OTZiZjEyNzlhNTMifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_5de06f07150241e98c7d7577e50d7617",
+      "statement": "EmotionAnalyzer loads two TFLite models from assets (emotion_yamnet.tflite and emotion_va_head.tflite) and dynamically locates the 1024-dimensional embedding output tensor (first output whose last shape dimension == 1024) instead of hard-coding an index, so output ordering changes do not break inference.",
+      "evidence": [
+        {
+          "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/data/player/EmotionAnalyzer.kt#L41-L59",
+          "version": "repo-lines-v1:sha256:d2ad4cfbc39728ad0c737e630f95d0a13a432228b718737d2f8976ceb017f029:eyJzZWxlY3RlZExpbmVDb3VudCI6MTksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjgzYjM0NWQ1ZDI0M2ZhN2Q2MzI1NGI1NGE5ZmExNDU3YzQ3ZTdhZGY5ODU4NzJlMzVhZjZlMDc1MTQzMzZjYTAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU1MjJjNDJjZDE5YzZkMDNkODA4YzQ1MjcyMDU1MjgyNWI3ZWExYzViNDkxYjIxODUxMWNhYzc0MTVjZjlkOWIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImM2OGM4YmY4NWQ3OTQ1YTA4NGVlODYyM2RhNzk0YWFlZDY2NmE3YmY3Njg0YTU3YmQwMDc5M2UyY2IyM2EyMWUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQ0MmVmY2QyMjdjZjdlNmI3NGQwYjFhMWM2YmFjZWJmNzc0MzhjMDExMzUyY2JlNGMwZDY0N2RjM2UwMzJiZWQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_6dbb0bb7e9bb48a39db02fc4c6c73609",
+      "statement": "Decoding runs outside the analyzer lock (pure CPU, no shared state) but the entire sliding-window inference executes inside synchronized(lock), and close() takes the same lock: periodic and manual scans are two distinct unique WorkManager jobs that can run concurrently, and TFLite Interpreter is not thread-safe, so concurrent invokes would crash natively.",
+      "evidence": [
+        {
+          "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/data/player/EmotionAnalyzer.kt#L379-L383",
+          "version": "repo-lines-v1:sha256:5e6906e7172a6e78bb4a7f6f3c83da2cd98b04e67aa727fa5b195c211b16cbd5:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMDRiYTYzMDdmOGNlZTAyOWRjYzVjMzVhY2EwMDZmMWFjYmNmNjUyNDZjYjZkZjJmZTdkYzUzY2M2ZmY3ZjM4OCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDg5M2Y0MGUzNzgxZWI4OTZjODJkMDQ2YTA4MDY3YTExZTM1Y2RmMmYxZGZhZjI2ZmVhOTBiOGRiNjY3NjQxMyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiM2UwN2YzZDIzMzM4MDQ0NzFjY2Y1NDQxMzA1NTBmMTU2NjAzOTNkNWVmMTY2NDU5ODNhM2Q2MTA3ZjA0OWVjOSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNjhkNzk1OTYwNDJmNDE4Y2Y2NzlhN2Y5ZjBiY2QyYWZmNDY5YzljNzc4MjYyMGVhNTQ5YjRiMjJlMTcxZGIxMyJ9"
+        },
+        {
+          "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/data/player/EmotionAnalyzer.kt#L89-L118",
+          "version": "repo-lines-v1:sha256:555b82c9755ce12e8a923ecb1a190b128d1306b66babcae93fc2ec239b951bac:eyJzZWxlY3RlZExpbmVDb3VudCI6MzAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU4NTUyYWQwZTQ1Mjc2YTFiOWQ1NDU2ZDQ4MDA4Njg5MGQ3MjAwNjQwZjZlMDYzYWJlMjk2NGQ2ODc3YTM3NjYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU1MjJjNDJjZDE5YzZkMDNkODA4YzQ1MjcyMDU1MjgyNWI3ZWExYzViNDkxYjIxODUxMWNhYzc0MTVjZjlkOWIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImY0NjM4Y2RkZTlhODkzZjc2Nzk1Nzg4MGQ4Y2QyZDA3ZmY0NjExNDQ2MjQwZmUyYzA0Yjg3Yjg2MDBkNGZiYmMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijk4ZWQwM2JhMWRhYjk2ZmM5MTc5ZjQxZWVjYmRlNzRlNDRmYjAzYmJiOTRlMzRlNmFkZGFhN2E2NDA3M2ExMDkifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_d758f95295824a4cb6812df6ca61fa48",
+      "statement": "analyze catches OutOfMemoryError explicitly (an Error, which would otherwise bypass the catch(Exception) fallback and get misreported by the Worker as INFERENCE_ERROR) and classifies it as Failure(TOO_LONG); decoding a >20-minute track is additionally gated by a pre-decode duration check, so OOM reaching this catch usually means a file with unknown durationUs.",
+      "evidence": [
+        {
+          "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/data/player/EmotionAnalyzer.kt#L138-L148",
+          "version": "repo-lines-v1:sha256:0923a8271c73520f8b854056394719adf37a6830a87cacebec114e1ba28af998:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImIzNjU4M2YzMGU0NmQ0ZWY3MmIwZjFhM2MwNjQ2ZDEyMTM2NGNiNDExNDYzYjgzZTNkYjE0NjZkYTE0NjQ0MDAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQ0OTcwZmNhOGQzNzk3MmQzMzhiYTcxNTVjY2EzZjViZWY1NGFiZjAxYTRlMjUwYmM3OWY3NGQxYzI0NTZmMzUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjRiMWFjNThhZDU3NzY4MGE2ZjRjYzBjZGNmNjc2ZmM4MDdlMGJkNDcwZDI0OGZhNmJiYWYwOWM5YmUzNWNjMzUifQ"
+        },
+        {
+          "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/data/player/EmotionAnalyzer.kt#L186-L208",
+          "version": "repo-lines-v1:sha256:694dd80b6143aaee6236c024901b74cea60d38afd2788eb5111b8271a6d910b6:eyJzZWxlY3RlZExpbmVDb3VudCI6MjMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImIzOWZkYzNiNDY5YzEwYTdiMjMwN2VmMWJlY2RhMjkzMWU5ZGVkZTJjYTM0MjJjMjFhZTY1MGY5ZWNjN2Q3NjMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjE5ODA4MGZlZmQ4MDMxZTBlNWZmNWQ0NmE0OTNjNmJmMzkzODdiMTAxOTg2MTgyZGZjMDcxNTJhZTFhYmNiMGUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImQ4NTNhM2Q3ODQ4ZWJlNThhMmIzMDNkNmFlYmEyYjE4YzdkZGFiNjE0ODc5NTZkY2Q3MzM0MjM2NjkxYWM2ZjIifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_415289f0e1e745f49888e7b794a9a6fb",
+      "statement": "Decoding prefers FfmpegPcmDecoder (same FFmpeg extension decoder as playback, after vendor MediaCodec soft-decoders caused real-device SIGSEGV/native loops); on FFmpeg failure, fallback to MediaCodec is allowed only for mime types in mediaCodecFallbackSafe's safe list (aac/flac/opus/vorbis) — ffmpeg-only mimes like alac/mp3/g711 return DECODE_UNSUPPORTED_FORMAT instead of risking the vendor decoder, and the extractor is rewound before fallback since FFmpeg already consumed samples.",
+      "evidence": [
+        {
+          "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/data/player/EmotionAnalyzer.kt#L150-L228",
+          "version": "repo-lines-v1:sha256:e2a72aa2cf43f113c7cc231c231e2d92ca7e8df8db348a4c881a2ae2e1096517:eyJzZWxlY3RlZExpbmVDb3VudCI6NzksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM5Y2JiYzY1NDY5ZGIxY2EyODQyZWZkOTdkZjdlZTJjZTZjYzE1NzE0ODJkMDFhMThiNzkwYTEwYzdjNTEwZjMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk5OWJkZWZlZWFjYTYzNDBlMDI5MGRjODZlODg5Yzg5ZDVlMTg5YWE1YmE0NGI1ODViM2I3MDczNGY0YTYyZDgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjE0ZjhhNjAyOTFiZjIzNWI2NzQxZDE1Zjc2YTIxY2RmYjI4YmFiMzdkMWRmZjk4NTYyZmJkMjAzZTQ5ZjQxNjUifQ"
+        },
+        {
+          "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/data/player/FfmpegPcmDecoder.kt#L20-L36",
+          "version": "repo-lines-v1:sha256:40029b210f9c06d5ecdd2af68cb77962b39c195cadb06caf3c2d20c80d6ee061:eyJzZWxlY3RlZExpbmVDb3VudCI6MTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVhZjIyY2YwNzMyNTkyYzI0NzE0MWNiZTYxZWZhMTEwMTI2MTJmNWEzMTIyYjlhZjliYmFmNTJmNTcyNGQxOTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk3MmE0MjkzODJiMmUxNDcxOGUwZTM3YjA1NzBhOGExNzAyOTkxZmNkODQ5OGNkODQwNjBhOGJmNGYwNTAxN2IiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImJjNDE3MzI3ZTM5MTA5MjVmZDE1ODZkNzc2OTBjODdjNjNmODU2ZDA1Y2ViNGIwYmU3YjdmMjE2MTk0NzM1MmMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjE2OGEwZmIwODk5MGUyNTg4ZWMxY2U5NWJiN2Q2Zjc3MzAwMGM1YmE4NTY4M2RlZTk3NTU5MDU0ZjNiNTRhZjcifQ"
+        },
+        {
+          "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/data/player/FfmpegPcmDecoder.kt#L200-L213",
+          "version": "repo-lines-v1:sha256:b127eb567dbcc5f54a528de19593cb61063801701c880d5b73b2baabb0f62e73:eyJzZWxlY3RlZExpbmVDb3VudCI6MTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImJkYzVmMDZiZjAxYTAxMzdmODg1YWIyNGMwNTdlYTA4NWZkNmYwZDM4NjY3NmVhMWEwNmU3NDI5MDRjZDkyMzYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzMDg3NTUyZWU0MGRiYjBmMzk3OGE4M2YzZmVkZjc2ZWRkMWJkMDY2NTE5YjA4ZjRiYWE3NzNkODhkOWYxYzkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjllOWE1ZmU2MTU2MDA1YzY5YmNkODA0YmE0ZTIxYzQ5ZmM4YWNkZjhiZWQ1MGEwZjFmNGU4YzU5YzFlMDczMmIifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_d572b5adb00e4d92bda0d80047aa4552",
+      "statement": "Two-layer circuit breaker prevents runaway decode memory: pre-decode, a track longer than MAX_DURATION_US (20 minutes, when durationUs > 0) is skipped with TOO_LONG before any decoding; mid-decode, ShortAccum capacity is capped at maxSamplesForSrc(srcSr) = MAX_SECONDS * srcSr — a per-sample-rate limit introduced because the old static 192 kHz worst-case constant never triggered at 44.1 kHz and a 36-minute compilation OOMed first — and exceeding it aborts with TOO_LONG; a 60 s wall-clock watchdog aborts stuck decodes with DECODE_TIMEOUT.",
+      "evidence": [
+        {
+          "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/data/player/EmotionAnalyzer.kt#L186-L208",
+          "version": "repo-lines-v1:sha256:694dd80b6143aaee6236c024901b74cea60d38afd2788eb5111b8271a6d910b6:eyJzZWxlY3RlZExpbmVDb3VudCI6MjMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImIzOWZkYzNiNDY5YzEwYTdiMjMwN2VmMWJlY2RhMjkzMWU5ZGVkZTJjYTM0MjJjMjFhZTY1MGY5ZWNjN2Q3NjMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjE5ODA4MGZlZmQ4MDMxZTBlNWZmNWQ0NmE0OTNjNmJmMzkzODdiMTAxOTg2MTgyZGZjMDcxNTJhZTFhYmNiMGUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImQ4NTNhM2Q3ODQ4ZWJlNThhMmIzMDNkNmFlYmEyYjE4YzdkZGFiNjE0ODc5NTZkY2Q3MzM0MjM2NjkxYWM2ZjIifQ"
+        },
+        {
+          "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/data/player/EmotionAnalyzer.kt#L255-L309",
+          "version": "repo-lines-v1:sha256:4c7676649d0a04415e5079b094bf0ecb2978253ea4d80f7de6525eaaf007fe5e:eyJzZWxlY3RlZExpbmVDb3VudCI6NTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjYwNjhmYmJkNzc3ZDNmZjIwZjUzMjMyZjhkZGY2M2M0MjdiYmI0NmI2ZDQyNzNjMWVhMDcwZTdhMWZlYjU3MDMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU1MjJjNDJjZDE5YzZkMDNkODA4YzQ1MjcyMDU1MjgyNWI3ZWExYzViNDkxYjIxODUxMWNhYzc0MTVjZjlkOWIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijc2ZjExNzc4N2NmMGY4NDA2MWY2YzcxYWIxOWFlNWJkZmViODg5MDAyNTViYjljNTkxNWM1NzZjNGU2MDdlZTciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijc0OGE1MjI3NzIzZDljZDVlOGE0N2UyOTlmYmRmNjMwMDA4NGJjYzAzODQ1ZjljNTJhN2E1ZGEzMWQzZTBlNDUifQ"
+        },
+        {
+          "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/data/player/EmotionAnalyzer.kt#L400-L411",
+          "version": "repo-lines-v1:sha256:5749523c3cec6113e2d5fc05a9e8ceb7475c469206f31f31dd2161cca7ec6d72:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImYyZTQzZDgxZGM0M2I4NWE0MmZjY2EwNDA5Njk4ZjczMGMyODNmOTI5NzBiYTdhYzNmMGY4MDg0ZGE0MDBkZTkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRjZTY4YmZmYjJjNjM1ZTcyZmFmODIyMjUyNTYzYmEzOGI0MzFlZTg5MjZmZTM1Y2JjMzIyODM4NDMxZjQ0NzEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImFhNzIyMjQxMGM3ZmU5ZDI1ZWQyZWEzZjc2ZTc3NWJmNGU1ODBlNDE4YmU2MzNiYmNjZGM1MWVkNjBhZDlmM2YiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoyLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjM3OTRkMDJhODEyMTk0NGQxNzZkMjY1ZTliYjljYzU5ZjZhYjg5MGJjYWRmOGFlZmRlYmRiYmI0ZjJlYTg0NDQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_0a86ec18fac84eec815b2e06e94b1945",
+      "statement": "Hard memory rule from the 2026-08-30 real-device OOM: PCM buffers must be primitive-type arrays, never boxed collections. The former ArrayList<Short> accumulation cost ~240 MB for a 4-minute 44.1 kHz stereo track (10.58M boxed Short objects plus a ~70 MB reference array) and blew the 256 MB heap; decoding now uses ShortAccum (doubling ShortArray growth with a max capacity that silently drops overflow samples for the caller to reject), inference reuses one set of output arrays across the whole song, and the embedding accumulator is a DoubleArray.",
+      "evidence": [
+        {
+          "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/data/player/EmotionAnalyzer.kt#L29-L33",
+          "version": "repo-lines-v1:sha256:a9976695db2f43ddabd40afaf30c05a2ddca49411ff72bf079de1663b0fb88e1:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNTQ1MzQ3ZDNkYjFhMzk5ZmY2OTM4ZjZkZjg2NjA0ZjNiMzU1ZmMwZWQwNjJmZmQ2NjM1YjEwODg5MjkzYTJhMCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiOTcyYTQyOTM4MmIyZTE0NzE4ZTBlMzdiMDU3MGE4YTE3MDI5OTFmY2Q4NDk4Y2Q4NDA2MGE4YmY0ZjA1MDE3YiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYjE0ODNjMzhmNTI4Yjc5MGQzMjFmNmUxZmYzNjlhZmM3MzhkZTFhMTgyNjdiZWNkNDBlN2Q2M2RkMzI0YmM1MCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTVmNjBkNjMzMGU5ZDIzYjk4ZjdhYmYyMjliMGUwZmIxMTVkZDFkMDU2MDc4YmFkN2JlOTk2Nzc4YjE2OWUwOSJ9"
+        },
+        {
+          "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/data/player/EmotionAnalyzer.kt#L365-L377",
+          "version": "repo-lines-v1:sha256:258cfeb64d895228f440d454b7624f13bf98c4697770f2fc9199da54f7b89e90:eyJzZWxlY3RlZExpbmVDb3VudCI6MTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBkYzdhOTAzNmJhYjI4YWRiOTFmODJjYTg4ZmI2YTM5YWFiNjc1N2JhNTkyOWE5NWVjZDVlZWFjMjUxNjgxYjUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjMwZTJhMjMyNWE1Yjk2MGNjODIzMDU1MjZmMDIxYWYwZWEwODRjMzk4ZmFiZmQwNGFiMGNjMTVlMDY3OGM0NTciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijk4OGIxYWVlNDJlODg1NDRiMTA1MGJkZDdkNmUwOTcwYTc0YmIyMWVkYTExYWMyMDZlN2MyMTc3ZGMxZDdhMTAifQ"
+        },
+        {
+          "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/data/player/EmotionAnalyzer.kt#L83-L89",
+          "version": "repo-lines-v1:sha256:53bf75e34afae4b347a1d66734c0df5de7c117c0f5aa4863ab01c935cf4b3ec7:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZDk3N2Y4OTNmZjYzM2M5YTMwZjk0OTlhNDNjYTY0NGRjOTc0ZmYzMTRjNjk4MDRiZWE2NDdkNTg0MjA3ODE4YSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZTg1NTJhZDBlNDUyNzZhMWI5ZDU0NTZkNDgwMDg2ODkwZDcyMDA2NDBmNmUwNjNhYmUyOTY0ZDY4NzdhMzc2NiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNjgxYjNhMzhhZGU2MGE4YmJiODA5MzEwMzI5YWExNDdlYmYyOWYwOTE4NzhkM2JhZGZlMmU0YWYwN2EwMjZmYSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMDIxZGI5MmVkNTk2MWFjZTFlYWU5NGU4Y2RiZmI2ODg0NzEwMzk2NmQ3ZmRjMTJjNTRiYjk2ZTk4NTA5OWE5NSJ9"
+        },
+        {
+          "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/data/player/ShortAccum.kt#L3-L13",
+          "version": "repo-lines-v1:sha256:83a8e014997203ee158ba85fd5e03d14554c65ddf6d1a759729931c1a2a7cdd0:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVhZjIyY2YwNzMyNTkyYzI0NzE0MWNiZTYxZWZhMTEwMTI2MTJmNWEzMTIyYjlhZjliYmFmNTJmNTcyNGQxOTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjgzY2RiOWFiY2U4NWIxM2Q1YjQ0OTAxZjQ0NjJmZWIzMjM4MmFmZTZlMTZkNzFhNDdhNzRjY2FlM2FlNzFlNzMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjoyLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjQzNmRhMWRlZTUzNjc1NDIwMTI0YmU4YjExYWIzNWU4MjE4ZmFjZTQ3ZTczYTg1YTc4MmJkYmE0YTY3MDQ4YzMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjZmYzQ3MWFiODc5Y2Y4NjA5Nzg3NjZlZTc5YWViOTUwNTQ1NDdmNmI5MDA2ZDFhZmZhY2NhNDU0M2I3NmEwOGEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_29ccc424610f4898a399951d4bd2bbb4",
+      "statement": "EmotionAnalyzer.analyze is CPU-intensive (~120 ms per window measured) and must be called from a background thread; EmotionScanWorker's CoroutineWorker context satisfies this.",
+      "evidence": [
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/emotion/EmotionScanWorker.kt#L75-L88",
+          "version": "repo-lines-v1:sha256:f2975b6a0e3d41e2d6642a3fb07fb40ebf86dc54c4ce1f5fe57c1eadfbc90d41:eyJzZWxlY3RlZExpbmVDb3VudCI6MTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZlMWZjYWY5ZThlNGI4ZDZlNDg2MjA5ODYzZTkwODUyNmJlMjA2OWZlZjE5NWYxMmMzZmE1NWU4YzI0ZmVlMzkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImIwZDk2MmViYjBmMmViMDc0MWMyYjRjYWRhYjZiNTNiMzEyMjg4ZGIxZDU0OWQyM2U4YTJkOGZkODY0OGFjNWIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImEyYjIyMDIwZGEzNzUxOTk0OGNlYmQzMzA5MGE3MzI1NjYyOWI2MGE3M2I3MTRhNmQzMTNmMWE1NjE1NTI2YTQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQ0ODBiNDgwNWM2OWMwNmQ5MjI4MmZhNGQ4MmIyY2Y0M2VlNzk2NmMyYzg3OWVhMmNlNTYyNDNmYTE3YzMxMjIifQ"
+        },
+        {
+          "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/data/player/EmotionAnalyzer.kt#L62-L64",
+          "version": "repo-lines-v1:sha256:483c9f4c8514bb503e03eaeda3207aaff9d6d7c8585d4ee9332209d5defbe655:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZGZkMTBjMjA5ZTNmN2FjZTAwZTg4YzA2MzdlYmRlNGU5Mzg2MzQ3ZDE3YWYwNzAzM2NjZDJhNmViOWMxZTQxYiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiY2QxZTFlMjYwYmRhNzcyZmFhOTgxNTVkMzgwOGYwOTVjOGJkMmE3ZTlhNTM2Y2I3N2I5YTQ3YzcxNDQ2MTY3OCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiOWNlZDBjMjE0MjdmMjBhMTc1ZmZhOWI1MGU5ZjA3YWQ5MjQ5MWZkNTZhYjM0ZmIzNzBjZDAxNDAwYzcwYjY2ZSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiOGJmNWI4ZWFjMWY3MDk1N2FmZjhjZjJjYzY5ZDFmODIxNzI0MWEwMmFjOTE1YzY2MTUzOWVlNzcxODk4MWJlZiJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_c4dc4ee51571421b89577a980bf0dc19",
+      "statement": "EmotionFailureStore persists per-song failures in a DataStore preferences JSON (single key mapping songId to reason/failedAt/attempts, corrupted entries skipped); record() increments attempts and overwrites reason/failedAt, clear() removes an entry after success, clearForRetry() wipes entries so attempts restart from zero, and the failure reasons (EmotionFailureReason) map 1:1 to user-presentable skip causes from extract failure, no audio track, too short, too long, decode timeout, unsupported format, to inference error.",
+      "evidence": [
+        {
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/repository/EmotionFailureStore.kt#L24-L64",
+          "version": "repo-lines-v1:sha256:256c8e340a56325116e4ad7782db38eb553ee7a64be116d5199e8f739e123e44:eyJzZWxlY3RlZExpbmVDb3VudCI6NDEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVhZjIyY2YwNzMyNTkyYzI0NzE0MWNiZTYxZWZhMTEwMTI2MTJmNWEzMTIyYjlhZjliYmFmNTJmNTcyNGQxOTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQ5YTEzNTc4ZDQ1MTVhYjQ0ODBlM2ZjMjI4YjJmNzBhOGI0YzVlMWFmYzdjMGEwODlhNjNjOGU0MDRiMDQwNGYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjA0NWNiYTY2MDkzNmRiMzBkZDIwMjVhMGEwYzY3YWJlYTI4NWQ1NmFhZDhjYzViZjQ4MThmMDQxMTYwMjk4ZmEifQ"
+        },
+        {
+          "resource": "repo://domain/src/main/java/cn/com/dcsgo/mihx/domain/repository/EmotionFailureRepository.kt#L11-L42",
+          "version": "repo-lines-v1:sha256:15f5938f6474e6f7541c42a42917ef7c7bf2c43b83910e1a2e0d704dca5f9ff8:eyJzZWxlY3RlZExpbmVDb3VudCI6MzIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjE5MGM4ZmI3ZmRkODZlODgyMWUzZTVmYTM4YTUwZjhlZWIwZWYxYzE5YzBjNTdiOWE0YjkyOTgzMDEyNmZjZTEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZhZmJhMDUyN2MzOTUzYzRiNmUwZTViNTczOWJhODM2MTJmODA1M2JjZGM5NDY2NzMwMTkzY2QxZDU5MGI0MDgiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjAyNjk2ZGM2M2Y5ZTA2NjlhYzU2ZWQwM2VjMWFjODYwMDNjZjk1ZjUyYmJhZDRkMGJkYThhZjNkOGMyMTRkZmUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImRkZGU4YTRkNjAwMGE2YWNmZjI2MTQ3ZTA0ZTI0M2QzZjdjZTI3ZTY4OTY0YzlkOTlhNDkyNDA4YThkNTc0NTQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_801f3ee1d77941919d7cee8a02fd2e77",
+      "statement": "Manual retry is the escape hatch for songs with attempts >= 3: EmotionViewModel.retryFailedSongs clears all failure records, clears the pause flag, and enqueues an APPENDed manual scan, after which the worker's pending filter re-admits those songs; the EmotionAnalysisScreen '无法分析' section lists failed songs with reason text, attempt counts, per-song mark/edit actions via the calibration dialog, and batch add-to-playlist plus retry buttons.",
+      "evidence": [
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/emotion/EmotionScanWorker.kt#L42-L45",
+          "version": "repo-lines-v1:sha256:c580f44bde4df3e4612e068a66e30bf01775b4b644efa7b14306bbc9d0899268:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYzdlN2VhYWVhYzkyNTBiODZhYzlhMTYwZDIwZjE3ZTYxNTZhMDJhNjFkZGVmZmZhNjM4OGJiY2YwMzkxNGE4ZCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZWI2Zjc5ZWRlYzU5YTk4Mjc2OTQ5ZTZhNTkzNGIyODU4OTdiNmQzZDdhNGY5MGUyNDkzNGI4YTg2YTdhYzNjMiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNGNkOGRiYWM0ZmMzMTdhYmYyOWM0YmUxMTg0MDhhNDQyNGZjMTg2YmE0ODc1YTExMzQxNjA1NTc4NDg1NTZiZCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiODBjNGQ0OGQxOTdhYjdlOTBjYTRhMTQyYjI1YjRlNTU2MTgyMmViYTUxOGYwMTQ4ZjJjMmQ4NWZjYTliM2RhMCJ9"
+        },
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/emotion/EmotionViewModel.kt#L212-L226",
+          "version": "repo-lines-v1:sha256:ba71402c1241cbdabebac7381cee8806832bae5f5b1c978b7b2543dfc7673e25:eyJzZWxlY3RlZExpbmVDb3VudCI6MTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM5Y2JiYzY1NDY5ZGIxY2EyODQyZWZkOTdkZjdlZTJjZTZjYzE1NzE0ODJkMDFhMThiNzkwYTEwYzdjNTEwZjMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk5OWJkZWZlZWFjYTYzNDBlMDI5MGRjODZlODg5Yzg5ZDVlMTg5YWE1YmE0NGI1ODViM2I3MDczNGY0YTYyZDgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImYwMzBkNmU4MGE3YjBkMWIyY2JhZDVkZjAyMzVmNjdkNjNmNzRmZDMxMmQzN2FmMzQzMTI2ZDdkYzVlMWQ0NWUifQ"
+        },
+        {
+          "resource": "repo://feature/user/src/main/java/cn/com/dcsgo/mihx/feature/user/EmotionAnalysisScreen.kt#L89-L173",
+          "version": "repo-lines-v1:sha256:eaafb6329568b59f07e9dff6aef609d8d31a24f4277ff047d9fe1622b86f881a:eyJzZWxlY3RlZExpbmVDb3VudCI6ODUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU5OWI2ODRmY2UyZTk0OThiZTk0YTNiNDBmYjA3ZTdkYmMyODBmY2Q1ZDBkZWI1ZmQ1OTI3ZDBlYjlmZDU5NWMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU1MjJjNDJjZDE5YzZkMDNkODA4YzQ1MjcyMDU1MjgyNWI3ZWExYzViNDkxYjIxODUxMWNhYzc0MTVjZjlkOWIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjI0YWExMDdjODkyMGNlNGFkNDUzNjI2YTM0NDNmMzhiOTA5ZWVmMTQ3ZjJlYzk5NGE0N2Q1YzJkNzczOTQzNmYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjI1YmY2OWI4NTA4YWFkNmM1ZjgwMWFhMjE4MWQyNmVhNzEzZmU4Njg4MjIyNmQ0ZmEzODUxZDBkYmUwN2FhMDEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_0a37117a06e14a6d95b777de87159f58",
+      "statement": "EmotionViewModel is an all-Flow state machine shared by the 'My' page emotion card and the emotion-analysis detail page: it combines a manual refresh tick, the manual job's WorkInfo flow (treating ENQUEUED as well as RUNNING as scanning so the button reacts instantly and process-death recovery re-pushes state), the periodic job's WorkInfo flow, and the emotionScanPaused DataStore flow; while scanning it rebuilds status every 2 s, otherwise once per signal change.",
+      "evidence": [
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/emotion/EmotionViewModel.kt#L60-L134",
+          "version": "repo-lines-v1:sha256:def9c892d39d7bfac45f102075560122114092c1a084c1c4c4325585589567e5:eyJzZWxlY3RlZExpbmVDb3VudCI6NzUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVhZjIyY2YwNzMyNTkyYzI0NzE0MWNiZTYxZWZhMTEwMTI2MTJmNWEzMTIyYjlhZjliYmFmNTJmNTcyNGQxOTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijc5YWQyODc0MDg1Yzg1ZGM3MmMzYTFlY2VhN2I2NjYyMmVlNTFkYTA1YTRhNmIyOGU1MjU0YzNlYjdlOTM0ODIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijc5YzA1M2ZlYjIzOWUyOWFhOTViYTM1MDE4NmRkY2Y2YTNlN2JhODhkZjA3Nzc2NWUzNDQwYTAyY2YxN2VhMTcifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_2a8912db0020458db99711cfd22d2778",
+      "statement": "EmotionViewModel.buildStatus reads repository state (total song count, analyzedVersions, analyzedTimeline, correctionCount, currentFailures) on Dispatchers.Default because the repositories are runBlocking(IO) bridges that would block the main thread; per-song duration stats are approximated from adjacent success timestamps with gaps over 10 minutes treated as idle, and the flattened rows list is only rebuilt when a fingerprint (counts, corrected, paused, tick, plus content hashes of versions/timeline/failures) changes.",
+      "evidence": [
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/emotion/EmotionViewModel.kt#L141-L179",
+          "version": "repo-lines-v1:sha256:68dee740e28d5d7b6cdfb8a81951f5a87bc1f137c87aa3b0a34dd383d3accd3f:eyJzZWxlY3RlZExpbmVDb3VudCI6MzksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImEwNjUxMWQyYmQ3NGQ3YTk5OGQ0OWM3YTMyZDgyZDZiNzYwZDIwYWI4OTY2N2E1YjEwMTIxMWMzMjc3Y2QyZTEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImFhNGEwZDgzYjYxNTM2ZGMwNGQ5OWUzOGMwNDY5ZDdjNTMwOWU1MzJkYmZjMzgwMWI5NGE2YTBhYzRiZjBjYWYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImJmNGMzOGY4MTdlZjAzMzcwM2ZiZmE1NmIyM2NhMTM1OTM3NGMzOGYyM2ZmZTg0Yjc0MTg4NWM5YTRiOGYyY2MifQ"
+        },
+        {
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/repository/SongEmotionsRepository.kt#L19-L57",
+          "version": "repo-lines-v1:sha256:3ecf0e507f2700fe8c1b15b5586870a71cb7661e2d8b83fb79049745f22fcb78:eyJzZWxlY3RlZExpbmVDb3VudCI6MzksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImEzMTJhODk2YjljNzQ5ZGE0YmFkYTE4Yzk1NzVhM2I2Njc2MWI4YjFmNjg3ZDNmMjAzMzI4NTc2MGY3ZGI0Y2QiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjIwZTNjMTU1M2Q4OTVlY2QxOTgzMjNiOTZhYzhjN2U3YjgwMzM4OTNmNGNkNDFkZDZlY2RlOWJjNTY3YzNlZDkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijg1Mzg1MjFiNWEzYWMzYjY0MTZlMzJmMWFhYWJiNjc5MjRkZDQ3YzMxOTYxOTY5NzQxNDYxNTcyOTAyN2M5NzkifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_74709deeca534debb1eaf8621497d6b5",
+      "statement": "SongEmotionsRepository.upsert (the rescan write path) inherits the previous row's userValence/userArousal/userTags when the new result carries no user correction, so a model-upgrade rescan never wipes user calibrations; saveCorrection updates only the three user fields on an existing row, and clearCorrection nulls them and additionally deletes the row entirely if it is a fully-empty user-only row (windowsAnalyzed == 0 and no embedding) to avoid it being mistaken for analyzed.",
+      "evidence": [
+        {
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/repository/SongEmotionsRepository.kt#L39-L103",
+          "version": "repo-lines-v1:sha256:6bfa4a2e02482f9a88832500bdc2b4731886d59fd004650828f7d47077268231:eyJzZWxlY3RlZExpbmVDb3VudCI6NjUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU2ZTM1NjE0ZmQ5N2ZmNjI3NjA4ZWFkMTg0NzBjMTM5NDBmZjY1ZjYwNjYwZGZjODQ4OTViOGYwZGE5OWZmMmEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjZkYTVlYmQwODk4YzZhZmQxYjU1NDVhYjI0NDgwYjIxZTViZmI5MmQ4YjcxOTM5OWMyYTE5ZDcyNWE1YTlhY2YiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjUwNTg1NDU3ZDc1NGUyNDUxZDQzNWRmNjdjMGJkZGY0ODU2YWE4NDZkMTIwZDhjOWYzMTVjMDhiNzQ0YjgxMjcifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_6e8161fce0a94241a89e38ff060c99b6",
+      "statement": "Calibrating a song with no analysis row (e.g., analysis failed) inserts a user-only SongEmotionEntity: curveJson '[]', windowsAnalyzed 0, embedding null, modelVersion 'user-only', and the user fields set — AppMediaMetadataViewModel.saveEmotionCorrection converts the picked words to mean group-anchor (V, A) via EmotionGroup.avgOfWords, treats an empty word set as clear-the-mark (requiring an existing row and returning false otherwise), and returns false for invalid words.",
+      "evidence": [
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/AppMediaMetadataViewModel.kt#L26-L47",
+          "version": "repo-lines-v1:sha256:ea61502f75a3dc2333a00ca91f79646f8dae4d15def5cd0983e063eae3f79f14:eyJzZWxlY3RlZExpbmVDb3VudCI6MjIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM5Y2JiYzY1NDY5ZGIxY2EyODQyZWZkOTdkZjdlZTJjZTZjYzE1NzE0ODJkMDFhMThiNzkwYTEwYzdjNTEwZjMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjYxNWViMGQ3NmUxODJkOGJhN2YyYTAzYTZkZmQ1MmIyYWM1ZWU4MzFlMTExYTA5ODBkNDc0MjgzNjI5YWIyMDAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        },
+        {
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/local/dao/MelodyDao.kt#L385-L392",
+          "version": "repo-lines-v1:sha256:ec32c89adf1b523e9a5dccf61d8fd0a4bb3fd570984745e8adbdac6e4e29fd70:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMzljYmJjNjU0NjlkYjFjYTI4NDJlZmQ5N2RmN2VlMmNlNmNjMTU3MTQ4MmQwMWExOGI3OTBhMTBjN2M1MTBmMyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDZkMGRiNzQwNWE2YjAwNjE0MmI4OTE0YTRlMzA1NDJhODQyNzliZTE0ZGRkZTdhZGU2NTE1ZGJiOTk5OTQyYiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZmU3MmZkMTc3MjMyYWY3MzY4ZDFmNGFlMmVmN2VkN2Q2Nzc2Y2RlMTFlZWIxOGI4YWM0MzY5NWZhNTRjMzIwZSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMjJlMjQwMDEyYWFlYjc1MDIyNjE0NWQ1MzgzMDc4MjRiMmUzZjYyMTEwZjUwMGRlYzJiNTkxZmRjM2E0NzdkNyJ9"
+        },
+        {
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/repository/SongEmotionsRepository.kt#L59-L91",
+          "version": "repo-lines-v1:sha256:10d5b7ab7771606dab9079c75677e1c2140057121c630033431d76d80224f6c7:eyJzZWxlY3RlZExpbmVDb3VudCI6MzMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAwNjhlNjlkNmVmODY4ZGRmZGY5ZmY4N2E5NTY2YzdiMTVjMmE0ODhiYzQxNDM2NmE4ZjYwMTJjY2EyNDQ2ZGUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk5OWJkZWZlZWFjYTYzNDBlMDI5MGRjODZlODg5Yzg5ZDVlMTg5YWE1YmE0NGI1ODViM2I3MDczNGY0YTYyZDgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImQ5ZTA4NDgxOTdmNTNjNDIyNzZkMjc5NjhkMmQwYmJlMWVkNGZjNGMyNTg2ZWE0NmZkNzRiNjgwOWFkNjJlZjQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_37ead15167b34dbb9abc566dc2531e20",
+      "statement": "The user-calibration entry point is provided once at the NavHost root: AppRoot supplies LocalEmotionCorrectionController (a CompositionLocal with a controller whose save delegates to AppMediaMetadataViewModel.saveEmotionCorrection and then refreshes EmotionViewModel, toasting on failure), so every page that renders the song-detail emotion section gets the '不像？标记' capability without callback threading.",
+      "evidence": [
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/AppRoot.kt#L131-L147",
+          "version": "repo-lines-v1:sha256:90322291107007931fa3a28c6ba33578669b98f3e64ff937ad2908a6f55b3244:eyJzZWxlY3RlZExpbmVDb3VudCI6MTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjUwY2U1ZDg3NGU1YmFlMDFlOWI0ZDE5OThhM2E1NDQ5YzIzNTBiYzI1OTFjY2Y5M2JhODJkZTljNDE1ODZiODEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZhMjBhMzkzNmY3ZDgxMmU1OWQ3OTIxZWE4ZTVhNDQ0MjI1Y2ZiM2E3ZTVhN2ExMjg2M2M4NDg4ZTU0NTEzMGMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQ1MjhhYjg4MmEzMWY4YTljODZhMGRlMDY5MDM0NGZjY2ZiZmYxNmRjZGUxODM2MzYxOWQ1NjZlZTZkOTMwYzAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImNhZWMxZWJiMTZkMDI4ZmI3NTI0NzU2ZGFmMGU0MGQyMDVjYjlmMWU0YTlkYzIyZDg5ZmZjY2I3OTc0YmMyNTIifQ"
+        },
+        {
+          "resource": "repo://core/ui/src/main/java/cn/com/dcsgo/mihx/ui/components/EmotionCorrection.kt#L6-L17",
+          "version": "repo-lines-v1:sha256:e7411dbcde65addf6d5df2a9ebe6a12b5a254bc4792cf3cfac66c412d57e0c72:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVhZjIyY2YwNzMyNTkyYzI0NzE0MWNiZTYxZWZhMTEwMTI2MTJmNWEzMTIyYjlhZjliYmFmNTJmNTcyNGQxOTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVmOGQxNTExYmZmM2FkZjA5MTk5YzU3NjhlYmRhMmMxYmMyYzJmODExZTY0MGQ0MzY5ZDM2NDQ4MzhhMWE3ZDYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImRjMzllYmM3MDdjZDNlYTdmMTIxMDViZTExZjlmNmFiOTgzNDg0MWQxN2U3OWQ5ZjljOTU3MjFmZGM1YTcyNGYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_87b360845fa74433988c00884870e6d4",
+      "statement": "SongEmotionSection renders the raw stored curve after smoothing with smoothCurve (moving average, window 5, shrunken windows at the edges, lists shorter than 3 returned as-is) and draws the arousal-peak dot only when hasSignificantPeak passes: max arousal must exceed mean arousal by PEAK_MARGIN = 0.5 (calibrated from a 20-song distribution: flat/always-high songs <= 0.49, true-climax songs >= 0.52); otherwise the UI labels the climax 'not significant', and the peak position maps peakSec/durationSec to x and peakSec/2.5s hop to a window index.",
+      "evidence": [
+        {
+          "resource": "repo://core/ui/src/main/java/cn/com/dcsgo/mihx/ui/components/SongEmotionSection.kt#L190-L238",
+          "version": "repo-lines-v1:sha256:17b16bf38ca95f31a6da6e939e31e903e285bf31ef3630c609391483b910f469:eyJzZWxlY3RlZExpbmVDb3VudCI6NDksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjlkMWJiZjA2YWMxN2UxZjZhYzI1MDI3NGM2MmZlNjRlMThkM2JkZDM1MWNhMjdhZjNhZDM5Mjg2ZWI5ZTUxY2QiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBjNjQ3OWNjMjMwNDQwZmQ0MWU4MjI0MjE4Njc5Njk4NTU5ZDI4OTNiZDY3YjQzODBhZmFiODExYjM4YTU1YWEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImNlYjJiZWY3ZDJhNDI2Y2QxNzg4YmU2NGJiYTUyOGQ5M2VjOTMzMmJjMzBiMGY2NTFiMzQyNWY4YmZhNGMwZmQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjA5NjRmNWMwMGIzMmZmNTNiZDBlNmU4YjlmMDE1NjE1MThjMDYyYWEyYzg0NDIxMDk3M2M3ZTY2MTdiNzJkY2UifQ"
+        },
+        {
+          "resource": "repo://core/ui/src/main/java/cn/com/dcsgo/mihx/ui/components/SongEmotionSection.kt#L53-L80",
+          "version": "repo-lines-v1:sha256:782d155cf776e66e09536f7e461183984fcb8dfc34d0d77b70b9645e1619ca59:eyJzZWxlY3RlZExpbmVDb3VudCI6MjgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRhOGRiMTRiNTlkMWQwYjk4MzgxMDFhNDQ3NThkYjE5MzdkMDM4MmZkZjJkZDVlYWMwZGQ4MmQxNWMwMGY3MDQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImM5YjkwZjA5ZDA0MGY5MGM5NmI4MmEwZWM5NjZiMjY0ZjgxZWZhZDQ1MGZkMThmNmE3ZmNiZTkxZDg0NTllODUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjA5NTFjOTljMTY3YzM1MTYwNmZjN2U5M2UyNzRkYTE3NDBiMWZlMmE1YTk4OGQ4M2I5MmIxODc3ODQ1MzgwOGMifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_686142523f22415d90446001e4f284b1",
+      "statement": "SongEmotionSection does not early-return for user-only rows (empty curve but non-empty userTags, typical of failed analyses): it shows the tag list plus the note that the analysis failed and the user's tags take precedence, and only the curve area is replaced; a completely unanalyzed song shows a placeholder saying analysis has not completed and runs automatically while charging.",
+      "evidence": [
+        {
+          "resource": "repo://core/ui/src/main/java/cn/com/dcsgo/mihx/ui/components/SongEmotionSection.kt#L82-L124",
+          "version": "repo-lines-v1:sha256:e04a40572629434e3dc149b41d2baee5a615f9ac9861c881f07badbf8fe7c67d:eyJzZWxlY3RlZExpbmVDb3VudCI6NDMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjdmN2JmYTQ1ODFmMmEyYWQ0NjZmMzY2ODEwNjIyNzljZmFlMTA4NGRmYTI0YWZjZDIxMDA4MTNjYTQwOTE0NWEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjU0ZjI3NDE4NjViNGU1ZGM4NzNmOWZjMTU4MjVjNWVhY2M5ZmI4MDk3N2UwZDliMmZlNzk4YzNjNmE1MTFiODEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjU4MjQ3YjJkYTU5ZTE3YjMzYTdhZjY5NGNmY2RmMTE3OTIzMWZhMDU3NjQyMGRiOWU5Njc5MjUyOTM3ODI4NzIifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_d7c29d5f178f474bbd388d372245d994",
+      "statement": "The library's Emotions tab (EmotionLibraryView) consumes EmotionViewModel.rows (flattened song + emotion + display tags + corrected flag) re-mapped by AppNavHost into EmotionSongUiRow, and offers tag-chip multi-select filtering, an analyzed/manually-marked segmented count, batch add-to-playlist, and a sort that prefers corrected and tagged rows; the empty state directs users to the 'My → 歌曲情绪分析' manual scan.",
+      "evidence": [
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/AppNavHost.kt#L335-L349",
+          "version": "repo-lines-v1:sha256:7560fb6a39d67541fc4670e1fcd8c2275b8443988a535f0291be5517d437d305:eyJzZWxlY3RlZExpbmVDb3VudCI6MTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjlmZjdmNmJkMTE5ZTc0YjUyODMwODc1NjI5OTE2OGE3ZjkwMDQ0N2UwMGNhM2I2YTk5ZWVhZGM1NzA1YjRiYzkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImYwZDlmNzM0YmU1YWEwMzkzNWM0OTliNzE0MTEzNTVjZWZhYzJhMmJmNTc5ODllMTI0NmQzNWE3MzUyYzdlOWEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImI1YjljZjQ3MzRmNjE2MDIyMzM4MzcxMjU2ZDhjMGY1MjhlY2M2NDhiMDIzODJjNjQ3ODQzM2FmODE0NmRmZWYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImIwMGJiZTljZTgxMmY5NmE1NjQzYjk2MzlhMDkwYzdhNDJhZjUwYmNiZDk5NjdlOTZjZDQwNmY2YjVlNGEzYjUifQ"
+        },
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/emotion/EmotionViewModel.kt#L190-L202",
+          "version": "repo-lines-v1:sha256:0ed30074758da8afaabd791f3f7dff9ca50a50b7661825eb5f3519e36d439a1a:eyJzZWxlY3RlZExpbmVDb3VudCI6MTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjYzNWJiN2UzODI1ZDlhMWE2MDIyZGMxMTgwMThmNDJhY2Y4MTY4YWQ5ZTkzYTE2MDYzYmQ3YTljNDU3Mzg5Y2UiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjhlYzFlODAxY2M2Njc0ZjcxNTcyZGFkNmY5NTA2Zjc5Yjg1NDFhOWM0ZjNkMzZkZDE3Njg5ZGExYjZlZTY2YTciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImI2M2FlMGY2MDk5NTM4MzJkZDYwZDIxN2Q4MDdkMTU0NWExYjMxNTQ5YjQzNjcyYjc4ZTdjNjdhNzYzNTgyNmMifQ"
+        },
+        {
+          "resource": "repo://feature/playlist/src/main/java/cn/com/dcsgo/mihx/feature/playlist/EmotionLibraryView.kt#L53-L97",
+          "version": "repo-lines-v1:sha256:a98bda385d2b10a7d724e07631eb5c2e624e88a7182ac992f33b5e015d3866e7:eyJzZWxlY3RlZExpbmVDb3VudCI6NDUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVhZjIyY2YwNzMyNTkyYzI0NzE0MWNiZTYxZWZhMTEwMTI2MTJmNWEzMTIyYjlhZjliYmFmNTJmNTcyNGQxOTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImM5NWZjM2VlZjhiZTYxNzViNWY2NGQ0Yjg4ZGVjMTI3NGRlYWIwMzIzYTIyZmU5OWI1OWY2YzVhODNmYmM3YTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImI5NzI4MGIwNmUxNzIyMmUxYjI5ZGU3MWVhMjc3ODZjNzFjMTZkNjA1ZGM2ODZjNTc4ZjdhZDMzOTk1ZTY4NTYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjE4ZjM4NmRkYzdhNmI0YmMzYThlNjgzZWVjNjFiOWYzYjQ4NGI5Yjg2NGU0ZjU1ZWQyMmQ0ODUxZmJmMDk2ZGYifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_3b3fed3549bf490b81a938ab789aac11",
+      "statement": "Emotion data feeds mood time-slot random play through a volatile snapshot: PlayerRuntime refreshes moodEmotionTagsCache by mapping songEmotionRepository.getAll() through emotionTagsOf (so user calibrations flow through automatically since user tags win), and PlayerRandomQueueFacade.filterByMoodTags restricts the random pool to songs carrying any tag of the active time slot, returning null to fall back to full-library shuffle when zero songs match and warning when the pool is under MoodSlotPolicy.POOL_WARN_THRESHOLD (10).",
+      "evidence": [
+        {
+          "resource": "repo://core/model/src/main/java/cn/com/dcsgo/mihx/core/model/EmotionTags.kt#L11-L13",
+          "version": "repo-lines-v1:sha256:d860b682b0d022ed58ac02f8bee8dfc4894788508bc575631dc09e26531d17e4:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiN2Y1ZjkyZjlkYjk1ODRlNGQ0MjFlZGNkZDY4NjM0OTk3MzkzY2MwMzFjOWE5OWVkOWZiYjViMmZkZGEzZTYzMCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiODM3YWYxOGExY2FlNjMxZThhNTI1ZmNiMTI0YmQxZWFkYzk3NTUxM2JjMTBmNDI5MzNkZTYxOGI1NjhiOTFlMyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMGQ0NGEwODZkOTk0MGI0NDc0NDFhZTAzMGQ2NGE4ZWViYzZiYTY0MDE0ZWU4OGRlNWRjNjEwMzJmNmQ1NjI4MiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjEsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNDEyY2EzNDVjY2Y3NWJmOWMwODA2YmNlNjk1YmU4ZGU4MDhiNzk5ODQyNTFhN2E1NGQyMDJjZjYxMDFkZDQ1MSJ9"
+        },
+        {
+          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRandomQueueFacade.kt#L21-L76",
+          "version": "repo-lines-v1:sha256:b0d856323850c84da84b5e559da047d66bc0e7cb095d1ce8ff4b5831bcfc63bd:eyJzZWxlY3RlZExpbmVDb3VudCI6NTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk4MDE2ZGQ0NmQ4NmI4ZjhhNmRhNmMxN2Q4MzkzNmFmNmRiZDI2MGU4ZDkwOTY1ZGYwYTRjZmZmZTlkNzFiOGIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjMwYzY4MDUzMjA0ZjFkMmFhYTdjNTliYzc1NjcwZWE1YTRiOWQ3ZTUyMzNhMThlNWUyN2Y3YzJkODQ1MDVkYzIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjA3YzAwOTI1YTdhMjc0MzA0MGExNTE2MWQ1MTA3NTM2MDdjYzFmYzE0ODFmZDEzYWZkZWNkMDUzMDA2NzQ5ZTYifQ"
+        },
+        {
+          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRuntime.kt#L379-L401",
+          "version": "repo-lines-v1:sha256:02faa2323e3a820b1a41e505258f2aa8d1015f226f4779da82af6b49b78948b3:eyJzZWxlY3RlZExpbmVDb3VudCI6MjMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZjZWM1NmM4NmU3MGYyMzJjMmY0MzIxNDI2YThkMDE2NWU0OTc4ODg2YmQ1YmE4ZWU1OGRhZTIyNTUwMzBkYjMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjNlNWU3YWRkN2U4MDJkN2NlNTcwNGE2MTA4MTQ3MzQzMTcxMDUwNDg2ODU3MTQxYjk2YTZhMTFiN2QxODgwOTMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjBiOGEzMzM5ZDA4MWUzM2Y4ZmQyZDViZGI5ZGQyNmUwNGY5YjE5YTM1NDE0NjBlZTEyNmYzOWQzNzBiZTFjYmMifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_2fee49a2705b4e8a9ea4a4774104dc93",
+      "statement": "MoodTimeSlotViewModel.loadStats computes per-tag song counts with the same emotionTagsOf over all emotions, giving the mood-slot configuration page its coverage signal; this visibility exists because low emotion-analysis coverage (R1 risk) directly shrinks the time-slot candidate pool, and failed songs stay out of the pool until fixed or manually tagged.",
+      "evidence": [
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/mood/MoodTimeSlotViewModel.kt#L22-L77",
+          "version": "repo-lines-v1:sha256:ee1ecb1fa8b6956395192d261f85df379c2a9813550925ae0b992db06dc0d5a2:eyJzZWxlY3RlZExpbmVDb3VudCI6NTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU3MGM3MDQyMDRjMTk0YjRkOTVlNzZlMTRlZTQ3MzkwZDJmZDRjNTdlYWYwOGExOTc3NDIyZDZiOWMxNDAzZDQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImY4NzJkNTQzODk2NTM3ZTBkNWUxNWQ2MGIzZjE2ZjU1NTM0YmM4NzY2ZGJhNDFmOTViYzMwNjgzMjE0ZjcyMWIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImY2YTJhMmUyZjdjZWE3NDE2OGQ1NTY1NTdhMmQ0NmQzZDVjYjc0MzRhODQzNmViNWU3YzlmZjcyZGE3Y2YzMmEifQ"
+        },
+        {
+          "resource": "repo://docs/architecture/MOOD_TIME_SLOT_PLAYBACK.md#L314-L322",
+          "version": "repo-lines-v1:sha256:1e5cef5730773185c065bf6b609a77de517dc83abb8378d0018bc7b038a46843:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMmYzYTFkZTNjMWM5MjJiMTZjMDE1Y2E1NjkzOGJlODdlMGJiMTBjYWJiZmE4MDYwOTQ3NzBlNjUxOGQxODliYSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMTI0MjNkZTU4MGQ0OTE5ZWU5MGQyODg2ODgxN2NlNWFlYjk2OTNiNTQzMjNjMjU5YjY2NTM1NzkxNTlkODNjMSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZjJiZGU3NjExMTdlN2MzZjQ1YTZjZTMyZmIyMThkZGVjMzY3ZGQxMzExMDkwNzlkYmE4MjE3NGExMjZjY2NjMSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjEsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMTVjOTZlMmZhMmRjOTg1NGU4MTIzMmZlYWE1ZDg5NjhmZWM0OTRkMjY0ZTJiZTRhNjRkNWE3MTg0NWY3MWNiYiJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_84911193d7b24ef19656af1bf0c61cd2",
+      "statement": "The display-layer contracts are unit-tested in SongEmotionSectionTest (smoothCurve length/noise behavior, hasSignificantPeak boundaries, EmotionGroup voting incl. WITTY exclusion and avgOfWords anchor math, emotionTagsOf precedence), and the consumer-side filtering in PlayerRandomQueueFacadeTest (tag filtering limits the pool, zero-match falls back to full library with a log line, and behavior is unchanged when the slot is inactive); the worker, analyzer, and failure store have no dedicated unit tests, so decode/scheduling changes need on-device regression, especially for OOM/long-compilation scenarios.",
+      "evidence": [
+        {
+          "resource": "repo://core/ui/src/test/java/cn/com/dcsgo/mihx/ui/components/SongEmotionSectionTest.kt#L31-L59",
+          "version": "repo-lines-v1:sha256:ccf77d22fb0d3d13bcb313ac5746bb1c45e173fa888e3bd42a63822e6ade1c97:eyJzZWxlY3RlZExpbmVDb3VudCI6MjksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRjZjA5ZWIwYzU3NDRmYjk3MzMxYjk4ZmYzZmJmMDVhNjAyYmEzZjdmNjdlNWRhNWJlOTA5NTAzM2Y2MjU4MjUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImRhNDVhZWM3YTI3MzQzNDBjZGExYjFjYzg5ZDVhOGMxNGQ5ZTI1NjFmMTRlNTZkMDg1MjVjMWE2ZWI1ODU4ZTciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjUzOGI5YmM1YjIxMjQwNDc3ZDU2ZDQ5ODYwMmM5NzJiNTYwNGFlN2UxNWFkMmQ2NDM1NTlhYjhiNzJjNjYyODQifQ"
+        },
+        {
+          "resource": "repo://core/ui/src/test/java/cn/com/dcsgo/mihx/ui/components/SongEmotionSectionTest.kt#L96-L134",
+          "version": "repo-lines-v1:sha256:a952d4d64bec475aa1b7f926fa70e949ff93a8942eb474e96bdb4dcedaf6fbc8:eyJzZWxlY3RlZExpbmVDb3VudCI6MzksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRjZjA5ZWIwYzU3NDRmYjk3MzMxYjk4ZmYzZmJmMDVhNjAyYmEzZjdmNjdlNWRhNWJlOTA5NTAzM2Y2MjU4MjUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjkxY2MzNDEzOWU0YTMwY2ZkMTdhNWVmMzc1Y2E3ZTVkMWIzNzZmMTQzNWNiZjgwMDdjMTM1ZTA2OTk4YzA3YjQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        },
+        {
+          "resource": "repo://feature/player/src/test/java/cn/com/dcsgo/mihx/feature/player/PlayerRandomQueueFacadeTest.kt#L297-L338",
+          "version": "repo-lines-v1:sha256:6b519abc93732e6de68a2abe3d6f894cece86504f690635a5d3c3bfa0bf146df:eyJzZWxlY3RlZExpbmVDb3VudCI6NDIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRjZjA5ZWIwYzU3NDRmYjk3MzMxYjk4ZmYzZmJmMDVhNjAyYmEzZjdmNjdlNWRhNWJlOTA5NTAzM2Y2MjU4MjUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImE4MzljMjkxNzljM2IwOTlkMTY0N2Y1MzYzNTY5ZTVlYjdhZTNiN2ZlOGJlMDQxYWFjM2U4ODllZjA5ZDEwMmEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjZlMWY1OWFiMzk2NDQwN2ZlMDUwZGE2MDFiMDcxZTIzMDYxYmFlN2U4Y2QzYjQ3NWM4OGQ2NDVlMGM1NjEzNjEifQ"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "by": "openwiki/0.5.0",
+    "at": "2026-09-07T13:49:59.042Z"
+  }
+}

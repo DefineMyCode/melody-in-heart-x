@@ -1,0 +1,466 @@
+{
+  "schemaVersion": 1,
+  "pageVersion": "sha256:ce4e87dac2b6a75feb8e8f7380fa72f1ee8c76b801f2c55ca2a892fdf64b8e46",
+  "claims": [
+    {
+      "id": "claim_d5c1de371efb4ac08e6bbd0206c8ce75",
+      "statement": "Shell ViewModels (PlayerViewModel, SettingsViewModel, AppMediaMetadataViewModel, PlaylistResumeViewModel, EmotionViewModel, MoodTimeSlotViewModel) must be created at AppRoot's Activity scope and passed into AppNavHost as parameters; calling viewModel() inside a NavHost composable block falls back to the non-Hilt SavedStateViewModelFactory and crashes for @HiltViewModel classes needing injected dependencies (regression recorded 2026-09-04 in source comments).",
+      "evidence": [
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/AppRoot.kt#L50-L62",
+          "version": "repo-lines-v1:sha256:8f643ee31b3ad2e048064cf884083bd1c13e2951d967a57bc7b4cd37b98adbf9:eyJzZWxlY3RlZExpbmVDb3VudCI6MTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjJlOGQ5NzlhM2JiNjU4M2YyOWJhYmZlZmJlNGM4YjUwMGMxMDcxOWJjOTc4ODgwNzYyMTlhYWY3NTUzZDAzOGIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNmMTYzZjc3ODZjNDJjYTg4OTI3MGY3NTNhNzgwNjI2NDI2YzAzZjk3M2EwNWFkZWFlZGQ0ZmE0ZDI3MGYwZDUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUwNGE3NWU3Njg3MTIwMzAyZDI2MjJiYjAxZjAxMTE2ZTFlNDVjNWQ2N2RkYWE0ODA5ZTY2NmZhZTUzYTNhZDciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjhiNjBlMTY3MDJlZTAyMGU3ZTU0MGYwM2FiMDUxYjk0ZjA0NjEwYjI1NzY2OGViY2U1ZTcxZGMyYjM4ZGIxN2QifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_7d4e00bb602946a8b5cd75c6db2cb230",
+      "statement": "PlayerUiState.isLoading defaults to true so the first frame is a full-screen LoadingSplash; AppRoot returns before composing MusicplayerTheme, AppScaffold, AppNavHost, and the toast/queue overlays until startup loading completes, and error-message toasts (errorMessage → toast + clearError) are likewise gated behind loading.",
+      "evidence": [
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/AppRoot.kt#L91-L101",
+          "version": "repo-lines-v1:sha256:1ee03f076685a9f7e774525c465fa8ffde9406ddab699c23621d419c3a38dc4d:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjljZWQwZTE2MWRiYTZmM2U5YWMxNDA2MWRiMzk4NGM1MTQzYzIzYjgwYjAzMGE0NTgxNzA2ZTZmYTM3N2ZhNmQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjcwNDUyZmFjYjlkNjgxYzU1MjZiMTg4NDExMDA0ZTExMzBjMTM1NjhjMDMxNzNiNThiMWI4OTgzMmQ5MzAxM2QiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImJhNjRiOTU4ZmI2ZjMyOWUyN2MyNzg1MGMwNzFlZWNkMmQ1MTM1NWZkNmRkZWZmMTRhNjkyNzEwZGFlY2QyNjcifQ"
+        },
+        {
+          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerUiState.kt#L41-L42",
+          "version": "repo-lines-v1:sha256:c24d01998ae88c434b93196cbf436df1f7e720d855d675bac87f5471215fcb87:eyJzZWxlY3RlZExpbmVDb3VudCI6MiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNzg0MjlmYWM4ZGY2Y2EyNzhkNWM3M2FkYjU2M2M4N2ExNGY0OTRhMjJkMTI2YjZlNTFlNzY3ODBlOTQzMmY4MCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZDZlYjI5NDY5YWE2OGEzZGVlNGYzYWY0YWJmZmYwYmE1OTk5YzJkYmQyZjMzMzA4MmU0Mjk3NjA0MzY3ZjU1ZSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZjhkZmEwOTEzNzc3NmYyNDM3YmEzMDM2OGE5OWUyNzEwNGQ2ZDU5MzZjODQxMThmNGZlNmFiYjYzODVkMTYxNiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMGI4NTQ3MDAwMzMwMzU2ZWZhMWI5ODAwZWFkMGMwZmM4ZjQ3YWM3MTgyYThlMDM3MGIzYmVmOTQ3MmZhNDk3NyJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_7a3e36269ac3452b900c504a480ed7aa",
+      "statement": "SettingsViewModel exposes persisted StateFlows from PlayerSettingsRepository — themeMode (default SYSTEM), themeVariant (default MONO), lyricFontScale (default 1f), each stateIn(WhileSubscribed(5_000)) with write-through setters — and AppRoot derives isDarkTheme from themeMode (SYSTEM → isSystemInDarkTheme), wraps the shell in MusicplayerTheme(darkTheme, variant), and syncs status-bar icon appearance via WindowCompat.getInsetsController.",
+      "evidence": [
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/AppRoot.kt#L231-L241",
+          "version": "repo-lines-v1:sha256:fbcbc0ae459a25e8779403f232d69266a36067896333e6c0d7373180426a411d:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjJlOGQ5NzlhM2JiNjU4M2YyOWJhYmZlZmJlNGM4YjUwMGMxMDcxOWJjOTc4ODgwNzYyMTlhYWY3NTUzZDAzOGIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjE5ZTc2MzU1Y2YxMTk5NDgwYzNmOTk4MzZiMTQ4NmM4NDFkODkxZmFhZDkwNGM2MDhlMDkzMDIyZDM3NTdhZWUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImNmY2E4ZWZlY2U1YmVlNGJjZWVjN2Q0ZGE0MDNhNDhkZmU5NzRlNjIxMjFhN2MwNzBiZDM5OGQ3ZWVhMjk2MDEifQ"
+        },
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/AppRoot.kt#L69-L77",
+          "version": "repo-lines-v1:sha256:35cac2874041182046650bced8455078f5cc4927ea39ce957bec32afc3491427:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiODc0NzNlMjFlODRjZDJhYTg1MTI5MTM1Y2FiODUzZGU0NzIwZWNlMGYxYmJiYjE2YzJkM2FlN2UwYTlkYjA1NyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDg5M2Y0MGUzNzgxZWI4OTZjODJkMDQ2YTA4MDY3YTExZTM1Y2RmMmYxZGZhZjI2ZmVhOTBiOGRiNjY3NjQxMyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMzdhMjRkZGEzZDdjOWQ0ODQ4ODc4ZjA2MWM5NTYyNDc3NjBjNzRjNzJkYjNmYTUxMTA5Y2I4ZDFiOTQ3ODhhMyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNDBiY2JiYWYwNjk0MGI5NDYzYTRjMWU0NjQ0YzA4YTA4NThmOTlmYTI5ODVhZjM1ZmQxNjBkZDRkY2U2MmU0YiJ9"
+        },
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/theme/SettingsViewModel.kt#L15-L45",
+          "version": "repo-lines-v1:sha256:986d275a31ef0ed803332c9c59e130fbba5dcde0f82d6abf55c8450cccd8c3e4:eyJzZWxlY3RlZExpbmVDb3VudCI6MzEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjliZmMzYzE5YTU1ODliOWUyZjEwNjExZTFkZjcwNDllMWQwNjBmYmVmODhkNmQ5NDQ5ZWYzYzVjNDhiMTVhZjMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImJhZDJhOWM2MTc4ZmZmMDBjY2U0ZDUyNmUwMGIyYzE0YTk3MWUxYjg0YzVlNDg0ZDRjZDU2ZTRkMjA5NWMyYWMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_45412338fecb44569f136e194b1aec29",
+      "statement": "MusicplayerTheme resolves ThemeMode×ThemeVariant onto four ThemePalettes (mono-light, mono-dark with OLED #000000, vermilion-day, vermilion-night) via paletteToColorScheme (primary=accent, background/surface=bg0, outlineVariant=out1), matching the token tables in docs/ui-design/DESIGN_SYSTEM.md; dynamic color is disabled by default and LocalContentColor is explicitly provided as onSurface so uncolored text follows the theme.",
+      "evidence": [
+        {
+          "resource": "repo://core/model/src/main/java/cn/com/dcsgo/mihx/core/model/ThemeVariant.kt#L8-L11",
+          "version": "repo-lines-v1:sha256:a4e57aaee02586482768652dc28e008418d6ebca0b9065c1cc3465897bbc904f:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYTFjMDNmNmI1OTA2N2NiZmE0MzQ4OWE5MDA4NmYxZWQ1MTUwNGFjYjg2ZTRjYzc0MWU3Zjg1ZWUzYzlkMzQyMCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDEyY2EzNDVjY2Y3NWJmOWMwODA2YmNlNjk1YmU4ZGU4MDhiNzk5ODQyNTFhN2E1NGQyMDJjZjYxMDFkZDQ1MSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZDJiMDI0ZjNiMjg0NDdlMzNmNTQxZWU5MDVlNDE2MmM2M2M5M2E5MmQyOWNiZGMwOTk5ZTU1ZmNmMTA2NWYwZSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjAsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSJ9"
+        },
+        {
+          "resource": "repo://core/ui/src/main/java/cn/com/dcsgo/mihx/ui/theme/Theme.kt#L124-L160",
+          "version": "repo-lines-v1:sha256:6d5d1f982e2e10e1ee2c374e39eaa26ab13febdb41fe01abb89357cea9275b4d:eyJzZWxlY3RlZExpbmVDb3VudCI6MzcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjJlOGQ5NzlhM2JiNjU4M2YyOWJhYmZlZmJlNGM4YjUwMGMxMDcxOWJjOTc4ODgwNzYyMTlhYWY3NTUzZDAzOGIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjE5ZTc2MzU1Y2YxMTk5NDgwYzNmOTk4MzZiMTQ4NmM4NDFkODkxZmFhZDkwNGM2MDhlMDkzMDIyZDM3NTdhZWUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://docs/ui-design/DESIGN_SYSTEM.md#L17-L24",
+          "version": "repo-lines-v1:sha256:f7e568c43745750b28405b96c82078715871957b43ad5b262967fbb3abefa783:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMGZmNWI4ZWJlZmRmMzI0ZWEyZTBkMWJmMTgxOGQ3OWRmOTJlMTkxODc2MDdmMTZlYWMyNjJlNjM5ZTZkNzM1ZiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZTY2MmI1MmNhNWU2ZmVhMTQzZGYyZDQ4OTQ5ZDI3M2JhMDU2NWMwMTBmYzAxNWE5OTFlOGQxMTFkMGVkNDE5YyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiOGIzZWJhOTM2MzYxMTJjYjdlZjdlNjExZjc1ZmQ3YTE3YzJkZmViNGI5MmY1ZDA4NjNlMWUzZjZjN2VlNDUyYyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMDAxZjJlYzE3NTkzYzEwNTRlYjQ2MzY3ZDg0NTNlZjI0YTE3M2NlOTZiNzExN2Q5MWY5YTY4ZDQ0ZmVmOGIwMSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_a86accb2e8624555aa434608c69d593b",
+      "statement": "PermissionCoordinator.requestAudioFolderAccess launches the custom PersistableOpenDocumentTree contract, which adds FLAG_GRANT_PERSISTABLE_URI_PERMISSION plus read/write grants so the picked SAF tree URI survives app restarts; the resulting URI flows to onFolderSelected → playerViewModel.importFolder(uri) with a count-based toast.",
+      "evidence": [
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/PersistableOpenDocumentTree.kt#L19-L28",
+          "version": "repo-lines-v1:sha256:628a12f30116ada7ddade66729996c653bb2c720a4cd222edc116803347287e9:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijg5MTk5ZTNiZjYyYmViNDA4ZmQxOTY4ODQ3MjQ3OTVmOTg1MTI1ZjkxZWEzOTQzOTgxNDM1MGJiODVhYmQwOTYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjgwNDc1OWM2ZGIwMTQ2M2IyNjZjYWVkZjk1ZWVmM2E1NjRlNjgyYWExMTE2MjQ0MWQyNDlhZjYwMzdjMDY5MjgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/AppRoot.kt#L103-L116",
+          "version": "repo-lines-v1:sha256:1d7015b8d519158a2e73a019610b22c8e6980b605fdca0bccd355b6f1f6aebb2:eyJzZWxlY3RlZExpbmVDb3VudCI6MTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk1N2NkNzdkYjRmZjFjOWNhZjgzNGFkODczN2U4ZTgzOTFiZmQ2ZDNhN2IxZjRkMWYzMTYyODY4YzcwOTI1MDciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjMwYzFmMTg4ZjE0MmVkN2E4MjQ2ODBiMjA3MTcyYzU1MTliYzYxNGE0OGZkYTdjZjE2N2VkYjhkZGY3OTk1NmMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk5OWJkZWZlZWFjYTYzNDBlMDI5MGRjODZlODg5Yzg5ZDVlMTg5YWE1YmE0NGI1ODViM2I3MDczNGY0YTYyZDgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjhkMGVjMDJhNGEyNzhhMjQ5MjA2Njg0MjExZWE1ZTFlN2YzMjFjZDMxOTYxMzYyZmMxZmE2MTJkNTQ3YTVkMmYifQ"
+        },
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/permissions/PermissionCoordinator.kt#L45-L49",
+          "version": "repo-lines-v1:sha256:1e2cc7c24ee6cfe576154d0316dcdb7bd63280c7f791d662bfc49ea2efd5a7a2:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNTRhODlkNzUwY2JlYzJmMGVkM2UyOTI2ZThiNGZiNjdjYTY0YzQ3NTQzN2E0ZTQ0MzI2Mzk0NzQyNDU2MGUzNyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDg5M2Y0MGUzNzgxZWI4OTZjODJkMDQ2YTA4MDY3YTExZTM1Y2RmMmYxZGZhZjI2ZmVhOTBiOGRiNjY3NjQxMyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNTY0Njk4MmU1Mjg2ZmUyZWMwZjBhYTFkYjQ4ZDA4MDVhNjA4Nzg4NDNmMjQyOTVjZGJiZWU1MjEzMmMyMWRmYyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiOTExYzIwNmZmY2ViMDVkZGJiYzQ1YzFjNmQxMTVkOTVmMjc1Yjg4NWIwODJlN2MxZGZiYzlkODFmOTA2ODJlMyJ9"
+        },
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/permissions/PermissionCoordinator.kt#L79-L83",
+          "version": "repo-lines-v1:sha256:c8ce7219492d3aafffa8686d48f6515c122bee578d851884e87f69834720c0a7:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiN2VjZDljYjc5YmFjYWVlYjQ0M2I1NWVkZmEzZDc2YzhjNTJlZWYyMGQyNDM5ZGQ2YjBhNjE4NjhiZjNlNzQ4NyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDA5M2RjZTAyZmEzZTVjMGI4YzFjODZhYzY3ZTg3NjNlM2EyNDlhYWFkMDFmOWE4ZWRlMmQ2NzI3MTUwYmQ3OCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiOTk5YmRlZmVlYWNhNjM0MGUwMjkwZGM4NmU4ODljODlkNWUxODlhYTViYTQ0YjU4NWIzYjcwNzM0ZjRhNjJkOCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMjg1OTZjOTQwNThiNDNjMDYwMGMyNzVmMTg3NjlhZGRkYTRlYjI0YzFhZWE1MjVjNWNiYWNiZThhZTUyNDhlMyJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_1299ceb1cd1c4c149a7a1943d32fc54d",
+      "statement": "requestNotificationPermission/requestBluetoothConnectPermission consult RuntimePermissionPolicy (POST_NOTIFICATIONS only on Tiramisu+, BLUETOOTH_CONNECT only on S+, each with a user-facing denied message); an already-granted permission runs onGranted immediately, otherwise exactly one pending RuntimePermissionRequest continuation is stashed and launched — grant resumes it, denial routes the spec's deniedMessage to the shared toast — and a null spec short-circuits to onGranted on older OS versions; RuntimePermissionPolicyTest pins both cutoffs and messages.",
+      "evidence": [
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/permissions/PermissionCoordinator.kt#L51-L77",
+          "version": "repo-lines-v1:sha256:048efd246807f8a5e31b7fd46dc0e3751c316c7be9da121dcc10456118230846:eyJzZWxlY3RlZExpbmVDb3VudCI6MjcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM5MzYwMGUxNjZhY2NkMGQ1MDE0ZjBmNjk1NmQzNDVhMmVhZGVjNzc4YWRlYjYxMjNjNGRmMjIzZTFlZjZkZDgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImU1MjAzODE4OWUyNTg2ODhkMTJhN2M2NzcyNzM0NTAzNTA0Nzc4NWVmNGM2NTI2ODA0ZTZjMmQzNDZhYTM3NWYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImI3MjNlZGU0N2QxNzNiNjNiMGFjNzMzMWQxNzE5OTM4ZTliNmQ4ODNmZmVhZWZkNTM0M2E5NmUxMGYxY2RmY2UifQ"
+        },
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/permissions/PermissionCoordinator.kt#L84-L101",
+          "version": "repo-lines-v1:sha256:e4401b9ac80aa923b2cd4d1354ae20ed43c0ae242ceacd459ff78d14ffbfa8df:eyJzZWxlY3RlZExpbmVDb3VudCI6MTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY5ZjZlODM0YjJhMDZkOTFjOTBhMTMwYzc3YzUxMWVlOWUzNjU2N2ZkNzQ1NzY4OTU1MjczZWNmZDU0MTg3MGUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQwOTNkY2UwMmZhM2U1YzBiOGMxYzg2YWM2N2U4NzYzZTNhMjQ5YWFhZDAxZjlhOGVkZTJkNjcyNzE1MGJkNzgiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjNmOWUyNGM0MDAwMmEzOTQzYTJkMTc4YjI0MDY0YjdiMjM3M2JmYjgwMmJhZjhhNzU2Y2YyMGY0NWRkYmM4MDkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjRhODQzMWVkZWU5OTM5MDhkZjQ3MDdkOTcwMWI4ZTZlZDZlMmZlMDY4OGZhY2ZiNTBkMTEzNTQ2ZWQxOGM3MWIifQ"
+        },
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/permissions/RuntimePermissionPolicy.kt#L11-L33",
+          "version": "repo-lines-v1:sha256:d6c1e6847feae7bb595924fd314c49e02cbd3f256f01a7255d3c59ab64394b42:eyJzZWxlY3RlZExpbmVDb3VudCI6MjMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijc0NzdmNmU2ZTU4MmZjNjYyYmE3NmY1M2ExZDJkYzU4NzE3Y2FlNWNhYzk0MGU2MDgzYzliN2IxNGRmMDNiYTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjdmMGJlMmQwYmFiYTU0OWUzZWE3YTUwMmE3ODJjZmU1MDk4MmY3MjRmNjQ3Yjk3ODBiMzcyODcwNTE1ODA3MGYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://app/src/test/java/cn/com/dcsgo/mihx/app/permissions/RuntimePermissionPolicyTest.kt#L9-L28",
+          "version": "repo-lines-v1:sha256:59035e5df2e0f565032d5978b2149f452e4f12df2e4f5984541a779dc39b7737:eyJzZWxlY3RlZExpbmVDb3VudCI6MjAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjdiZjA5ZGI5NmQ4NWVkNTU1NWQzMzFkM2M3MzFlOTBkMjE0NTMzOTVkMGZkNmQzY2ZhZjBiZDgyOTIxYzE4N2UiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijg1MDkyNmZhNDU4MjA4MmFmYmUwMWU0YmFlNjIzNzJiNzI4N2EyZjlhNDQyYThkOTkwM2U0OGY3MGY3NjU1YWUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_56bdb5a74f9945b485ed686f1b26b647",
+      "statement": "Settings wires permission grants to player features (Bluetooth → initializeBluetoothPlayback, notification → setPlaybackNotificationEnabled(true), each with a success toast), and both permission requests must be user-triggered from Settings rather than at startup — a rule enforced by verifyProductArchitecture checking that the player startup facade contains no Bluetooth initialization and SettingsScreen keeps the 蓝牙播放监听/申请蓝牙权限 controls.",
+      "evidence": [
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/AppNavHost.kt#L950-L961",
+          "version": "repo-lines-v1:sha256:bc36fc48cf1cd257ae38cf9224bdbd37c0b456a3f1d84c9b8a0d5bc70d98892f:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjEwYTA3MGNhYjEyMTM5MWQ5NWIwNGNlM2NmNTdiNmY2MjRmMjNkYmNiMmUwYTMyOWFkNGQ0Yzg5NDA0MTM2ZWEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZlNGNlZmUxOGM2MDRlY2ZjNjNlYzE5NjkxNTU2ZGVkZTNiYTFkY2NiNzhhYmNhYmQyMDI4MjM0YjI3MjE0MTAiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjliN2M5NmEzNTU0Y2IxOTkyMTMwNTc1YjAxNmJhNWQ2OGJkMjBkODBjMTY5NzI2MGE0YWI4ZWQxYTIyOGQ2OGEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImY4ZjkxMDkyNDFjMTZmODUwZGY0YTRlYTExNjI4MmEzOWNjNDQ1YjE0ZDFhNDkwYzc4N2RlOWM0ZDEyNTNkNDkifQ"
+        },
+        {
+          "resource": "repo://build.gradle.kts#L334-L340",
+          "version": "repo-lines-v1:sha256:bc27044e1bf7d55bd52e296c28bf6ccf8028f0c8bd66b74507ab4145c0785f70:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNDA0NWY2YzQ1ZGZjYmQxYTU1OGZiNzE2ODg4YmNiOGVlNGE0Zjc4NDNiZjJkZTEzYjIyYzA5ODk5ZDlkZmZkZSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNzBmZWNiZWUzZjFkYTk3Y2MyYzc5MzRlZmI2N2VkODNkODQwM2VmYzAzZDI2YTRmYmE2OGJmOTVkNTBjYWI1OCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZWQyNzc0MmQxMGJkOTMzYjBlNDNiODQ4OWEzODVkOGUyZTIwNzY4ZTY3YjNmNTE4MjU4NGFiMjE4ZWZjOGE1MSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZjdkZDA5ZjU3ZGQxYjdlOWVlNWIyNWJmMTlkNGJiODA3MGRjYTFmOGRjY2ZhN2E5MGY0MGZmY2Q2MGQwMTkzOSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_13f6ae55816d4e16a4dde1d8ee80e830",
+      "statement": "The shell owns a single rememberToastHost rendered as top-center ToastHost plus AutoDismissToasts(2000ms) above the NavHost; ToastHostState.showToast keeps only the latest entry (clearing prior ones), so attribution toasts replace rather than queue.",
+      "evidence": [
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/AppRoot.kt#L224-L225",
+          "version": "repo-lines-v1:sha256:5ae7d83ea26140893ea47d4140651bff8829ac9c7a3d7f386fe3eebe6b8be597:eyJzZWxlY3RlZExpbmVDb3VudCI6MiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNTVjMjFhZTY2MmU4OWY3Y2FlZGE4YjBhZWZmNzBmMjU0NzMxMzYwZDU1ODk2NDI3ZGZkNjBjYmNhNjUzMzU0NiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiOGVkNWViMmZlNDY5MWE1NjJkZTZhODlhODcyYmMyMjY5Y2ExYjM3ZTY5NzM3NDY0ZTliY2VhZDQ3ZmMyMTZjYiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMWMxMzdkNzMzZWM2MjhlNjQ5ZTczNmRjZDBkZjM3OWZmMDFjZDcxYmQwNzM1YmM0NmJhYTYzZTNlZDY0YmJlOSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYjcwZDYwOWU5YjdkZDUwN2IyMzI4ZDVjZTIyY2IwMzY5ZDRmNjc2OTkyNWQ3ZWJkYjJmZThhMGYxYzljZTk3YSJ9"
+        },
+        {
+          "resource": "repo://core/ui/src/main/java/cn/com/dcsgo/mihx/ui/components/ToastHost.kt#L194-L206",
+          "version": "repo-lines-v1:sha256:d884b0b084901fe911d1597e4a43f89d7e073b817275e886cf1dcc5777d6c380:eyJzZWxlY3RlZExpbmVDb3VudCI6MTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjJlOGQ5NzlhM2JiNjU4M2YyOWJhYmZlZmJlNGM4YjUwMGMxMDcxOWJjOTc4ODgwNzYyMTlhYWY3NTUzZDAzOGIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjJlYjFhMDlmMjQwNDg3ODc5OGEyYWMyYmRkMjFiZmQwMDBmYTY3NDEyNjJmODA2YjU2MWZlOGUyMGE1NTM0MzMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://core/ui/src/main/java/cn/com/dcsgo/mihx/ui/components/ToastHost.kt#L73-L84",
+          "version": "repo-lines-v1:sha256:f7116532c9440de573485549aa6787056f58c8d7a5099b8ce968697dbc38b058:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM5Y2JiYzY1NDY5ZGIxY2EyODQyZWZkOTdkZjdlZTJjZTZjYzE1NzE0ODJkMDFhMThiNzkwYTEwYzdjNTEwZjMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk1YjM1NmE0OTg2ZjAxMjBhZGRmYmNiOWVmYzAxZTUzNmZiM2E3ZGY4MjA5MjgzYmIyYTZlNjJiNmNhY2NiOGMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjUzYmZmZTFkZTk2MzIzZDEzNTdjNmY2MjEwZmIxZjc1YTk2ZjgyYWNiZWE3Y2EwZGE0ZjU5ZDRmYmE0ODZkMzUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_9c6b3a612b4042bdbd1e2116ed14c146",
+      "statement": "Lucky-play and infinite-play starts attribute mood-slot selection through toasts built from playerViewModel.currentMoodSlotName() (已按「{slotName}」为你随机播放 / 已按「{slotName}」开启无限随机播放), implementing the design doc's §4.5 anti-'attribution difficulty' rule, and both actions settle the playlist source via playlistResumeViewModel.switchSource(null, …).",
+      "evidence": [
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/AppNavHost.kt#L218-L240",
+          "version": "repo-lines-v1:sha256:b8d47bcafca74166fcc9987fb9d8c124edf7de7732f94cb94ca4609cb0fa3fef:eyJzZWxlY3RlZExpbmVDb3VudCI6MjMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImUzMWNjZjM3OWQ1NmZlMTcxOTE2NDdmNmI4YjllM2Y5OTY1ZTMyOWRkZjg3ODBjZGE1YjRlYTNkMTlhZTYwMmEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZlNGNlZmUxOGM2MDRlY2ZjNjNlYzE5NjkxNTU2ZGVkZTNiYTFkY2NiNzhhYmNhYmQyMDI4MjM0YjI3MjE0MTAiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjVhZWE3M2NhYWZmYTBmYWZhZGViYTVmMGFjY2M4ZDIwZTViNTllNGIzZDRjMWQzMDBkNmI0MWZhYjhlZTQ2NTAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjU0MGQyYTk3OGVkNDIzMTAxNWFhOWZiMGZiODMwZmEyZmIxYjAxZGUyZjQ5NDMzOGZiNWNiYTQ0ZmFjZDA2OTgifQ"
+        },
+        {
+          "resource": "repo://docs/architecture/MOOD_TIME_SLOT_PLAYBACK.md#L239-L247",
+          "version": "repo-lines-v1:sha256:bf64487e710b84c2fb37948687d4867d917a70ca706b9908432887fba7f7338b:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNGQ0NWNlYTEwNzY3NzQwZTAyNTEwMDgyMTNiNGJkNWFhZGI0M2QxZWQxNzk3MzM1Yzg5NzZiZTQ2MWMxMTI0ZSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMmU2MDVlMDM0NDQ2ZTMxYmNkOTdmY2RkY2VhNGU3MTUzNzQ4NTRhZjdlOTA5NDAzYzlmZGZiMDg3NDViZWQ5MSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYTc2MTIzMjk5MTA0MTI4MGNjZjFhYTk0ZjJlNjY5MTAzOTE0MzFlOTYzOTBlODE1NTMzMzc4MTg2NmYwMjk4MCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTkwNGI2YTNlYzU3N2E4MTc4OTE0MTlkZmE3N2MwZjcyMzJkNTY4YjBlMDcwNjA5MDcyYmY0ZjIwZDg1NDM4NiJ9"
+        },
+        {
+          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerViewModel.kt#L326-L326",
+          "version": "repo-lines-v1:sha256:9bd1c630825a942c21acf6d04fbbdc3050929bfcb87627befdf63dd74ae5a319:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiOWJkMWM2MzA4MjVhOTQyYzIxYWNmNmQwNGZiYmRjMzA1MDkyOWJmY2I4NzYyN2JlZmRmNjNkZDc0YWU1YTMxOSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiOWJkMWM2MzA4MjVhOTQyYzIxYWNmNmQwNGZiYmRjMzA1MDkyOWJmY2I4NzYyN2JlZmRmNjNkZDc0YWU1YTMxOSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYjdmNTQxN2VmZDJhMTU0MzE5OGUxNjI0NDY2ZWY0YjYzZmUxMDYxZTJkOWIzNDQ1NjhlYWZiM2EzNzM5M2EwYSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMTAxOTZhNDQzYmIxZGM3ODIzMmYxYTQ1ZjY5NDI5NjllNDYzNjg0NWY2NjA3ZjNkYmZjYjY4NmRlNWYxOGI0ZSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_c79ca25e7efe4d57ac45b94362cf35dd",
+      "statement": "deleteSongWithToast runs PlayerViewModel.deleteSong on a shell coroutine scope because the call is suspending end-to-end: PlayerSongDeletionFacade → SongDeletionCoordinator → MusicRepository.deleteSong performs the SAF DocumentFile cross-process delete inside withContext(Dispatchers.IO) (M-3, review 2026-09-03) before removing the song from songs/playlists, persisting, and deleting its emotion rows, so the main thread is never blocked (no ANR); DeleteSongResult.Success/Failure map directly to toasts.",
+      "evidence": [
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/AppRoot.kt#L118-L127",
+          "version": "repo-lines-v1:sha256:a3a2a3a080c7b4d00c5d5ace0288282106bfc3095f1c34879ec785438f8fc8c4:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImI5ZTc5OThhZWViNjVmMjA2NmVjOTJlMmVlN2YxZWE1YjJkMzRkZjY3Nzc5MTVjMjc1MzE3YjJhNTFjNjk0YjQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImJlMTI4MDhiYmY5MDFmMWRhYzU3ZWNmNGZkMDVhN2FjZTAxMmIwODgzZTkzZmI4NGU5ODE1MWNmN2U1YTlkY2IiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImQ1MjhhYjg4MmEzMWY4YTljODZhMGRlMDY5MDM0NGZjY2ZiZmYxNmRjZGUxODM2MzYxOWQ1NjZlZTZkOTMwYzAifQ"
+        },
+        {
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/repository/MusicRepository.kt#L607-L656",
+          "version": "repo-lines-v1:sha256:225e0c76a667f0ff24f3c2bf8b6bf995910e9fac65d2d2b2af20482dfaabafae:eyJzZWxlY3RlZExpbmVDb3VudCI6NTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM5Y2JiYzY1NDY5ZGIxY2EyODQyZWZkOTdkZjdlZTJjZTZjYzE1NzE0ODJkMDFhMThiNzkwYTEwYzdjNTEwZjMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjVmMWQ5ZTZhNTc4ZDM0NmEwMmIxMDA4ZmI0YmEzY2Q2MWVkYzYyMWFiNTY1OGJkYTUzOTI5MzJmMDg0NzAzZmIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjhmODc1NzlmNDJiOTQ2YmRjZGU4ZjVhMjBiMTNlZTE2N2Q3NjNjMmE3Y2M2NDFjNDk3NjRmMTE1ODljNmYyYzQifQ"
+        },
+        {
+          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerSongDeletionFacade.kt#L12-L23",
+          "version": "repo-lines-v1:sha256:6cc87025e764bb17b7c99f0adc4bac563a8384fc913cb47c7f19375d98ca850a:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBkN2JmMjQ5ODFiNjQxMWY4Njk2ODVjNTcxMTAxNmZlNDM1MDE5NjRkYTE3YTc4MjBjNjgwZDA5ZGQ0N2M0M2YiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImVlM2M4NTdiNjhmZjVhMjdkODA2MzA4ZTMxNjRkMmM0ZjMyNWZkZjE3MjQyOWRjNGU0NzgwMGJhMzFlNWM0ZDAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        },
+        {
+          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerViewModel.kt#L304-L304",
+          "version": "repo-lines-v1:sha256:f3d530f02a5fb244542cac121cc7652b0417631475117b57c131edeb4f03cbeb:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZjNkNTMwZjAyYTVmYjI0NDU0MmNhYzEyMWNjNzY1MmIwNDE3NjMxNDc1MTE3YjU3YzEzMWVkZWI0ZjAzY2JlYiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZjNkNTMwZjAyYTVmYjI0NDU0MmNhYzEyMWNjNzY1MmIwNDE3NjMxNDc1MTE3YjU3YzEzMWVkZWI0ZjAzY2JlYiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYjJmZmQ2ZmM2NzNmYmU0MjY4MzRiY2YxODVlMWVmZDViZmI2ZmZlOWE1ODJkN2RkMTc0MWQ4ZDg1ZDUzZmNhMiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZjFjZjgwYzNjMjFhNWMxNGMyYmVmZGE3MDEwMzMxMTczYTdmZTU3ZDk2ZGJkNjdkZmQ4NjliOGIyOGY5OWVhYSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_59c5e73d375842e39821b9283e85c1a9",
+      "statement": "AppRoutes is the single route-constant table (18 destination routes including the HOME start destination and parameterized playlist/{id}, artist/{name}, album/{name}, version-comparison/{groupId}, song-top-list?period patterns); parameterized routes must be built through its helper functions, which Uri.encode arguments — call sites never concatenate route strings.",
+      "evidence": [
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/AppNavHost.kt#L128-L131",
+          "version": "repo-lines-v1:sha256:29ed0521dfabb714b429975c23261254466d00922a590603c2b3f6c10b18c94e:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMGVlNDNmMTFlYzczNjdiZWVjNjE4YTU4MDkzZDU2MmYzMGUyNWEyZjcxMjc5N2Q3M2QyNmI1YWFjMDAxYWEyYyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNmY3ZjM5NDg2ZjE0ZDc4ZTk4MDQyMGE4NDc0ZTc4YjE5NTE1ODVmNmUzMTk2NjM1Y2Q4ZWQ4NWUzZDg0MjAzZCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMjZhOGZkNzIxOWRhMzE4YmNmNTBiMDc0NzVkNzJlNzYxOGQ3MDc2OWFhNTI5ZjAyNjFhY2VmZjFlY2U0MWMwMCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZmNjZTFiYmFjMDZkNDVmMjQ0YTljOWE5OGZjMmRmZmFlOTQzNDlkOGEyZDY1M2M4Y2RhNzE5ZDlmMTBjMjcwZiJ9"
+        },
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/navigation/AppRoutes.kt#L5-L40",
+          "version": "repo-lines-v1:sha256:9fa76e8f9cd5048e02584b3d177bd94bde42dd272e4322e8a2aa375c34d888ea:eyJzZWxlY3RlZExpbmVDb3VudCI6MzYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImUyMjY1MjE3ODM5YmMyYTVjNThjODQ1YTJkZmM0ZTFhOTQyYjdhYzcwYjM0MTI3MjUxM2U5ZDcyZjMwNjdmZjUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjUwM2QyYTU1MjlhM2MwYmI4M2IzYzc1MWIzNzk1OWI3YWMxZTRhMTZkMjdiNjY3Nzk5Y2E0YjVmY2NiNDFjNTIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijg3MzdlNDA0ZjUzOTYyNjI4MzNiNmM1NzNkZGY5MDlkMjA2ZmZjYzQxYWQyYTc0NzAwOWJkYTIwODYxM2IzMTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_81fecf2447574cb5a5c76d72e1d26802",
+      "statement": "AppDestinations.fromRoute maps every sub-page to its owning bottom tab (USER: settings, playback stats and its sub-pages, song top list, emotion analysis, mood time slot; PLAYLIST: playlist detail, artist/album detail, version management/comparison, quick-skip; everything else incl. Home and lyrics → HOME), and this single mapping synchronizes bottom-bar highlight via LaunchedEffect(activeRoute), computes enter/exit transitions by comparing tab ordinals (same-tab → no transition; pop transitions disabled), and gates edge-swipe tab paging which is disabled on the lyrics route.",
+      "evidence": [
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/AppNavHost.kt#L131-L160",
+          "version": "repo-lines-v1:sha256:91ddb225a41632ed0ccb7235cb46fb7a5298adad08eb9948b6711dfcc7a9690b:eyJzZWxlY3RlZExpbmVDb3VudCI6MzAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZmN2YzOTQ4NmYxNGQ3OGU5ODA0MjBhODQ3NGU3OGIxOTUxNTg1ZjZlMzE5NjYzNWNkOGVkODVlM2Q4NDIwM2QiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZhOWMyM2ExNjk1ZWE3MWQxNTYzMzJmNzg0MTNlMzQ0NDQ3YmQyYzIwZTQ5MTllM2QzOGY2NDAyMWIxMDIwMDMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQ3OGU4YzZkMTIwMjJhZTQ4OTUzNzFkOWU0MmNjMWI5YmQzY2I3NDM2ZmZiMzg4YWI4YThkZDFhYzhlNzQ5ZjkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjlmYjBjOGRjZTUxYzgyZWZlYTJlZmY2YmMwOTkxMGI5ODRkN2M5MTU2M2IwZDViZTEzMjg2Mjg4MTcxMWQ3YzIifQ"
+        },
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/AppNavHost.kt#L88-L89",
+          "version": "repo-lines-v1:sha256:815d54c067333c150083e95153766dc946b9f0ab600428e2a6ab0e2d5919d4c7:eyJzZWxlY3RlZExpbmVDb3VudCI6MiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZDI3YzViMzRmYTYwM2YwNDYxOGRhZWNlN2JjMzU5ODUzZTQ0ZWE0NzU2OGI3NDQ4YjQ1MWJhMGQwZmIxZGU2OSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiOGYxY2MyMGYyMGJiZjExNmE1NjI2MjQ4Y2YyZmVhZDg5YTFjYWU0ZTA3YmQ0MjM5ZTVjMzhhZGY1YTEwMDMwYSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMDg4MGJmMjM1ZWZhOWU4ZjQ2OTkxMGEzZDI0ZGMzZmNjMTFkNGVlNTIyNTRiZmVjYWRiZjM3ODA0YjEyNGY2MSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMTdmYTYwYzI1N2E4M2I1ZjNlZDgyNjEzYzFmMDU0ZDE0ZGIyYWExNjc0MjA3M2ZhNzc0MGIwMDAzOWFkZDMyYiJ9"
+        },
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/AppRoot.kt#L181-L181",
+          "version": "repo-lines-v1:sha256:fe027fa7d9fe6e7ede38697411677109799ff803b176f7aa767400f1583e830e:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZmUwMjdmYTdkOWZlNmU3ZWRlMzg2OTc0MTE2NzcxMDk3OTlmZjgwM2IxNzZmN2FhNzY3NDAwZjE1ODNlODMwZSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZmUwMjdmYTdkOWZlNmU3ZWRlMzg2OTc0MTE2NzcxMDk3OTlmZjgwM2IxNzZmN2FhNzY3NDAwZjE1ODNlODMwZSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZjZkMGM2ZmJlMTRmZmFiNjg2OGQ5NDdhYTI1ZjMzM2NkYTE2YWY5MDc1OTg4NzU5MjRjNWVhMjI5ZDBhNWZkMCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMDMyZGZlMTgzMzlkMzdkYjY5NmM5YmIwMzAxNmNmNjA3MjE0MTNjNzU2MjFiYmMzMDdhZjkwYWU4OTk0ODMyOCJ9"
+        },
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/AppRoot.kt#L85-L89",
+          "version": "repo-lines-v1:sha256:0fb8477aa1618201904674c270ac7425b1e4b76128f3e271b57901f7a06787ea:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZmJmZDJjMjJiY2VlOGEzYzcyMTg0ZmY4ODc0NTVjZjJlYjQ2ZGY4Y2ZjODIzYmQ5ZDU4OGQ4ZGM1NDIwYThkNyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDg5M2Y0MGUzNzgxZWI4OTZjODJkMDQ2YTA4MDY3YTExZTM1Y2RmMmYxZGZhZjI2ZmVhOTBiOGRiNjY3NjQxMyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMmM0ZmM1YzlhOGUzNjc5NGQ5MWU3NDE4ODFiZjNmMmZmYWUwYzg2Y2Q0ZmNiZDVkZGQ4NTcyNTkyNjI3ODQ5ZiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZDJkNGExYjI1OWQzZDY5MGMyMTM3YzExNTVhZjMwMzNkMzA5MmM4MmY1NDNjNWFlZDgwMGY4NTk2M2IwNTg2NyJ9"
+        },
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/navigation/AppDestinations.kt#L16-L39",
+          "version": "repo-lines-v1:sha256:8b73d54ebeca08e4d1926e056ccdff456e050a23f34ec8bdaad7deabb447255a:eyJzZWxlY3RlZExpbmVDb3VudCI6MjQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU3ZWJkYjNmYTVmZjg0ZjMwYTNjMDE2ZTAzZGMzNmMyNDI1N2E5MTJkZTdiNjNjNmYzYjhhN2VkMTNlYmRmYTciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjgwNDdiYzgxMDdmMTE1N2Q0Y2E3NGQ2NTU1YzQ5YTc3MDZhYjc3MzNkOTNiODc0OGM0YTQ1M2RhZGNiNDliNjUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoyLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjM3OTRkMDJhODEyMTk0NGQxNzZkMjY1ZTliYjljYzU5ZjZhYjg5MGJjYWRmOGFlZmRlYmRiYmI0ZjJlYTg0NDQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_cd9d7c43766540db88d5216b16e4e02b",
+      "statement": "AppScaffold adapts at 600dp between a phone layout (content + MusicPlayerBottomBar mini-player shown when the current destination is not HOME and a song is loaded, plus a bottom text nav bar) and a wide layout (left 72dp TextNavRail + content), with text-only three-destination navigation being a deliberately kept difference from the design mock.",
+      "evidence": [
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/AppScaffold.kt#L120-L150",
+          "version": "repo-lines-v1:sha256:92fbddfc0ac7f785a015766afb01d1f099edc1d07be4d25266d6a7816ae21606:eyJzZWxlY3RlZExpbmVDb3VudCI6MzEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxZTcxYjczMzUyNjI0MjUwNDA0OGZhMzJhOGZmMDhlZDdjZTVlNjE2ODRkMDQ4MWIyM2I3MDczMGM5NjE3MWQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjhkYjMzOWMxN2Q0Y2M1NGU3MGM0ZmNmZWNiNjExYmI5ZTdkMzYzZjI1YjE4ZTA5MjNhMWQzMDZjYzk1OTI0ZTUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjE3YjJiNWY3NWI5MjM3ZTUwMjZiYjNkODVhZWY2ZmM0ODVlMTkwNjc5N2M2YjMxOTA5ZWQ1NjY5ZWI3MGVjYTciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjUyZWJjYTg3NmUxODcyNzEwMjg3MGU1MWYxOGY3NTljOTg2YjcxNzRmYTIwOTgzZjAxNzg0MGYzZjUyOTU5MzQifQ"
+        },
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/AppScaffold.kt#L155-L166",
+          "version": "repo-lines-v1:sha256:098714f5f0cba9de567d8c63035677737529e8fd01e63b1cdde817b12c7bb709:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRmMzEwMDE1YjQyOGE2Njg1OWZjZDVmMTE4ZmFlMmM5MDhiNGYyMWM0MGIxZTk2Y2VhZjcyYTQzZTlmYTMyYWYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjVmY2I1ODdhMzEwZWM2ODg1NDcwMGJkMTM1NjM5MTlhYWJjMzdjYzdmYzI3NzNjY2IzMzZmMzk4NzFhYzBmYjkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjE5ZTc2MzU1Y2YxMTk5NDgwYzNmOTk4MzZiMTQ4NmM4NDFkODkxZmFhZDkwNGM2MDhlMDkzMDIyZDM3NTdhZWUifQ"
+        },
+        {
+          "resource": "repo://docs/ui-design/DESIGN_SYSTEM.md#L474-L479",
+          "version": "repo-lines-v1:sha256:af0a5d243392aabd768cfeb447e0d443cd13bfc4ca829e603d35666ba5f840ef:eyJzZWxlY3RlZExpbmVDb3VudCI6NiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYWNmOGNlMzc0ZTAxNDYxODA0MGY2MWU3OTZkMjY4NWExNjdkYjNjYTlhZDY0MWU4ODZiYTRiYzc4ZWVlMjZhNyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZTk5MTZjZTNiYzAxNjJkZDRjZGE1NWQ1Zjc0Njk5ZTA3N2I2NTM2YjQ4ZDYwYzk3NTY2ZDgyOTFhNjkxM2Q4ZCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMjU2OTc5NWJkMTQ5MzAwNGNiZDBhNjEwZjM5NjQyZWRlMmMzM2NmZGU3YWMwMDY1NTg0NmYzZDRmY2YwNDRiZiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMDAxZjJlYzE3NTkzYzEwNTRlYjQ2MzY3ZDg0NTNlZjI0YTE3M2NlOTZiNzExN2Q5MWY5YTY4ZDQ0ZmVmOGIwMSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_21f183ff8abd495da1fad324bd4be197",
+      "statement": "Bottom-tab destinations navigate with the state-preserving recipe popUpTo(startDestination){saveState=true} + launchSingleTop + restoreState=true, so per-tab back stacks and UI state survive tab switches.",
+      "evidence": [
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/AppRoot.kt#L159-L179",
+          "version": "repo-lines-v1:sha256:1164929a4dff41eb43a4ca64224a24c3738a0016b8f2133fad8d90825aa252f3:eyJzZWxlY3RlZExpbmVDb3VudCI6MjEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI4N2YxMTk2YzU0NzdiNjRkMmE5MDBjNjQ4MDA0NWJjMzYwOTI5MDNiZTgxMGFlZjcyMjAwZWM4YzY1N2Y5MTEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjkxY2E3YWJiNzg3Mzc2NTY1ODQxNzRlNjcyMGIwYjk1MGU3NmU0ZDlkNjJlMjdhODJiYWNkY2I4NGViNTZkYTQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjZmNWJiN2IxYzJmMTg1NWIzNWY0MWM2MmVkOTBhMTBhMDBlMTRhMDAyNzdmNDZlMDRmYThiYTBmMDRiNzcwMDgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQ1ZDc4NDBkZmFlZDVmYTE0MmFhM2IzODNhODI4ZTU2MWNjZThiMWIxMTI4MWMxZTA4ZWU1MzIxODZmYmNmMzMifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_fb56d9c8a0c74d2fa73dcc8983b162d2",
+      "statement": "Each :feature:* module exposes only XxxRoute (a public composable taking XxxRouteState + XxxRouteActions + callbacks) plus an internal XxxScreen; AppNavHost is the sole place routes are wired and cross-feature jumps happen — verifyProductArchitecture forbids feature-to-feature Gradle deps, requires Route/Screen pairs per feature, and fails the build if overlay-routing files (AppOverlayHost etc.) are reintroduced.",
+      "evidence": [
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/AppNavHost.kt#L34-L86",
+          "version": "repo-lines-v1:sha256:5b081b4d9a737da18a8234e3a54b4a605ca0e41f1a48aa53d62f66389c0f046d:eyJzZWxlY3RlZExpbmVDb3VudCI6NTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU0YWFjZDExZTMzNTdlYTFjOGU5NjdkZmQ5MDkxZjdkY2FhNDQ5ZDZkMDNmYzkzMzc0OWVlMTQyMmY0MmE0MDYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjFiNjE2ZDI4OGE4NzBmYmM2YjhlMTQyZTNlOWFlMzM2NjQ4ZmY2Y2VjMzUyMzcwOTkyMmZlMGYyMmMzMzE0N2EiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImIyMzYxMDZiYTFlNTgxMTg2Y2RmYmEwM2VlY2ZkYWM1MTFjNzJlMDNjYjJhODE0YTc5NWQ2ZmMxNGI5MzQyMzQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjJkNzQ2NzY1ZWQxNDVkZDk1ZjViYWZiNTBlNjZlOTk3YTg0MDNlZjY1YWY2MTk4Y2NjZTRhNDc2MDk3NGI5Y2YifQ"
+        },
+        {
+          "resource": "repo://build.gradle.kts#L280-L325",
+          "version": "repo-lines-v1:sha256:ed95b3330a3c575bd89514e81f050edb33e6442f2f6faf5cb50a644da4661674:eyJzZWxlY3RlZExpbmVDb3VudCI6NDYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjVlMDFiNDY2YmFjYTA1Y2QyZjYzNzEwMGU0MWRmOGU5NGZhNGI2YjViYTRmYmU1YjZjZGNhZDI1ODk4MjBjOTYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjIzMmM0OWM0N2JkMjg3OTI4Mzc3NzY2ZTM0YmI1NDcxYTkyYmFmN2FlMTZjOTgyYWM4MGY1OTRlNDA2MTk2ZWIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjYzYjUzNjI2NDlkMWNkYTU4MWIxYWY4NWU3NmVmYmE3OTQ3NGIzYTgyZDNjNzNlMmEwZDUzNTkyNTg5MDMwODYifQ"
+        },
+        {
+          "resource": "repo://feature/settings/src/main/java/cn/com/dcsgo/mihx/feature/settings/SettingsRoute.kt#L26-L44",
+          "version": "repo-lines-v1:sha256:20e2994c8345447194d6e36dabc3ade4f625f532a242327cc45b15652b6d0a4f:eyJzZWxlY3RlZExpbmVDb3VudCI6MTksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjJlOGQ5NzlhM2JiNjU4M2YyOWJhYmZlZmJlNGM4YjUwMGMxMDcxOWJjOTc4ODgwNzYyMTlhYWY3NTUzZDAzOGIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjdhNWI3OTk1YWYyZDAxOWUzYTAyNWU5YTU4OGJjMzQzOTIyMzJmMDUwMDMyNjgyNmUzYTQ4OWIwODU5ZGNiNjkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_f137d721bed84cd1b134c89bd2650cc7",
+      "statement": "Route-state derivation (playlistRouteState, userRouteState, playStatsRouteState, playbackStatsRouteState, songTopListRouteState, resolveResumeSong, flatGroupedSongs) is concentrated in pure, side-effect-free functions in AppRouteStateMappers.kt (documented as independently testable), while navigation/playback action assembly lives in AppRouteActionMappers.kt, keeping AppNavHost down to route table plus transitions.",
+      "evidence": [
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/AppRouteActionMappers.kt#L17-L22",
+          "version": "repo-lines-v1:sha256:d32cf6508754332ccf1c01fe7f6d1ba6e486017097e9fed2ab169fd186d5e13e:eyJzZWxlY3RlZExpbmVDb3VudCI6NiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZWFmMjJjZjA3MzI1OTJjMjQ3MTQxY2JlNjFlZmExMTAxMjYxMmY1YTMxMjJiOWFmOWJiYWY1MmY1NzI0ZDE5NCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMDFiYTQ3MTljODBiNmZlOTExYjA5MWE3YzA1MTI0YjY0ZWVlY2U5NjRlMDljMDU4ZWY4Zjk4MDVkYWNhNTQ2YiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMmJkNTgyMzYyMTdiN2EzMjQ2Y2JkY2MzNTFiZTFjMmM1MWUwOGVkOWJhZjBmODZmNmFjZGQ1NDMwMWFjZDM0MCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYmRlYTY1ZGQxMmQ1ZDZjZjkwZDJjZGJlMDVjMmY1YzhjMGNmMWVhNDE2YzNkY2U3MmI2ZTRiZmQwMzgxMjNkYSJ9"
+        },
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/AppRouteStateMappers.kt#L18-L36",
+          "version": "repo-lines-v1:sha256:b975e787a9d56ee34a0eb86a26c6c8e39779147f0e39539b7560d91f4327477c:eyJzZWxlY3RlZExpbmVDb3VudCI6MTksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVhZjIyY2YwNzMyNTkyYzI0NzE0MWNiZTYxZWZhMTEwMTI2MTJmNWEzMTIyYjlhZjliYmFmNTJmNTcyNGQxOTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjE0NGYwZWE1ODhiMDY2ZTQzOGE4ZTIxZTc2M2I2YzU2Y2ZiOGU1ZTc4YTI2NzhlMmNmOWFkMTZhZmQ1MmZlZDYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjMxNWE4YjU4NWM4M2E1ZWI2NmMwM2YyZjJjNDAxYjhiMmMxYzJjMGNiOTgzNDMwNjZmYmM0ZGJiNGYzNmU4M2QiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjUzZGNhY2VhZTliYmUxYzQwYjk2Y2ZiODI1YjY0ZmMxMDY1MDdkMDg1NDU4YzQ2ZmQ5NWFiMDNjODFkN2U1MzAifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_4782fbb11f3e4b779d0ebecfbf41ba47",
+      "statement": "The O(n) grouped-and-flattened library is computed once at NavHost level (remember(uiState.songs) { flatGroupedSongs(...) }) and passed as precomputedLibrarySongs to playlist/stats/artist/album/version routes, eliminating per-recomposition regrouping on 1100+ song libraries (M-7 review); mappers fall back to internal computation only for legacy callers/tests.",
+      "evidence": [
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/AppNavHost.kt#L121-L126",
+          "version": "repo-lines-v1:sha256:fa00ab7e9171cd2b0b45b753f8e4bf784c23d61b2cabb5fecbaae267093d583b:eyJzZWxlY3RlZExpbmVDb3VudCI6NiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiOGY0NmQyMDkyYTljNzljZjc0Yzk5ODNiMmRkMzU0NTgxZDZhY2Y3MWNkMGQxMTlkZjUzYzZjMWM3ZDBmYjg5OCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDg5M2Y0MGUzNzgxZWI4OTZjODJkMDQ2YTA4MDY3YTExZTM1Y2RmMmYxZGZhZjI2ZmVhOTBiOGRiNjY3NjQxMyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNDllYzRiZmNkNDQ0MzRhY2QxNmNmYzYxMGQyZGJjOTkzMWM4ZDQzYzkzZmJjM2RhNTRkZTQwZWZhYjgyZjJkOSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZjUwNDZhNzIxN2JhOGMwYjkzYWY2YjdkMzk5MTNjZDZhOGNmNzJhYjllZWE2MDcwZjQ2YjdiZGI0Zjg3Nzk1YiJ9"
+        },
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/AppRouteStateMappers.kt#L44-L51",
+          "version": "repo-lines-v1:sha256:8f031dbce269e9c1d98819a6c87df6daf6f615b06d1e6fd8e8339251ac765e08:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMmY5OTEzNmVkNWVhNzgzMTQ4ZDIyMTVlYTMxMjUzYTZkNDE2MTllOWE0NDcyYTI4ZDRmNDhlMGQ0ODI4NjEyZSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNzRmN2ZhMWQ5MWY1MzdiYjgyN2E4NGIyYmNmYmJkODE2NDU0MjI3MzBmNDJiZWY2NWMwNmMzZjVkNGU4ZjBhZiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMDNlZDg4MWEzZmUzYWFlY2Y0NTlkZGQxMzQ1MzI2MTEwMmE0OTUyYzQyYzg2YjYxNjgxNTMxODI5MzYwNDk0NyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZmZmZGVjYWJkZmM1Zjc1ZDRhY2ZkYmUwOGNhODBkMTJkMGY1OWM0MDg4ZDhhNjczOGEyMTY3OGZmZWE5ODI4ZCJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_9e150ad9f6d44f528f9ac5a7642a64fa",
+      "statement": "positionMs (~500ms updates) and sleepTimerRemainingMs (1s ticks) are narrow StateFlows deliberately outside PlayerUiState so high-frequency ticks never recompose the whole shell (M-6 fix); only the destinations that need them subscribe — HomeRoute (position + sleep timer), LyricsRoute (position), VersionComparisonRoute (seek bar).",
+      "evidence": [
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/AppNavHost.kt#L162-L167",
+          "version": "repo-lines-v1:sha256:423d8faf2cb3e15ca32e7db2b72f1c75d53ea18f88f7c95797cbc9b48e353c09:eyJzZWxlY3RlZExpbmVDb3VudCI6NiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNDg0ZGQxMDU3MGE4OGRmYzNjNjgzMGVjYTNiYWMxNjYyOTk0NDlkNDhkNjE2Y2I4MDljOWM1MTZjNTRmMmNmOCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYzc3NTE4MjI2OTE2OWUwOWI2MmQ3NzMwMTZlNTczNjRhODk5YTgxOGIzN2U4YmViYjU0YWI1MmJkM2NhYThjMyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiOWFlMDExZjU2ODMxOWU5YmVhZTE3Yjg1YjIwNjU3ZmYzYjk1MmMyYjZlMjMxZTI5ZjZjZmJlNzg1MzQwNWFjMyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMGU1MGVkODllN2I2MzVjMTNlY2ZmNjQwZDEwYzYxODY5MWIyZTI2ZGU5MmNhY2YxMGQyMjIzMDBjZWE0MjA4YiJ9"
+        },
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/AppNavHost.kt#L308-L311",
+          "version": "repo-lines-v1:sha256:41e57c40bdd5c969902b72a18dde303e811752d89ec2d6c4a57629faadd27496:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMjA4MGE2N2Y1MDMwOTcwNWU1YTcxM2Q5NDFhNzRmNTliYTljY2I3ZWJlMWY5MDBjMWUxMGVkOGZmOGFiODA1MyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYTNlMWQ1MDMwMzEwN2UxNTFlYTlhMTk4ODJmODczNGQ0NDgyMzFkNGM0NWMxMGMzOGZmMDhjYzdjNzQ1YWNkNyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZGE5Zjg2ZDI4ZTc4NGY5ZmQzMWZiNzJkMTVmNjBjYmNlYWFmZGQ2NjljYmQ1YjZkYTc4ODhhMDIzMzIxZWJiOSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiODk5NmUyMGQ0ZmIzZTkxMGFmNDM1OGM0ZGIxMzVjNTlhYTFlODk3Zjg0Y2E3YmYwN2Q3OWU1MzYzM2NhNTAxYSJ9"
+        },
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/AppNavHost.kt#L718-L719",
+          "version": "repo-lines-v1:sha256:882bd35d373f36c100ee54d2ab07126e0454568e0f93ba0a0f28fd9661f14dca:eyJzZWxlY3RlZExpbmVDb3VudCI6MiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZWJhZTMwYmUyYjYyNjIyMTYyNmI3OWNlNDNkNzE3MTg5Y2EwMGVmZDYyMGY5MzI5NzRhZDliZDk2NDI4ZDBiMyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDY0ZThkNGNhY2M2M2FiM2E3MjQyZmM3NzU5N2FkZTlhYzk5MDdkMDlhNWJlYjEyODNkZDE5Y2ZiNmNkZmNjNiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiM2UzYzg4NGQyZWU1N2M2Y2NmMzExMWQ5M2Q2MGYxYTAyZDZmZjZkMGU5NmMxMTY5ZjY3Y2VhMWNiNjdiMjlhMCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMWNmNjM0ZGY1ZDdhNzg0YTk0MzdjNmMyNzA1YzEwMjAxNGI1NDk5MTY3OTA5YWFmYTJlMDUyOTRjNTZhN2VlZCJ9"
+        },
+        {
+          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerViewModel.kt#L42-L46",
+          "version": "repo-lines-v1:sha256:7e58cee8bc018c703b133d658988f6e8b1b99fae157167459c642f9929af2225:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMDE4MmRiZTQ4NzI1ZTVmOWVkNTg2NzI3Nzk1ZGUwM2U5MTAyOGNkZDQ2MThmZTIwZWY1OGE0YWVlNzA4NjE0ZSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiOGJlZTg3ZmEwYjA2ZWMwMmZkNTY0OWRkNjBlODA0ZjIxMDQ1ZWQ4Mzc1YzViYmM1YWM2ODkyY2Y4ZWZjY2M2YiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMDY3Yzc3MmU3ZmExNjMwMzI4Nzk1ZmZmNGY3Y2RmZDQyYWVmN2UzNTUzNzNmZDgzNjNmMDIyYmYzMTEyZWE5ZCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiM2MwZTdiMzFlZjhmNmIwY2UyM2FkZDI1Mzk2ZWJjMDk5MDUwMGFhYzU0YzNkYjRlOGQwZjJjN2MwMWRjZjlmNSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_03a4f3af54b84e5eae4665a050a4ca2d",
+      "statement": "Every click-a-song action queues through PlayerViewModel.playWith(song, SongPlaybackStrategy): SongPlaybackStrategy.single() queues only the clicked song (stats pages, local-music single click, staying on the page), while scope(list) queues the displayed group (playlist/artist/album/top list/quick-skip/version group) in sequential mode starting from the clicked song, replacing any existing queue.",
+      "evidence": [
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/AppNavHost.kt#L394-L423",
+          "version": "repo-lines-v1:sha256:449c17f9f359bd911e44f898b5cf7b80ced4b623cabab9acc296601ee542f30a:eyJzZWxlY3RlZExpbmVDb3VudCI6MzAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFiMDMwYmM0MWJmM2Y5NTdiZDI2MmQ2NDA3YzJmZGE0MzgyMjkxYzRkZDE5ZjY4N2E1MTE0NmEzMWRjYzYyZWUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjExMDk0NmMxYTJiNGRkM2M1Njk2NGNjODEzNzU5YWMyNTE5ZTQzOWU4ZjgxMjU0YzU3ZWY4MWNmYjI0NGY4ZmMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjdiNDhkNzkxMDJjMjMzNTA3N2RjNzcwN2U1NTUxMzc5YzY4ZmQzNThmNWY4M2Y5ODE3ZWZjNjJlYjA2NGVlYTYifQ"
+        },
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/AppRouteActionMappers.kt#L99-L111",
+          "version": "repo-lines-v1:sha256:6b028bd05ca6a73eee1077cad3a43f4e4b9c3e9d069213cf6efb13af5ed1653e:eyJzZWxlY3RlZExpbmVDb3VudCI6MTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY1MjY0Y2M0YmMzM2M2NTBjODIxNzQzNTY4ZDI3ODk2OGE4OGU3YWQwODA1ZDA1YmE0NDZmYTdkZTcwMzEyMzkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZhZmJhMDUyN2MzOTUzYzRiNmUwZTViNTczOWJhODM2MTJmODA1M2JjZGM5NDY2NzMwMTkzY2QxZDU5MGI0MDgiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjNiMTIxY2QyN2Y3Y2FlMTdkOTQ5MGIwYzE1MTllZjc3YzI2YjcwZGJlZGI2OTExY2IxNDExNWEwNGU5NDdlMTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjE2NWIzYjQ4ZGZjNTUwNDJlMzkzNDE2YTg5MDA3NTJkZGM5YzVkMzQ2MjRhNGUzNGRkODMyOGE1NmI5N2QyMjQifQ"
+        },
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/player/SongPlaybackStrategy.kt#L13-L42",
+          "version": "repo-lines-v1:sha256:32aa283fa5e85c0ba58b6506c84ab082eb57d70e6302746fe7c0e6fb384f4c77:eyJzZWxlY3RlZExpbmVDb3VudCI6MzAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZiMjViOGM2YjQ1NTZjNjM4YTg4NzY0ZTFlMTZmYzUwYjhjOWE0MWRjODZmZjg1MzdmYzU1YmE1MDY2Y2IyNzUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImJkMGIzMzVjNDBiZjRiZDFhYjM0MmY4NDg0NDFmNDNjMDIwMGVhOGRjMWI2ZWNhMzgzMDI5ZGRmYzg1ZDMyYWQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_a8cfe39d5c584b24823200d88de5ecf9",
+      "statement": "PlaylistResumeViewModel.switchSource(newSource, currentSongId) settles the previous playlist source inside a single repository transaction — the library page always settles with a null source on song click, playlist detail passes its id only when the clicked song belongs to it, and onResumePlaylist plays the resolved song then clears the banner; resolveResumeSong nulls stale records whose song left the playlist or is unplayable (uri == null), covered by ResolveResumeSongTest.",
+      "evidence": [
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/AppNavHost.kt#L362-L423",
+          "version": "repo-lines-v1:sha256:285ae51cd985130547404c22e6754bffb3898eafff6e5159eb273eb6c5c2f357:eyJzZWxlY3RlZExpbmVDb3VudCI6NjIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjA1YjZjYmZmMmVjZjBkNDE2MGIyYTI3MjQwYzc1NDhhODA0Y2VhODVhYzhmZjY2NTVjYTRiOGUzMzdmNTVjOTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjZiY2IyOGEwNGY2MDA1YTBjNDMyNzA1Mzg4ZjRlYjJkYjkwOTY3MzQ3YTI2NWY4YmY5YTA4ZDA4OTg5MTQ2ODEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjdiNDhkNzkxMDJjMjMzNTA3N2RjNzcwN2U1NTUxMzc5YzY4ZmQzNThmNWY4M2Y5ODE3ZWZjNjJlYjA2NGVlYTYifQ"
+        },
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/AppRouteStateMappers.kt#L148-L158",
+          "version": "repo-lines-v1:sha256:37465071ae4a45d9a218f063bac55efae2a49d005209f1873cc16dfe93d0694c:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAyNDQyZGYxMDUxMjMwNGM3MTkyNjUzYzYyZTgyNWY3Y2FmMmIyY2E5YjBiZDhhMWNiYjYxODUyODg4OTY2MDAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjE2NDZkMzNhYjlkNDUwNGNiYmQ1YzgyNDUwMDNkMjdhOTgyNTZhZmU4ZTY2ZTZmNjYwMWUzOTQ2NjdjZmEyZGYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijk1N2I0ZDZjNzI3YzlmNDIyMWMxYTFlYzI5MWI1MjhjMGI3ZDJmYWNhMWJiMWFmOGQ3OGEwYjU3YjgwMGRjNTMifQ"
+        },
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/playlist/PlaylistResumeViewModel.kt#L30-L41",
+          "version": "repo-lines-v1:sha256:794eb107feb032b665101e2b240b556a3721dbf5e5cafcd71f86e342feaeb665:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM5Y2JiYzY1NDY5ZGIxY2EyODQyZWZkOTdkZjdlZTJjZTZjYzE1NzE0ODJkMDFhMThiNzkwYTEwYzdjNTEwZjMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk5OWJkZWZlZWFjYTYzNDBlMDI5MGRjODZlODg5Yzg5ZDVlMTg5YWE1YmE0NGI1ODViM2I3MDczNGY0YTYyZDgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        },
+        {
+          "resource": "repo://app/src/test/java/cn/com/dcsgo/mihx/ResolveResumeSongTest.kt#L10-L60",
+          "version": "repo-lines-v1:sha256:4d1f4ef8451c84e0159a20736f1d7bda2aecc2f8e416e53ba1e41e60c57e24b2:eyJzZWxlY3RlZExpbmVDb3VudCI6NTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjViYTljMmVjNzY0YWM2ODU2ZGEyYWIwNjFkODBmZjQ5YjJlMWEwNzVlMjE2NGRlMmJjNjQyY2Y3YTI4NWE0ZDEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijg1MDkyNmZhNDU4MjA4MmFmYmUwMWU0YmFlNjIzNzJiNzI4N2EyZjlhNDQyYThkOTkwM2U0OGY3MGY3NjU1YWUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_3b30fc06259e43f09c7506f7283d739c",
+      "statement": "AppRoot provides LocalEmotionCorrectionController once above the scaffold, delegating save to AppMediaMetadataViewModel.saveEmotionCorrection (empty word set → clearCorrection to restore auto tags, requiring an existing row; otherwise EmotionGroup.avgOfWords resolves the words to V-A anchor coordinates for saveCorrection; repository bridges run on Dispatchers.Default), refreshing EmotionViewModel on success and toasting 这首歌还没完成分析 on failure — so any page rendering SongInfoDialog/SongEmotionSection gains the 不像？标记 capability without callback threading, and SongEmotionSection shows its calibrate button only when the controller is non-null.",
+      "evidence": [
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/AppMediaMetadataViewModel.kt#L26-L47",
+          "version": "repo-lines-v1:sha256:ea61502f75a3dc2333a00ca91f79646f8dae4d15def5cd0983e063eae3f79f14:eyJzZWxlY3RlZExpbmVDb3VudCI6MjIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM5Y2JiYzY1NDY5ZGIxY2EyODQyZWZkOTdkZjdlZTJjZTZjYzE1NzE0ODJkMDFhMThiNzkwYTEwYzdjNTEwZjMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjYxNWViMGQ3NmUxODJkOGJhN2YyYTAzYTZkZmQ1MmIyYWM1ZWU4MzFlMTExYTA5ODBkNDc0MjgzNjI5YWIyMDAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        },
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/AppRoot.kt#L131-L146",
+          "version": "repo-lines-v1:sha256:6637791532166f9643e2dd19e6cfab035c63be1495b1e8e8c73e33c7e31973d4:eyJzZWxlY3RlZExpbmVDb3VudCI6MTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjUwY2U1ZDg3NGU1YmFlMDFlOWI0ZDE5OThhM2E1NDQ5YzIzNTBiYzI1OTFjY2Y5M2JhODJkZTljNDE1ODZiODEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQwOTNkY2UwMmZhM2U1YzBiOGMxYzg2YWM2N2U4NzYzZTNhMjQ5YWFhZDAxZjlhOGVkZTJkNjcyNzE1MGJkNzgiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQ1MjhhYjg4MmEzMWY4YTljODZhMGRlMDY5MDM0NGZjY2ZiZmYxNmRjZGUxODM2MzYxOWQ1NjZlZTZkOTMwYzAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQ0NjU5MmRmNzgwNzg0YmRlMDU1YTZjNWYwZjZlMmZhMjIzYjkxNGRkYWYxMWY0YjY1N2I4ZDk2N2QyZWZiODIifQ"
+        },
+        {
+          "resource": "repo://core/ui/src/main/java/cn/com/dcsgo/mihx/ui/components/EmotionCorrection.kt#L6-L17",
+          "version": "repo-lines-v1:sha256:e7411dbcde65addf6d5df2a9ebe6a12b5a254bc4792cf3cfac66c412d57e0c72:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVhZjIyY2YwNzMyNTkyYzI0NzE0MWNiZTYxZWZhMTEwMTI2MTJmNWEzMTIyYjlhZjliYmFmNTJmNTcyNGQxOTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVmOGQxNTExYmZmM2FkZjA5MTk5YzU3NjhlYmRhMmMxYmMyYzJmODExZTY0MGQ0MzY5ZDM2NDQ4MzhhMWE3ZDYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImRjMzllYmM3MDdjZDNlYTdmMTIxMDViZTExZjlmNmFiOTgzNDg0MWQxN2U3OWQ5ZjljOTU3MjFmZGM1YTcyNGYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://core/ui/src/main/java/cn/com/dcsgo/mihx/ui/components/SongEmotionSection.kt#L170-L177",
+          "version": "repo-lines-v1:sha256:a1a55ee48e70bb6d6f60020fe0f236501e5b023a94284d8130a133afe72cee59:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZGVhODc2ZWFjZmI3NjA0ZTYyMjBkMzAyYzJhMDZhODZjMTQ1YjkwNDk5ZDYwZGM5ZDM5NmRiN2YyNzI1ZmJiZCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNTUyMmM0MmNkMTljNmQwM2Q4MDhjNDUyNzIwNTUyODI1YjdlYTFjNWI0OTFiMjE4NTExY2FjNzQxNWNmOWQ5YiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNzYzMjE4OWViMGE5YjZmZTYzOTMwZGQ0MmU0NjNkNDY0Njg5ODIyNzc3YTM5ZWFlZmJjOTQ2MTUwZDU2NzE2YSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiOWMxNzFjZTc1MTA4NTA1YjY3ODZlZjc5MjNlMDhhMjRmYmE3NjIzMDM1NTg5NzFmOGFhYmE2Y2FhNDMyOTkyZiJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_37db8362d4a446fd87f64c9bd7117347",
+      "statement": "The emotion-analysis page derives failed-song rows with a produceState keyed on the failure fingerprint + songs list + a local calibrationVersion; because manual marks do not change the failure record (attempts/failedAt unchanged), onCalibrateSong must increment calibrationVersion after a successful save to force a requery (2026-09-04 regression where the list only updated after leaving the page), and marking a failed song without an analysis row creates a user-only record through the shared controller.",
+      "evidence": [
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/AppMediaMetadataViewModel.kt#L28-L30",
+          "version": "repo-lines-v1:sha256:5dc018b1cf6cab6535b371f7c38d343a962e14f3189285a65fe3ce36ea49b4a6:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMmYwZjAwMDdiMjcxNTg0OGMxNTBkMThiYWRlMTAyMTFjZGM3MzRmYmQ5MWY5ZDVjNDFmMmI3N2FjZTk2N2MwZSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiY2QxZTFlMjYwYmRhNzcyZmFhOTgxNTVkMzgwOGYwOTVjOGJkMmE3ZTlhNTM2Y2I3N2I5YTQ3YzcxNDQ2MTY3OCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiOTc5M2UzYjE3YmZkMDIyZmE5YWQ2MzFmMWZkMmY1MzlhMmMwYjc4ZGUzNzQxNTY3Y2NhNjdjMjhhMjgyM2I4ZSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiY2Y4Njc5YzViMzM4ZTk2M2JlNGQ2NGY3MDFhNTFhOTQ4MmExYzJhODVlOWU2YmU3Y2EzNGJiYTRhYWZmZTlkNSJ9"
+        },
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/AppNavHost.kt#L818-L845",
+          "version": "repo-lines-v1:sha256:ac0978a0353103ccc23e37bc931a03ae8a4a7501b4d6ad9e1008a3758fe84451:eyJzZWxlY3RlZExpbmVDb3VudCI6MjgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY2MDg0M2JkNjc3YmY1N2IxMmRkMzRiNmIwM2FlZDI0OTg0YjI3MDAyMzUyODM0ZmE1YjNiNTdkZmNmNzNhY2YiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU1MjJjNDJjZDE5YzZkMDNkODA4YzQ1MjcyMDU1MjgyNWI3ZWExYzViNDkxYjIxODUxMWNhYzc0MTVjZjlkOWIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjQ0NzVlMWIzOGFiYzc3NzVjMTViNTQ0ZDhiYmU0YzU4ZmRlMGE5NjhkOTM2YmI1YWRkY2E4NDc5NWE1ZjUzODkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjY2MWVmZjU5MTQxOGUyNDg4YjRjYzVjMmZkNjI5N2UzMDAyZDZhMDBkYzUxZmY4ZDc3ZmZkMWRkMDU0ZDk0YTIifQ"
+        },
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/AppNavHost.kt#L879-L894",
+          "version": "repo-lines-v1:sha256:34a7f8efe3a6a25357268bf26f49f122f65995944abf881fa7612990d453fa42:eyJzZWxlY3RlZExpbmVDb3VudCI6MTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY4NmNhZjJhOGRmMWE3MmMzOTJmNmJkY2Y0YmE3NmI3MzA1NGQ3YzdlYWJkOGEyMzcwMDNmMTdjMWQ3YjRiMzkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZlNGNlZmUxOGM2MDRlY2ZjNjNlYzE5NjkxNTU2ZGVkZTNiYTFkY2NiNzhhYmNhYmQyMDI4MjM0YjI3MjE0MTAiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjQzYTJhMGNiNGMxMzkyY2ExYzU0NWRmMDg0N2JmNTI3NjE2OGFmNWZiNmQ4MGEzZjYyOThkYWRkYjEzNTU5MjMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjNhODE2OGIxZTg2MTlkOWFlMWY1YjY3ZDQzNWYxMTU0ZTQ1YTQyYjg0M2NhMzYwZjg3ZDNlODAzYjdhODM0ZDYifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_a688a32919c14399950c19d6195614f3",
+      "statement": "MoodTimeSlotViewModel observes TimeSlotConfigRepository configs and the persisted moodTimeSlotEnabled switch; loadStats() computes tag→song counts and library size once per config-page entry on Dispatchers.IO (degrading badges to zero on failure), save() reports overlap/zero-length validation errors through a (Boolean, String?) callback surfaced as toasts, and MoodSlotEditDialog receives the tag counts plus the manual-only tag list (鬼畜/沙雕/戏谑/荒诞).",
+      "evidence": [
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/AppNavHost.kt#L549-L611",
+          "version": "repo-lines-v1:sha256:d2140fbdb3c76bc392dd53354a38113c5d52c4b714d3c438a6141c9734447592:eyJzZWxlY3RlZExpbmVDb3VudCI6NjMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImE1NmZkYTg1NWJjODg5OTA1OGQ5YTg1ZDkyMmM4NzI3ZTgwNmZhMGEyYzRkMWJkMGM0ZTRlNmI2YTI2YzBkNmIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjZiY2IyOGEwNGY2MDA1YTBjNDMyNzA1Mzg4ZjRlYjJkYjkwOTY3MzQ3YTI2NWY4YmY5YTA4ZDA4OTg5MTQ2ODEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijg2MWVhMDdhNWY4YzA1ZWNhZGEwOThlNDA5MjgzOTAyMDEwZGI3YjViNGM5YTM3ZmI4Mzg4ZmZjNmM0ZTA0N2MifQ"
+        },
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/mood/MoodTimeSlotViewModel.kt#L40-L100",
+          "version": "repo-lines-v1:sha256:a38dc3a8bb10ac2b42bfd782582282483cdb8f3119e470498e41077c240b1f6d:eyJzZWxlY3RlZExpbmVDb3VudCI6NjEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZmYzQ4ZTgyMzkxMjQ5YmJlMmM4MzQwMDI3MzQ2YjdlZmU0MTdhMTgyY2E4OTRmNWMwMDM2ZDU0OTczNGJlNzkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImY5ZmFlODJhZTJlYThkYzhjYWFlMzA5ODA2YzIwMjAxNjcxMGZmMzcyMmZmMmI3ZjA2ZWI5N2RmMGZmNjk2M2EiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijc4M2Y4MWRiN2IzNzViZjlkYzMxYjYxZjdhZjIyNGE1YmVjZDMzN2M0M2Q3Y2MwYzkwMWYyZjE2ZGY4ZmU5MTcifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_dce2e22373584581afd80278938dc962",
+      "statement": "The player resolves the active mood slot from volatile moodSlotConfigsCache/moodEmotionTagsCache snapshots refreshed at startup (refreshMoodSlotCache) and falls back to full-library random when the tag-filtered pool is empty; the wiring seam MoodTimeSlotViewModel.onConfigsChanged and PlayerRuntime.refreshMoodSlots() exists for post-save cache refresh but currently has no caller, so config-page changes reach the player's random logic only at the next cold start.",
+      "evidence": [
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/mood/MoodTimeSlotViewModel.kt#L108-L109",
+          "version": "repo-lines-v1:sha256:4e2e336d96aeb473ec8cc1e68098208316ed7acc9270746d1380bf32adec560a:eyJzZWxlY3RlZExpbmVDb3VudCI6MiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYzM5N2U2MjhlMTNkOTA5ZjhiYTYxMjNkYjAzYWMwY2I1ZjJkMmFjMDUzNjIwM2EyOWQ3NDRmMGQzMWFkZDg0YSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDRhNjdkMTkyNTE2MzVmZThjMDgzODk2YzdkY2U1ZThhNTEzZmIzMjUyM2ZmYTI4NmU3MTU5NjFiNDhlM2E5ZSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiOTk5YmRlZmVlYWNhNjM0MGUwMjkwZGM4NmU4ODljODlkNWUxODlhYTViYTQ0YjU4NWIzYjcwNzM0ZjRhNjJkOCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjEsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNDEyY2EzNDVjY2Y3NWJmOWMwODA2YmNlNjk1YmU4ZGU4MDhiNzk5ODQyNTFhN2E1NGQyMDJjZjYxMDFkZDQ1MSJ9"
+        },
+        {
+          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRandomQueueFacade.kt#L61-L76",
+          "version": "repo-lines-v1:sha256:641a2af88cd0dabfe6f23a976224cb7e7571ed9db8db892de51dae36fe672f58:eyJzZWxlY3RlZExpbmVDb3VudCI6MTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImI5ODAyNzQxN2Q3OTU5YzRmZWNjYWY2MWZhN2IyMGMxMzZlZmVmZjNhYmM5MjMyY2UzNzliYzQ2OGNhYTkwOWUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImJjYjkxZDkxN2IzMmMyYmMzM2IzNjcyNjk0ZDIwOTViYmQzYTRhN2IzOThmYTM5ZTc1ZjZlZGIwYWQ0MzNhNTkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjA3YzAwOTI1YTdhMjc0MzA0MGExNTE2MWQ1MTA3NTM2MDdjYzFmYzE0ODFmZDEzYWZkZWNkMDUzMDA2NzQ5ZTYifQ"
+        },
+        {
+          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRuntime.kt#L379-L401",
+          "version": "repo-lines-v1:sha256:02faa2323e3a820b1a41e505258f2aa8d1015f226f4779da82af6b49b78948b3:eyJzZWxlY3RlZExpbmVDb3VudCI6MjMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZjZWM1NmM4NmU3MGYyMzJjMmY0MzIxNDI2YThkMDE2NWU0OTc4ODg2YmQ1YmE4ZWU1OGRhZTIyNTUwMzBkYjMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjNlNWU3YWRkN2U4MDJkN2NlNTcwNGE2MTA4MTQ3MzQzMTcxMDUwNDg2ODU3MTQxYjk2YTZhMTFiN2QxODgwOTMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjBiOGEzMzM5ZDA4MWUzM2Y4ZmQyZDViZGI5ZGQyNmUwNGY5YjE5YTM1NDE0NjBlZTEyNmYzOWQzNzBiZTFjYmMifQ"
+        },
+        {
+          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRuntime.kt#L483-L485",
+          "version": "repo-lines-v1:sha256:74d1a176074acac990667d458495142a099695d7c3289d8705299c24db472413:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYzQ3ZjJjNGJhNzliNjA3MWRjMzQwMTQxY2MxMzgzNmQ1ZjA0YjhjNGVmODc2ZTczZjIyODY1Mjg2OTIyM2Q4MCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiODcxYmJlYmZlZDFhOTM2NzUzNjQ5ZjFiMDk5YjY1OWUyYTc1N2Y2ODBiMjAyZGY4ZjQ3ZmE4MWViNWZlMTM0OCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiODY2ZGMzZDI0YWEwY2UzZjViN2FlMWM4YzA1OTdkZjM5ZTEwMDY0NjUxZTA4MTcwM2E3MzU5MjljYjQ3NmIyOCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMTdkMGU4NTlhYjgwNGZmZTYyOGU1OGY3ZDBiYTRmZmYyMDg1NzU4OWIyNjQxZDUzOGFmNTJkNmMwNTExZjAzOSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_60f3e01a90d642b9a08660b928703fea",
+      "statement": "Repository calls reached from composition (songInfo loading, playback-stats snapshots per review C-2, ranked counts) are wrapped in runCatching with safe defaults because the underlying Room runBlocking bridge throws; failures are logged via AppLog and degrade to null/EMPTY values instead of crashing the coroutine.",
+      "evidence": [
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/AppNavHost.kt#L173-L183",
+          "version": "repo-lines-v1:sha256:6a7984f2a92d53e73a22e02fb61e13c0e81c3da1b7ace362b155c227edf02843:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImE2NDRkMGE0OTI3NDUwMDRmMmI5MTI5MTA3ODdiNGYyNjJmOWNhMGZiYzc0MWU1MTcxMWUzZDY2MTFjODg3NWMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU1MjJjNDJjZDE5YzZkMDNkODA4YzQ1MjcyMDU1MjgyNWI3ZWExYzViNDkxYjIxODUxMWNhYzc0MTVjZjlkOWIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjY0MzI2MGY1YWQ2YjIyZjRhZTVkZmU3YTU0YTViZTNlMDU1NjNlZTdmMzFjNGRkNzljZjFkNTU1MmI5MzE0YTgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImZlYjE3NTM4ZjJkYzk0MDI0ZTQ0ZjZmZTAyN2RkMjIyMzY0N2Y0YWQ0OTIyOWUyZjMxMzhmN2VmMzJlYWExNDgifQ"
+        },
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/AppNavHost.kt#L504-L517",
+          "version": "repo-lines-v1:sha256:c797b543d23fbb90d8ab945792ca41fa98b6b3bba3739b8d639141e5054e74f2:eyJzZWxlY3RlZExpbmVDb3VudCI6MTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImViOGFmNTNlODc5YjhlMzBmNWJhNWE0ZjQxNmJkNTE4Njg0Y2FiNjk2ZTljMzdlYTA3NDUxYjlkZWRmYzMxYTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU1MjJjNDJjZDE5YzZkMDNkODA4YzQ1MjcyMDU1MjgyNWI3ZWExYzViNDkxYjIxODUxMWNhYzc0MTVjZjlkOWIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijg3ZjVjYjJjNGMzZGMyNzFjZjhlODY4YjY4YTk1YWE2ZDA1YzE3Y2Y2ZDZlNDM4NmE3ZGQwY2JjMDI2NWE4YTEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImY3YWM3MmQ3NTBiYWI2ZTYxMzY0ZjBjN2Y4MGRlNDIwYzcxNzkyYzIzOTI4MjE0MDUwZGU0YWU3Y2I3ZDI4MzUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_a9e321a1ca14454aa53a475e6deb322e",
+      "statement": "PlayerQueueSheetHost renders PlayQueueSheet above the scaffold, driven by shell-local showQueueSheet state with a BackHandler; selecting a song plays that queue index and dismisses the sheet, and removal/clear emit confirmation toasts.",
+      "evidence": [
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/AppRoot.kt#L205-L222",
+          "version": "repo-lines-v1:sha256:d13e1aca9870755e434850f3d3dc3737ea5d118520d24d5bf4b1b5e965df58db:eyJzZWxlY3RlZExpbmVDb3VudCI6MTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImUwM2E0ZWIxOTA1ZDIyOWUwN2Q1MzhiYWRkNWZiMzE5ZjJmZmQwMjUxZjMzZTY2ZjBkNzkwNzUxYTNmZjhkNjAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU1MDMyZTk2NGQwOTMyMzUxZTVkMTg1MjY5MjgxYjE3MWEzYTA5YjA4YjI4NmU2NjFlYTQ3MDMyM2M4MmViNGQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjQwYWYyODI1MjRiNTg2ODQ5MTU5MDkxZTQ4ZDgxZGE0M2VkMTEyMTQyZTllZWI5M2UwZGYwYzUyMWI3ODk4ZjMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImEwYmQwYTIzYzNmYzQ1NTcyZGUwYjg3MDRkNzYzYTJmZDQ5YThkNjVkMTE4NTBjYjc4YjlkNjMwOGUwYjhiM2MifQ"
+        },
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/AppRoot.kt#L78-L83",
+          "version": "repo-lines-v1:sha256:fa63814c16060c2f1c8adce567227bcde27c6e87942386da60976b6b19ebdc7c:eyJzZWxlY3RlZExpbmVDb3VudCI6NiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZjQ5NDk5NzI0NDRhOTY1NDYwMDI0MjM5MzMxYzlkYmU2OTQyZjVlMDEyNzg4YjI1MDQ5YTVkZGYxYjk4NGQ2YiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDg5M2Y0MGUzNzgxZWI4OTZjODJkMDQ2YTA4MDY3YTExZTM1Y2RmMmYxZGZhZjI2ZmVhOTBiOGRiNjY3NjQxMyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMGZkNjBhMWY4YjkzNDM1ZjZkYWZhNWI3ZTdmOWE4NWFlYzc0ODhjODVlNDBhOWY4MDljMTNkMDZlOWRkYjdhNyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNWIwYmZkMzU0MzU4ZDgwNzUyZTQ5ZmE5ZTU1NWRlMjU5OWI5MzA4YmM0YTFmMDg0YzYzOTdmODdlYjQyYjc4ZSJ9"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "by": "openwiki/0.5.0",
+    "at": "2026-09-07T13:49:59.042Z"
+  }
+}

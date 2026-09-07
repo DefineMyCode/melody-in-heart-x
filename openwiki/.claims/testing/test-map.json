@@ -1,0 +1,396 @@
+{
+  "schemaVersion": 1,
+  "pageVersion": "sha256:3abcb1754c935aa319a96fd22084ff2f7e9ac597cb815a1d2dd73691b1a2fede",
+  "claims": [
+    {
+      "id": "claim_78728123d1944ce1b4df1ebcb4402109",
+      "statement": "The repository's verification is split across three layers: JVM unit tests (JUnit 4, no device needed) are the primary gate for all planner/resolver/facade/repository logic; `:app:connectedAndroidTest` runs Compose UI instrumentation tests (HomeScreen/PlaylistScreen/SettingsScreen compose tests) requiring a device; and `:benchmark:connectedCheck` runs macrobenchmarks (StartupBenchmark cold-start with 5 iterations, ScrollBenchmark, BaselineProfileGenerator) that also regenerate the Baseline Profile shipped in release builds.",
+      "evidence": [
+        {
+          "resource": "repo://CLAUDE.md#L42-L63",
+          "version": "repo-lines-v1:sha256:dcce2fbd256b3a13fda77b1ff187f03ba30d3fed6a6d8bde1f1f9a84df1f69d4:eyJzZWxlY3RlZExpbmVDb3VudCI6MjIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY0NmI4NzJmN2YwNGIyNTNhMTkxZWIxZGExNWE2MDI0ZjdjZjE5NTNmZDNhYjM4MWU1MjkwYmU0YTYyNDAxNTAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ3YzA2YzU2MWQ1YzMyNzM0MzY4NTI2OGE0NmIzMzkxZjM5OThlZWU4OTBkMmJlNTFmMGQyMWNjNGE1M2FlNmQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImZkMGE2NGY3YjBhODJiYTM3ZWI4OTg1NzIzNGE5NDM3NDcwMzNkODUyNjdmOGQyYjJkYTY0NjI1Njc3MmE0MzciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjY1NTQzM2Y2MTg2YWYwNzVlZDNlODYxYjhlZGM2YWUwMTYzNjM0ZDhiODFjZDE2N2QzMDI2Mjc1NzQxNjM0NDUifQ"
+        },
+        {
+          "resource": "repo://app/src/androidTest/java/cn/com/dcsgo/mihx/HomeScreenComposeTest.kt#L14-L44",
+          "version": "repo-lines-v1:sha256:bd01739cb12ef0cf5930438e5ddda169fef0a7c5d886c5888d8e4738bb043f56:eyJzZWxlY3RlZExpbmVDb3VudCI6MzEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI3MDQ2OGQ5OWY3ZTBiZDQ4ZTQ4MWUyNDM2Yjc4YWI1OTA1MjUzNmY5OTcxNzZlNWM4YWMyN2EyOGZiY2Y1YjEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjU1NDM3YjZlMzNjYTcwNTRhNzg5NmQwZTlmY2MzODNlYjhhMjM1YWRkMTI1N2M2MWE2YjFjODcwZDg2ZmFmM2EiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImU3ZGU0MWE0MGNjYTQ2OTFlYjMwMWQyZTk0YmI5NzNkNGViYjY0Njk4ZTAxNWU0NzllYjM2MmUyNTYyYzE2N2IifQ"
+        },
+        {
+          "resource": "repo://benchmark/src/main/java/cn/com/dcsgo/mihx/benchmark/StartupBenchmark.kt#L11-L29",
+          "version": "repo-lines-v1:sha256:150027ad7bcc4c741e2c3d9b47ec7b7a418366658718f42c3b0dbef6a275f30e:eyJzZWxlY3RlZExpbmVDb3VudCI6MTksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjYwNDY3YmNkZWQ2OGM4M2NhODE5ZDA1NjYxYzgzZmViMThkOWNkNjA0ODk2MWJjYTAyMTdhNDAxM2E0MzQyYTAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQzNjNhMmU1ZjkyNGZjNDNjNGQ2ZjExY2E2YzlhZmQ4YjM3MmU3YTg2NTRiYmJlYmJmZTIwYmExOWU5ODE1ZWQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        },
+        {
+          "resource": "repo://build.gradle.kts#L580-L588",
+          "version": "repo-lines-v1:sha256:2894d8e4dc174385dac4f8403a231b2ba1bc7250e8246cb001e94705c090a98d:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMWY1OGI5ODU2NTI2MDNiYTQwMGNkMzBhMmU1ODA0OGJhMGMzNWEyNjU3YTE0NjBkNDVkNDE3OTBlNGFiZTFmZiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDEyY2EzNDVjY2Y3NWJmOWMwODA2YmNlNjk1YmU4ZGU4MDhiNzk5ODQyNTFhN2E1NGQyMDJjZjYxMDFkZDQ1MSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMTllNzYzNTVjZjExOTk0ODBjM2Y5OTgzNmIxNDg2Yzg0MWQ4OTFmYWFkOTA0YzYwOGUwOTMwMjJkMzc1N2FlZSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjAsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_361fafa6ecf64c4687644e5c6f27a2b6",
+      "statement": "The `check` lifecycle task aggregates the root `spotlessCheck`, the root `verifyProductArchitecture` task, and every subproject's `check` (each of which runs that module's unit tests and its own spotlessCheck), so a `check` failure may originate from formatting, an architecture assertion, or a unit test and must be diagnosed from the GradleException message.",
+      "evidence": [
+        {
+          "resource": "repo://build.gradle.kts#L42-L47",
+          "version": "repo-lines-v1:sha256:32a95d5f63377e3d819a82c0d3a27116be8cdeaa6d74ede9c834199ed569691c:eyJzZWxlY3RlZExpbmVDb3VudCI6NiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiOTcyNjc1OGZlYjRjODVmMWI3ZmNiNzdmNTM1N2M4ZTg4NmU5NGIwNWZhOGM0ZWNhMDAyMmU4NGYxYTcxMmMwOCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDEyY2EzNDVjY2Y3NWJmOWMwODA2YmNlNjk1YmU4ZGU4MDhiNzk5ODQyNTFhN2E1NGQyMDJjZjYxMDFkZDQ1MSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiOTk5YmRlZmVlYWNhNjM0MGUwMjkwZGM4NmU4ODljODlkNWUxODlhYTViYTQ0YjU4NWIzYjcwNzM0ZjRhNjJkOCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZjE2MjBkYjYyNzE5MmM2NTcxMTdhZTkzZGQxNTllNTUyNzkyZWQ1YTVhNzhlODhmMzEzMTQ0OGEyNjJjNzZiMiJ9"
+        },
+        {
+          "resource": "repo://build.gradle.kts#L580-L588",
+          "version": "repo-lines-v1:sha256:2894d8e4dc174385dac4f8403a231b2ba1bc7250e8246cb001e94705c090a98d:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMWY1OGI5ODU2NTI2MDNiYTQwMGNkMzBhMmU1ODA0OGJhMGMzNWEyNjU3YTE0NjBkNDVkNDE3OTBlNGFiZTFmZiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDEyY2EzNDVjY2Y3NWJmOWMwODA2YmNlNjk1YmU4ZGU4MDhiNzk5ODQyNTFhN2E1NGQyMDJjZjYxMDFkZDQ1MSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMTllNzYzNTVjZjExOTk0ODBjM2Y5OTgzNmIxNDg2Yzg0MWQ4OTFmYWFkOTA0YzYwOGUwOTMwMjJkMzc1N2FlZSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjAsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_0cba91555a834ede981945a5dd85bd71",
+      "statement": "The mood time-slot feature's design doc §7 (item 7) defines a regression floor: with the enhancement switch off, lucky-play behavior must remain bit-for-bit identical to the pre-enhancement behavior, and the existing RandomQueuePlanner tests must not be modified and must stay green. UniformRandomPlannerTest and the non-mood PlayerRandomQueueFacadeTest cases (plus moodFilterDisabledKeepsOriginalBehavior / moodFilterInactiveOutsideSlotTime) carry the same baseline; mood filtering is therefore only allowed at the candidate-pool entrance in PlayerRandomQueueFacade, never inside the planners.",
+      "evidence": [
+        {
+          "resource": "repo://docs/architecture/MOOD_TIME_SLOT_PLAYBACK.md#L304-L312",
+          "version": "repo-lines-v1:sha256:2dc78228a53951c51c161d6f67841132498cd838ac6d5ae620df98a6b0881cfa:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiOGZhODcxZjhlOTM2NTQwMTk3NjI2MWMxNjJhZWJmNWI1OTY4YTgzMTdjMzkyNDIzZTlkNjdjMDNmMzY4MjQ4MiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMDcwNWVkMWYzNTE5OGRmMzIzZTc5Y2E1MThkZDJkMDQ2MmQwNGMyNjE5NDAwMTA1MzAwMzk3NWMwOTdmNzFjMyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMDAxZjJlYzE3NTkzYzEwNTRlYjQ2MzY3ZDg0NTNlZjI0YTE3M2NlOTZiNzExN2Q5MWY5YTY4ZDQ0ZmVmOGIwMSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiN2JlNGVjNDE2YmU4NzMxMjVlMGFjZTVlYjQ2NTc4ZjNiMjUxNzIxZDA5Y2YwNzhlMjVmYTExZjFmYWE1NThjMiJ9"
+        },
+        {
+          "resource": "repo://domain/src/test/java/cn/com/dcsgo/mihx/domain/playback/RandomQueuePlannerTest.kt#L9-L39",
+          "version": "repo-lines-v1:sha256:353987d1d20e14d5fb0e9240063bd79dd5a96d5a3cda1f3337002416483a32e4:eyJzZWxlY3RlZExpbmVDb3VudCI6MzEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM1MWMwY2IxZjk4N2FiMTAxZDRlZDdmMGMzNGJiY2Q2NDNhZTRlOTlkNzhiYjMzNzVkNzYzZDhiODZhNDA0NTgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjcyYTE0Y2Y5MTMwMTI0MWYwNDRlMjc0NDVjNWQyMTRjYzY3OTk4ZTA4NTQzODc2YWM1Njk0NjQ3ZWNiYzcyNTYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjIxYzNlNjQzZGY5NmViYjAzNDUxZjdkNjQ0ODdhNmRjMzhmYThlYjBiMjBlMzg2MTdiNGY4ZWFmYTQyNjVlMGYifQ"
+        },
+        {
+          "resource": "repo://feature/player/src/test/java/cn/com/dcsgo/mihx/feature/player/PlayerRandomQueueFacadeTest.kt#L363-L379",
+          "version": "repo-lines-v1:sha256:b4147b35face2afa46bd68d6dc0f42b1d9362c3808935da1a2ce41071203e488:eyJzZWxlY3RlZExpbmVDb3VudCI6MTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRjZjA5ZWIwYzU3NDRmYjk3MzMxYjk4ZmYzZmJmMDVhNjAyYmEzZjdmNjdlNWRhNWJlOTA5NTAzM2Y2MjU4MjUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImI5MDhlOTIxZjkyMGU1ZThmNmFhZWNkYjBiYTBjM2MyODNkYmQzYzk2NWYyOTBjYjllOWE4MmQzZDJkYjQ3MTMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImY3YjUzNGEzNTIyNGVmNjVhMzZhNWIzYzYzYzY2MTdkMDg1MzIyOTMxNTJmMzIwYTcyZWYyYjFjMDg4ODA5MjcifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_bda8be9eadff48ccaa6f5f25c6ef04d8",
+      "statement": "RandomQueuePlannerTest locks the lucky-play plan semantics: recently played songs are excluded and selections are merged into the recent set; when the remaining pool is smaller than the batch the history is cleared and resetHistory=true is reported; with uniform random enabled the low-play-count songs are still selected after the recent filter; planInfiniteStart records only queued playable songs as coverage; planInfiniteRefill excludes songs already in the queue while keeping existing exclusions; and no-playable-songs returns null.",
+      "evidence": [
+        {
+          "resource": "repo://domain/src/test/java/cn/com/dcsgo/mihx/domain/playback/RandomQueuePlannerTest.kt#L17-L52",
+          "version": "repo-lines-v1:sha256:c50033baad64074a1be36111c6de3b2bf4adf2a815ebffa4fdcb395165dea401:eyJzZWxlY3RlZExpbmVDb3VudCI6MzYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRjZjA5ZWIwYzU3NDRmYjk3MzMxYjk4ZmYzZmJmMDVhNjAyYmEzZjdmNjdlNWRhNWJlOTA5NTAzM2Y2MjU4MjUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImI5NWZhMjFhNzQxOWQ5YWYwYmFlY2E0MjNkNmQzMTE4NDNlNzM1YmFiYzdmMDhkNGNlYjBkZmYzZjE2NTZlMjciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImRkODU0M2YxMDU1ZTBmMDE5YmM1YmY5YzZmMTQzMzI0ZTI0MzEzNGYzMTVmNTIyZWRhZDM1MWYzMDUyOWNkODMifQ"
+        },
+        {
+          "resource": "repo://domain/src/test/java/cn/com/dcsgo/mihx/domain/playback/RandomQueuePlannerTest.kt#L54-L114",
+          "version": "repo-lines-v1:sha256:97ad7aa605616094d771e8601d86aacd180579b41290be91c14079bbd1d4b06b:eyJzZWxlY3RlZExpbmVDb3VudCI6NjEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjhjZTM5ZmQxMDdmODFhNDE4MzIyOGEyZDlhNzU3NGFlODNmZmNjMTE4NjI0ODNjNjY0OWUxMTVhNDgyZGVmZDEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImU4ZWFmM2UxZGIyODRmNmE2ZmQ0ZTA2NmFlMmZiNjU0YWU2OGZkZmNmM2U3ZTRkY2E0YzJkZDIxNGE0OWI5ZDAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImVmOTUxMzQ0MWViNDU5OThjOWNiYzdmODE1YmY1YzkxYTE1MTYwOTc1NTk5YjYyZmFjYzNlNmQ0ZThmNDAzNGUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_9b8946160cf245f4bfc9659622615f8e",
+      "statement": "UniformRandomPlannerTest locks the play-count tiered preemption semantics: flag-off degenerates to the injected shuffle; when enabled, songs are dynamically tiered by raw play count with lowest tiers preempting quota (a sufficient lower tier is never crossed, an insufficient one is fully taken then topped up), tiering stays effective when all counts exceed any fixed threshold because thresholds derive from the distribution, equal counts degrade to pure shuffle, orderSongs groups by count and shuffles within each group, and buildPlayOrderIds keeps the current song first for SHUFFLE mode while tiering the rest.",
+      "evidence": [
+        {
+          "resource": "repo://domain/src/test/java/cn/com/dcsgo/mihx/domain/playback/UniformRandomPlannerTest.kt#L11-L155",
+          "version": "repo-lines-v1:sha256:43904ad1e90e9d3fa661583fb8d1a066bdb48c0c007e0ebfc46d69cac2672e25:eyJzZWxlY3RlZExpbmVDb3VudCI6MTQ1LCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiI0Y2YwOWViMGM1NzQ0ZmI5NzMzMWI5OGZmM2ZiZjA1YTYwMmJhM2Y3ZjY3ZTVkYTViZTkwOTUwMzNmNjI1ODI1IiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI0ODkzZjQwZTM3ODFlYjg5NmM4MmQwNDZhMDgwNjdhMTFlMzVjZGYyZjFkZmFmMjZmZWE5MGI4ZGI2Njc2NDEzIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiI0NzQxZDUxNzU0ZTQ3OTJkYjAyYTQ0ZjNhNTVhMDA1YzMwNzk3ZTZiYWUwMWM4MjJiMjUwNmYxZjg2MmRiOWJkIiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiI4ZmE5OWQ4NDcwYmU1MWM4ZjIxNjhlNzNkNDhiMzU5ZjEwNjE2YjQ2ZjcxYWNkNDRkMjRhOWI2NDEzZDIzOWE1In0"
+        }
+      ]
+    },
+    {
+      "id": "claim_f6d72fe1222b43c88b8e9043fc212a15",
+      "statement": "MoodSlotResolverTest locks all edge cases of time-slot resolution and validation: half-open [start, end) intervals (start minute hits, end minute does not), overnight slots with end <= start, at-most-one hit per minute across the full day for valid configs with deterministic earliest-start resolution for invalid overlaps, disabled switch or empty configs never activate, validation error classes (blank/overlong name > NAME_MAX_LENGTH=20, no tags, zero length, overlap returning Conflict naming the conflicting slot, touching slots allowed, same-id edit without self-conflict), and circular-overlaps semantics (overnight x morning intersect, two overnight slots always intersect, full-day overlaps everything non-zero).",
+      "evidence": [
+        {
+          "resource": "repo://domain/src/main/java/cn/com/dcsgo/mihx/domain/playback/MoodSlotResolver.kt#L10-L19",
+          "version": "repo-lines-v1:sha256:cf7187c7ae923c8807869561fa7b7ab368e3f0c844088c57483866bbc9779899:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImViMWFkNzk4YTJlZWQwNDYzOWRhZjdkY2Q1MThhZGY3ZDNkMDJlN2Y2Y2IxNzAyOWNhYmRjNGI5YmM0MWRkZGMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjliODI5ZTc5NDVjOWQwMmQyYzFhOTMwN2JhMGM4ZWQyMjhmN2FkMWFhNzM3MTRjYTRmM2M4ZTk1NTgwN2ZkOTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQ5OTI4OGQ4MzQ2MmFkNGEwNDA5MDM0NmY4M2U0ZTRiMTIwYzkyNmE1NjUxMzZlMzM2ZjBhYmE3OWQ5MmIxOTkifQ"
+        },
+        {
+          "resource": "repo://domain/src/test/java/cn/com/dcsgo/mihx/domain/playback/MoodSlotResolverTest.kt#L10-L190",
+          "version": "repo-lines-v1:sha256:2624b511195101af4c0289a5bb3d656298e8255f28026f27bd92493751d87165:eyJzZWxlY3RlZExpbmVDb3VudCI6MTgxLCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiJlYWYyMmNmMDczMjU5MmMyNDcxNDFjYmU2MWVmYTExMDEyNjEyZjVhMzEyMmI5YWY5YmJhZjUyZjU3MjRkMTk0IiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI0MTJjYTM0NWNjZjc1YmY5YzA4MDZiY2U2OTViZThkZTgwOGI3OTk4NDI1MWE3YTU0ZDIwMmNmNjEwMWRkNDUxIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiI3MmExNGNmOTEzMDEyNDFmMDQ0ZTI3NDQ1YzVkMjE0Y2M2Nzk5OGUwODU0Mzg3NmFjNTY5NDY0N2VjYmM3MjU2IiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MCwiZm9sbG93aW5nQ29udGV4dEhhc2giOiJlM2IwYzQ0Mjk4ZmMxYzE0OWFmYmY0Yzg5OTZmYjkyNDI3YWU0MWU0NjQ5YjkzNGNhNDk1OTkxYjc4NTJiODU1In0"
+        }
+      ]
+    },
+    {
+      "id": "claim_25b3a90b6c9f4f08a85ee5e4ae31b061",
+      "statement": "The mood group of PlayerRandomQueueFacadeTest locks the facade-side filtering and degradation: when a slot is hit the random pool is narrowed to songs carrying the slot's tags; an empty tagged pool falls back to full-library random with a 'fall back to full library' log rather than failing to start; inactive slot time or a disabled switch preserves the original behavior; and mood filtering composes with uniform random so tiered preemption still applies inside the filtered pool (0-play songs ranked ahead of 10-play songs).",
+      "evidence": [
+        {
+          "resource": "repo://feature/player/src/test/java/cn/com/dcsgo/mihx/feature/player/PlayerRandomQueueFacadeTest.kt#L297-L421",
+          "version": "repo-lines-v1:sha256:6299bfa8c7c945856a377494dd219ec2dbfefc15e0990f44e8c391ed1652651e:eyJzZWxlY3RlZExpbmVDb3VudCI6MTI1LCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiI0Y2YwOWViMGM1NzQ0ZmI5NzMzMWI5OGZmM2ZiZjA1YTYwMmJhM2Y3ZjY3ZTVkYTViZTkwOTUwMzNmNjI1ODI1IiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI0ODkzZjQwZTM3ODFlYjg5NmM4MmQwNDZhMDgwNjdhMTFlMzVjZGYyZjFkZmFmMjZmZWE5MGI4ZGI2Njc2NDEzIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiJhODM5YzI5MTc5YzNiMDk5ZDE2NDdmNTM2MzU2OWU1ZWI3YWUzYjdmZThiZTA0MWFhYzNlODg5ZWYwOWQxMDJhIiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiI4ZmE5OWQ4NDcwYmU1MWM4ZjIxNjhlNzNkNDhiMzU5ZjEwNjE2YjQ2ZjcxYWNkNDRkMjRhOWI2NDEzZDIzOWE1In0"
+        }
+      ]
+    },
+    {
+      "id": "claim_ad77d2b8b0024c9ea3c6297d77b70c6a",
+      "statement": "Two same-named ControllerQueuePlannerTest classes lock complementary queue semantics. The :domain one locks playable-order expansion (null for empty queue, sequential order with requested start, REVERSE ordering, stable SHUFFLE via playOrderIds, skipping unplayable songs to the next playable). The :player one locks controller-plan semantics (remainingAfterStart tail detection, duplicate songs 1,2,2,3 preserved with occurrence-based start index, addSongAsNext yielding controller order 1,2,5,3, play-mode changes rebuilding order, all-unplayable returning null).",
+      "evidence": [
+        {
+          "resource": "repo://domain/src/test/java/cn/com/dcsgo/mihx/domain/playback/ControllerQueuePlannerTest.kt#L10-L65",
+          "version": "repo-lines-v1:sha256:3ba14f4712b00bf8b9ea214d4da669fa3fdb8d11f21fb544b8e1eb05cd71313e:eyJzZWxlY3RlZExpbmVDb3VudCI6NTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM5MmQ2MjE1ZTk4MDUzNGRkYmRjOTM4ZGFlZTFjYWFiMmNmY2U4YmEzNDhiYjJjOThlMTZkMDc0ZWY2NDZjNjAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijg1MDkyNmZhNDU4MjA4MmFmYmUwMWU0YmFlNjIzNzJiNzI4N2EyZjlhNDQyYThkOTkwM2U0OGY3MGY3NjU1YWUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjA1MGRmMWJhMjg3Yzc3NDljMGIzOTFlOGFiNWY1Mzg2OWEwMjhhODE1YjcwZjY2ZmJkMzI2MzFlNjNjYTFhYWMifQ"
+        },
+        {
+          "resource": "repo://player/src/test/java/cn/com/dcsgo/mihx/data/player/ControllerQueuePlannerTest.kt#L13-L102",
+          "version": "repo-lines-v1:sha256:cdcaf8f47e79025bb14fc454cdd850902ad34cd5f61e5b5bef54d7a1ef34de4c:eyJzZWxlY3RlZExpbmVDb3VudCI6OTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRjZjA5ZWIwYzU3NDRmYjk3MzMxYjk4ZmYzZmJmMDVhNjAyYmEzZjdmNjdlNWRhNWJlOTA5NTAzM2Y2MjU4MjUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImEzZWM5Mzk0OWUzMzg1MDI3ZDAxN2U1YTZmMzc5MTkxMDQ1NWZkNDIwNDI1NzdmOTI0Y2U5ZDMyZDQ2YTdkNTgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImVmOTUxMzQ0MWViNDU5OThjOWNiYzdmODE1YmY1YzkxYTE1MTYwOTc1NTk5YjYyZmFjYzNlNmQ0ZThmNDAzNGUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_e41e83bcf71148ffab83d180bcd1a04f",
+      "statement": "PlaybackWindowPlannerTest locks the window slice (DEFAULT_PREVIOUS_COUNT=20 / DEFAULT_NEXT_COUNT=50, clamped at queue start/end, window-local vs full-queue index mapping, REVERSE-mode windows in playback order), and ControllerWindowSynchronizerTest locks window caching (non-forced plans reuse the window but re-anchor startIndex to the current song, forced plans after addSongAsNext invalidate and recompute, empty queue returns null).",
+      "evidence": [
+        {
+          "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/player/window/PlaybackWindowPlanner.kt#L26-L29",
+          "version": "repo-lines-v1:sha256:a124db3eb7c66294ed2d9c9359273ca19f33cd269914606ef81645b13736053c:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYmYzMzAyN2JjMjBiNWJjYzRiMTM5MGI2MzZiMmFjYThiMDg1M2JmNTAyMDRiMDIwOWExN2I4ZjQ4NDA3Yzc4YiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDg5M2Y0MGUzNzgxZWI4OTZjODJkMDQ2YTA4MDY3YTExZTM1Y2RmMmYxZGZhZjI2ZmVhOTBiOGRiNjY3NjQxMyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZmYwZDc1OTUwZGYwZmY5YTNlZTk2NjM5ZGNjOGZmNWVhZWRiNDBkNjgyYmVhOTI2MjJiNTIwZGQ4ODdkOTNlOSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjEsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNDEyY2EzNDVjY2Y3NWJmOWMwODA2YmNlNjk1YmU4ZGU4MDhiNzk5ODQyNTFhN2E1NGQyMDJjZjYxMDFkZDQ1MSJ9"
+        },
+        {
+          "resource": "repo://player/src/test/java/cn/com/dcsgo/mihx/player/window/ControllerWindowSynchronizerTest.kt#L12-L100",
+          "version": "repo-lines-v1:sha256:b0b8cb7b2f4552c505c93044cd561b1860ccaa5558f0a58299c1d317d9474be3:eyJzZWxlY3RlZExpbmVDb3VudCI6ODksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRjZjA5ZWIwYzU3NDRmYjk3MzMxYjk4ZmYzZmJmMDVhNjAyYmEzZjdmNjdlNWRhNWJlOTA5NTAzM2Y2MjU4MjUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjAwMDg0NDVjZmU1ZGMxY2Y2NWVlOWE1MjA4MGNmOTUzYzI3YzRhNGZjNGU3MjVlOWYyNjQ5MWU3ZDZhZTYzNzgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImIxYmExZjVmYTVmOWY3ODYxNzBkYWJhYmI0MzIxZTZmOWJmNGE3NDViZjZlMDhmYzgxNjdjNjMwZGY4NjU2ZWMifQ"
+        },
+        {
+          "resource": "repo://player/src/test/java/cn/com/dcsgo/mihx/player/window/PlaybackWindowPlannerTest.kt#L10-L56",
+          "version": "repo-lines-v1:sha256:3eaa50d02bd97f4ecb134dfeda01fe9db0da2c89aca8198218660b4552a1f912:eyJzZWxlY3RlZExpbmVDb3VudCI6NDcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRjZjA5ZWIwYzU3NDRmYjk3MzMxYjk4ZmYzZmJmMDVhNjAyYmEzZjdmNjdlNWRhNWJlOTA5NTAzM2Y2MjU4MjUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjhlN2YxNjdkODc1YmRhZDdhY2I3YmE4MDcxOTMzOTFhMTg2YjllM2UzYWIzYWQ2YTU1ZjYyN2E3ZWU5ZjcwMDQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjRjYzZjZTY1ODkxNzYxOGQzZTg3ZmMzODk0NjU5NzU5NjZiN2MyZjdiNTI0YThiNzZlYjY1OWU4ODExNjM4ZmEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_e1273be8d0784f3aa36b0548defe6e3d",
+      "statement": "PlaybackWindowPerformanceShapeTest locks the product-level performance shape: for 100/500/1000-song queues the controller window stays <= 71 items and >= 51 items at start/middle/end, including a 1000-song stable-shuffle window that must not expand to the full queue. The file's existence and required terms ('100', '500', '1_000', '71', 'WindowedControllerQueuePlanner') are themselves machine-enforced by verifyProductArchitecture, so deleting or renaming it fails the architecture gate.",
+      "evidence": [
+        {
+          "resource": "repo://build.gradle.kts#L239-L248",
+          "version": "repo-lines-v1:sha256:a5ba1b4f86a5b8a66e85712c81a3d49754b7ed9d42107248081c2cf9a2907fd6:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk3ZDMyNDA1Mjc1OGZmZjU4NjIxYzJhMDNlNjRjNjJkY2NmMDAxZTE4ODA2NmUwNzdiMWM5ZmZjMWU5NTRlMjkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImZjZThkMTM3ZmE0NGFjNjY0OGIzYTRhNmY1NmY1MGJhYmE2NzczNDE0NWQwNDc0YTRlNTU1Njk3ZmQyNmJlYzgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImVmYzNkNDc3MDVlZjMxMzk0OTJkNWIyMTJmZDNkYjIwMzVmMzZhYzE5NGY0YmMyYjcwZGM0OGZhN2Q1NTM3ZTIifQ"
+        },
+        {
+          "resource": "repo://player/src/test/java/cn/com/dcsgo/mihx/player/window/PlaybackWindowPerformanceShapeTest.kt#L10-L65",
+          "version": "repo-lines-v1:sha256:8efb6cf3d7777efd64cdaa364b17c7a8a4604f0d78b1f7031fc4745f34f81d37:eyJzZWxlY3RlZExpbmVDb3VudCI6NTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRmMmYyNDE3ZjQ4MjAyYmY0NmY0ZmE3YTZjM2I5NDVkNTAyNGE0OTc2NzVmYjQyNzgwZDViY2U1NjkyZWJiODciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjcyYTE0Y2Y5MTMwMTI0MWYwNDRlMjc0NDVjNWQyMTRjYzY3OTk4ZTA4NTQzODc2YWM1Njk0NjQ3ZWNiYzcyNTYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjA1MGRmMWJhMjg3Yzc3NDljMGIzOTFlOGFiNWY1Mzg2OWEwMjhhODE1YjcwZjY2ZmJkMzI2MzFlNjNjYTFhYWMifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_3b15e055486f4f64986f2f11a7a38377",
+      "statement": "MediaItemWrapDetectionTest locks index-based wrap detection (not transition-reason-based, because Media3 reports REPEAT_MODE_ALL tail wrap as SEEK): last-index-to-0 is a wrap, normal forward navigation, one-step previous, unknown previous (C.INDEX_UNSET), and non-zero new index are not; a 2-item window's backward move is treated as a wrap (harmless since the refill planner deduplicates); empty or single-item windows cannot wrap.",
+      "evidence": [
+        {
+          "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/data/player/PlaybackController.kt#L435-L444",
+          "version": "repo-lines-v1:sha256:05f74c602f95e98913e31fa9c9c72d99702453e763b59ab28a447494c979da40:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQzOTEwMTBkMjAyZThlMTgzMzAxN2M1MDFjYjg1NDM2NzMxYzQwZTI5MDFiNWU4NDAwNzMzMTc2NGJlNjdjNjYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjM0YjkyZjI4NGJhNzdhMzU0MzhhZWExZGRiZTEwOTNhY2M2NzQ1ZGEyODMxNGRhYjZhN2U2Y2NmZTcyYTNiMjEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjM0ZTM5YjMwMGJhMDdkNjhjMTI4ZjVmMDg3ZjI4NDEzNTFiYjY3MDlmZGIyNDY2YzgzNGE0NjE1M2IxODdiMjcifQ"
+        },
+        {
+          "resource": "repo://player/src/test/java/cn/com/dcsgo/mihx/data/player/MediaItemWrapDetectionTest.kt#L10-L51",
+          "version": "repo-lines-v1:sha256:19c279edd07263c5ed77fd28da23577879914476bb9a6639a8e0a26618c53293:eyJzZWxlY3RlZExpbmVDb3VudCI6NDIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRjZjA5ZWIwYzU3NDRmYjk3MzMxYjk4ZmYzZmJmMDVhNjAyYmEzZjdmNjdlNWRhNWJlOTA5NTAzM2Y2MjU4MjUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImVlMTc5OTAyNWY1MTg1ZTQ2N2Y4MjdiMjUyMjFkOTA0MjMzZmIwNGU1YmM4MzdkYzAzZWNkNDQ0Nzc4NGI1MjAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_a9908ad5df264ad89fe2faa2c2a0732a",
+      "statement": "SingleItemLoopRewindDetectionTest locks single-item loop rewind detection for REPEAT_MODE_ALL queues of exactly one item (0-to-0 transitions that never fire onMediaItemTransition and must be caught via AUTO discontinuity plus position rewind): with known duration the old position must be near the end, with unknown duration a conservative threshold applies and rewinds from under 30 seconds count as buffering jitter; SEEK-reason rewinds (manual drag to start) never count as completion (anti-abuse); multi-item queues, index changes, and non-zero new positions are rejected; threshold boundary values still detect.",
+      "evidence": [
+        {
+          "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/data/player/PlaybackController.kt#L446-L465",
+          "version": "repo-lines-v1:sha256:21d8d5ad58ce6af0bfaee79341aee3ad1851532d7c72302b53d01bd7037fe2b1:eyJzZWxlY3RlZExpbmVDb3VudCI6MjAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVhZjIyY2YwNzMyNTkyYzI0NzE0MWNiZTYxZWZhMTEwMTI2MTJmNWEzMTIyYjlhZjliYmFmNTJmNTcyNGQxOTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImI4MTkzOTQzMTQ1ZTY2NTE1M2EwNzJhZTU2MDZjNjQ4NTNjNWRjMzQ1OWFlZmM4NGYxYzNhNzgwZDkxMjZlZjEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjU1MzgwYjg3NDg0ZmI4YTBkODQ5ZmMwOTEwODQ5OTYzYmUxOGU5YjgzM2U4NGEyZWZlZTMwNzVlMWM2ZTE5YmMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImI0ZDY4N2U3ODY1NjgxNjQ0ZDkxN2VjNGY3ZGQzZTQ1YzY0M2U2MjgzZjlhZDQyZGI3NWY2MWEwMWE3MmVkMTkifQ"
+        },
+        {
+          "resource": "repo://player/src/test/java/cn/com/dcsgo/mihx/data/player/SingleItemLoopRewindDetectionTest.kt#L10-L118",
+          "version": "repo-lines-v1:sha256:b45c43a2bbf8a2c49292739387982975431f4d3ca58357e16572b7c49dbc6397:eyJzZWxlY3RlZExpbmVDb3VudCI6MTA5LCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiJmZWVjYzBhMmM2ZjQ1ZDY1NzE0NjY1MjllODAyNjc3YzFhNjc1NDY3ZjlmMWZjY2I0NGYxNDY4NzcxOTg3NDhmIiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI0ODkzZjQwZTM3ODFlYjg5NmM4MmQwNDZhMDgwNjdhMTFlMzVjZGYyZjFkZmFmMjZmZWE5MGI4ZGI2Njc2NDEzIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiIyY2U0YWViYjEwZTVlY2VmZjYxZjYxYzVmZTY4NTdmMjZlZDI2YzI2MmM5ZGZlOGZhYTc2YTM4MTVlNmNkYzdhIiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MSwiZm9sbG93aW5nQ29udGV4dEhhc2giOiI0MTJjYTM0NWNjZjc1YmY5YzA4MDZiY2U2OTViZThkZTgwOGI3OTk4NDI1MWE3YTU0ZDIwMmNmNjEwMWRkNDUxIn0"
+        }
+      ]
+    },
+    {
+      "id": "claim_c3858c1fa2e043fcb2290f49fb8a8562",
+      "statement": "ControllerPlaybackStateSynchronizerTest locks the Media3-snapshot-to-UI-state mapping: mediaId (Song.id.toString()) maps back to the business queue and updates currentIndex while emitting duration updates and playback-start events; unknown mediaId keeps the current song; already-tracked songs do not re-emit playback start; a pause during buffering is not treated as a real pause (isPlayingTransition three cases); and QueueManager.restorePlayModeAfterNextSong restores the pre-next play mode only for the relevant song with an injectable play-order builder.",
+      "evidence": [
+        {
+          "resource": "repo://domain/src/test/java/cn/com/dcsgo/mihx/domain/playback/ControllerPlaybackStateSynchronizerTest.kt#L12-L152",
+          "version": "repo-lines-v1:sha256:ebb57b8d91157322f9604e675e38cae2e2f499cd617f9d48da0a7151aa5c88cb:eyJzZWxlY3RlZExpbmVDb3VudCI6MTQxLCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiI0MjYwZWM3ZTY5NGNmOWFiZDRjZjM3NTBhYzQ0NGQ0MGZkZTAwODllOWFkMzJkNDI5YzlkYmIwZjdhMTliYmNmIiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI0ODkzZjQwZTM3ODFlYjg5NmM4MmQwNDZhMDgwNjdhMTFlMzVjZGYyZjFkZmFmMjZmZWE5MGI4ZGI2Njc2NDEzIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiI3MmExNGNmOTEzMDEyNDFmMDQ0ZTI3NDQ1YzVkMjE0Y2M2Nzk5OGUwODU0Mzg3NmFjNTY5NDY0N2VjYmM3MjU2IiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiIzZDU1NDM5ZWRlODE1NDA3OTNkMzE3ZGI5MGEwNGM1YjZkZjIwMmI2MGNiODgxNTRkZDI2ZDc1YjMyM2ZkNmQ2In0"
+        }
+      ]
+    },
+    {
+      "id": "claim_0ceebc64285844e1887125d56c78bf18",
+      "statement": "PlaybackRestoreCoordinatorTest locks startup restore semantics: no stored state returns null; a missing or unplayable current song restores the queue but without a playable session; the normal path builds a playable session carrying the restore position and same-name song group sorted by sample rate descending; and the infinite-play flag with its played-song coverage set survives restore unchanged.",
+      "evidence": [
+        {
+          "resource": "repo://domain/src/test/java/cn/com/dcsgo/mihx/domain/playback/PlaybackRestoreCoordinatorTest.kt#L17-L76",
+          "version": "repo-lines-v1:sha256:e3205768616c210516121e7fd46f7c072533df0166532e2bad6142ca044f5135:eyJzZWxlY3RlZExpbmVDb3VudCI6NjAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRjZjA5ZWIwYzU3NDRmYjk3MzMxYjk4ZmYzZmJmMDVhNjAyYmEzZjdmNjdlNWRhNWJlOTA5NTAzM2Y2MjU4MjUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImI5NWZhMjFhNzQxOWQ5YWYwYmFlY2E0MjNkNmQzMTE4NDNlNzM1YmFiYzdmMDhkNGNlYjBkZmYzZjE2NTZlMjciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImVmOTUxMzQ0MWViNDU5OThjOWNiYzdmODE1YmY1YzkxYTE1MTYwOTc1NTk5YjYyZmFjYzNlNmQ0ZThmNDAzNGUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_59161639a28e44e0b213e4379828e09a",
+      "statement": "PlaybackStateStoreTest locks the DataStore-backed snapshot store: save/restore round-trips keep queue, currentIndex, mode, playOrderIds, duplicate items, and infinite-play state; restore filters songs that no longer exist; saveCurrentPlaybackSnapshot corrects index/position from the live current song and can even create a queue for a song that was not in the saved queue; an empty-session save (transient all-empty state during UI rebuild) must not erase an existing snapshot (2026-09-03 regression named in the test); an empty save with no prior snapshot writes nothing; and restore falls back to legacy SharedPreferences with the next successful save clearing the legacy keys.",
+      "evidence": [
+        {
+          "resource": "repo://player/src/test/java/cn/com/dcsgo/mihx/data/player/PlaybackStateStoreTest.kt#L22-L183",
+          "version": "repo-lines-v1:sha256:2d329121cbfe3c5aa5afbba581ffd5d6d8eb111b664b7c5e4d6222222704334d:eyJzZWxlY3RlZExpbmVDb3VudCI6MTYyLCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiI0Y2YwOWViMGM1NzQ0ZmI5NzMzMWI5OGZmM2ZiZjA1YTYwMmJhM2Y3ZjY3ZTVkYTViZTkwOTUwMzNmNjI1ODI1IiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI0ODkzZjQwZTM3ODFlYjg5NmM4MmQwNDZhMDgwNjdhMTFlMzVjZGYyZjFkZmFmMjZmZWE5MGI4ZGI2Njc2NDEzIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiJjYjA0M2JjNjhmNTg0ZWMwNDg1N2Q4YWEwMGNmOWE3MGVjMjlhMDRmMzgyNzZlODhmZTc5ODRmM2RlMGRiYzM0IiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiI4ZmE5OWQ4NDcwYmU1MWM4ZjIxNjhlNzNkNDhiMzU5ZjEwNjE2YjQ2ZjcxYWNkNDRkMjRhOWI2NDEzZDIzOWE1In0"
+        }
+      ]
+    },
+    {
+      "id": "claim_094e7e9416164498831a8e04f1791132",
+      "statement": "PlaybackStateSnapshotSerializerTest locks snapshot JSON robustness: round-trips preserve duplicates, currentIndex, mode, and play order; damaged JSON and a missing required currentIndex decode to null rather than throwing; missing optional fields take defaults; and malformed or unavailable entries in infinitePlayedIds are silently dropped.",
+      "evidence": [
+        {
+          "resource": "repo://player/src/test/java/cn/com/dcsgo/mihx/data/player/PlaybackStateSnapshotSerializerTest.kt#L13-L61",
+          "version": "repo-lines-v1:sha256:42525b6c4e6bbc489a09bd5d8428746a41dca8fab4a6da6aded6c8744c68afff:eyJzZWxlY3RlZExpbmVDb3VudCI6NDksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRjZjA5ZWIwYzU3NDRmYjk3MzMxYjk4ZmYzZmJmMDVhNjAyYmEzZjdmNjdlNWRhNWJlOTA5NTAzM2Y2MjU4MjUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjkyNDg5YzFjNDAwOWExOTU5N2EyZWFiYzY3NTU5ZjMwY2QwYjY1ZmUyYzhkYTllMjgwYjkzNGIyNjkxODhlOTciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjhmYTk5ZDg0NzBiZTUxYzhmMjE2OGU3M2Q0OGIzNTlmMTA2MTZiNDZmNzFhY2Q0NGQyNGE5YjY0MTNkMjM5YTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_ae9ed3dd98d24bf7b56d2d37e9b11c8a",
+      "statement": "Each of the :feature:player facades has a same-named JVM test that uses fake callables to record side effects and locks the orchestration above the pure planners: PlayerQueueFacadeTest (setPlayQueue updates state and triggers persistence), PlayerControllerQueueFacadeTest (remainingMediaItems prefers controller info with a planned-queue fallback), PlayerMediaEventFacadeTest (tail/wrap triggers infinite refill only in infinite mode, restores play mode after add-next consuming the one-shot flag), PlayerPersistenceFacadeTest (async save captures the position before launching, and live-session restore skips the controller rebuild while still restoring the UI queue), and PlayerPlaybackStateAutosaverTest (immediate save then interval throttling with reset allowing the next immediate save).",
+      "evidence": [
+        {
+          "resource": "repo://feature/player/src/test/java/cn/com/dcsgo/mihx/feature/player/PlayerControllerQueueFacadeTest.kt#L34-L47",
+          "version": "repo-lines-v1:sha256:73895d55838547831d90a8a7788e581bc45a6a431d23c0342f9701abba8528bd:eyJzZWxlY3RlZExpbmVDb3VudCI6MTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRjZjA5ZWIwYzU3NDRmYjk3MzMxYjk4ZmYzZmJmMDVhNjAyYmEzZjdmNjdlNWRhNWJlOTA5NTAzM2Y2MjU4MjUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImE4ZjU5MjA0YzFjM2RmMzlkNGY5ZDVlN2E5N2Q5N2E4NTU1MDExYzM0YTg2MzIxMjQ3YTE3MWQyMzhkOTFmNDIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImQ3NmUzYzQ1MDc2Y2ViODI3YjNkMGFmOTY3Mjc2YTE2YWE3MTljNzUwMzk5ODYwOWM3NjVmMWExNDhmZThlNjgifQ"
+        },
+        {
+          "resource": "repo://feature/player/src/test/java/cn/com/dcsgo/mihx/feature/player/PlayerMediaEventFacadeTest.kt#L43-L95",
+          "version": "repo-lines-v1:sha256:c47175a5e899b74ac0694c015d0eb3948ffba1a73b7f610e5f8380a11f28b234:eyJzZWxlY3RlZExpbmVDb3VudCI6NTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRjZjA5ZWIwYzU3NDRmYjk3MzMxYjk4ZmYzZmJmMDVhNjAyYmEzZjdmNjdlNWRhNWJlOTA5NTAzM2Y2MjU4MjUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImE2ZjE0NzNmNzJlNzI4YzQ1ZTYwM2NhY2YwOWY3NTJhOGUyNTY5Y2FmYTJmZGY0NGI0OWRjNGNmODkwOGNjMDEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImNjMDhhMjU0MzM5NDI1OTI2OGRiOGU3OWNlZjk2YjFmYWY0YTQ1Y2Y1ZWI5MTFiZGY0Mjc0NmJiODI5NTUwZWUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImU4ZWFmM2UxZGIyODRmNmE2ZmQ0ZTA2NmFlMmZiNjU0YWU2OGZkZmNmM2U3ZTRkY2E0YzJkZDIxNGE0OWI5ZDAifQ"
+        },
+        {
+          "resource": "repo://feature/player/src/test/java/cn/com/dcsgo/mihx/feature/player/PlayerPersistenceFacadeTest.kt#L44-L101",
+          "version": "repo-lines-v1:sha256:cc18be683bdc8e8cd97ea4a40bc4a56641a68b0ac8e86d90dc6a0f4a68be8f6c:eyJzZWxlY3RlZExpbmVDb3VudCI6NTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRjZjA5ZWIwYzU3NDRmYjk3MzMxYjk4ZmYzZmJmMDVhNjAyYmEzZjdmNjdlNWRhNWJlOTA5NTAzM2Y2MjU4MjUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZlNGYyZDEzNTJiZDA2MGJhY2U4MDBiZDhiOGQ5YjQ4YTkxMWZhNTk2ZTJlZTdiNWI2MzY0N2ZjYWU5MzgyZTYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjUxNjZjM2I0ZTgwMmFlNjVmNDVmN2ZlZGMyZmVhZTUyN2YzMmY0M2M3MDQ5NzFkODU2NmQ3NjRhMTA3OGRjZmIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjVlOGNkYjBjMmYxOTk3OGFlMDYzOTA0MmM2MzMyMzJiNGY1MDI3OTFlODgwYmM1Njc2NDdiZjJmMzYzOWYzMjcifQ"
+        },
+        {
+          "resource": "repo://feature/player/src/test/java/cn/com/dcsgo/mihx/feature/player/PlayerPlaybackStateAutosaverTest.kt#L17-L50",
+          "version": "repo-lines-v1:sha256:95fdf6ba26e71b1f16b791ca6bce283e27fa7ec62b0ea1fafab00d2ecb2a41b5:eyJzZWxlY3RlZExpbmVDb3VudCI6MzQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRjZjA5ZWIwYzU3NDRmYjk3MzMxYjk4ZmYzZmJmMDVhNjAyYmEzZjdmNjdlNWRhNWJlOTA5NTAzM2Y2MjU4MjUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ0OGQ2MTRiMWFmNWRjOTY5ZWViZTE2ODk1ODIwY2VjNTlkMjc3N2M5OGE2ZmY5YjM1MTcyZTE3MDY0NWIwZGYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjY2ZjVjOWVmYjMxM2FhMDM5OTQyZTBkNDE2NWI5YjQwN2NhMjY0NzJmMTc5N2E2MTM1OTA5MDM1M2JkYmE1OWMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjRhODQzMWVkZWU5OTM5MDhkZjQ3MDdkOTcwMWI4ZTZlZDZlMmZlMDY4OGZhY2ZiNTBkMTEzNTQ2ZWQxOGM3MWIifQ"
+        },
+        {
+          "resource": "repo://feature/player/src/test/java/cn/com/dcsgo/mihx/feature/player/PlayerQueueFacadeTest.kt#L37-L48",
+          "version": "repo-lines-v1:sha256:22619eb62019ff7014061c5fc1c9a42e04a4ef7675b5c725701dfd16663d2551:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRjZjA5ZWIwYzU3NDRmYjk3MzMxYjk4ZmYzZmJmMDVhNjAyYmEzZjdmNjdlNWRhNWJlOTA5NTAzM2Y2MjU4MjUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjUxNjZjM2I0ZTgwMmFlNjVmNDVmN2ZlZGMyZmVhZTUyN2YzMmY0M2M3MDQ5NzFkODU2NmQ3NjRhMTA3OGRjZmIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjJlZWU0ZWU5YmU3MGQ1OTU3NjUwN2Q5MzVlYTFjMDRlYzI4NGJhZDNmMDEwYjAwNDZjMDcxOThkZGNjMGI0NjUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_bfbef5b9113a43a1a933a2b38041d5ca",
+      "statement": "NarrowFlowSyncTest and PlayerSleepTimerCoordinatorTest lock the 2026-09-03 narrow-flow regression baseline: discrete uiState updates must compare against the pre-update uiState old value so stale positions or zeroed sleep-timer countdowns are never flushed back into the narrow flows; true discrete position changes (seek), the restore path, and sleep-timer start must propagate to the narrow flow; and cancel must zero the countdown via the explicit resetSleepTimerNarrowFlow entry rather than value-diff propagation.",
+      "evidence": [
+        {
+          "resource": "repo://feature/player/src/test/java/cn/com/dcsgo/mihx/feature/player/NarrowFlowSyncTest.kt#L7-L98",
+          "version": "repo-lines-v1:sha256:2b403e2478e030b9837ba0a69c974e78c848db7b551ef09c1027c361c2dfc9de:eyJzZWxlY3RlZExpbmVDb3VudCI6OTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVhZjIyY2YwNzMyNTkyYzI0NzE0MWNiZTYxZWZhMTEwMTI2MTJmNWEzMTIyYjlhZjliYmFmNTJmNTcyNGQxOTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImNmODQ0MWZmMmY2ZDljZTgxYmE5YzMwY2ViZTkxODAxZDczZGYyNWNlMGQ0OTYwMThhZmNiYzI0OTI2NDI0YzciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijc1NmJhZTVjMTZiNzgyMWNmM2M4ZWY4MzljYmY0OGU2MTk4ZWY1ZDY1MmU3ZTYyNjdkZjlmNGEwODliYzI3YmMifQ"
+        },
+        {
+          "resource": "repo://feature/player/src/test/java/cn/com/dcsgo/mihx/feature/player/PlayerSleepTimerCoordinatorTest.kt#L17-L22",
+          "version": "repo-lines-v1:sha256:8df688563bb7a221d2235258c78a41c02bcb7fa4e0001d453df2556783b0c9e5:eyJzZWxlY3RlZExpbmVDb3VudCI6NiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZWFmMjJjZjA3MzI1OTJjMjQ3MTQxY2JlNjFlZmExMTAxMjYxMmY1YTMxMjJiOWFmOWJiYWY1MmY1NzI0ZDE5NCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiOTcyYTQyOTM4MmIyZTE0NzE4ZTBlMzdiMDU3MGE4YTE3MDI5OTFmY2Q4NDk4Y2Q4NDA2MGE4YmY0ZjA1MDE3YiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNzJhMTRjZjkxMzAxMjQxZjA0NGUyNzQ0NWM1ZDIxNGNjNjc5OThlMDg1NDM4NzZhYzU2OTQ2NDdlY2JjNzI1NiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZGNlMGIzZDk2Mzk1ODBhMjliMDNlNzFiYTE1ZWE2ZjIxNTY0Yzc3NzNkZTBiNDI0MDU4NTgxNzZjNTg5MjU4ZCJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_ef963b11c6bb4cc0a50c5d0d44da51f4",
+      "statement": "The :data repository tests run on the JVM without Android: Room repository tests exercise hand-written per-file FakeMelodyDao in-memory tables (MusicRepositoryRoomTest locks playlist cross-ref restore by sortOrder, orphan-ref filtering, duplicate-rejecting persistence, and titleOverride write/clear round-trips driving groupKey; PlayStatsRepositoryRoomTest locks incremental stat persistence, zero defaults for missing songs, and deterministic ranked ordering with raw-vs-effective count switching). :data explicitly adds the real org.json as a testImplementation because the Android SDK's org.json is a stub that throws on the JVM.",
+      "evidence": [
+        {
+          "resource": "repo://data/build.gradle.kts#L37-L38",
+          "version": "repo-lines-v1:sha256:d34e20719f61ab9d134b7675a66dae72b5a413a9ad76433e3debecd047f8b7d5:eyJzZWxlY3RlZExpbmVDb3VudCI6MiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMmU3M2VhNTMwYjFkNjIxNTQxYjRkYmE1ZGEyMmYwYWViN2Q4ZmRlMDg5OTcwMTFhZGUxMzIxMGJiNjI2N2ZiMiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiM2U0ODFhMjE1NmMyMDY4ZGZmMzQ0OTIzNzE3YzdhYWZkYjJiMTNmNDQzOWQ0MjQyNWM5NjU5YzI4MjdjOTdmMCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZmI1N2IzNmQ0MTU4MGQ1MDhkYjE2ZjY1OTE0YTAzMjA1ZDU0ZTllOTZhYzM5MWNhYmMxZWQ1YWFkZWRmYjAzOCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMTYyMTFkYjY4ODI2NGMxMmY5ZmRiNTBmMDQxMTE3ZDQ3ZGJmOWU3YmU5N2UwMGM3ZjU4YWVkM2ZlNGE0MzliNiJ9"
+        },
+        {
+          "resource": "repo://data/src/test/java/cn/com/dcsgo/mihx/data/repository/MusicRepositoryRoomTest.kt#L197-L197",
+          "version": "repo-lines-v1:sha256:865ea6b5e7aba8558abacea94718c3f53d875acd4dd59696121ba7db82b1cd8e:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiODY1ZWE2YjVlN2FiYTg1NThhYmFjZWE5NDcxOGMzZjUzZDg3NWFjZDRkZDU5Njk2MTIxYmE3ZGI4MmIxY2Q4ZSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiODY1ZWE2YjVlN2FiYTg1NThhYmFjZWE5NDcxOGMzZjUzZDg3NWFjZDRkZDU5Njk2MTIxYmE3ZGI4MmIxY2Q4ZSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNzJmZGQ5MjM3YWZhNThlMWU0MjFiOTI5NjhiMjdkMGM4NzIyODhhYmRlMmNjYWRjNjY1MjJiMzAxYzVlOGMyOCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMTdiNjY4M2EwNDdhMmJmNzIxMzdjY2ZhYWU3OGViMjY3MGZjNTQ0NTJiMTc2ZjVlYjkwYWM0MzI5ZDczMzFiYiJ9"
+        },
+        {
+          "resource": "repo://data/src/test/java/cn/com/dcsgo/mihx/data/repository/MusicRepositoryRoomTest.kt#L28-L129",
+          "version": "repo-lines-v1:sha256:87a9d840f261f220e89009a29435f4fcf94006cc41a875b9700fda4857ef498e:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAyLCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiI0Y2YwOWViMGM1NzQ0ZmI5NzMzMWI5OGZmM2ZiZjA1YTYwMmJhM2Y3ZjY3ZTVkYTViZTkwOTUwMzNmNjI1ODI1IiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI0ODkzZjQwZTM3ODFlYjg5NmM4MmQwNDZhMDgwNjdhMTFlMzVjZGYyZjFkZmFmMjZmZWE5MGI4ZGI2Njc2NDEzIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiI3NWRmOWQ2OGU1NTFjYjFiMDUzYWVjNDY0YTMxMDk5ZDVkNTA5NGM1ZDI1MDM1NTZiOWJlZGU1MmUyMDNlYjk0IiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiI3ZjE1OGZmZDJlZmNkYTU4ZDFhMjhkNmZlNGE5Y2U5MGYyZjNiNjhmMTVjZTQ2M2MxYmRkOGE0NjY2YWJkY2RjIn0"
+        },
+        {
+          "resource": "repo://data/src/test/java/cn/com/dcsgo/mihx/data/repository/PlayStatsRepositoryRoomTest.kt#L27-L93",
+          "version": "repo-lines-v1:sha256:4463fea05e8160bb4eecffcb03a1799dcc07f443e96846fc2bba0cf861bbddb6:eyJzZWxlY3RlZExpbmVDb3VudCI6NjcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRjZjA5ZWIwYzU3NDRmYjk3MzMxYjk4ZmYzZmJmMDVhNjAyYmEzZjdmNjdlNWRhNWJlOTA5NTAzM2Y2MjU4MjUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImIxNmVhZjg2ZjI4OTMzN2JlOTQ2ZjgyZDNlZWJjNDZiMmNkNzg1ODNhN2RiNTQyZGRhMWY3ZmQzZjEwZTQ4YjUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjkyMmM4NzNhMTlkMGQ5M2VkNmNmZWI4ODVhMzg5NmZhYmU4NTg0YTE0MTA4MTcwMDRiOTAyODNjZTFkMDEzOGIifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_158ee456e45546dfa628bb4ab48b9cf2",
+      "statement": "PlayerSettingsRepositoryTest locks settings persistence semantics using a real PreferenceDataStore over a temp file: defaults apply when nothing is stored (ThemeMode.SYSTEM, ThemeVariant.MONO, lyric font scale 1), and the legacy SharedPreferences fallback is one-shot — the first DataStore write also deletes the legacy key (asserted for both the dark-theme and global-uniform-random paths). PlaylistResumeDataStoreTest locks per-playlist resume record/overwrite/clear semantics.",
+      "evidence": [
+        {
+          "resource": "repo://data/src/test/java/cn/com/dcsgo/mihx/data/repository/PlayerSettingsRepositoryTest.kt#L21-L140",
+          "version": "repo-lines-v1:sha256:3dc6aa3a18da9f6111ad0b041bc2a3bdd871bd63bc8c8d8c8ab523ab7d5f4cc4:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIwLCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiI0Y2YwOWViMGM1NzQ0ZmI5NzMzMWI5OGZmM2ZiZjA1YTYwMmJhM2Y3ZjY3ZTVkYTViZTkwOTUwMzNmNjI1ODI1IiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI0ODkzZjQwZTM3ODFlYjg5NmM4MmQwNDZhMDgwNjdhMTFlMzVjZGYyZjFkZmFmMjZmZWE5MGI4ZGI2Njc2NDEzIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiIyNTQxZDZjYmYyN2JhODI5ZjhiYmFjMGEyYTY2MGNkZWU3NjMzMGUwYTA2OWY1YjRjOWUzZDhlNGQyYmYzMTUzIiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiJiYzRhMzIxNmE1NTYzODkxODkyZTYxNWNlZTcwZjJiMmQ4ZGZhNzgxNjJhMDYwMTc1ZDM5NzIxZWEyZDQxYjNkIn0"
+        },
+        {
+          "resource": "repo://data/src/test/java/cn/com/dcsgo/mihx/data/repository/PlaylistResumeDataStoreTest.kt#L23-L80",
+          "version": "repo-lines-v1:sha256:394a1a9cc5c8f79331c77339d2fc5ee0a72a6b55759c9bf2af5c5399e8145b54:eyJzZWxlY3RlZExpbmVDb3VudCI6NTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRjZjA5ZWIwYzU3NDRmYjk3MzMxYjk4ZmYzZmJmMDVhNjAyYmEzZjdmNjdlNWRhNWJlOTA5NTAzM2Y2MjU4MjUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjVjMDlhY2FmM2E5YzkyZWY0NGVhOTI5NmE2ZGM4YTFhZDAyYWM5ZjE5ZTYxMzUxMWNmNmRjZGIzOGUxNjJhNjQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjliYzRhYTRhMjRjNDc2OGJmMDIzOTIxZjM0N2U0OTNiNGI1MzIwM2NlZmNhMDY1NDZjMzdjNjJiZGZlYjAwMDUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImIxYzM0NTIyMjc5ZDEzY2FkNmNkY2ZkYTY5YmM0ZjZkYWNmMGE3MWQ1YzE0N2FmMDc4Mzk2OTFhZjBmZTgwMjYifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_7574a137722646e9a868f25364d39ba3",
+      "statement": "The legacy migration tests lock the v1-JSON-to-Room path: LegacyJsonSnapshotParserTest locks parsing of songs/playlists/title overrides, play-stats pref prefixes (play_count_*, raw_play_count_*, play_duration_*), quick-skip songs and short-play counts, Chinese default values for missing optional fields, per-segment recovery from corrupt JSON, duplicate-URI dedup that keeps URI-less songs, and playlist refs restricted to migrated songs with reindexed sortOrder. SharedPreferencesLegacyJsonMigrationTest locks the one-shot orchestration: full data write plus a MigrationStateEntity completion marker, corrupt JSON still migrating stats and writing the marker, and an existing marker causing a complete skip with zero writes.",
+      "evidence": [
+        {
+          "resource": "repo://data/src/test/java/cn/com/dcsgo/mihx/data/local/migration/LegacyJsonSnapshotParserTest.kt#L10-L197",
+          "version": "repo-lines-v1:sha256:e8ded5733a54e62d569f7f75be5f25fdb8593f90f6581e4326c1ac751a74aec7:eyJzZWxlY3RlZExpbmVDb3VudCI6MTg4LCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiI0Y2YwOWViMGM1NzQ0ZmI5NzMzMWI5OGZmM2ZiZjA1YTYwMmJhM2Y3ZjY3ZTVkYTViZTkwOTUwMzNmNjI1ODI1IiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI0ODkzZjQwZTM3ODFlYjg5NmM4MmQwNDZhMDgwNjdhMTFlMzVjZGYyZjFkZmFmMjZmZWE5MGI4ZGI2Njc2NDEzIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiIwZTA2NDViOTg0YTdmNDBjNzllODkxYTFlNDViZDE3NWRmY2NiYTczZWU2MGFhZjc0MjhkM2FiNzhkNGY2NmQ2IiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MSwiZm9sbG93aW5nQ29udGV4dEhhc2giOiI0MTJjYTM0NWNjZjc1YmY5YzA4MDZiY2U2OTViZThkZTgwOGI3OTk4NDI1MWE3YTU0ZDIwMmNmNjEwMWRkNDUxIn0"
+        },
+        {
+          "resource": "repo://data/src/test/java/cn/com/dcsgo/mihx/data/local/migration/SharedPreferencesLegacyJsonMigrationTest.kt#L27-L136",
+          "version": "repo-lines-v1:sha256:e2d7c45fb2b6d8ce6eec666072e1e02bae7abd5c5d1b1dac255713f65a0b7f00:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEwLCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiI0Y2YwOWViMGM1NzQ0ZmI5NzMzMWI5OGZmM2ZiZjA1YTYwMmJhM2Y3ZjY3ZTVkYTViZTkwOTUwMzNmNjI1ODI1IiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI0ODkzZjQwZTM3ODFlYjg5NmM4MmQwNDZhMDgwNjdhMTFlMzVjZGYyZjFkZmFmMjZmZWE5MGI4ZGI2Njc2NDEzIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiJhN2UyYzI5NTA3MjgzODNhNDJiY2QzODIzMTg4NmE5YWEwZmYyZjczNzFiODUxNDQzNjgyZDI5ODBlZGNmMjBjIiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiJhMDJiNWYwZjkxYTZhOTEwNTI0OWY5MDM3ZmRhOGNjZDRmNDA4ODRkYzVhZDVlYjY5N2Q1YjRmMTc3Y2YxNzFiIn0"
+        }
+      ]
+    },
+    {
+      "id": "claim_2ed82a7810f9419681564f101ba48320",
+      "statement": "LrcParserOffsetTest locks the LRC [offset:] tag regression (2026-09-03 lyrics latency fix — the offset was previously discarded): a positive offset shifts all lyric timestamps earlier (timeMs += offset), a negative offset delays them, missing or non-numeric offsets keep original timestamps, the offset applies to every timestamp including multi-timestamp lines, and blank content returns null.",
+      "evidence": [
+        {
+          "resource": "repo://data/src/test/java/cn/com/dcsgo/mihx/data/util/LrcParserOffsetTest.kt#L7-L69",
+          "version": "repo-lines-v1:sha256:a1689eaf690a599d4ef7af7897da751ffabf85665a211815e3c3db0f47f96e0b:eyJzZWxlY3RlZExpbmVDb3VudCI6NjMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVhZjIyY2YwNzMyNTkyYzI0NzE0MWNiZTYxZWZhMTEwMTI2MTJmNWEzMTIyYjlhZjliYmFmNTJmNTcyNGQxOTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijg1MDkyNmZhNDU4MjA4MmFmYmUwMWU0YmFlNjIzNzJiNzI4N2EyZjlhNDQyYThkOTkwM2U0OGY3MGY3NjU1YWUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_e655858db1c644969044cd857f64ddff",
+      "statement": "RuntimePermissionPolicyTest locks the version-gated permission specs: POST_NOTIFICATIONS is required only on API 33+ (TIRAMISU) and BLUETOOTH_CONNECT only on API 31+ (S), each returning a spec with its Chinese denied-message on qualifying versions and null below the threshold.",
+      "evidence": [
+        {
+          "resource": "repo://app/src/test/java/cn/com/dcsgo/mihx/app/permissions/RuntimePermissionPolicyTest.kt#L9-L28",
+          "version": "repo-lines-v1:sha256:59035e5df2e0f565032d5978b2149f452e4f12df2e4f5984541a779dc39b7737:eyJzZWxlY3RlZExpbmVDb3VudCI6MjAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjdiZjA5ZGI5NmQ4NWVkNTU1NWQzMzFkM2M3MzFlOTBkMjE0NTMzOTVkMGZkNmQzY2ZhZjBiZDgyOTIxYzE4N2UiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijg1MDkyNmZhNDU4MjA4MmFmYmUwMWU0YmFlNjIzNzJiNzI4N2EyZjlhNDQyYThkOTkwM2U0OGY3MGY3NjU1YWUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_0a7f8fb8864248388741432bfe4c4b75",
+      "statement": "AppLoggerTest locks log redaction (content:// and file:// URIs, POSIX/Windows file paths, Bluetooth MAC addresses, and deviceName/bluetoothName fields are replaced with placeholders, including inside Throwable messages and stack traces), and PerformanceTraceTest locks the observability seam (measure passes through the block value, log output goes through AppLog with redacted metadata, release silence is governed by isEnabled, and allow/disallow whitelists named operations through to release builds). These tests back the architecture rule that forbids direct android.util.Log calls outside AppLogger.",
+      "evidence": [
+        {
+          "resource": "repo://core/common/src/test/java/cn/com/dcsgo/mihx/core/common/AppLoggerTest.kt#L8-L49",
+          "version": "repo-lines-v1:sha256:869c8d6e7dc49082f3171eef069e8d25d9425bf8a242527051c6951a53a3f9bb:eyJzZWxlY3RlZExpbmVDb3VudCI6NDIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijg5Nzg3NWYzOThlZjhkNmI2M2JiYTI3ZWZhOWI1ZGZkMTEzMzRiYzZlZTZkZjljOGRjNjE5M2ZkMDMzMjk2NTUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjcyYTE0Y2Y5MTMwMTI0MWYwNDRlMjc0NDVjNWQyMTRjYzY3OTk4ZTA4NTQzODc2YWM1Njk0NjQ3ZWNiYzcyNTYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        },
+        {
+          "resource": "repo://core/common/src/test/java/cn/com/dcsgo/mihx/core/common/PerformanceTraceTest.kt#L7-L58",
+          "version": "repo-lines-v1:sha256:ca9b57cb066ad574aec4d117eec8ac601080b4d865e6f94ef85110bb69a3add3:eyJzZWxlY3RlZExpbmVDb3VudCI6NTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjdlOTFhYmYzNGU4ODExZGQ0Y2UyY2UyMDllZGU0OTI0YzQxMGZjZTJiM2IxZTQxOGIxZDUxODZmZTQwYWJhNGYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjcyYTE0Y2Y5MTMwMTI0MWYwNDRlMjc0NDVjNWQyMTRjYzY3OTk4ZTA4NTQzODc2YWM1Njk0NjQ3ZWNiYzcyNTYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImYwNjJmMGExNmZmZGYzNmI1MTI2YmNlMjVlOGNhYjI2YzI0YjQ1YjVkYjRmMWM3MjdmYjg2ZDA1MDgzMGZkZjAifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_c9b56be704c041d181840a2a6ec55f2e",
+      "statement": "SongEmotionSectionTest locks the emotion pure-function layer in :core:ui: smoothCurve keeps length and shrinks noise with short-list passthrough, lowConfidence marks the undetermined band (either axis |value| < 0.15), hasSignificantPeak requires an arousal spike standing out, the word table is closed (10 groups, 39 unique words with the ABYSS group at 3, headline as first word), per-window voting abstains on near-zero windows and takes up to MAX_TAGS groups by ratio, WITTY (鬼畜) is excluded from automatic voting (center-vacuum fix) while the manual groupOf path remains unrestricted, and emotionTagsOf gives user tags priority with empty output at low confidence.",
+      "evidence": [
+        {
+          "resource": "repo://core/ui/src/test/java/cn/com/dcsgo/mihx/ui/components/SongEmotionSectionTest.kt#L10-L117",
+          "version": "repo-lines-v1:sha256:e5f4fdf81091a97a3bffe4f585b63188c2d5064f07e7cc618510e1887d77e784:eyJzZWxlY3RlZExpbmVDb3VudCI6MTA4LCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiI1ZTQ5Y2I0YjRlYzVjZGQzNmI4MzVjNjc3YTllYjdhYzJjZGQxMTcyOWJiNDU2NThlMTJkNWRjN2E3MjgxZGRhIiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI0ODkzZjQwZTM3ODFlYjg5NmM4MmQwNDZhMDgwNjdhMTFlMzVjZGYyZjFkZmFmMjZmZWE5MGI4ZGI2Njc2NDEzIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiI3MmExNGNmOTEzMDEyNDFmMDQ0ZTI3NDQ1YzVkMjE0Y2M2Nzk5OGUwODU0Mzg3NmFjNTY5NDY0N2VjYmM3MjU2IiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiIyZWYwZTAwY2I3OGI4ZTZlMjE2ZGExNGRkZTU2ZmIzOTU1MGMwM2ZlMWM4OGMxM2NkOWRkNmM2OTAxMWY1OTk0In0"
+        }
+      ]
+    },
+    {
+      "id": "claim_1f4b6bf13d724fd78d7b67e86fd8a6ba",
+      "statement": "Two small regression locks pin cross-cutting behaviors: ResolveResumeSongTest (app module) locks playlist-resume song resolution returning null when the resume is null, the song is absent from the playlist, or the song is unplayable under the injected/default (uri != null) rule; LyricsHighlightLeadTest (core:model) locks the lyric highlight lead (HIGHLIGHT_LEAD_MS) pre-scroll compensation — the upcoming line is highlighted ~300ms early by default, leadMs=0 preserves strict timestamp behavior, and negative lead delays highlight.",
+      "evidence": [
+        {
+          "resource": "repo://app/src/test/java/cn/com/dcsgo/mihx/ResolveResumeSongTest.kt#L10-L60",
+          "version": "repo-lines-v1:sha256:4d1f4ef8451c84e0159a20736f1d7bda2aecc2f8e416e53ba1e41e60c57e24b2:eyJzZWxlY3RlZExpbmVDb3VudCI6NTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjViYTljMmVjNzY0YWM2ODU2ZGEyYWIwNjFkODBmZjQ5YjJlMWEwNzVlMjE2NGRlMmJjNjQyY2Y3YTI4NWE0ZDEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijg1MDkyNmZhNDU4MjA4MmFmYmUwMWU0YmFlNjIzNzJiNzI4N2EyZjlhNDQyYThkOTkwM2U0OGY3MGY3NjU1YWUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        },
+        {
+          "resource": "repo://core/model/src/test/java/cn/com/dcsgo/mihx/core/model/LyricsHighlightLeadTest.kt#L11-L54",
+          "version": "repo-lines-v1:sha256:0adb4c9f2b82d8441288f733eb88c883a1543f90095f3f2bae71fdf62d72eee1:eyJzZWxlY3RlZExpbmVDb3VudCI6NDQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImIxMDBlMGM5YWVlZmIyNjg5MTFhMTBiMTY5ZDJiNDZlMjJjY2EyODdmYjgwOGNiMDgxYmUwZmNkZDU5ZjlmYjIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImFkNDI2NTU0MDgxODNmODEzYmJlZDIyNjllNDRlNjMxNDA2YTJiMWQ2OTgwYzczYTFkZTEyOWIzYmYyMWMzMDQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_5e8b16d35deb456d855fdd6501a44f5f",
+      "statement": "The project validation policy (AGENTS.md) prescribes the narrowest quiet validation: run the changed module's tests with --tests class filters before committing, reserve full `check` for pre-commit, and preserve complete failure output without truncation (verifyProductArchitecture failures name the offending file directly). Gradle accepts multiple --tests filters in one invocation plus wildcard package patterns, and :benchmark:connectedCheck may fail on MIUI real devices due to ROM restrictions on macrobenchmark automation steps.",
+      "evidence": [
+        {
+          "resource": "repo://AGENTS.md#L7-L8",
+          "version": "repo-lines-v1:sha256:8ca5bb1072a6d0f45c86d7adab2737c384361844ab3eb6dddde54fbac71c7547:eyJzZWxlY3RlZExpbmVDb3VudCI6MiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMmNiM2Q0YTQ2NjliZGM3YTQwZDk4MDc3MzVkZjYwOGJmZTMxZDM4NjA2N2M5OTliNzUwYWFjNjMyYzFiNmQzMSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYmNiMzA1ZGNiMTRkY2I0MTUzZTFhM2YyNTk0NjVjZWFkYWRjOWIwNDRhNzkzZGE0MjdkMmM0M2QzYTA5ZDQ5MSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZTA1MTY5OTI5YTliMjNhOWIwMDJiYjE5MDNhYTA3ZWMxZGE0ODA1ZjY3ZTEyNTBmYzZjOTQ4MDlmMzJlMGM3ZSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNjU1MjQ4YjYyZjU1MmY2Y2I2ZjcxMTA5YzgzY2E0OWZlOTU1MmU5NjYyYTBhZmNjZTdjNjY5YTJiYmEwZWMwYSJ9"
+        },
+        {
+          "resource": "repo://CLAUDE.md#L42-L63",
+          "version": "repo-lines-v1:sha256:dcce2fbd256b3a13fda77b1ff187f03ba30d3fed6a6d8bde1f1f9a84df1f69d4:eyJzZWxlY3RlZExpbmVDb3VudCI6MjIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY0NmI4NzJmN2YwNGIyNTNhMTkxZWIxZGExNWE2MDI0ZjdjZjE5NTNmZDNhYjM4MWU1MjkwYmU0YTYyNDAxNTAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ3YzA2YzU2MWQ1YzMyNzM0MzY4NTI2OGE0NmIzMzkxZjM5OThlZWU4OTBkMmJlNTFmMGQyMWNjNGE1M2FlNmQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImZkMGE2NGY3YjBhODJiYTM3ZWI4OTg1NzIzNGE5NDM3NDcwMzNkODUyNjdmOGQyYjJkYTY0NjI1Njc3MmE0MzciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjY1NTQzM2Y2MTg2YWYwNzVlZDNlODYxYjhlZGM2YWUwMTYzNjM0ZDhiODFjZDE2N2QzMDI2Mjc1NzQxNjM0NDUifQ"
+        },
+        {
+          "resource": "repo://build.gradle.kts#L215-L237",
+          "version": "repo-lines-v1:sha256:df3d734db042f504799ee38cb4826f472e89c3124a24a8a8e73bd15b1ccd525f:eyJzZWxlY3RlZExpbmVDb3VudCI6MjMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQ2NTE0M2EwZDU0YTg2ZjEwMjVmMmU2N2E0Mzc3N2ExODEzM2VlMWIxYmIyNzgzOWM1YzY4ZThlNmRjNmJmNzkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU1MjJjNDJjZDE5YzZkMDNkODA4YzQ1MjcyMDU1MjgyNWI3ZWExYzViNDkxYjIxODUxMWNhYzc0MTVjZjlkOWIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImJiMTk4OGJkNTY2Zjc3OWI2ZWY4ZWI1NDRkZmQzNTRmNjBmZmI5NjViMWMwZDk1MDE5NGQxMjE0YWZlM2FhZjkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjJhNTk5NzA0MGM0MmZmOGZmNDNkZGNiZTlkNDBmMjVhNzE0MzVmOWY1N2Q2MGUyOThjMDc5MWM1MjEwMTA4MDkifQ"
+        },
+        {
+          "resource": "repo://docs/refactor/PRODUCT_REFACTOR_AUDIT.md#L55-L55",
+          "version": "repo-lines-v1:sha256:02452df6cc73a040752beba57c8bddbeea8684a5c86821e689ab1f909ce48ef2:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMDI0NTJkZjZjYzczYTA0MDc1MmJlYmE1N2M4YmRkYmVlYTg2ODRhNWM4NjgyMWU2ODlhYjFmOTA5Y2U0OGVmMiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMDI0NTJkZjZjYzczYTA0MDc1MmJlYmE1N2M4YmRkYmVlYTg2ODRhNWM4NjgyMWU2ODlhYjFmOTA5Y2U0OGVmMiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMjQ2OGZmYWQ2OTlhMjkxZGY5ZjM2ZjMwODk4NzBiMDU2ZWIyNmMyODI2NDRiNmFmNTJlNTdlODUzYzQyYzk4MCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZDk0OGU5ZmVlNzkxN2MwOTljNGYwMzk2MmI4ZjQ4MjlmZTQ2Y2FhNWQ2NDgwN2M5MWU0OGQ5ZTE2ZTRkNDQ4YSJ9"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "by": "openwiki/0.5.0",
+    "at": "2026-09-07T13:49:59.042Z"
+  }
+}

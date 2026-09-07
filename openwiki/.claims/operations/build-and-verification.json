@@ -1,0 +1,528 @@
+{
+  "schemaVersion": 1,
+  "pageVersion": "sha256:8bc4c90f2fdcec874348c94e4c7629e13dfdec84f17e2a396fa3edcd6f67cac5",
+  "claims": [
+    {
+      "id": "claim_05816abd377f46f1bb264134270ccc79",
+      "statement": "The app defines three build types: debug (no minification, `.debug` applicationId suffix so it installs alongside release, full ABI for emulators), release (R8 minification + resource shrinking), and benchmark (created via `initWith(getByName(\"release\"))`, debug-signed, `isDebuggable = false`, adding `x86_64` ABI on top of release's arm64-v8a, `matchingFallbacks` to release).",
+      "evidence": [
+        {
+          "resource": "repo://CLAUDE.md#L23-L40",
+          "version": "repo-lines-v1:sha256:2dfd303cf220654ccf7213f980b1957a2ec336bef3f0f680f5c50e20743837cd:eyJzZWxlY3RlZExpbmVDb3VudCI6MTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjlmMjVlNTlhMTIxYzA1MDk5YTA0N2VkY2I5ZWY5NTljYmM5NmEwMDllZmU5NDI5NjQ4NmYyOGRlY2Y5NDMzNjUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ3YzA2YzU2MWQ1YzMyNzM0MzY4NTI2OGE0NmIzMzkxZjM5OThlZWU4OTBkMmJlNTFmMGQyMWNjNGE1M2FlNmQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk0OWMzOTI0ZDM2NGI4YzJjZTQ2MjFhZjQ1N2IzNTBjMTFkN2JlN2M4NTQ2ZDg5MmM3ZWM0YmIzM2RkZTNiYWEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImU2YmI0NGQ0OGExMDg0ZjE0Yzc5ZmNlNzViZGMxNTk0OTYyOTBhOTAyYjFhYTBjZDdjMjRiYTZkODY4YWM4MzkifQ"
+        },
+        {
+          "resource": "repo://app/build.gradle.kts#L76-L107",
+          "version": "repo-lines-v1:sha256:9f3b2a8fa3699b8630f68699f0aed822f05b48ce06b700f785ee2dd8edd797ec:eyJzZWxlY3RlZExpbmVDb3VudCI6MzIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjkzYWFlNDUwMDc1NWYyOTE0OGFjMzFhZmJlMDllNjQxYjgyNTljN2RlYmUzMWM3ZThhMDExOTgzNGI0YmM4ZmIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk5OWJkZWZlZWFjYTYzNDBlMDI5MGRjODZlODg5Yzg5ZDVlMTg5YWE1YmE0NGI1ODViM2I3MDczNGY0YTYyZDgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImE4ZWU0YTMxNzIwODNmOGJhNDA5ZTJkMTc1NDI0NzdmNDA4ZDZhZjY0Y2NlODgxNzQxZDNkNmFiNjBiNGQ0YzkifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_0f50127a978b4ad7ad48b2a34cae39f8",
+      "statement": "Release builds ship arm64-v8a only (minSdk 33 devices are all 64-bit) and restrict resources to `resConfigs(\"zh\", \"en\")`, enabling R8 minification plus resource shrinking with `proguard-android-optimize.txt`; the resulting release APK is ~6-7 MB. debug/benchmark keep multiple ABIs for emulator compatibility.",
+      "evidence": [
+        {
+          "resource": "repo://app/build.gradle.kts#L29-L40",
+          "version": "repo-lines-v1:sha256:c48d62a0f91c64679a5088bf0d63aed89bc4040450ef38ead2d56c9510b9155d:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk1NTQyMjk1MGE3NjJjOTE3ZDcwMDc3NTJkY2MzMzRiOTM2NTNkNmVjNTViNzFkYzQ3MGZhODZkMGRhNzQ5OTgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjJiZWQyMThkODM2YzA5M2ZkYWJlNjY4NmFlM2YzOWJjYmIyZGQ3OWJjYzczNTQ1YTI2MjQ2YWZmYjBjM2YyYTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjJhZjRkYWY2ZjQ4ZGIwODE1ZDBmNmNhYzg3YzFjZTRjNGE5Zjc5ZGVjNThmZmE0M2JkYmUwNjRiYjRkYWNhMzMifQ"
+        },
+        {
+          "resource": "repo://app/build.gradle.kts#L82-L96",
+          "version": "repo-lines-v1:sha256:e9e0882e71ba708dba0c42d99fa19110fa1dfa63a4bd534278b6341718fdeacf:eyJzZWxlY3RlZExpbmVDb3VudCI6MTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI0YjYxOGE4MDc0YjEyMDNmYmFiMGUxNjk2ZGE3ZWE5YTM5ZjNlZTNkZTIwNWY2MzljMDJhYTI4NjkwN2M2OTAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjBkZTZkNGIxMTBhYThhYmVlYTE1ZGY4ZTgwNWI5NzdmNmY1YTZhNTM4Y2Y0OGUwNDkxZmFjMWQ2MmExYWU5NmQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjlhMTE1OTMzZGE2ODEzNjhmNDRlOWVkNDI1MDA0NmVjODkwNTRmZDQ0OWNhZWEzNDI3NTA0YzRjOTY0MWY1ZjMifQ"
+        },
+        {
+          "resource": "repo://build.gradle.kts#L504-L522",
+          "version": "repo-lines-v1:sha256:f1e737581843c12ef1dd25fdb204afef947480146a14a92aea4caf913a612a68:eyJzZWxlY3RlZExpbmVDb3VudCI6MTksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBmMDFhZGEyYjRlMzM3NjNkY2U5MGQzMTM1MGNiYzM1NWYyMjg2YThjMDBlNDcyNDY1MzdmNGYyYmYzNWVjZTEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjQ4ZjU4ZWQwZTE0N2ExYjYyMjI0NzZlNzI1NmQ0YmQ5YjQ3OWJiNDA5OGJlOTRjMzIxYjA5OTVlZWUwYWQ4NjgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjY1YTY2MDRmODJhYmY1NDQ3NWI3ZTQzNTRlNWVlN2Y0MThiZTY1YjQ0NTA4YzBjZTY2NDUzN2JkOTFlYjAwNWIifQ"
+        },
+        {
+          "resource": "repo://docs/refactor/PRODUCT_REFACTOR_AUDIT.md#L28-L29",
+          "version": "repo-lines-v1:sha256:b1d3e10fd38f4e9086ff1564d2beca79321b0935a75b5c2367f822d6246d3ea6:eyJzZWxlY3RlZExpbmVDb3VudCI6MiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiODEzMGIyNDg2MmQxYmMwMTQ3OTAwOGQ2OGQ2ZGI0NmViNWJkOTc5YTYzNTcwNjUxMjlhNGQ1YmZjOTRhZDhkYiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNTJjZTljYjZhNzgxNGM3ZjQwMGNjMzBjN2M0MjBkZDYwNTkwZDQwYzM0MTBmNjkyZGI3MzI0N2FkNzRiYjY4YiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMjk3YzU4ZThjYTQ0M2MwOTM5ZGI0YzQ2MTlhYTE5ZmU4NWJjNDI3OGZmNDJmNjJmMzBlNmJhNGI2ZjMwNDBjNCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZWExOTBlYjY2OThhNDE1NTA4YmY3YzlhYzkyNWNhYWUyNDlkZWUzYmQ4ZmQyYmM2YjA0ZmEzMmYzYjI2NzU5ZiJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_fd6c863027e74db1aa15456378ed6f27",
+      "statement": "Release signing reads the gitignored `keystore.properties` (storeFile/storePassword/keyAlias/keyPassword); when it is missing, local builds fall back to debug signing with a warning, but passing `-PrequireReleaseSigning=true` (release/CI scenario) makes the build fail outright to prevent shipping a debug-signed \"release\" artifact.",
+      "evidence": [
+        {
+          "resource": "repo://.gitignore#L31-L33",
+          "version": "repo-lines-v1:sha256:2a45bdad2fdd46fb6aff735d1e5d27202aed811d207fed791f1801cb819a1d64:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMWE1Y2RlMzQ5MGIwZWJmOWMzNDNkOTY0Y2U5ZGIwZGNkOWUzMjQxZTRjMWQ4ZTAwYWJjYThkYzI4YWUwMzcyNSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYjJiMWM3MTFlMmNjMWI4MjY3ODIxOTg2MzkxNmFmMmRiM2RlZmQzNWVmYTg1ZjY3MGI0MjIwNGE4NzI1ZTIyYyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiM2I1NmY2MmRmN2MyMGRlNDRjNTcwN2ZlOTlhNjgzZmY0ZTE4NzhmNTljYzA2MjA4MjRiNWEzOWFjNjA5MDE4YyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMWU4Zjc5MjllYzRiM2U3NWI5YzRlOWRkNzk3OGViNmI5ODA0Njg3OGQ2ZDE3N2JlYzAzZTk4MjEzMWVhZTcxMCJ9"
+        },
+        {
+          "resource": "repo://app/build.gradle.kts#L54-L74",
+          "version": "repo-lines-v1:sha256:bc565d99d810215d8de88fbc8b52dc062bdb671fd1d64d4344fd10fd7bf11b28:eyJzZWxlY3RlZExpbmVDb3VudCI6MjEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU4MmEyN2U1NDM5NDE0N2U4NDIzMTI1ZTUwY2I1ODM2YzA0ODQ5MTQyNTIxZDc3ZmU0NTZjNTkwNDYyMjBhMjEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk5OWJkZWZlZWFjYTYzNDBlMDI5MGRjODZlODg5Yzg5ZDVlMTg5YWE1YmE0NGI1ODViM2I3MDczNGY0YTYyZDgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImIwNzBiNTM4NjAxYWFmNzQxOGI4OThiYzU5ZGY2YzE5NDcxYzMwYzE0MWNiNGJmNDU1MmZjZmYxYTUzOGRmYjYifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_fc76e281a38049e9af17bfebf7913133",
+      "statement": "The `check` lifecycle task aggregates root-level `spotlessCheck` and `verifyProductArchitecture` plus every subproject's `check`; each subproject's `check` also depends on its own `spotlessCheck`, so a full `check` runs formatting, architecture assertions, and all module unit tests across debug/release/benchmark variants.",
+      "evidence": [
+        {
+          "resource": "repo://build.gradle.kts#L42-L47",
+          "version": "repo-lines-v1:sha256:32a95d5f63377e3d819a82c0d3a27116be8cdeaa6d74ede9c834199ed569691c:eyJzZWxlY3RlZExpbmVDb3VudCI6NiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiOTcyNjc1OGZlYjRjODVmMWI3ZmNiNzdmNTM1N2M4ZTg4NmU5NGIwNWZhOGM0ZWNhMDAyMmU4NGYxYTcxMmMwOCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDEyY2EzNDVjY2Y3NWJmOWMwODA2YmNlNjk1YmU4ZGU4MDhiNzk5ODQyNTFhN2E1NGQyMDJjZjYxMDFkZDQ1MSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiOTk5YmRlZmVlYWNhNjM0MGUwMjkwZGM4NmU4ODljODlkNWUxODlhYTViYTQ0YjU4NWIzYjcwNzM0ZjRhNjJkOCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZjE2MjBkYjYyNzE5MmM2NTcxMTdhZTkzZGQxNTllNTUyNzkyZWQ1YTVhNzhlODhmMzEzMTQ0OGEyNjJjNzZiMiJ9"
+        },
+        {
+          "resource": "repo://build.gradle.kts#L580-L588",
+          "version": "repo-lines-v1:sha256:2894d8e4dc174385dac4f8403a231b2ba1bc7250e8246cb001e94705c090a98d:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMWY1OGI5ODU2NTI2MDNiYTQwMGNkMzBhMmU1ODA0OGJhMGMzNWEyNjU3YTE0NjBkNDVkNDE3OTBlNGFiZTFmZiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDEyY2EzNDVjY2Y3NWJmOWMwODA2YmNlNjk1YmU4ZGU4MDhiNzk5ODQyNTFhN2E1NGQyMDJjZjYxMDFkZDQ1MSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMTllNzYzNTVjZjExOTk0ODBjM2Y5OTgzNmIxNDg2Yzg0MWQ4OTFmYWFkOTA0YzYwOGUwOTMwMjJkMzc1N2FlZSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjAsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_eece98b4db564a2c9967401856cfcc16",
+      "statement": "`verifyProductArchitecture` is a custom verification task (~580-line `doLast` block) in the root `build.gradle.kts` that walks the repo for kt/kts/java/xml/toml files (skipping build/.gradle/.git/.idea) and asserts rules with `fail(message)` throwing `GradleException`; there is no incremental mode or allowlist, so any new file or module enters the next scan.",
+      "evidence": [
+        {
+          "resource": "repo://build.gradle.kts#L49-L74",
+          "version": "repo-lines-v1:sha256:64fb6d2a8de9509602392198083a0118cec5af789262b27c0fcb4ee0ff760d87:eyJzZWxlY3RlZExpbmVDb3VudCI6MjYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjkyMzFhNzYxOTMzYWI0ZDFjNzc5Y2JiMjZmOGI0M2U4Y2Y3NjU2ZDVhMjE2YTJlOTdlZDk5MzI2NzM4ZWY1MjkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjE5ZTc2MzU1Y2YxMTk5NDgwYzNmOTk4MzZiMTQ4NmM4NDFkODkxZmFhZDkwNGM2MDhlMDkzMDIyZDM3NTdhZWUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjBlZjAyNTI1MTViYmZlZmUzMjA2ZmZkMDZiMWFjYThiNWUwMTdlNzdkNzAyNmY1YWFlMjg5MzQ3YTVmYmRjZjMifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_329ad16d948f45c7a574c561931a43e0",
+      "statement": "The gate enforces the product module inventory and per-module hygiene: all 14 modules must appear in `settings.gradle.kts`, and every module directory must keep a local `.gitignore` containing `/build/`, `/.cxx/`, `/.externalNativeBuild/`, and `/captures/`.",
+      "evidence": [
+        {
+          "resource": "repo://build.gradle.kts#L76-L110",
+          "version": "repo-lines-v1:sha256:a8802e97d9e2a3312a02e4762a9ba44f3afd439b3472f68cfe5b103fdd11729d:eyJzZWxlY3RlZExpbmVDb3VudCI6MzUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU3MzRiZDA4YTk1ZmVmNzI0MjRlYjUwNmM4NGMzYWI1NGI1MGE3OGI3MTEyODgxODcyY2E3YzRhY2JmOWZkMWEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU1MjJjNDJjZDE5YzZkMDNkODA4YzQ1MjcyMDU1MjgyNWI3ZWExYzViNDkxYjIxODUxMWNhYzc0MTVjZjlkOWIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImM4OTczYjE2ODgzZTU3NWU0YWFlNDg4YjE0OWNmMTQ0YWUzZjk2MTRkNzg4NjdlMTExMzk2ZWVkZDk5YWYwYzkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjY2ZTBmMGEwOTU4ZWFmN2QzMGY2NjVhMjNkNzM3OTc3ZjNjMTg4ZjczZTcxMzMzZDU5M2U1YzZkNzdmMWQ5N2UifQ"
+        },
+        {
+          "resource": "repo://data/.gitignore",
+          "version": "repo-file-v1:sha256:5dae78f84c2bef2d9794830b1e908864a425d018d89a8681bc347eda309c1700"
+        },
+        {
+          "resource": "repo://settings.gradle.kts#L22-L38",
+          "version": "repo-lines-v1:sha256:497e30f7f79157f3e08f8096caed2996edec11dc6042e67e429513e77392fa2a:eyJzZWxlY3RlZExpbmVDb3VudCI6MTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImRlZDY5YzRlNjFmNjFjYzg0YThhYjgyOWUwYzkwMTJhZjM4YjI4MTg0YjU3ZGJmMDJhNGE5ZTIwZjA3MTEyYjgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZhZmJhMDUyN2MzOTUzYzRiNmUwZTViNTczOWJhODM2MTJmODA1M2JjZGM5NDY2NzMwMTkzY2QxZDU5MGI0MDgiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjE5ZTc2MzU1Y2YxMTk5NDgwYzNmOTk4MzZiMTQ4NmM4NDFkODkxZmFhZDkwNGM2MDhlMDkzMDIyZDM3NTdhZWUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_9525f6e43d2943958c4cbd9d3c323491",
+      "statement": "Hilt assembly points are hard-gated: `MelodyApplication` (`@HiltAndroidApp`), `MainActivity` (`@AndroidEntryPoint`), `AppMediaSessionService` in :player (`@AndroidEntryPoint`), and `PlayerViewModel` (`@HiltViewModel`) must exist with their annotations, and the six required SingletonComponent Hilt modules (app/di: CoroutineModule, LoggerModule, PlayerModule; data/di: RepositoryModule, DatabaseModule, DataStoreModule) must exist as `@Module @InstallIn(SingletonComponent::class)` objects.",
+      "evidence": [
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/di/CoroutineModule.kt#L10-L15",
+          "version": "repo-lines-v1:sha256:0369e6de6530f49d48099a718df321c403d74088cc070b6062df0c78eafe6806:eyJzZWxlY3RlZExpbmVDb3VudCI6NiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNTk1NWY1MWQ3ZTI5MjE3YzExOTQ2YmEwMDg1Y2VhNWRiZmU5MDFmYTcxZTZmYzk2MjE3YmU3ZDc5OWVhOTNmMSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDI5OGRmZjQxNDg4ZmM3NTlmMzQzOTQyOGM2YWZjOTI4Njg3MTM3NzU4NzRlNDBkYTQwNTA3Y2IzZGNiZGE4NyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNWM4OTAwMjM0ZDA4NzA2NTlhMjRlYzQ1NDQzMDdlYmJjYjEzYWNiZDM0YTlhY2U5NDMyMTE1YzE1NGVhZDgxMCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjEsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNDEyY2EzNDVjY2Y3NWJmOWMwODA2YmNlNjk1YmU4ZGU4MDhiNzk5ODQyNTFhN2E1NGQyMDJjZjYxMDFkZDQ1MSJ9"
+        },
+        {
+          "resource": "repo://build.gradle.kts#L112-L142",
+          "version": "repo-lines-v1:sha256:12bbcfd4764040200722f6686103f4219883c2cf9fc34e04a495ef5cd81d8656:eyJzZWxlY3RlZExpbmVDb3VudCI6MzEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImI2OTk0NGE0NjVlMTZjM2M4ZGZjMmU0OTYyMWZkNDUxY2I2ZTA4MmY4OWIzYjhjY2Q3YTNhMGMwNjRiMjRmYzYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjE3NjFiZjRiZTFiMWZjOTM5NDEyZDdiNjhhY2VkZmUyNjNjMWNiYzIyMjMxMjEyZGYzOTA5YzcyMjljZDE2ZWMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjZkNTJkMDYxYjk0OTkxYWI4NWQ3ZDQxN2ZkOTczNDY1YzZhNWYyOGQ4NDM4ZGM5Y2IyODZlMmRhMGM1NWQzY2IifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_826dea9713764b39bc9aa493ee901f5d",
+      "statement": "The gate pins the architecture docs: `docs/architecture/PLAYBACK_STATE_MACHINE.md` must exist and document the playback state/sync terms (idle..error states plus AppMediaSessionService, PlaybackController, ControllerPlaybackStateSynchronizer, PlayerControllerStateFacade, PlayerMediaEventFacade), and `docs/refactor/PRODUCT_REFACTOR_AUDIT.md` must track Verified / Still Not Fully Proven sections plus the release, benchmark, and test validation commands.",
+      "evidence": [
+        {
+          "resource": "repo://build.gradle.kts#L144-L185",
+          "version": "repo-lines-v1:sha256:e7dfffb9bec000c219ed10bc976c19fe58351ee7c3f8ac4d6c07ba31e6013ecf:eyJzZWxlY3RlZExpbmVDb3VudCI6NDIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjA4MTI0MTcxNjFkYjVhMmY2ODc0ZjEzNzA4YWE5ZmRlYzdlODRkNWRlZjM4NzM2ZjYyYWE4OGQ5YmFiYmUyMjEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImRhOWY4NmQyOGU3ODRmOWZkMzFmYjcyZDE1ZjYwY2JjZWFhZmRkNjY5Y2JkNWI2ZGE3ODg4YTAyMzMyMWViYjkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImRhYzk3MDM1MGM5YTA0NTU0NjZiMDJhNmY3YTg0MDZkODZlMmY3YTEwMjlkMGRhZDIxZDYwMWQ3ODFlMzFkZjYifQ"
+        },
+        {
+          "resource": "repo://docs/refactor/PRODUCT_REFACTOR_AUDIT.md#L1-L70",
+          "version": "repo-lines-v1:sha256:ad57a9105c1cb2723a2d9536131916824b2b9bfc78a5d656fa544a06343f5728:eyJzZWxlY3RlZExpbmVDb3VudCI6NzAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjEyOWJlZDA0MmRmMTcxYjAzZWMwNTJjNWUyYjI4ZGQzMDE0M2JlOWJlMDI1MmFlYzY2YTVmMjUzYWU0OGU2ZjgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjliOTAyNTBiNmNjNzlkMGRjZjA3MzNhZGZjOTc0NGNlMjg3M2YyNWNjNzEwNzVmMjdmMGRmN2M3MjQ4YTM4ZTUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_c14b24ca47bd4b4791c372a206a9d1fd",
+      "statement": "The gate locks the :benchmark module shape: the build file must use the Android test plugin, `targetProjectPath = \":app\"`, and depend on `androidx.benchmark.macro.junit4`; `StartupBenchmark` must keep MacrobenchmarkRule, StartupTimingMetric, StartupMode.COLD, startActivityAndWait, and `packageName = \"cn.com.dcsgo.mihx\"`.",
+      "evidence": [
+        {
+          "resource": "repo://benchmark/build.gradle.kts#L1-L48",
+          "version": "repo-lines-v1:sha256:aa8810b823bd967966428a939008b2bc5bbdbbf2320421ff9e2ed502ea7fa446:eyJzZWxlY3RlZExpbmVDb3VudCI6NDgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ0MDQwMTAzMTViZGJiMGZlYTBmZDZmZjAyMTRkOGJjOTIxY2UyODM2ZDFjYzZiY2I4ODQ5ZjM1NzZjZjVhNjciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://build.gradle.kts#L186-L209",
+          "version": "repo-lines-v1:sha256:8c57aa32692359f939dfcfe46f0408ee004b1ce3d34b744c5eeb837ff3b09c34:eyJzZWxlY3RlZExpbmVDb3VudCI6MjQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjkzZjhlZDNkOWU3ZGQzOTU2NmViYzA0ZmU3MDEzNjQwMmE1NmMwYzJiYzU5NzQxNzlhMjFkZDRkYTJiZDM4NzUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQwYjI4MTZhNDMzNTlkYzBiM2NjNjNjNTM5M2JkMzM3YzM5MmVjOWYxZDkwY2Y3OTFmNWE4N2U3ZDNlZjg0MTQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImJiYWI4NDZkY2NiMjYxMGI0NzdhYmZiZTQ2MGZhNGE2ODRmM2JhOWE2ODY3MmEwYzI1MWIyZjNlMmVjYWU1M2QifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_fc345cb1a65c465c9f27659010394fec",
+      "statement": "Performance observability is gate-anchored: `PerformanceTrace` must exist in :core:common, `MusicRepository` must keep the `music_import_scan`/`music_import_folder` trace operations, `PlaybackController` must keep `controller_play_queue`/`controller_prepare_queue`/`controller_sync_queue`/`play_next_command`, and `PlaybackWindowPerformanceShapeTest` must keep covering the 100/500/1000-song queue sizes with the 71-item window bound.",
+      "evidence": [
+        {
+          "resource": "repo://build.gradle.kts#L211-L248",
+          "version": "repo-lines-v1:sha256:7576da773cf69fed473054c5f83c206bead3310e5a2b25b461291a8762a11892:eyJzZWxlY3RlZExpbmVDb3VudCI6MzgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU5OTUxYWNiODRkOGZkYmE1YjdhMmI4ZTA2ZTNmZTMyYWNkYzc3MDVjZTM5MzcyZWRiNTI4NzI4MDk1ZTgwODYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImRhOWY4NmQyOGU3ODRmOWZkMzFmYjcyZDE1ZjYwY2JjZWFhZmRkNjY5Y2JkNWI2ZGE3ODg4YTAyMzMyMWViYjkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImVmYzNkNDc3MDVlZjMxMzk0OTJkNWIyMTJmZDNkYjIwMzVmMzZhYzE5NGY0YmMyYjcwZGM0OGZhN2Q1NTM3ZTIifQ"
+        },
+        {
+          "resource": "repo://player/src/test/java/cn/com/dcsgo/mihx/player/window/PlaybackWindowPerformanceShapeTest.kt#L10-L21",
+          "version": "repo-lines-v1:sha256:b1fe7e2cb75d2a20d85ae16b87ec0c83d9e2720425991dfb2692d4334a2145b1:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRmMmYyNDE3ZjQ4MjAyYmY0NmY0ZmE3YTZjM2I5NDVkNTAyNGE0OTc2NzVmYjQyNzgwZDViY2U1NjkyZWJiODciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjcyYTE0Y2Y5MTMwMTI0MWYwNDRlMjc0NDVjNWQyMTRjYzY3OTk4ZTA4NTQzODc2YWM1Njk0NjQ3ZWNiYzcyNTYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImQxYjhlMTg1Y2MwMDFjMTE2ZThjNGYzOTUxYTEyMWVjOTM5ZDFiYWI2NDUyZTcyODc3OTIxOTA2ZjQxMzJjYjkifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_ed602378922a4ba8b4063cf14e1f389a",
+      "statement": "Historical regressions are banned at source-scan level: no references to the legacy `com.dcsgo.data.model` package, no `PlayerViewModelComponents`/`PlayerViewModelComponentFactory` (the old manual assembly hub, deliberately replaced by PlayerRuntime and injected facade/graph objects), and no Android Things dependency strings.",
+      "evidence": [
+        {
+          "resource": "repo://CLAUDE.md#L133-L144",
+          "version": "repo-lines-v1:sha256:85afeaf1d0b4c36c7530c5f4efbddbdba9a9b26d85aeaaae475d16c154edead2:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjUyZThjNGUwNmI4MjY0MzA1NmY2YTVmNTZmMmY3YzdkMjZjNTk2ODQxMWQ0ODUxZWRiOTI3YWNhOGRjODJhYTgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjljNTJiMDdlNmQ0MTNlM2MyODEyZWU5ZTY3YzVhZGZiNGYyY2Y4MDBhODcxNjA0YWIwYmZmMjg4MzY0MTAxZTAiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjhkNDQ0ZTY1MGE5ZmI5ZjgxYzAwYmM4YjhhM2E2ZGZkN2MyMzcwZWE5NjZiYzI0ZTVlMmRlMmU2ZGFjYjc5ZDUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjBhMGEzYmNjOTE3MjgzMmNiYzQyYWYzODI3MWQ0NzE3YzRkNjE0ZGVjZDBlYzAxYTJhNTRmMzFkYmZiMDY0NjIifQ"
+        },
+        {
+          "resource": "repo://build.gradle.kts#L250-L269",
+          "version": "repo-lines-v1:sha256:ce579064c66f3a383e889970c5dba4653ebdd398247b8f89e945ffb9b1065210:eyJzZWxlY3RlZExpbmVDb3VudCI6MjAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjhjM2ZkMmIxZGRmYWRlMjZkNDM4NWUwNWU0ODQ1ODI0NDJjYWUyZjE5NmJhNDdlNTgwNGExNTVkNDRjNjUxNzUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImRhOWY4NmQyOGU3ODRmOWZkMzFmYjcyZDE1ZjYwY2JjZWFhZmRkNjY5Y2JkNWI2ZGE3ODg4YTAyMzMyMWViYjkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImY2NDA5YjBjYWMzYTE2YjRmOGFiYmQ0YTE0NzU4MDQzYjM3N2YzNjFiMzJjNzkwMGRlODFhMGYyYzcyYjJiZTIifQ"
+        },
+        {
+          "resource": "repo://build.gradle.kts#L496-L502",
+          "version": "repo-lines-v1:sha256:c4d55268145f0331cc531f2c59326eaf6a2a3424299ce371d01e813f74d10b10:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYTA2NzM4YzEyYzI2OWNiYzI1NzA5OTBjZjVlYTU3YzQ2MjY5YmFjMWQwZTY4ZmU3ZTA2ZTUyNzcxYjhlYjE1YyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZTZiMDQ0OTE0Njk3MjJlODM2M2E5NGU0MDQ0NTM4ZTAxM2EyYTIxN2UzNmIxZTU2OGJhNjBhY2I3YjRjOGYyZSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZGE5Zjg2ZDI4ZTc4NGY5ZmQzMWZiNzJkMTVmNjBjYmNlYWFmZGQ2NjljYmQ1YjZkYTc4ODhhMDIzMzIxZWJiOSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNTRkMjEzOGM4NjM3YTNiOTYxZDEyMjU3ZjgwNWViMWRhMjNhNGM5ZDIxNjVjNjRkOTU3ZjJjYjE5NDYxOWVmYiJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_4e546da1f7da4fac82d3b2c9dd97831c",
+      "statement": "Module dependency boundaries are gate-enforced: feature build files must not declare `project(\":data\")`, `project(\":player\")`, or any `project(\":feature:…\")`; feature/domain/player sources must not import `cn.com.dcsgo.mihx.data.repository.*` or `data.local.*`; MusicRepository must not declare the four domain repository interfaces as supertypes while the four `*RepositoryAdapter.kt` files must exist and implement them; and `player/window/` classes must not import `cn.com.dcsgo.mihx.data.player` implementation packages.",
+      "evidence": [
+        {
+          "resource": "repo://build.gradle.kts#L270-L293",
+          "version": "repo-lines-v1:sha256:13d01ac2309d76ae21bc814d2d37ee8d7fd9eb8ff80d709671bac6b61333c697:eyJzZWxlY3RlZExpbmVDb3VudCI6MjQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjA3MjA3ODJkM2IxZDM4MTFhNjgwY2I4NGJiOTUzYzA1NTIxOTVkMGUxMWUzM2VhYTg4ZWMyNGRhYWFhOWJiYmYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjE5OTFjNDQ3OTNhMjExNGZmOWYxYWQxNzU2ZDZlZjJlOGRiODY0NGIwN2NiZGRjN2M0ODZlNGU3YmY4ZDBmMWEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImEzNzI3YWMxY2I0ZDBjZjgyYzQ4MTc0OGFkYmZlNTdkODZkODAzMjRkNzcyYjhmMGQyMGViYjgxODZhMzgyNDEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjhmYjA2MGFhZTlhNjM4NDYyZjk1YzAzMWQyNTcxMmE3NmEyZDRjNjI5MmU2NWQ3ZDAzZTc1MzU4MDcwOTg1OWUifQ"
+        },
+        {
+          "resource": "repo://build.gradle.kts#L405-L449",
+          "version": "repo-lines-v1:sha256:a0896043d4e19916d150d53f85d842bbccee7ce4d5314eec2379fef9a0cd9806:eyJzZWxlY3RlZExpbmVDb3VudCI6NDUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQ5YzBiMjZlNjJkODFkN2Y2MmZhMjRiNzk4N2I3NjNjNWFmM2U2YTc2MDIyMGI5ODU3ZTNkZjQ2NGQwMmQyYzMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjYwZGQ0ODk2ZTEwZjUwNDZiMjYwNDJmNzgyNGU4ZTg1NzVhZGMzM2Y2MjVkYzY1NDI5MDI2ZDZjYjRjZjViNzMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImQ0NGExNGJmYWMzZTU2NmRiNmIzNDA5YThmMTZlMmZkODRhODY5NjUyYTU3NTdhZDYzYjM0MjJhMThjMTIwM2YifQ"
+        },
+        {
+          "resource": "repo://feature/player/build.gradle.kts#L21-L36",
+          "version": "repo-lines-v1:sha256:a2521c4be7550cf6091883774d97ef67e25b587b4a2616d7d2134b327f0b281b:eyJzZWxlY3RlZExpbmVDb3VudCI6MTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImNiYTMxNDVhZWUwZGEwNTkyNGQzYWQwYjFlZWI0YWRlNzc2MWI2NjdkOGE5NjE0NmRlZWYzOWFiZDFjZTQ4Y2IiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjZjODU3YmRlMjJiOGIxMDQxYzkwYjMzMzRmZDhjMGUyNGZlNTkwODYwYTg2NGU3Njk1OTVkZjBkZWQ3NTk5NTciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_ae308b5ddf78400885ff71cecd0fa9a0",
+      "statement": "UI routing patterns are gate-enforced: features must expose Route+Screen composables (lyrics, settings, play stats, quick-skip, version management are individually checked), the overlay routing files (AppOverlay.kt/AppOverlayHost.kt/OverlayRoute.kt) must not reappear, :feature:home must not import `cn.com.dcsgo.mihx.ui.lyrics` directly, and :core:model must contain no res XML and no UI resource id references.",
+      "evidence": [
+        {
+          "resource": "repo://build.gradle.kts#L291-L333",
+          "version": "repo-lines-v1:sha256:097f8dc27e81fc06116d474871357d45a34d6e99adbbee4815713f2f0fff1f05:eyJzZWxlY3RlZExpbmVDb3VudCI6NDMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjMyMzQzZmVhMTI1MzdhMDBhOWEyZmM1ZjAzMWFlZGE4YTUzZTQ3NmFhMzdmZDYwY2FkNjE4ZDM3MzcwMjkzOGUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImFjYTJmNDhlMWMxMjlhZmZiNWMyYTI2ZDhmMDYwYzFlNTYwYTQwOGNlMjAxNzM2MjY0N2M1NGQ5ZjA1MDBiZDgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjEyOGM3NWNkYzYxM2ExNDhhOTQ1YzVmM2YwMmM5Mzc3YWRhZTI4YjBlNWQzYmMxN2NkYjNlNDc1MzE1NDQzNDEifQ"
+        },
+        {
+          "resource": "repo://build.gradle.kts#L451-L471",
+          "version": "repo-lines-v1:sha256:ee3253e4157e5cbe6eac57107c5c54935d2f43ff383e2d6e2055a4b1c4d0bdf7:eyJzZWxlY3RlZExpbmVDb3VudCI6MjEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxYmQ2NTcyNTI3OThhNjg3NTlmMzIzYWUxZmIwNjQ5Y2FlOGUyMWQ5NTdjM2ZjYzFiODY4N2RhZTlkYjhmMWEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjVmYWM0NWU3M2E2NDQyYzhlZmRmMWM1MDZhMDRlYjAwZDk2NGViNmE5YzY5NWE2YTRkNjY2YTQ1ZGQ1ZmRkOTAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjJhMjM5NDExZTI0ODkyZWRmYmY4ZmIyZDYwMTYwYjk1OTVkY2JhYjNmNzg2ZDg2Mzc3OWQzYTE2ZDY4YjVkYmIifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_e8bd95cf3f7d4b71a0a605c019ff090b",
+      "statement": "Privacy-sensitive capability startup is gate-enforced: Bluetooth monitoring must never initialize at app startup (PlayerStartupFacade must not contain `Bluetooth`, and the four startup-path files must not request notification/Bluetooth permissions); SettingsScreen must expose the user-triggered Bluetooth controls; and Bluetooth playback monitoring and playback notification must be persisted PlayerSettingsRepository/DataStore keys surfaced through PlayerUiState rather than app-shell local remember state, with PermissionCoordinator supporting onGranted callbacks.",
+      "evidence": [
+        {
+          "resource": "repo://build.gradle.kts#L334-L388",
+          "version": "repo-lines-v1:sha256:b55e2b7d59069ffb7cea801cf268dffc4f471b9f0ddd24fd027db3d7e3fad74e:eyJzZWxlY3RlZExpbmVDb3VudCI6NTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQwNDVmNmM0NWRmY2JkMWE1NThmYjcxNjg4OGJjYjhlZTRhNGY3ODQzYmYyZGUxM2IyMmMwOTg5OWQ5ZGZmZGUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImVkMjc3NDJkMTBiZDkzM2IwZTQzYjg0ODlhMzg1ZDhlMmUyMDc2OGU2N2IzZjUxODI1ODRhYjIxOGVmYzhhNTEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjM2YWIyZmU2NGI5NjMwMDgyMDViNTY3MDIwM2ExNWI5YzY3NGU3OTNlZTM0ZGE4ZTI2ZTVjNzlkZTZkY2NkNzYifQ"
+        },
+        {
+          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerStartupFacade.kt#L1-L17",
+          "version": "repo-lines-v1:sha256:2ee8a4ffdbc459b4199f97292b7cc203857552bb529e9c5cf6d51ff0d34ff2ca:eyJzZWxlY3RlZExpbmVDb3VudCI6MTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImM3ZWFmNmRiMzJlM2QxYzZjMDBmMTI5NjA3OGI0YjY2NWE3YWQ4ZTU0OWZkNTIyMGQyYmU3MTdiZTlmZGM4N2UiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        },
+        {
+          "resource": "repo://feature/settings/src/main/java/cn/com/dcsgo/mihx/feature/settings/SettingsScreen.kt#L116-L120",
+          "version": "repo-lines-v1:sha256:03cf0f5744c3dc8b330871d4dc663a77c3100bede190368ec63572301f7ae234:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNGJkOTBlNjIyNGRhMWIyMzA5MjFlYmIxOWI2ODgzZDM3NTEwODExM2U1NGQ1Mjc1Njc5ZGY2ZWM0OTRlN2FjZiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDVlODUzOGVhZTg3NWQ5YjcyYWIyYjY1ZDI1ZDc5YThmMWYzMTdlMWI0NzI5M2UzMDZlOTJmZDQ1OTViZWI2OSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiOGRlMmRjMTQ3OTA0Nzg1MjliNmMwMmJkNDRjZGE0N2I5YjkxOTQxNzQ0YWRkMTVmNzA2OGVjZGM4ZWJkOTliMyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMTVlZTcwZjAxZWQ4M2NmMmUyODZhYWI1MDk2NmNmYTliYTI4MzNjNjA5MTExZjc2OWFlMTYwYTc3ZDIyM2ZkOSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_8750dfe847f54f81a191395e438fa746",
+      "statement": "Two product-wide code quality rules are machine-enforced: LazyColumn `items`/`itemsIndexed` calls in app/core/feature must declare a stable `key` within 160 characters (bare `item { }` is banned), and direct `android.util.Log` calls are banned everywhere except `AppLogger.kt` itself — all logging goes through AppLog/AppLogger.",
+      "evidence": [
+        {
+          "resource": "repo://build.gradle.kts#L390-L403",
+          "version": "repo-lines-v1:sha256:67c0de51bcc3474e89421c446d014ec9f02f0b17965cb4f728415140e09d589d:eyJzZWxlY3RlZExpbmVDb3VudCI6MTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNhN2I2ODkzOTBjZGVmYmM4YWMwMDhmMmEyNDFhOGMxZGRhZDhjNTY5NTI3ZmFkODFhYWM2ZDdiOTZlNDM2MjUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImE0NjlkMzQ4MjE2OWRjNzljNGY4ZjRkNjgwMWY3OGExODliOWEyMDA3ZTg1MzI1NWE4NWFhMWI0ZDVhODQ2N2YiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjdmODViMDVkOTBhNDA1OGMxOTY3MzMwMTg4YTFkZjdjOWM3ZGYyYTgxZTVmMTk5NDI2NTdmYWE0Y2YwZGIzN2EifQ"
+        },
+        {
+          "resource": "repo://build.gradle.kts#L473-L481",
+          "version": "repo-lines-v1:sha256:343e6aa1dfd0720fbf8d465160b9d62048091e2b33bb0d5afaeab7bd393c22d9:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMjFjNjcwZTk0ODZiZjA1YWFkY2Q3MmQ0ZDIxY2M4MmYxYzcxMmQ3YmMyY2JhNWU1N2YyNzdkYjU1NTdlZTNhMyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZTZiMDQ0OTE0Njk3MjJlODM2M2E5NGU0MDQ0NTM4ZTAxM2EyYTIxN2UzNmIxZTU2OGJhNjBhY2I3YjRjOGYyZSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNDIxMGQ5MmRhMGJkOTcyODg4MjkyNjFkMGY4YmQzMmUwY2UxMDNkYThkZDAyZDE1NmM0MDhjZTVlYjliMmRhMiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNzBlNGYyNjY2ZjU0ODU3MGVjNmNmMGE3ZDMyNWM2MDEwNjFiYmQxYzBlMzI1ZjM4ZTM2N2E4YzIxMGJiNzNiZCJ9"
+        },
+        {
+          "resource": "repo://core/common/src/main/java/cn/com/dcsgo/mihx/core/common/AppLogger.kt#L77-L86",
+          "version": "repo-lines-v1:sha256:3b01fbd07e190e58af292a4966a81b821dca8ec1004ea7afc2b6ff1be70a2dcb:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImUzZjNhYzQ4MmNlZDA0YjIwODM4OGMxZGJhOThkZjM0YWEyY2YwYmFkMGZkMzEzYzFlOGY1NmFkMWFmOTc0NjAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjM4ZDVjMDY4OWEwYzYwOGZlNzQ3YzExYzU3MDQ0OTUxMWZhMzQ0N2E1Nzk4YzFlYzlmNTgzY2ZhMzFlMGY3MTgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_b9f65bddd13147a0a04b61a8d65bbc7f",
+      "statement": "Manifest placement rules are gate-enforced: `AppMediaSessionService` must be declared by the :player manifest (never the :app manifest), and the :app manifest must not declare READ_MEDIA_AUDIO or READ_EXTERNAL_STORAGE because media import relies exclusively on SAF document-tree access.",
+      "evidence": [
+        {
+          "resource": "repo://app/src/main/AndroidManifest.xml#L14-L43",
+          "version": "repo-lines-v1:sha256:2148e3282aad9eb370a07c8167c2f41d65da67f94a3ffb6d8d2dff625b4dba36:eyJzZWxlY3RlZExpbmVDb3VudCI6MzAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI0MzVhMDVlZGZjNDdlY2ZhOTE1NjZlNWIxODhkY2M2OGJiZThlYTFmMDNjNTk2MGU4YzFjNDE2NGU3N2RkOTEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImI0MWYwYjgyOTI1ZDZjMDZmZDY5Njc1MDU3ZjBmMzMxNTlkYzRlZDQ5ZTdiY2VmYWJjMzQxMWE0M2VmODkwMjgiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImM2NDhmZDk1OGVjZDA2NzgzMGUyMGEyMzRjMjVlNWJlNTE0ZTZiZDAwNDhmNmE0ZTJkZTJhZTUzMjZkYzFlNmUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjExYTI3Nzg2YTYzODUzNjQzYTY5NTMxZDg4OWUwMTc0MDZlMmFhMzI3NWFlZWJlMzNkOTA0ZWI4YmNlYTIzNGYifQ"
+        },
+        {
+          "resource": "repo://build.gradle.kts#L483-L494",
+          "version": "repo-lines-v1:sha256:8d81bb8ee1dfaabffe5e686f858f007f206b997e2227cffe42746cbb21e456f9:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImMxYzJiNDE2YjhiM2ExZDk3MWRkYWYzYWU4YzIxZTNjYzEwNjQxM2E4NGQxODVmMmU1MTg2YTU4OTYxNTJmODIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjAzODVlYWY1NDRhZGUzZTY3M2M0NmMwZmNkMjlhZjFjOTBjNGYxNjc4MjEwYWMxYTViZWEwNjg1NGJjMTkzZjkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImQxZDMwZjU0NWFkZjgwMzUzZmRjZWJkZThmNTQ3MjVlZGM2NTYxMGI1MzAzMGIzMzQ3YWExNWFiMDRhOTBiODgifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_ca934acb6dee406c83f09f368ae47682",
+      "statement": "The gate parses the app release block with the regex `release\\s*\\{([\\s\\S]*?)\\n\\s*\\}` to require `isMinifyEnabled = true` and `isShrinkResources = true`; because this regex cuts at the first closing brace, `app/build.gradle.kts` deliberately keeps the signing decision outside `buildTypes` and the release block flat — adding nested braces inside the release block would truncate the check.",
+      "evidence": [
+        {
+          "resource": "repo://app/build.gradle.kts#L54-L107",
+          "version": "repo-lines-v1:sha256:6b71a509771cceae64479feb255a085820fcc78465e571bac23100c9471f36ef:eyJzZWxlY3RlZExpbmVDb3VudCI6NTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU4MmEyN2U1NDM5NDE0N2U4NDIzMTI1ZTUwY2I1ODM2YzA0ODQ5MTQyNTIxZDc3ZmU0NTZjNTkwNDYyMjBhMjEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk5OWJkZWZlZWFjYTYzNDBlMDI5MGRjODZlODg5Yzg5ZDVlMTg5YWE1YmE0NGI1ODViM2I3MDczNGY0YTYyZDgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImE4ZWU0YTMxNzIwODNmOGJhNDA5ZTJkMTc1NDI0NzdmNDA4ZDZhZjY0Y2NlODgxNzQxZDNkNmFiNjBiNGQ0YzkifQ"
+        },
+        {
+          "resource": "repo://build.gradle.kts#L504-L522",
+          "version": "repo-lines-v1:sha256:f1e737581843c12ef1dd25fdb204afef947480146a14a92aea4caf913a612a68:eyJzZWxlY3RlZExpbmVDb3VudCI6MTksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBmMDFhZGEyYjRlMzM3NjNkY2U5MGQzMTM1MGNiYzM1NWYyMjg2YThjMDBlNDcyNDY1MzdmNGYyYmYzNWVjZTEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjQ4ZjU4ZWQwZTE0N2ExYjYyMjI0NzZlNzI1NmQ0YmQ5YjQ3OWJiNDA5OGJlOTRjMzIxYjA5OTVlZWUwYWQ4NjgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjY1YTY2MDRmODJhYmY1NDQ3NWI3ZTQzNTRlNWVlN2Y0MThiZTY1YjQ0NTA4YzBjZTY2NDUzN2JkOTFlYjAwNWIifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_645911b21fff4d5a814f92edc0abdf49",
+      "statement": "Privacy/backup exclusion is a gate-enforced release checklist: both `backup_rules.xml` (full-backup-content) and `data_extraction_rules.xml` (cloud-backup + device-transfer) must exclude the legacy SharedPreferences files, the full melody.db family (db/journal/shm/wal), the player_settings and playback_state DataStore files, and the album-art caches; adding a new persisted file requires updating both rule files or the architecture check fails.",
+      "evidence": [
+        {
+          "resource": "repo://app/src/main/res/xml/backup_rules.xml#L1-L15",
+          "version": "repo-lines-v1:sha256:80056e1cdc2eb13339c741a61a63b8a89838022dfceae1a223fd4196bc7eee51:eyJzZWxlY3RlZExpbmVDb3VudCI6MTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQzOGRmYjA5MGQ3YjE5MTgyNjY5OTA4YTg5MTE4NjM2OGQ0YWY1YjAxOWE5ZTcxNjhlNGMwOGM5MjgyN2I1NGQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjgwZjkxZTkzNWY4N2I4MTM0ZWRjYzZjZjQzNGRjYjkxOWMzZmJiMDVmY2ZlNWY1MDA1OGI4ZmNmMmIyNDkzMjYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://app/src/main/res/xml/data_extraction_rules.xml#L1-L31",
+          "version": "repo-lines-v1:sha256:95ecc384349abd207950cfe67675e3dcb768c2f01992b593f99309f0b61154ca:eyJzZWxlY3RlZExpbmVDb3VudCI6MzEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQzOGRmYjA5MGQ3YjE5MTgyNjY5OTA4YTg5MTE4NjM2OGQ0YWY1YjAxOWE5ZTcxNjhlNGMwOGM5MjgyN2I1NGQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImJiMDA1NDU0MTFmMzFhNDRlOTBhYjBmNTJlNTIyNjAzODlmODU3NWJkNTYxZjA1Njg0MTIxOTIzZmU3MjYxZDAiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://build.gradle.kts#L524-L546",
+          "version": "repo-lines-v1:sha256:1389e532acc35378d19d46c8d89b267096047a7fd0006383543f5a25a40e7a2f:eyJzZWxlY3RlZExpbmVDb3VudCI6MjMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU0NTMzNjY4OWFiM2EzODNmMTVjMjY3YTlkYjQ1YTA4YzE2MzU4NTAyNmNhOGU0MzU2MDc2NzFkYzMxNWI3ZjkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImU3YzI3MzRmYTQwNTU0MzU3NWQ3OGE3ZmQ4NTA0NDIzN2Q1ZTAzNmFjNDRlZWY2MTEyYjM3NGYwYmU5ZTk2NmIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjBmMWM1NGVkMDUyNmY0OGVhN2RlY2EwYjdmYTljODljMTljZTNhYzk4ODZiNTlmMmM4ODExZmUxMDVhY2Y3ZDcifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_34656b419f1447e6aa77a7d6f8e3610a",
+      "statement": "Room schema JSONs are immutable snapshots whose version history is tamper-evident: schema v1 must not contain `quick_skip_short_play_counts`, v2 must contain it but not `lrcUri`, v3 must contain `lrcUri`; `DatabaseModule` must register `Migration(1, 2)`, `Migration(2, 3)`, and the `addMigrations(MIGRATION_1_2, MIGRATION_2_3)` call.",
+      "evidence": [
+        {
+          "resource": "repo://build.gradle.kts#L548-L576",
+          "version": "repo-lines-v1:sha256:259629c2c74b6bd0ed4d9dfc1851c7a7adc6131aa4c4cbef8c52e60dc328722b:eyJzZWxlY3RlZExpbmVDb3VudCI6MjksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImUyNTA5OTQ3ZmY2ZmZlNTg4ZDVhZmU5ZmU4ZmYyOTVkODkzMzIwYTY5MWZkNGJhYzFlOTQyZjUyOTE2NzlhM2UiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImRhOWY4NmQyOGU3ODRmOWZkMzFmYjcyZDE1ZjYwY2JjZWFhZmRkNjY5Y2JkNWI2ZGE3ODg4YTAyMzMyMWViYjkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjE5ZTc2MzU1Y2YxMTk5NDgwYzNmOTk4MzZiMTQ4NmM4NDFkODkxZmFhZDkwNGM2MDhlMDkzMDIyZDM3NTdhZWUifQ"
+        },
+        {
+          "resource": "repo://data/schemas/cn.com.dcsgo.mihx.data.local.MelodyDatabase/1.json",
+          "version": "repo-file-v1:sha256:27ad0ef836b71b720c35905b5279676969c1a1e29c4170f1ce22588c5a2986cf"
+        },
+        {
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/di/DatabaseModule.kt#L26-L68",
+          "version": "repo-lines-v1:sha256:5c64b20898a3baf8070b0fdce593f936507d5f8f8145c502fc4226fd8db3616a:eyJzZWxlY3RlZExpbmVDb3VudCI6NDMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjkxNGY4YjllNzJhZTRiZTgwY2E0MWNmNDY2YzRkNzI1ZmIzMjllMjFlYWRmYWU0OTNmNmVjMDk5YjhmZjU1MTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImViYTA0NjlhYmE2NTk4YTQwMzI5NTQ1YWM4MWM3ODg0ODkzOWJiODZmZTY2NGY1NTA1YzE5MjA1OWJjNjM0NTkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImM5YWM0N2U4ZDNmZGJkYzU2NmE4YzJjMjI4OTM4MzYxZDYwYWU5MmU0MjcxNTcxZDViYjA3NTk2YzMyM2UyZDYifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_e7576a3e41d04516ae83c915a65474b8",
+      "statement": "The Room schema workflow: :data exports schemas via `ksp { arg(\"room.schemaLocation\", \"$projectDir/schemas\") }`, MelodyDatabase declares `version = 10, exportSchema = true`; entity/DAO changes require bumping the version, building :data to auto-generate the new JSON in data/schemas/, registering a `Migration(N, N+1)` in DatabaseModule, adding a focused unit test for complex migrations, and never hand-editing existing schema JSONs.",
+      "evidence": [
+        {
+          "resource": "repo://CLAUDE.md#L183-L192",
+          "version": "repo-lines-v1:sha256:8b3aa53ecedfd05665eaa3f1319d6ef3a16f30b6698acf80938195dd5bb128cb:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjA5N2E5MjQzODJhYzQ1YTVjM2U4NDg4ODVhNDJkMzBkYzM1NDQwMTUyNmIxNGQ4OTkwNzU5ZjY1OWIwMDAzZTUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjA5OTM5NDUxYzM3NGIzOTYxYTA3YTdhNjY0ZDRjMGI5OWJlNTU5YzUzNzQyZDNlZjEzOGQ1MjNmMDM5Y2M5MmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjFjYmU5Y2U0YzBiODEzNjA4YjMyMTczYzEwZGQ1ZDA4NzVhOGQ0MWY5YWY3NjUxMTk5ZTM5YjFjZGQ2ZGE2ZjMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImE2NmY4NWU2OGY2ZTU1ZjVhOTNmMGNjNGFiZDgwMWE3MWI2ZjkyMzQzYjkyYzdmMDdhNjg4Yzk2MjI2YzY3ZTQifQ"
+        },
+        {
+          "resource": "repo://data/build.gradle.kts#L41-L43",
+          "version": "repo-lines-v1:sha256:90b83104f78186dbb4bbee423cd8d9b130cecb5ff6720433f6ef4ad84763732b:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZWNhZDcwODEyMDZiZDM0OGUzMGEzZDU5MTk1MmE2MTNmZmZmYjM1YTdhODI5YTFhNzJjMGEyMWYxZDhhZjNiYiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDEyY2EzNDVjY2Y3NWJmOWMwODA2YmNlNjk1YmU4ZGU4MDhiNzk5ODQyNTFhN2E1NGQyMDJjZjYxMDFkZDQ1MSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiOWZmYzZkZjlmZmZlMWQ5NDJkZDIyODM4NTIyZTE1NWQwY2I2ZTg2NjRhZjQ1OTQ5YzA3YWU3OGE5Yzk4NmNjOSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjAsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSJ9"
+        },
+        {
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/local/MelodyDatabase.kt#L36-L38",
+          "version": "repo-lines-v1:sha256:8454bebf63d52defe7689dadfe91b279ebd0c9735b37dee17358fb3f4790ddfa:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiOGNiZDY5NmE3NWZiYWFiMjVjZDY3NjEzZWY5NmM2MTVkMzhkZTNiYjk5Mzk5Njk3YzNmYzg0MTVhMTg3MWVmMSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZmFmYmEwNTI3YzM5NTNjNGI2ZTBlNWI1NzM5YmE4MzYxMmY4MDUzYmNkYzk0NjY3MzAxOTNjZDFkNTkwYjQwOCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMTA5YjU2YjQ4YmQyODMxMWViMjc5Zjg4ZDI4OGNiYTE4ZDI1OGZhMjNiNmVkNmNiNjY3OTk3MjY3NTFkZWU0OCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTRiZjA4OWU1ZDU5ZTAwZmVkY2NmMTIyYmI5NTRhYjIwNWY3ZDY3ZGUzZmY1NjBiZjljNWEwMzFiZjlhZTNhMCJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_ebd1f59feac34cb992da16ddae550e20",
+      "statement": "The :benchmark module provides three macrobenchmark entry points: StartupBenchmark (cold startup, StartupTimingMetric, 5 iterations), ScrollBenchmark (FrameTimingMetric P50/P90/P95 with 3 up/down home-screen swipes), and BaselineProfileGenerator (BaselineProfileRule.collect that writes app/src/main/baselineProfiles/baseline-prof.txt); it suppresses the EMULATOR error via testInstrumentationRunnerArguments and enables only the benchmark build type via androidComponents.beforeVariants.",
+      "evidence": [
+        {
+          "resource": "repo://benchmark/build.gradle.kts#L10-L42",
+          "version": "repo-lines-v1:sha256:3e2589e86efe6174b7e4b9a4d1c6f6c4671e7fb3eaf86ff426b53334301a2f4f:eyJzZWxlY3RlZExpbmVDb3VudCI6MzMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk1NTQyMjk1MGE3NjJjOTE3ZDcwMDc3NTJkY2MzMzRiOTM2NTNkNmVjNTViNzFkYzQ3MGZhODZkMGRhNzQ5OTgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjRkOTYwZmVmNGY5Nzk3YTc1OTc0MTE1YzhjODAzNTdiZjQxZTNkMGQwYmY5MDE1YzE4ZDUwMzMxYzdlYWQwYTMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijk5ZmQ1YjJlZGJjNjc3ZjIwZTExZTQ1YTM1MWJhOGMzOTBlMWQyNWJmNzk5OTk4ZTg2Yzg1NjNiM2VjMDQxYzQifQ"
+        },
+        {
+          "resource": "repo://benchmark/src/main/java/cn/com/dcsgo/mihx/benchmark/ScrollBenchmark.kt#L13-L46",
+          "version": "repo-lines-v1:sha256:13ce79fe3e1f1e457075149fcca9ce67f75bca121146137dbe8ff67dd3dbc5e5:eyJzZWxlY3RlZExpbmVDb3VudCI6MzQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVhZjIyY2YwNzMyNTkyYzI0NzE0MWNiZTYxZWZhMTEwMTI2MTJmNWEzMTIyYjlhZjliYmFmNTJmNTcyNGQxOTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQzNjNhMmU1ZjkyNGZjNDNjNGQ2ZjExY2E2YzlhZmQ4YjM3MmU3YTg2NTRiYmJlYmJmZTIwYmExOWU5ODE1ZWQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        },
+        {
+          "resource": "repo://benchmark/src/main/java/cn/com/dcsgo/mihx/benchmark/StartupBenchmark.kt#L11-L29",
+          "version": "repo-lines-v1:sha256:150027ad7bcc4c741e2c3d9b47ec7b7a418366658718f42c3b0dbef6a275f30e:eyJzZWxlY3RlZExpbmVDb3VudCI6MTksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjYwNDY3YmNkZWQ2OGM4M2NhODE5ZDA1NjYxYzgzZmViMThkOWNkNjA0ODk2MWJjYTAyMTdhNDAxM2E0MzQyYTAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQzNjNhMmU1ZjkyNGZjNDNjNGQ2ZjExY2E2YzlhZmQ4YjM3MmU3YTg2NTRiYmJlYmJmZTIwYmExOWU5ODE1ZWQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_1467d0054030493e9e306bcb8b743ff6",
+      "statement": "Baseline Profile operations: the bundled baseline-prof.txt (~2425 rules, generated on a Pixel 6 emulator) is packaged into release builds and installed by androidx.profileinstaller to speed cold start and first-screen scroll; regeneration runs via `:app:generateBaselineProfile` or `:benchmark:connectedCheck` and requires a real device/emulator, with MIUI ROMs potentially blocking macrobenchmark's automated permission/frame-confirmation steps and physical-device cold-start acceptance still pending (emulator median ~810 ms, software-rendered).",
+      "evidence": [
+        {
+          "resource": "repo://app/build.gradle.kts#L151-L151",
+          "version": "repo-lines-v1:sha256:9275444c56eb1f29445aa3571c5f63cfca9e6731249e636523392f7e743f032b:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiOTI3NTQ0NGM1NmViMWYyOTQ0NWFhMzU3MWM1ZjYzY2ZjYTllNjczMTI0OWU2MzY1MjMzOTJmN2U3NDNmMDMyYiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiOTI3NTQ0NGM1NmViMWYyOTQ0NWFhMzU3MWM1ZjYzY2ZjYTllNjczMTI0OWU2MzY1MjMzOTJmN2U3NDNmMDMyYiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMzU4YjI2NTNiYWU1NmRmM2UzNGRjMzlhMzkyZGU3NDY4MzUwM2E4ZjllOWI0YmEzYjJmYjQ2OTBjNTYyNGI2ZCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTEzZGFjMzA2NGY2YjQzYmVmZDg3MzMzNDlkODY2MjAyNDkxYTlkY2FmYTljZDViYjM1MTIxYzVlYjlhODk0MiJ9"
+        },
+        {
+          "resource": "repo://app/src/main/baselineProfiles/baseline-prof.txt#L1-L10",
+          "version": "repo-lines-v1:sha256:fd5cefbb8ecc41d4ce163df183ca27ab4e97b31a05d1059dedf2a296467ab53f:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFiYmZkNDVlMWNkYTk3ZTZkZWI3NDJmMzc4NmExZDdhZjVmYTQ1Njc3OGExZDA1NGM2MzQ3NDgwYzVhZjExNGYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImYwYzkyZjc1MzBmYWJkYjY5MmJiMmYxOTk2NzI3OGNlNmQ4ODY2OGRlZDliYTJhMmZiYTE0OGUyNDk2ZWQ1MTAiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImIwNmVlNTc1MGFhOTcyY2I5OGQyMzE2NjY5NzcyYTI1NzllYTlkZjU2NTU3M2E5MWMzNzg0NGU4MDJjY2QzNTMifQ"
+        },
+        {
+          "resource": "repo://docs/refactor/PRODUCT_REFACTOR_AUDIT.md#L29-L30",
+          "version": "repo-lines-v1:sha256:78a243086eab767281b6ebdf126c6a9a905c80a393faa40a03139942521b6a63:eyJzZWxlY3RlZExpbmVDb3VudCI6MiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNTJjZTljYjZhNzgxNGM3ZjQwMGNjMzBjN2M0MjBkZDYwNTkwZDQwYzM0MTBmNjkyZGI3MzI0N2FkNzRiYjY4YiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNzMwZTU1OGM2MTFhY2I3ZTIwOWY3M2RlZDYzZGU4OTMzNTlmYWJjMWJkMDIwZDA5MzA5M2JkNGU5NjI0NjNiNSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYWJlODA1MWI4MzYwMTI0OWE5MDBmZDI0ZTQ0ZjJjYzVkNzI4MjAxYmE4M2QwYzc1OWIwZGJiMzVmMzk3N2E3NCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZjFlOWY2YzAyMmQ0N2QwNDFmZDkzYmY0MmZkMTM3ZmI0NDU5OGY3OGY5MjBjN2E1MzZlNTQ3MWM2NTZmYmRmNiJ9"
+        },
+        {
+          "resource": "repo://docs/refactor/PRODUCT_REFACTOR_AUDIT.md#L62-L70",
+          "version": "repo-lines-v1:sha256:24b59ee567c7d88d9049f58b534249ca713f47aa97b00fcffaaf3bee7fc126fe:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMjJlNTFiMjMxYjY2ZGQ1MGEwMzBkNmEwYzUxM2MyZDU5ZWM4ZDY2YWM5OTQ3ZWY1ZDQ1MjZlNTU4YWJjMjFkZiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiOWI5MDI1MGI2Y2M3OWQwZGNmMDczM2FkZmM5NzQ0Y2UyODczZjI1Y2M3MTA3NWYyN2YwZGY3YzcyNDhhMzhlNSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiOGZhNjk3ZTYyZTk0MzMyOGI1ZTVlNTJjZjM1MDExODE1Y2RlZTdjZDJkOGEwNmZkMmNkY2U0N2JmYzYzOWRkMiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjAsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSJ9"
+        },
+        {
+          "resource": "repo://gradle/libs.versions.toml#L22-L22",
+          "version": "repo-lines-v1:sha256:87e27e3d1c1fa198a58ef7fdb8ff995b8baab9c54871f1dd410bef026b2b9a80:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiODdlMjdlM2QxYzFmYTE5OGE1OGVmN2ZkYjhmZjk5NWI4YmFhYjljNTQ4NzFmMWRkNDEwYmVmMDI2YjJiOWE4MCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiODdlMjdlM2QxYzFmYTE5OGE1OGVmN2ZkYjhmZjk5NWI4YmFhYjljNTQ4NzFmMWRkNDEwYmVmMDI2YjJiOWE4MCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMmY4NDkwNGIwMWU2ZDAyNTkyYWUxMDJkNTg5MDFhYWMwMmI5YmVhMjM0OGY4Yzc5MzY5ZDJhMzM2OTg1OTljYSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNGJjY2IzOWZhODI3NjdjMzQwODc4MjViMWYxZmEwMzMyNzA3NTY5MjdiM2U0NTIyODhlOGM1YjM0N2M5ZWY0YSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_d3b4d45e1362463cbe0dcbb65084d700",
+      "statement": "PerformanceTrace is an explicit observability policy, not a logging side effect: `isEnabled` initializes from BuildConfig.DEBUG so debug builds trace everything while release is intentionally silent, an `allow`/`disallow` allowlist lets critical operations emit traces in release, `measure`/`log` emit through AppLog.info with redacted metadata, and core/common explicitly enables buildConfig for BuildConfig.DEBUG.",
+      "evidence": [
+        {
+          "resource": "repo://core/common/build.gradle.kts#L10-L13",
+          "version": "repo-lines-v1:sha256:ddeaddbff925fbf78109952b59abf5d25ea0f4531eb4beae1afa5d0910825210:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNWFlOTZhZWQyM2ZjZjI5ZTQ0ZTQ0NmRkYzY0ZmY5ZTJiYjBmOWY3YWY4YmJkNjg1MGU1ZGJmNzM1NmM0OTAzNSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDg5M2Y0MGUzNzgxZWI4OTZjODJkMDQ2YTA4MDY3YTExZTM1Y2RmMmYxZGZhZjI2ZmVhOTBiOGRiNjY3NjQxMyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNDM3OTU2MzJlYWI5M2E3NWM2OGE4NDAwYTE3M2YwNDZjMmMyNzAyOWFmMWZjZWU2NzhiN2I4OTNjNGQwMDYyMCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYzhmMDI0NDRmZmNhMTM5MjRkM2MwZjExNzEzMzc2NjkwMDY5OGI3ZmVjMzlhNzUwMmY5YzE2ODU1MmMzM2E1NiJ9"
+        },
+        {
+          "resource": "repo://core/common/src/main/java/cn/com/dcsgo/mihx/core/common/PerformanceTrace.kt#L1-L55",
+          "version": "repo-lines-v1:sha256:cc7ebafaf0d2deeb9c763fec84239315dc07eb164c2fe9d209c06d467c83164a:eyJzZWxlY3RlZExpbmVDb3VudCI6NTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZjODVlYTg5NzVjZDA1YTM5NGFlNjc0YmNjNmVlNDNkZGI5ZTU4ZGIyNWJhYWNjYzJkYzg5NTZmOTYzNTgzNTIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjcxYmZhNWY4ZjQ4OWRmMTNiM2RjNTQ1NmY5Y2EzNjBlZTJlMmI0MjgyNjBlNDgyZGJiZGZhMzZkNDdhNTUwNWYifQ"
+        },
+        {
+          "resource": "repo://docs/refactor/PRODUCT_REFACTOR_AUDIT.md#L70-L70",
+          "version": "repo-lines-v1:sha256:9b90250b6cc79d0dcf0733adfc9744ce2873f25cc71075f27f0df7c7248a38e5:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiOWI5MDI1MGI2Y2M3OWQwZGNmMDczM2FkZmM5NzQ0Y2UyODczZjI1Y2M3MTA3NWYyN2YwZGY3YzcyNDhhMzhlNSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiOWI5MDI1MGI2Y2M3OWQwZGNmMDczM2FkZmM5NzQ0Y2UyODczZjI1Y2M3MTA3NWYyN2YwZGY3YzcyNDhhMzhlNSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMDgwMmRlYzRiYmUxN2ZiNjQ2N2I0YzBjYjRhNTY2MzQyMzRlNWQ2ZDE0OTk0MzE1NzY5MWRiZjRkMzhkODNjMCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjAsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_e5affd4ca3eb418290de80b078e0497d",
+      "statement": "AppLog/AppLogger is the only logging channel: AndroidAppLogger gates debug/info/warning behind BuildConfig.DEBUG while error always emits, and every message and stack trace passes through `redactSensitiveValuesForLog()` which replaces content:// URIs, file:// URIs, Bluetooth MACs, device names, and Windows/POSIX paths with redacted placeholders — so release builds expose only sanitized error logs; AppLog.install(AndroidAppLogger(BuildConfig.DEBUG)) wires it in MelodyApplication.onCreate and the uncaught-exception hook also logs through AppLog.",
+      "evidence": [
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/MelodyApplication.kt#L13-L20",
+          "version": "repo-lines-v1:sha256:fdb98a871f47a9936e9fb35ebdfa76a7bbab1d468661d7ddb5a84417c417ac1e:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMGU2ODY5YTlhZGY1Njk5MDA3YjIzMTdhYWE2MjM2ZTY2MjRlZTBiMjlmNDRhOTNkNDk4NDI4ZGI5NTdlMWE0YiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDg5M2Y0MGUzNzgxZWI4OTZjODJkMDQ2YTA4MDY3YTExZTM1Y2RmMmYxZGZhZjI2ZmVhOTBiOGRiNjY3NjQxMyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiOTk0ODgyYWEwNjUzYjE0N2RhMmU0ZGMwZDYxY2U3NTU5MDQ0N2IxODlhYWEwOTU3MDg3OGY5Y2I2MmJiODExNCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiOTU0MmNlMWIxNWJlYjRhNWYwNTNjNTQ1MTM3Y2JjYmMyZmM4ODM4ODhjNjYwZTIwYTIzMmIzZDliZjdjMTA4ZSJ9"
+        },
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/MelodyApplication.kt#L44-L54",
+          "version": "repo-lines-v1:sha256:8dc01cd4b257dab0aaa1994d444c287ea39507b6ff33c3fc21de4087ac780a13:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImExODM4Nzk5ZjVhMGI2Yjk1MDU2NTg0YzMyY2ZlZTMyOGZlOGI3MTJkNjFkNDJlNTc3NGQxMTQ4MWQ5YjBkZWIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjA1ODQxNTU5MGJjNGU4MmFmNDg0MDUzNmIxOWMwYzA0ZmNiODdlODAwZDc5ODUyNzQyMGU2N2EwNGY2MjdiZjYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        },
+        {
+          "resource": "repo://core/common/src/main/java/cn/com/dcsgo/mihx/core/common/AppLogger.kt#L39-L86",
+          "version": "repo-lines-v1:sha256:5a4e49330e5fc2fc1973ac68c45a20a9b22d5f1cc53aa3255594c58c2698f4d5:eyJzZWxlY3RlZExpbmVDb3VudCI6NDgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY2ZDEyYmM2MWRlZjI5ZTI2MDdlYTU0Mjg4YzNjNjcwYzE1NWMwN2Q0Yjg2ZDY3NTlkYTM4MjQyOTg1NWI3MmYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjE5ZTc2MzU1Y2YxMTk5NDgwYzNmOTk4MzZiMTQ4NmM4NDFkODkxZmFhZDkwNGM2MDhlMDkzMDIyZDM3NTdhZWUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_db71ba607f43403f8d433e20bcffd2d7",
+      "statement": "Version compatibility constraints: Kotlin 2.0.21 requires the built-in compose compiler plugin (`org.jetbrains.kotlin.plugin.compose`) and forbids the old `composeOptions { kotlinCompilerExtensionVersion }` block; KSP 2.0.21-1.0.28 must prefix-match the Kotlin version exactly; Media3 1.9.0 pairs with the Jellyfin FFmpeg extension 1.9.0+1; Room 2.6.1, Hilt 2.52, AGP 8.13.2, minSdk 33 / targetSdk 36 with Java 11 bytecode; effective versionName is 3.7.0 / versionCode 33 (CLAUDE.md's 3.5.1/29 table is stale — the version catalog and app build file are authoritative).",
+      "evidence": [
+        {
+          "resource": "repo://CLAUDE.md#L5-L17",
+          "version": "repo-lines-v1:sha256:4de723bb1606eb90c8eea26ca39c3652247a3d5fe6f0254b646bf6aee489346f:eyJzZWxlY3RlZExpbmVDb3VudCI6MTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY1ZWEyMzcxOGM0MDc2Mjk5N2M3NDEwMWRjYzU4YjRlOWY3NTA4YmNhZjk0ZDI5Nzk2MTBlMmFlNzZkYWRkM2MiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjhiNWUwYzVhZjdmMmNhYWEyMWY4ZmRkYTRhZTEwMDJkYmQ4YTFkMGQxNGIwNjAwNTA4NzVmODE4MmFiMTYyYmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImU2MWI1M2MyODk2ODIzNzk5YWJhMjY4MDUyODliMTYxZmFmY2QwN2Y3MzgyM2U1OGI1NmFlZWQ5MDQ1M2RhN2MiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjRjNDM3MGY3YzFhMzI5MzMzZDg1MzMwZjM4NjBhMDQ3YjFjMGVmNTQ1NWE0MjAzZGMzNjU5MWE2NTg3M2ZlMjEifQ"
+        },
+        {
+          "resource": "repo://CLAUDE.md#L87-L90",
+          "version": "repo-lines-v1:sha256:79b6547d6c62bd6fc98ad6cc197f3703cdeae257e7124af831e487d8e1eb1331:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYjAyOTc2ZGYyZmQxNjE4ZDZkYzc2YWY5M2E2NmI0ZTI5M2RkMzg1ZjIyYWM0NWZjOWQxNDUwZWMxYzdlMTljMSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMWY1MTUxYjhhYWVlM2ZmM2NmODQ4OGViNTE0MGQ0ZDdmNWJlMjdiZjZjMWJmZjlhZmYyZmNiMzZmM2NkODAxYSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZWZjNzhlYzcyY2NmNzQ2MDIxZDMzZDM2MDVlM2ZkNGM2YmZjOTNkNWQ5ZWQ4ZTM0YmRmMTVmNDA4M2FkZjU0YiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZGYxM2IwYjc5YjVhZmVhMzQ0OWRlNDFmZTBmYmRkMjAwMDgzNGRhOTI5MjAzNmVlYzIxZmM3OGVjODg4NmQ0MCJ9"
+        },
+        {
+          "resource": "repo://app/build.gradle.kts#L27-L34",
+          "version": "repo-lines-v1:sha256:4bd1d52f2419b822eab22f59648a121ed22d66f42b4135ef58bfb2b5d595685a:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiODM5ODMxMjIxMDIxZmJkZTUwNjg5NmY3Y2U3ZGM2NzgxMGExYTM3ZDE0NTI0NzNiMWM3ZTBlNDQ1NGI4YjM2NyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNTdkNzhkMWI1OGM5MTIxNjlmNmI3NzhjYTI2NTIyOGNiMWVkZmZhZjEwODY1YzhkM2U1MWZhMGYyYmE0ZTc5YyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMDdjMjA0MzA1ZjlhMWM0OTljYzMzYzA4Njc2ZmE2NzE0ZWRiYmI5YWQzYWJmZjA3ZTdjM2M4MWM2NmM4MmE0YiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNmZlNGViYWMzNmYyNzY4MmVkNWIwMzA5MjM1ZTc1YjQ5YWEzMWM3ZWM0MDhmMzIwNDM5NDkwYmZkODIxMTZkYiJ9"
+        },
+        {
+          "resource": "repo://gradle/libs.versions.toml#L1-L29",
+          "version": "repo-lines-v1:sha256:59f6b082dd91a94f35a43ad4753029ab4853d378ca172469c7a483fa4dd5966b:eyJzZWxlY3RlZExpbmVDb3VudCI6MjksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ5Y2ZhY2I4ZjFkYTQ4NWZlNzgwYzEwMmUzYmZmODI3NTU2NGJlMGNhODljY2UzOTY2NDhkZWM1YmU5YzdmNDEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjFlZDc0MDhhMzRkMzNlYTUxNjNlNTQ5YmZkYjhjMTdlYjZkOGIwYWYwZmM0NTMzOGZmNjdhYjVmZDExZGFhNDYifQ"
+        },
+        {
+          "resource": "repo://gradle/libs.versions.toml#L72-L80",
+          "version": "repo-lines-v1:sha256:3ef6ac7ec9852e011ae3209c81a17fec8d590b6685ccad62fdeaa42cc95ab47a:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMjE2ZmFjNDhhYmQ1MzY2NmMwNTg0ZjRkYWZlMzk1YThmZDExMWY0NjZhZjZkNmE4NDc5MGZlYWI0MzgwMGQxNyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDk3YjkwMzQ3Zjk0ZDhhNDVlNDAxNWQ0ZjJmNDIwYzBlYzY2ODEwZDJiM2I1ZDQxMDU3MTBhNTJiMzVkMGIxMCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMDIyZDEwYTY1N2FmM2UwM2VkYzIyZmJjMDRkMzBkMGY0NDVlZjJkZDMxMWI4OWIwZTgxM2M3YmFjNTg4YjlmMSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjAsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_8f90016082b7422fb3c9e98a875c8969",
+      "statement": "R8 keep rules in app/proguard-rules.pro preserve manifest entry points (MelodyApplication, MainActivity, AppMediaSessionService), Hilt/Room/Media3 reflection attributes, MelodyDatabase and entity classes for diagnosability, and the Jellyfin FFmpeg decoder classes (`FfmpegAudioDecoder`, `FfmpegLibrary`) because FfmpegPcmDecoder drives the package-private Media3 FFmpeg decoder reflectively via a `Class.forName`-based FfmpegLibraryProbe — renaming or stripping these breaks the FFmpeg decode path.",
+      "evidence": [
+        {
+          "resource": "repo://app/proguard-rules.pro#L1-L15",
+          "version": "repo-lines-v1:sha256:055f2bc8e288d2e12a004d7f6b92b0de4ea63255c2b002c93102e0702ea5d4a0:eyJzZWxlY3RlZExpbmVDb3VudCI6MTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijg4NzNjYjdjMGZhZTUzYzg4NTQ2ZmM2YjYxN2EwNTY0ZTEwZmI2MDNkYzUxZWIyZDkyNzBkYTZkNjRkYjEzMTAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImE0ZjkzZmUwYzYyZWIyMzFhNGU5MjlhNmYyNmE0M2E2ZDljNDU0ZmY1MDRhZTM1NzdiYWMxMzJlYzY0ZjgyMWYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://player/build.gradle.kts#L31-L35",
+          "version": "repo-lines-v1:sha256:3329cc8295effa258f0eb97c0e6464648e609fedc6bdfb9247da5680c999cda1:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYzIyZmM1OTJjYTc3YTEyNDM1YzllMDMyZWFlOGFiYjljMWM5NDc1M2ZmMjY1NWJmNjBhNzZhOTU0YmQ3YTVmNSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNTk1ZGQ4OGNmOWQyZmZjZGU5ZWQ3Y2ZmMGQ4NjE2MWM4OTM0MGQ0MDlkMWMyNjI1MWIwZGVjNjEzNmU2Y2UwZCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZDJkYmNkY2YwNjI0MTBiOGYwMTc1NjRiYWVkYWJmNjE0N2ZhYjFhNjQ4NjU3OWE2YmEyZmI0MjNmMzIyZWMxMCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiOGZmYjUyN2E3ZDIyN2Y4NzBmNzkwZjViNzVlZGQyYTYzNjhmMzZkOWExMGE0ZjE5OTEzZDZjYjE1YWM2ZmU5MSJ9"
+        },
+        {
+          "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/data/player/FfmpegPcmDecoder.kt#L280-L284",
+          "version": "repo-lines-v1:sha256:275a8fcf99ab19931db47d54aa45113c9386bf7d713c6961c5a7e2aadfb17f3e:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYmQwZTlkYjlkYmEyMjg3OTg2YTMzNDMyMGMxMDdkNTRlNmY4NjA5ZjAzYTA5ZTgyNmEwMmQyYmZjMzZlYzY2NiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMGI3YWJjOWZmZGNlMzIxYjcxZjM0OWMwOTkxYTViMzJlZmEyZDExYmM0M2NjYmEyZWMzNWZlMzVjMmZhMGRjNCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMTllNzYzNTVjZjExOTk0ODBjM2Y5OTgzNmIxNDg2Yzg0MWQ4OTFmYWFkOTA0YzYwOGUwOTMwMjJkMzc1N2FlZSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZWE1ZjYxMmIxMGE4ZGJhYTdhMDYxYjRmYzFlZjNlMzUxZTdhMGQyZGYzNGJmZjQzMDM3ZWQyODRkYTMxNzA2NSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_73d6315fd0864ef2bf85e62082c5f369",
+      "statement": "Deterministic Windows verification depends on `kotlin.compiler.execution.strategy=in-process`: the Kotlin daemon used to fail creating client marker files on Windows and fall back mid-build, so compilation runs inside the Gradle daemon — which means `org.gradle.jvmargs=-Xmx2048m` is the effective compile heap (kotlin.daemon.jvmargs only applies out-of-process; CLAUDE.md's 3072 MB note is stale), alongside `org.gradle.parallel=true` and `org.gradle.caching=true`.",
+      "evidence": [
+        {
+          "resource": "repo://docs/refactor/PRODUCT_REFACTOR_AUDIT.md#L25-L25",
+          "version": "repo-lines-v1:sha256:6acb031652b9b489b15e3eeea6458ceadee0d29ce9a4d1b643e776c346a4e575:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNmFjYjAzMTY1MmI5YjQ4OWIxNWUzZWVlYTY0NThjZWFkZWUwZDI5Y2U5YTRkMWI2NDNlNzc2YzM0NmE0ZTU3NSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNmFjYjAzMTY1MmI5YjQ4OWIxNWUzZWVlYTY0NThjZWFkZWUwZDI5Y2U5YTRkMWI2NDNlNzc2YzM0NmE0ZTU3NSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZDk2MzlhODU5YTJhZDQxYzZmMGVkOTE3NGVlNTkxY2M4OTUyYjRkNmQ3OGM0OWY5Y2NlYTc3YTNiYmU3OTg5MCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYWJlODA1MWI4MzYwMTI0OWE5MDBmZDI0ZTQ0ZjJjYzVkNzI4MjAxYmE4M2QwYzc1OWIwZGJiMzVmMzk3N2E3NCJ9"
+        },
+        {
+          "resource": "repo://gradle.properties#L20-L26",
+          "version": "repo-lines-v1:sha256:65ee881b5b3b9c99fd65c8ae4fa4fd2ac6f951d3b4eb38174601cb562edcafa0:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZGM5YjM3NzQyNTQwMTczN2E5MGU4MTY5NjEwZjc4NGNmMWJjZTExOTcxYjFjOGQ1NDU2OTFlNTJmZDZhZThkNiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMzE3ZjhkOWMyNWM4NWM3MDIzNmI4M2ViOWJiZDYxMGQxYTRmMWY0NGVhODllYTYyZTAxOWNjYzVjYmMzMWI3MyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYWM1MTI3YWYwNjdiNGIxMmIwYjAyMWYyMzFiYzFkNjlhMzVmYTU0YTQzNzg3NWQ4NWIwZTFkYWY1NWMyZDk3YSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjAsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSJ9"
+        },
+        {
+          "resource": "repo://gradle.properties#L9-L13",
+          "version": "repo-lines-v1:sha256:5cc7f6362a637b6ea1e910a0b1a9f9da191b450e20fb9aa2f0c294203fd56ac4:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNTI2ZTdkM2Y5MmUwNDMxNWFjMTA1YzhlMzA5YzUyMDRjMjg2MjU0ZmIyZGY5YjNiZDI4MTQ3YTgzMWUxMmQ2NiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYjdjZTU1NDdhNzBjMjA0ODM0YTc5YmQxMDRmYTQzNzY5Y2NhMzIyOWFiMTI3Zjk5ZDRjYzY1YzM0MDM0OGZhYyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiODJmOWRkYzhlY2RmZDdhOTE5MDJhOGU3N2ZlMzBmYTUzNzlkNjQxMTY2MDk3YzhkOTM0ZGIwY2YzOTk4NWUwZSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZjFlNWQyYTk0NDhkMjEzMTlkYjQyMGY0NTI3YmM5YWQ3NmRlNjBiYzAyYTI5MTQzMmM2MDFiOTQ5NmQyZWMwNSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_0d39bfd0462747e2944797fbdbd8e3ec",
+      "statement": "`android.nonTransitiveRClass=true` scopes each module's R class to its own declared resources, so resources must not be referenced across module boundaries via R classes — complementary to the gate rule that :core:model may carry no UI resource ids (mapping belongs in :core:ui or the owning feature, e.g. PlayMode.iconRes()).",
+      "evidence": [
+        {
+          "resource": "repo://build.gradle.kts#L451-L471",
+          "version": "repo-lines-v1:sha256:ee3253e4157e5cbe6eac57107c5c54935d2f43ff383e2d6e2055a4b1c4d0bdf7:eyJzZWxlY3RlZExpbmVDb3VudCI6MjEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxYmQ2NTcyNTI3OThhNjg3NTlmMzIzYWUxZmIwNjQ5Y2FlOGUyMWQ5NTdjM2ZjYzFiODY4N2RhZTlkYjhmMWEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjVmYWM0NWU3M2E2NDQyYzhlZmRmMWM1MDZhMDRlYjAwZDk2NGViNmE5YzY5NWE2YTRkNjY2YTQ1ZGQ1ZmRkOTAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjJhMjM5NDExZTI0ODkyZWRmYmY4ZmIyZDYwMTYwYjk1OTVkY2JhYjNmNzg2ZDg2Mzc3OWQzYTE2ZDY4YjVkYmIifQ"
+        },
+        {
+          "resource": "repo://gradle.properties#L23-L26",
+          "version": "repo-lines-v1:sha256:8a759b8e0db23b5ae1cb0d81b736c43dedab9d024317e7948caea483f4118824:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNjI3MGI2MzM2ZTMxNGNkYmQ4Mjg5MDMzODYzYjUzODFkMWM1MjI2ODliNjE3MTY0MzJlZmE3YzM5ZGQzZDQzMSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMzE3ZjhkOWMyNWM4NWM3MDIzNmI4M2ViOWJiZDYxMGQxYTRmMWY0NGVhODllYTYyZTAxOWNjYzVjYmMzMWI3MyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiY2I0Mjg2NzAyN2E3ZDE2NjM0MTEyNDJhMzExZjc3MTAzZTViNmQ5MjUzZWVjNDRhOGI1NTMyZWMyYjkyZjViNSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjAsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_eb50d53e5de445dca7951d6ce4ea3c40",
+      "statement": "Spotless is the formatting gate and must stay catalog-managed: the root build applies `alias(libs.plugins.spotless)` and defines kotlin/kotlinGradle/androidXml format rules (trim trailing whitespace, end with newline), the catalog must keep the spotless plugin entry, and both the root and each subproject's `check` must depend on `spotlessCheck` (both facts gate-enforced).",
+      "evidence": [
+        {
+          "resource": "repo://build.gradle.kts#L2-L47",
+          "version": "repo-lines-v1:sha256:98ee7fd17bd41465eb28f35b31cb8096b5d24741f1abaf6d1365256ef5c786cc:eyJzZWxlY3RlZExpbmVDb3VudCI6NDYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ0MDQwMTAzMTViZGJiMGZlYTBmZDZmZjAyMTRkOGJjOTIxY2UyODM2ZDFjYzZiY2I4ODQ5ZjM1NzZjZjVhNjciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjoxLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjYzY2QxY2MyNDkwNGMwNDZiMGZhODg2ZTcwM2RkMWRkN2IxY2QwYzIxZmFiNGQzMWQ1NjBkMzM2NTMwOWZkNjEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImYxNjIwZGI2MjcxOTJjNjU3MTE3YWU5M2RkMTU5ZTU1Mjc5MmVkNWE1YTc4ZTg4ZjMxMzE0NDhhMjYyYzc2YjIifQ"
+        },
+        {
+          "resource": "repo://gradle/libs.versions.toml#L23-L23",
+          "version": "repo-lines-v1:sha256:fe7e33948519176ff23e3fbda087e954e58f5e758eab8088685229f0399d1b4d:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZmU3ZTMzOTQ4NTE5MTc2ZmYyM2UzZmJkYTA4N2U5NTRlNThmNWU3NThlYWI4MDg4Njg1MjI5ZjAzOTlkMWI0ZCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZmU3ZTMzOTQ4NTE5MTc2ZmYyM2UzZmJkYTA4N2U5NTRlNThmNWU3NThlYWI4MDg4Njg1MjI5ZjAzOTlkMWI0ZCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiN2JjMGE4ZmU3ODQ4Y2JlYjZhNjUxODMwYTM3MTE5ZWI2NzBlMjQxNGNkYmM2NGI2ZmY0MGJkYjQ5Y2UwNGU2OSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMDVhMGMxODhkNmE0MzEzOGEwOGY5N2FhMmI3ZjUyNWU1NWQwNjZmMjhhYTAwMDE0MzIwNTk1YmY3MGExOGQ0NSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_3f90f79be3d44fa0abaef3831d6bedf0",
+      "statement": "Device-dependent validation commands: `:app:connectedAndroidTest` (Compose instrumentation) and `:benchmark:connectedCheck` (macrobenchmarks including Baseline Profile generation) require a real device or emulator, whereas full `test` runs on the JVM across debug/release/benchmark unit-test variants; media-key/service behavior and the ActivityResult permission path are still verified primarily through JVM planner/facade/policy tests rather than end-to-end device tests.",
+      "evidence": [
+        {
+          "resource": "repo://CLAUDE.md#L57-L63",
+          "version": "repo-lines-v1:sha256:062a93a9476b8311cc5bf0c18c77f2c94d82ddc4da2d24d945c854b9ab4c604b:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMDFiYTQ3MTljODBiNmZlOTExYjA5MWE3YzA1MTI0YjY0ZWVlY2U5NjRlMDljMDU4ZWY4Zjk4MDVkYWNhNTQ2YiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDdjMDZjNTYxZDVjMzI3MzQzNjg1MjY4YTQ2YjMzOTFmMzk5OGVlZTg5MGQyYmU1MWYwZDIxY2M0YTUzYWU2ZCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiY2RlZWFhMzM0M2ZiMGZkYjBkODZmYzkwNzgzYjQyNTMwY2FiOTQyMGJjMTQ1NzM5NzA0MjY1YzJiNzcyNWRmZSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNjU1NDMzZjYxODZhZjA3NWVkM2U4NjFiOGVkYzZhZTAxNjM2MzRkOGI4MWNkMTY3ZDMwMjYyNzU3NDE2MzQ0NSJ9"
+        },
+        {
+          "resource": "repo://docs/refactor/PRODUCT_REFACTOR_AUDIT.md#L61-L66",
+          "version": "repo-lines-v1:sha256:2fad958886a8743a2c70faea8d26ce515a85a63dbe60b0defd7857997125ef4b:eyJzZWxlY3RlZExpbmVDb3VudCI6NiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNWUyMTUyOTE2M2Q0Y2Y5MGVkYzM1YmYyMDdlNzQyMWNlOTMwZjVjNDhiOTY2NjQyMjZlYjdmNzc0MGNmNzZiNSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNGE3MjIxZTJjZThhMTZhNzQ1MDk2ZGViNWVjYzAxYmFjNzM5ZDY4ZmQ0NzU2Y2E0N2JiMGU4OGJiZjdkZDcwOSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNmFiOWJkOGZkOTM5MmMyOGEwODI5MWNkMGI1ZmRmZjEwNGI1ODlkYzA4ODJkNmViOGFmNWQ5MDQzMGFlNThmZCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMDgwMmRlYzRiYmUxN2ZiNjQ2N2I0YzBjYjRhNTY2MzQyMzRlNWQ2ZDE0OTk0MzE1NzY5MWRiZjRkMzhkODNjMCJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_e4326179644f429b9cc27692ecacadf7",
+      "statement": "OpenWiki pages are generated artifacts (refreshed daily at 08:00 UTC by .github/workflows/openwiki-update.yml via `openwiki code --update`, submitted as a PR); hand-editing them is discouraged — source code and docs/ are authoritative and some architecture facts in docs/ are additionally gate-locked by verifyProductArchitecture, so doc changes belong in docs/ followed by OpenWiki regeneration.",
+      "evidence": [
+        {
+          "resource": "repo://.github/workflows/openwiki-update.yml#L1-L77",
+          "version": "repo-lines-v1:sha256:f2d3a046a8ab4b2915e338f5689374ada19bfd3eeec6f68cc44de37abc468d27:eyJzZWxlY3RlZExpbmVDb3VudCI6NzcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjA2MDI3ODdhZjZkY2MwODM0ZGUxMjFjYmIxY2I5NWY5NDU5YjcyMWVhYjAzNDlmMTA1MDFiOTk2YzFjNzdmZmYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU3MmQwMTE2OGE0NzZmN2EwZjk5YmJjNGUyZDA1YzYxMjkzMGEwZGRkY2NkMzRhNjc4ZDk2Y2NhYWQ0ZGE2NDQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjM2NzE4ZjA2N2I1ZTVjMWYwOTkxYTZlNzQ3MjZmZTJhMjNkMjY0MzQ1ZTA4ZTRlYWQwNGZhZjczYzI3ZWQ0NDMifQ"
+        },
+        {
+          "resource": "repo://AGENTS.md#L1-L12",
+          "version": "repo-lines-v1:sha256:e196ae5aef70399b7f4cd655c0440c5c589dbecac5863d6178aa1c195d5a4325:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjVmMTgwZjljMTI2OTAzYmNjMzMxYWE5NTQ1NmU0OTQ0NGE3ZDRkMDExZThhMmE4M2Y1ZGM4NzAyMzkxODEyZDAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjA5Zjc4NzE0ODkzYWE3Nzk0MmNlYTFjNGEyZTAyMzFkYmI3ZmEyYTQxYTcwYzgxNDYwYTNjNjc1NjJkYTNhYWEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://build.gradle.kts#L144-L185",
+          "version": "repo-lines-v1:sha256:e7dfffb9bec000c219ed10bc976c19fe58351ee7c3f8ac4d6c07ba31e6013ecf:eyJzZWxlY3RlZExpbmVDb3VudCI6NDIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjA4MTI0MTcxNjFkYjVhMmY2ODc0ZjEzNzA4YWE5ZmRlYzdlODRkNWRlZjM4NzM2ZjYyYWE4OGQ5YmFiYmUyMjEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImRhOWY4NmQyOGU3ODRmOWZkMzFmYjcyZDE1ZjYwY2JjZWFhZmRkNjY5Y2JkNWI2ZGE3ODg4YTAyMzMyMWViYjkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImRhYzk3MDM1MGM5YTA0NTU0NjZiMDJhNmY3YTg0MDZkODZlMmY3YTEwMjlkMGRhZDIxZDYwMWQ3ODFlMzFkZjYifQ"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "by": "openwiki/0.5.0",
+    "at": "2026-09-07T13:49:59.042Z"
+  }
+}

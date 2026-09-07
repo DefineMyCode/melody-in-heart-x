@@ -1,0 +1,406 @@
+{
+  "schemaVersion": 1,
+  "pageVersion": "sha256:d92d44012fd6f57ef8ce0f7e2e2c09d852492b5a3a95e689c354113c794b50c9",
+  "claims": [
+    {
+      "id": "claim_7ec27e2bdd4443a789bce034bc194fcc",
+      "statement": "PlayerStartupFacade fixes the cold-start order as startService → connectMediaController → loadInitialData (passing restorePlaybackState as the afterInitialSnapshot callback, so the restore read runs after the library's first snapshot) → listenForSongChanges; this exact order is locked by PlayerStartupFacadeTest.",
+      "evidence": [
+        {
+          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRuntime.kt#L447-L457",
+          "version": "repo-lines-v1:sha256:ad83c96f065af0db46699fa288822708c6d9a7ad8286fd7c1ac02ef9f9344534:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBhMTBjMzliMWJmZTM5OGIyZTM3YjEwNWZhNDEyOTJlOGMxOTNiYjJkZDU3ODUyMjM4Mjk2MjkxNGJjYWUwYjgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjMwYzFmMTg4ZjE0MmVkN2E4MjQ2ODBiMjA3MTcyYzU1MTliYzYxNGE0OGZkYTdjZjE2N2VkYjhkZGY3OTk1NmMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjNiM2ViM2I1ODI3NDZiYTFhNTBjNmI1MWI0ZWU2NjE4YmJiODJjMjQyYjc0NzcyNWYyMWUzNzk1ZDIxODQ5ZmIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjU3ZTM5MDdkZTI1NjNmYzAxMDAyZTAyNDMyOTJkNWJhNTA2NmFiNDQ1OTk0ZGE2Mjg3NTgzMDQwMmNjNzA0MjQifQ"
+        },
+        {
+          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerStartupFacade.kt#L10-L17",
+          "version": "repo-lines-v1:sha256:44659ac9072ce0ba11a24ca41917edd04dca4fddcb21caed58242c6b7d7bd4e6:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiOGMwMWMwZjc2MjVhNDJiMzI0NzE1ZTUxYjcyZmE0NjdjYjVmMDFkMWRjNTcyODA0NWQ4MjJiNzllNmQ5ZjViMiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDg5M2Y0MGUzNzgxZWI4OTZjODJkMDQ2YTA4MDY3YTExZTM1Y2RmMmYxZGZhZjI2ZmVhOTBiOGRiNjY3NjQxMyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYWM3MDU0ZDkyZjAyMmQ1YjkwYTZmNzIzMmE4OTQwZmRhYmEzNzk5OTMxMzVlY2EzYWNlYzZkZjQ3OTQ4NDNjOCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjEsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNDEyY2EzNDVjY2Y3NWJmOWMwODA2YmNlNjk1YmU4ZGU4MDhiNzk5ODQyNTFhN2E1NGQyMDJjZjYxMDFkZDQ1MSJ9"
+        },
+        {
+          "resource": "repo://feature/player/src/test/java/cn/com/dcsgo/mihx/feature/player/PlayerStartupFacadeTest.kt#L21-L36",
+          "version": "repo-lines-v1:sha256:f996698dc2d891899da7496ca0c92f19b2d868e4dc67c8b50a547d0c1ef4ab46:eyJzZWxlY3RlZExpbmVDb3VudCI6MTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRjZjA5ZWIwYzU3NDRmYjk3MzMxYjk4ZmYzZmJmMDVhNjAyYmEzZjdmNjdlNWRhNWJlOTA5NTAzM2Y2MjU4MjUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjFlOWEyZjZlMThiMjVhODM0YjJlY2YxY2Y3YzM0MDQ1MWJhOTNlN2I1NGY3MzI3ZjAwZjkwNTI3MWVmMzRjY2QiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_29313d4345f742d3812bfea80698a235",
+      "statement": "PlayerRuntime.start keeps the main thread lean: the four DataStore-backed settings (globalUniformRandomEnabled, bluetoothPlaybackMonitoringEnabled, playbackNotificationEnabled, dailyListeningGoalMinutes) and the sleep-timer restore are read on the IO dispatcher before startupFacade.start() runs on main; afterwards refreshMoodSlotCache asynchronously snapshots time-slot configs and emotion-tag maps into @Volatile caches (never blocking startup), and the Bluetooth monitor is initialized only when the persisted bluetoothPlaybackMonitoringEnabled is true.",
+      "evidence": [
+        {
+          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRuntime.kt#L379-L401",
+          "version": "repo-lines-v1:sha256:02faa2323e3a820b1a41e505258f2aa8d1015f226f4779da82af6b49b78948b3:eyJzZWxlY3RlZExpbmVDb3VudCI6MjMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZjZWM1NmM4NmU3MGYyMzJjMmY0MzIxNDI2YThkMDE2NWU0OTc4ODg2YmQ1YmE4ZWU1OGRhZTIyNTUwMzBkYjMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjNlNWU3YWRkN2U4MDJkN2NlNTcwNGE2MTA4MTQ3MzQzMTcxMDUwNDg2ODU3MTQxYjk2YTZhMTFiN2QxODgwOTMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjBiOGEzMzM5ZDA4MWUzM2Y4ZmQyZDViZGI5ZGQyNmUwNGY5YjE5YTM1NDE0NjBlZTEyNmYzOWQzNzBiZTFjYmMifQ"
+        },
+        {
+          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRuntime.kt#L459-L490",
+          "version": "repo-lines-v1:sha256:a87a28d11073e5e2c1a93830586a3fbcb2db81305cca8081cc0bb05f40abd09c:eyJzZWxlY3RlZExpbmVDb3VudCI6MzIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjhjMDFjMGY3NjI1YTQyYjMyNDcxNWU1MWI3MmZhNDY3Y2I1ZjAxZDFkYzU3MjgwNDVkODIyYjc5ZTZkOWY1YjIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjNkZmRjZjY4NmY4NWNhMzU2NDdkN2I3ZTlhYzg0NjY2YzA1YmJjN2NhZDJjY2EzMGIyZjgyYjY4MmI5MGI5ZTEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImE3NGRmMmE4MDU4OTk0NmRmMDVmZmQ3ZDNjNjljNDU0ZGQ3OWIyMThmZDZjODk2ZmE4ZDA2ZmEyNjc5OGE0ODYifQ"
+        },
+        {
+          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRuntime.kt#L486-L488",
+          "version": "repo-lines-v1:sha256:17d0e859ab804ffe628e58f7d0ba4fff20857589b2641d538af52d6c0511f039:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNGVjNTNjOGYzNjZiMzQyZWVkMDYzNmJlNDBkZDZhNDlhMmNiODhiNTQ1ZjcwMjU2YzZmNzMxZTg3NTA0MTZmZSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNTUyMmM0MmNkMTljNmQwM2Q4MDhjNDUyNzIwNTUyODI1YjdlYTFjNWI0OTFiMjE4NTExY2FjNzQxNWNmOWQ5YiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNzRkMWExNzYwNzRhY2FjOTkwNjY3ZDQ1ODQ5NTE0MmEwOTk2OTVkN2MzMjg5ZDg3MDUyOTljMjRkYjQ3MjQxMyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiOTk5YmRlZmVlYWNhNjM0MGUwMjkwZGM4NmU4ODljODlkNWUxODlhYTViYTQ0YjU4NWIzYjcwNzM0ZjRhNjJkOCJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_975cbd13bd4542f2b8936bdc3542a631",
+      "statement": "PlayerViewModel is a delegation-only facade: its only constructor parameter is PlayerRuntimeFactory, the constructor builds the runtime with runtimeFactory.create(viewModelScope) and boots it via init { runtime.start() }, and every public method is a one-line forward — playback logic lives in PlayerRuntime's facades, not the ViewModel.",
+      "evidence": [
+        {
+          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerViewModel.kt#L32-L65",
+          "version": "repo-lines-v1:sha256:729c1ad43441446c2a197ca2d81042f797ca8c9587eb9a2aa618fce4084c8024:eyJzZWxlY3RlZExpbmVDb3VudCI6MzQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjliZmMzYzE5YTU1ODliOWUyZjEwNjExZTFkZjcwNDllMWQwNjBmYmVmODhkNmQ5NDQ5ZWYzYzVjNDhiMTVhZjMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjRkYmE4N2M0NGM0ZTdlOTIyMjRhMDc4NjNiMGI1Nzc3NDUxMTAxYTZjOGZkZGYxNmQ3Mzc3ODZiOGE5OTVlZGUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxODAxYTY2MWNiMWQwOWFlNzZhN2NhYzYzYWViYzM5Yzc2YzVlMTRhNDJmODlmYmQ3NjVkMDA2MzY5YWYyMWUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_186ac53338cb4fcb91c7d6da54cf169d",
+      "statement": "PlaybackController.startService intentionally uses context.startService(...) instead of startForegroundService(...): MediaSessionService only publishes its notification (and calls startForeground) when the player has media items, so a cold-start empty session under startForegroundService would hit the 5-second FGS timeout ANR; the method's only call chain is the foreground UI cold start, and SessionToken-based connect can still bind the service.",
+      "evidence": [
+        {
+          "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/data/player/PlaybackController.kt#L133-L143",
+          "version": "repo-lines-v1:sha256:de3dfdae3bdc580dcd03a5a8024e3ea7cf88eb1f0ccaed8f634b40258b4254ef:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImI4MjNlOGI4NWFmYjg3YmEzNTYxODg0MTY0OGJjYmQwMWI2NzcwNjI3MzIwYTc4OTRlZWYxYzBmNWIyYTY5MWYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk5OWJkZWZlZWFjYTYzNDBlMDI5MGRjODZlODg5Yzg5ZDVlMTg5YWE1YmE0NGI1ODViM2I3MDczNGY0YTYyZDgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImMwMWFjOGZjOThiMjdlMTMxMGRmNjY5YmFlNTc4OWJiODA1MWM5OTY2MmRkNTg3OGQ3MzA3NmM3MjU1ZjczMjcifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_139f8b6c0fcb443d87d2a57e688f939c",
+      "statement": "MediaController connection is asynchronous (SessionToken + buildAsync); on success the controller listener is registered, pending UI actions buffered while disconnected are drained FIFO (bounded at 64, oldest dropped with an onControllerUnavailable report on overflow), and onConnected fires after the first playback snapshot has been synced by PlayerMediaControllerGraph; on connection failure all pending actions are aborted (not replayed) and onControllerUnavailable is reported.",
+      "evidence": [
+        {
+          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerMediaControllerGraph.kt#L32-L39",
+          "version": "repo-lines-v1:sha256:b54ed293960b8f6d94daf9f1a411c4d3c8b83488eb1c73e37c50befc6e695194:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNGU5NDRmYTY2NWUwOWM4NGQ3Y2YyNTU5MTJiNTM0MTRmOGU5MjBiNzhjMWRmZDMxYWNiZjQwODA4YzVmNjJmOSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDg5M2Y0MGUzNzgxZWI4OTZjODJkMDQ2YTA4MDY3YTExZTM1Y2RmMmYxZGZhZjI2ZmVhOTBiOGRiNjY3NjQxMyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMzBiZDMzZDFkYTI1MjVhYzM4NDQwNWE2NGY5YjUwMzI2Zjc0Mjg0OGYxYzc5YzdkMTNkMTQwNDcxN2Q2MjU3NiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMDk5Y2MwMzgzZGExZGQwMWVjZDUwYTQyNmFjNmQ3YzI5YmY1NDJlNTEzOTliOGRhYTRjNDRhYTMxNzRmOTc1ZSJ9"
+        },
+        {
+          "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/data/player/PlaybackController.kt#L145-L171",
+          "version": "repo-lines-v1:sha256:9a2dea925447859b13b4d4057be0bc9e94669e7ee08cc2b037c2d7f65faab778:eyJzZWxlY3RlZExpbmVDb3VudCI6MjcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQ3ZDIxZDY5ZmE0ZTc1MzNiOTFlZjZkOWZiOTE1ZThmNDY0ODhkMmUxMWNmYWZiMGE1OTEyMWVhZWM0OGU3MGQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjBkZDQ2Nzg2Nzk0Njk5Mjc5MDVlMGViZjA1Y2E2OTRlNGY1OTEyNWNmYTZhMDYwZjNjNGQxMTE4OTZkOTdiMmUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjVmZTczM2JiNzI4NWZiYTBjMTQ2NmY2ZmZkMmM1OGFjY2JiNGY5ZDFkNjI3NzRmZmRiM2ExZDgyMGQ1ZGFhMmQifQ"
+        },
+        {
+          "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/data/player/PlaybackController.kt#L205-L221",
+          "version": "repo-lines-v1:sha256:4782a632dd81ac0965c3311f990a084a1b0f153a410331d6d5ca3b8fa084f9d4:eyJzZWxlY3RlZExpbmVDb3VudCI6MTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijg4YjI4NWMyMWViMWI1NTc4OWI0MWNiNzdhZWQwYjY1MGExNmExOTlkNWU3Yjk2MjEwNjFkNDRlNzE0OTRhNDIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUxYWQ3OWRhNjRjMGUxNjM1OTM2ZTJmNWIzODAwZjRiMzQ4NmZjNGMwNTkyMTZmMTJlZmQ4ZjNlMmM5OGM2OGIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQzYTQ4MjY5N2MyMzA2OGE3YjM4Mzg4OWQzNTRmOTljODM4NWEwYzVjNzE1ZjU3NjdiZDYwYWQ2NDhhNmU0YWQifQ"
+        },
+        {
+          "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/data/player/PlaybackController.kt#L374-L387",
+          "version": "repo-lines-v1:sha256:9cd2277c637629d59514429175c1a1bffc08f23fcb088e2ba6830568d8ed17a9:eyJzZWxlY3RlZExpbmVDb3VudCI6MTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM5Y2JiYzY1NDY5ZGIxY2EyODQyZWZkOTdkZjdlZTJjZTZjYzE1NzE0ODJkMDFhMThiNzkwYTEwYzdjNTEwZjMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk5OWJkZWZlZWFjYTYzNDBlMDI5MGRjODZlODg5Yzg5ZDVlMTg5YWE1YmE0NGI1ODViM2I3MDczNGY0YTYyZDgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImVjNmYxMDliZGZjOGZmNjA2Zjg3M2FiMDA2MDZlMTBmMWY2MzdlM2FlMjlmOTI4OGVkOTBmZTIyNGE3NzE1ZDAifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_c9163d49d32b49f1be334c1ba635c129",
+      "statement": "PlayerRuntime.handleControllerUnavailable logs the reason, writes it plus the dropped-action count into PlayerUiState.errorMessage, but still calls persistenceGraph.onControllerReady() — a startup-time connection failure must release the restore decision or pendingRestore would hang forever and the UI queue would never recover.",
+      "evidence": [
+        {
+          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRuntime.kt#L213-L220",
+          "version": "repo-lines-v1:sha256:71ee1a540d99278d8d537970e7c7347b1101fdfd6ae15825cdb22db4d568a9d3:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYmM5YTAyMzhhNDc5ZmE4NmMzOTY5ZDA2NDhmZDI4NWU3MjE1M2JlOTFjOWVkODA4NzE1ZDc2M2U0ZjVlMjM3ZSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDg5M2Y0MGUzNzgxZWI4OTZjODJkMDQ2YTA4MDY3YTExZTM1Y2RmMmYxZGZhZjI2ZmVhOTBiOGRiNjY3NjQxMyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiN2EwYWM5YjhjZjc1OWZjNDk0ZWU2YjRkMzU4ZTg0YTllNDQwYzU0YTUwN2NiOTJmMDgzY2ZjNjcyYTM1MzM1MCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNTVjODg5NjAxNzQ4YjdmNGNlNWIyZTljZDcwYTA2NWI4YzU2ZjVjYmQwMGQ3M2NmZmQxY2ZlMjE2ZjEwY2UxOCJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_664fe00d5a1a4ecbaa3b572dafe64774",
+      "statement": "The restore decision converges in PlayerPersistenceGraph: the DataStore read/decode runs on the IO dispatcher and publishes pendingRestore on main, while the controller connection sets controllerReady; maybeApplyRestore fires only when both are ready (whichever finishes first waits for the other), so the decision always uses the controller's real state rather than a guess.",
+      "evidence": [
+        {
+          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerPersistenceGraph.kt#L75-L111",
+          "version": "repo-lines-v1:sha256:5ca3dbeeb7df9a1f7e4aba0f897ebca3ff14cc3c7c5ca6cf78f0113c48b8f56c:eyJzZWxlY3RlZExpbmVDb3VudCI6MzcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImM0ZWZmOThlMTE5Zjg3YjhiMjlmMzliNWFiYTA5YzBmZmEwM2ExMmU4MGM5OTgyM2JiNjlmNDg5MDA3ZmEyMTMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImRmNzMwOGVlODc1ZTBlNDdiNjdmZDIzMTgyZTdlOTk4YjE4MGJhMzk4M2NjNjViMjYwYjMxYjA2NWFmNTBkMmQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjA0NTUyYzgzMzU1YTJiYWQyMjNiZmI1NWYwN2YxZmE5MmFjMzliODc5ZWJkMGMwMmY1NWMzZWEzNmUxYTI5YmEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_c40fe0ac6c984a998da5d8bbbd3c2f1f",
+      "statement": "liveSessionActive() is defined as controllerQueueInfo()?.mediaItemCount ?: 0 > 0 — the controller queue being non-empty is the sole live-session criterion; position > 0 is deliberately not used because the restore IO read can finish before MediaController connects (buildAsync binds cross-process asynchronously), at which point currentPlaybackPositionMs degrades to the UI-state value (always 0 after a rebuild) and would misclassify a live session as no session, causing the snapshot to overwrite a playing session.",
+      "evidence": [
+        {
+          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRuntime.kt#L139-L148",
+          "version": "repo-lines-v1:sha256:1e38829ef2fde724373a940071c39cff529f246adafa13ff7c9879b89b055c2b:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM5Y2JiYzY1NDY5ZGIxY2EyODQyZWZkOTdkZjdlZTJjZTZjYzE1NzE0ODJkMDFhMThiNzkwYTEwYzdjNTEwZjMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImJhMjNmZjRiZTNiNjhjOTYyZThkZThiZTU4NWZlYTlhYzBkZjZjNTI3YWFiM2IwYjRkNGRhNWNkYjg5NjAwMjgiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImZmMGQ3NTk1MGRmMGZmOWEzZWU5NjYzOWRjYzhmZjVlYWVkYjQwZDY4MmJlYTkyNjIyYjUyMGRkODg3ZDkzZTkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjBkYjllNmJiNmNmYzZhNzM0NjNkYzYwYmNiYjYwMzNkZGJhMzk3ODk5NGIyZGU4MGU4YWYyYjMwYzE0MGYyMTQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_a5412e65492d45e391ccf8d01a82c6f4",
+      "statement": "applyRestoreResult has two branches: with no live session it performs a full restore — writing playQueue, infinite-play state, currentSong, restore-point position and isPlaying=false to the UI while prepareControllerQueue reloads the controller queue at the snapshot position without autoplay; with a live session it only fills the UI queue shadow (playQueue, currentSong, sameNameSongs) and never touches the controller — position and playing state are left to the post-connect snapshot sync, because controller snapshot sync adjusts currentIndex but never fills songs, so skipping the UI queue would leave the play queue permanently empty.",
+      "evidence": [
+        {
+          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerPersistenceFacade.kt#L62-L122",
+          "version": "repo-lines-v1:sha256:19e8dfa9ddea3fa3d774d5a1dc64d824bc68cf519350e9f7e752044d6b655427:eyJzZWxlY3RlZExpbmVDb3VudCI6NjEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM5Y2JiYzY1NDY5ZGIxY2EyODQyZWZkOTdkZjdlZTJjZTZjYzE1NzE0ODJkMDFhMThiNzkwYTEwYzdjNTEwZjMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjliYjI1MGMxMWI4ZWVlZDllMDA0ODIxOGFlMDBmMmEzM2E3ODAyZmEzMDY2ZTA0MWMzY2RiNzI0MGYzMzVjMjUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        },
+        {
+          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerPersistenceGraph.kt#L95-L111",
+          "version": "repo-lines-v1:sha256:4998b1d1c86321fe48b0dc423360369f7029081d2f30390260bcca8ebfb2d824:eyJzZWxlY3RlZExpbmVDb3VudCI6MTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZhMzdhYzk1OTVjYjVjYzMyZjE0YWNkNGE2NmViYmE5YzdhM2Y2MWQ2ZWRmZWYwYWM0ZmQ5NzU1ZDdkMWYxYzUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk5OWJkZWZlZWFjYTYzNDBlMDI5MGRjODZlODg5Yzg5ZDVlMTg5YWE1YmE0NGI1ODViM2I3MDczNGY0YTYyZDgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjA0NTUyYzgzMzU1YTJiYWQyMjNiZmI1NWYwN2YxZmE5MmFjMzliODc5ZWJkMGMwMmY1NWMzZWEzNmUxYTI5YmEifQ"
+        },
+        {
+          "resource": "repo://feature/player/src/test/java/cn/com/dcsgo/mihx/feature/player/PlayerPersistenceFacadeTest.kt#L96-L134",
+          "version": "repo-lines-v1:sha256:615cbc50b8eba44623980bcfd1b325f983122f574f41a7e42a2843d973a2e8a3:eyJzZWxlY3RlZExpbmVDb3VudCI6MzksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRjZjA5ZWIwYzU3NDRmYjk3MzMxYjk4ZmYzZmJmMDVhNjAyYmEzZjdmNjdlNWRhNWJlOTA5NTAzM2Y2MjU4MjUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImZmMGQ3NTk1MGRmMGZmOWEzZWU5NjYzOWRjYzhmZjVlYWVkYjQwZDY4MmJlYTkyNjIyYjUyMGRkODg3ZDkzZTkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImQwMGM0OWNhYjNkZjVlNTJkN2NjM2NlNjdjMTAwN2U1MmZmZTkwNDI1ZjEyNGVjYTNhMzNmODcxMjE0YWVkNWMifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_6a817de0ebe94382bb97c55f86ab9576",
+      "statement": "Among the three controller queue commands, prepareQueue is the only one allowed to carry a live-session guard (it skips rebuilding when mediaItemCount > 0, preventing the restore path from overwriting a playing session); playQueue must never have this guard — any active session makes mediaItemCount > 0, so the guard would silently swallow every user play request while the service keeps playing the old queue.",
+      "evidence": [
+        {
+          "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/data/player/PlaybackController.kt#L279-L293",
+          "version": "repo-lines-v1:sha256:18de2a14ee5cd312570e3c99997bae04855b87a3819228f239e3f6b78384f42a:eyJzZWxlY3RlZExpbmVDb3VudCI6MTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjczM2RhMjIwZDQ0MTZlYTE2ZTUwZDQ1NmEyYWY3OGNjM2FkOGI0MjA3ODI3ZmE4ODY0ZDcyZWYzNDAyN2FhOGYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImZlYjUzZmM4NGRjMTNjZTUwMTU1MDk2ZmE0YTJlOTExOTg1NjRhMzVlZDdhNzgyMjAxZjNiZGRhZWY5NDBiNTYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImJjZGZmMzkwN2M5ZWJmNDQxMTAxN2NmM2RiMzIzNDAzMGM4YmUxYjFmNjE0NjQzYmM0MTBmZTBhMDU1NzgwYzEifQ"
+        },
+        {
+          "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/data/player/PlaybackController.kt#L295-L320",
+          "version": "repo-lines-v1:sha256:d0314a1abd4ff671d3a6be5d40b9d16cb6e91e7a76efb1ea5a32bf61a803a841:eyJzZWxlY3RlZExpbmVDb3VudCI6MjYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM5Y2JiYzY1NDY5ZGIxY2EyODQyZWZkOTdkZjdlZTJjZTZjYzE1NzE0ODJkMDFhMThiNzkwYTEwYzdjNTEwZjMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk5OWJkZWZlZWFjYTYzNDBlMDI5MGRjODZlODg5Yzg5ZDVlMTg5YWE1YmE0NGI1ODViM2I3MDczNGY0YTYyZDgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImZiZDQ0MmMwOWE1YWE3NmMxYjFjYTFiMzkxMzE2ZDM5ZmNmMGI2YmNkYTNmNzYxM2JjMDVmYTJlYjRlZmZiNGEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_0c1dcaac51e645b88dbf9603fdc20b2f",
+      "statement": "PlaybackRestoreCoordinator upgrades the raw stored state into a PlaybackRestoreResult: when the restored queue's current song is playable it additionally builds RestoredPlayableSession(song, positionMs, sameNameSongs) with same-name versions sorted by sampleRate descending, so the restored version panel shares the same data as the full restore path.",
+      "evidence": [
+        {
+          "resource": "repo://domain/src/main/java/cn/com/dcsgo/mihx/domain/playback/PlaybackRestoreCoordinator.kt#L48-L73",
+          "version": "repo-lines-v1:sha256:afd5c48512d7bc6bc03cf04008078665f7422eac92b28ba5d25c7eb6478c326e:eyJzZWxlY3RlZExpbmVDb3VudCI6MjYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImJhY2QwODk4M2VjMTMzNjU2YzFlZDc4ZTRiMDE5OGJiMWQ1MmI0YjQ5OGMzZDY4NGJlNGIxZDQwMGIwMGIwYzkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImI0NmVmOTQyNDE4MjQxYThjOTRmNzJlYTFmOTE5ZDFjZDg3ZmMxOGFlZjM0Mzk3OTI5ZTE3ZWRjNWM3NTk5NzYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_e7101072af194e18a3af2fcefcd3368b",
+      "statement": "PlaybackController translates Media3 events into domain callbacks: onMediaItemTransition with reason AUTO/SEEK/REPEAT becomes onMediaItemEnded(songId, wrapped) — manual headset/lock-screen/notification skips (SEEK) must flow through this path for infinite-play refill, while PLAYLIST_CHANGED (self-inflicted window rebuilds) does not; the wrapped flag is decided by index via isMediaItemWrap (new index 0, previous index was the window's last item), not by transition reason, because Media3 reports REPEAT_MODE_ALL tail wraps as SEEK/AUTO and REPEAT only means single-item repeat; a playWhenReady pause with reason END_OF_MEDIA_ITEM becomes onMediaItemEnded(null, false); STATE_ENDED becomes onPlaybackEnded; onPlayerError reports the current song id.",
+      "evidence": [
+        {
+          "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/data/player/PlaybackController.kt#L423-L444",
+          "version": "repo-lines-v1:sha256:5a3ef578d970689585f0c0467adc8cc9aeb4013ac032b27d2d9ad859b3bf052c:eyJzZWxlY3RlZExpbmVDb3VudCI6MjIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVhZjIyY2YwNzMyNTkyYzI0NzE0MWNiZTYxZWZhMTEwMTI2MTJmNWEzMTIyYjlhZjliYmFmNTJmNTcyNGQxOTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImU5NmY4Y2IwODNmYTgwMGE0ZGNkMjk2OTcyMmQ3YjkyNjg2YWRkOWViZTM2NTU0OTJmYTY3MmIxYTdjZWQyNDIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjM0ZTM5YjMwMGJhMDdkNjhjMTI4ZjVmMDg3ZjI4NDEzNTFiYjY3MDlmZGIyNDY2YzgzNGE0NjE1M2IxODdiMjcifQ"
+        },
+        {
+          "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/data/player/PlaybackController.kt#L60-L115",
+          "version": "repo-lines-v1:sha256:6060e31aae8a10ec6bb660986841054dd0423306406bee292e7820ca64fb183c:eyJzZWxlY3RlZExpbmVDb3VudCI6NTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjE0MmZmYWEzMjI0ZTdlNTM3Y2JjZTVhOTNmM2Q1MWVhNmVhZjc3MzZiMTlhMmJlYjUzODVjOGYwOWJhZTNhNmYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjZiY2IyOGEwNGY2MDA1YTBjNDMyNzA1Mzg4ZjRlYjJkYjkwOTY3MzQ3YTI2NWY4YmY5YTA4ZDA4OTg5MTQ2ODEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUxOGE4MTljOTlkYTAzNGQzODFmYTNiNDFlMGFlOTk0YmFiYzI4MTVkZGUzYzBlYjVmZTJlNjQ0NGQzMjhkNmMifQ"
+        },
+        {
+          "resource": "repo://player/src/test/java/cn/com/dcsgo/mihx/data/player/MediaItemWrapDetectionTest.kt#L8-L51",
+          "version": "repo-lines-v1:sha256:4b264165b0afe772914a44477254ea06553f0a613eaaf3bc7fb9c69420590378:eyJzZWxlY3RlZExpbmVDb3VudCI6NDQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU1MmE0M2E2ZmMzODUyMjM4MDI1N2FmYTFiODRjMjkwNGM3ZjZlYmQyNGVhMzVhNDgxYzk5YjEyMWMxYjhlNzMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjcyYTE0Y2Y5MTMwMTI0MWYwNDRlMjc0NDVjNWQyMTRjYzY3OTk4ZTA4NTQzODc2YWM1Njk0NjQ3ZWNiYzcyNTYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_bcfaba5579514216984919af6f9500b0",
+      "statement": "PlayerMediaEventFacade.handleMediaItemEnded(startedSongId, wrapped) applies a fixed effect sequence: stop the old track's duration tracking and clear trackedSongId (the other half of the once-per-song tracking rule); refill the infinite queue when in infinite play and (wrapped or remainingMediaItems <= DEFAULT_REFILL_THRESHOLD = 5), passing advanceAfterWrap = wrapped; restore the add-next play mode; finally notify the sleep timer that a song ended (播完最后一曲).",
+      "evidence": [
+        {
+          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerMediaEventFacade.kt#L27-L74",
+          "version": "repo-lines-v1:sha256:12142c2a690bd2665f7c8f0f49e05fcc72f0afdf3d3bc992604b464d73154141:eyJzZWxlY3RlZExpbmVDb3VudCI6NDgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImNlMjc3NmY1M2MxN2Q0YmMwMDU3OTAzMWYwZjEyN2NjMmM3MWIxODdjOGRkMjk1ZDA1ZGFjMmZmYjgyNzQ2ZGMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImYzYzBkMjE4M2EwNDVmNTFkNGNlNjg0MGFkODk1MjRlNTc1YWM2MWQ1ZWRiOTUwNTI5ODExOWY1NDUxNzNhY2UiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_f0d18471f8f44e8b8c68e1f567acef05",
+      "statement": "QueueManager.restorePlayModeAfterNextSong restores the pre-add-next play mode only when the just-started song equals the recorded nextPlaySongId and playModeBeforeNext exists: it corrects the business queue's current index using startedSongId, rebuilds the play order for the restored mode, clears nextPlaySongId/playModeBeforeNext, and the facade then re-syncs the controller queue.",
+      "evidence": [
+        {
+          "resource": "repo://domain/src/main/java/cn/com/dcsgo/mihx/domain/playback/QueueManager.kt#L70-L96",
+          "version": "repo-lines-v1:sha256:5767e2fe4e72b895b07425ae483d27331b449dc7f9e2a5f16a0bef96445673c2:eyJzZWxlY3RlZExpbmVDb3VudCI6MjcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY1NmJiMmRmZmYxMjZiNTM2ZDY0M2ViYWFiMWZhNGJmMTUxYWI1ZGE0Y2FiMmU2NDAxMWEyYWY1ZjM2MDkzODEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjFhMmI3Njc5M2M2ZTMxZjQ0MGQ5ZGEzZDE3ZDE4OTU3MzM4YmVkMTEyOTQ5MWZjZjdiZDlkMzcxZGZlM2I5MWYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijg4OTAxZjRjYmU0YzRlNjkwYmNmN2NjODMyYWViMzAyMjhkOGU2M2YzMWJmNzhjMzc4MDE5M2I3ZmIyYTFkMjQifQ"
+        },
+        {
+          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerMediaEventFacade.kt#L50-L74",
+          "version": "repo-lines-v1:sha256:e19b43ef82f1c5ab6ff754c14cabc3d18df9a77764d2ddafadf36a59e2e3f965:eyJzZWxlY3RlZExpbmVDb3VudCI6MjUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImJjYWMwYzdmYzE2YWE2MDM0MzBmYjI4ZmQ3YTY0ZmZhYjMzNzQ5Y2M1MmU4ZGNhODA5MTllNjA0MTVmOGM0ZWYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImFmYTM2OTZjYmQwZGJjOWU3YmExZDY3OGJmYzQ4ZmJkMWFhOWQxMTdjNDYyYzU3ODE5MDQxOWQ0Y2NhNzRiMWUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_fbb8d2b5b0d64c819b78114ac94e7656",
+      "statement": "PlayerRuntime wires onControllerPlaybackSynced as a second refill trigger: after every snapshot sync, if the business queue is non-empty, infinite play is off, and the controller's remaining media items are at or below DEFAULT_REFILL_THRESHOLD (5), it re-syncs the business queue to the controller so a sequential queue tops up its window near the tail.",
+      "evidence": [
+        {
+          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRuntime.kt#L305-L313",
+          "version": "repo-lines-v1:sha256:7b0e6857110e6ac531bb37b32fdcc659f5fbfb37184bdd3fcb688bfa9ddb4bd8:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNWM5MGFhMmFiZmZmNGZjZjA5NmU1NjZlOTQzNWNlZjJkNDAxZmNjZmQ1NDZhODUyYzdjMzNkMTRmMDk2MmE1NyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMzBjMWYxODhmMTQyZWQ3YTgyNDY4MGIyMDcxNzJjNTUxOWJjNjE0YTQ4ZmRhN2NmMTY3ZWRiOGRkZjc5OTU2YyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYThhNTY5YjBhNmQxYTAzZDJlNTdiMmFiNmU5ODU1NzQyNzE1OWNkZDRjM2YzMzIyZDRkMWQ3ZDgzZWU0YjdmYSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMTJhNzQyYjM2ZThlZGQ0MjM4MTRjNzQ3MmFlYTMzYTBmNDJhNDk3YzkwOWRlZTViM2U3OThkYzAwNWIwMzczOCJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_331e0baab6da4447bf193def2b83245e",
+      "statement": "PlayDurationTracker accumulates played time in a 1-second IO loop only while isPlaying and not seeking (seek windows are excluded and the timestamp is reset after); startPlayback(songId, durationMs, initialPlayedMs) settles the previous track, seeds the new accumulator with initialPlayedMs (the pre-kill restore-point position, so listening time before a process death still counts toward thresholds), and increments the raw play count for the new session on the IO scope.",
+      "evidence": [
+        {
+          "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/data/player/PlayDurationTracker.kt#L210-L228",
+          "version": "repo-lines-v1:sha256:75caeb2d5f232c9fdeeff44e753a245dde2261e7cc8dd312c8f9e019bba705e3:eyJzZWxlY3RlZExpbmVDb3VudCI6MTksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVmM2Q1NjMyNTViZTIyNDA4NzYyNWYyYzhiOGFjNzVhNDU0ZGViMWUwNmJhN2E5ZWM1YmUwYjE0MWRjNGE5ZjIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImFlYTIxYTljMGU0MTc3NzBhZDA2NTE0YTVlMDg5Y2RiOWU1Yjk2NmEzYWI3OWJkYzIzODRhZWVmZDcwYTU1YTIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjgwMzIxMTU3ODI0MGE2ZTFhNmQyODdiMzg4OTIwMjdkMWM5OGIzY2ZlZjc0ODM1YjJjZGY0OTk0ZGE4OGRhNGQifQ"
+        },
+        {
+          "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/data/player/PlayDurationTracker.kt#L75-L99",
+          "version": "repo-lines-v1:sha256:7d1acbfee6497588c4e6609cdce0ec57a934baa11fadc1bf23c3d5f810e6b6ac:eyJzZWxlY3RlZExpbmVDb3VudCI6MjUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFiYTAzMzczMjhkYmY3NjFkZWRiZTNmNWYwOTQ0NjE4ZWQxN2Y0ODA3NDkyNWQ1Mjc2Y2I2OTM2ZTA3ODg3NmIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjlmMDFlOWRmMWI3OTllNGU2YzdmYWM5OGIyZDU3ZjM1ZWYyNjI2OGFiNjQwNWZmMTc3ODQwNThmN2U2MDBiNzUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImE4ODYxMzA3YTM4NGIxODJmNzEzZWZjNDY4ZTYyMjk0NTQ2MmI2MzZiYmY1NTRmZDczMTY5OWU3MzhlMjc5ZDAifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_3070c66c3b2b4beba6e58632467a69de",
+      "statement": "PlayDurationTracker.settlePlayback decides effective play when the accumulated time reaches 90% of the song duration (COMPLETION_RATE_THRESHOLD = 0.9) or 5 minutes (long-song fallback): effective play increments the stats count, automatically removes the song from the quick-skip list and resets its short-play counter; a play shorter than 5 seconds increments the short-play counter and, on the second such play, auto-adds the song to the quick-skip list; any play with positive duration records a playback session (startedAt derived from the duration) for daily/weekly/monthly aggregation.",
+      "evidence": [
+        {
+          "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/data/player/PlayDurationTracker.kt#L148-L205",
+          "version": "repo-lines-v1:sha256:4fa36de605e3af24ff7cfa54cce68ecdd4c9c3f49c810eaf1067d518f778bd8f:eyJzZWxlY3RlZExpbmVDb3VudCI6NTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjVjZTY0M2M1ZjczZDc4OTA1NDJlOWVkNWJjZDcyYmNkNDc3YWQ2NmJmYmU4ZTYyZTg4Nzk4ZmE4MTVmMGM1NWQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjFhOTk5ODVhYTBmMWY3MGE1ZTczOGI2MjBjYmY0ZWFkODZkMzcyMGNiOWY5MThmNDFhNjhjN2VmMDNlZWM3OGQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImY2YTdkMzEzNTEzODk1MmU3ZjBjYmE0OGE5NjFjZmVlNmI5ZDU4NGVlNGZhZmE0YjYzZGZmNWNmMzBhYjg5OTkifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_1dfa9f24e35241c48f5575e1ed15bac9",
+      "statement": "PlayDurationTracker runs all Room writes on its own SupervisorJob + Dispatchers.IO scope with a launchTracked wrapper that logs failures (CancellationException rethrown): a plain Job would let a single settle/increment exception cancel the whole scope, silently killing play counting and duration accumulation (M-5 review fix).",
+      "evidence": [
+        {
+          "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/data/player/PlayDurationTracker.kt#L230-L244",
+          "version": "repo-lines-v1:sha256:acc2e4942496122c3e6c3b7a6d2fecfca87bf0e470a594617a163c20317b02d3:eyJzZWxlY3RlZExpbmVDb3VudCI6MTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM5Y2JiYzY1NDY5ZGIxY2EyODQyZWZkOTdkZjdlZTJjZTZjYzE1NzE0ODJkMDFhMThiNzkwYTEwYzdjNTEwZjMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk5OWJkZWZlZWFjYTYzNDBlMDI5MGRjODZlODg5Yzg5ZDVlMTg5YWE1YmE0NGI1ODViM2I3MDczNGY0YTYyZDgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImM3MjIwNjM4ODc0MGIxN2Q3NDM3M2ZiNTMzNTQ4NmNkYmJjOTExMWE4NjAxM2M3Mzg1MjhmY2FmYTM2NmYxMmIifQ"
+        },
+        {
+          "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/data/player/PlayDurationTracker.kt#L41-L43",
+          "version": "repo-lines-v1:sha256:e5c467c602a4e5f45837527a10670551ef1bf99f0d22d0255949830c7deeab95:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMjg5ZTgwMGNjNDBlOTgxZDAyNzI2YzQ5ZmE3ZDMwOGEwZjZkMjdmZDc1NDM5NzY2MTUzMDcyZDIxZTNjOWJlMSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiOTI0NDI1ODlmMGNmODU0ZmM5OTM0Y2RkNzU2Y2U3MzUzMjVkMjkzNDk3ODI5ZGFlZDg0YWM3NTY0ZGJjMmU4YyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNzcxMzk5NTg0YTI1MmY5ZmY0ZGQ5YmY0ZjJjY2VjNmEzZDNmMjNjMmE5YmQ0MjZlMmJjOGZlZDAyMDM5Nzk4YiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMTM0ZDUwOThjZTg0MmVhN2NmMmU2ZWQxMjAwYzBkYTdkMDM4NTZjMDMzMjg3ODE4ZmYwZjk1OWUwOGM1M2NhNyJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_32b6fef5ed39453cb6aa80435823cff6",
+      "statement": "Under REPEAT_MODE_ALL a single-item queue (quick-skip/playlist/album/artist reduced to one song) wraps back to the same item with index 0→0, so Media3 never fires onMediaItemTransition and settlement (effective play +1, removal from the quick-skip list) would never run while the timer accumulates across loops; PlaybackController.onPositionDiscontinuity detects this via isSingleItemLoopRewind — DISCONTINUITY_REASON_AUTO_TRANSITION + mediaItemCount == 1 + index 0→0 + new position ≤ 2s + old position near the end (duration − 5s when duration is known, ≥ 30s conservative fallback otherwise) — and emits one onMediaItemEnded to settle the finished play before the next loop starts tracking a fresh session; buffering reconnection (resumes in place) and manual seek-to-start (SEEK reason) do not trigger it.",
+      "evidence": [
+        {
+          "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/data/player/PlaybackController.kt#L24-L31",
+          "version": "repo-lines-v1:sha256:c4e18974f408c13fe5489e96009c92d4946254154409de9e1afe7d43622b9b83:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZWFmMjJjZjA3MzI1OTJjMjQ3MTQxY2JlNjFlZmExMTAxMjYxMmY1YTMxMjJiOWFmOWJiYWY1MmY1NzI0ZDE5NCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMzM4NDgzYzcxNmY4YWNhMjI2NzJmNzI5NjhlZWNiYzY0YzlhZWEzNThiZDZhMTY1ODZjMDI1OTAwOTk5NGY4YiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNDc2YzI0NTY2ZGRlMzFhN2Y1M2QxMjMwYjRjNjJhNWQyNDUwN2I0ZWRjYmFkZGI3NjZhOWFkODAyNmZkMjIxNSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNjkwMDc0MGU3MmFjM2U0YTg3NTM4N2NiNjA2NDU5YWE3MGViYzMzNTg3NjYzOTkzODg4YWNjOGM3YmQ4NzkxMiJ9"
+        },
+        {
+          "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/data/player/PlaybackController.kt#L446-L478",
+          "version": "repo-lines-v1:sha256:8757fc81ba486b5df12cc91aab77888112fa9d28276bc29c98637c251f256e23:eyJzZWxlY3RlZExpbmVDb3VudCI6MzMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVhZjIyY2YwNzMyNTkyYzI0NzE0MWNiZTYxZWZhMTEwMTI2MTJmNWEzMTIyYjlhZjliYmFmNTJmNTcyNGQxOTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjU1MzgwYjg3NDg0ZmI4YTBkODQ5ZmMwOTEwODQ5OTYzYmUxOGU5YjgzM2U4NGEyZWZlZTMwNzVlMWM2ZTE5YmMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/data/player/PlaybackController.kt#L66-L88",
+          "version": "repo-lines-v1:sha256:4481343e33527c532825fd435677d9a0b786f3f6675033c72daa532c6aa40e4c:eyJzZWxlY3RlZExpbmVDb3VudCI6MjMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY5ZDQ4MzQ1NjBhMDdlN2RjMjgyYWIzMzIyYThkM2NhZjZjMDIyM2MyNDFlOThkOWJjYzQwZmVjZDNlMDBlZTUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImRhOWY4NmQyOGU3ODRmOWZkMzFmYjcyZDE1ZjYwY2JjZWFhZmRkNjY5Y2JkNWI2ZGE3ODg4YTAyMzMyMWViYjkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjY3OWY2NTU2OTJhNjAyYzBiM2U2OTI0ZmNiNThiMjQ5YzcwZjU2MzRiZGVhNjRiNjBjMDM0MWI4MDM4MGZhMWQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_4ba2e8b660734a7f92dc17d6389d4492",
+      "statement": "PlayerSleepTimerCoordinator persists the sleep-timer end timestamp and play-last-song flag: the per-second ticker writes only the sleepTimerRemainingMs narrow flow (never the main UiState, avoiding full-shell recomposition every second); when the timer fires with playLastSong while playing, it only sets sleepTimerPausePending and explicitly resets the narrow flow, waiting for the natural song end signaled by PlayerMediaEventFacade's onSleepTimerSongEnded to pause and cancel; cancel and fire must both reset the narrow flow explicitly because ticks never touch uiState and NarrowFlowSync's value comparison cannot see the zeroing; restore() at startup resumes an unexpired persisted timer and clears an expired one.",
+      "evidence": [
+        {
+          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerSleepTimerCoordinator.kt#L34-L136",
+          "version": "repo-lines-v1:sha256:2e356367aa81a654236cc3ad1b3e7e25c4ec8d62a2d13d1658d9f60e3288b232:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAzLCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiI1ZjY2Y2U3MDZhYjA1ZDVlMDRhMzU1MjI0YzA4MzhiYjhiMDQ5NDE5OTE1MmZjZWIzOWU1YjY5ZWZkNDE1YWQzIiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI0ODkzZjQwZTM3ODFlYjg5NmM4MmQwNDZhMDgwNjdhMTFlMzVjZGYyZjFkZmFmMjZmZWE5MGI4ZGI2Njc2NDEzIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiIzZDlkNTVmMzljMjc3ZDU1MWVlZWI1NDk1NGJhOWQxZThkOWQzYjVhYzRkNDg1N2VkOTJmOTk1YjJjZDY1ZmJkIiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MSwiZm9sbG93aW5nQ29udGV4dEhhc2giOiI0MTJjYTM0NWNjZjc1YmY5YzA4MDZiY2U2OTViZThkZTgwOGI3OTk4NDI1MWE3YTU0ZDIwMmNmNjEwMWRkNDUxIn0"
+        }
+      ]
+    },
+    {
+      "id": "claim_d29215047f6245238dca1e876bab3997",
+      "statement": "BluetoothPlaybackCoordinator collapses the Bluetooth managers' callbacks into two auto-pause rules: pause only when previously playing through Bluetooth AND A2DP has just disconnected AND playback is still active (protecting sessions that never went through Bluetooth), and pause on audio interruption while playing; isPlaying and pausePlayback are constructor-injected lambdas, and initialization is user-setting gated — the runtime initializes the monitor only when the persisted bluetoothPlaybackMonitoringEnabled is true, and enabling it from Settings goes through initializeBluetoothPlayback.",
+      "evidence": [
+        {
+          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerBluetoothGraph.kt#L10-L17",
+          "version": "repo-lines-v1:sha256:2ec4d2d3615f4dd687b7e19caa1664900e969406356acc63d42e9555be6661d7:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMzNiYjRmYmZmMTI2ZDFlMjA0NjMzZjYxYjUzMjcxNTU4ODQ0YjNhMDMxOTk2M2JjOWEyYjc4NzNmMjI4MzdjNyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDg5M2Y0MGUzNzgxZWI4OTZjODJkMDQ2YTA4MDY3YTExZTM1Y2RmMmYxZGZhZjI2ZmVhOTBiOGRiNjY3NjQxMyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZTBiYTE0MjczYjhkOTFjNDZhOGQxNDk4NWFlOTA3YmJjZWU3YjdiNjhjM2NiYmJjYTFiNjVmZWM0YjNkM2U1MCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNGEzYjg0NDAwZWVkMzViYTRlOWU3NjViMTIyYjkxODVlNzcyYTZmMDdiOTY5YTZjMmExNmNkMDljMGFmZDAwYSJ9"
+        },
+        {
+          "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/data/player/BluetoothPlaybackCoordinator.kt#L19-L56",
+          "version": "repo-lines-v1:sha256:57e05b19c7f3b14f8b5780df81cdfe3df74863bb094cb407b6dba857f7d63442:eyJzZWxlY3RlZExpbmVDb3VudCI6MzgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImM2MjczNGU1Y2ZlNWVmM2M1YzU2Mzk1YWIyNjY3NTBhZDlhNGY1MDdkNDRkMDhmOTUxYzRhY2U1ZDBlNmZlNzEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjNmYmE1NDcyYzYzZTAwYmYxZjRlNjQ0MzYyYWQ1OWI4ZjBkNGE3YzA3OWM5M2M2MjI2N2ExNjQ5NDFmNTE0OGYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImE3ZGNlN2I3NjMzZTk4M2U4MTVmNWVlNjE0ZDUzM2JlODVlYjc2NjYxNzI3NGQ4MmJiNjY1MTBiM2ZkMzIyMTgifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_0fe9c21763cc45f78537d3573e27a61a",
+      "statement": "Crash-recovery persistence is throttled separately from rendering: PlayerPlaybackProgressTicker writes the 200ms position into the positionMs narrow flow only (never touching disk) and feeds the same tick into PlayerPersistenceGraph.onPlaybackPosition, where PlayerPlaybackStateAutosaver throttles saves to one per DEFAULT_INTERVAL_MS = 5 seconds measured by SystemClock.elapsedRealtime — each save first syncs the latest controller snapshot then saves; reset() allows the next position to save immediately.",
+      "evidence": [
+        {
+          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerPlaybackProgressTicker.kt#L16-L42",
+          "version": "repo-lines-v1:sha256:3190527f95972212654e00af9b028c01a0719e14167331a899a8c2d01f41eb2b:eyJzZWxlY3RlZExpbmVDb3VudCI6MjcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImI2YTk0NGY1YWQ2MmVlMWI2MzdhOWFmYWQyZTQ1NzQxOWIxMGIwNTZjNjViMzZkNmEzYTQzYjc1ZjQwZjhlYWQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImE2MTZmYTQ0MTY3OWUzZDM4N2VhMWJkODhjODA1M2FkODJkMWRiOGRhZDBlN2RhYjFkYzk3Mzk1YWE3NmZjMjgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        },
+        {
+          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerPlaybackStateAutosaver.kt#L11-L28",
+          "version": "repo-lines-v1:sha256:b70fb338eb6b78a7e60236498297c9bcbc9e1cab32e84fc8d16ad822be39cb3e:eyJzZWxlY3RlZExpbmVDb3VudCI6MTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY1ZTkyNzhhMjlhYTEwNjdlNTg1MzUyNDk3NGMxMzA0ZWE3Yjc1MDg1NGUwZTA3ZjYxMTVkN2M3MzJhNGE2NDkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjdlYmUyNzkzMWUzY2RlMzQxMjUyMzliNmE1NTk2NTM1YWEwNDM3NWVhZDYwMjRlMjVhYTU5YjFmYzU2NGEzYjQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        },
+        {
+          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRuntime.kt#L226-L235",
+          "version": "repo-lines-v1:sha256:e36b92d22de20d1d1ac5396e9ceb46df5a48f6cff7782a44d192781fdb79a625:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjJhZDlkMGExZjk4NjlkY2E5NmIxNzBhN2QwYWNiMmQ4MjA3YzA2ODBhMzk0MWQ1YTI2ZDg3MTlmZTY3NjcyMjciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjMwYzFmMTg4ZjE0MmVkN2E4MjQ2ODBiMjA3MTcyYzU1MTliYzYxNGE0OGZkYTdjZjE2N2VkYjhkZGY3OTk1NmMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImJkMTk0YWY2MzFhNDVlNGU5ODQ5Yzc5ZWI0MzEyNDA0YjRiZjQxY2VkOWY3NjQ4YjRmYTQ0ZWFiNGE5MDdmMGYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImQ4MTgyYzMyNjMzMzIxOTQ2ZTUwYmY4MzU2MTk0NmNhNDU0NjFmMjkxMTRiOWM3NTEzY2U2NjBiZmMxNGM0ZjQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_7aa2da8ff7584ab3a8b603ed60fde9c1",
+      "statement": "PlayerPersistenceFacade.savePlaybackStateAsync captures the current playback position on the calling thread before launching the DataStore write on IO, so the saved position reflects the moment of the event rather than the IO-scheduled write time; the synchronous save variant is reserved for teardown paths.",
+      "evidence": [
+        {
+          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerPersistenceFacade.kt#L18-L40",
+          "version": "repo-lines-v1:sha256:1a139448433fd1979f4b73f661299ee7a674f29ac602601b445a37c362ce7ead:eyJzZWxlY3RlZExpbmVDb3VudCI6MjMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImM3NDNmMGFkNGRlYjI2MGNiZGM3YmUwYTgxYzA0MTYyNDIwODYxZjFkYWZjNjVjOWE2NTBmZmUzNWI5YjUzODYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjM0NDdjYTU4ZTJlYTM5MDRiZjU3Yjk2YTYzM2FjMTgwOTc3MzNiYWFiNDM2NDgyM2M1Mjg2ZjRlNDRjM2I4NGQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImVmY2QyNTZjMjRmZTlmMDY5M2NiYThhNTYwMzI4N2FhNDM1MjdiZWUzOTM2ZGJmYzFiZjNlNjBiYmNiYTg4MDAifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_427551d7e475457aab564f304ec0c604",
+      "statement": "AppMediaSessionService saves an exit snapshot in onDestroy and onTaskRemoved: songId and position are read synchronously on the calling thread (ExoPlayer is only accessible on its application thread), while the DataStore write is launched on the process-level ApplicationScope via the suspend persistCurrentPlaybackSnapshot — which overwrites only CURRENT_SONG_ID and PLAY_POSITION_MS while preserving the existing queue JSON — so the write completes even after the service instance is destroyed; the same path records the current song as the playlist resume source.",
+      "evidence": [
+        {
+          "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/data/player/AppMediaSessionService.kt#L122-L144",
+          "version": "repo-lines-v1:sha256:a02c3b8f1529e049e1064ab8635902ca0687e76925f5bef352a11db1eea1a79f:eyJzZWxlY3RlZExpbmVDb3VudCI6MjMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM5Y2JiYzY1NDY5ZGIxY2EyODQyZWZkOTdkZjdlZTJjZTZjYzE1NzE0ODJkMDFhMThiNzkwYTEwYzdjNTEwZjMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImU5N2E3Mzc5MGY4YmJlN2E0ZDEzYThlZDNhYzVjYmNiZGI5Yjg2YjQzNTU3NjllZDA4MGY5NjIxMTM5Yjc5ZmMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        },
+        {
+          "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/data/player/AppMediaSessionService.kt#L60-L76",
+          "version": "repo-lines-v1:sha256:bd720f464d837ee9a415f9c38dc7beca5a577b4e91fd2eb5f6c938307f8ab430:eyJzZWxlY3RlZExpbmVDb3VudCI6MTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjdlZDEzMWJhM2E4MTQ3YjczZTZiZTVmNDVhMjgwODM0OWM5NTI1NzZjYmMyYzcxMTQ5ODAzNmQ1NzNkYjMxMGIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImY1OGExZThhMWFhNmEwOTI5ZmUwODQxM2RmYjgxOTZhYWQyMzEyZTYzY2I5MzBiNmJkZTQyOTA0MjhlYTcxMWQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjRkMDJkNWYzNmUzMGU5NGQ0Y2RmZGRkZjE4OTA2NzVlM2IyMDFmNDZiYzNlODVjM2ZiZWVmYTMwNjliNGJkYjkifQ"
+        },
+        {
+          "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/data/player/PlaybackStateStore.kt#L126-L148",
+          "version": "repo-lines-v1:sha256:d1219e2859665a653f25c3904a20a5a783e32fd1b7d6124d8da0d3df99872b05:eyJzZWxlY3RlZExpbmVDb3VudCI6MjMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBkMDRmZDkwZWJlNjdmZTEzYjFlZjBmZjBlZWE4YmU2NjhhZGRiMDYwYjgzYTU4ODRmNTk1YjkwM2Q3Mzc4OTgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImU4OWU4NDJkODQ3YjAwOGNkMmI0ZDI5NWNhODg3NjQ4OGI0ZGI4NWU0NThlZmM2NDY2NjNmYmZmNzg1NTU3MWQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImJlM2E2MDM0ZjQwMzI0YzRjZjc5MTEyMWRhYjllMDZiY2I4ZmQ2NjBiOTJkMGRlYjg0ZTJmMjdiMDJhYzE0OGMifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_48bdce3e586444139048ff43e4f69a54",
+      "statement": "PlaybackStateStore.save has an empty-session protection: a save with an empty queue, no infinite play, and no current song skips writing but preserves the existing snapshot — UI rebuild windows produce transient all-empty states, and clearing there used to delete the valid snapshot saved 5 seconds earlier, leaving the restored play queue permanently empty; explicit clearing (user clears the queue) goes through clearPlaybackState instead.",
+      "evidence": [
+        {
+          "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/data/player/PlaybackStateStore.kt#L61-L88",
+          "version": "repo-lines-v1:sha256:e3dcdfe116e6a0755a936dd7935d9f9e70f53c3c6852c4ba6abf239ff83a9ccd:eyJzZWxlY3RlZExpbmVDb3VudCI6MjgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijc3MWRiYjA2NGNiNjRhMjgyZjMxMTc2Nzg2MWYxMTczYmEwY2RjMzg1NDBjYzE2NmZmMDI3YWExMGZhODgwZGEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU1MjJjNDJjZDE5YzZkMDNkODA4YzQ1MjcyMDU1MjgyNWI3ZWExYzViNDkxYjIxODUxMWNhYzc0MTVjZjlkOWIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjBlZDAzOTJlNTU2MThmMzFiNjhjYmYxOTQ3YmU5OTYzOWM5NjRmYzI3NDNiZjYxYzRlYmJhZGRhMjhiYjhkNmQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImI3Zjk4ZTRiN2VkYjZiN2NmOWNiZjEwODE3ZWM5ZmQ0ZTA3MWNjOTQ2NDAyOTViMDYxNTM4ZTA5ZGU0ZDQ0MmMifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_f205bccac8ea4683a6784d5a02ea2841",
+      "statement": "ViewModel teardown follows a fixed order in PlayerLifecycleFacade.onCleared: sync one final controller playback state, save playback state, release the playback controller, release Bluetooth monitoring, release the duration tracker (settling the playing track), and stop the progress ticker; the service start side is wrapped in try/log so a failed start never crashes the app.",
+      "evidence": [
+        {
+          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerLifecycleFacade.kt#L14-L21",
+          "version": "repo-lines-v1:sha256:224698eb9b824ce31a9b521a7c61e78602c96045583241cc1bea6827d68e8bf9:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNTYzZjUwZWFiZjM1NzNiMDA0ZGY3YWY1ZDIwOWU4ZjI0NDNkOTkxOWE2MDFmOGMyOGQzMzMzZTQxOWMxMjViMiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDg5M2Y0MGUzNzgxZWI4OTZjODJkMDQ2YTA4MDY3YTExZTM1Y2RmMmYxZGZhZjI2ZmVhOTBiOGRiNjY3NjQxMyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZTBhMGE5Y2FhMWI4YjY5YTViNGEzOTYwNjc4ZmNkMmQwYTRkNjM2NGQxNzAyMGVkY2E2OTIwMDIwMmI1M2QwMCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNjhkZGMxOGM2NzE3MWE2ZDYwYmViMDRjZTU3MDI1MjNjNTA2ZTk4ZTZmNGVkYWMyYWY0MWM2Y2Q0ZWVhMGFjMiJ9"
+        },
+        {
+          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerLifecycleFacade.kt#L23-L31",
+          "version": "repo-lines-v1:sha256:fa565037056f1ca8cc874d771c9a081be9896587fade4ced0f5aaa95076f0b5f:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYTdhZWMzMDU4NTkwNWRkNjVkODdlNmE1Y2RjMjdmODI4NWIyZGUzOGZlODNkZWRlNDY5MThkOGZkNWFmMzU4OSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDg5M2Y0MGUzNzgxZWI4OTZjODJkMDQ2YTA4MDY3YTExZTM1Y2RmMmYxZGZhZjI2ZmVhOTBiOGRiNjY3NjQxMyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiOTk5YmRlZmVlYWNhNjM0MGUwMjkwZGM4NmU4ODljODlkNWUxODlhYTViYTQ0YjU4NWIzYjcwNzM0ZjRhNjJkOCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjEsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNDEyY2EzNDVjY2Y3NWJmOWMwODA2YmNlNjk1YmU4ZGU4MDhiNzk5ODQyNTFhN2E1NGQyMDJjZjYxMDFkZDQ1MSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_d189d9e1394c4024a72efa6ec24c1a25",
+      "statement": "The queue-replacement start chain is: PlayerQueueFacade.setPlayQueue plans via PlaybackQueueActionPlanner.replaceQueue (new PlayQueue built by QueueManager.createQueue, PlayQueueIndex playback action, exitInfinitePlay flag), applyPlan writes the plan into PlayerUiState and executes the action through playFromQueue, which passes PlayerErrorFacade's playability guard (an unplayable target writes a readable error instead of starting a doomed session) before playbackSessionGraph.startQueuePlayback plans the windowed controller queue and PlaybackController.playQueue starts it with REPEAT_MODE_ALL + setMediaItems + prepare() + play(), starting duration tracking; single-song playback uses playSingle with REPEAT_MODE_OFF.",
+      "evidence": [
+        {
+          "resource": "repo://domain/src/main/java/cn/com/dcsgo/mihx/domain/playback/PlaybackQueueActionPlanner.kt#L35-L50",
+          "version": "repo-lines-v1:sha256:13b74e60e76c9750c6a11739bb5fb693dd0d67a112fface5a6ad986a6784cfd0:eyJzZWxlY3RlZExpbmVDb3VudCI6MTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImM2MGJiY2JjYWY1NGEyZGU5MzYwMjA0NmJmZWYyOWMzMjhjYWMxMGM1MzM4M2E4ODI1OTZlMjhlMjRmOWUwNzEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjY3YTY0ZGI5NTViYTRlYzJkNzBjMzI5YjI1MTdjYjc5ZTExYTRhZjYxZGM5MTc3ZmIwNzA5YjAyOWY0YjlhY2UiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQ4OGI1NzI0MDM0ZGQ1ZmVmZGJiMzA4Y2E3MWEyYjhiY2Q1M2UyYzU4ZDljMTM5MzI3MWY2M2E3MGFkN2Q0NDkifQ"
+        },
+        {
+          "resource": "repo://domain/src/main/java/cn/com/dcsgo/mihx/domain/playback/PlaybackSessionCoordinator.kt#L99-L127",
+          "version": "repo-lines-v1:sha256:8218e9887b91c82c7ae02fc1059a274d7c9c12d0090367aec73a855aaaaf5e01:eyJzZWxlY3RlZExpbmVDb3VudCI6MjksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjdlOWE3MGQ1YTIxYTgzZGU3N2Y5OTU4NWU0ODVkMDE2MDZlNGY2YjNiY2MwNTE4ODc4NzUxOWRhODg4MjFjNWMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjQyOTE0YWU3NzdlYjQwMjA2NzI3NjQwNTlhZTI3ZjY1MWY1MjRiY2VmYzViZTlhZWVmOWUyZmEyYjk5NWI1YzAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjdkOTk1MjhiNmYyNmVmNGE1M2VlZmE1NWQzNDNiYWRkMWJkZmI5ZWY3YzI2ODA2NDEyYTQzODVkZjAxODc1MWYifQ"
+        },
+        {
+          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerErrorFacade.kt#L15-L22",
+          "version": "repo-lines-v1:sha256:d15cdba5c54892502ebfb04021babd66e4d6db203e09734501bbd63a66b9c37b:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMjBhYzQyODRmNDhlNjM0YTRkNmRhNWUyOGZlYjg4MGYzMmEyYWY0ODI1NGJiZWJiN2ZkZmNiYjYwZjBlYjRhOCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDg5M2Y0MGUzNzgxZWI4OTZjODJkMDQ2YTA4MDY3YTExZTM1Y2RmMmYxZGZhZjI2ZmVhOTBiOGRiNjY3NjQxMyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNmYyZWM2OWQ2Yzk1ZDE4ZGMzZGUwMDc1ODBmMzU3NDQyMzI5YWVmZGU0NzcyYzZjZDU0ZDMyYzEyOTUwZTcxOCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjEsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNDEyY2EzNDVjY2Y3NWJmOWMwODA2YmNlNjk1YmU4ZGU4MDhiNzk5ODQyNTFhN2E1NGQyMDJjZjYxMDFkZDQ1MSJ9"
+        },
+        {
+          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerQueueFacade.kt#L19-L33",
+          "version": "repo-lines-v1:sha256:84f2d3c189b364de45d54fd45727ab1ea39d72f63f69a26633feb883408d2e0f:eyJzZWxlY3RlZExpbmVDb3VudCI6MTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNlYjhmYWNmMTQ5YmEzNmQwMWIwZTVjYzFhMmQ1Yjc1NGQ3MmVjMjM5YzgzMDVkZjk5YzRlNmZlM2EyMGE1YzEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImMxMmY0NjVjZDA5ZWJlZWI2N2ZhMThkOTdhNTA0MWQ5ZDEwMGNkZjVhZmViZGFlNDZiZDY3NGFhMjRiZDI5NjYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImQwZGZlNmQ0YTkyNWZiNTEwNDFkZjlkNTU1OTQzODI4ZmJjMzYwYjc1NTVlNDM2Y2MzZTEzNTUwN2VhMmVjZmQifQ"
+        },
+        {
+          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerQueueFacade.kt#L99-L143",
+          "version": "repo-lines-v1:sha256:734cba4c2dd098245a4eb9054af2e3871c9331c26a8a77ebeb1e95f1bb26f473:eyJzZWxlY3RlZExpbmVDb3VudCI6NDUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQ1ZmQ3OTcyMzFhMWFjZTJmYjUzMWVlNDI0Y2QyMzM0ZDc2OTZjMWI5NTBhYzI2NDE3MmM3YTg2N2M4NWQ5MzMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImM4MDU1NTIyN2IxNGM1ZmEwYTQ0NTA1NjhmM2U0N2RmNzAxMDg1NjFlZDU4NjM3ZTZiODlkZDc5ZmVhOGE3NzgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        },
+        {
+          "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/data/player/PlaybackController.kt#L279-L293",
+          "version": "repo-lines-v1:sha256:18de2a14ee5cd312570e3c99997bae04855b87a3819228f239e3f6b78384f42a:eyJzZWxlY3RlZExpbmVDb3VudCI6MTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjczM2RhMjIwZDQ0MTZlYTE2ZTUwZDQ1NmEyYWY3OGNjM2FkOGI0MjA3ODI3ZmE4ODY0ZDcyZWYzNDAyN2FhOGYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImZlYjUzZmM4NGRjMTNjZTUwMTU1MDk2ZmE0YTJlOTExOTg1NjRhMzVlZDdhNzgyMjAxZjNiZGRhZWY5NDBiNTYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImJjZGZmMzkwN2M5ZWJmNDQxMTAxN2NmM2RiMzIzNDAzMGM4YmUxYjFmNjE0NjQzYmM0MTBmZTBhMDU1NzgwYzEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_1e1734ca19854bb082fd0c1f3a139267",
+      "statement": "ControllerPlaybackStateSynchronizer.sync produces a PlaybackStart only when the snapshot is playing, the mediaId resolves to a song, and trackedSongId differs from that song's id — steady-state snapshots of an already-tracked song never re-trigger startPlayback, which is the mechanism behind once-per-song tracking; PlayerControllerStateFacade applies duration updates and playback starts to the duration tracker, passing the snapshot position as initialPlayedMs so pre-kill listening time counts toward settlement.",
+      "evidence": [
+        {
+          "resource": "repo://domain/src/main/java/cn/com/dcsgo/mihx/domain/playback/ControllerPlaybackStateSynchronizer.kt#L46-L90",
+          "version": "repo-lines-v1:sha256:3f32fea200e70f9b8cd700b2d4f08619874bf878da4086174d72f9d4c41fbbfa:eyJzZWxlY3RlZExpbmVDb3VudCI6NDUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY3NWQ2ZGUxOWY1NzgyMmFmYTE2ZGQ0MDE3YThjYjI3NDUzNzU3NmM1ZGE0MWUzMzZjMjBkMGRhYTI2N2U5MzgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjVhMzQ4YzBkZGI0OGNjYTFkOTI1MzQ3NTI5MmJkMTI2NjNhYTJkNTZlMWRiZWQ1MDYzOWJhN2Y4NjFmOTQ3NmEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjgzNGZjNDEwMzRiOTJmOGM0OTg3YTVkZjFjYjM5ZTJlNzk2MjM3MmU4NzVjYjM2MGVmZmM2NGI3NTIzNjExYmUifQ"
+        },
+        {
+          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerControllerStateFacade.kt#L21-L53",
+          "version": "repo-lines-v1:sha256:753c378e35dac9aad703a2008314f9e0a780b7697578d0f8affbbcdae8f9baa3:eyJzZWxlY3RlZExpbmVDb3VudCI6MzMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU0YjBkOWI1YWE2ZWNlYjI1ZGY2MjhkYmU5Mjg2OTI3ZWE2YTU5NWQ0OGQ4NDQyNmNmYjMzY2U0MmQwMDMwMzYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjdhZjBkODlkYjA0ZjIwMWJhMmM5OTMwNGQxNjA1YzRjNzE1MjkxYWNlYmIwYWI5MWRhYzA4NGNlNmJiYmRhYTQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjY4MGM4MDI4ZTU1ZDM3NmM0OTViODM2ZTE2ZWQ1YzE1NjNhZmM5ZjUxZWE1MDRlNmI1NTEyOWU4NzFkODg1MGUifQ"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "by": "openwiki/0.5.0",
+    "at": "2026-09-07T13:49:59.042Z"
+  }
+}

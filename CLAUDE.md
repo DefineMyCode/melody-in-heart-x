@@ -206,3 +206,11 @@ When adding/modifying a Room entity:
 - `:app` manifest must not declare `AppMediaSessionService` (it belongs to `:player` manifest).
 - Release build must have `isMinifyEnabled = true` and `isShrinkResources = true`.
 - Performance-critical paths (`MusicRepository` import/scan, `PlaybackController` queue/prepare/sync/next) must keep their `PerformanceTrace` operation anchors.
+
+<!-- OPENWIKI:START -->
+
+## OpenWiki
+
+See [AGENTS.md](AGENTS.md) for OpenWiki agent instructions.
+
+<!-- OPENWIKI:END -->

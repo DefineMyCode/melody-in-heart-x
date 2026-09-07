@@ -1,0 +1,7 @@
+# Files
+
+- [Playback Queue and Windowed Synchronization](queue-architecture.md) - How PlayQueue's business queue and the Media3 MediaController's windowed queue cooperate: playOrderIds playback ordering, duplicate queue-item semantics, the three-layer window planning pipeline, and per-operation synchronization flows.
+- [Random Playback and Infinite Random](random-and-infinite.md) - The random selection chain: RandomQueuePlanner batch selection with recent-play eviction, UniformRandomPlanner play-count tiered preemption, infinite-play queue refill with wrap handling, and how the global uniform-random setting and mood-slot attribution are wired in.
+- [PlayerRuntime and the Facade Catalog](runtime-facades.md) - How PlayerViewModel stays a thin delegator, how PlayerRuntime composes ~18 facades through five graph objects wired by lambda injection, and the narrow-flow, startup, restore, teardown, and extension rules that govern any change to the player feature.
+- [播放服务与 MediaController](service-and-controller.md) - :player 层的 Android 集成面：AppMediaSessionService 的 ExoPlayer/MediaSession 生命周期与快照落盘、PlaybackController 的连接/pending actions/事件翻译/单曲回绕检测、SongMediaItemMapper 的 mediaId 契约，以及蓝牙断连自动暂停和情绪/统计组件为何落在 :player。
+- [播放状态机与状态恢复](state-machine.md) - 产品级播放状态机（idle/preparing/ready/playing/paused/buffering/ended/error）如何围绕 Media3 事件运转：ControllerPlaybackStateSynchronizer 的单点快照映射、positionMs 窄流与 ticker 的启停约束、播放状态持久化解耦，以及进程重建后依据 controller 队列判据区分 live session 与完整恢复的决策规则。

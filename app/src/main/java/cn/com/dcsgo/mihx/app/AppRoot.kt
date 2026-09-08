@@ -91,8 +91,10 @@ fun AppRoot(
     BackHandler(enabled = showQueueSheet) {
         showQueueSheet = false
     }
-    // 播放抽屉的 BACK 由 ModalBottomSheet 自身处理（predictive-back 关闭动画），
-    // 这里不再拦截——拦截会吃掉 BACK 事件导致抽屉手势/状态错乱（曾致关抽屉后页面无响应）
+    // 播放浮层是普通 composition（无独立 dialog window），BACK 在这里统一关闭
+    BackHandler(enabled = showPlayerSheet) {
+        showPlayerSheet = false
+    }
 
     LaunchedEffect(activeRoute) {
         // 始终按当前路由所属 Tab 同步高亮（嵌套路由如设置/统计也映射到所属 Tab），
@@ -204,7 +206,6 @@ fun AppRoot(
                     uiState = uiState,
                     playerViewModel = playerViewModel,
                     permissionCoordinator = permissionCoordinator,
-                    onShowQueue = { showQueueSheet = true },
                     themeMode = themeMode,
                     onThemeModeChange = settingsViewModel::setThemeMode,
                     themeVariant = themeVariant,

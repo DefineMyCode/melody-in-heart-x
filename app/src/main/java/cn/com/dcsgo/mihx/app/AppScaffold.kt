@@ -171,7 +171,7 @@ private fun ScaffoldContentColumn(
             content()
         }
         // 迷你条：非播放页 + 有歌 + 抽屉未展开。点击整体拉出播放抽屉
-        if (!hideBottomBars && currentDestination != AppDestinations.HOME && currentSong != null) {
+        if (!hideBottomBars && currentSong != null) {
             MusicPlayerBottomBar(
                 isPlaying = isPlaying,
                 currentSong = currentSong,

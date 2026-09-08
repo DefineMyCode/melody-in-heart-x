@@ -105,42 +105,45 @@ jobs:
         run: |
           TAG="${{ steps.version.outputs.tag }}"
           APK="${{ steps.version.outputs.apk }}"
-          # 从 GitHub release 说明同步正文
-          BODY=$(gh release view "$TAG" --json body --jq .body | python3 -c 'import json,sys; print(json.load(sys.stdin))' 2>/dev/null || echo "$TAG")
-          PAYLOAD=$(python3 - "$TAG" "$BODY" <<'PY'
-          import json, sys
-          print(json.dumps({
-              "tag_name": sys.argv[1],
-              "target_commitish": "main",
-              "name": sys.argv[1],
-              "body": sys.argv[2],
-          }))
-          PY
-          )
-          # release 已存在则跳过创建(幂等), 拿 release id —— 全 python 处理,容错非列表响应
-          RID=$(python3 - "$TAG" "$PAYLOAD" <<'PY'
-          import json, os, sys, urllib.request, urllib.parse
+          export GITEE_TOKEN
+          # 全 python 完成: 读 GitHub release 说明 → 查/建 Gitee release → 传附件。
+          # 不经 shell 变量中转, 避免 release 正文中的引号破坏命令行。
+          python3 - <<'PY'
+          import json, os, subprocess, sys, urllib.request, urllib.parse
           token = os.environ["GITEE_TOKEN"]
-          tag = sys.argv[1]; payload = sys.argv[2]
+          tag = "${{ steps.version.outputs.tag }}"
+          apk = "${{ steps.version.outputs.apk }}"
           base = "https://gitee.com/api/v5/repos/deng-chongshuang_admin/melody-in-heart-x/releases"
+
           def req(url, data=None):
               r = urllib.request.Request(url, data=json.dumps(data).encode() if data else None,
                                          headers={"Content-Type": "application/json"} if data else {})
               return json.load(urllib.request.urlopen(r))
+
+          body = subprocess.run(
+              ["gh", "release", "view", tag, "--json", "body", "--jq", ".body"],
+              capture_output=True, text=True,
+          ).stdout.strip() or tag
+
           try:
               existing = req(f"{base}?access_token={urllib.parse.quote(token)}&per_page=100")
-              rid = next((r["id"] for r in existing if isinstance(r, dict) and r.get("tag_name") == tag), "")
-          except Exception:
-              rid = ""
+              rid = next((r["id"] for r in existing if isinstance(r, dict) and r.get("tag_name") == tag), 0)
+          except Exception as e:
+              print(f"list releases failed: {e}")
+              rid = 0
           if not rid:
-              created = req(f"{base}?access_token={urllib.parse.quote(token)}", json.loads(payload))
-              rid = str(created.get("id", ""))
-          print(rid)
+              created = req(f"{base}?access_token={urllib.parse.quote(token)}",
+                            {"tag_name": tag, "target_commitish": "main", "name": tag, "body": body})
+              rid = created.get("id", 0)
+          if not rid:
+              sys.exit("::error::Gitee release 创建失败")
+
+          att = subprocess.run(
+              ["curl", "-s", "-X", "POST",
+               f"{base}/{rid}/attach_files",
+               "-F", f"access_token={token}", "-F", f"file=@{apk}"],
+              capture_output=True, text=True)
+          result = json.loads(att.stdout)
+          assert result.get("name"), result
+          print(f"Gitee attachment OK: {result['name']}")
           PY
-          )
-          if [ -z "$RID" ]; then echo "::error::Gitee release 创建失败"; exit 1; fi
-          curl -s -X POST "https://gitee.com/api/v5/repos/deng-chongshuang_admin/melody-in-heart-x/releases/$RID/attach_files" \
-            -F "access_token=$GITEE_TOKEN" \
-            -F "file=@$APK" > /tmp/gitee_attach.json
-          python3 -c "import json; d=json.load(open('/tmp/gitee_attach.json')); assert d.get('name'), d"
-          echo "Gitee attachment OK: $(python3 -c "import json; print(json.load(open('/tmp/gitee_attach.json')).get('name'))")

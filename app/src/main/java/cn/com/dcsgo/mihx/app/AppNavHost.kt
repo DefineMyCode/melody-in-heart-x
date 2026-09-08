@@ -1011,10 +1011,15 @@ private fun PlayerSheetHost(
     // 关闭一律走 onDismissRequest → 状态复位，避免"抽屉已消失但 show 仍 true"的死锁
     if (!show) return
     var showQueueInside by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
-    // 队列内嵌视图：BACK 先关队列回播放主屏，再按才关抽屉
-    androidx.activity.compose.BackHandler(enabled = showQueueInside) { showQueueInside = false }
     val sheetState = androidx.compose.material3.rememberModalBottomSheetState(
         skipPartiallyExpanded = true,
+        // 队列视图下拦截关闭意图（BACK/下滑）：先切回播放主屏，不关抽屉
+        confirmValueChange = { newValue ->
+            if (newValue == androidx.compose.material3.SheetValue.Hidden && showQueueInside) {
+                showQueueInside = false
+                false
+            } else true
+        },
     )
     androidx.compose.material3.ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -1025,6 +1030,8 @@ private fun PlayerSheetHost(
         // 关闭系统状态栏适配：内容延伸到状态栏后面（全屏沉浸），氛围背景贯穿顶部
         contentWindowInsets = { androidx.compose.foundation.layout.WindowInsets(0) },
     ) {
+        // 队列内嵌视图：BACK 先关队列回播放主屏（在 sheet 的 dialog window 内注册才能拦到 BACK）
+        androidx.activity.compose.BackHandler(enabled = showQueueInside) { showQueueInside = false }
         Box(modifier = Modifier.fillMaxSize()) {
             // 队列视图：在抽屉内切换内容（避免第二个 ModalBottomSheet 的 window 冲突）
             if (showQueueInside) {

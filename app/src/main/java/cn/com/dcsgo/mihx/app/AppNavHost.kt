@@ -1011,6 +1011,8 @@ private fun PlayerSheetHost(
     // 关闭一律走 onDismissRequest → 状态复位，避免"抽屉已消失但 show 仍 true"的死锁
     if (!show) return
     var showQueueInside by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
+    // 队列内嵌视图：BACK 先关队列回播放主屏，再按才关抽屉
+    androidx.activity.compose.BackHandler(enabled = showQueueInside) { showQueueInside = false }
     val sheetState = androidx.compose.material3.rememberModalBottomSheetState(
         skipPartiallyExpanded = true,
     )

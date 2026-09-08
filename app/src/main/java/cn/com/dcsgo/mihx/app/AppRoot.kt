@@ -173,15 +173,22 @@ fun AppRoot(
                 onPlayPauseClick = playerViewModel::togglePlayPause,
                 onPreviousClick = playerViewModel::playPrevious,
                 onNextClick = playerViewModel::playNext,
-                onNavigateToHome = {
-                    navController.navigate(AppRoutes.HOME) {
-                        popUpTo(navController.graph.findStartDestination().id) {
-                            saveState = true
+                // 迷你条点击 → 播放全屏抽屉（方案D实验）
+                onOpenPlayerSheet = { showPlayerSheet = true },
+                // 空曲库时全局随心播放入口
+                onLuckyPlayClick = {
+                    val started = playerViewModel.playRandomQueue()
+                    if (started) {
+                        playerViewModel.currentMoodSlotName()?.let { slotName ->
+                            toastHost.showToast("已按「$slotName」为你随机播放")
                         }
-                        launchSingleTop = true
-                        restoreState = true
+                    } else {
+                        toastHost.showToast("还没有可播放的音乐，请先导入歌曲吧~")
                     }
+                    started
                 },
+                // 播放抽屉展开时隐藏底栏/迷你条
+                hideBottomBars = showPlayerSheet,
                 // 全屏歌词页不响应横滑，避免误切底部 Tab
                 swipeEnabled = activeRoute != AppRoutes.LYRICS,
             ) {

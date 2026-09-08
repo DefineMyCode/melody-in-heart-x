@@ -1014,6 +1014,8 @@ private fun PlayerSheetHost(
         containerColor = androidx.compose.material3.MaterialTheme.colorScheme.background,
         dragHandle = null,
         tonalElevation = 0.dp,
+        // 关闭系统状态栏适配：内容延伸到状态栏后面（全屏沉浸），氛围背景贯穿顶部
+        contentWindowInsets = { androidx.compose.foundation.layout.WindowInsets(0) },
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
             // 播放进度窄流（与 HOME 路由同源）

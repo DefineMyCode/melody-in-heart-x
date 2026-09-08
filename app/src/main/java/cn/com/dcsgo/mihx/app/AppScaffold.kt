@@ -41,7 +41,12 @@ fun AppScaffold(
     onPlayPauseClick: () -> Unit,
     onPreviousClick: () -> Unit,
     onNextClick: () -> Unit,
-    onNavigateToHome: () -> Unit,
+    /** 点击迷你条 → 拉出播放全屏抽屉（方案D实验） */
+    onOpenPlayerSheet: () -> Unit = {},
+    /** 空曲库时全局「随心播放」入口（列表空、迷你条不存在时的播放入口） */
+    onLuckyPlayClick: (() -> Unit)? = null,
+    /** 播放抽屉展开时隐藏底栏/迷你条（抽屉盖住全屏，底下露出底栏会穿帮） */
+    hideBottomBars: Boolean = false,
     swipeEnabled: Boolean = true,
     content: @Composable () -> Unit,
 ) {
@@ -63,8 +68,10 @@ fun AppScaffold(
                     onPlayPauseClick = onPlayPauseClick,
                     onPreviousClick = onPreviousClick,
                     onNextClick = onNextClick,
-                    onNavigateToHome = onNavigateToHome,
+                    onOpenPlayerSheet = onOpenPlayerSheet,
+                    onLuckyPlayClick = onLuckyPlayClick,
                     onDestinationSelected = onDestinationSelected,
+                    hideBottomBars = hideBottomBars,
                     swipeEnabled = swipeEnabled,
                     content = content,
                 )
@@ -81,16 +88,20 @@ fun AppScaffold(
                     onPlayPauseClick = onPlayPauseClick,
                     onPreviousClick = onPreviousClick,
                     onNextClick = onNextClick,
-                    onNavigateToHome = onNavigateToHome,
+                    onOpenPlayerSheet = onOpenPlayerSheet,
+                    onLuckyPlayClick = onLuckyPlayClick,
                     onDestinationSelected = onDestinationSelected,
+                    hideBottomBars = hideBottomBars,
                     swipeEnabled = swipeEnabled,
                     content = content,
                     modifier = Modifier.weight(1f),
                 )
-                TextBottomBar(
-                    currentDestination = currentDestination,
-                    onDestinationSelected = onDestinationSelected,
-                )
+                if (!hideBottomBars) {
+                    TextBottomBar(
+                        currentDestination = currentDestination,
+                        onDestinationSelected = onDestinationSelected,
+                    )
+                }
             }
         }
     }
@@ -106,8 +117,10 @@ private fun ScaffoldContentColumn(
     onPlayPauseClick: () -> Unit,
     onPreviousClick: () -> Unit,
     onNextClick: () -> Unit,
-    onNavigateToHome: () -> Unit,
+    onOpenPlayerSheet: () -> Unit,
+    onLuckyPlayClick: (() -> Unit)?,
     onDestinationSelected: (AppDestinations) -> Unit,
+    hideBottomBars: Boolean = false,
     swipeEnabled: Boolean = true,
     content: @Composable () -> Unit,
     modifier: Modifier = Modifier,
@@ -152,7 +165,8 @@ private fun ScaffoldContentColumn(
         ) {
             content()
         }
-        if (currentDestination != AppDestinations.HOME && currentSong != null) {
+        // 迷你条：非播放页 + 有歌 + 抽屉未展开。点击整体拉出播放抽屉
+        if (!hideBottomBars && currentDestination != AppDestinations.HOME && currentSong != null) {
             MusicPlayerBottomBar(
                 isPlaying = isPlaying,
                 currentSong = currentSong,
@@ -161,8 +175,32 @@ private fun ScaffoldContentColumn(
                 onPlayPauseClick = onPlayPauseClick,
                 onPreviousClick = onPreviousClick,
                 onNextClick = onNextClick,
-                onNavigateToHome = onNavigateToHome,
+                onNavigateToHome = onOpenPlayerSheet,
             )
+        }
+        // 空曲库兜底入口：迷你条不存在时，提供全局「随心播放」让用户能开始播放
+        if (!hideBottomBars && currentSong == null && onLuckyPlayClick != null) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(MaterialTheme.colorScheme.surfaceContainerLowest)
+                    .navigationBarsPadding()
+                    .clickable(onClick = onLuckyPlayClick)
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = "∞ 随心播放",
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary,
+                )
+                Text(
+                    text = "  ·  从曲库随机开始",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
         }
     }
 }

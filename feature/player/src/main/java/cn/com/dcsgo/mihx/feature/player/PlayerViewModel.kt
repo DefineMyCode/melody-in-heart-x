@@ -17,10 +17,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
-import cn.com.dcsgo.mihx.core.common.AppLog
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.sync.withLock
 
@@ -250,20 +246,6 @@ class PlayerViewModel @Inject constructor(
         statsSnapshotMutex.withLock {
             playStatsRepository.playbackStatsSnapshot().also { cachedStatsSnapshot = it }
         }
-
-    // ── 今日已听歌曲数（主屏情境问候用）──
-    // ponytail: 单查询 distinctSongsBetween（毫秒级），不拉整个快照（8 个全扫留给统计页）。
-    private val _todaySongCount = MutableStateFlow(0)
-    val todaySongCount: StateFlow<Int> = _todaySongCount.asStateFlow()
-
-    /** 进入主屏时后台刷新一次今日计数；每次开始新播放会话也会触发。 */
-    fun refreshTodaySongCount() {
-        viewModelScope.launch {
-            _todaySongCount.value = runCatching { playStatsRepository.distinctSongsToday() }
-                .onFailure { AppLog.error("PlayerViewModel", "distinctSongsToday failed: ${it.message}", it) }
-                .getOrDefault(_todaySongCount.value)
-        }
-    }
 
     /**
      * 加载按播放次数降序排序的歌曲计数列表（songId, count）。

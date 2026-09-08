@@ -93,8 +93,6 @@ fun HomeScreen(
     sleepTimerRemainingMs: Long = 0L,
     sleepTimerPlayLastSong: Boolean = false,
     sleepTimerPausePending: Boolean = false,
-    /** 当日已听歌曲数（情境问候用） */
-    todaySongCount: Int = 0,
     onSleepTimerStart: (Int, Boolean) -> Unit = { _, _ -> },
     onSleepTimerCancel: () -> Unit = {},
     onShowSongInfo: (Song) -> Unit = {},
@@ -115,9 +113,12 @@ fun HomeScreen(
             }
         }
     } else {
-        // 封面视图：氛围背景（封面主色）+ Box 叠加 FAB 和 Hi-Res 徽章
-        val coverAccent = rememberDominantColor(currentSong.albumArtUri)
-        AmbientBackdrop(accentFromCover = coverAccent) {
+        // 封面视图：氛围背景（封面主色+vibrant次色）+ Box 叠加 FAB 和 Hi-Res 徽章
+        val coverColors = rememberCoverColors(currentSong.albumArtUri)
+        AmbientBackdrop(
+            accentFromCover = coverColors?.first,
+            secondaryFromCover = coverColors?.second,
+        ) {
         Box(
             modifier = Modifier
                 .fillMaxSize(),
@@ -127,10 +128,6 @@ fun HomeScreen(
                 contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 88.dp),
                 verticalArrangement = Arrangement.spacedBy(24.dp)
             ) {
-                item(key = "greeting") {
-                    ContextGreetingRow(todaySongCount = todaySongCount)
-                }
-
                 item(key = "album_cover") {
                     AlbumCoverSection(
                         currentSong = currentSong,

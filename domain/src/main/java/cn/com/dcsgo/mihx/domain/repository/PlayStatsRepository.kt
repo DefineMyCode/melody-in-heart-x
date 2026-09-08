@@ -26,7 +26,4 @@ interface PlayStatsRepository {
 
     /** 播放统计中心快照：今日 / 本周逐日 / 本周榜 / 本月榜 */
     suspend fun playbackStatsSnapshot(): PlaybackStatsSnapshot
-
-    /** 今日播放过的不同歌曲数（主屏情境问候用，单查询轻量） */
-    suspend fun distinctSongsToday(): Int
 }

@@ -18,8 +18,6 @@ data class HomeRouteState(
     val sleepTimerRemainingMs: Long = 0L,
     val sleepTimerPlayLastSong: Boolean = false,
     val sleepTimerPausePending: Boolean = false,
-    /** 当日已听歌曲数（情境问候用），无统计则 0 */
-    val todaySongCount: Int = 0,
 )
 
 data class HomeRouteActions(
@@ -64,7 +62,6 @@ fun HomeRoute(
         sleepTimerRemainingMs = state.sleepTimerRemainingMs,
         sleepTimerPlayLastSong = state.sleepTimerPlayLastSong,
         sleepTimerPausePending = state.sleepTimerPausePending,
-        todaySongCount = state.todaySongCount,
         onSleepTimerStart = actions.onSleepTimerStart,
         onSleepTimerCancel = actions.onSleepTimerCancel,
         onShowSongInfo = actions.onShowSongInfo,

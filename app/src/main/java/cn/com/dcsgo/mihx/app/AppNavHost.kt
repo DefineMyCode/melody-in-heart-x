@@ -165,6 +165,9 @@ fun AppNavHost(
             // M-6（评审 2026-09-03）：定时关闭剩余毫秒窄流——倒计时每秒 tick 只驱动
             // 定时关闭 Chip 局部重组，不写主 UiState 导致整壳重组。
             val sleepTimerRemainingMs by playerViewModel.sleepTimerRemainingMs.collectAsStateWithLifecycle()
+            // 情境问候：今日已听歌曲数（进页后台刷一次，单查询轻量）
+            val todaySongCount by playerViewModel.todaySongCount.collectAsStateWithLifecycle()
+            LaunchedEffect(Unit) { playerViewModel.refreshTodaySongCount() }
             // 播放页"更多"功能对话框状态
             var songForInfo by remember { mutableStateOf<Song?>(null) }
             var songInfo by remember { mutableStateOf<SongInfo?>(null) }
@@ -194,6 +197,7 @@ fun AppNavHost(
                     sleepTimerRemainingMs = sleepTimerRemainingMs,
                     sleepTimerPlayLastSong = uiState.sleepTimerPlayLastSong,
                     sleepTimerPausePending = uiState.sleepTimerPausePending,
+                    todaySongCount = todaySongCount,
                 ),
                 actions = HomeRouteActions(
                     onPlayPauseClick = playerViewModel::togglePlayPause,

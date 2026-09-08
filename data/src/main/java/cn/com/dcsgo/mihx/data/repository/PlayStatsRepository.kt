@@ -123,6 +123,14 @@ class PlayStatsRepository(
         }
     }
 
+    override suspend fun distinctSongsToday(): Int {
+        val zone = ZoneId.systemDefault()
+        val today = LocalDate.now(zone)
+        val start = today.atStartOfDay(zone).toInstant().toEpochMilli()
+        val end = today.plusDays(1).atStartOfDay(zone).toInstant().toEpochMilli()
+        return melodyDao.distinctSongsBetween(start, end)
+    }
+
     override suspend fun playbackStatsSnapshot(): PlaybackStatsSnapshot {
         val zone = ZoneId.systemDefault()
         val today = LocalDate.now(zone)

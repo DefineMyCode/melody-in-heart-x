@@ -93,6 +93,8 @@ fun HomeScreen(
     sleepTimerRemainingMs: Long = 0L,
     sleepTimerPlayLastSong: Boolean = false,
     sleepTimerPausePending: Boolean = false,
+    /** 当日已听歌曲数（情境问候用） */
+    todaySongCount: Int = 0,
     onSleepTimerStart: (Int, Boolean) -> Unit = { _, _ -> },
     onSleepTimerCancel: () -> Unit = {},
     onShowSongInfo: (Song) -> Unit = {},
@@ -101,28 +103,33 @@ fun HomeScreen(
 ) {
     if (currentSong == null) {
         // 空状态：没有任何音乐，仍显示 FAB
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.surface),
-        ) {
-            EmptyHomeHint()
-            HomeFabs(
-                onLuckyPlayClick = onLuckyPlayClick
-            )
+        AmbientBackdrop {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize(),
+            ) {
+                EmptyHomeHint()
+                HomeFabs(
+                    onLuckyPlayClick = onLuckyPlayClick
+                )
+            }
         }
     } else {
-        // 封面视图：用 Box 包裹以叠加 FAB 和 Hi-Res 徽章
+        // 封面视图：氛围背景 + Box 叠加 FAB 和 Hi-Res 徽章
+        AmbientBackdrop {
         Box(
             modifier = Modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.surface),
+                .fillMaxSize(),
         ) {
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 88.dp),
+                contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 88.dp),
                 verticalArrangement = Arrangement.spacedBy(24.dp)
             ) {
+                item(key = "greeting") {
+                    ContextGreetingRow(todaySongCount = todaySongCount)
+                }
+
                 item(key = "album_cover") {
                     AlbumCoverSection(
                         currentSong = currentSong,
@@ -180,6 +187,7 @@ fun HomeScreen(
             HomeFabs(
                 onLuckyPlayClick = onLuckyPlayClick
             )
+        }
         }
     }
 }

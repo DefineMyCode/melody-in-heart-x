@@ -11,66 +11,103 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.draw.blur
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
+import androidx.compose.ui.platform.LocalContext
 
 /**
  * 主屏氛围背景（方案D「此刻」）—— 网易云式「封面背光」。
  *
- * 参考网易云实现拆解出的三要素：
- * 1. 光晕以封面为中心包裹（径向光中心≈封面中心略偏上），封面像被自己照亮
- * 2. 光色 = 封面主色的加深提饱和版（单色系，不引入第二色相冲淡封面）
- * 3. 亮度峰紧贴封面边缘，向下渐灭到底部近黑
- *
- * 实现：BoxWithConstraints 感知屏宽，径向光 center 定在 (屏宽/2, 封面中心y)。
- * y 坐标由 [glowCenterYFraction]（屏高比例）传入——主屏封面约占 0.22 高度处。
+ * 三要素（对齐网易云实测效果）：
+ * 1. 模糊封面位图铺满全屏当底（网易云的本质做法，光斑随封面内容走）
+ * 2. 封面中心径向光晕提亮封面周围
+ * 3. 全屏保持封面色系到底，只做「上亮下暗」渐变——不收黑
  */
 @Composable
 fun AmbientBackdrop(
-    /** 封面主色（可选）。null 时退化为主题色氛围。 */
+    albumArtUri: android.net.Uri? = null,
+    /** 封面主色（可选）。无封面时退化为主题色氛围。 */
     accentFromCover: Color? = null,
-    /** 径向光中心的纵向位置（占屏高比例，主屏封面中心约 0.24） */
-    glowCenterYFraction: Float = 0.24f,
+    /** 径向光中心的纵向位置（占屏高比例，主屏圆形封面中心约 0.32） */
+    glowCenterYFraction: Float = 0.32f,
     content: @Composable () -> Unit,
 ) {
     val dark = isSystemInDarkTheme()
-    // 网易云式取色：主色加深+提饱和，让它像"封面的延续"而不是浮着的彩色灯
-    val glow = (accentFromCover ?: MaterialTheme.colorScheme.primaryContainer)
-        .let { c -> if (dark) darken(c, 0.55f) else darken(c, 0.35f) }
+    val context = LocalContext.current
     val base = MaterialTheme.colorScheme.background
+    // 主色加深但保亮度(网易云是中亮度): 暗 0.78 而非 0.55
+    val glow = (accentFromCover ?: MaterialTheme.colorScheme.primaryContainer)
+        .let { c -> if (dark) darken(c, 0.78f) else darken(c, 0.62f) }
+    // 渐变终点 = glow 再暗一档(网易云底部是深苔绿,不是黑)
+    val bottom = darken(glow, 0.62f)
 
     BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
         val widthPx = with(LocalDensity.current) { maxWidth.toPx() }
         val heightPx = with(LocalDensity.current) { maxHeight.toPx() }
-        val center = Offset(widthPx / 2f, heightPx * glowCenterYFraction)
-        // 半径≈屏宽 1.1 倍:光晕包裹封面并延伸到两侧边缘外一点
-        val radius = widthPx * 1.1f
 
+        // 层0: 模糊封面铺满全屏(网易云本质做法)——Compose blur(硬件加速,minSdk 33)
+        if (albumArtUri != null) {
+            AsyncImage(
+                model = ImageRequest.Builder(context)
+                    .data(albumArtUri)
+                    .build(),
+                contentDescription = null,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .blur(40.dp),
+                contentScale = ContentScale.Crop,
+                alpha = if (dark) 0.9f else 0.85f,
+            )
+            // 模糊封面之上压一层主色薄纱统一色调
+            Box(
+                Modifier
+                    .fillMaxSize()
+                    .background(glow.copy(alpha = 0.45f)),
+            )
+        } else {
+            // 无封面: 主题色渐变兜底
+            Box(
+                Modifier
+                    .fillMaxSize()
+                    .background(
+                        Brush.verticalGradient(listOf(glow.copy(alpha = 0.6f), bottom)),
+                    ),
+            )
+        }
+
+        // 层1: 封面径向提亮光晕
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                // 层1: 封面背光径向光晕(峰值贴封面边缘)
                 .background(
                     Brush.radialGradient(
                         colors = listOf(
-                            glow.copy(alpha = if (dark) 0.95f else 0.9f),
                             glow.copy(alpha = 0.55f),
                             Color.Transparent,
                         ),
-                        center = center,
-                        radius = radius,
+                        center = Offset(widthPx / 2f, heightPx * glowCenterYFraction),
+                        radius = widthPx * 1.1f,
                     ),
-                )
-                // 层2: 中部余晖——同色低透明度线性拖尾,避免径向光之外死黑断层
+                ),
+        )
+
+        // 层2: 上亮下暗整体渐变——终点为深色同色系,永不收黑
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
                 .background(
                     Brush.verticalGradient(
                         colors = listOf(
                             Color.Transparent,
-                            glow.copy(alpha = if (dark) 0.28f else 0.22f),
-                            Color.Transparent,
+                            base.copy(alpha = 0.15f),
+                            bottom.copy(alpha = 0.85f),
                         ),
-                        startY = heightPx * 0.15f,
-                        endY = heightPx * 0.85f,
+                        startY = heightPx * 0.35f,
+                        endY = heightPx,
                     ),
                 ),
         ) {
@@ -79,7 +116,7 @@ fun AmbientBackdrop(
     }
 }
 
-/** 加深并提饱和：返回 HSL 上降低亮度、拉满一点饱和度的颜色。 */
+/** HSV 降亮度提饱和。 */
 private fun darken(color: Color, luminanceFactor: Float): Color {
     val hsv = FloatArray(3)
     android.graphics.Color.RGBToHSV(
@@ -88,7 +125,7 @@ private fun darken(color: Color, luminanceFactor: Float): Color {
         (color.blue * 255).toInt(),
         hsv,
     )
-    hsv[1] = (hsv[1] * 1.25f).coerceAtMost(1f) // 饱和度提升
-    hsv[2] *= luminanceFactor                   // 亮度压暗
+    hsv[1] = (hsv[1] * 1.2f).coerceAtMost(1f)
+    hsv[2] *= luminanceFactor
     return Color(android.graphics.Color.HSVToColor(hsv))
 }

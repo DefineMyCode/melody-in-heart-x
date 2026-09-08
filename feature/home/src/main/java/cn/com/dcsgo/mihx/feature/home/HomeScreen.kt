@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -113,17 +114,20 @@ fun HomeScreen(
             }
         }
     } else {
-        // 封面视图：网易云式封面背光氛围 + Box 叠加 FAB 和 Hi-Res 徽章
+        // 封面视图：网易云式封面背光氛围(模糊封面打底+主色光晕) + Box 叠加 FAB 和 Hi-Res 徽章
         val coverAccent = rememberDominantColor(currentSong.albumArtUri)
-        AmbientBackdrop(accentFromCover = coverAccent) {
+        AmbientBackdrop(
+            albumArtUri = currentSong.albumArtUri,
+            accentFromCover = coverAccent,
+        ) {
         Box(
             modifier = Modifier
                 .fillMaxSize(),
         ) {
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 88.dp),
-                verticalArrangement = Arrangement.spacedBy(24.dp)
+                contentPadding = PaddingValues(start = 24.dp, end = 24.dp, top = 16.dp, bottom = 88.dp),
+                verticalArrangement = Arrangement.spacedBy(28.dp)
             ) {
                 item(key = "album_cover") {
                     AlbumCoverSection(
@@ -269,9 +273,11 @@ private fun AlbumCoverSection(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Box(
+            // 网易云式: 大圆形封面,近全宽(留16dp边距)
             modifier = Modifier
-                .size(252.dp)
-                .clip(RoundedCornerShape(20.dp))
+                .fillMaxWidth()
+                .aspectRatio(1f)
+                .clip(CircleShape)
                 .background(MaterialTheme.colorScheme.primaryContainer)
                 .clickable(
                     interactionSource = remember { MutableInteractionSource() },
@@ -285,14 +291,14 @@ private fun AlbumCoverSection(
                 AsyncImage(
                     model = currentSong.albumArtUri,
                     contentDescription = "专辑封面，点击查看歌词",
-                    modifier = Modifier.size(252.dp),
+                    modifier = Modifier.fillMaxSize(),
                     contentScale = ContentScale.Crop
                 )
             } else {
                 // 无封面时的占位图标
                 Box(
                     modifier = Modifier
-                        .size(252.dp)
+                        .fillMaxSize()
                         .background(MaterialTheme.colorScheme.primaryContainer),
                     contentAlignment = Alignment.Center
                 ) {

@@ -211,6 +211,7 @@ fun AppRoot(
                     emotionViewModel = emotionViewModel,
                     moodTimeSlotViewModel = moodTimeSlotViewModel,
                     showPlayerSheet = showPlayerSheet,
+                    onPlayerSheetDismiss = { showPlayerSheet = false },
                 )
             }
 

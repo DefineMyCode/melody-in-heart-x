@@ -1006,8 +1006,12 @@ private fun PlayerSheetHost(
     showToast: (String) -> Unit,
     loadSongInfo: suspend (Song) -> SongInfo?,
 ) {
+    // 常驻组合：show 只控制 ModalBottomSheet 的挂载/卸载，
+    // 关闭一律走 onDismissRequest → 状态复位，避免"抽屉已消失但 show 仍 true"的死锁
     if (!show) return
-    val sheetState = androidx.compose.material3.rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val sheetState = androidx.compose.material3.rememberModalBottomSheetState(
+        skipPartiallyExpanded = true,
+    )
     androidx.compose.material3.ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,

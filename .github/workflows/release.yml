@@ -1,0 +1,131 @@
+name: Release Build
+
+# push v* tag 自动构建签名 release APK 并发布 GitHub Release + 同步 Gitee Release
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "要构建的 tag（如 v3.7.0）"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  build-release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          ref: ${{ inputs.tag || github.ref }}
+          fetch-depth: 0
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@99b8673ff64fbf99d8d825f62d24d8e2a9f0b2a0 # v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@00354b9f5c992054c22d3652eb0fc508ebfaedaf # v3
+
+      - name: Set up Gradle cache
+        uses: gradle/actions/setup-gradle@cc4fc07e3510a7aa0071d1fbbdd0748de0571a1c # v4
+
+      - name: Restore signing key from secret
+        env:
+          KEYSTORE_B64: ${{ secrets.RELEASE_KEYSTORE_B64 }}
+        run: |
+          mkdir -p key
+          echo "$KEYSTORE_B64" | base64 -d > key/mihx
+          # 校验 keystore 完整性（能列出 alias 即有效）
+          keytool -list -keystore key/mihx -storepass "${{ secrets.RELEASE_KEYSTORE_PASSWORD }}" >/dev/null 2>&1 \
+            || { echo "::error::keystore 无效或密码错误"; exit 1; }
+
+      - name: Create keystore.properties
+        env:
+          STORE_PASSWORD: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
+        run: |
+          cat > keystore.properties <<EOF
+          storeFile=key/mihx
+          storePassword=$STORE_PASSWORD
+          keyAlias=$KEY_ALIAS
+          keyPassword=$KEY_PASSWORD
+          EOF
+
+      - name: Determine version
+        id: version
+        run: |
+          TAG="${{ inputs.tag || github.ref_name }}"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "apk=melody-heart-${TAG}-arm64.apk" >> "$GITHUB_OUTPUT"
+
+      - name: Build signed release APK
+        run: ./gradlew :app:assembleRelease --no-daemon --stacktrace
+
+      - name: Verify APK signature
+        run: |
+          APK="app/build/outputs/apk/release/app-release.apk"
+          $ANDROID_HOME/build-tools/36.0.0/apksigner verify --print-certs "$APK" | head -4
+          ls -lh "$APK"
+
+      - name: Rename APK
+        run: cp app/build/outputs/apk/release/app-release.apk "melody-heart-${{ steps.version.outputs.tag }}-arm64.apk"
+
+      - name: Upload to workflow artifacts (always)
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: ${{ steps.version.outputs.apk }}
+          path: ${{ steps.version.outputs.apk }}
+          retention-days: 14
+
+      - name: Create/Update GitHub Release with APK
+        if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="${{ steps.version.outputs.tag }}"
+          APK="${{ steps.version.outputs.apk }}"
+          # tag 推送时 release 已存在则复用,不存在则用 tag message 作说明创建
+          gh release view "$TAG" >/dev/null 2>&1 \
+            || gh release create "$TAG" --title "$TAG" --generate-notes
+          gh release upload "$TAG" "$APK" --clobber
+
+      - name: Sync to Gitee Release
+        env:
+          GITEE_TOKEN: ${{ secrets.GITEE_TOKEN }}
+        run: |
+          TAG="${{ steps.version.outputs.tag }}"
+          APK="${{ steps.version.outputs.apk }}"
+          # 从 GitHub release 说明同步正文
+          BODY=$(gh release view "$TAG" --json body --jq .body | python3 -c 'import json,sys; print(json.load(sys.stdin))' 2>/dev/null || echo "$TAG")
+          PAYLOAD=$(python3 - "$TAG" "$BODY" <<'PY'
+          import json, sys
+          print(json.dumps({
+              "tag_name": sys.argv[1],
+              "target_commitish": "main",
+              "name": sys.argv[1],
+              "body": sys.argv[2],
+          }))
+          PY
+          )
+          # release 已存在则跳过创建(幂等), 拿 release id
+          RID=$(curl -s "https://gitee.com/api/v5/repos/deng-chongshuang_admin/melody-in-heart-x/releases?access_token=$GITEE_TOKEN" \
+            | python3 -c "import json,sys; rs=json.load(sys.stdin); print(next((r['id'] for r in rs if r['tag_name']=='$TAG'), ''))")
+          if [ -z "$RID" ]; then
+            RID=$(curl -s -X POST "https://gitee.com/api/v5/repos/deng-chongshuang_admin/melody-in-heart-x/releases" \
+              -H "Content-Type: application/json" -d "$PAYLOAD" \
+              | python3 -c "import json,sys; print(json.load(sys.stdin).get('id',''))")
+          fi
+          if [ -z "$RID" ]; then echo "::error::Gitee release 创建失败"; exit 1; fi
+          curl -s -X POST "https://gitee.com/api/v5/repos/deng-chongshuang_admin/melody-in-heart-x/releases/$RID/attach_files" \
+            -F "access_token=$GITEE_TOKEN" \
+            -F "file=@$APK"

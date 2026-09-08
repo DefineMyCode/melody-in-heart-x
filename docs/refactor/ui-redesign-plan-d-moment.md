@@ -10,7 +10,7 @@
 
 **可行，但这是一次"导航骨架级"重构，不是换肤。** 改动核心是把 App 从
 「Tab 页框架（曲库为主屏）」翻转为「播放为主屏 + 曲库降级为 BottomSheet 抽屉」。
-预估总量 **3-5 个工作日**（纯 UI 层，domain/data 几乎不动），分 4 个独立可合并的
+预估总量 **2.5-4 个工作日**（纯 UI 层，domain/data 几乎不动），分 4 个独立可合并的
 阶段，每阶段出一个可用 debug 包。
 
 风险等级：中。不需要 Room 迁移、不需要动播放内核（PlaybackController/
@@ -47,7 +47,6 @@ PlayerRuntime 零改动），但 `AppNavHost` 的 17 个 composable 路由表要
 
 | 组件 | 说明 | 工作量 | 降级方案 |
 |---|---|---|---|
-| 旋转黑胶封面 | `rememberInfiniteTransition` 旋转 + 播放状态机驱动 start/stop；真实封面裁圆 + Mixin 高光弧 | 0.5 天 | 静态圆封面+旋转 CD 纹理贴图，不动动画 |
 | 氛围背景 | 封面主色提取（Palette API 已有 AlbumArtExtractor 可扩展）→ radial-gradient 模糊层，`:player` 内自绘 | 0.5 天 | 纯静态深底渐变（去掉动画）|
 | 情绪转盘（dial）| 横滑胶囊选择器：LazyRow + snap + 中位放大；选词=标记接口复用 EmotionViewModel.overrideEmotion | 1 天 | 退化为普通横滑 chips（无中位放大），0.5 天 |
 | 情境问候 | "晚上好·今晚已听14首"：时段判断 + 今日播放次数（playback_stats 已有今日查询）| 0.25 天 | — |
@@ -59,8 +58,8 @@ PlayerRuntime 零改动），但 `AppNavHost` 的 17 个 composable 路由表要
 
 **阶段 1：主屏翻转（1-1.5 天）** — 风险最高先行
 - AppNavHost 改造：PlayScreen 升为 HOME 路由，PlaylistScreen 包进抽屉
-- 黑胶 + 氛围背景 + 情境问候
-- 验收：切歌/暂停时唱片停转；进程重建后主屏状态正确；1103 首抽屉展开不掉帧（复用 flatGroupedSongs 共享缓存）
+- 方形大封面（圆角卡片）+ 氛围背景 + 情境问候
+- 验收：切歌时封面平滑过渡；进程重建后主屏状态正确；1103 首抽屉展开不掉帧（复用 flatGroupedSongs 共享缓存）
 
 **阶段 2：播放详情 + 队列（0.5-1 天）**
 - 歌词页加上下文徽章 + 页面指示点；PlayQueueSheet 样式对齐设计
@@ -79,9 +78,9 @@ PlayerRuntime 零改动），但 `AppNavHost` 的 17 个 composable 路由表要
 
 ## 四、边界与退化分析（按你的要求前置）
 
-1. **低配机性能**：氛围层 blur + 唱片旋转 + 歌词高亮三层叠加，Redmi/低端机可能掉帧。
+1. **低配机性能**：氛围层 blur + 歌词高亮两层叠加，Redmi/低端机可能掉帧。
    对策：`LocalAccessibilityManager` 检测或提供"减少动效"开关（设置页加一行），
-   关闭后全部退化为静态。
+   关闭后氛围层退化为静态渐变。
 2. **抽屉内列表长度**：1103 首全列表在抽屉里保持 LazyColumn + 已有共享分组缓存，
    展开动画期间避免重组（内容用 `movableContentOf` 或延迟到 settle 后加载）。
 3. **播放主屏无返回键语义**：BACK 键在主屏 = 打开/关闭抽屉，而不是退出 App；

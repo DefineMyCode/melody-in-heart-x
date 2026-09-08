@@ -153,9 +153,14 @@ private fun ScaffoldContentColumn(
                                     else -> 0
                                 }
                                 if (direction != 0) {
-                                    val targetIndex = currentDestination.ordinal + direction
-                                    AppDestinations.entries.getOrNull(targetIndex)
-                                        ?.let(onDestinationSelected)
+                                    // 横滑只在底栏 Tab（曲库/我的）间切换；
+                                    // HOME 是全屏抽屉承载，不参与 Tab 序（方案D）
+                                    val tabs = AppDestinations.entries.filter { it.showInBottomBar }
+                                    val currentIdx = tabs.indexOf(currentDestination)
+                                    if (currentIdx >= 0) {
+                                        val target = (currentIdx + direction).mod(tabs.size)
+                                        onDestinationSelected(tabs[target])
+                                    }
                                 }
                             },
                             onDragCancel = { totalDragX = 0f },

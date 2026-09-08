@@ -350,6 +350,7 @@ private fun AlbumCoverSection(
 // 歌曲信息与播放控制栏
 // ─────────────────────────────────────────────────────────────────────────────
 
+@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 @Composable
 private fun SongInfoSection(
     currentSong: Song,
@@ -471,10 +472,35 @@ private fun SongInfoSection(
                 },
                 valueRange = 0f..durationMs.coerceAtLeast(1L).toFloat(),
                 modifier = Modifier.fillMaxWidth(),
+                // 网易云式细轨道：无 thumb 竖线，轨道压细
+                thumb = { Spacer(modifier = Modifier.size(0.dp)) },
+                track = { state ->
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(3.dp)
+                            .background(
+                                color = MaterialTheme.colorScheme.outlineVariant,
+                                shape = RoundedCornerShape(1.5.dp)
+                            )
+                    ) {
+                        val fraction = if (state.valueRange.endInclusive > state.valueRange.start) {
+                            ((state.value - state.valueRange.start) /
+                                (state.valueRange.endInclusive - state.valueRange.start)).coerceIn(0f, 1f)
+                        } else 0f
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth(fraction)
+                                .height(3.dp)
+                                .background(
+                                    color = MaterialTheme.colorScheme.primary,
+                                    shape = RoundedCornerShape(1.5.dp)
+                                )
+                        )
+                    }
+                },
                 colors = SliderDefaults.colors(
-                    thumbColor = MaterialTheme.colorScheme.primary,
                     activeTrackColor = MaterialTheme.colorScheme.primary,
-                    // 对齐设计系统 §5.4：未完成轨道用 out1（outlineVariant）
                     inactiveTrackColor = MaterialTheme.colorScheme.outlineVariant
                 )
             )

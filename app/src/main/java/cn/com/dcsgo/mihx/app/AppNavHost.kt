@@ -114,6 +114,9 @@ fun AppNavHost(
     playlistResumeViewModel: PlaylistResumeViewModel,
     emotionViewModel: cn.com.dcsgo.mihx.app.emotion.EmotionViewModel,
     moodTimeSlotViewModel: cn.com.dcsgo.mihx.app.mood.MoodTimeSlotViewModel,
+    /** 曲库抽屉（方案D）：由 AppRoot 控制显隐，本组件负责渲染内容 */
+    showLibrarySheet: Boolean = false,
+    onLibrarySheetDismiss: () -> Unit = {},
 ) {
     // 失败歌曲手动标记等 suspend 回调的协程作用域
     val navCoroutineScope = rememberCoroutineScope()
@@ -966,5 +969,115 @@ fun AppNavHost(
                 ),
             )
         }
+    }
+
+    // 曲库抽屉（方案D）：NavHost 之外的模态浮层
+    LibrarySheetHost(
+        show = showLibrarySheet,
+        onDismiss = onLibrarySheetDismiss,
+        navController = navController,
+        uiState = uiState,
+        playerViewModel = playerViewModel,
+        permissionCoordinator = permissionCoordinator,
+        deleteSongWithToast = deleteSongWithToast,
+        playlistResumeViewModel = playlistResumeViewModel,
+        emotionViewModel = emotionViewModel,
+        sharedLibrarySongs = sharedLibrarySongs,
+        loadSongInfo = loadSongInfo,
+        showToast = showToast,
+    )
+}
+
+
+/**
+ * 曲库抽屉（方案D「此刻」）：ModalBottomSheet 承载原 PLAYLIST 路由的曲库首页。
+ *
+ * - 复用 [PlaylistRoute] 全部组装逻辑（与 PLAYLIST 路由一致）
+ * - 点进歌单/歌手/专辑详情时先关抽屉再导航（全屏页不能压在模态浮层下）
+ * - 关闭后 NavHost 的 PLAYLIST 路由不再作为入口存在（底部栏曲库项改为开抽屉）
+ */
+@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+@Composable
+private fun LibrarySheetHost(
+    show: Boolean,
+    onDismiss: () -> Unit,
+    navController: NavHostController,
+    uiState: PlayerUiState,
+    playerViewModel: PlayerViewModel,
+    permissionCoordinator: PermissionCoordinator,
+    deleteSongWithToast: (Int) -> Unit,
+    playlistResumeViewModel: PlaylistResumeViewModel,
+    emotionViewModel: cn.com.dcsgo.mihx.app.emotion.EmotionViewModel,
+    sharedLibrarySongs: List<Song>,
+    loadSongInfo: suspend (Song) -> SongInfo?,
+    showToast: (String) -> Unit,
+) {
+    if (!show) return
+    val sheetState = androidx.compose.material3.rememberModalBottomSheetState(skipPartiallyExpanded = false)
+    androidx.compose.material3.ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = sheetState,
+        containerColor = androidx.compose.material3.MaterialTheme.colorScheme.surface,
+        dragHandle = null,
+    ) {
+        val baseActions = playlistRouteActions(
+            navController,
+            playerViewModel,
+            permissionCoordinator,
+            deleteSongWithToast,
+            playlistResumeViewModel,
+        )
+        val actions = baseActions.copy(
+            // 任何导航动作前先收起抽屉（详情页是全屏路由）
+            onPlaylistClick = { playlist ->
+                onDismiss()
+                baseActions.onPlaylistClick(playlist)
+            },
+            onArtistClick = { name ->
+                onDismiss()
+                baseActions.onArtistClick(name)
+            },
+            onAlbumClick = { name ->
+                onDismiss()
+                baseActions.onAlbumClick(name)
+            },
+            onShowVersionManagement = {
+                onDismiss()
+                baseActions.onShowVersionManagement()
+            },
+            onShowQuickSkipSongs = {
+                onDismiss()
+                baseActions.onShowQuickSkipSongs()
+            },
+            onSongClick = { song, contextSongs ->
+                // 点歌 = 播放,抽屉收起,不导航
+                onDismiss()
+                baseActions.onSongClick(song, contextSongs)
+                playlistResumeViewModel.switchSource(null, uiState.currentSong?.id)
+            },
+            onLocalSongClick = { song ->
+                onDismiss()
+                baseActions.onLocalSongClick(song)
+            },
+        )
+        val emotionRowsUi by emotionViewModel.rows.collectAsStateWithLifecycle()
+        val songSortMode by playerViewModel.songSortMode.collectAsStateWithLifecycle()
+        val songSortAscending by playerViewModel.songSortAscending.collectAsStateWithLifecycle()
+        PlaylistRoute(
+            state = playlistRouteState(
+                uiState,
+                playerViewModel,
+                selectedPlaylist = null,
+                emotionRows = emotionRowsUi.map {
+                    EmotionSongUiRow(song = it.song, tags = it.tags, corrected = it.corrected)
+                },
+                precomputedLibrarySongs = sharedLibrarySongs,
+                sortMode = songSortMode,
+                sortAscending = songSortAscending,
+            ),
+            actions = actions,
+            loadSongInfo = loadSongInfo,
+            showToast = showToast,
+        )
     }
 }

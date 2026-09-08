@@ -76,10 +76,15 @@ fun AppRoot(
         ThemeMode.DARK -> true
     }
     var showQueueSheet by remember { mutableStateOf(false) }
+    // 曲库抽屉（方案D）：底部栏"曲库"项不再导航，改为开抽屉
+    var showLibrarySheet by remember { mutableStateOf(false) }
     val uiState by playerViewModel.uiState.collectAsStateWithLifecycle()
 
     BackHandler(enabled = showQueueSheet) {
         showQueueSheet = false
+    }
+    BackHandler(enabled = showLibrarySheet) {
+        showLibrarySheet = false
     }
 
     LaunchedEffect(activeRoute) {
@@ -177,6 +182,7 @@ fun AppRoot(
                         restoreState = true
                     }
                 },
+                onLibraryClick = { showLibrarySheet = true },
                 // 全屏歌词页不响应横滑，避免误切底部 Tab
                 swipeEnabled = activeRoute != AppRoutes.LYRICS,
             ) {
@@ -199,6 +205,8 @@ fun AppRoot(
                     playlistResumeViewModel = playlistResumeViewModel,
                     emotionViewModel = emotionViewModel,
                     moodTimeSlotViewModel = moodTimeSlotViewModel,
+                    showLibrarySheet = showLibrarySheet,
+                    onLibrarySheetDismiss = { showLibrarySheet = false },
                 )
             }
 

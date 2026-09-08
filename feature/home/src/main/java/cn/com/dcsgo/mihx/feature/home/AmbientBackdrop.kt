@@ -18,10 +18,14 @@ import androidx.compose.ui.graphics.Color
  * 视觉同源且零成本。真要跟封面联动时再上 Palette API。
  */
 @Composable
-fun AmbientBackdrop(content: @Composable () -> Unit) {
+fun AmbientBackdrop(
+    /** 封面主色（可选）。null 时退化为主题色氛围。 */
+    accentFromCover: Color? = null,
+    content: @Composable () -> Unit,
+) {
     val dark = isSystemInDarkTheme()
     // 主题容器色 → 背景色的对角渐变：播放主屏的"氛围光"底
-    val glow = MaterialTheme.colorScheme.primaryContainer
+    val glow = accentFromCover ?: MaterialTheme.colorScheme.primaryContainer
     val base = MaterialTheme.colorScheme.background
     val brush = Brush.verticalGradient(
         colors = listOf(

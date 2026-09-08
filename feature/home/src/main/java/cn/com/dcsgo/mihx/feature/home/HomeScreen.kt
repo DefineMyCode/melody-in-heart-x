@@ -115,8 +115,9 @@ fun HomeScreen(
             }
         }
     } else {
-        // 封面视图：氛围背景 + Box 叠加 FAB 和 Hi-Res 徽章
-        AmbientBackdrop {
+        // 封面视图：氛围背景（封面主色）+ Box 叠加 FAB 和 Hi-Res 徽章
+        val coverAccent = rememberDominantColor(currentSong.albumArtUri)
+        AmbientBackdrop(accentFromCover = coverAccent) {
         Box(
             modifier = Modifier
                 .fillMaxSize(),

@@ -22,32 +22,6 @@ import androidx.compose.ui.graphics.Color
  * 无封面/解码失败 → 返回 null，调用方退化为主题色渐变。不做 LRU——
  * 主屏一次只显示一首歌，同一首歌反复切页时 coil 自己有内存缓存。
  */
-/** 主色 + 次色(vibrant)成对提取。次色与主色过近时给 null（调用方自行退化）。 */
-@Composable
-fun rememberCoverColors(albumArtUri: android.net.Uri?): Pair<Color, Color?>? {
-    val context = LocalContext.current
-    var colors by remember(albumArtUri) { mutableStateOf<Pair<Color, Color?>?>(null) }
-
-    LaunchedEffect(albumArtUri) {
-        val uri = albumArtUri ?: return@LaunchedEffect
-        val extracted = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Default) {
-            runCatching {
-                val request = ImageRequest.Builder(context).data(uri).allowHardware(false).build()
-                val drawable = context.imageLoader.execute(request).drawable ?: return@runCatching null
-                val bitmap = (drawable as? BitmapDrawable)?.bitmap ?: drawable.toBitmap()
-                    ?: return@runCatching null
-                val palette = Palette.from(bitmap).maximumColorCount(16).generate()
-                val dominant = (palette.dominantSwatch ?: palette.vibrantSwatch)?.let { Color(it.rgb) }
-                    ?: return@runCatching null
-                val vibrant = palette.vibrantSwatch?.let { Color(it.rgb) }
-                dominant to vibrant
-            }.getOrNull()
-        }
-        colors = extracted
-    }
-    return colors
-}
-
 @Composable
 fun rememberDominantColor(albumArtUri: android.net.Uri?): Color? {
     val context = LocalContext.current

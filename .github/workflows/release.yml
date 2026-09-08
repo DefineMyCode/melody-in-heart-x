@@ -117,15 +117,30 @@ jobs:
           }))
           PY
           )
-          # release 已存在则跳过创建(幂等), 拿 release id
-          RID=$(curl -s "https://gitee.com/api/v5/repos/deng-chongshuang_admin/melody-in-heart-x/releases?access_token=$GITEE_TOKEN" \
-            | python3 -c "import json,sys; rs=json.load(sys.stdin); print(next((r['id'] for r in rs if r['tag_name']=='$TAG'), ''))")
-          if [ -z "$RID" ]; then
-            RID=$(curl -s -X POST "https://gitee.com/api/v5/repos/deng-chongshuang_admin/melody-in-heart-x/releases" \
-              -H "Content-Type: application/json" -d "$PAYLOAD" \
-              | python3 -c "import json,sys; print(json.load(sys.stdin).get('id',''))")
-          fi
+          # release 已存在则跳过创建(幂等), 拿 release id —— 全 python 处理,容错非列表响应
+          RID=$(python3 - "$TAG" "$PAYLOAD" <<'PY'
+          import json, os, sys, urllib.request, urllib.parse
+          token = os.environ["GITEE_TOKEN"]
+          tag = sys.argv[1]; payload = sys.argv[2]
+          base = "https://gitee.com/api/v5/repos/deng-chongshuang_admin/melody-in-heart-x/releases"
+          def req(url, data=None):
+              r = urllib.request.Request(url, data=json.dumps(data).encode() if data else None,
+                                         headers={"Content-Type": "application/json"} if data else {})
+              return json.load(urllib.request.urlopen(r))
+          try:
+              existing = req(f"{base}?access_token={urllib.parse.quote(token)}&per_page=100")
+              rid = next((r["id"] for r in existing if isinstance(r, dict) and r.get("tag_name") == tag), "")
+          except Exception:
+              rid = ""
+          if not rid:
+              created = req(f"{base}?access_token={urllib.parse.quote(token)}", json.loads(payload))
+              rid = str(created.get("id", ""))
+          print(rid)
+          PY
+          )
           if [ -z "$RID" ]; then echo "::error::Gitee release 创建失败"; exit 1; fi
           curl -s -X POST "https://gitee.com/api/v5/repos/deng-chongshuang_admin/melody-in-heart-x/releases/$RID/attach_files" \
             -F "access_token=$GITEE_TOKEN" \
-            -F "file=@$APK"
+            -F "file=@$APK" > /tmp/gitee_attach.json
+          python3 -c "import json; d=json.load(open('/tmp/gitee_attach.json')); assert d.get('name'), d"
+          echo "Gitee attachment OK: $(python3 -c "import json; print(json.load(open('/tmp/gitee_attach.json')).get('name'))")

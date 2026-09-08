@@ -42,8 +42,6 @@ fun AppScaffold(
     onPreviousClick: () -> Unit,
     onNextClick: () -> Unit,
     onNavigateToHome: () -> Unit,
-    /** 非空时底部栏"曲库"项改为触发此回调（曲库抽屉，方案D），不导航 */
-    onLibraryClick: (() -> Unit)? = null,
     swipeEnabled: Boolean = true,
     content: @Composable () -> Unit,
 ) {
@@ -55,7 +53,6 @@ fun AppScaffold(
                 TextNavRail(
                     currentDestination = currentDestination,
                     onDestinationSelected = onDestinationSelected,
-                    onLibraryClick = onLibraryClick,
                 )
                 ScaffoldContentColumn(
                     currentDestination = currentDestination,
@@ -93,7 +90,6 @@ fun AppScaffold(
                 TextBottomBar(
                     currentDestination = currentDestination,
                     onDestinationSelected = onDestinationSelected,
-                    onLibraryClick = onLibraryClick,
                 )
             }
         }
@@ -176,7 +172,6 @@ private fun ScaffoldContentColumn(
 private fun TextBottomBar(
     currentDestination: AppDestinations,
     onDestinationSelected: (AppDestinations) -> Unit,
-    onLibraryClick: (() -> Unit)? = null,
 ) {
     Row(
         modifier = Modifier
@@ -185,7 +180,7 @@ private fun TextBottomBar(
             .navigationBarsPadding(),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        AppDestinations.entries.forEach { destination ->
+        AppDestinations.entries.filter { it.showInBottomBar }.forEach { destination ->
             val selected = destination == currentDestination
             Text(
                 text = destination.label,
@@ -197,14 +192,7 @@ private fun TextBottomBar(
                 modifier = Modifier
                     .weight(1f)
                     .padding(vertical = 8.dp)
-                    .clickable {
-                        // 曲库项：有抽屉回调时开抽屉（方案D），否则旧行为导航
-                        if (destination == AppDestinations.PLAYLIST && onLibraryClick != null) {
-                            onLibraryClick()
-                        } else {
-                            onDestinationSelected(destination)
-                        }
-                    },
+                    .clickable { onDestinationSelected(destination) },
             )
         }
     }
@@ -215,7 +203,6 @@ private fun TextBottomBar(
 private fun TextNavRail(
     currentDestination: AppDestinations,
     onDestinationSelected: (AppDestinations) -> Unit,
-    onLibraryClick: (() -> Unit)? = null,
 ) {
     Column(
         modifier = Modifier
@@ -226,7 +213,7 @@ private fun TextNavRail(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        AppDestinations.entries.forEach { destination ->
+        AppDestinations.entries.filter { it.showInBottomBar }.forEach { destination ->
             val selected = destination == currentDestination
             Text(
                 text = destination.label,
@@ -236,13 +223,7 @@ private fun TextNavRail(
                 else MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable {
-                        if (destination == AppDestinations.PLAYLIST && onLibraryClick != null) {
-                            onLibraryClick()
-                        } else {
-                            onDestinationSelected(destination)
-                        }
-                    }
+                    .clickable { onDestinationSelected(destination) }
                     .padding(vertical = 10.dp),
                 textAlign = TextAlign.Center,
             )

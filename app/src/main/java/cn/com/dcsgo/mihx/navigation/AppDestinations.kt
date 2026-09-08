@@ -6,9 +6,11 @@ enum class AppDestinations(
     val route: String,
     val label: String,
     val iconResId: Int,
+    /** 是否出现在底部导航栏（方案D：播放页改为全屏抽屉，不占底栏位） */
+    val showInBottomBar: Boolean = true,
 ) {
     PLAYLIST(AppRoutes.PLAYLIST, "曲库", R.drawable.queue_music_24),
-    HOME(AppRoutes.HOME, "播放", R.drawable.ic_play),
+    HOME(AppRoutes.HOME, "播放", R.drawable.ic_play, showInBottomBar = false),
     USER(AppRoutes.USER, "我的", R.drawable.ic_person_24),
     ;
 

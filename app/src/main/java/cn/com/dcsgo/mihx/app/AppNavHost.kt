@@ -10,6 +10,10 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.runtime.Composable
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -114,9 +118,9 @@ fun AppNavHost(
     playlistResumeViewModel: PlaylistResumeViewModel,
     emotionViewModel: cn.com.dcsgo.mihx.app.emotion.EmotionViewModel,
     moodTimeSlotViewModel: cn.com.dcsgo.mihx.app.mood.MoodTimeSlotViewModel,
-    /** 曲库抽屉（方案D）：由 AppRoot 控制显隐，本组件负责渲染内容 */
-    showLibrarySheet: Boolean = false,
-    onLibrarySheetDismiss: () -> Unit = {},
+    /** 播放全屏抽屉（方案D实验）：由 AppRoot 控制显隐 */
+    showPlayerSheet: Boolean = false,
+    onPlayerSheetDismiss: () -> Unit = {},
 ) {
     // 失败歌曲手动标记等 suspend 回调的协程作用域
     val navCoroutineScope = rememberCoroutineScope()
@@ -967,113 +971,136 @@ fun AppNavHost(
         }
     }
 
-    // 曲库抽屉（方案D）：NavHost 之外的模态浮层
-    LibrarySheetHost(
-        show = showLibrarySheet,
-        onDismiss = onLibrarySheetDismiss,
+    // 播放全屏抽屉（方案D实验）：NavHost 之外的模态浮层，承载播放主屏内容
+    PlayerSheetHost(
+        show = showPlayerSheet,
+        onDismiss = onPlayerSheetDismiss,
         navController = navController,
         uiState = uiState,
         playerViewModel = playerViewModel,
-        permissionCoordinator = permissionCoordinator,
-        deleteSongWithToast = deleteSongWithToast,
         playlistResumeViewModel = playlistResumeViewModel,
-        emotionViewModel = emotionViewModel,
-        sharedLibrarySongs = sharedLibrarySongs,
-        loadSongInfo = loadSongInfo,
+        onShowQueue = onShowQueue,
         showToast = showToast,
+        loadSongInfo = loadSongInfo,
     )
 }
 
 
 /**
- * 曲库抽屉（方案D「此刻」）：ModalBottomSheet 承载原 PLAYLIST 路由的曲库首页。
+ * 播放全屏抽屉（方案D实验）：ModalBottomSheet 全高承载播放主屏（HomeRoute）。
  *
- * - 复用 [PlaylistRoute] 全部组装逻辑（与 PLAYLIST 路由一致）
- * - 点进歌单/歌手/专辑详情时先关抽屉再导航（全屏页不能压在模态浮层下）
- * - 关闭后 NavHost 的 PLAYLIST 路由不再作为入口存在（底部栏曲库项改为开抽屉）
+ * - 底部栏只剩「曲库 / 我的」，播放页由本抽屉承载（跳过 NavHost）
+ * - skipPartiallyExpanded = true：直达全屏态，模拟"全屏抽屉"
+ * - 抽屉内点歌词/歌手/专辑会导航——先关抽屉再跳（全屏路由不能压在浮层下）
  */
 @OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 @Composable
-private fun LibrarySheetHost(
+private fun PlayerSheetHost(
     show: Boolean,
     onDismiss: () -> Unit,
     navController: NavHostController,
     uiState: PlayerUiState,
     playerViewModel: PlayerViewModel,
-    permissionCoordinator: PermissionCoordinator,
-    deleteSongWithToast: (Int) -> Unit,
     playlistResumeViewModel: PlaylistResumeViewModel,
-    emotionViewModel: cn.com.dcsgo.mihx.app.emotion.EmotionViewModel,
-    sharedLibrarySongs: List<Song>,
-    loadSongInfo: suspend (Song) -> SongInfo?,
+    onShowQueue: () -> Unit,
     showToast: (String) -> Unit,
+    loadSongInfo: suspend (Song) -> SongInfo?,
 ) {
     if (!show) return
-    val sheetState = androidx.compose.material3.rememberModalBottomSheetState(skipPartiallyExpanded = false)
+    val sheetState = androidx.compose.material3.rememberModalBottomSheetState(skipPartiallyExpanded = true)
     androidx.compose.material3.ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
-        containerColor = androidx.compose.material3.MaterialTheme.colorScheme.surface,
+        containerColor = androidx.compose.material3.MaterialTheme.colorScheme.background,
         dragHandle = null,
+        tonalElevation = 0.dp,
     ) {
-        val baseActions = playlistRouteActions(
-            navController,
-            playerViewModel,
-            permissionCoordinator,
-            deleteSongWithToast,
-            playlistResumeViewModel,
-        )
-        val actions = baseActions.copy(
-            // 任何导航动作前先收起抽屉（详情页是全屏路由）
-            onPlaylistClick = { playlist ->
-                onDismiss()
-                baseActions.onPlaylistClick(playlist)
-            },
-            onArtistClick = { name ->
-                onDismiss()
-                baseActions.onArtistClick(name)
-            },
-            onAlbumClick = { name ->
-                onDismiss()
-                baseActions.onAlbumClick(name)
-            },
-            onShowVersionManagement = {
-                onDismiss()
-                baseActions.onShowVersionManagement()
-            },
-            onShowQuickSkipSongs = {
-                onDismiss()
-                baseActions.onShowQuickSkipSongs()
-            },
-            onSongClick = { song, contextSongs ->
-                // 点歌 = 播放,抽屉收起,不导航
-                onDismiss()
-                baseActions.onSongClick(song, contextSongs)
-                playlistResumeViewModel.switchSource(null, uiState.currentSong?.id)
-            },
-            onLocalSongClick = { song ->
-                onDismiss()
-                baseActions.onLocalSongClick(song)
-            },
-        )
-        val emotionRowsUi by emotionViewModel.rows.collectAsStateWithLifecycle()
-        val songSortMode by playerViewModel.songSortMode.collectAsStateWithLifecycle()
-        val songSortAscending by playerViewModel.songSortAscending.collectAsStateWithLifecycle()
-        PlaylistRoute(
-            state = playlistRouteState(
-                uiState,
-                playerViewModel,
-                selectedPlaylist = null,
-                emotionRows = emotionRowsUi.map {
-                    EmotionSongUiRow(song = it.song, tags = it.tags, corrected = it.corrected)
-                },
-                precomputedLibrarySongs = sharedLibrarySongs,
-                sortMode = songSortMode,
-                sortAscending = songSortAscending,
-            ),
-            actions = actions,
-            loadSongInfo = loadSongInfo,
-            showToast = showToast,
-        )
+        Box(modifier = Modifier.fillMaxSize()) {
+            // 播放进度窄流（与 HOME 路由同源）
+            val positionMs by playerViewModel.positionMs.collectAsStateWithLifecycle()
+            HomeRoute(
+                state = HomeRouteState(
+                    currentSong = uiState.currentSong,
+                    isPlaying = uiState.isPlaying,
+                    currentPositionMs = positionMs,
+                    durationMs = uiState.durationMs,
+                    playMode = uiState.playQueue.playMode,
+                    isInfinitePlay = uiState.isInfinitePlay,
+                    sameNameSongs = uiState.sameNameSongs,
+                    isSleepTimerActive = uiState.isSleepTimerActive,
+                    sleepTimerPlayLastSong = uiState.sleepTimerPlayLastSong,
+                    sleepTimerPausePending = uiState.sleepTimerPausePending,
+                ),
+                actions = HomeRouteActions(
+                    onPlayPauseClick = playerViewModel::togglePlayPause,
+                    onPreviousClick = playerViewModel::playPrevious,
+                    onNextClick = playerViewModel::playNext,
+                    onStartSeeking = playerViewModel::startSeeking,
+                    onEndSeeking = playerViewModel::endSeeking,
+                    onSeekTo = playerViewModel::seekTo,
+                    onQueueClick = {
+                        onDismiss()
+                        onShowQueue()
+                    },
+                    onTogglePlayMode = {
+                        playerViewModel.togglePlayMode()
+                        playerViewModel.currentPlayMode.label
+                    },
+                    onSwitchVersion = playerViewModel::switchToVersion,
+                    onShowLyrics = {
+                        onDismiss()
+                        navController.navigate(AppRoutes.LYRICS)
+                    },
+                    onArtistClick = { name ->
+                        onDismiss()
+                        navController.navigate(AppRoutes.artistDetail(name))
+                    },
+                    onAlbumClick = { name ->
+                        onDismiss()
+                        navController.navigate(AppRoutes.albumDetail(name))
+                    },
+                    onLuckyPlayClick = {
+                        val started = playerViewModel.playRandomQueue()
+                        if (started) {
+                            playerViewModel.currentMoodSlotName()?.let { slotName ->
+                                showToast("已按「$slotName」为你随机播放")
+                            }
+                        } else {
+                            showToast("还没有可播放的音乐，请先导入歌曲吧~")
+                        }
+                        playlistResumeViewModel.switchSource(null, uiState.currentSong?.id)
+                        started
+                    },
+                    onStartInfinitePlay = {
+                        val started = playerViewModel.startInfinitePlay()
+                        if (started) {
+                            playerViewModel.currentMoodSlotName()?.let { slotName ->
+                                showToast("已按「$slotName」开启无限随机播放")
+                            }
+                        }
+                        playlistResumeViewModel.switchSource(null, uiState.currentSong?.id)
+                        started
+                    },
+                    onStopInfinitePlay = playerViewModel::stopInfinitePlay,
+                    onRelatedPlayClick = { song ->
+                        val added = playerViewModel.playRelatedSongs(song)
+                        playlistResumeViewModel.switchSource(null, uiState.currentSong?.id)
+                        if (added > 0) showToast("已关联 $added 首歌曲") else showToast("未检索到关联歌曲")
+                    },
+                    onSleepTimerStart = { minutes, playLast ->
+                        playerViewModel.startSleepTimer(minutes, playLast)
+                        showToast("已设置定时关闭：${minutes}分钟后暂停播放")
+                    },
+                    onSleepTimerCancel = {
+                        playerViewModel.cancelSleepTimer()
+                        showToast("已取消定时关闭")
+                    },
+                    onShowSongInfo = { },
+                    onAddToPlaylist = { },
+                    onDeleteSong = { },
+                ),
+                showToast = showToast,
+            )
+        }
     }
 }

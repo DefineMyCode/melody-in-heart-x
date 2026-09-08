@@ -78,7 +78,15 @@ fun AppRoot(
     var showQueueSheet by remember { mutableStateOf(false) }
     // 播放全屏抽屉（方案D实验）：底部栏不再有"播放"项，播放页由抽屉承载
     var showPlayerSheet by remember { mutableStateOf(false) }
+    var resumeSheetArmed by remember { mutableStateOf(true) }
     val uiState by playerViewModel.uiState.collectAsStateWithLifecycle()
+    // 重启后若恢复了播放会话，直接以全屏抽屉形态呈现播放页（方案D）
+    LaunchedEffect(uiState.currentSong?.id) {
+        if (resumeSheetArmed && uiState.currentSong != null) {
+            showPlayerSheet = true
+            resumeSheetArmed = false
+        }
+    }
 
     BackHandler(enabled = showQueueSheet) {
         showQueueSheet = false

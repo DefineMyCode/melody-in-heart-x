@@ -46,6 +46,7 @@ import cn.com.dcsgo.mihx.feature.home.QuickSkipSongsRouteState
 import cn.com.dcsgo.mihx.feature.lyrics.LyricsRoute
 import cn.com.dcsgo.mihx.feature.lyrics.LyricsRouteActions
 import cn.com.dcsgo.mihx.feature.lyrics.LyricsRouteState
+import cn.com.dcsgo.mihx.feature.player.PlayQueueSheet
 import cn.com.dcsgo.mihx.feature.player.PlayerUiState
 import cn.com.dcsgo.mihx.feature.player.PlayerViewModel
 import cn.com.dcsgo.mihx.feature.playlist.AlbumDetailRoute
@@ -1009,6 +1010,7 @@ private fun PlayerSheetHost(
     // 常驻组合：show 只控制 ModalBottomSheet 的挂载/卸载，
     // 关闭一律走 onDismissRequest → 状态复位，避免"抽屉已消失但 show 仍 true"的死锁
     if (!show) return
+    var showQueueInside by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
     val sheetState = androidx.compose.material3.rememberModalBottomSheetState(
         skipPartiallyExpanded = true,
     )
@@ -1022,6 +1024,28 @@ private fun PlayerSheetHost(
         contentWindowInsets = { androidx.compose.foundation.layout.WindowInsets(0) },
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
+            // 队列视图：在抽屉内切换内容（避免第二个 ModalBottomSheet 的 window 冲突）
+            if (showQueueInside) {
+                PlayQueueSheet(
+                    playQueue = uiState.playQueue,
+                    isShown = true,
+                    currentSongId = uiState.currentSong?.id,
+                    onSongClick = { index ->
+                        playerViewModel.playQueueItem(index)
+                        showQueueInside = false
+                    },
+                    onRemoveSong = { index ->
+                        playerViewModel.removeFromPlayQueueAt(index)
+                        showToast("已从播放队列移除")
+                    },
+                    onClearQueue = {
+                        playerViewModel.clearPlayQueue()
+                        showToast("播放队列已清空")
+                    },
+                    onDismiss = { showQueueInside = false },
+                    useInlineShell = true
+                )
+            } else {
             // 播放进度窄流（与 HOME 路由同源）
             val positionMs by playerViewModel.positionMs.collectAsStateWithLifecycle()
             HomeRoute(
@@ -1044,10 +1068,7 @@ private fun PlayerSheetHost(
                     onStartSeeking = playerViewModel::startSeeking,
                     onEndSeeking = playerViewModel::endSeeking,
                     onSeekTo = playerViewModel::seekTo,
-                    onQueueClick = {
-                        onDismiss()
-                        onShowQueue()
-                    },
+                    onQueueClick = { showQueueInside = true },
                     onTogglePlayMode = {
                         playerViewModel.togglePlayMode()
                         playerViewModel.currentPlayMode.label
@@ -1107,6 +1128,7 @@ private fun PlayerSheetHost(
                 ),
                 showToast = showToast,
             )
+            }
         }
     }
 }

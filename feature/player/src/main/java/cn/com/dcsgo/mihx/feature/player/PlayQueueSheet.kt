@@ -77,7 +77,9 @@ fun PlayQueueSheet(
     onSongClick: (Int) -> Unit = {},      // 参数是索引
     onRemoveSong: (Int) -> Unit = {},     // 参数是队列索引
     onClearQueue: () -> Unit = {},
-    onDismiss: () -> Unit = {}
+    onDismiss: () -> Unit = {},
+    /** true: 不套 ModalBottomSheet 壳，直接输出内容（嵌入播放抽屉内切换视图用） */
+    useInlineShell: Boolean = false
 ) {
     if (!isShown) return
 
@@ -117,11 +119,7 @@ fun PlayQueueSheet(
         )
     }
 
-    ModalBottomSheet(
-        onDismissRequest = onDismiss,
-        sheetState = sheetState,
-        containerColor = MaterialTheme.colorScheme.surface
-    ) {
+    val content: @Composable () -> Unit = {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -208,6 +206,18 @@ fun PlayQueueSheet(
 
             // 底部间距
             Spacer(modifier = Modifier.height(24.dp))
+        }
+    }
+
+    if (useInlineShell) {
+        content()
+    } else {
+        ModalBottomSheet(
+            onDismissRequest = onDismiss,
+            sheetState = sheetState,
+            containerColor = MaterialTheme.colorScheme.surface
+        ) {
+            content()
         }
     }
 }

@@ -11,21 +11,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.draw.blur
-import coil.compose.AsyncImage
-import coil.request.ImageRequest
-import androidx.compose.ui.platform.LocalContext
 
 /**
- * 主屏氛围背景（方案D「此刻」）—— 网易云式「封面背光」。
+ * 主屏氛围背景（方案D「此刻」）—— 网易云式「封面取色渐变」。
  *
- * 三要素（对齐网易云实测效果）：
- * 1. 模糊封面位图铺满全屏当底（网易云的本质做法，光斑随封面内容走）
- * 2. 封面中心径向光晕提亮封面周围
- * 3. 全屏保持封面色系到底，只做「上亮下暗」渐变——不收黑
+ * 核心思路（对齐网易云）：背景不是模糊封面，而是**封面上下两段的取色**——
+ * 1. 封面以上区域 = 封面上段取色（与封面顶部融洽衔接）
+ * 2. 封面区域本身 = 图片，无需背景
+ * 3. 封面以下 = 从封面下段取色渐变加深，融洽过渡到底部
+ * 避免模糊铺底造成的"整页一坨糊"，也避免单一主色与封面上下色调脱节。
  */
 @Composable
 fun AmbientBackdrop(
@@ -37,47 +32,27 @@ fun AmbientBackdrop(
     content: @Composable () -> Unit,
 ) {
     val dark = isSystemInDarkTheme()
-    val context = LocalContext.current
-    val base = MaterialTheme.colorScheme.background
-    // 主色加深但保亮度(网易云是中亮度): 暗 0.78 而非 0.55
-    val glow = (accentFromCover ?: MaterialTheme.colorScheme.primaryContainer)
-        .let { c -> if (dark) darken(c, 0.78f) else darken(c, 0.62f) }
-    // 渐变终点 = glow 再暗一档(网易云底部是深苔绿,不是黑)
-    val bottom = darken(glow, 0.62f)
+
+    // 封面上下取色：上段用于顶部衔接，下段用于底部渐变终点
+    val coverColors = rememberCoverColors(albumArtUri)
+    val topColor = (coverColors?.top ?: accentFromCover ?: MaterialTheme.colorScheme.primaryContainer)
+        .let { c -> if (dark) darken(c, 0.70f) else darken(c, 0.82f) }
+    val bottomColor = (coverColors?.bottom ?: coverColors?.top ?: accentFromCover ?: MaterialTheme.colorScheme.primaryContainer)
+        .let { c -> if (dark) darken(c, 0.45f) else darken(c, 0.55f) }
+    val glow = topColor
 
     BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
         val widthPx = with(LocalDensity.current) { maxWidth.toPx() }
         val heightPx = with(LocalDensity.current) { maxHeight.toPx() }
 
-        // 层0: 模糊封面铺满全屏(网易云本质做法)——Compose blur(硬件加速,minSdk 33)
-        if (albumArtUri != null) {
-            AsyncImage(
-                model = ImageRequest.Builder(context)
-                    .data(albumArtUri)
-                    .build(),
-                contentDescription = null,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .blur(40.dp),
-                contentScale = ContentScale.Crop,
-                alpha = if (dark) 0.9f else 0.85f,
-            )
-            // 模糊封面之上压一层主色薄纱统一色调
-            Box(
-                Modifier
-                    .fillMaxSize()
-                    .background(glow.copy(alpha = 0.45f)),
-            )
-        } else {
-            // 无封面: 主题色渐变兜底
-            Box(
-                Modifier
-                    .fillMaxSize()
-                    .background(
-                        Brush.verticalGradient(listOf(glow.copy(alpha = 0.6f), bottom)),
-                    ),
-            )
-        }
+        // 层0: 封面取色双色渐变（上段色→下段色），无模糊图
+        Box(
+            Modifier
+                .fillMaxSize()
+                .background(
+                    Brush.verticalGradient(listOf(topColor, bottomColor)),
+                ),
+        )
 
         // 层1: 封面径向提亮光晕
         Box(
@@ -95,7 +70,7 @@ fun AmbientBackdrop(
                 ),
         )
 
-        // 层2: 上亮下暗整体渐变——终点为深色同色系,永不收黑
+        // 层2: 封面下缘以下压暗渐变——保证信息区文字可读,色相与封面下段一致
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -103,10 +78,9 @@ fun AmbientBackdrop(
                     Brush.verticalGradient(
                         colors = listOf(
                             Color.Transparent,
-                            base.copy(alpha = 0.15f),
-                            bottom.copy(alpha = 0.85f),
+                            bottomColor.copy(alpha = 0.55f),
                         ),
-                        startY = heightPx * 0.35f,
+                        startY = heightPx * 0.42f,
                         endY = heightPx,
                     ),
                 ),

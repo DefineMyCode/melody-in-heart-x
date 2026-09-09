@@ -115,7 +115,7 @@ fun HomeScreen(
         }
     } else {
         // 封面视图：网易云式封面背光氛围(模糊封面打底+主色光晕) + Box 叠加 FAB 和 Hi-Res 徽章
-        val coverAccent = rememberDominantColor(currentSong.albumArtUri)
+        val coverAccent = rememberCoverColors(currentSong.albumArtUri)?.top
         AmbientBackdrop(
             albumArtUri = currentSong.albumArtUri,
             accentFromCover = coverAccent,

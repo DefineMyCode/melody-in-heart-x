@@ -16,16 +16,24 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.graphics.Color
 
 /**
- * 从封面 URI 提取主色（方案D 氛围背景）。
+ * 从封面提取「上色 + 下色」双色（方案D 氛围背景，网易云式）。
  *
- * ponytail: Palette 同步解码放 Default 线程，结果 remember 按 uri 缓存；
- * 无封面/解码失败 → 返回 null，调用方退化为主题色渐变。不做 LRU——
- * 主屏一次只显示一首歌，同一首歌反复切页时 coil 自己有内存缓存。
+ * 网易云的背景与封面融洽的关键：不是全图一个主色，而是**上段取色用于封面以上/封面区，
+ * 下段取色用于封面以下的渐变终点**——封面图自身的上下色调差异被保留。
+ *
+ * ponytail: 解码采样放 Default 线程，结果 remember 按 uri 缓存；
+ * 上段=位图上部 1/3 区域平均色，下段=下部 1/3 区域平均色（比 Palette swatch 更贴合"融洽"）。
+ * 无封面/解码失败 → 返回 null，调用方退化为主题色渐变。
  */
+data class CoverColors(
+    val top: Color,
+    val bottom: Color,
+)
+
 @Composable
-fun rememberDominantColor(albumArtUri: android.net.Uri?): Color? {
+fun rememberCoverColors(albumArtUri: android.net.Uri?): CoverColors? {
     val context = LocalContext.current
-    var color by remember(albumArtUri) { mutableStateOf<Color?>(null) }
+    var colors by remember(albumArtUri) { mutableStateOf<CoverColors?>(null) }
 
     LaunchedEffect(albumArtUri) {
         val uri = albumArtUri ?: return@LaunchedEffect
@@ -35,18 +43,35 @@ fun rememberDominantColor(albumArtUri: android.net.Uri?): Color? {
                 val drawable = context.imageLoader.execute(request).drawable
                 val bitmap = (drawable as? BitmapDrawable)?.bitmap
                     ?: drawable?.toBitmap() ?: return@runCatching null
-                Palette.from(bitmap).maximumColorCount(16).generate()
-                    .getDominantColorOrDefault()
+                // 采样降尺寸：取色不需要原图分辨率
+                val small = Bitmap.createScaledBitmap(bitmap, 64, 64, true)
+                val upper = avgColor(small, 0, 0, 64, 21)
+                val lower = avgColor(small, 0, 43, 64, 64)
+                CoverColors(top = upper, bottom = lower)
             }.getOrNull()
         }
-        color = extracted
+        colors = extracted
     }
-    return color
+    return colors
 }
 
-private fun Palette.getDominantColorOrDefault(): Color? {
-    val swatch = dominantSwatch ?: vibrantSwatch ?: return null
-    return Color(swatch.rgb)
+/** 区域平均色（去掉接近白/接近黑的极值像素，避免取到封面自带白边）。 */
+private fun avgColor(bitmap: Bitmap, x0: Int, y0: Int, x1: Int, y1: Int): Color {
+    var r = 0L; var g = 0L; var b = 0L; var n = 0L
+    for (y in y0 until y1) {
+        for (x in x0 until x1) {
+            val c = bitmap.getPixel(x, y)
+            val cr = (c shr 16) and 0xFF
+            val cg = (c shr 8) and 0xFF
+            val cb = c and 0xFF
+            // 跳过近白(255,255,255±20)与近黑(≤25)像素：白边/黑边不参与取色
+            if (cr > 235 && cg > 235 && cb > 235) continue
+            if (cr < 25 && cg < 25 && cb < 25) continue
+            r += cr; g += cg; b += cb; n++
+        }
+    }
+    if (n == 0L) return Color.White
+    return Color((r / n).toInt(), (g / n).toInt(), (b / n).toInt())
 }
 
 private fun Drawable.toBitmap(): Bitmap? {
@@ -58,7 +83,8 @@ private fun Drawable.toBitmap(): Bitmap? {
     }
     // 采样降尺寸：取色不需要原图分辨率，压到 128px 足够（ponytail: 省内存省时间）
     val max = 128
-    if (bmp.width <= max && bmp.height <= max) return bmp
-    val scale = max.toFloat() / maxOf(bmp.width, bmp.height)
-    return Bitmap.createScaledBitmap(bmp, (bmp.width * scale).toInt().coerceAtLeast(1), (bmp.height * scale).toInt().coerceAtLeast(1), true)
+    return if (bmp.width > max || bmp.height > max) {
+        val scale = max.toFloat() / maxOf(bmp.width, bmp.height)
+        Bitmap.createScaledBitmap(bmp, (bmp.width * scale).toInt(), (bmp.height * scale).toInt(), true)
+    } else bmp
 }

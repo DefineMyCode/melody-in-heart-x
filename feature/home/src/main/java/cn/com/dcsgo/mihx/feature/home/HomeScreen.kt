@@ -128,7 +128,7 @@ fun HomeScreen(
                 modifier = Modifier.fillMaxSize(),
                 // 封面铺满全屏(含状态栏): top/start/end 0,封面全出血;下方内容自带水平 padding
                 contentPadding = PaddingValues(top = 24.dp, bottom = 64.dp),
-                verticalArrangement = Arrangement.spacedBy(20.dp)
+                verticalArrangement = Arrangement.spacedBy(14.dp)
             ) {
                 item(key = "album_cover") {
                     AlbumCoverSection(
@@ -276,7 +276,7 @@ private fun AlbumCoverSection(
         Box(
             // 方形封面: 宽度填满屏幕,顶部下移留白(网易云封面不顶格)
             modifier = Modifier
-                .padding(top = 48.dp)
+                .padding(top = 64.dp)
                 .fillMaxWidth()
                 .aspectRatio(1f)
                 .background(MaterialTheme.colorScheme.primaryContainer)
@@ -442,7 +442,7 @@ private fun SongInfoSection(
             onVersionSelect = onSwitchVersion
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(8.dp))
 
         // 播放进度条
         Column(
@@ -472,7 +472,9 @@ private fun SongInfoSection(
                     onEndSeeking(localPositionMs.toLong())
                 },
                 valueRange = 0f..durationMs.coerceAtLeast(1L).toFloat(),
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .padding(horizontal = 24.dp)
+                    .fillMaxWidth(),
                 // 网易云式细轨道：无 thumb 竖线，轨道压细
                 thumb = { Spacer(modifier = Modifier.size(0.dp)) },
                 track = { state ->
@@ -506,7 +508,9 @@ private fun SongInfoSection(
                 )
             )
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .padding(horizontal = 24.dp)
+                    .fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
@@ -522,7 +526,7 @@ private fun SongInfoSection(
             }
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(8.dp))
 
         // 播放控制栏（队列按钮 + 上一首 + 暂停 + 下一首 + 播放模式按钮）
         Row(

@@ -74,7 +74,7 @@ fun CopyableText(
     ) {
         Text(
             text = text,
-            style = if (isTitle) MaterialTheme.typography.titleLarge
+            style = if (isTitle) MaterialTheme.typography.titleMedium
                     else MaterialTheme.typography.bodyMedium,
             fontWeight = if (isTitle) FontWeight.Bold else FontWeight.Normal,
             color = if (isTitle) MaterialTheme.colorScheme.onSurface

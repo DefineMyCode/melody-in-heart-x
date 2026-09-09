@@ -55,19 +55,16 @@ fun rememberCoverColors(albumArtUri: android.net.Uri?): CoverColors? {
     return colors
 }
 
-/** 区域平均色（去掉接近白/接近黑的极值像素，避免取到封面自带白边）。 */
+/** 区域平均色（全像素参与，不过滤极值）。 */
 private fun avgColor(bitmap: Bitmap, x0: Int, y0: Int, x1: Int, y1: Int): Color {
     var r = 0L; var g = 0L; var b = 0L; var n = 0L
     for (y in y0 until y1) {
         for (x in x0 until x1) {
             val c = bitmap.getPixel(x, y)
-            val cr = (c shr 16) and 0xFF
-            val cg = (c shr 8) and 0xFF
-            val cb = c and 0xFF
-            // 跳过近白(255,255,255±20)与近黑(≤25)像素：白边/黑边不参与取色
-            if (cr > 235 && cg > 235 && cb > 235) continue
-            if (cr < 25 && cg < 25 && cb < 25) continue
-            r += cr; g += cg; b += cb; n++
+            r += (c shr 16) and 0xFF
+            g += (c shr 8) and 0xFF
+            b += c and 0xFF
+            n++
         }
     }
     if (n == 0L) return Color.White

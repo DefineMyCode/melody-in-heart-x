@@ -120,6 +120,7 @@ fun AppNavHost(
     loadSongInfo: suspend (Song) -> SongInfo?,
     showToast: (String) -> Unit,
     deleteSongWithToast: (Int) -> Unit,
+    onShowQueue: () -> Unit = {},
     playlistResumeViewModel: PlaylistResumeViewModel,
     emotionViewModel: cn.com.dcsgo.mihx.app.emotion.EmotionViewModel,
     moodTimeSlotViewModel: cn.com.dcsgo.mihx.app.mood.MoodTimeSlotViewModel,
@@ -139,7 +140,7 @@ fun AppNavHost(
 
     NavHost(
         navController = navController,
-        startDestination = AppRoutes.PLAYLIST,
+        startDestination = AppRoutes.HOME,
         enterTransition = {
             val from = tabOrdinal(initialState.destination.route)
             val to = tabOrdinal(targetState.destination.route)
@@ -171,6 +172,153 @@ fun AppNavHost(
         popEnterTransition = { EnterTransition.None },
         popExitTransition = { ExitTransition.None },
     ) {
+
+        composable(AppRoutes.HOME) {
+            // 播放位置窄流：只在当前目的地（播放页）订阅，不驱动整壳重组
+            val positionMs by playerViewModel.positionMs.collectAsStateWithLifecycle()
+            // M-6（评审 2026-09-03）：定时关闭剩余毫秒窄流——倒计时每秒 tick 只驱动
+            // 定时关闭 Chip 局部重组，不写主 UiState 导致整壳重组。
+            val sleepTimerRemainingMs by playerViewModel.sleepTimerRemainingMs.collectAsStateWithLifecycle()
+            // 播放页"更多"功能对话框状态
+            var songForInfo by remember { mutableStateOf<Song?>(null) }
+            var songInfo by remember { mutableStateOf<SongInfo?>(null) }
+            var songForAddToPlaylist by remember { mutableStateOf<Song?>(null) }
+            var songForDelete by remember { mutableStateOf<Song?>(null) }
+            LaunchedEffect(songForInfo) {
+                val uri = songForInfo?.uri
+                if (uri != null) {
+                    // m6（评审 2026-09-03）：底层走 Room runBlocking 桥，DB 异常会让协程崩溃，这里兜底。
+                    songInfo = runCatching { songForInfo?.let { loadSongInfo(it) } }
+                        .onFailure {
+                            AppLog.error("AppNavHost", "loadSongInfo failed: ${it.message}", it)
+                        }
+                        .getOrNull()
+                }
+            }
+            HomeRoute(
+                state = HomeRouteState(
+                    currentSong = uiState.currentSong,
+                    isPlaying = uiState.isPlaying,
+                    currentPositionMs = positionMs,
+                    durationMs = uiState.durationMs,
+                    playMode = uiState.playQueue.playMode,
+                    isInfinitePlay = uiState.isInfinitePlay,
+                    sameNameSongs = uiState.sameNameSongs,
+                    isSleepTimerActive = uiState.isSleepTimerActive,
+                    sleepTimerRemainingMs = sleepTimerRemainingMs,
+                    sleepTimerPlayLastSong = uiState.sleepTimerPlayLastSong,
+                    sleepTimerPausePending = uiState.sleepTimerPausePending,
+                ),
+                actions = HomeRouteActions(
+                    onPlayPauseClick = playerViewModel::togglePlayPause,
+                    onPreviousClick = playerViewModel::playPrevious,
+                    onNextClick = playerViewModel::playNext,
+                    onStartSeeking = playerViewModel::startSeeking,
+                    onEndSeeking = playerViewModel::endSeeking,
+                    onSeekTo = playerViewModel::seekTo,
+                    onQueueClick = onShowQueue,
+                    onTogglePlayMode = {
+                        playerViewModel.togglePlayMode()
+                        playerViewModel.currentPlayMode.label
+                    },
+                    onSwitchVersion = playerViewModel::switchToVersion,
+                    onShowLyrics = { navController.navigate(AppRoutes.LYRICS) },
+                    onArtistClick = { artistName ->
+                        navController.navigate(AppRoutes.artistDetail(artistName))
+                    },
+                    onAlbumClick = { albumName ->
+                        navController.navigate(AppRoutes.albumDetail(albumName))
+                    },
+                    onLuckyPlayClick = {
+                        val started = playerViewModel.playRandomQueue()
+                        if (started) {
+                            // 情境化随心播放归因（§4.5）：让"这首歌为什么被选中"可解释
+                            playerViewModel.currentMoodSlotName()?.let { slotName ->
+                                showToast("已按「$slotName」为你随机播放")
+                            }
+                        } else {
+                            showToast("还没有可播放的音乐，请先导入歌曲吧~")
+                        }
+                        playlistResumeViewModel.switchSource(null, uiState.currentSong?.id)
+                        started
+                    },
+                    onStartInfinitePlay = {
+                        val started = playerViewModel.startInfinitePlay()
+                        if (started) {
+                            playerViewModel.currentMoodSlotName()?.let { slotName ->
+                                showToast("已按「$slotName」开启无限随机播放")
+                            }
+                        }
+                        playlistResumeViewModel.switchSource(null, uiState.currentSong?.id)
+                        started
+                    },
+                    onStopInfinitePlay = playerViewModel::stopInfinitePlay,
+                    onRelatedPlayClick = { song ->
+                        val added = playerViewModel.playRelatedSongs(song)
+                        playlistResumeViewModel.switchSource(null, uiState.currentSong?.id)
+                        if (added > 0) {
+                            showToast("已关联 $added 首歌曲")
+                        } else {
+                            showToast("未检索到关联歌曲")
+                        }
+                    },
+                    onSleepTimerStart = { minutes, playLast ->
+                        playerViewModel.startSleepTimer(minutes, playLast)
+                        showToast("已设置定时关闭：${minutes}分钟后暂停播放")
+                    },
+                    onSleepTimerCancel = {
+                        playerViewModel.cancelSleepTimer()
+                        showToast("已取消定时关闭")
+                    },
+                    onShowSongInfo = { song ->
+                        songForInfo = song
+                        songInfo = null
+                    },
+                    onAddToPlaylist = { song -> songForAddToPlaylist = song },
+                    onDeleteSong = { song -> songForDelete = song },
+                ),
+                showToast = showToast,
+            )
+            // 歌曲详细信息对话框（更多菜单 → 查看歌曲详细信息）
+            val infoSong = songForInfo
+            val currentSongInfo = songInfo
+            if (infoSong != null && currentSongInfo != null) {
+                SongInfoDialog(
+                    song = infoSong,
+                    songInfo = currentSongInfo,
+                    onDismiss = {
+                        songForInfo = null
+                        songInfo = null
+                    },
+                )
+            }
+            // 添加到歌单对话框（更多菜单 → 添加到歌单）
+            songForAddToPlaylist?.let { song ->
+                SingleSongAddToPlaylistDialog(
+                    song = song,
+                    playlists = uiState.playlists,
+                    onDismiss = { songForAddToPlaylist = null },
+                    onSelectPlaylist = { playlist ->
+                        playerViewModel.addSongToPlaylist(playlist.id, song.id)
+                        showToast("已添加到歌单「${playlist.name}」")
+                        songForAddToPlaylist = null
+                    },
+                    onCreatePlaylist = playerViewModel::createPlaylist,
+                )
+            }
+            // 删除确认对话框（更多菜单 → 删除，与本地音乐交互一致）
+            songForDelete?.let { song ->
+                DeleteSongConfirmDialog(
+                    song = song,
+                    onDismiss = { songForDelete = null },
+                    onConfirm = {
+                        songForDelete = null
+                        deleteSongWithToast(song.id)
+                    },
+                )
+            }
+        }
+
 
         composable(AppRoutes.LYRICS) {
             // 播放位置窄流：只在歌词页订阅，随位置推进只重组歌词内容
@@ -830,213 +978,6 @@ fun AppNavHost(
             )
         }
     }
-
-    // 播放全屏抽屉（方案D实验）：NavHost 之外的模态浮层，承载播放主屏内容
-    PlayerSheetHost(
-        show = showPlayerSheet,
-        onDismiss = onPlayerSheetDismiss,
-        navController = navController,
-        uiState = uiState,
-        playerViewModel = playerViewModel,
-        playlistResumeViewModel = playlistResumeViewModel,
-        showToast = showToast,
-        loadSongInfo = loadSongInfo,
-    )
 }
 
 
-/**
- * 播放全屏浮层（方案D）：自绘层，不再用 ModalBottomSheet。
- *
- * - 常驻 composition，show 控制 AnimatedVisibility 挂载（slideIn/OutVertically 从底部进出）
- * - 无独立 dialog window：BACK 走 AppRoot 的 BackHandler，手势/底栏遮挡是普通 Compose 逻辑
- * - 下滑关闭：内容拖拽跟手，松手超过阈值（屏高 1/4）或快速下滑即关
- * - 内容二态：播放主屏（HomeRoute）⇄ 播放队列（PlayQueueSheet 内嵌）
- */
-@Composable
-private fun PlayerSheetHost(
-    show: Boolean,
-    onDismiss: () -> Unit,
-    navController: NavHostController,
-    uiState: PlayerUiState,
-    playerViewModel: PlayerViewModel,
-    playlistResumeViewModel: PlaylistResumeViewModel,
-    showToast: (String) -> Unit,
-    loadSongInfo: suspend (Song) -> SongInfo?,
-) {
-    var showQueueInside by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
-    var dragOffsetY by androidx.compose.runtime.remember { androidx.compose.runtime.mutableFloatStateOf(0f) }
-    // 切换主屏/队列时复位拖拽偏移
-    androidx.compose.runtime.LaunchedEffect(showQueueInside) { dragOffsetY = 0f }
-    val density = androidx.compose.ui.platform.LocalDensity.current
-    val screenHeight = with(density) { androidx.compose.ui.platform.LocalConfiguration.current.screenHeightDp.dp.toPx() }
-    val closeThreshold = screenHeight / 4f
-
-    val dragConnection = androidx.compose.runtime.remember {
-        object : androidx.compose.ui.input.nestedscroll.NestedScrollConnection {
-            // 内容滚到顶后继续下拉 → 累积为浮层位移（iOS 弹性 sheet 行为）
-            override fun onPostScroll(
-                consumed: androidx.compose.ui.geometry.Offset,
-                available: androidx.compose.ui.geometry.Offset,
-                source: androidx.compose.ui.input.nestedscroll.NestedScrollSource,
-            ): androidx.compose.ui.geometry.Offset {
-                if (available.y > 0f) {
-                    dragOffsetY += available.y
-                    return androidx.compose.ui.geometry.Offset(0f, available.y)
-                }
-                return androidx.compose.ui.geometry.Offset.Zero
-            }
-
-            override suspend fun onPreFling(
-                available: androidx.compose.ui.unit.Velocity,
-            ): androidx.compose.ui.unit.Velocity {
-                if (dragOffsetY > closeThreshold) onDismiss()
-                dragOffsetY = 0f
-                return androidx.compose.ui.unit.Velocity.Zero
-            }
-        }
-    }
-
-    // 普通 composition（无独立 window），BackHandler 直接生效：BACK 分级——先关队列，再关浮层
-    androidx.activity.compose.BackHandler(enabled = show && showQueueInside) { showQueueInside = false }
-
-    androidx.compose.animation.AnimatedVisibility(
-        visible = show,
-        enter = androidx.compose.animation.slideInVertically(
-            animationSpec = androidx.compose.animation.core.tween(280),
-            initialOffsetY = { it },
-        ),
-        exit = androidx.compose.animation.slideOutVertically(
-            animationSpec = androidx.compose.animation.core.tween(240),
-            targetOffsetY = { it },
-        ),
-    ) {
-            Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .offset { androidx.compose.ui.unit.IntOffset(0, dragOffsetY.toInt()) }
-                .nestedScroll(dragConnection)
-                .background(androidx.compose.material3.MaterialTheme.colorScheme.background)
-                .pointerInput(Unit) {
-                    // 主屏无滚动容器时 nested scroll 链不激活，这里兜底拖拽关闭
-                    detectVerticalDragGestures(
-                        onVerticalDrag = { change, dragAmount ->
-                            android.util.Log.w("PlayerOverlay", "drag $dragAmount")
-                            change.consume()
-                            dragOffsetY = (dragOffsetY + dragAmount).coerceAtLeast(0f)
-                        },
-                        onDragEnd = {
-                            android.util.Log.w("PlayerOverlay", "end offset=$dragOffsetY threshold=$closeThreshold")
-                            if (dragOffsetY > closeThreshold) onDismiss()
-                            dragOffsetY = 0f
-                        },
-                        onDragCancel = { dragOffsetY = 0f },
-                    )
-                }
-        ) {
-            if (showQueueInside) {
-                PlayQueueSheet(
-                    playQueue = uiState.playQueue,
-                    isShown = true,
-                    currentSongId = uiState.currentSong?.id,
-                    onSongClick = { index ->
-                        playerViewModel.playQueueItem(index)
-                        showQueueInside = false
-                    },
-                    onRemoveSong = { index ->
-                        playerViewModel.removeFromPlayQueueAt(index)
-                        showToast("已从播放队列移除")
-                    },
-                    onClearQueue = {
-                        playerViewModel.clearPlayQueue()
-                        showToast("播放队列已清空")
-                    },
-                    onDismiss = { showQueueInside = false },
-                    useInlineShell = true
-                )
-            } else {
-                val positionMs by playerViewModel.positionMs.collectAsStateWithLifecycle()
-                HomeRoute(
-                    state = HomeRouteState(
-                        currentSong = uiState.currentSong,
-                        isPlaying = uiState.isPlaying,
-                        currentPositionMs = positionMs,
-                        durationMs = uiState.durationMs,
-                        playMode = uiState.playQueue.playMode,
-                        isInfinitePlay = uiState.isInfinitePlay,
-                        sameNameSongs = uiState.sameNameSongs,
-                        isSleepTimerActive = uiState.isSleepTimerActive,
-                        sleepTimerPlayLastSong = uiState.sleepTimerPlayLastSong,
-                        sleepTimerPausePending = uiState.sleepTimerPausePending,
-                    ),
-                    actions = HomeRouteActions(
-                        onPlayPauseClick = playerViewModel::togglePlayPause,
-                        onPreviousClick = playerViewModel::playPrevious,
-                        onNextClick = playerViewModel::playNext,
-                        onStartSeeking = playerViewModel::startSeeking,
-                        onEndSeeking = playerViewModel::endSeeking,
-                        onSeekTo = playerViewModel::seekTo,
-                        onQueueClick = { showQueueInside = true },
-                        onTogglePlayMode = {
-                            playerViewModel.togglePlayMode()
-                            playerViewModel.currentPlayMode.label
-                        },
-                        onSwitchVersion = playerViewModel::switchToVersion,
-                        onShowLyrics = {
-                            onDismiss()
-                            navController.navigate(AppRoutes.LYRICS)
-                        },
-                        onArtistClick = { name ->
-                            onDismiss()
-                            navController.navigate(AppRoutes.artistDetail(name))
-                        },
-                        onAlbumClick = { name ->
-                            onDismiss()
-                            navController.navigate(AppRoutes.albumDetail(name))
-                        },
-                        onLuckyPlayClick = {
-                            val started = playerViewModel.playRandomQueue()
-                            if (started) {
-                                playerViewModel.currentMoodSlotName()?.let { slotName ->
-                                    showToast("已按「$slotName」为你随机播放")
-                                }
-                            } else {
-                                showToast("还没有可播放的音乐，请先导入歌曲吧~")
-                            }
-                            playlistResumeViewModel.switchSource(null, uiState.currentSong?.id)
-                            started
-                        },
-                        onStartInfinitePlay = {
-                            val started = playerViewModel.startInfinitePlay()
-                            if (started) {
-                                playerViewModel.currentMoodSlotName()?.let { slotName ->
-                                    showToast("已按「$slotName」开启无限随机播放")
-                                }
-                            }
-                            playlistResumeViewModel.switchSource(null, uiState.currentSong?.id)
-                            started
-                        },
-                        onStopInfinitePlay = playerViewModel::stopInfinitePlay,
-                        onRelatedPlayClick = { song ->
-                            val added = playerViewModel.playRelatedSongs(song)
-                            playlistResumeViewModel.switchSource(null, uiState.currentSong?.id)
-                            if (added > 0) showToast("已关联 $added 首歌曲") else showToast("未检索到关联歌曲")
-                        },
-                        onSleepTimerStart = { minutes, playLast ->
-                            playerViewModel.startSleepTimer(minutes, playLast)
-                            showToast("已设置定时关闭：${minutes}分钟后暂停播放")
-                        },
-                        onSleepTimerCancel = {
-                            playerViewModel.cancelSleepTimer()
-                            showToast("已取消定时关闭")
-                        },
-                        onShowSongInfo = { },
-                        onAddToPlaylist = { },
-                        onDeleteSong = { },
-                    ),
-                    showToast = showToast,
-                )
-            }
-        }
-    }
-}

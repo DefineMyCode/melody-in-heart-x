@@ -77,23 +77,10 @@ fun AppRoot(
     }
     var showQueueSheet by remember { mutableStateOf(false) }
     // 播放全屏抽屉（方案D实验）：底部栏不再有"播放"项，播放页由抽屉承载
-    var showPlayerSheet by remember { mutableStateOf(false) }
-    var resumeSheetArmed by remember { mutableStateOf(true) }
     val uiState by playerViewModel.uiState.collectAsStateWithLifecycle()
-    // 重启后若恢复了播放会话，直接以全屏抽屉形态呈现播放页（方案D）
-    LaunchedEffect(uiState.currentSong?.id) {
-        if (resumeSheetArmed && uiState.currentSong != null) {
-            showPlayerSheet = true
-            resumeSheetArmed = false
-        }
-    }
 
     BackHandler(enabled = showQueueSheet) {
         showQueueSheet = false
-    }
-    // 播放浮层是普通 composition（无独立 dialog window），BACK 在这里统一关闭
-    BackHandler(enabled = showPlayerSheet) {
-        showPlayerSheet = false
     }
 
     LaunchedEffect(activeRoute) {
@@ -183,7 +170,7 @@ fun AppRoot(
                 onPreviousClick = playerViewModel::playPrevious,
                 onNextClick = playerViewModel::playNext,
                 // 迷你条点击 → 播放全屏抽屉（方案D实验）
-                onOpenPlayerSheet = { showPlayerSheet = true },
+
                 // 空曲库时全局随心播放入口
                 onLuckyPlayClick = {
                     val started = playerViewModel.playRandomQueue()
@@ -197,7 +184,6 @@ fun AppRoot(
                     started
                 },
                 // 播放抽屉展开时隐藏底栏/迷你条
-                hideBottomBars = showPlayerSheet,
                 // 全屏歌词页不响应横滑，避免误切底部 Tab
                 swipeEnabled = activeRoute != AppRoutes.LYRICS,
             ) {
@@ -217,10 +203,9 @@ fun AppRoot(
                     showToast = toastHost::showToast,
                     deleteSongWithToast = ::deleteSongWithToast,
                     playlistResumeViewModel = playlistResumeViewModel,
+                    onShowQueue = { showQueueSheet = true },
                     emotionViewModel = emotionViewModel,
                     moodTimeSlotViewModel = moodTimeSlotViewModel,
-                    showPlayerSheet = showPlayerSheet,
-                    onPlayerSheetDismiss = { showPlayerSheet = false },
                 )
             }
 

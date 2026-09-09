@@ -10,7 +10,7 @@ enum class AppDestinations(
     val showInBottomBar: Boolean = true,
 ) {
     PLAYLIST(AppRoutes.PLAYLIST, "曲库", R.drawable.queue_music_24),
-    HOME(AppRoutes.HOME, "播放", R.drawable.ic_play, showInBottomBar = false),
+    HOME(AppRoutes.HOME, "播放", R.drawable.ic_play),
     USER(AppRoutes.USER, "我的", R.drawable.ic_person_24),
     ;
 

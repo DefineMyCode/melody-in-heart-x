@@ -24,6 +24,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -77,8 +78,8 @@ fun CopyableText(
             style = if (isTitle) MaterialTheme.typography.titleMedium
                     else MaterialTheme.typography.bodyMedium,
             fontWeight = if (isTitle) FontWeight.Bold else FontWeight.Normal,
-            color = if (isTitle) MaterialTheme.colorScheme.onSurface
-                    else MaterialTheme.colorScheme.onSurfaceVariant,
+            color = if (isTitle) Color.White
+                    else Color.White.copy(alpha = 0.65f),
             textAlign = TextAlign.Center,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
@@ -103,7 +104,7 @@ fun CopyableText(
                     onCopied(text)
                 },
             tint = if (justCopied) MaterialTheme.colorScheme.primary
-                   else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                   else Color.White.copy(alpha = 0.6f)
         )
     }
 }

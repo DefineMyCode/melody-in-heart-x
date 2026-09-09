@@ -503,8 +503,8 @@ private fun SongInfoSection(
                     }
                 },
                 colors = SliderDefaults.colors(
-                    activeTrackColor = MaterialTheme.colorScheme.primary,
-                    inactiveTrackColor = MaterialTheme.colorScheme.outlineVariant
+                    activeTrackColor = Color.White,
+                    inactiveTrackColor = Color.White.copy(alpha = 0.35f)
                 )
             )
             Row(
@@ -516,12 +516,12 @@ private fun SongInfoSection(
                 Text(
                     text = formatDurationTime(currentPositionMs),
                     style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = Color.White.copy(alpha = 0.7f)
                 )
                 Text(
                     text = formatDurationTime(durationMs),
                     style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = Color.White.copy(alpha = 0.7f)
                 )
             }
         }

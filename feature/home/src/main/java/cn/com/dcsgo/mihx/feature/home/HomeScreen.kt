@@ -127,8 +127,8 @@ fun HomeScreen(
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
                 // 封面铺满全屏(含状态栏): top/start/end 0,封面全出血;下方内容自带水平 padding
-                contentPadding = PaddingValues(bottom = 88.dp),
-                verticalArrangement = Arrangement.spacedBy(28.dp)
+                contentPadding = PaddingValues(top = 24.dp, bottom = 64.dp),
+                verticalArrangement = Arrangement.spacedBy(20.dp)
             ) {
                 item(key = "album_cover") {
                     AlbumCoverSection(
@@ -274,8 +274,9 @@ private fun AlbumCoverSection(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Box(
-            // 方形封面: 宽度填满屏幕,无圆角(方案D终版)
+            // 方形封面: 宽度填满屏幕,顶部下移留白(网易云封面不顶格)
             modifier = Modifier
+                .padding(top = 48.dp)
                 .fillMaxWidth()
                 .aspectRatio(1f)
                 .background(MaterialTheme.colorScheme.primaryContainer)
@@ -441,7 +442,7 @@ private fun SongInfoSection(
             onVersionSelect = onSwitchVersion
         )
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
         // 播放进度条
         Column(

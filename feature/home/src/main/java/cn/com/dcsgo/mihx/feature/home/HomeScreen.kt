@@ -126,7 +126,8 @@ fun HomeScreen(
         ) {
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(start = 24.dp, end = 24.dp, top = 16.dp, bottom = 88.dp),
+                // 封面铺满全屏(含状态栏): top/start/end 0,封面全出血;下方内容自带水平 padding
+                contentPadding = PaddingValues(bottom = 88.dp),
                 verticalArrangement = Arrangement.spacedBy(28.dp)
             ) {
                 item(key = "album_cover") {
@@ -273,11 +274,10 @@ private fun AlbumCoverSection(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Box(
-            // 网易云式: 大圆形封面,近全宽(留16dp边距)
+            // 方形封面: 宽度填满屏幕,无圆角(方案D终版)
             modifier = Modifier
                 .fillMaxWidth()
                 .aspectRatio(1f)
-                .clip(CircleShape)
                 .background(MaterialTheme.colorScheme.primaryContainer)
                 .clickable(
                     interactionSource = remember { MutableInteractionSource() },

@@ -128,7 +128,8 @@ private fun ScaffoldContentColumn(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .statusBarsPadding(),
+            // 播放浮层打开时不加状态栏 padding（浮层要全屏铺到状态栏后面）
+            .then(if (hideBottomBars) Modifier else Modifier.statusBarsPadding()),
     ) {
         Box(
             modifier = Modifier

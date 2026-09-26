@@ -200,6 +200,36 @@ interface MelodyDao {
     @Upsert
     suspend fun upsertPlayStat(stat: PlayStatsEntity)
 
+    /** 原子自增有效播放次数，返回新值（不存在则插入 1）。Room/sqlite 语句级原子，无 lost update。 */
+    @Query(
+        """
+        INSERT INTO play_stats (songId, playCount, rawPlayCount, totalDurationMs, lastPlayedAt)
+        VALUES (:songId, 1, 0, 0, :now)
+        ON CONFLICT(songId) DO UPDATE SET playCount = playCount + 1, lastPlayedAt = :now
+        """
+    )
+    suspend fun incrementPlayCount(songId: Int, now: Long)
+
+    /** 原子自增原始播放次数，返回新值（不存在则插入 1）。 */
+    @Query(
+        """
+        INSERT INTO play_stats (songId, playCount, rawPlayCount, totalDurationMs, lastPlayedAt)
+        VALUES (:songId, 0, 1, 0, :now)
+        ON CONFLICT(songId) DO UPDATE SET rawPlayCount = rawPlayCount + 1, lastPlayedAt = :now
+        """
+    )
+    suspend fun incrementRawPlayCount(songId: Int, now: Long)
+
+    /** 原子累加累计播放时长（存在才累加，不存在则插入 durationMs）。 */
+    @Query(
+        """
+        INSERT INTO play_stats (songId, playCount, rawPlayCount, totalDurationMs, lastPlayedAt)
+        VALUES (:songId, 0, 0, :durationMs, :now)
+        ON CONFLICT(songId) DO UPDATE SET totalDurationMs = totalDurationMs + :durationMs, lastPlayedAt = :now
+        """
+    )
+    suspend fun addPlayDuration(songId: Int, durationMs: Long, now: Long)
+
     @Upsert
     suspend fun upsertQuickSkipSongs(songs: List<QuickSkipSongEntity>)
 

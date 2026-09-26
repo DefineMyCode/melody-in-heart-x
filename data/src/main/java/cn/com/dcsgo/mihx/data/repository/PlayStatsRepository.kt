@@ -41,9 +41,10 @@ class PlayStatsRepository(
 
     /** 将指定歌曲的播放次数 +1，返回新的次数 */
     override fun increment(songId: Int): Int {
-        val current = readStat(songId)
-        val newCount = current.playCount + 1
-        writeStat(current.copy(playCount = newCount, lastPlayedAt = System.currentTimeMillis()))
+        val now = System.currentTimeMillis()
+        // SQL 原子自增（upsert + playCount=playCount+1），消除 read→write 两个独立事务间的 lost update
+        runBlocking(Dispatchers.IO) { melodyDao.incrementPlayCount(songId, now) }
+        val newCount = getCount(songId)
         AppLog.debug(TAG, "increment: song=$songId count=$newCount")
         return newCount
     }
@@ -54,9 +55,10 @@ class PlayStatsRepository(
 
     /** 将指定歌曲的原始播放次数 +1，返回新的次数 */
     override fun incrementRawPlayCount(songId: Int): Int {
-        val current = readStat(songId)
-        val newCount = current.rawPlayCount + 1
-        writeStat(current.copy(rawPlayCount = newCount, lastPlayedAt = System.currentTimeMillis()))
+        val now = System.currentTimeMillis()
+        // SQL 原子自增
+        runBlocking(Dispatchers.IO) { melodyDao.incrementRawPlayCount(songId, now) }
+        val newCount = getRawPlayCount(songId)
         AppLog.debug(TAG, "incrementRawPlayCount: song=$songId count=$newCount")
         return newCount
     }
@@ -67,9 +69,10 @@ class PlayStatsRepository(
 
     /** 更新指定歌曲的累计播放时长，返回新的时长 */
     fun updatePlayDuration(songId: Int, durationMs: Long): Long {
-        val current = readStat(songId)
-        val newDuration = current.totalDurationMs + durationMs
-        writeStat(current.copy(totalDurationMs = newDuration, lastPlayedAt = System.currentTimeMillis()))
+        val now = System.currentTimeMillis()
+        // SQL 原子累加
+        runBlocking(Dispatchers.IO) { melodyDao.addPlayDuration(songId, durationMs, now) }
+        val newDuration = getPlayDuration(songId)
         AppLog.debug(TAG, "updatePlayDuration: song=$songId duration=${newDuration}ms")
         return newDuration
     }

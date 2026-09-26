@@ -292,6 +292,24 @@ class MusicRepositoryRoomTest {
             playStats.upsertBy(listOf(stat)) { it.songId }
         }
 
+        override suspend fun incrementPlayCount(songId: Int, now: Long) {
+            val i = playStats.indexOfFirst { it.songId == songId }
+            if (i >= 0) playStats[i] = playStats[i].copy(playCount = playStats[i].playCount + 1, lastPlayedAt = now)
+            else playStats += PlayStatsEntity(songId, 1, 0, 0L, now)
+        }
+
+        override suspend fun incrementRawPlayCount(songId: Int, now: Long) {
+            val i = playStats.indexOfFirst { it.songId == songId }
+            if (i >= 0) playStats[i] = playStats[i].copy(rawPlayCount = playStats[i].rawPlayCount + 1, lastPlayedAt = now)
+            else playStats += PlayStatsEntity(songId, 0, 1, 0L, now)
+        }
+
+        override suspend fun addPlayDuration(songId: Int, durationMs: Long, now: Long) {
+            val i = playStats.indexOfFirst { it.songId == songId }
+            if (i >= 0) playStats[i] = playStats[i].copy(totalDurationMs = playStats[i].totalDurationMs + durationMs, lastPlayedAt = now)
+            else playStats += PlayStatsEntity(songId, 0, 0, durationMs, now)
+        }
+
         override suspend fun upsertQuickSkipSongs(songs: List<QuickSkipSongEntity>) {
             quickSkipSongs.upsertBy(songs) { it.songId }
         }

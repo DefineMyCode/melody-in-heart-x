@@ -42,6 +42,7 @@ class PlayerLibraryFacadeTest {
         },
         snapshot = { snapshot },
         setSongsChangedListener = { callback -> listener = callback },
+        loadPlayStatsForSort = { emptyMap<Int, Int>() to emptyMap<Int, Long>() },
         catalogScope = testScope,
         ioDispatcher = Dispatchers.Unconfined,
         albumArtRefreshDelayMs = 0,

@@ -2,6 +2,7 @@ package cn.com.dcsgo.mihx.data.util
 
 import android.content.Context
 import android.net.Uri
+import android.os.Build
 import android.os.Environment
 import android.provider.DocumentsContract
 import cn.com.dcsgo.mihx.core.common.AppLog
@@ -12,6 +13,9 @@ import java.io.File
 import java.util.concurrent.TimeUnit
 
 private const val TAG = "LrcParser"
+
+/** 单曲 .lrc 歌词文件读取上限（字节）。防止超大/畸形歌词文件全量入内存导致 OOM。 */
+private const val MAX_LRC_BYTES = 1 shl 20 // 1MB
 
 /**
  * LRC 歌词解析器
@@ -51,6 +55,13 @@ object LrcParser {
             }
 
             // ── 备用：file:// URI 或固定公共目录 ──
+            // 心乐 @ API>=29 (scoped storage) 不声明任何存储权限，裸物理路径读取必然
+            // SecurityException/FileNotFoundException，是无谓 IO + 误导日志的死分支。
+            // 仅在 API<29（旧 file:// 导入模型）保留此 fallback。
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                AppLog.debug(TAG, "Scoped storage (API>=29): skip file:// public-dir fallback")
+                return null
+            }
             val searchDirs = mutableListOf<String?>()
             searchDirs.add(getParentDirFromUri(songUri))
             searchDirs.add(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)?.absolutePath)
@@ -221,13 +232,31 @@ object LrcParser {
      */
     fun parseLrcUri(context: Context, uri: Uri): Lyrics? {
         return try {
-            context.contentResolver.openInputStream(uri)?.bufferedReader()?.use { reader ->
-                parseLrcContent(reader.readText())
+            context.contentResolver.openInputStream(uri)?.use { input ->
+                // 有界读取：最多读 MAX_LRC_BYTES+1 字节以判断是否超限，避免全量入内存
+                val bytes = readBounded(input, MAX_LRC_BYTES + 1)
+                if (bytes.size > MAX_LRC_BYTES) {
+                    AppLog.warning(TAG, "LRC from $uri exceeds ${MAX_LRC_BYTES} bytes, skipped")
+                    return null
+                }
+                parseLrcContent(bytes.decodeToString())
             }
         } catch (e: Exception) {
             AppLog.warning(TAG, "SAF: failed to read LRC from URI $uri: ${e.message}")
             null
         }
+    }
+
+    /** 按上限读取输入流：最多读 max 字节，超过也可能只读到前 max 字节（由调用方判断截断）。 */
+    private fun readBounded(input: java.io.InputStream, max: Int): ByteArray {
+        val buf = java.io.ByteArrayOutputStream()
+        val chunk = ByteArray(8192)
+        while (buf.size() < max) {
+            val n = input.read(chunk, 0, kotlin.math.min(chunk.size, max - buf.size()))
+            if (n < 0) break
+            buf.write(chunk, 0, n)
+        }
+        return buf.toByteArray()
     }
 
     /**
@@ -269,7 +298,11 @@ object LrcParser {
      */
     private fun parseLrcFile(file: File): Lyrics? {
         return try {
-            file.readLines().joinToString("\n").let { parseLrcContent(it) }
+            if (file.length() > MAX_LRC_BYTES) {
+                AppLog.warning(TAG, "LRC file ${file.name} exceeds ${MAX_LRC_BYTES} bytes, skipped")
+                return null
+            }
+            file.readText().let { parseLrcContent(it) }
         } catch (e: Exception) {
             AppLog.warning(TAG, "Failed to parse LRC file: ${e.message}")
             null

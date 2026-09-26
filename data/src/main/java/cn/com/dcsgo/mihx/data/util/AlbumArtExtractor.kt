@@ -15,6 +15,8 @@ import java.io.FileOutputStream
 private const val TAG = "AlbumArtExtractor"
 private const val CACHE_DIR_NAME = "album_art"
 private const val TARGET_ALBUM_ART_PX = 512
+/** 内嵌封面原始字节读取上限（字节）。超限视为异常封面不缓存，避免整幅超大图全量解码。 */
+private const val MAX_ART_BYTES = 8 * 1024 * 1024 // 8MB
 
 object AlbumArtExtractor {
 
@@ -131,10 +133,19 @@ object AlbumArtExtractor {
                 AppLog.debug(TAG, "No embedded album art for $songUri")
                 return null
             }
+            if (artBytes.size > MAX_ART_BYTES) {
+                AppLog.warning(TAG, "Embedded album art ${artBytes.size} exceeds ${MAX_ART_BYTES} bytes, skipped")
+                return null
+            }
 
             // 先采样解码到 ~512px 量级，避免整幅超大内嵌封面导致内存尖峰
             val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
             BitmapFactory.decodeByteArray(artBytes, 0, artBytes.size, bounds)
+            // 解码器无法给出尺寸时拒绝解码（避免 sampleSize=1 整幅原稿解码）
+            if (bounds.outWidth <= 0 || bounds.outHeight <= 0) {
+                AppLog.warning(TAG, "Album art bounds undecodable ($bounds), skipped")
+                return null
+            }
             var sampleSize = 1
             while (
                 bounds.outWidth / (sampleSize * 2) >= TARGET_ALBUM_ART_PX &&

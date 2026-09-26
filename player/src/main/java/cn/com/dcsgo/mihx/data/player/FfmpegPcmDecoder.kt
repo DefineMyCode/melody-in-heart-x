@@ -67,7 +67,9 @@ class FfmpegPcmDecoder @Inject constructor() {
             return null
         }
         val maxInput = try { format.getInteger(MediaFormat.KEY_MAX_INPUT_SIZE) } catch (e: Exception) { 0 }
-        val initialInputSize = if (maxInput > 0) maxInput else DEFAULT_INPUT_SIZE
+        // clamp：恶意/异常容器头可能报巨大 MAX_INPUT_SIZE，导致 SimpleDecoder 为每个
+        // input buffer 预分配过大内存（×NUM_BUFFERS）。音频帧单帧极少超过 4MB，封顶即可。
+        val initialInputSize = (if (maxInput in 1..MAX_INPUT_SIZE_CAP) maxInput else DEFAULT_INPUT_SIZE)
 
         val m3 = Format.Builder()
             .setSampleMimeType(sampleMimeType)
@@ -177,7 +179,9 @@ class FfmpegPcmDecoder @Inject constructor() {
     }
 
     /** 交织 s16 LE -> mono(多声道求均值下混). data 的 position/limit 已由解码器摆好. */
-    private fun consumeOutput(data: ByteBuffer, ch: Int, pcm: ShortAccum) {
+    private fun consumeOutput(data: ByteBuffer, chIn: Int, pcm: ShortAccum) {
+        // 恶意流 decoder 报告的声道数可能异常；clamp 到合法范围，避免读到错误交织产生噪音
+        val ch = chIn.coerceIn(1, MAX_CHANNELS)
         data.order(ByteOrder.LITTLE_ENDIAN)
         val total = data.limit() / 2 / ch
         for (k in 0 until total) {
@@ -195,6 +199,8 @@ class FfmpegPcmDecoder @Inject constructor() {
         private const val TAG = "FfmpegPcmDecoder"
         private const val NUM_BUFFERS = 16
         private const val DEFAULT_INPUT_SIZE = 5760
+        private const val MAX_INPUT_SIZE_CAP = 4 * 1024 * 1024 // 4MB
+        private const val MAX_CHANNELS = 8
         private const val POLL_MS = 2L
 
         /** 该 mime 是否交给 FFmpeg 解(覆盖表 = FfmpegLibrary.getCodecName). */

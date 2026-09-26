@@ -407,7 +407,17 @@ class EmotionAnalyzer @Inject constructor(
          * 事后熔断样本数上限：按实际源采样率换算。
          * 旧静态 [MAX_SAMPLES] 按 192kHz 最坏情况设定，44.1kHz 立体声下形同虚设
          * （36 分钟合集远未触线就先 OOM，2026-09-04 真机日志）。
+         * 采样率先 clamp 到合法编解码范围（8k–192k），避免恶意/畸形头报告的极端
+         * 采样率让该值溢出 Int（ShortAccum.maxCapacity 是 Int）；同时封顶 Int.MAX_VALUE。
          */
-        fun maxSamplesForSrc(srcSampleRate: Int): Long = MAX_SECONDS.toLong() * srcSampleRate
+        fun maxSamplesForSrc(srcSampleRate: Int): Long {
+            val rate = srcSampleRate.coerceIn(MIN_SRC_SAMPLE_RATE, MAX_SRC_SAMPLE_RATE)
+            val samples = MAX_SECONDS.toLong() * rate
+            return samples.coerceAtMost(Int.MAX_VALUE.toLong())
+        }
+
+        /* 合法源采样率范围（clamp 用） */
+        private const val MIN_SRC_SAMPLE_RATE = 8_000
+        private const val MAX_SRC_SAMPLE_RATE = 192_000
     }
 }

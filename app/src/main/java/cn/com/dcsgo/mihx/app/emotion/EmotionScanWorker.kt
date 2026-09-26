@@ -88,6 +88,11 @@ class EmotionScanWorker(
             ) }
             when (result) {
                 is cn.com.dcsgo.mihx.domain.repository.EmotionAnalysisResult.Success -> {
+                    // 批内可能发生用户删除该歌：写入前校验 song 仍在当前曲库，防孤儿情绪行/失败记录
+                    if (ep.musicRepository().observeSongsSnapshot().none { it.id == song.id }) {
+                        AppLog.info(TAG, "analyzed [$attempted]: ${song.title} gone from library, skip persist")
+                        continue
+                    }
                     ep.emotionRepository().upsert(result.emotion)
                     failureRepo.clear(song.id)
                     done++
@@ -99,6 +104,10 @@ class EmotionScanWorker(
                     )
                 }
                 is cn.com.dcsgo.mihx.domain.repository.EmotionAnalysisResult.Failure -> {
+                    if (ep.musicRepository().observeSongsSnapshot().none { it.id == song.id }) {
+                        AppLog.info(TAG, "analyzed [$attempted]: ${song.title} gone from library, skip failure record")
+                        continue
+                    }
                     failureRepo.record(song.id, result.reason)
                     AppLog.warning(
                         TAG,

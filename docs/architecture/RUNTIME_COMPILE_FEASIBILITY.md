@@ -13,11 +13,28 @@
 
 ## 一、结论速览
 
+> **2026-09-29 真机复验更新**：本报告初版的所有实测量都在桌面 JVM 上完成（报告自己
+> 标注过这个弱点）。拿到可用模拟器后，**在真安卓运行时（ART / API 36 / x86_64）上
+> 复跑了同一批实验**，见 §九。复验**强化了主结论（❌ 不可行）**，但**推翻了初版的
+> 两条具体论断**，且**发现真正的第一阻断点与初版预测不同**。下表已按真机结果修订。
+
 | # | 结论 | 证据强度 |
 |---|---|---|
-| **1** | **不可行。** 运行期在原 App 进程内编译 Compose 源码，这条路被 JVM 平台层阻断，不是工程量问题 | **【实测】硬阻断** —— 编译器连初始化都过不去 |
-| **2** | **技术上「能跑」的唯一形态是"把一整个 JDK 搬进 APK 并当子进程拉起来"。** 代价约 +63MB 编译期产物、被 Google Play W^X 政策排除、无法内嵌进现有 App | **【实测】+【文献】** |
+| **1** | **不可行。** 运行期在原 App 进程内编译 Compose 源码，这条路被平台层阻断，不是工程量问题 | **【真机实测】硬阻断** —— 编译器在**初始化阶段**就崩（§九） |
+| **2** | **技术上「能跑」的唯一形态是"把一整个 JDK 搬进 APK 并当子进程拉起来"。** 代价约 +60MB+ 产物、被 Google Play W^X 政策排除、无法内嵌进现有 App | **【实测】+【文献】** |
 | **3** | **正确解法是另一条路：不要编译。** Google 官方的 androidx RemoteCompose 与 A2UI 正是为"运行期动态 UI 且不做源码编译"设计的，且官方明说 A2UI 的目标是 `without executing arbitrary code` | **【文献】官方一手** |
+
+### ★ 真机复验推翻了初版的两条论断（详见 §九）
+
+| 初版论断 | 真机事实 | 影响 |
+|---|---|---|
+| 「安卓运行时**没有** `LambdaMetafactory`」 | ❌ **错**。ART 运行时**有**，且 `metafactory`/`altMetafactory` 两个方法都在。它只是不在 `android.jar` 这个**编译期 stub** 里 | 论证方式要改：不能拿 `android.jar` 反向推断运行时能力 |
+| 「崩在 `VirtualFileManagerImpl.<init>`，读源码之前」 | ⚠️ **不准确**。那是桌面 JVM 削模块时的崩点；**真机上越过了它**，真正第一堵墙是 `sun.misc.Unsafe.copyMemory` 的**方法签名缺失** | 阻断点更靠后、也更本质：**类存在但方法签名不同**（类级探测查不出） |
+
+**主结论不变且更强**：真机上编译器仍无法完成初始化。而且暴露了一个初版没有的
+**方法论陷阱**——只看「类在不在」会得出错误结论，因为安卓的 `sun.misc.Unsafe`
+**类在、55 个方法在，但缺 `copyMemory(Object,long,Object,long,long)` 这个 5 参重载**
+（安卓只有 3 参 `(long,long,long)`）。详见 §九。
 
 ### 对「是否可作为主路线」的判断
 
@@ -65,7 +82,7 @@ Kotlin 编译器的实现是 **IntelliJ 平台应用**，不是"一个能嵌进 
 
 | 缺失的 JDK 包 | 引用它的编译器类数 | 安卓为何没有 |
 |---|---|---|
-| `java/lang/invoke/LambdaMetafactory` | **2 442** | ART/libcore 未实现（**文献一**） |
+| `java/lang/invoke/LambdaMetafactory` | **2 442** | ⚠️ **初版此处论断已被真机推翻**：ART 运行时**有**这个类（见 §九）。此处 0 命中是因为 `android.jar` 是**编译期 stub**，不含实现类——**不能拿它反推运行时能力** |
 | `com/sun/tools/javac/*`（JCTree 等） | 181 | 安卓不带 `jdk.compiler` |
 | `javax/lang/model/*` | 116 | 安卓不带 `java.compiler`（**文献二**） |
 | `javax/xml/stream/*`（StAX） | 23 | 安卓 `java.xml` 不含 StAX |
@@ -86,7 +103,7 @@ java/lang/management     0        ← java.management 缺失
 com/sun/tools            0
 com/sun/source           0
 sun/misc                 0        ← jdk.unsupported 缺失
-java/lang/invoke         18       ← 有 MethodHandle，但【无 LambdaMetafactory】
+java/lang/invoke         18       ← 有 MethodHandle；无 LambdaMetafactory（仅限本 stub！）
 java/util/logging        18       ← 有（这一项安卓是有的）
 java/beans               6        ← 有 6 个 PropertyChange* 类（部分有）
 ```
@@ -325,9 +342,108 @@ Compose 运行时取 `androidx.compose.runtime:runtime-android:1.7.5` 的 `class
 
 - ❌ **未找到** Google/JetBrains 官方"明确禁止在安卓上运行 Kotlin 编译器"的直述文档。本文的否决结论**由实测硬阻断 + 官方能力边界文档共同支撑**，而非某一条禁令。
 - ❌ **未找到** 任何**开源项目实现"运行期编译 Compose 源码并在本进程渲染"**。检索到的同类项目（AndroidIDE、Termux、Jdroid、A2UI-Android、RemoteCompose）**无一采用该形态**，全部走"数据驱动"或"独立进程 + 完整 JDK"。这一"无人做成"本身是强旁证，但**不能替代直接证据**。
-- ⚠️ **`sun.misc.Unsafe` 在安卓语义不可用**：结论为多来源间接推断（AOSP libcore 不含 `sun/misc/Unsafe`、`jdk.unsupported` 未被任何安卓文档列为可用模块），**未找到一条权威直述链接**。
+- ✅ **`sun.misc.Unsafe` 在安卓的可用性 —— 已由真机实测取代间接推断**（初版此处标为"未找到权威来源"）：真机上 `sun.misc.Unsafe` **类存在且声明了 55 个方法**，但**缺 `copyMemory(Object,long,Object,long,long)` 5 参重载**（安卓只有 `copyMemory(long,long,long)`），这正是编译器的第一阻断点。见 §九。
 - ⚠️ **Termux 的 aapt2 限制引文**：页面被反爬拦截，仅取到搜索摘要，**未获全文**。
-- ⚠️ **本报告未在真实安卓设备上实测**（无设备/模拟器，`adb` 未安装）。所有实测量均在 Linux x86_64 + 桌面 JVM(OpenJDK 21) 上完成，真机数字应更差。
+- ~~⚠️ **本报告未在真实安卓设备上实测**~~ → **已于 2026-09-29 补做**：在 tfl_smoke 模拟器（API 36 / x86_64 / ART）上用 `app_process` 直接拉起真实编译器复验，**推翻了本报告的两条论断**（§九）。这是本报告最重要的修正。
+
+---
+
+---
+
+## 九、真机复验（2026-09-29 补做）—— 推翻了初版两条论断
+
+初版所有实测量都在桌面 JVM 上完成，报告自己把它列为弱点。拿到可用模拟器后
+（**tfl_smoke / API 36 / x86_64 / ART**），用 `app_process` 直接把真实产物拉起来复验。
+
+方法（不需要装 App，绕开一切打包干扰）：
+
+```bash
+# 1) 把 kotlin-compiler-embeddable 2.0.21 用 D8 转成 dex（6 个 dex，共 62MB）
+# 2) 打成一个 jar，推进设备
+adb push kc.jar /data/local/tmp/kc.jar
+# 3) 直接用 ART 拉起编译器本体
+adb shell "CLASSPATH=/data/local/tmp/kc.jar app_process /system/bin \
+  org.jetbrains.kotlin.cli.jvm.K2JVMCompiler -no-jdk -no-stdlib \
+  -d /data/local/tmp/out /data/local/tmp/src/Hello.kt"
+```
+
+### 9.1 ★ 推翻一：`LambdaMetafactory` 在安卓运行时**是存在的**
+
+初版据 `android.jar` 里查不到该类，断言"ART/libcore 未实现"。**真机实测推翻**：
+
+```
+LambdaMetafactory 方法:
+  public static CallSite LambdaMetafactory.altMetafactory(Lookup,String,MethodType,Object[])
+  public static CallSite LambdaMetafactory.metafactory(Lookup,String,MethodType,MethodType,MethodHandle,MethodType)
+```
+
+**根因（方法论错误）**：`android.jar` 是给编译器看的 **stub jar**，只含公开 SDK 面，
+**不等于运行时能力**。拿它反推"运行时有没有"在原理上就是错的。
+（注：Jake Wharton 关于脱糖的那篇仍是正确的——它讲的是**编译期脱糖策略**，不是运行时类缺失。）
+
+### 9.2 ★ 推翻二：真正的第一阻断点**不是** `VirtualFileManagerImpl`
+
+初版预测"崩在 `VirtualFileManagerImpl.<init>`，读任何源码之前"。真机上**越过了它**，
+停在更靠后、也更本质的位置：
+
+```
+error: no class roots are found in the JDK path: /apex/com.android.art     ← 先撞 JDK 检测
+（加 -no-jdk -no-stdlib 绕过后）
+java.lang.Error: java.lang.NoSuchMethodException: copyMemory [Object, long, Object, long, long]
+    at com.intellij.util.ConcurrentLongObjectHashMap.<clinit>
+    at com.intellij.util.Java11Shim$Companion$INSTANCE$1.createConcurrentLongObjectMap
+    at com.intellij.core.CoreApplicationEnvironment.createProgressIndicatorProvider
+    ...（编译器初始化阶段，仍未读到任何源文件）
+```
+
+### 9.3 ★★ 最重要的方法论发现：**类级探测会骗人**
+
+`sun.misc.Unsafe` 的实测结果：
+
+| 检查项 | 结果 |
+|---|---|
+| 类是否存在 | ✅ **存在** |
+| 声明的方法数 | **55 个**（`copyMemory`/`allocateMemory`/`getUnsafe`/CAS 系列/`park` 等都在） |
+| `copyMemory` 的**签名** | ❌ 只有 **3 参** `copyMemory(long,long,long)`；**缺 5 参** `copyMemory(Object,long,Object,long,long)` |
+| 反射 `getMethod("copyMemory", Object.class, long.class, Object.class, long.class, long.class)` | ❌ `NoSuchMethodException` |
+| 是否被隐藏 API 限制拦截 | ❌ 不是——`setAccessible(true)` 成功，**纯粹是签名不存在** |
+
+**这推翻了初版"安卓的 sun.misc.Unsafe 语义不可用"的间接推断，但给出更强的结论**：
+不是"类没有"，而是**"类在、方法名在、但方法签名被裁剪成安卓自己的子集"**。
+
+**为什么这很重要**：任何靠 `Class.forName` 逐类探测得出的"缺失清单"都**低估了真实差距**。
+初版算出的"146 个缺失 JDK 类"只是**下界**；真实不兼容还包括大量
+**"类在但方法签名不同"** 的情况——**类级探测查不出来**。
+`ConcurrentLongObjectHashMap.<clinit>` 直接 `java.lang.Error` 挂掉，
+连 `try/catch` 都救不了，编译器初始化就此终止。
+
+### 9.4 真机上的其他实测数据
+
+| 项 | 真机值 | 说明 |
+|---|---|---|
+| `java.vm.name` | **Dalvik** | 即 ART 的 Dalvik 兼容标识 |
+| `java.specification.version` | **0.9** | 不是 `1.8`/`11`/`21`——编译器里任何按 Java 版本分支的逻辑都可能走错路 |
+| `java.lang.management.ManagementFactory` | ❌ 不存在 | 初版判断正确 |
+| `javax.tools` / `javax.lang.model` / `javax.swing` / `java.awt` | ❌ 全不存在 | 初版判断正确 |
+| `java.nio.file.Files` | ✅ 存在，**56 个公开方法** | ⚠️ 初版未验证；实测 `createTempFile(String,String,FileAttribute[])` **可用**（返回真实临时文件路径） |
+| 单进程 `maxMemory` | **192 MB** | 跑这个编译器（初始化就需数百 MB）**远远不够** |
+| CPU 核数 | 4 | — |
+
+**内存这一条是独立于所有类/方法问题的第二重硬阻断**：即便把上面每个缺失都补齐，
+192MB 的默认堆也装不下编译器。
+
+### 9.5 复验后的结论
+
+**主结论（❌ 不可行）不仅不变，而且更硬**：
+
+1. 真机上编译器**确实无法完成初始化**（`ConcurrentLongObjectHashMap.<clinit>` → `java.lang.Error`）。
+2. 阻断点比初版预测**更本质**：不是"缺类"，而是"**类在但签名不同**"——
+   这类问题无法靠"往 APK 里塞缺失的类"解决，因为**你没法往运行时里加方法**。
+3. 叠加 `maxMemory = 192MB` 与 `java.specification.version = 0.9`，工程量只会比初版估计更大。
+
+**对心乐的意义完全不变**：这条路的结论仍是"不可作为主路线"，
+路线 B（声明式皮肤包）依然是正确选择。本节的唯一修正是**论证的准确性**——
+一个建立在错误理由上的正确结论，早晚会在别处把人带沟里。
 
 ---
 

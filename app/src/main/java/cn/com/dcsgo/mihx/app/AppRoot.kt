@@ -29,14 +29,17 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.core.view.WindowCompat
 import cn.com.dcsgo.mihx.app.permissions.rememberPermissionCoordinator
+import cn.com.dcsgo.mihx.app.player.NowPlayingSurface
 import cn.com.dcsgo.mihx.app.player.PlayerQueueSheetHost
+import cn.com.dcsgo.mihx.app.player.PlayerSheetHost
 import cn.com.dcsgo.mihx.app.playlist.PlaylistResumeViewModel
 import cn.com.dcsgo.mihx.app.theme.SettingsViewModel
 import cn.com.dcsgo.mihx.app.tuning.AppTuningProvider
 import cn.com.dcsgo.mihx.app.tuning.UiTuningPanel
 import cn.com.dcsgo.mihx.app.tuning.rememberDebugTuning
 import cn.com.dcsgo.mihx.app.shell.AppShell
-import cn.com.dcsgo.mihx.app.shell.DefaultShell
+import cn.com.dcsgo.mihx.app.shell.PlayerEntry
+import cn.com.dcsgo.mihx.app.shell.SkinShellResolver
 import cn.com.dcsgo.mihx.core.model.ThemeMode
 import cn.com.dcsgo.mihx.core.model.ThemeVariant
 import cn.com.dcsgo.mihx.domain.model.DeleteSongResult
@@ -69,9 +72,6 @@ fun AppRoot(
     val navController = rememberNavController()
     val backStackEntry by navController.currentBackStackEntryAsState()
     val activeRoute = backStackEntry?.destination?.route
-    // P2：外壳来自皮肤描述。当前恒为内置骨架（描述驱动的用户切换在 P5 落地），
-    // 但导航层已完全由这份数据驱动——把恒等换成"用户选中的皮肤"即可切换整套骨架。
-    val shell: AppShell = DefaultShell.shell
     val themeMode by settingsViewModel.themeMode.collectAsStateWithLifecycle()
     val themeVariant by settingsViewModel.themeVariant.collectAsStateWithLifecycle()
     val lyricFontScale by settingsViewModel.lyricFontScale.collectAsStateWithLifecycle()
@@ -82,9 +82,20 @@ fun AppRoot(
         ThemeMode.DARK -> true
     }
     var showQueueSheet by remember { mutableStateOf(false) }
+    // P3：全局播放抽屉的开合状态。
+    // 仅当骨架声明 playerEntry = SHEET 时可达；默认骨架为 TAB，此值恒为 false，
+    // 因此默认骨架的行为与改造前完全一致。
+    var showPlayerSheet by remember { mutableStateOf(false) }
     val uiState by playerViewModel.uiState.collectAsStateWithLifecycle()
     // UI 参调（debug 构建才有控制器；release 恒为 null，令牌回落默认值 = 原硬编码）
     val (tuningController, tuningAccess) = rememberDebugTuning()
+
+    // P2：外壳来自皮肤描述。P3 起可在 debug 面板切换骨架（验收抽屉型）；
+    // release 下 tuningAccess 恒为默认值 → 始终内置骨架，行为与改造前一致。
+    // P5 会把这里换成"用户导入的皮肤"。
+    val shell: AppShell = remember(tuningAccess.currentSkinId) {
+        SkinShellResolver.resolveById(tuningAccess.currentSkinId)
+    }
 
     BackHandler(enabled = showQueueSheet) {
         showQueueSheet = false
@@ -168,6 +179,8 @@ fun AppRoot(
                 isPlaying = uiState.isPlaying,
                 positionMs = playerViewModel.positionMs,
                 durationMs = uiState.durationMs,
+                // P3：抽屉打开时隐藏迷你条——否则同一首歌出现两处控制，且底层条目被遮挡
+                miniPlayerHiddenBySheet = showPlayerSheet,
                 onTabSelected = { tab ->
                     navController.navigate(tab.route) {
                         popUpTo(navController.graph.findStartDestination().id) {
@@ -181,12 +194,18 @@ fun AppRoot(
                 onPreviousClick = playerViewModel::playPrevious,
                 onNextClick = playerViewModel::playNext,
                 onNavigateToHome = {
-                    navController.navigate(AppRoutes.HOME) {
-                        popUpTo(navController.graph.findStartDestination().id) {
-                            saveState = true
+                    // P3：抽屉型骨架没有"播放页 Tab"，迷你条点击的语义变成"拉起抽屉"；
+                    // 默认骨架（TAB）保持原语义不变（导航到播放页）。
+                    if (shell.playerEntry == PlayerEntry.SHEET) {
+                        showPlayerSheet = true
+                    } else {
+                        navController.navigate(AppRoutes.HOME) {
+                            popUpTo(navController.graph.findStartDestination().id) {
+                                saveState = true
+                            }
+                            launchSingleTop = true
+                            restoreState = true
                         }
-                        launchSingleTop = true
-                        restoreState = true
                     }
                 },
                 // 全屏歌词页不响应横滑，避免误切底部 Tab
@@ -213,6 +232,35 @@ fun AppRoot(
                     emotionViewModel = emotionViewModel,
                     moodTimeSlotViewModel = moodTimeSlotViewModel,
                     onVersionLongPress = tuningAccess.onOpenPanel,
+                )
+            }
+
+            // P3：全局播放抽屉。仅当骨架声明 playerEntry = SHEET 时可能为 true。
+            // 内容与 Tab 形态共用同一个 NowPlayingSurface，避免两套实现漂移。
+            PlayerSheetHost(
+                isShown = showPlayerSheet,
+                onDismiss = { showPlayerSheet = false },
+            ) {
+                NowPlayingSurface(
+                    playerViewModel = playerViewModel,
+                    uiState = uiState,
+                    onShowQueue = { showQueueSheet = true },
+                    loadSongInfo = mediaMetadataViewModel::songInfo,
+                    showToast = toastHost::showToast,
+                    deleteSongWithToast = ::deleteSongWithToast,
+                    playlistResumeViewModel = playlistResumeViewModel,
+                    onNavigateToLyrics = {
+                        showPlayerSheet = false
+                        navController.navigate(AppRoutes.LYRICS)
+                    },
+                    onNavigateToArtist = { artistName ->
+                        showPlayerSheet = false
+                        navController.navigate(AppRoutes.artistDetail(artistName))
+                    },
+                    onNavigateToAlbum = { albumName ->
+                        showPlayerSheet = false
+                        navController.navigate(AppRoutes.albumDetail(albumName))
+                    },
                 )
             }
 
@@ -246,6 +294,9 @@ fun AppRoot(
                     onExport = tuningController.onExport,
                     onReset = tuningController.onReset,
                     onClose = { tuningController.onShowPanelChange(false) },
+                    skinOptions = tuningAccess.skinOptions,
+                    currentSkinId = tuningAccess.currentSkinId,
+                    onSkinChange = tuningAccess.onSkinChange,
                 )
             }
         }

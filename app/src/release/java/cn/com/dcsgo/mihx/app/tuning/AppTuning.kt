@@ -24,6 +24,10 @@ data class UiTuningAccess(
     val enabled: Boolean,
     val onOpenPanel: () -> Unit,
     val onExport: () -> Unit,
+    /** P3：骨架（皮肤）切换信息。release 恒为空/默认，不暴露任何切换入口。 */
+    val currentSkinId: String? = null,
+    val skinOptions: List<Pair<String, String>> = emptyList(),
+    val onSkinChange: (String) -> Unit = {},
 )
 
 /**

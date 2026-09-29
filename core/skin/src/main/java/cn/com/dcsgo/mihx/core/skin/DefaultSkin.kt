@@ -155,4 +155,82 @@ object DefaultSkin {
             "内置默认骨架未通过校验（说明描述与零件库不一致）：${result.issues.joinToString { "${it.code}: ${it.message} @${it.field}" }}",
         )
     }
+
+    /**
+     * 用户举例的那套骨架：**2 Tab（曲库/我的）+ 播放页为全局抽屉**。
+     *
+     * 这是 P3 的可运行样本——它证明"描述能表达抽屉型骨架"这一诉求已被满足，
+     * 而不只是接口上留了个 `playerEntry = "sheet"` 的字段。
+     *
+     * 与内置骨架的差异仅三处：
+     *  1. 底栏去掉「播放」（播放页从 Tab 移出）；
+     *  2. `playerEntry` 改为 `sheet`；
+     *  3. `startPage` 改为曲库页（播放页已不在底栏，落在那儿会没有高亮项）。
+     *
+     * 与原型 `mihx-plugin-shell/parts-library.html` 里的「极简双页」皮肤一致。
+     */
+    val MINIMAL_SHEET_JSON: String =
+        """
+        {
+          "schemaVersion": 1,
+          "id": "dcsgo.skin.minimal",
+          "name": "极简双页 · 播放抽屉",
+          "tokens": {
+            "theme": "MONO",
+            "dark": true,
+            "surface": 0,
+            "cardRadiusDp": 16,
+            "hairlineDp": 1,
+            "rowGapDp": 14,
+            "artSizeDp": 52,
+            "artRadiusDp": 14,
+            "nowPlayingRadiusDp": 20
+          },
+          "shell": {
+            "bottomBar": [
+              { "id": "tab-library", "label": "曲库", "icon": "library", "target": "$PAGE_LIBRARY" },
+              { "id": "tab-me",      "label": "我的", "icon": "me",      "target": "$PAGE_ME" }
+            ],
+            "miniPlayer": true
+          },
+          "pages": {
+            "$PAGE_LIBRARY": {
+              "header": {
+                "title": "曲库",
+                "subtitle": "本地音乐",
+                "actions": [ { "icon": "search", "title": "搜索" } ]
+              },
+              "sections": []
+            },
+            "$PAGE_PLAYER": { "sections": [] },
+            "$PAGE_ME": {
+              "fixedOneScreen": true,
+              "header": { "title": "我的", "actions": [ { "icon": "sliders", "title": "设置" } ] },
+              "sections": []
+            }
+          },
+          "startPage": "$PAGE_LIBRARY",
+          "playerEntry": "sheet",
+          "nowPlaying": {
+            "center": false,
+            "coverShape": "square",
+            "controlStyle": "solid",
+            "showMood": false,
+            "lyrics": false,
+            "queue": true,
+            "actions": [
+              { "icon": "heart", "label": "喜欢" },
+              { "icon": "plus",  "label": "歌单" }
+            ]
+          }
+        }
+        """.trimIndent()
+
+    /** 解析抽屉型样本骨架；供测试与将来的人工验收使用。 */
+    fun minimalSheetSkin(): Skin = when (val result = SkinParser.parse(MINIMAL_SHEET_JSON)) {
+        is SkinValidation.Valid -> result.skin
+        is SkinValidation.Invalid -> error(
+            "抽屉型样本骨架未通过校验：${result.issues.joinToString { "${it.code}: ${it.message} @${it.field}" }}",
+        )
+    }
 }

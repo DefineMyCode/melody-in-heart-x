@@ -23,6 +23,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import cn.com.dcsgo.mihx.app.permissions.PermissionCoordinator
+import cn.com.dcsgo.mihx.app.player.NowPlayingSurface
 import cn.com.dcsgo.mihx.app.player.SongPlaybackStrategy
 import cn.com.dcsgo.mihx.app.player.playWith
 import cn.com.dcsgo.mihx.app.shell.AppShell
@@ -174,150 +175,25 @@ fun AppNavHost(
         popExitTransition = { ExitTransition.None },
     ) {
         composable(AppRoutes.HOME) {
-            // 播放位置窄流：只在当前目的地（播放页）订阅，不驱动整壳重组
-            val positionMs by playerViewModel.positionMs.collectAsStateWithLifecycle()
-            // M-6（评审 2026-09-03）：定时关闭剩余毫秒窄流——倒计时每秒 tick 只驱动
-            // 定时关闭 Chip 局部重组，不写主 UiState 导致整壳重组。
-            val sleepTimerRemainingMs by playerViewModel.sleepTimerRemainingMs.collectAsStateWithLifecycle()
-            // 播放页"更多"功能对话框状态
-            var songForInfo by remember { mutableStateOf<Song?>(null) }
-            var songInfo by remember { mutableStateOf<SongInfo?>(null) }
-            var songForAddToPlaylist by remember { mutableStateOf<Song?>(null) }
-            var songForDelete by remember { mutableStateOf<Song?>(null) }
-            LaunchedEffect(songForInfo) {
-                val uri = songForInfo?.uri
-                if (uri != null) {
-                    // m6（评审 2026-09-03）：底层走 Room runBlocking 桥，DB 异常会让协程崩溃，这里兜底。
-                    songInfo = runCatching { songForInfo?.let { loadSongInfo(it) } }
-                        .onFailure {
-                            AppLog.error("AppNavHost", "loadSongInfo failed: ${it.message}", it)
-                        }
-                        .getOrNull()
-                }
-            }
-            HomeRoute(
-                state = HomeRouteState(
-                    currentSong = uiState.currentSong,
-                    isPlaying = uiState.isPlaying,
-                    currentPositionMs = positionMs,
-                    durationMs = uiState.durationMs,
-                    playMode = uiState.playQueue.playMode,
-                    isInfinitePlay = uiState.isInfinitePlay,
-                    sameNameSongs = uiState.sameNameSongs,
-                    isSleepTimerActive = uiState.isSleepTimerActive,
-                    sleepTimerRemainingMs = sleepTimerRemainingMs,
-                    sleepTimerPlayLastSong = uiState.sleepTimerPlayLastSong,
-                    sleepTimerPausePending = uiState.sleepTimerPausePending,
-                ),
-                actions = HomeRouteActions(
-                    onPlayPauseClick = playerViewModel::togglePlayPause,
-                    onPreviousClick = playerViewModel::playPrevious,
-                    onNextClick = playerViewModel::playNext,
-                    onStartSeeking = playerViewModel::startSeeking,
-                    onEndSeeking = playerViewModel::endSeeking,
-                    onSeekTo = playerViewModel::seekTo,
-                    onQueueClick = onShowQueue,
-                    onTogglePlayMode = {
-                        playerViewModel.togglePlayMode()
-                        playerViewModel.currentPlayMode.label
-                    },
-                    onSwitchVersion = playerViewModel::switchToVersion,
-                    onShowLyrics = { navController.navigate(AppRoutes.LYRICS) },
-                    onArtistClick = { artistName ->
-                        navController.navigate(AppRoutes.artistDetail(artistName))
-                    },
-                    onAlbumClick = { albumName ->
-                        navController.navigate(AppRoutes.albumDetail(albumName))
-                    },
-                    onLuckyPlayClick = {
-                        val started = playerViewModel.playRandomQueue()
-                        if (started) {
-                            // 情境化随心播放归因（§4.5）：让"这首歌为什么被选中"可解释
-                            playerViewModel.currentMoodSlotName()?.let { slotName ->
-                                showToast("已按「$slotName」为你随机播放")
-                            }
-                        } else {
-                            showToast("还没有可播放的音乐，请先导入歌曲吧~")
-                        }
-                        playlistResumeViewModel.switchSource(null, uiState.currentSong?.id)
-                        started
-                    },
-                    onStartInfinitePlay = {
-                        val started = playerViewModel.startInfinitePlay()
-                        if (started) {
-                            playerViewModel.currentMoodSlotName()?.let { slotName ->
-                                showToast("已按「$slotName」开启无限随机播放")
-                            }
-                        }
-                        playlistResumeViewModel.switchSource(null, uiState.currentSong?.id)
-                        started
-                    },
-                    onStopInfinitePlay = playerViewModel::stopInfinitePlay,
-                    onRelatedPlayClick = { song ->
-                        val added = playerViewModel.playRelatedSongs(song)
-                        playlistResumeViewModel.switchSource(null, uiState.currentSong?.id)
-                        if (added > 0) {
-                            showToast("已关联 $added 首歌曲")
-                        } else {
-                            showToast("未检索到关联歌曲")
-                        }
-                    },
-                    onSleepTimerStart = { minutes, playLast ->
-                        playerViewModel.startSleepTimer(minutes, playLast)
-                        showToast("已设置定时关闭：${minutes}分钟后暂停播放")
-                    },
-                    onSleepTimerCancel = {
-                        playerViewModel.cancelSleepTimer()
-                        showToast("已取消定时关闭")
-                    },
-                    onShowSongInfo = { song ->
-                        songForInfo = song
-                        songInfo = null
-                    },
-                    onAddToPlaylist = { song -> songForAddToPlaylist = song },
-                    onDeleteSong = { song -> songForDelete = song },
-                ),
+            // P3：播放页内容已抽成 NowPlayingSurface，Tab 与全局抽屉两种形态共用同一份实现。
+            NowPlayingSurface(
+                playerViewModel = playerViewModel,
+                uiState = uiState,
+                onShowQueue = onShowQueue,
+                loadSongInfo = loadSongInfo,
                 showToast = showToast,
+                deleteSongWithToast = deleteSongWithToast,
+                playlistResumeViewModel = playlistResumeViewModel,
+                onNavigateToLyrics = { navController.navigate(AppRoutes.LYRICS) },
+                onNavigateToArtist = { artistName ->
+                    navController.navigate(AppRoutes.artistDetail(artistName))
+                },
+                onNavigateToAlbum = { albumName ->
+                    navController.navigate(AppRoutes.albumDetail(albumName))
+                },
             )
-            // 歌曲详细信息对话框（更多菜单 → 查看歌曲详细信息）
-            val infoSong = songForInfo
-            val currentSongInfo = songInfo
-            if (infoSong != null && currentSongInfo != null) {
-                SongInfoDialog(
-                    song = infoSong,
-                    songInfo = currentSongInfo,
-                    onDismiss = {
-                        songForInfo = null
-                        songInfo = null
-                    },
-                )
-            }
-            // 添加到歌单对话框（更多菜单 → 添加到歌单）
-            songForAddToPlaylist?.let { song ->
-                SingleSongAddToPlaylistDialog(
-                    song = song,
-                    playlists = uiState.playlists,
-                    onDismiss = { songForAddToPlaylist = null },
-                    onSelectPlaylist = { playlist ->
-                        playerViewModel.addSongToPlaylist(playlist.id, song.id)
-                        showToast("已添加到歌单「${playlist.name}」")
-                        songForAddToPlaylist = null
-                    },
-                    onCreatePlaylist = playerViewModel::createPlaylist,
-                )
-            }
-            // 删除确认对话框（更多菜单 → 删除，与本地音乐交互一致）
-            songForDelete?.let { song ->
-                DeleteSongConfirmDialog(
-                    song = song,
-                    onDismiss = { songForDelete = null },
-                    onConfirm = {
-                        songForDelete = null
-                        deleteSongWithToast(song.id)
-                    },
-                )
-            }
         }
+
 
         composable(AppRoutes.LYRICS) {
             // 播放位置窄流：只在歌词页订阅，随位置推进只重组歌词内容

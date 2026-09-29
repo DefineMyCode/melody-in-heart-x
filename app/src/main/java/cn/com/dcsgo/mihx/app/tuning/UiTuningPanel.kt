@@ -43,6 +43,15 @@ fun UiTuningPanel(
     onExport: () -> Unit,
     onReset: () -> Unit,
     onClose: () -> Unit,
+    /**
+     * P3 骨架（皮肤）切换。仅 debug 可达，用于验收抽屉型骨架。
+     *
+     * 这不是 P5 的产品级皮肤管理 UI——它是一个**验收开关**，
+     * 让"2 Tab + 播放抽屉"那套骨架能在真机上被实际跑到。
+     */
+    skinOptions: List<Pair<String, String>> = emptyList(),
+    currentSkinId: String? = null,
+    onSkinChange: (String) -> Unit = {},
 ) {
     Surface(modifier = Modifier.fillMaxSize()) {
         Column(
@@ -71,6 +80,35 @@ fun UiTuningPanel(
                     .verticalScroll(rememberScrollState())
                     .padding(horizontal = 12.dp),
             ) {
+                if (skinOptions.isNotEmpty()) {
+                    GroupTitle("骨架（皮肤）· 验收开关")
+                    skinOptions.forEach { (id, label) ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { onSkinChange(id) }
+                                .padding(vertical = 8.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                        ) {
+                            Text(
+                                text = label,
+                                fontSize = 13.sp,
+                                color = MaterialTheme.colorScheme.onSurface,
+                            )
+                            Text(
+                                text = if (id == currentSkinId) "✓ 当前" else "切换",
+                                fontSize = 12.sp,
+                                fontWeight = if (id == currentSkinId) FontWeight.Bold else FontWeight.Normal,
+                                color = if (id == currentSkinId) {
+                                    MaterialTheme.colorScheme.primary
+                                } else {
+                                    MaterialTheme.colorScheme.onSurfaceVariant
+                                },
+                            )
+                        }
+                    }
+                }
+
                 GroupTitle("歌曲列表行")
                 SliderRow("行垂直内边距", tuning.vis.listRowVerticalPaddingDp, 0f..24f) {
                     onTuningChange(tuning.copy(vis = tuning.vis.copy(listRowVerticalPaddingDp = it)))

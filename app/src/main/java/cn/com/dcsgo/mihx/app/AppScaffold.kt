@@ -66,6 +66,14 @@ fun AppScaffold(
     onNextClick: () -> Unit,
     onNavigateToHome: () -> Unit,
     swipeEnabled: Boolean = true,
+    /**
+     * P3：播放抽屉是否正处于打开状态。
+     *
+     * 抽屉打开时必须隐藏迷你条——否则同一首歌会出现两处控制，且底层条目被遮挡。
+     * 这个状态由 AppRoot 持有（抽屉在那儿渲染），以参数下传而不是塞进 [AppShell]：
+     * 它表达的是**瞬时的 UI 状态**，不是骨架的结构属性。
+     */
+    miniPlayerHiddenBySheet: Boolean = false,
     content: @Composable () -> Unit,
 ) {
     BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
@@ -91,6 +99,7 @@ fun AppScaffold(
                     onNavigateToHome = onNavigateToHome,
                     onTabSelected = onTabSelected,
                     swipeEnabled = swipeEnabled,
+                    miniPlayerHiddenBySheet = miniPlayerHiddenBySheet,
                     content = content,
                 )
             }
@@ -142,6 +151,7 @@ private fun ScaffoldContentColumn(
     onNavigateToHome: () -> Unit,
     onTabSelected: (AppTab) -> Unit,
     swipeEnabled: Boolean = true,
+    miniPlayerHiddenBySheet: Boolean = false,
     content: @Composable () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -184,7 +194,7 @@ private fun ScaffoldContentColumn(
         ) {
             content()
         }
-        if (shouldShowMiniPlayer(shell, activeRoute, currentSong != null)) {
+        if (shouldShowMiniPlayer(shell, activeRoute, currentSong != null) && !miniPlayerHiddenBySheet) {
             MusicPlayerBottomBar(
                 isPlaying = isPlaying,
                 currentSong = currentSong!!,

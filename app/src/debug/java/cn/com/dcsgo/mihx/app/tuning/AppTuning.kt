@@ -37,6 +37,10 @@ data class UiTuningAccess(
     val enabled: Boolean,
     val onOpenPanel: () -> Unit,
     val onExport: () -> Unit,
+    /** P3：当前骨架（皮肤）id，与 [UiTuningController.skinOptions] 配合用于验收切换。 */
+    val currentSkinId: String? = null,
+    val skinOptions: List<Pair<String, String>> = emptyList(),
+    val onSkinChange: (String) -> Unit = {},
 )
 
 /**
@@ -74,6 +78,15 @@ internal fun rememberDebugTuning(): Pair<UiTuningController?, UiTuningAccess> {
     val store = remember(context) { UiTuningStore(context) }
     var tuning by remember { mutableStateOf(store.load()) }
     var showPanel by remember { mutableStateOf(false) }
+    // P3：骨架（皮肤）切换状态，仅 debug 可达。
+    // 用 SharedPreferences 持久化，因为切换骨架后 App 常需重建导航图（进程内状态会丢）。
+    val skinPrefs = remember(context) { context.getSharedPreferences("skin_debug", android.content.Context.MODE_PRIVATE) }
+    var currentSkinId by remember {
+        mutableStateOf(
+            skinPrefs.getString("skin_id", null)
+                ?: cn.com.dcsgo.mihx.app.shell.SkinShellResolver.DEFAULT_SKIN_ID,
+        )
+    }
 
     val controller = remember(tuning, showPanel, store) {
         UiTuningController(
@@ -99,11 +112,21 @@ internal fun rememberDebugTuning(): Pair<UiTuningController?, UiTuningAccess> {
         )
     }
 
-    val access = remember(controller) {
+    val skinOptions = remember {
+        cn.com.dcsgo.mihx.app.shell.SkinShellResolver.knownSkins.map { it.id to it.name }
+    }
+
+    val access = remember(controller, currentSkinId, skinOptions) {
         UiTuningAccess(
             enabled = true,
             onOpenPanel = controller.onShowPanelChange.let { { it(true) } },
             onExport = controller.onExport,
+            currentSkinId = currentSkinId,
+            skinOptions = skinOptions,
+            onSkinChange = { id ->
+                currentSkinId = id
+                skinPrefs.edit().putString("skin_id", id).apply()
+            },
         )
     }
     return controller to access

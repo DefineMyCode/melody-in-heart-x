@@ -23,6 +23,26 @@ import cn.com.dcsgo.mihx.navigation.AppRoutes
 object SkinShellResolver {
 
     /**
+     * 当前可选的骨架集合（皮肤）。
+     *
+     * P3 只登记两套**内置**骨架用于验收：
+     *  - 默认骨架（3 Tab，与改造前一致）
+     *  - 抽屉型骨架（2 Tab + 播放为全局抽屉，即用户举例的那套）
+     *
+     * 用户导入的皮肤在 P5 才接进来。
+     */
+    val knownSkins: List<Skin> by lazy { listOf(DefaultSkin.skin(), DefaultSkin.minimalSheetSkin()) }
+
+    /** 内置骨架 id；未知 id 一律回落它（fail-safe）。 */
+    const val DEFAULT_SKIN_ID: String = DefaultSkin.ID
+
+    /** 按皮肤 id 解析外壳；id 未知时回落默认骨架而不是崩。 */
+    fun resolveById(id: String?): AppShell {
+        val skin = knownSkins.firstOrNull { it.id == id } ?: return DefaultShell.shell
+        return resolve(skin)
+    }
+
+    /**
      * 描述里的页面 key → 顶级路由。
      *
      * 目前是**固定映射**：P2 只支持"这几种页面被放在底栏"，

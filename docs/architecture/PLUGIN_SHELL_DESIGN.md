@@ -169,6 +169,12 @@ spike 已证明可行，但代价明确：
 | **P1** | 骨架描述模型 + 解析校验 + 内置"默认骨架"（描述 = 当前 App 结构，视觉零变化） | 描述能 1:1 表达现状 | 1~2 天 |
 | **P2** | 导航层改造：`AppDestinations` → 运行期 Tab 列表；`AppScaffold` 按描述渲染 | 用内置描述驱动的 App，行为与现在一致 | 2~3 天 |
 | **P3** | 新增 `sheet` 容器 + 迷你条唤起 | 播放页可作为全局抽屉（即用户的例子） | 2 天 |
+
+**P3 的具体改造（代码现状已核实）**：
+- 播放页现在是 `AppRoutes.HOME` 的一个**普通 Tab**（`AppNavHost:164`），且迷你条只在非 HOME 页显示（`AppScaffold:155` 条件 `currentDestination != AppDestinations.HOME`）。
+- 新骨架下：`HOME` **从 Tab 列表移除**，迷你条改为"只要有当前歌曲就常驻显示"，播放页内容改由 `sheet` 容器承载。
+- `ModalBottomSheet` **仓库里已有现成用法**（`feature/player/PlayQueueSheet.kt:120`），全局播放抽屉可直接复用同一 API 与写法，不必新造容器。
+- ⚠️ 需带上的已知坑（skill 已记录）：M3 sheet 的 BACK 处理发生在**独立 dialog window**，主 window 的 `BackHandler` 收不到 → 要用 `sheetState.confirmValueChange` 拦截；且新增的 sheet 回调参数若漏接线会拿到空 lambda 默认值，导致**模态窗口残留拦截触摸、页面看似无响应**（此类 bug 必须模拟器复现 + logcat 定位）。
 | **P4** | 零件库扩充 + 骨架文件导入/切换/导出 + 设置页 UI | 可导入分享的骨架文件 | 2~3 天 |
 
 **每阶段独立可验收**：P1+P2 完成后必须证明"用描述驱动的 App 与现在完全一样"，这是后续一切的地基。

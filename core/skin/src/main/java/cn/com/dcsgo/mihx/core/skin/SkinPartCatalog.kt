@@ -44,14 +44,25 @@ object SkinPartCatalog {
 
     // ── L2 页面与分区 ────────────────────────────────────────────
     const val LIBRARY_TABS = "libraryTabs"
+
+    /**
+     * 我的页分区（L2 分区化，2026-09-29 P4）。
+     *
+     * 改造前我的页靠一个 `myOverview` 零件整体渲染；现在拆成 5 个可独立裁剪/重排的分区。
+     * 这组名字必须与 `feature/user` 的 `UserSections` 常量**逐字一致**，
+     * 由 `UserSectionsMatchDescriptionTest` 对照回归。
+     */
+    const val USER_INFO = "userInfo"
+    const val PLAY_STATS = "playStats"
+    const val MOOD_TIME_SLOT = "moodTimeSlot"
+    const val EMOTION_SCAN = "emotionScan"
+    const val FILE_CHECK = "fileCheck"
+
     const val MY_OVERVIEW = "myOverview"
     const val SONG_LIST = "songList"
     const val SETTINGS = "settings"
-    const val PLAY_STATS = "playStats"
     const val EMOTION_ANALYSIS = "emotionAnalysis"
-    const val MOOD_TIME_SLOT = "moodTimeSlot"
-    const val FILE_CHECK = "fileCheck"
-    const val HEADER = "header"
+    const val HEADER_WIDGET = "header"
     const val SEARCH = "search"
     const val SEGMENT_CHIPS = "segmentChips"
     const val SECTION_TITLE = "sectionTitle"
@@ -109,13 +120,16 @@ object SkinPartCatalog {
         // L2
         Part(LIBRARY_TABS, Layer.L2_PAGE, setOf("tabs", "rowTemplate")),
         Part(MY_OVERVIEW, Layer.L2_PAGE, setOf("sections")),
+        // 我的页分区（P4 拆分，可独立裁剪/重排）
+        Part(USER_INFO, Layer.L2_PAGE),
+        Part(PLAY_STATS, Layer.L2_PAGE),
+        Part(MOOD_TIME_SLOT, Layer.L2_PAGE),
+        Part(EMOTION_SCAN, Layer.L2_PAGE),
+        Part(FILE_CHECK, Layer.L2_PAGE),
         Part(SONG_LIST, Layer.L2_PAGE, setOf("title", "hint", "source", "template", "count")),
         Part(SETTINGS, Layer.L2_PAGE),
-        Part(PLAY_STATS, Layer.L2_PAGE),
         Part(EMOTION_ANALYSIS, Layer.L2_PAGE),
-        Part(MOOD_TIME_SLOT, Layer.L2_PAGE),
-        Part(FILE_CHECK, Layer.L2_PAGE),
-        Part(HEADER, Layer.L2_PAGE, setOf("title", "subtitle")),
+        Part(HEADER_WIDGET, Layer.L2_PAGE, setOf("title", "subtitle")),
         Part(SEARCH, Layer.L2_PAGE),
         Part(SEGMENT_CHIPS, Layer.L2_PAGE),
         Part(SECTION_TITLE, Layer.L2_PAGE, setOf("text")),

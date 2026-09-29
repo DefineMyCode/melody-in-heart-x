@@ -31,6 +31,16 @@ data class AppShell(
     val miniPlayer: Boolean,
     /** 播放页进入方式；`SHEET` 时播放页不再是 Tab（P3 落地容器）。 */
     val playerEntry: PlayerEntry,
+    /**
+     * 「我的」页的分区顺序（L2 分区化，2026-09-29 P4）。
+     *
+     * 空列表 = 未指定 → 由页面回落到改造前的写死顺序（行为零变化）。
+     * 元素是**页面自己认识的分区 key**（见 `feature/user` 的 `UserSections`）。
+     *
+     * 放在这里而不是让 AppNavHost 去读描述，是为了保持 AppNavHost 不感知皮肤模型——
+     * 解析与归一化统一由 [SkinShellResolver] 完成。
+     */
+    val myPageSectionOrder: List<String> = emptyList(),
 )
 
 /** 播放页进入方式（与皮肤描述对齐）。 */

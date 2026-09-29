@@ -58,6 +58,13 @@ Unit = {},
     onOpenMoodTimeSlot: () -> Unit = {},
     /** 版本行长按（调试面板入口）；release 由调用方传空实现 */
     onVersionLongPress: () -> Unit = {},
+    /**
+     * 分区顺序（L2 分区化，2026-09-29 P4）。
+     *
+     * 默认 [UserSections.DEFAULT_ORDER] = 改造前的写死顺序，因此**不传时行为零变化**。
+     * 皮肤描述可通过 `myOverview` 的 `sections` 属性裁剪/重排这里的分区。
+     */
+    sectionOrder: List<String> = UserSections.DEFAULT_ORDER,
 ) {
     Box(
         modifier = Modifier
@@ -71,45 +78,54 @@ Unit = {},
             ),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            item(key = "user_info", contentType = "header") {
-                UserInfoSection(onSettingsClick = onShowSettings, onVersionLongPress = onVersionLongPress)
-            }
+            // L2：按描述给的顺序渲染；未知 key 由 UserSections.parse 过滤，
+            // 因此这里不用再做防御——但为稳妥仍用 when-else 忽略未知项。
+            sectionOrder.forEach { key ->
+                when (key) {
+                    UserSections.USER_INFO -> item(key = "user_info", contentType = "header") {
+                        UserInfoSection(
+                            onSettingsClick = onShowSettings,
+                            onVersionLongPress = onVersionLongPress,
+                        )
+                    }
 
-            item(key = "play_stats", contentType = "header") {
-                PlayStatsSection(
-                    todayDurationMs = todayDurationMs,
-                    weekTotalMs = weekTotalMs,
-                    onOpenPlaybackStats = onOpenPlaybackStats,
-                )
-            }
+                    UserSections.PLAY_STATS -> item(key = "play_stats", contentType = "header") {
+                        PlayStatsSection(
+                            todayDurationMs = todayDurationMs,
+                            weekTotalMs = weekTotalMs,
+                            onOpenPlaybackStats = onOpenPlaybackStats,
+                        )
+                    }
 
-            // 情境化随心播放增强入口卡（第 5 卡，视觉对齐其他入口卡）
-            item(key = "mood_time_slot", contentType = "header") {
-                MoodTimeSlotSection(
-                    configs = moodSlotConfigs,
-                    enabled = moodSlotEnabled,
-                    nowMinuteOfDay = nowMinuteOfDay,
-                    onClick = onOpenMoodTimeSlot,
-                )
-            }
+                    // 情境化随心播放增强入口卡（第 5 卡，视觉对齐其他入口卡）
+                    UserSections.MOOD_TIME_SLOT -> item(key = "mood_time_slot", contentType = "header") {
+                        MoodTimeSlotSection(
+                            configs = moodSlotConfigs,
+                            enabled = moodSlotEnabled,
+                            nowMinuteOfDay = nowMinuteOfDay,
+                            onClick = onOpenMoodTimeSlot,
+                        )
+                    }
 
-            item(key = "emotion_scan", contentType = "header") {
-                EmotionScanSection(
-                    analyzedCount = emotionAnalyzedCount,
-                    totalCount = emotionTotalCount,
-                    scanning = emotionScanning,
-                    paused = emotionPaused,
-                    onScanNow = onEmotionScanNow,
-                    onOpenDetail = onOpenEmotionAnalysis,
-                )
-            }
+                    UserSections.EMOTION_SCAN -> item(key = "emotion_scan", contentType = "header") {
+                        EmotionScanSection(
+                            analyzedCount = emotionAnalyzedCount,
+                            totalCount = emotionTotalCount,
+                            scanning = emotionScanning,
+                            paused = emotionPaused,
+                            onScanNow = onEmotionScanNow,
+                            onOpenDetail = onOpenEmotionAnalysis,
+                        )
+                    }
 
-            item(key = "file_check", contentType = "header") {
-                FileCheckSection(
-                    validationResult = validationResult,
-                    isValidating = isValidating,
-                    onOpenFileCheck = onOpenFileCheck
-                )
+                    UserSections.FILE_CHECK -> item(key = "file_check", contentType = "header") {
+                        FileCheckSection(
+                            validationResult = validationResult,
+                            isValidating = isValidating,
+                            onOpenFileCheck = onOpenFileCheck
+                        )
+                    }
+                }
             }
         }
     }

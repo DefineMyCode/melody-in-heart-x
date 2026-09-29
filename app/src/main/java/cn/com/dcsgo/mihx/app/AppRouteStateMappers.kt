@@ -14,6 +14,7 @@ import cn.com.dcsgo.mihx.feature.playlist.PlaylistRouteState
 import cn.com.dcsgo.mihx.feature.user.PlaybackStatsRouteState
 import cn.com.dcsgo.mihx.feature.user.SongTopListRouteState
 import cn.com.dcsgo.mihx.feature.user.UserRouteState
+import cn.com.dcsgo.mihx.feature.user.UserSections
 
 /**
  * 路由 State 派生映射
@@ -86,6 +87,12 @@ internal fun userRouteState(
     nowMinuteOfDay: Int = 0,
     /** UI 调参面板入口（debug 构建才有实际动作） */
     onVersionLongPress: () -> Unit = {},
+    /**
+     * 我的页分区顺序（L2 分区化，P4）。
+     *
+     * 由骨架描述解析后传入；默认值 = 改造前的写死顺序，故不传时行为零变化。
+     */
+    sectionOrder: List<String> = UserSections.DEFAULT_ORDER,
 ): UserRouteState = UserRouteState(
     todayDurationMs = snapshot.todayDurationMs,
     weekTotalMs = snapshot.weekTotalMs,
@@ -99,6 +106,7 @@ internal fun userRouteState(
     moodSlotEnabled = moodSlotEnabled,
     nowMinuteOfDay = nowMinuteOfDay,
     onVersionLongPress = onVersionLongPress,
+    sectionOrder = sectionOrder,
 )
 
 internal fun playStatsRouteState(

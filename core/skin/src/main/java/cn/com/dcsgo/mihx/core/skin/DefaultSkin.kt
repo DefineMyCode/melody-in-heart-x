@@ -117,7 +117,11 @@ object DefaultSkin {
                 ]
               },
               "sections": [
-                { "part": "myOverview", "props": { "sections": "myHero,settingsGroup" } }
+                { "part": "userInfo" },
+                { "part": "playStats" },
+                { "part": "moodTimeSlot" },
+                { "part": "emotionScan" },
+                { "part": "fileCheck" }
               ]
             }
           },
@@ -203,7 +207,11 @@ object DefaultSkin {
             "$PAGE_ME": {
               "fixedOneScreen": true,
               "header": { "title": "我的", "actions": [ { "icon": "sliders", "title": "设置" } ] },
-              "sections": []
+              "sections": [
+                { "part": "userInfo" },
+                { "part": "playStats" },
+                { "part": "emotionScan" }
+              ]
             }
           },
           "startPage": "$PAGE_LIBRARY",

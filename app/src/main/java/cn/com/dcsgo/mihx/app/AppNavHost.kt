@@ -425,6 +425,10 @@ fun AppNavHost(
                     moodSlotEnabled = moodEnabled,
                     nowMinuteOfDay = moodNowMinute,
                     onVersionLongPress = onVersionLongPress,
+                    // P4 L2 分区化：我的页分区顺序来自骨架描述（可裁剪/重排）。
+                    // 已由 SkinShellResolver 解析成零件名列表并归一化；
+                    // 缺省或非法时回落到改造前顺序，行为零变化。
+                    sectionOrder = shell.myPageSectionOrder,
                 ),
                 actions = userRouteActions(
                     navController = navController,

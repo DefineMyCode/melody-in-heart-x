@@ -32,6 +32,12 @@ data class UserRouteState(
      * 这样 feature 模块不需要感知 BuildConfig，也不会把调参逻辑编进正式包。
      */
     val onVersionLongPress: () -> Unit = {},
+    /**
+     * 我的页分区顺序（L2 分区化，2026-09-29 P4）。
+     *
+     * 默认 = 改造前的写死顺序，故**不传时行为零变化**；由 :app 从皮肤描述解析后注入。
+     */
+    val sectionOrder: List<String> = UserSections.DEFAULT_ORDER,
 )
 
 data class UserRouteActions(
@@ -68,5 +74,6 @@ fun UserRoute(
         nowMinuteOfDay = state.nowMinuteOfDay,
         onVersionLongPress = state.onVersionLongPress,
         onOpenMoodTimeSlot = actions.onOpenMoodTimeSlot,
+        sectionOrder = state.sectionOrder,
     )
 }

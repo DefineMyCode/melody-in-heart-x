@@ -5,6 +5,7 @@ import cn.com.dcsgo.mihx.core.skin.DefaultSkin
 import cn.com.dcsgo.mihx.core.skin.Skin
 import cn.com.dcsgo.mihx.core.skin.SkinParser
 import cn.com.dcsgo.mihx.core.skin.SkinValidation
+import cn.com.dcsgo.mihx.feature.user.UserSections
 import cn.com.dcsgo.mihx.navigation.AppRoutes
 
 /**
@@ -111,7 +112,22 @@ object SkinShellResolver {
             startRoute = startRoute,
             miniPlayer = skin.shell.miniPlayer,
             playerEntry = PlayerEntry.fromId(skin.playerEntry.id),
+            myPageSectionOrder = resolveMyPageSectionOrder(skin),
         )
+    }
+
+    /**
+     * 从描述里解析「我的」页的分区顺序。
+     *
+     * 描述里 `pages.me.sections` 的 `part` 名即分区 key。返回空列表表示"未指定"，
+     * 页面会回落到改造前的写死顺序（因此不写这段描述时行为零变化）。
+     *
+     * 只保留页面**认识**的 key（由 `feature/user` 的 `UserSections` 定义）：
+     * 描述里写了未知 key 时，校验器已在导入期拒绝；这里再过滤一次是纵深防御。
+     */
+    private fun resolveMyPageSectionOrder(skin: Skin): List<String> {
+        val sections = skin.pages[DefaultSkin.PAGE_ME]?.sections ?: return emptyList()
+        return sections.map { it.part }.filter(UserSections::isKnown)
     }
 
     /**

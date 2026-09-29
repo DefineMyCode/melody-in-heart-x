@@ -3,6 +3,16 @@
    <configuration>
       <verify-metadata>true</verify-metadata>
       <verify-signatures>false</verify-signatures>
+      <trusted-artifacts>
+         <!-- Android Studio / IDEA 在 Gradle Sync 时会用 detached configuration 下载依赖的
+              -sources.jar（以及 Gradle 发行版的 gradle-*-src.zip）用于源码跳转。
+              这些 artifact 不属于正常构建依赖图，Gradle 的 write-verification-metadata 任务 永远采集不到，
+              因此只在同步阶段报“Dependency verification failed”。它们不参与编译与打包，
+              这里按文件名正则显式信任；编译/运行期依赖仍逐条校验 sha256。 -->
+         <trust file=".*-sources[.]jar" regex="true" reason="IDE-only source jars pulled by Android Studio sync via detached configurations; never used for compilation or runtime."/>
+         <trust file=".*-javadoc[.]jar" regex="true" reason="IDE-only javadoc jars, same detached-configuration path as sources jars; never used for compilation or runtime."/>
+         <trust file="gradle-.*-src[.]zip" regex="true" reason="Gradle distribution source zip downloaded by the IDE for source navigation."/>
+      </trusted-artifacts>
    </configuration>
    <components>
       <component group="androidx.activity" name="activity" version="1.12.2">

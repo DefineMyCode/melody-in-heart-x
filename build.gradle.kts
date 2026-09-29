@@ -78,6 +78,7 @@ tasks.register("verifyProductArchitecture") {
             ":core:model",
             ":core:common",
             ":core:ui",
+            ":core:skin",
             ":domain",
             ":data",
             ":player",

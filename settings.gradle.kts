@@ -25,6 +25,7 @@ include(
     ":core:model",
     ":core:common",
     ":core:ui",
+    ":core:skin",
     ":domain",
     ":data",
     ":player",

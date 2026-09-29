@@ -123,6 +123,7 @@ dependencies {
     implementation(project(":core:model"))
     implementation(project(":core:common"))
     implementation(project(":core:ui"))
+    implementation(project(":core:skin"))
     implementation(project(":domain"))
     implementation(project(":data"))
     implementation(project(":player"))

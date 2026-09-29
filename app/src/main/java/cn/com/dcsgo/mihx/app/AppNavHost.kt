@@ -25,6 +25,9 @@ import androidx.navigation.navArgument
 import cn.com.dcsgo.mihx.app.permissions.PermissionCoordinator
 import cn.com.dcsgo.mihx.app.player.SongPlaybackStrategy
 import cn.com.dcsgo.mihx.app.player.playWith
+import cn.com.dcsgo.mihx.app.shell.AppShell
+import cn.com.dcsgo.mihx.app.shell.AppTab
+import cn.com.dcsgo.mihx.app.shell.indexOfRoute
 import cn.com.dcsgo.mihx.app.playlist.PlaylistResumeViewModel
 import cn.com.dcsgo.mihx.core.model.Lyrics
 import cn.com.dcsgo.mihx.core.model.Song
@@ -77,7 +80,6 @@ import cn.com.dcsgo.mihx.feature.user.VersionComparisonRouteState
 import cn.com.dcsgo.mihx.feature.user.VersionManagementRoute
 import cn.com.dcsgo.mihx.feature.user.VersionManagementRouteActions
 import cn.com.dcsgo.mihx.feature.user.VersionManagementRouteState
-import cn.com.dcsgo.mihx.navigation.AppDestinations
 import cn.com.dcsgo.mihx.navigation.AppRoutes
 import cn.com.dcsgo.mihx.ui.components.SongInfoDialog
 import cn.com.dcsgo.mihx.ui.components.LocalEmotionCorrectionController
@@ -85,8 +87,16 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.launch
 
-/** 路由 → 其所属底部 Tab 的序号（嵌套路由如设置/统计也映射到所属 Tab，同一 Tab 内序号相同则无转场） */
-private fun tabOrdinal(route: String?): Int = AppDestinations.fromRoute(route).ordinal
+/**
+ * 路由 → 其所属底部 Tab 的序号（嵌套路由如设置/统计也映射到所属 Tab，同一 Tab 内序号相同则无转场）。
+ *
+ * P2 改造：原实现取 `AppDestinations.fromRoute(route).ordinal`（编译期枚举序号）；
+ * 现在序号由**运行期 tab 列表**决定，因此 tab 数量可变（默认骨架仍是 3 项，序号与改造前一致）。
+ */
+private fun tabOrdinal(
+    route: String?,
+    tabs: List<AppTab>,
+): Int = tabs.indexOfRoute(route)
 
 /** 当前时刻的当日分钟数（0–1439），供情境化随心播放入口卡/配置页判定"生效中" */
 private fun currentMinuteOfDay(): Int =
@@ -97,6 +107,8 @@ private fun currentMinuteOfDay(): Int =
 @Composable
 fun AppNavHost(
     navController: NavHostController,
+    /** 运行期外壳（P2）：启动页与转场序号都由它决定，替代改造前写死的 AppRoutes.HOME。 */
+    shell: AppShell,
     uiState: PlayerUiState,
     playerViewModel: PlayerViewModel,
     permissionCoordinator: PermissionCoordinator,
@@ -129,10 +141,10 @@ fun AppNavHost(
 
     NavHost(
         navController = navController,
-        startDestination = AppRoutes.HOME,
+        startDestination = shell.startRoute,
         enterTransition = {
-            val from = tabOrdinal(initialState.destination.route)
-            val to = tabOrdinal(targetState.destination.route)
+            val from = tabOrdinal(initialState.destination.route, shell.tabs)
+            val to = tabOrdinal(targetState.destination.route, shell.tabs)
             when {
                 // 目标 Tab 序号更大（左滑/前进）：新页从右滑入 + 淡入
                 to > from ->
@@ -146,8 +158,8 @@ fun AppNavHost(
             }
         },
         exitTransition = {
-            val from = tabOrdinal(initialState.destination.route)
-            val to = tabOrdinal(targetState.destination.route)
+            val from = tabOrdinal(initialState.destination.route, shell.tabs)
+            val to = tabOrdinal(targetState.destination.route, shell.tabs)
             when {
                 to > from ->
                     slideOutHorizontally(tween(300, easing = FastOutSlowInEasing)) { -it } +

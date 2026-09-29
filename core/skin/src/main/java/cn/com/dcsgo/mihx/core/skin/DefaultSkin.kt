@@ -124,7 +124,7 @@ object DefaultSkin {
               ]
             }
           },
-          "startPage": "$PAGE_LIBRARY",
+          "startPage": "$PAGE_PLAYER",
           "playerEntry": "tab",
           "nowPlaying": {
             "center": false,

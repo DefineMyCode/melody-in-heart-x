@@ -111,8 +111,9 @@ class SkinParserValidationTest {
 
     @Test
     fun `rejects missing start page field`() {
+        // 用正则按 key 删除，避免依赖字段的具体取值（P2 修正 startPage 时曾因此误伤）
         assertCode(
-            mutated { it.replace("\"startPage\": \"library\",", "") },
+            mutated { it.replace(Regex(""""startPage"\s*:\s*"[^"]*",?"""), "") },
             SkinIssue.Code.PAGE_MISSING,
         )
     }

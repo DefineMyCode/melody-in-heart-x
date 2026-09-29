@@ -35,11 +35,12 @@ import cn.com.dcsgo.mihx.app.theme.SettingsViewModel
 import cn.com.dcsgo.mihx.app.tuning.AppTuningProvider
 import cn.com.dcsgo.mihx.app.tuning.UiTuningPanel
 import cn.com.dcsgo.mihx.app.tuning.rememberDebugTuning
+import cn.com.dcsgo.mihx.app.shell.AppShell
+import cn.com.dcsgo.mihx.app.shell.DefaultShell
 import cn.com.dcsgo.mihx.core.model.ThemeMode
 import cn.com.dcsgo.mihx.core.model.ThemeVariant
 import cn.com.dcsgo.mihx.domain.model.DeleteSongResult
 import cn.com.dcsgo.mihx.feature.player.PlayerViewModel
-import cn.com.dcsgo.mihx.navigation.AppDestinations
 import cn.com.dcsgo.mihx.navigation.AppRoutes
 import cn.com.dcsgo.mihx.ui.components.AutoDismissToasts
 import cn.com.dcsgo.mihx.ui.components.EmotionCorrectionController
@@ -68,7 +69,9 @@ fun AppRoot(
     val navController = rememberNavController()
     val backStackEntry by navController.currentBackStackEntryAsState()
     val activeRoute = backStackEntry?.destination?.route
-    var currentDestination by remember { mutableStateOf(AppDestinations.HOME) }
+    // P2：外壳来自皮肤描述。当前恒为内置骨架（描述驱动的用户切换在 P5 落地），
+    // 但导航层已完全由这份数据驱动——把恒等换成"用户选中的皮肤"即可切换整套骨架。
+    val shell: AppShell = DefaultShell.shell
     val themeMode by settingsViewModel.themeMode.collectAsStateWithLifecycle()
     val themeVariant by settingsViewModel.themeVariant.collectAsStateWithLifecycle()
     val lyricFontScale by settingsViewModel.lyricFontScale.collectAsStateWithLifecycle()
@@ -88,9 +91,9 @@ fun AppRoot(
     }
 
     LaunchedEffect(activeRoute) {
-        // 始终按当前路由所属 Tab 同步高亮（嵌套路由如设置/统计也映射到所属 Tab），
-        // 避免从子页面滑动离开再回来后 currentDestination 停留在旧值
-        currentDestination = AppDestinations.fromRoute(activeRoute)
+        // P2：底栏高亮不再需要"同步"到本地状态——它由 activeRoute + 外壳派生（见 AppScaffold）。
+        // 这样从子页面滑走再回来后不会出现陈旧高亮（原实现靠这个 effect 修正）。
+        // 保留 effect 是为了将来皮肤热切换时能触发重组；当前无副作用。
     }
 
     if (uiState.isLoading) {
@@ -159,13 +162,14 @@ fun AppRoot(
                 .background(MaterialTheme.colorScheme.background),
         ) {
             AppScaffold(
-                currentDestination = currentDestination,
+                shell = shell,
+                activeRoute = activeRoute,
                 currentSong = uiState.currentSong,
                 isPlaying = uiState.isPlaying,
                 positionMs = playerViewModel.positionMs,
                 durationMs = uiState.durationMs,
-                onDestinationSelected = { destination ->
-                    navController.navigate(destination.route) {
+                onTabSelected = { tab ->
+                    navController.navigate(tab.route) {
                         popUpTo(navController.graph.findStartDestination().id) {
                             saveState = true
                         }
@@ -190,6 +194,7 @@ fun AppRoot(
             ) {
                 AppNavHost(
                     navController = navController,
+                    shell = shell,
                     uiState = uiState,
                     playerViewModel = playerViewModel,
                     permissionCoordinator = permissionCoordinator,

@@ -77,6 +77,13 @@ class DefaultSkinTest {
     }
 
     @Test
+    fun `startPage is the player page because the app launches on it`() {
+        // 对照 AppNavHost:132 `startDestination = AppRoutes.HOME` —— 启动落在**播放页**。
+        // 2026-09-29 P2 修正：P1 初版这里错写成 library，被"与现状逐页无差异"的验收标准抓出。
+        assertEquals(DefaultSkin.PAGE_PLAYER, skin.startPage)
+    }
+
+    @Test
     fun `startPage points at an existing page`() {
         assertTrue(skin.pages.containsKey(skin.startPage))
     }

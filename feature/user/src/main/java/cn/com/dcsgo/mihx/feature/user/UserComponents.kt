@@ -2,7 +2,9 @@ package cn.com.dcsgo.mihx.feature.user
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -48,8 +50,11 @@ import cn.com.dcsgo.mihx.domain.model.LocalFileValidationResult
  * 显示应用图标、名称和简介
  */
 @Composable
+@OptIn(ExperimentalFoundationApi::class)
 fun UserInfoSection(
     onSettingsClick: () -> Unit = {},
+    /** 版本行长按回调：调试构建用于打开 UI 调参面板；release 恒为空实现 */
+    onVersionLongPress: () -> Unit = {},
 ) {
     Box(modifier = Modifier.fillMaxWidth()) {
         IconButton(
@@ -91,7 +96,12 @@ fun UserInfoSection(
             Text(
                 text = stringResource(R.string.app_introduction),
                 style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.combinedClickable(
+                    // 无点击动作也开启 clickable，否则 combinedClickable 的 onLongClick 不触发
+                    onClick = {},
+                    onLongClick = onVersionLongPress,
+                ),
             )
         }
     }

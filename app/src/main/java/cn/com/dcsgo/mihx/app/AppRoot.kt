@@ -32,6 +32,9 @@ import cn.com.dcsgo.mihx.app.permissions.rememberPermissionCoordinator
 import cn.com.dcsgo.mihx.app.player.PlayerQueueSheetHost
 import cn.com.dcsgo.mihx.app.playlist.PlaylistResumeViewModel
 import cn.com.dcsgo.mihx.app.theme.SettingsViewModel
+import cn.com.dcsgo.mihx.app.tuning.AppTuningProvider
+import cn.com.dcsgo.mihx.app.tuning.UiTuningPanel
+import cn.com.dcsgo.mihx.app.tuning.rememberDebugTuning
 import cn.com.dcsgo.mihx.core.model.ThemeMode
 import cn.com.dcsgo.mihx.core.model.ThemeVariant
 import cn.com.dcsgo.mihx.domain.model.DeleteSongResult
@@ -77,6 +80,8 @@ fun AppRoot(
     }
     var showQueueSheet by remember { mutableStateOf(false) }
     val uiState by playerViewModel.uiState.collectAsStateWithLifecycle()
+    // UI 参调（debug 构建才有控制器；release 恒为 null，令牌回落默认值 = 原硬编码）
+    val (tuningController, tuningAccess) = rememberDebugTuning()
 
     BackHandler(enabled = showQueueSheet) {
         showQueueSheet = false
@@ -128,6 +133,9 @@ fun AppRoot(
 
     MusicplayerTheme(darkTheme = isDarkTheme, variant = themeVariant) {
         SyncSystemBarsAppearance(isDarkTheme)
+        // 调参令牌下发必须在主题之内：排版读取方（AppScaffold / feature:home / 迷你条）
+        // 会向上查找 LocalXxxTokens，放在主题外会让它们解析到默认实例而非这里的实时值。
+        AppTuningProvider(controller = tuningController) {
         // 全站统一的"情绪校准"入口: 任何渲染歌曲详情对话框的页面
         // (曲库/歌手/专辑/本地音乐/播放页/详情页)自动获得"不像？标记"能力
         CompositionLocalProvider(
@@ -199,6 +207,7 @@ fun AppRoot(
                     playlistResumeViewModel = playlistResumeViewModel,
                     emotionViewModel = emotionViewModel,
                     moodTimeSlotViewModel = moodTimeSlotViewModel,
+                    onVersionLongPress = tuningAccess.onOpenPanel,
                 )
             }
 
@@ -223,6 +232,18 @@ fun AppRoot(
 
             ToastHost(toastHost = toastHost)
             AutoDismissToasts(toastHost = toastHost, durationMs = 2000L)
+
+            // 调试面板覆盖层（仅 debug 构建可达：release 的 controller 恒为 null）
+            if (tuningController != null && tuningController.showPanel) {
+                UiTuningPanel(
+                    tuning = tuningController.tuning,
+                    onTuningChange = tuningController.onTuningChange,
+                    onExport = tuningController.onExport,
+                    onReset = tuningController.onReset,
+                    onClose = { tuningController.onShowPanelChange(false) },
+                )
+            }
+        }
         }
         }
     }

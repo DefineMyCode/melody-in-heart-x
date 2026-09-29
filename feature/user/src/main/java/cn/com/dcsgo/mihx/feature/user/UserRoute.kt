@@ -26,6 +26,12 @@ data class UserRouteState(
     val moodSlotEnabled: Boolean = false,
     /** 当前时刻分钟数（0–1439），判定入口卡"生效中"态 */
     val nowMinuteOfDay: Int = 0,
+    /**
+     * 版本行长按回调（UI 调参面板入口）。
+     * 由 :app 侧注入：debug 构建打开调试面板，release 恒为空实现——
+     * 这样 feature 模块不需要感知 BuildConfig，也不会把调参逻辑编进正式包。
+     */
+    val onVersionLongPress: () -> Unit = {},
 )
 
 data class UserRouteActions(
@@ -60,6 +66,7 @@ fun UserRoute(
         moodSlotConfigs = state.moodSlotConfigs,
         moodSlotEnabled = state.moodSlotEnabled,
         nowMinuteOfDay = state.nowMinuteOfDay,
+        onVersionLongPress = state.onVersionLongPress,
         onOpenMoodTimeSlot = actions.onOpenMoodTimeSlot,
     )
 }

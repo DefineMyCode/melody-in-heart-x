@@ -55,6 +55,8 @@ import coil.compose.AsyncImage
 import cn.com.dcsgo.mihx.core.common.time.formatDurationTime
 import cn.com.dcsgo.mihx.core.model.PlayMode
 import cn.com.dcsgo.mihx.core.model.Song
+import cn.com.dcsgo.mihx.ui.theme.LocalPlaybackPanelTokens
+import cn.com.dcsgo.mihx.ui.theme.LocalSpacingTokens
 import cn.com.dcsgo.mihx.ui.components.SongItemAction
 import cn.com.dcsgo.mihx.ui.icons.iconRes
 
@@ -121,7 +123,7 @@ fun HomeScreen(
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 88.dp),
-                verticalArrangement = Arrangement.spacedBy(24.dp)
+                verticalArrangement = Arrangement.spacedBy(LocalSpacingTokens.current.sectionSpacingDp.dp)
             ) {
                 item(key = "album_cover") {
                     AlbumCoverSection(
@@ -261,14 +263,16 @@ private fun AlbumCoverSection(
     isPlaying: Boolean,
     onCoverClick: () -> Unit
 ) {
+    val panel = LocalPlaybackPanelTokens.current
+    val coverSize = panel.coverSizeDp.dp
     Column(
         modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Box(
             modifier = Modifier
-                .size(252.dp)
-                .clip(RoundedCornerShape(20.dp))
+                .size(coverSize)
+                .clip(RoundedCornerShape(panel.coverCornerDp.dp))
                 .background(MaterialTheme.colorScheme.primaryContainer)
                 .clickable(
                     interactionSource = remember { MutableInteractionSource() },
@@ -282,21 +286,21 @@ private fun AlbumCoverSection(
                 AsyncImage(
                     model = currentSong.albumArtUri,
                     contentDescription = "专辑封面，点击查看歌词",
-                    modifier = Modifier.size(252.dp),
+                    modifier = Modifier.size(coverSize),
                     contentScale = ContentScale.Crop
                 )
             } else {
                 // 无封面时的占位图标
                 Box(
                     modifier = Modifier
-                        .size(252.dp)
+                        .size(coverSize)
                         .background(MaterialTheme.colorScheme.primaryContainer),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = Icons.Default.PlayArrow,
                         contentDescription = null,
-                        modifier = Modifier.size(80.dp),
+                        modifier = Modifier.size((coverSize.value * 0.317f).dp),
                         tint = MaterialTheme.colorScheme.primary
                     )
                 }

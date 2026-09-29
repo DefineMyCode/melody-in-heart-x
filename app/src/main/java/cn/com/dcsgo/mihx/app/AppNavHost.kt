@@ -114,6 +114,8 @@ fun AppNavHost(
     playlistResumeViewModel: PlaylistResumeViewModel,
     emotionViewModel: cn.com.dcsgo.mihx.app.emotion.EmotionViewModel,
     moodTimeSlotViewModel: cn.com.dcsgo.mihx.app.mood.MoodTimeSlotViewModel,
+    /** UI 调参面板入口（debug 构建打开调试面板；release 为空实现） */
+    onVersionLongPress: () -> Unit = {},
 ) {
     // 失败歌曲手动标记等 suspend 回调的协程作用域
     val navCoroutineScope = rememberCoroutineScope()
@@ -534,6 +536,7 @@ fun AppNavHost(
                     moodSlotConfigs = moodConfigs,
                     moodSlotEnabled = moodEnabled,
                     nowMinuteOfDay = moodNowMinute,
+                    onVersionLongPress = onVersionLongPress,
                 ),
                 actions = userRouteActions(
                     navController = navController,

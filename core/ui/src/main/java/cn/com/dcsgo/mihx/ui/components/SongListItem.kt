@@ -41,6 +41,7 @@ import coil.compose.AsyncImage
 import cn.com.dcsgo.mihx.core.common.time.formatDurationTime
 import cn.com.dcsgo.mihx.core.model.Song
 import cn.com.dcsgo.mihx.core.ui.R
+import cn.com.dcsgo.mihx.ui.theme.LocalVisTokens
 
 /**
  * 歌曲条目「更多」菜单动作项（供各 feature 构造更多操作菜单复用）
@@ -56,11 +57,11 @@ data class SongItemAction(
  * 共享歌曲列表行：封面 + 标题/歌手 + 播放中 EQ + 可选时长，头部/尾部用插槽自定义。
  *
  * 统一各 feature（歌单 / 秒切歌曲 / 播放队列）的歌曲行实现，避免重复代码。
- * 默认封面样式对齐设计 §5.13（44dp 缩略图、10dp 圆角、播放中高亮）。
+ * 尺寸走 [LocalVisTokens]（默认值 = 原硬编码 44dp/10dp/10dp，视觉不变）。
  *
  * @param song              歌曲数据
  * @param isCurrentPlaying  是否正在播放（影响封面与标题样式，并显示 EQ 指示器）
- * @param contentPadding    行内边距（不同场景可覆盖）
+ * @param contentPadding    行内边距（不同场景可覆盖；默认值跟随 [LocalVisTokens]）
  * @param showDuration      是否展示歌曲时长
  * @param onClick           整行点击回调
  * @param leading           行首插槽（多选指示 / 序号等）
@@ -73,7 +74,7 @@ fun SongListItem(
     song: Song,
     isCurrentPlaying: Boolean = false,
     modifier: Modifier = Modifier,
-    contentPadding: PaddingValues = PaddingValues(vertical = 10.dp, horizontal = 4.dp),
+    contentPadding: PaddingValues? = null,
     showDuration: Boolean = false,
     onClick: () -> Unit = {},
     leading: (@Composable () -> Unit)? = null,
@@ -81,11 +82,16 @@ fun SongListItem(
     subline: (@Composable () -> Unit)? = null,
     trailing: (@Composable () -> Unit)? = null,
 ) {
+    val tokens = LocalVisTokens.current
+    val resolvedPadding = contentPadding ?: PaddingValues(
+        vertical = tokens.listRowVerticalPaddingDp.dp,
+        horizontal = 4.dp,
+    )
     Row(
         modifier = modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
-            .padding(contentPadding),
+            .padding(resolvedPadding),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         leading?.invoke()
@@ -137,10 +143,13 @@ fun SongListItem(
 /** 默认封面：44dp 缩略图（有专辑图显示图，否则播放/队列图标占位） */
 @Composable
 private fun DefaultSongCover(song: Song, isCurrentPlaying: Boolean) {
+    val tokens = LocalVisTokens.current
+    val coverSize = tokens.listCoverSizeDp.dp
+    val coverCorner = tokens.listCoverCornerDp.dp
     Box(
         modifier = Modifier
-            .size(44.dp)
-            .clip(RoundedCornerShape(10.dp))
+            .size(coverSize)
+            .clip(RoundedCornerShape(coverCorner))
             .background(
                 if (isCurrentPlaying) MaterialTheme.colorScheme.primary
                 else MaterialTheme.colorScheme.primaryContainer
@@ -151,7 +160,7 @@ private fun DefaultSongCover(song: Song, isCurrentPlaying: Boolean) {
             AsyncImage(
                 model = song.albumArtUri,
                 contentDescription = "专辑封面",
-                modifier = Modifier.size(44.dp),
+                modifier = Modifier.size(coverSize),
                 contentScale = ContentScale.Crop,
             )
         } else {

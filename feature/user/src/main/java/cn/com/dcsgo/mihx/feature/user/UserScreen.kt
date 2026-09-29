@@ -56,6 +56,8 @@ Unit = {},
     moodSlotEnabled: Boolean = false,
     nowMinuteOfDay: Int = 0,
     onOpenMoodTimeSlot: () -> Unit = {},
+    /** 版本行长按（调试面板入口）；release 由调用方传空实现 */
+    onVersionLongPress: () -> Unit = {},
 ) {
     Box(
         modifier = Modifier
@@ -70,7 +72,7 @@ Unit = {},
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             item(key = "user_info", contentType = "header") {
-                UserInfoSection(onSettingsClick = onShowSettings)
+                UserInfoSection(onSettingsClick = onShowSettings, onVersionLongPress = onVersionLongPress)
             }
 
             item(key = "play_stats", contentType = "header") {

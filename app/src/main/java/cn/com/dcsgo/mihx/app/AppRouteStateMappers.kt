@@ -84,6 +84,8 @@ internal fun userRouteState(
     moodSlotConfigs: List<cn.com.dcsgo.mihx.core.model.TimeSlotConfig> = emptyList(),
     moodSlotEnabled: Boolean = false,
     nowMinuteOfDay: Int = 0,
+    /** UI 调参面板入口（debug 构建才有实际动作） */
+    onVersionLongPress: () -> Unit = {},
 ): UserRouteState = UserRouteState(
     todayDurationMs = snapshot.todayDurationMs,
     weekTotalMs = snapshot.weekTotalMs,
@@ -96,6 +98,7 @@ internal fun userRouteState(
     moodSlotConfigs = moodSlotConfigs,
     moodSlotEnabled = moodSlotEnabled,
     nowMinuteOfDay = nowMinuteOfDay,
+    onVersionLongPress = onVersionLongPress,
 )
 
 internal fun playStatsRouteState(

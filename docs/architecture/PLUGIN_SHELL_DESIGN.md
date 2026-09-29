@@ -1,204 +1,262 @@
 # 插件重构应用界面（应用骨架契约）设计方案
 
-日期：2026-09-29　状态：设计待评审
-关联：`PLUGIN_SYSTEM_DESIGN.md`（T2 代码插件）、`PLUGIN_SYSTEM_SPIKE_REPORT.md`（实测）
+日期：2026-09-29　状态：**范围已裁定，待实施 P1**
+关联：`PLUGIN_SYSTEM_DESIGN.md`（路线 C 代码插件，已降级为逃生口）、`PLUGIN_SYSTEM_SPIKE_REPORT.md`（C 路线实测）、`RUNTIME_COMPILE_FEASIBILITY.md`（否决设备端编译）
+
+**原型**（可交互，已验收）：http://85.137.246.39:4311/mihx-plugin-shell/parts-library.html
+**原型说明**：`/root/designs/mihx-plugin-shell/README-PARTS-LIBRARY.md`
+
+---
+
+## 〇、范围裁定（2026-09-29 用户拍板）
+
+原型展示了三套由**同一份零件库**渲染的骨架（现状心乐 / 网易云式 / 极简双页），用户据此裁定的投入范围：
+
+> **「把钱花在把 1–5 层做扎实」**
+
+即：**L6 表现层零件（频谱、波形进度、轮播、无限流首页等）不做**。理由是每个 L6 零件都需要独立的渲染开发 + 测试，成本陡增而收益递减。L1–L5 才是"一眼看出这是另一个 App"的主战场。
 
 ---
 
 ## 一、需求
 
-用户 2026-09-29 提出：「可调节的参数比较少，我想做到的是插件能够完全重构应用的界面。例如：只保留两个页面曲库和我的，播放页弄成一个全局抽屉可通过迷你播放条调出来。我希望插件能做到这种程度。」
+用户 2026-09-29 提出：「我想做到的是插件能够完全重构应用的界面。例如：只保留两个页面曲库和我的，播放页弄成一个全局抽屉可通过迷你播放条调出来。」
 
-**这个需求与阶段 0 不是一个量级。** 阶段 0 改的是"某个像素值"，这里要改的是**应用的一级结构**：
+后续澄清（同日）：**这是「皮肤」诉求，不是「加功能」诉求**——
+- 插件只调 UI，**不新增功能**
+- 装一个 UI 插件后，心乐**看起来像另一个音乐软件**
+- 插件是**一个文件**，可识别/读取/校验，不合格要**明确提示失败原因**
+- **不需要在手机上开发插件**（→ 排除设备端编译，见 `RUNTIME_COMPILE_FEASIBILITY.md`）
+- 「导出给他人使用」是**与插件无依赖关系的另一个功能**，不在本设计范围
 
-| 维度 | 阶段 0（令牌） | 本次需求（骨架） |
+| 维度 | L0 令牌（已交付） | 本需求（骨架） |
 |---|---|---|
-| 改什么 | 某个 dp / 颜色 | 有几个 Tab、每个 Tab 挂什么页、播放页以什么形态存在、如何被唤起 |
+| 改什么 | 某个 dp / 颜色 | 有几个 Tab、每 Tab 挂什么页、播放页以什么形态存在、如何被唤起 |
 | 谁的职责 | 宿主页面内部 | 宿主导航层（`AppNavHost` / `AppScaffold` / `AppDestinations`） |
 | 能否靠调参实现 | 能 | **不能**——底栏项目数是编译期常量 |
 
 ---
 
-## 二、三条可选路线（必须先拍板）
+## 二、七层拆分与投入线
 
-### 路线 A：纯参数令牌（已做，阶段 0）
+按「差异感 ÷ 实现成本」排序，这是裁定"钱花在哪"的坐标系：
 
-只能调整尺寸/颜色。**明确做不到本需求**，列在这里只为划清边界。
+| 层 | 内容 | 差异感 | 成本 | 裁定 |
+|---|---|---|---|---|
+| **L0** | 视觉令牌：色/圆角/间距/字阶 | 低 | 已交付 | ✅ 已完成 |
+| **L1** | **导航外壳**：Tab 项数与顺序、迷你条、抽屉、侧边栏 | **极高** | 中 | ✅ 必做 |
+| **L2** | **页面装配**：每页有哪些分区、顺序、数据源 | 高 | **低** | ✅ 必做 |
+| **L3** | **行模板 + 列/网格**：行形态、封面位置、列表↔网格 | 高 | **低** | ✅ 必做（性价比最高） |
+| **L4** | **播放页形态**：封面形状、歌词位置、背景策略、控制区布局 | **极高** | 中高 | ✅ 必做 |
+| **L5** | **资源包**：字体、背景图、图标集 | 中 | 低 | ✅ 同批 |
+| L6 | 表现层零件：黑胶转盘、频谱、波形进度、轮播 | 高 | **高**（每个都需独立渲染开发） | ❌ **不做**（原型已演示成本） |
+| L7 | 全新交互：无限流首页、3D、空间手势 | 极高 | 极高 | ❌ 逃生口（路线 C）或不做 |
 
-### 路线 B：结构声明 —— 宿主提供零件库，插件用声明式描述重新装配 ★推荐
+**投入线画在 L5/L6 之间**：L1–L5 投入产出近似线性；L6 起每个零件都是独立工程，回报开始变差。
 
-插件不写 Compose 代码，而是交出一份**应用骨架描述（JSON）**，声明：
-- 底部有几个 Tab、各自的标签/图标/指向哪个页面
-- 播放页以什么形态存在（全局抽屉 / 全屏页 / Tab / 常驻悬浮）
-- 迷你播放条的位置与点击行为
-- 每个页面的内容类型与参数
+### ★ 关键发现（原型第 ③ 块面板得出）
 
-宿主按描述**装配**现有页面。它本质是**引用 + 组合**，不是生成新 UI。
+**已交付的色板（`THEMES`）改不出差异感。** 实测心乐墨色 `#121212` vs 网易云深色 `#1A1A1A` 只差 8 级灰——没人分得出来。
 
-**为什么这条路最适合这个需求：**
+真正区分「心乐（零实心块）」与「网易云（卡片墙）」的是三个**结构令牌**：
 
-| 优势 | 说明 |
-|---|---|
-| 零崩溃风险 | 组合期没有插件代码，spike 发现的"组合期异常直接崩进程"问题不存在 |
-| **改完即时生效** | 不编译、不装 APK——这一点连阶段 0 都做不到（阶段 0 还是要构建） |
-| 可单文件分享 | 一个 JSON 文件发群里就能装，比发 APK 轻得多 |
-| 无编译器版本耦合 | 没有 dex，不需要 `compilerVersion` 闸门 |
-| 天然安全 | 插件无法执行任意代码，只能引用宿主白名单内的零件 |
+| 令牌 | 含义 | 取值 |
+|---|---|---|
+| `surface` | 容器填充（0 = 零实心块宣言，1 = 实心卡片） | 0 ~ 1 连续 |
+| `cardR` | 卡片/封面圆角 | dp |
+| `hairline` | 描边粗细 | dp |
 
-**能力上限（必须诚实说明）＝ 宿主零件库的丰富度。** 插件能重新排列组合宿主的页面与组件，但**造不出宿主没有的新组件**。想要新组件，仍需要改宿主代码（或走路线 C）。
-
-### 路线 C：代码插件（Compose 写在插件 dex 里）
-
-spike 已证明可行，但代价明确：
-- 组合期异常**无法隔离**，用户 App 崩一次（只能靠重启自愈）
-- Kotlin/Compose 升级后插件集体失效
-- 插件必须用 Android Studio + JDK 编写，普通人写不了
-- 调试体验差（无断点/热重载）
-
-**它对"新组件"是必需的，对"重新装配"则是杀鸡用牛刀。**
-
-### 建议组合
-
-**B 做主干（覆盖 90% 的"换界面"愿望），C 保留为扩展**（当确实需要宿主没有的新组件时才用）。
+**结论：用户"只有颜色不够"的判断是对的，但缺的不是更多颜色，是这三个结构令牌。** 它们必须进 `ThemeTokens`，不能写死在页面里。
 
 ---
 
-## 三、路线 B 的契约草案
+## 三、路线选型
 
-### 3.1 骨架描述文件 `shell.json`
+### 路线 B：结构声明 —— 宿主提供零件库，皮肤用声明式描述重新装配 ★主干
+
+皮肤不写 Compose 代码，交一份**骨架描述（JSON）**，声明 Tab、抽屉形态、迷你条行为、每页分区。宿主按描述**装配现有页面**。本质是**引用 + 组合**。
+
+| 优势 | 说明 |
+|---|---|
+| **零崩溃风险** | 组合期无皮肤代码，spike 发现的"组合期异常直接崩进程"问题不存在 |
+| **改完即时生效** | 不编译、不装 APK——连 L0 令牌面板都做不到（仍要构建） |
+| **导入时可精确校验** | 能逐字段报错（未知零件名 / 版本不符 / 字段越界），正是用户要的"提示失败原因" |
+| **单文件可分享** | 一个 JSON 发群里就能装 |
+| **无编译器版本耦合** | 无 dex，不需要 `compilerVersion` 闸门，Kotlin 升级不失效 |
+| **天然安全** | 无法执行任意代码，只能引用零件白名单 |
+
+**能力上限（诚实说明）＝ 零件库丰富度。** 皮肤能重排组合宿主零件，造不出宿主没有的新组件。
+
+### 路线 C：代码插件 —— 降级为逃生口
+
+spike 已证明可行，但代价明确：组合期异常**无法隔离**；Kotlin/Compose 升级后插件集体失效；需 Android Studio + JDK 编写；调试体验差。
+
+且**用户明确「插件不需要新增功能」**——这抽掉了 C 的存在理由。C 的全部价值是"加能力"，为它白担代价不划算。
+
+**裁定：B 主干；C 仅在某个 L6/L7 特效确实做不成零件时，作为单点补丁动用，不进主线。**
+
+### 路线 A：纯参数令牌 —— 已被 L0 覆盖
+
+---
+
+## 四、契约草案
+
+### 4.1 骨架描述文件 `skin.json`
 
 ```json
 {
   "schemaVersion": 1,
-  "id": "dcsgo.shell.minimal",
+  "id": "dcsgo.skin.minimal",
   "name": "极简双页 · 播放抽屉",
-  "theme": { "variant": "VERMILION", "tokens": "builtin:VermilionNight" },
-
+  "tokens": {
+    "theme": "vermilion", "mode": "dark",
+    "surface": 0, "cardR": 16, "hairline": 1, "rowGap": 14,
+    "art": 52, "artR": 14, "npR": 20
+  },
   "shell": {
-    "bottomBar": {
-      "type": "tabBar",
-      "items": [
-        { "id": "library", "label": "曲库", "icon": "queue_music", "target": "libraryPage" },
-        { "id": "mine",    "label": "我的", "icon": "person",      "target": "myPage" }
+    "bottomBar": [
+      { "id": "tab-lib", "label": "曲库", "icon": "library", "target": "library" },
+      { "id": "tab-me",  "label": "我的", "icon": "me",      "target": "me" }
+    ],
+    "miniPlayer": true,
+    "miniPlayerTap": "openSheet"
+  },
+  "pages": {
+    "library": {
+      "header": { "title": "曲库", "sub": "1,103 首", "actions": [{ "icon": "search", "t": "搜索" }] },
+      "sections": [
+        { "part": "playlistShelf", "props": { "title": "歌单" } },
+        { "part": "songList",     "props": { "title": "全部歌曲", "template": "compact", "count": 7 } }
       ]
     },
-    "miniPlayer": {
-      "visible": true,
-      "position": "aboveBottomBar",
-      "tap": { "action": "openSheet", "sheet": "playerSheet" }
+    "me": {
+      "fixedOneScreen": true,
+      "header": { "title": "我的", "sub": "本机账号", "actions": [{ "icon": "sliders", "t": "设置" }] },
+      "sections": [
+        { "part": "myHero",        "props": { "layout": "stack" } },
+        { "part": "settingsGroup", "props": { "rows": [{ "icon": "folder", "l": "扫描目录", "v": "3 个" }] } }
+      ]
     }
   },
-
-  "pages": {
-    "libraryPage": {
-      "type": "libraryTabs",
-      "tabs": ["playlists", "artists", "albums", "emotions"],
-      "rowTemplate": "default"
-    },
-    "myPage": {
-      "type": "myOverview",
-      "sections": ["playStats", "moodSlot", "emotionScan", "fileCheck"]
-    },
-    "playerSheet": {
-      "type": "sheet",
-      "peekHeightDp": 72,
-      "heightPercent": 88,
-      "content": { "type": "nowPlaying", "showLyrics": true, "showQueue": true }
-    }
+  "startPage": "library",
+  "nowPlaying": {
+    "center": false, "coverShape": "square", "controlStyle": "solid",
+    "showMood": false, "queue": true,
+    "actions": [{ "icon": "heart", "l": "喜欢" }, { "icon": "plus", "l": "歌单" }]
   },
-
-  "startPage": "libraryPage"
+  "playerEntry": "sheet"
 }
 ```
 
-**这份文件完整表达用户举的例子**：两个 Tab（曲库/我的）+ 播放页作为全局抽屉 + 迷你条唤起。
+**这份文件完整表达用户举的例子**：两个 Tab + 播放页作为全局抽屉 + 迷你条唤起。
+原型里三套皮肤的 `SKINS` 对象就是本契约的可运行草案（已实测可渲染）。
 
-### 3.2 宿主零件库（可引用的 `type` 白名单）
+### 4.2 零件库白名单（**按 L1–L5 划线**）
 
-骨架描述里的每个 `type` 都必须是宿主已实现并登记的类型。首期白名单：
-
-**页面级**
-- `libraryTabs` — 曲库页（歌单/歌手/专辑/情绪 分页）
-- `myOverview` — 我的页（分区可裁剪、可排序）
-- `settings` / `playStats` / `emotionAnalysis` / `moodTimeSlot` / `fileCheck` — 二级页
-- `songList` — 歌曲列表（数据源：`all` / `playlist:<id>` / `artist:<name>` / `album:<name>`）
-
-**容器级**
-- `tabBar` — 底部导航（2~4 项）
+**L1 容器/外壳**
+- `tabBar` — 底部导航（2~5 项）
+- `miniPlayer` — 迷你播放条（可常驻/可关）
 - `sheet` — 全局抽屉（peek 高度 + 展开高度）
-- `miniPlayer` — 迷你播放条
-- `rail` — 大屏侧边导航
+- `rail` — 大屏侧边导航（后置）
 
-**组件级**
-- `nowPlaying` — 播放页主体（封面/歌词/队列 可开关）
-- `emotionWheel` / `header` / `divider` / `spacer`
+**L2 页面与分区**
+- `libraryTabs` — 曲库页（歌单/歌手/专辑/情绪/歌曲 分页，页签可裁剪）
+- `myOverview` — 我的页（分区可裁剪、可排序）
+- `songList` — 歌曲列表（数据源 `all` / `playlist:<id>` / `artist:<name>` / `album:<name>`）
+- `settings` / `playStats` / `emotionAnalysis` / `moodTimeSlot` / `fileCheck` — 二级页
+- `header` / `search` / `segmentChips` / `sec`
 
-未登记的类型一律拒绝加载并给出明确提示（fail-closed）。
+**L3 行与排布**
+- `songRow` 模板：`default`（带封面）/ `compact`（纯文字）
+- `playlistShelf` — 横向货架
+- `playlistGrid` — 2 列卡片墙
+- `quickGrid` — 圆形快捷入口
+- `emotionChips` — 情绪词条
 
-### 3.3 插件方视图
+**L4 播放页**
+- `nowPlaying` — 主体；可配：`center`、`coverShape`(square/vinyl/none)、`controlStyle`(solid/plain)、`showMood`、`lyrics`、`queue`、`actions[]`
+- `cover` — 封面形状零件
+- `progress` / `controls` / `lyrics` / `queue`
 
-- **路线 B 的"插件"= 一个 JSON 文件**（可打进 zip 附图标/资源）
-- 作者只需了解零件名字与参数，不需要 JDK / Android Studio
-- 分发：单文件、离线、可分享
-- 改完在设置里重新导入即生效
+**L5 资源包**
+- `font` / `background` / `iconSet` — 以 zip 内资源引用
+
+**fail-closed 铁律**：未登记的类型一律拒绝加载 + 明确提示，**不静默降级**。
+
+### 4.3 ★ 零件库扩张纪律（防"万能配置"）
+
+原型面板 ② 的覆盖度表给出可操作判据：
+
+1. **零件的定义是"引用"，不是"定义"**。判据：若描述里出现**宿主不认识的视觉概念**，说明要写代码，不是加字段。
+2. **每个零件必须对应一个已真实存在的宿主页面/组件**，且**至少被一个真实皮肤用到**。
+3. **覆盖率目标**：每个登记的零件应在多套骨架里被复用。原型里三套皮肤实测——
+   - `3/3` 绿色 = 通用零件（值得投入）
+   - `1/3` 橙色 = **骨架专属零件（换骨架就用不上，是负债）**
+4. 造出来没人用的零件就是负债，**服完穷再登记**。
 
 ---
 
-## 四、必须改造的现有代码（这是真工作量）
-
-现状是"一级结构写死在代码里"，要让它可被描述驱动：
+## 五、必须改造的现有代码
 
 | 现有位置 | 现状 | 改造 |
 |---|---|---|
-| `AppDestinations`（enum，3 项固定） | 编译期常量 | 改为运行期列表：`List<ShellTab>`，来自骨架描述 |
-| `AppRoutes`（路由常量） | 编译期常量 | 保留为内置默认骨架的路由名；插件页面经 `ShellPageRegistry` 解析 |
-| `AppScaffold`（底栏 + 迷你条） | 硬编码遍历 `AppDestinations.entries` | 按骨架描述渲染 tab 项；迷你条行为由描述决定 |
-| `AppNavHost`（约 900+ 行，路由硬编码） | `composable(route)` 逐条注册 | 引入 `ShellPageRegistry`：`type` → 宿主 Composable 的映射表，NavHost 按骨架注册路由 |
-| `PlayerViewModel` / `PlayerUiState` | 全局单例（Activity 级） | **无需改动**——播放状态本就全局，抽屉与 Tab 共用同一份状态 |
+| `AppDestinations`（enum，3 项固定） | 编译期常量 | 改为运行期 `List<SkinTab>`，来自骨架描述 |
+| `AppRoutes` | 编译期常量 | 保留为内置默认骨架的路由名 |
+| `AppScaffold` | 硬编码遍历 `AppDestinations.entries` | 按描述渲染 tab 项；迷你条行为由描述决定 |
+| `AppNavHost`（约 900+ 行） | `composable(route)` 逐条注册 | 引入 `SkinPartRegistry`：`type` → 宿主 Composable 映射 |
+| `ThemeTokens` | 已有色/尺寸令牌 | **新增 3 个结构令牌**：`surface` / `cardR` / `hairline`（见 §二） |
+| `PlayerViewModel` / `PlayerUiState` | 全局单例（Activity 级） | **无需改动**——播放状态本就全局，抽屉与 Tab 共用同一份 |
 | 播放页形态 | 现在是 `HOME` 路由（普通 Tab） | 新增 `sheet` 容器承载同一份 `nowPlaying` 内容 |
-| 回收站/返回栈 | `<b>`返回语义与 Tab 绑定 | 抽屉打开时 BACK 先关抽屉（`BackHandler`），已在队列 sheet 有先例可照搬 |
+| 返回栈 | BACK 与 Tab 绑定 | 抽屉打开时 BACK 先关抽屉；已在队列 sheet 有先例 |
 
-**关键点：页面内容本身几乎不用改**（曲库页/我的页/播放页的 Composable 都还在），改的是**外壳与导航层**。这让改造风险主要集中在导航层，而不是全应用。
+**关键：页面内容本身几乎不用改**（曲库/我的/播放页 Composable 都还在），改的是**外壳与导航层**。风险集中在导航层，而非全应用。
+
+**L2 分区化的额外要求**：曲库页/我的页当前是整块 Composable，要能被描述裁剪分区，需先做**分区化拆分**（每个分区独立 Composable + 注册）。这是 L2 的主要工作量。
 
 ---
 
-## 五、分阶段实施
+## 六、分阶段实施
 
-| 阶段 | 内容 | 交付 | 预估 |
+| 阶段 | 内容 | 验收 | 预估 |
 |---|---|---|---|
 | **P1** | 骨架描述模型 + 解析校验 + 内置"默认骨架"（描述 = 当前 App 结构，视觉零变化） | 描述能 1:1 表达现状 | 1~2 天 |
-| **P2** | 导航层改造：`AppDestinations` → 运行期 Tab 列表；`AppScaffold` 按描述渲染 | 用内置描述驱动的 App，行为与现在一致 | 2~3 天 |
-| **P3** | 新增 `sheet` 容器 + 迷你条唤起 | 播放页可作为全局抽屉（即用户的例子） | 2 天 |
+| **P2** | 导航层改造：`AppDestinations` → 运行期 Tab 列表；`AppScaffold` 按描述渲染 | 用内置描述驱动的 App 与现状**逐页无差异** | 2~3 天 |
+| **P3** | `sheet` 容器 + 迷你条唤起；新增 3 个结构令牌 | 播放页可作为全局抽屉（用户举的例子） | 2 天 |
+| **P4** | L2 页面分区化 + L3 行模板/网格 + L4 播放页形态可配 | 能用描述拼出「网易云式」「极简双页」 | 3~4 天 |
+| **P5** | L5 资源包 + 导入/切换/导出 + 设置页 UI | 可导入分享的皮肤文件 | 2~3 天 |
 
-**P3 的具体改造（代码现状已核实）**：
-- 播放页现在是 `AppRoutes.HOME` 的一个**普通 Tab**（`AppNavHost:164`），且迷你条只在非 HOME 页显示（`AppScaffold:155` 条件 `currentDestination != AppDestinations.HOME`）。
-- 新骨架下：`HOME` **从 Tab 列表移除**，迷你条改为"只要有当前歌曲就常驻显示"，播放页内容改由 `sheet` 容器承载。
-- `ModalBottomSheet` **仓库里已有现成用法**（`feature/player/PlayQueueSheet.kt:120`），全局播放抽屉可直接复用同一 API 与写法，不必新造容器。
-- ⚠️ 需带上的已知坑（skill 已记录）：M3 sheet 的 BACK 处理发生在**独立 dialog window**，主 window 的 `BackHandler` 收不到 → 要用 `sheetState.confirmValueChange` 拦截；且新增的 sheet 回调参数若漏接线会拿到空 lambda 默认值，导致**模态窗口残留拦截触摸、页面看似无响应**（此类 bug 必须模拟器复现 + logcat 定位）。
-| **P4** | 零件库扩充 + 骨架文件导入/切换/导出 + 设置页 UI | 可导入分享的骨架文件 | 2~3 天 |
+**P1+P2 是全案地基**：必须真做出"描述驱动的 App 与现在完全一样"并逐页比对，不能口头声称。
 
-**每阶段独立可验收**：P1+P2 完成后必须证明"用描述驱动的 App 与现在完全一样"，这是后续一切的地基。
+### P3 的具体改造（代码现状已核实）
 
-版本：新功能 → **v3.8.0**（b+1）。
+- 播放页现在是 `AppRoutes.HOME` 的**普通 Tab**（`AppNavHost:164`），迷你条只在非 HOME 页显示（`AppScaffold:155` 条件 `currentDestination != AppDestinations.HOME`）。
+- 新骨架下：`HOME` **从 Tab 列表移除**，迷你条改为"只要有当前歌曲就常驻"，播放页内容改由 `sheet` 承载。
+- `ModalBottomSheet` **仓库里已有现成用法**（`feature/player/.../PlayQueueSheet.kt:120`），直接复用，不必新造容器。
+- ⚠️ 已知坑：M3 sheet 的 BACK 处理在**独立 dialog window**，主 window 的 `BackHandler` 收不到 → 用 `sheetState.confirmValueChange` 拦截；新增 sheet 回调参数若漏接线会拿到空 lambda 默认值 → **模态窗口残留拦截触摸、页面看似无响应**（须模拟器复现 + logcat 定位）。
+
+版本：新功能 → **v3.8.0**（b+1，c 置 0）。皮肤 `schemaVersion` 独立演进。
 
 ---
 
-## 六、风险登记
+## 七、风险登记
 
 | 风险 | 影响 | 对策 |
 |---|---|---|
-| 导航层改造面大（`AppNavHost` 900+ 行） | 引入回归 | P1/P2 的验收标准 = 与现状逐页比对无差异（截图 + DOM 尺寸） |
-| 零件库设计过窄 | 表达力不足，用户仍不满意 | 先按用户例子（双 Tab + 播放抽屉）反推最小零件集，跑通再扩 |
-| 描述文件版本演进 | 旧骨架在新宿主失效 | `schemaVersion` 闸门 + 未知字段忽略 + 未知 `type` 明确报错 |
-| "看起来没差别"风险（方案D 前车之鉴） | 白做 | **先用可交互 HTML 原型让用户确认骨架方向，再动代码**（见 `mihx-plugin-shell` 三变体） |
-| 零件库沦为"什么都能配"的万能配置 | 复杂度爆炸、难维护 | 只登记真实被用到的零件；每个零件必须对应一个已存在页面/组件 |
+| 导航层改造面大（`AppNavHost` 900+ 行） | 引入回归 | P1/P2 验收 = 与现状逐页比对无差异（截图 + DOM 尺寸） |
+| **"看起来没差别"（方案D 前车之鉴）** | 白做 | 原型已出并获用户裁定范围；P4 前先用描述拼出目标骨架再动 Compose |
+| 零件库设计过窄 | 表达力不足 | 已用三套原型反推最小零件集（§4.2），且覆盖度表可量化缺口 |
+| 描述文件版本演进 | 旧皮肤在新宿主失效 | `schemaVersion` 闸门 + 未知字段忽略 + 未知 `part` 明确报错 |
+| 零件库沦为"万能配置" | 复杂度爆炸 | §4.3 四条纪律；覆盖率 1/3 的零件需复议 |
+| L2 分区化牵动页面结构 | 视觉回归 | 分区拆分单独一批、逐页比对；与骨架改造解耦提交 |
+| 皮肤含恶意内容 | 资源耗尽/崩溃 | 描述无法执行代码；资源包限制体积与类型白名单 |
 
 ---
 
-## 七、与既有文档的关系
+## 八、与既有文档的关系
 
-- 本文件（路线 B）= **主干**，解决"重建应用骨架"
-- `PLUGIN_SYSTEM_DESIGN.md`（路线 C）= **扩展**，解决"宿主没有的新组件"
-- 阶段 0 已交付的令牌层 = 两条路线共用的底座（骨架描述里的 `theme.tokens` 直接引用它）
+- **本文件（路线 B）= 主干**，解决"重建应用骨架与应用外观"
+- `PLUGIN_SYSTEM_DESIGN.md`（路线 C）= **逃生口**，仅当 L6/L7 特效做不成零件时单点动用
+- `RUNTIME_COMPILE_FEASIBILITY.md` = **证据归档**，封死"设备端编译"这条路（也支撑"不需要在手机上开发"这一前提）
+- L0 令牌层（阶段 0 已交付）= 三条路线共用的底座
 
-**下一步**：原型方向确认 → P1 骨架描述模型。
+**下一步**：P1 骨架描述模型 + 解析校验。

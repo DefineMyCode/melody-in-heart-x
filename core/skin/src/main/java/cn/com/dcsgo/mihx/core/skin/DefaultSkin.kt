@@ -85,7 +85,7 @@ object DefaultSkin {
                 ]
               },
               "search": true,
-              "segments": ["歌单", "歌手", "专辑", "情绪", "歌曲"],
+              "segments": ["歌单", "歌手", "专辑", "情绪"],
               "defaultSegment": "歌单",
               "sectionsBySegment": {
                 "歌单": [
@@ -100,9 +100,6 @@ object DefaultSkin {
                 ],
                 "情绪": [
                   { "part": "emotionChips", "props": { "title": "按情绪起播" } }
-                ],
-                "歌曲": [
-                  { "part": "songList", "props": { "source": "all", "template": "default" } }
                 ]
               }
             },

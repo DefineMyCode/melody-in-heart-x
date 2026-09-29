@@ -145,7 +145,8 @@ class SkinParserValidationTest {
     @Test
     fun `rejects invalid song list source`() {
         assertCode(
-            mutated { it.replace("\"source\": \"all\"", "\"source\": \"telepathy\"") },
+            // 锚在仍存在的「专辑」段上（原锚点「歌曲」段已随 P4 保真修正删除）
+            mutated { it.replace("\"source\": \"album\"", "\"source\": \"telepathy\"") },
             SkinIssue.Code.INVALID_PROP_VALUE,
         )
     }
@@ -153,7 +154,13 @@ class SkinParserValidationTest {
     @Test
     fun `rejects negative song count`() {
         assertCode(
-            mutated { it.replace("\"source\": \"all\", \"template\": \"default\"", "\"source\": \"all\", \"template\": \"default\", \"count\": \"-3\"") },
+            // 锚在仍存在的「专辑」段上（原锚点「歌曲」段已随 P4 保真修正删除）
+            mutated {
+                it.replace(
+                    "\"source\": \"album\", \"template\": \"default\"",
+                    "\"source\": \"album\", \"template\": \"default\", \"count\": \"-3\"",
+                )
+            },
             SkinIssue.Code.INVALID_PROP_VALUE,
         )
     }

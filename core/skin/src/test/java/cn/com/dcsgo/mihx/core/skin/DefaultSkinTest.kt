@@ -41,10 +41,14 @@ class DefaultSkinTest {
     }
 
     @Test
-    fun `library page keeps five segments`() {
-        // 对照曲库页现状：歌单 / 歌手 / 专辑 / 情绪 / 歌曲
+    fun `library page keeps four segments matching LibraryTab`() {
+        // 对照 feature/playlist 的 LibraryTab enum：歌单 / 歌手 / 专辑 / 情绪 —— **共 4 项**。
+        //
+        // ⚠️ 2026-09-29 P4 修正：初版本测试写的是 5 项（多一个「歌曲」），
+        // 与源码不符。当时它只拿描述自证，把错误锁死了——
+        // 现在同时由 LibrarySegmentsMatchSourceTest 直接对照源码做回归。
         val library = skin.pages.getValue(DefaultSkin.PAGE_LIBRARY)
-        assertEquals(listOf("歌单", "歌手", "专辑", "情绪", "歌曲"), library.segments)
+        assertEquals(listOf("歌单", "歌手", "专辑", "情绪"), library.segments)
         assertEquals("歌单", library.defaultSegment)
         assertTrue("曲库页必须有搜索入口", library.search)
     }

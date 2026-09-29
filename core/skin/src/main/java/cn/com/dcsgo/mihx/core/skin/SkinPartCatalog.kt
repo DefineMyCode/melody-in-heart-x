@@ -86,8 +86,18 @@ object SkinPartCatalog {
      */
     val ROW_TEMPLATES = setOf("default", "compact")
 
-    /** 分区标签可以控制内容顺序；`libraryTabs` 的段名。 */
-    val LIBRARY_SEGMENTS = setOf("歌单", "歌手", "专辑", "情绪", "歌曲")
+    /**
+     * `libraryTabs` 的段名。
+     *
+     * **必须与 `feature/playlist` 的 `LibraryTab` enum 逐字一致**：
+     * `歌单 / 歌手 / 专辑 / 情绪` 共 4 项。
+     *
+     * ⚠️ 2026-09-29 P4 修正：初版这里多写了「歌曲」，那是**错的**——
+     * 曲库页没有「歌曲」分段（该词只出现在歌手/专辑**详情页**的子标签里）。
+     * 起因是照抄原型草案而未回源码核对，且当时的测试只拿描述自证，
+     * 把错误锁死了。`LibrarySegmentsMatchSourceTest` 现在直接对照源码做回归。
+     */
+    val LIBRARY_SEGMENTS = setOf("歌单", "歌手", "专辑", "情绪")
 
     /** 白名单：零件名 → 定义。 */
     val parts: Map<String, Part> = listOf(

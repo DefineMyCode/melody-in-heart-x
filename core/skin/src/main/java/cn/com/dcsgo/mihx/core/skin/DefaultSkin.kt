@@ -211,7 +211,9 @@ object DefaultSkin {
               "sections": [
                 { "part": "userInfo" },
                 { "part": "playStats" },
+                { "part": "moodTimeSlot" },
                 { "part": "emotionScan" },
+                { "part": "fileCheck" },
                 { "part": "skinSwitcher" }
               ]
             }

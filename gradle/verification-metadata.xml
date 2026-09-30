@@ -12,6 +12,12 @@
          <trust file=".*-sources[.]jar" regex="true" reason="IDE-only source jars pulled by Android Studio sync via detached configurations; never used for compilation or runtime."/>
          <trust file=".*-javadoc[.]jar" regex="true" reason="IDE-only javadoc jars, same detached-configuration path as sources jars; never used for compilation or runtime."/>
          <trust file="gradle-.*-src[.]zip" regex="true" reason="Gradle distribution source zip downloaded by the IDE for source navigation."/>
+         <!-- AGP 会在 IDE Sync 时通过 detached configuration 下载平台特定的 aapt2 二进制 jar
+              (如 aapt2-8.13.2-14304508-windows.jar / -linux.jar / -darwin.jar / -linux-x64.jar),
+              这些不进正常构建依赖图(真实编译用的是 Android SDK 自带的 aapt2),
+              因此 Gradle 的 write-verification-metadata 永远采集不到——加白名单按文件名正则信任。
+              同步时报 "Dependency verification failed for :core:model:androidApis" 即此类。 -->
+         <trust file="aapt2-.*[.]jar" regex="true" reason="AGP platform-specific aapt2 binary pulled by Android Studio sync via detached configurations; never used for compilation (real aapt2 comes from Android SDK)."/>
       </trusted-artifacts>
    </configuration>
    <components>

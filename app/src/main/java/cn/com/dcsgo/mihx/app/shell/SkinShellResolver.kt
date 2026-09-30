@@ -28,13 +28,15 @@ object SkinShellResolver {
     /**
      * 当前可选的骨架集合（皮肤）。
      *
-     * P3 只登记两套**内置**骨架用于验收：
+     * 登记的内置骨架用于验收与开关测试：
      *  - 默认骨架（3 Tab，与改造前一致）
      *  - 抽屉型骨架（2 Tab + 播放为全局抽屉，即用户举例的那套）
+     *  - 网格样本骨架（3 Tab + 曲库歌手/专辑段走网格）
+     *  - 黑胶样本骨架（3 Tab + 播放页切到黑胶形态）
      *
-     * 用户导入的皮肤在 P5 才接进来。
+     * 用户导入的皮肤在 P5 走另一条解析路径（resolveUserSkin）。
      */
-    val knownSkins: List<Skin> by lazy { listOf(DefaultSkin.skin(), DefaultSkin.minimalSheetSkin(), DefaultSkin.gridSampleSkin()) }
+    val knownSkins: List<Skin> by lazy { listOf(DefaultSkin.skin(), DefaultSkin.minimalSheetSkin(), DefaultSkin.gridSampleSkin(), DefaultSkin.vinylSampleSkin()) }
 
     /** 内置骨架 id；未知 id 一律回落它（fail-safe）。 */
     const val DEFAULT_SKIN_ID: String = DefaultSkin.ID
@@ -131,7 +133,21 @@ object SkinShellResolver {
             playerEntry = PlayerEntry.fromId(skin.playerEntry.id),
             myPageSectionOrder = resolveMyPageSectionOrder(skin),
             librarySongListTemplate = resolveLibrarySongListTemplate(skin),
+            playerTemplate = resolvePlayerTemplate(skin),
         )
+    }
+
+    /**
+     * 从描述里解析播放页渲染模板(L4 播放页形态,2026-09-30)。
+     *
+     * 描述里 `pages.player.template` 是 [SkinPartCatalog.PLAYER_TEMPLATES] 中的字符串。
+     * 缺省/null/未知值 → [PlayerTemplate.CLASSIC](与改造前一致,行为零变化)。
+     *
+     * 容错:[PlayerTemplate.fromId] 对未知值回落 CLASSIC(不会让页面崩)。
+     */
+    private fun resolvePlayerTemplate(skin: Skin): PlayerTemplate {
+        val playerPage = skin.pages[DefaultSkin.PAGE_PLAYER] ?: return PlayerTemplate.CLASSIC
+        return PlayerTemplate.fromId(playerPage.template)
     }
 
     /**

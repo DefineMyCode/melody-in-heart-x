@@ -24,6 +24,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import cn.com.dcsgo.mihx.app.permissions.PermissionCoordinator
 import cn.com.dcsgo.mihx.app.player.NowPlayingSurface
+import cn.com.dcsgo.mihx.app.player.NowPlayingVinylSurface
 import cn.com.dcsgo.mihx.app.player.SongPlaybackStrategy
 import cn.com.dcsgo.mihx.app.player.playWith
 import cn.com.dcsgo.mihx.app.shell.AppShell
@@ -186,22 +187,45 @@ fun AppNavHost(
     ) {
         composable(AppRoutes.HOME) {
             // P3：播放页内容已抽成 NowPlayingSurface，Tab 与全局抽屉两种形态共用同一份实现。
-            NowPlayingSurface(
-                playerViewModel = playerViewModel,
-                uiState = uiState,
-                onShowQueue = onShowQueue,
-                loadSongInfo = loadSongInfo,
-                showToast = showToast,
-                deleteSongWithToast = deleteSongWithToast,
-                playlistResumeViewModel = playlistResumeViewModel,
-                onNavigateToLyrics = { navController.navigate(AppRoutes.LYRICS) },
-                onNavigateToArtist = { artistName ->
-                    navController.navigate(AppRoutes.artistDetail(artistName))
-                },
-                onNavigateToAlbum = { albumName ->
-                    navController.navigate(AppRoutes.albumDetail(albumName))
-                },
-            )
+            // L4：皮肤描述里 pages.player.template = "vinyl" 时切到 NowPlayingVinylSurface
+            //     (黑胶形态:旋转封面 + 进度环 + 最简控制条)。
+            //     默认皮肤此字段为 CLASSIC → 继续走 NowPlayingSurface,行为零变化。
+            val playerTemplate = shell.playerTemplate
+            if (playerTemplate == cn.com.dcsgo.mihx.app.shell.PlayerTemplate.VINYL) {
+                NowPlayingVinylSurface(
+                    playerViewModel = playerViewModel,
+                    uiState = uiState,
+                    onShowQueue = onShowQueue,
+                    loadSongInfo = loadSongInfo,
+                    showToast = showToast,
+                    deleteSongWithToast = deleteSongWithToast,
+                    playlistResumeViewModel = playlistResumeViewModel,
+                    onNavigateToLyrics = { navController.navigate(AppRoutes.LYRICS) },
+                    onNavigateToArtist = { artistName ->
+                        navController.navigate(AppRoutes.artistDetail(artistName))
+                    },
+                    onNavigateToAlbum = { albumName ->
+                        navController.navigate(AppRoutes.albumDetail(albumName))
+                    },
+                )
+            } else {
+                NowPlayingSurface(
+                    playerViewModel = playerViewModel,
+                    uiState = uiState,
+                    onShowQueue = onShowQueue,
+                    loadSongInfo = loadSongInfo,
+                    showToast = showToast,
+                    deleteSongWithToast = deleteSongWithToast,
+                    playlistResumeViewModel = playlistResumeViewModel,
+                    onNavigateToLyrics = { navController.navigate(AppRoutes.LYRICS) },
+                    onNavigateToArtist = { artistName ->
+                        navController.navigate(AppRoutes.artistDetail(artistName))
+                    },
+                    onNavigateToAlbum = { albumName ->
+                        navController.navigate(AppRoutes.albumDetail(albumName))
+                    },
+                )
+            }
         }
 
 

@@ -52,6 +52,16 @@ data class AppShell(
      * 解析与归一化统一由 [SkinShellResolver] 完成。
      */
     val librarySongListTemplate: SongListTemplate = SongListTemplate.DEFAULT,
+    /**
+     * 播放页渲染模板(L4 播放页形态,2026-09-30)。
+     *
+     * 默认 CLASSIC = 改造前形态;皮肤描述里 `player.template` 切到 vinyl 时,
+     * HOME composable 会走 [cn.com.dcsgo.mihx.app.player.NowPlayingVinylSurface] 渲染黑胶版。
+     *
+     * 仍放在 [AppShell] 里而非让 AppNavHost 读描述——同 [myPageSectionOrder] / [librarySongListTemplate] 一样,
+     * 解析与归一化统一由 [SkinShellResolver] 完成。
+     */
+    val playerTemplate: PlayerTemplate = PlayerTemplate.CLASSIC,
 )
 
 /** 播放页进入方式（与皮肤描述对齐）。 */

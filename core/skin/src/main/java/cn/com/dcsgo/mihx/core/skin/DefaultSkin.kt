@@ -311,4 +311,69 @@ object DefaultSkin {
             "网格样本骨架未通过校验：${result.issues.joinToString { "${it.code}: ${it.message} @${it.field}" }}",
         )
     }
+
+    /**
+     * 黑胶播放页样本骨架（L4 播放页形态，2026-09-30）。
+     *
+     * 与 [gridSampleSkin] 同思路——结构与 [skin] 几乎相同（3 Tab + 全部 L3 网格 + 4 分段我的页），
+     * **唯一的差异是 `pages.player.template = "vinyl"`**，让同一份 App 能 A/B 对比
+     * 黑胶形态与传统现在播放形态的实际渲染差异。
+     *
+     * 接入方式：[cn.com.dcsgo.mihx.app.shell.SkinShellResolver.knownSkins] 把它登记进可切列表。
+     */
+    private val VINYL_SAMPLE_JSON = """{
+        "schemaVersion": 1,
+        "id": "dcsgo.skin.vinyl",
+        "name": "黑胶播放页样本",
+        "tokens": { "theme": "VERMILION", "dark": false },
+        "shell": {
+          "bottomBar": [
+            { "id": "tab-library", "label": "曲库", "icon": "library", "target": "library" },
+            { "id": "tab-player",  "label": "播放", "icon": "play",     "target": "player" },
+            { "id": "tab-me",      "label": "我的", "icon": "me",       "target": "me" }
+          ],
+          "miniPlayer": true
+        },
+        "pages": {
+          "$PAGE_LIBRARY": {
+            "header": { "title": "曲库", "subtitle": "本地音乐" },
+            "search": true,
+            "segments": ["歌单", "歌手", "专辑", "情绪"],
+            "defaultSegment": "歌单",
+            "sectionsBySegment": {
+              "歌单": [
+                { "part": "playlistShelf", "props": { "title": "我的歌单" } },
+                { "part": "emotionChips",  "props": { "title": "情绪词条" } }
+              ],
+              "歌手": [ { "part": "songList", "props": { "source": "artist", "template": "default" } } ],
+              "专辑": [ { "part": "songList", "props": { "source": "album",  "template": "default" } } ],
+              "情绪": [ { "part": "emotionChips", "props": { "title": "按情绪起播" } } ]
+            }
+          },
+          "$PAGE_PLAYER": {
+            "header": null,
+            "template": "vinyl",
+            "sections": []
+          },
+          "$PAGE_ME": {
+            "fixedOneScreen": true,
+            "header": { "title": "我的" },
+            "sections": [
+              { "part": "userInfo" },
+              { "part": "playStats" },
+              { "part": "customSkin" }
+            ]
+          }
+        },
+        "startPage": "$PAGE_PLAYER",
+        "playerEntry": "tab"
+      }""".trimIndent()
+
+    /** 解析黑胶播放页样本骨架；默认皮肤不变（仍走 classic），这套用于 debug 面板验收 vinyl。 */
+    fun vinylSampleSkin(): Skin = when (val result = SkinParser.parse(VINYL_SAMPLE_JSON)) {
+        is SkinValidation.Valid -> result.skin
+        is SkinValidation.Invalid -> error(
+            "黑胶样本骨架未通过校验：${result.issues.joinToString { "${it.code}: ${it.message} @${it.field}" }}",
+        )
+    }
 }

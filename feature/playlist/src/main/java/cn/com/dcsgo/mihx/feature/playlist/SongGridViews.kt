@@ -109,7 +109,6 @@ fun ArtistGridListView(
     hideSingleSongArtists: Boolean,
     onHideSingleSongArtistsChange: (Boolean) -> Unit,
     onArtistClick: (String) -> Unit,
-    songsByArtist: Map<String, Song?>,
 ) {
     val visible = if (hideSingleSongArtists) artists.filter { it.songCount > 1 } else artists
     Column(modifier = Modifier.fillMaxSize()) {
@@ -136,8 +135,14 @@ fun ArtistGridListView(
                         .clickable { onArtistClick(artist.name) }
                         .padding(4.dp),
                 ) {
+                    // 直接用 ArtistEntry.coverUri（已由 data 层聚合;Room 的 artistCatalog
+                    // 与 LibraryCatalog.deriveArtists 都按"取该歌手名下任一非空 cover"聚合）。
+                    // 之前 L3 这里多走 songsByArtist(用 song.artist 字符串作 key)在"多歌手共歌"
+                    // 场景下取不到任何歌的 cover —— 但 ArtistEntry.coverUri 走的是另一条路径,
+                    // 多数情况下是有值的,所以 main 上 ArtistListView 能显示封面。
+                    // ★ 这是 L3 装配时的双源不一致,fix 时间: 2026-09-30。
                     SongCoverBox(
-coverUri = songsByArtist[artist.name]?.albumArtUri,
+                        coverUri = artist.coverUri,
                         fallbackIcon = Icons.AutoMirrored.Filled.List,
                         modifier = Modifier.fillMaxWidth().aspectRatio(1f),
                     )
@@ -173,7 +178,6 @@ fun AlbumGridListView(
     hideSingleSongAlbums: Boolean,
     onHideSingleSongAlbumsChange: (Boolean) -> Unit,
     onAlbumClick: (String) -> Unit,
-    songsByAlbum: Map<String, Song?>,
 ) {
     val visible = if (hideSingleSongAlbums) albums.filter { it.songCount > 1 } else albums
     Column(modifier = Modifier.fillMaxSize()) {
@@ -200,8 +204,9 @@ fun AlbumGridListView(
                         .clickable { onAlbumClick(album.name) }
                         .padding(4.dp),
                 ) {
+                    // 同 ArtistGridListView:直接用 AlbumEntry.coverUri,不走 songsByAlbum(同样理由)。
                     SongCoverBox(
-coverUri = songsByAlbum[album.name]?.albumArtUri,
+                        coverUri = album.coverUri,
                         fallbackIcon = Icons.Filled.MusicNote,
                         modifier = Modifier.fillMaxWidth().aspectRatio(1f),
                     )

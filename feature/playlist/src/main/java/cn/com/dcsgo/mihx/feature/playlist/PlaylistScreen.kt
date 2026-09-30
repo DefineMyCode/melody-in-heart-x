@@ -360,14 +360,13 @@ fun PlaylistScreen(
                         )
                         LibraryTab.ARTISTS -> when (songListTemplate) {
                             SongListTemplate.GRID -> ArtistGridListView(
-                                artists = libraryArtists.filter { artist ->
-                                    librarySearchQuery.isBlank() ||
-                                        artist.name.contains(librarySearchQuery, ignoreCase = true)
-                                },
-                                hideSingleSongArtists = librarySearchQuery.isBlank() && hideSingleSongArtists,
-                                onHideSingleSongArtistsChange = { hideSingleSongArtists = it },
-                                onArtistClick = onArtistClick,
-                                songsByArtist = songs.associate { it.artist to it }.filterKeys { it in libraryArtists.map(ArtistEntry::name) },
+                            artists = libraryArtists.filter { artist ->
+                                librarySearchQuery.isBlank() ||
+                                    artist.name.contains(librarySearchQuery, ignoreCase = true)
+                            },
+                            hideSingleSongArtists = librarySearchQuery.isBlank() && hideSingleSongArtists,
+                            onHideSingleSongArtistsChange = { hideSingleSongArtists = it },
+                            onArtistClick = onArtistClick,
                             )
                             SongListTemplate.DEFAULT -> ArtistListView(
                                 artists = libraryArtists.filter { artist ->
@@ -389,7 +388,6 @@ fun PlaylistScreen(
                                 hideSingleSongAlbums = librarySearchQuery.isBlank() && hideSingleSongAlbums,
                                 onHideSingleSongAlbumsChange = { hideSingleSongAlbums = it },
                                 onAlbumClick = onAlbumClick,
-                                songsByAlbum = songs.associate { it.album to it }.filterKeys { it in libraryAlbums.map(AlbumEntry::name) },
                             )
                             SongListTemplate.DEFAULT -> AlbumListView(
                                 albums = libraryAlbums.filter { album ->

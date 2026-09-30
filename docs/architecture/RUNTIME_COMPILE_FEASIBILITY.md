@@ -33,8 +33,15 @@
 
 **主结论不变且更强**：真机上编译器仍无法完成初始化。而且暴露了一个初版没有的
 **方法论陷阱**——只看「类在不在」会得出错误结论，因为安卓的 `sun.misc.Unsafe`
-**类在、55 个方法在，但缺 `copyMemory(Object,long,Object,long,long)` 这个 5 参重载**
-（安卓只有 3 参 `(long,long,long)`）。详见 §九。
+**类在、55 个方法在，但缺 `copyMemory(Object,long,Object,long,long)` 这个 5 参重载**（安卓只有 3 参 `(long,long,long)`）。详见 §九。
+
+> **关于「目标 JDK = 9」那条初版推测的处理**——初版在没有 JVM 运行时上下文的前提下，
+> 推测"如果能跑编译器，安卓很可能是按 JDK 9 之类的兼容层提供"。真机实测给出的真值是
+> `java.specification.version = "0.9"`（§9.4），这是 ART 的 Dalvik 兼容标识
+> （[Dalvik Bytecode Specification §"Versioning"](https://source.android.com/devices/tech/dalvik/dex-format#dex-file-magic)），
+> **不是任何标准 JDK 版本号**。所以这条初版推测**被否证了**，但方向刚好相反——
+> 比想象的更低（0.9 vs 9），意味着任何按"标准 JDK 9/11/21"分支的代码都会走错路。
+> 详见 §9.6。
 
 ### 对「是否可作为主路线」的判断
 
@@ -444,6 +451,33 @@ java.lang.Error: java.lang.NoSuchMethodException: copyMemory [Object, long, Obje
 **对心乐的意义完全不变**：这条路的结论仍是"不可作为主路线"，
 路线 B（声明式皮肤包）依然是正确选择。本节的唯一修正是**论证的准确性**——
 一个建立在错误理由上的正确结论，早晚会在别处把人带沟里。
+
+### 9.6 收尾：初版「目标 JDK = 9」推测的归宿
+
+初版在没有安卓运行时上下文时，靠文档和类名推测"如果能跑编译器，安卓很可能按某个
+**JDK 9 之类的兼容层**提供底层支持"——这个推测是**错的**，但**重要程度低**（它不是
+主结论的依据，只是一个让论证图自洽的副假设），所以初版正文里没有展开。真机复验给出
+的实测值把这条推测的**真实方向**也明确了**——不是 9，而是更低**。
+
+| 项 | 初版推测 | 真机实测 | 真值出处 |
+|---|---|---|---|
+| `java.specification.version` | 推测"接近 JDK 9" | **`"0.9"`** | `app_process` 跑 `System.getProperty("java.specification.version")` 直读 |
+
+**这个 `0.9` 的真实含义**：ART 的 `System.getProperty(...)` 返回的是 [Dalvik 字节码规范的
+versioning 字面](https://source.android.com/devices/tech/dalvik/dex-format#dex-file-magic)，
+不是任何标准 Java SE 版本号。安卓**从来没有**实现过完整的 Java SE 类库——它只实现了
+`java.base`（即 `java.lang`/`java.util`/`java.nio` 等）核心子集，外加 [Android SDK 加的
+android.* 类](https://developer.android.com/reference/packages)，其他都是 stub。
+
+**对论证的修正是负向的**：本节之前把"安卓没有 `javax.tools`/`java.desktop`/`sun.misc.Unsafe.copyMemory`
+5 参重载"作为"看起来不可能跑编译器"的论证；现在补一刀——**就算类在、签名匹配，安卓
+按 Java 版本分支的代码（任何 `if (specVersion >= 9)` 之类）也会走错路**，因为根本没有
+"标准 Java 版本号"这个东西可读。`0.9` 不等于"Java 0.9"，也不等于"接近任何 JDK"，
+它只是个 Dalvik 自报的兼容标识。
+
+**这件事不影响主结论**：编译器在 ART 上跑不起来这条**没变**，但**理由清单多了一根**：
+除了类缺失、内存不够、签名不匹配，**还有版本号语义错位**。三层否定堆在一起，主结论
+更稳。
 
 ---
 

@@ -139,6 +139,9 @@ fun AppNavHost(
     panelCoverCornerOverride: Float? = null,
     onPanelCoverSizeChange: (Float) -> Unit = {},
     onPanelCoverCornerChange: (Float) -> Unit = {},
+    /** 歌手/专辑网格布局开关（全局，不分样式）。 */
+    gridLayoutEnabled: Boolean = false,
+    onGridLayoutChange: (Boolean) -> Unit = {},
 ) {
     // 失败歌曲手动标记等 suspend 回调的协程作用域
     val navCoroutineScope = rememberCoroutineScope()
@@ -525,6 +528,8 @@ fun AppNavHost(
                 onSkinSelected = onSkinSelected,
                 onPanelCoverSizeChange = onPanelCoverSizeChange,
                 onPanelCoverCornerChange = onPanelCoverCornerChange,
+                gridLayoutEnabled = gridLayoutEnabled,
+                onGridLayoutChange = onGridLayoutChange,
                 onBack = { navController.navigateUp() },
             )
         }

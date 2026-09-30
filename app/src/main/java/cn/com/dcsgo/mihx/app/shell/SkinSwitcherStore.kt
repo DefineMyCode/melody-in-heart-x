@@ -41,6 +41,18 @@ class SkinSwitcherStore(context: Context) {
         prefs.edit().putFloat(panelCornerKey(skinId), value).apply()
     }
 
+    /**
+     * 歌手/专辑网格布局开关（2026-09-30 用户拍板：由「样式」下沉为全局开关）。
+     *
+     * 与播放面板覆盖不同，它是**全局单值**（不分 skinId）——两种样式都能用同一开关。
+     * 缺省 false = 改造前形态（列表行），零回归。
+     */
+    fun gridLayoutEnabled(): Boolean = prefs.getBoolean(KEY_GRID_LAYOUT, false)
+
+    fun setGridLayoutEnabled(enabled: Boolean) {
+        prefs.edit().putBoolean(KEY_GRID_LAYOUT, enabled).apply()
+    }
+
     private fun readPositiveFloat(key: String): Float? {
         if (!prefs.contains(key)) return null
         val v = prefs.getFloat(key, -1f)
@@ -54,5 +66,6 @@ class SkinSwitcherStore(context: Context) {
 
     companion object {
         private const val KEY_ACTIVE_ID = "active_id"
+        private const val KEY_GRID_LAYOUT = "grid_layout"
     }
 }

@@ -36,7 +36,7 @@ object SkinShellResolver {
      *
      * 用户导入的皮肤在 P5 走另一条解析路径（resolveUserSkin）。
      */
-    val knownSkins: List<Skin> by lazy { listOf(DefaultSkin.skin(), DefaultSkin.minimalSheetSkin(), DefaultSkin.gridSampleSkin(), DefaultSkin.vinylSampleSkin(), DefaultSkin.sumiSampleSkin(), DefaultSkin.neteaseSampleSkin()) }
+    val knownSkins: List<Skin> by lazy { listOf(DefaultSkin.skin(), DefaultSkin.minimalSheetSkin()) }
 
     /** 内置骨架 id；未知 id 一律回落它（fail-safe）。 */
     const val DEFAULT_SKIN_ID: String = DefaultSkin.ID

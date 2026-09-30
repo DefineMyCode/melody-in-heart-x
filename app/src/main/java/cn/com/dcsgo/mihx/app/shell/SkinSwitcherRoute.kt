@@ -39,7 +39,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import cn.com.dcsgo.mihx.ui.theme.PlaybackPanelTokens
 
 /**
@@ -50,7 +49,10 @@ import cn.com.dcsgo.mihx.ui.theme.PlaybackPanelTokens
  *  - 用户导入任意 JSON 皮肤的能力已移除（CustomSkinSection / UserSkinRoute / UserSkinStore /
  *    SkinIdDeriver 全部下线）；
  *  - 删掉了原先 UI 参数调试页里的多组旋钮（行/区块/迷你条），**只保留**
- *    「播放面板封面边长」「播放面板封面圆角」两个旋钮，**整合到本页面底部**。
+ *    「播放面板封面边长」「播放面板封面圆角」两个旋钮，**整合到本页面底部**；
+ *  - 歌手/专辑网格布局在 2026-09-30 下沉为**全局开关**（不分样式，两种样式共用），
+ *    样式项只显示名称（`dcsgo.skin.*` id 小字已去掉）；
+ *  - 「当前值」摘要块（coverSizeDp=…）同批移除——滑条右侧数字已是当前值。
  *
  * ## 覆盖值归属
  *  - 旋钮的当前值是「当前选中样式」的覆盖，由 AppRoot 持久化（按 skinId 分键）；
@@ -70,6 +72,8 @@ fun SkinSwitcherRoute(
     onSkinSelected: (String) -> Unit,
     onPanelCoverSizeChange: (Float) -> Unit,
     onPanelCoverCornerChange: (Float) -> Unit,
+    gridLayoutEnabled: Boolean,
+    onGridLayoutChange: (Boolean) -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -119,7 +123,6 @@ fun SkinSwitcherRoute(
                 Column(modifier = Modifier.padding(vertical = 4.dp)) {
                     skinOptions.forEachIndexed { index, (id, name) ->
                         SkinRow(
-                            id = id,
                             name = name,
                             selected = id == currentSkinId,
                             onClick = { onSkinSelected(id) },
@@ -147,27 +150,36 @@ fun SkinSwitcherRoute(
                 onChange = onPanelCoverCornerChange,
             )
 
+            SectionTitle("歌手、专辑")
             Surface(
-                shape = RoundedCornerShape(10.dp),
+                shape = RoundedCornerShape(14.dp),
                 color = MaterialTheme.colorScheme.surfaceContainerLowest,
+                border = BorderStroke(0.5.dp, MaterialTheme.colorScheme.outlineVariant),
                 modifier = Modifier.fillMaxWidth(),
             ) {
-                Text(
-                    text = buildString {
-                        append("当前值:\n")
-                        append("coverSizeDp=").append("%.1f".format(effectiveSize))
-                        append("\ncoverCornerDp=").append("%.1f".format(effectiveCorner))
-                        if (panelCoverSizeOverride == null && panelCoverCornerOverride == null) {
-                            append("\n（均为样式默认值）")
-                        } else {
-                            append("\n（已对当前样式微调,仅作用于该样式）")
-                        }
-                    },
-                    fontSize = 11.sp,
-                    fontFamily = FontFamily.Monospace,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(12.dp),
-                )
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 14.dp, vertical = 10.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "网格布局",
+                            style = MaterialTheme.typography.bodyLarge,
+                        )
+                        Text(
+                            text = "歌手、专辑以两列网格展示，所有样式通用",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                    androidx.compose.material3.Switch(
+                        checked = gridLayoutEnabled,
+                        onCheckedChange = onGridLayoutChange,
+                    )
+                }
             }
         }
     }
@@ -186,7 +198,6 @@ private fun SectionTitle(text: String) {
 
 @Composable
 private fun SkinRow(
-    id: String,
     name: String,
     selected: Boolean,
     onClick: () -> Unit,
@@ -199,19 +210,12 @@ private fun SkinRow(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = name,
-                style = MaterialTheme.typography.bodyLarge,
-                fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
-            )
-            Text(
-                text = id,
-                style = MaterialTheme.typography.bodySmall,
-                fontFamily = FontFamily.Monospace,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
+        Text(
+            text = name,
+            style = MaterialTheme.typography.bodyLarge,
+            fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
+            modifier = Modifier.weight(1f),
+        )
         if (selected) {
             Icon(
                 imageVector = Icons.Filled.Check,

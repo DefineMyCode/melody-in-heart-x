@@ -54,7 +54,7 @@ object DefaultSkin {
         {
           "schemaVersion": 1,
           "id": "$ID",
-          "name": "心乐（内置）",
+          "name": "默认三页",
           "tokens": {
             "theme": "VERMILION",
             "dark": true,
@@ -176,7 +176,7 @@ object DefaultSkin {
         {
           "schemaVersion": 1,
           "id": "dcsgo.skin.minimal",
-          "name": "极简双页 · 播放抽屉",
+          "name": "极简双页",
           "tokens": {
             "theme": "MONO",
             "dark": true,

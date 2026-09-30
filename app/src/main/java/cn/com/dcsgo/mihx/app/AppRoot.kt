@@ -38,6 +38,7 @@ import cn.com.dcsgo.mihx.app.shell.AppShell
 import cn.com.dcsgo.mihx.app.shell.PlayerEntry
 import cn.com.dcsgo.mihx.app.shell.SkinShellResolver
 import cn.com.dcsgo.mihx.app.shell.SkinSwitcherStore
+import cn.com.dcsgo.mihx.app.shell.withGridLayout
 import cn.com.dcsgo.mihx.core.model.ThemeMode
 import cn.com.dcsgo.mihx.core.model.ThemeVariant
 import cn.com.dcsgo.mihx.domain.model.DeleteSongResult
@@ -93,7 +94,13 @@ fun AppRoot(
     val context = LocalContext.current
     val skinStore = remember(context) { SkinSwitcherStore(context.applicationContext) }
     var currentSkinId by remember {
-        mutableStateOf(skinStore.activeId() ?: SkinShellResolver.DEFAULT_SKIN_ID)
+        // 样式列表收紧到「默认三页 / 极简双页」两套(2026-09-30)后,旧 prefs 里可能存着
+        // 已下线的 id(网格/黑胶/水墨/网易云式)——不在列表里就回落默认,否则切换页无项高亮。
+        mutableStateOf(
+            skinStore.activeId()
+                ?.takeIf { id -> SkinShellResolver.knownSkins.any { it.id == id } }
+                ?: SkinShellResolver.DEFAULT_SKIN_ID,
+        )
     }
     var panelCoverSize by remember {
         mutableStateOf<Float?>(skinStore.panelCoverSize(currentSkinId))
@@ -101,10 +108,18 @@ fun AppRoot(
     var panelCoverCorner by remember {
         mutableStateOf<Float?>(skinStore.panelCoverCorner(currentSkinId))
     }
+    // 歌手/专辑网格布局：全局开关（不分样式），默认关 = 改造前的列表行形态。
+    var gridLayoutEnabled by remember {
+        mutableStateOf(skinStore.gridLayoutEnabled())
+    }
+    val onGridLayoutChange: (Boolean) -> Unit = { enabled ->
+        gridLayoutEnabled = enabled
+        skinStore.setGridLayoutEnabled(enabled)
+    }
     // 解析外壳：当前选中是内置 id → resolveById(原有路径,行为零变化)。
     // 不再有「user.skin.*」分支——用户自定义皮肤已被样式切换取代。
-    val shell: AppShell = remember(currentSkinId) {
-        SkinShellResolver.resolveById(currentSkinId)
+    val shell: AppShell = remember(currentSkinId, gridLayoutEnabled) {
+        SkinShellResolver.resolveById(currentSkinId).withGridLayout(gridLayoutEnabled)
     }
 
     BackHandler(enabled = showQueueSheet) {
@@ -271,6 +286,8 @@ fun AppRoot(
                     panelCoverCornerOverride = panelCoverCorner,
                     onPanelCoverSizeChange = onPanelCoverSizeChange,
                     onPanelCoverCornerChange = onPanelCoverCornerChange,
+                    gridLayoutEnabled = gridLayoutEnabled,
+                    onGridLayoutChange = onGridLayoutChange,
                 )
             }
 

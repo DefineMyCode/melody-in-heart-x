@@ -64,6 +64,19 @@ data class AppShell(
     val playerTemplate: PlayerTemplate = PlayerTemplate.CLASSIC,
 )
 
+/**
+ * 叠加「歌手/专辑网格布局」全局开关（2026-09-30 用户拍板：由样式下沉为开关）。
+ *
+ *  - [enabled] = true → 歌手/专辑段强制走两列网格（[SongListTemplate.GRID]），
+ *    **不看样式的 `songList.template`**——所以两种样式（默认三页/极简双页）都能用；
+ *  - [enabled] = false → 保留样式自身的解析结果（两套内置样式默认都是列表行）。
+ *
+ * 抽成函数是为了让「开关 → 外壳」这条映射能被单测锁住（原先内联在 AppRoot 的
+ * `remember` 里，测不到）。
+ */
+fun AppShell.withGridLayout(enabled: Boolean): AppShell =
+    if (enabled) copy(librarySongListTemplate = SongListTemplate.GRID) else this
+
 /** 播放页进入方式（与皮肤描述对齐）。 */
 enum class PlayerEntry(val id: String) {
     TAB("tab"),

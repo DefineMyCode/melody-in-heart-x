@@ -5,7 +5,6 @@ import android.content.SharedPreferences
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import cn.com.dcsgo.mihx.data.repository.PlayerSettingsKeys
-import cn.com.dcsgo.mihx.data.repository.UserSkinStore
 import cn.com.dcsgo.mihx.data.repository.playerSettingsDataStore
 import cn.com.dcsgo.mihx.data.repository.timeSlotConfigDataStore
 import dagger.Module
@@ -54,10 +53,4 @@ object DataStoreModule {
         PlayerSettingsKeys.LEGACY_PREFS_NAME,
         Context.MODE_PRIVATE,
     )
-
-    /** P5: 用户自定义皮肤的单槽位存储。DataStore 与 PlayerSettings 同栈。 */
-    @Provides
-    @Singleton
-    fun provideUserSkinStore(@ApplicationContext context: Context): UserSkinStore =
-        UserSkinStore(context)
 }

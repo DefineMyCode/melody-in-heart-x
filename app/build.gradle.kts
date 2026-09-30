@@ -30,8 +30,8 @@ android {
         applicationId = "cn.com.dcsgo.mihx"
         minSdk = 33
         targetSdk = 36
-        versionCode = 35
-        versionName = "3.7.2"
+        versionCode = 39
+        versionName = "3.7.2-skin-switcher"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 

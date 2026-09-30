@@ -59,9 +59,21 @@ object SkinPartCatalog {
     const val FILE_CHECK = "fileCheck"
 
     /**
-     * P5：用户导入皮肤入口卡。
-     * 在 [UserSections] 单独成一个分区(Q3 = 另开一个入口),
-     * 与其他分区解耦。
+     * 样式切换入口卡(2026-09-30 用户拍板: 替换原 P5 自定义皮肤入口)。
+     *
+     * 在 [UserSections] 单独成一个分区,与"导入任意 JSON 皮肤"解耦:
+     * 现在只允许切换内置骨架 + 调当前样式的播放面板封面尺寸/圆角。
+     */
+    const val SKIN_SWITCHER = "skinSwitcher"
+
+    /**
+     * P5 历史:用户自定义皮肤入口的 part 名字。
+     *
+     * 2026-09-30 后端换了 [SKIN_SWITCHER],但仍保留此常量做**字面兼容**:
+     * 已交付的皮肤包 zip(如 `/tmp/skinpack/dcsgo.skin.netease.json`)里写的就是
+     * `"part": "customSkin"`,为了让这些描述仍能解析,白名单里同时保留它;
+     * 装配层 [cn.com.dcsgo.mihx.app.shell.SkinShellResolver] 会把两种写法都映射到
+     * [UserSections.SKIN_SWITCHER] 渲染。
      */
     const val CUSTOM_SKIN = "customSkin"
 
@@ -82,9 +94,12 @@ object SkinPartCatalog {
      *
      * 描述里 `player.template` 字段必须在该集合里,否则 [SkinParser] 拒绝该描述。
      * 装配侧 [cn.com.dcsgo.mihx.app.shell.PlayerTemplate.fromId] 容错解析(未知值回落 classic)。
-     * 两边必须同步——参见 [SongListTemplateCatalogTest] 的同款对照测试。
+     * 两边必须同步——参见 [PlayerTemplateCatalogTest] 的同款对照测试。
+     *
+     * 2026-09-30 新增 `sumi`(水墨青,内置皮肤 `dcsgo.skin.sumi`)和 `netease`(网易云式,
+     * 内置皮肤 `dcsgo.skin.netease`)。
      */
-    val PLAYER_TEMPLATES = setOf("classic", "vinyl")
+    val PLAYER_TEMPLATES = setOf("classic", "vinyl", "sumi", "netease")
 
     const val SETTINGS = "settings"
     const val EMOTION_ANALYSIS = "emotionAnalysis"
@@ -144,7 +159,9 @@ object SkinPartCatalog {
         Part(MOOD_TIME_SLOT, Layer.L2_PAGE),
         Part(EMOTION_SCAN, Layer.L2_PAGE),
         Part(FILE_CHECK, Layer.L2_PAGE),
-        // P5: 用户皮肤入口卡。layout/content 由 feature/user 的 CustomSkinSection 装配。
+        // 样式切换入口卡(2026-09-30): 替换原 P5 CUSTOM_SKIN,只允许切换内置骨架。
+        Part(SKIN_SWITCHER, Layer.L2_PAGE),
+        // P5 历史兼容:用户皮肤包 zip 仍写 "customSkin",白名单保留。
         Part(CUSTOM_SKIN, Layer.L2_PAGE),
         // songList.template 的合法值见 SONG_LIST_TEMPLATES —— 描述校验会拒掉任何不在该集合的取值
         Part(SONG_LIST, Layer.L2_PAGE, setOf("title", "hint", "source", "template", "count")),

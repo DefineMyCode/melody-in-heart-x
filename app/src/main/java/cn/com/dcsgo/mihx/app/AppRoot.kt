@@ -34,12 +34,10 @@ import cn.com.dcsgo.mihx.app.player.PlayerQueueSheetHost
 import cn.com.dcsgo.mihx.app.player.PlayerSheetHost
 import cn.com.dcsgo.mihx.app.playlist.PlaylistResumeViewModel
 import cn.com.dcsgo.mihx.app.theme.SettingsViewModel
-import cn.com.dcsgo.mihx.app.tuning.AppTuningProvider
-import cn.com.dcsgo.mihx.app.tuning.UiTuningPanel
-import cn.com.dcsgo.mihx.app.tuning.rememberDebugTuning
 import cn.com.dcsgo.mihx.app.shell.AppShell
 import cn.com.dcsgo.mihx.app.shell.PlayerEntry
 import cn.com.dcsgo.mihx.app.shell.SkinShellResolver
+import cn.com.dcsgo.mihx.app.shell.SkinSwitcherStore
 import cn.com.dcsgo.mihx.core.model.ThemeMode
 import cn.com.dcsgo.mihx.core.model.ThemeVariant
 import cn.com.dcsgo.mihx.domain.model.DeleteSongResult
@@ -50,7 +48,9 @@ import cn.com.dcsgo.mihx.ui.components.EmotionCorrectionController
 import cn.com.dcsgo.mihx.ui.components.LocalEmotionCorrectionController
 import cn.com.dcsgo.mihx.ui.components.ToastHost
 import cn.com.dcsgo.mihx.ui.components.rememberToastHost
+import cn.com.dcsgo.mihx.ui.theme.LocalPlaybackPanelTokens
 import cn.com.dcsgo.mihx.ui.theme.MusicplayerTheme
+import cn.com.dcsgo.mihx.ui.theme.PlaybackPanelTokens
 import androidx.compose.runtime.rememberCoroutineScope
 import kotlinx.coroutines.launch
 
@@ -87,25 +87,24 @@ fun AppRoot(
     // 因此默认骨架的行为与改造前完全一致。
     var showPlayerSheet by remember { mutableStateOf(false) }
     val uiState by playerViewModel.uiState.collectAsStateWithLifecycle()
-    // UI 参调（debug 构建才有控制器；release 恒为 null，令牌回落默认值 = 原硬编码）
-    val (tuningController, tuningAccess) = rememberDebugTuning()
 
-    // P2：外壳来自皮肤描述。P3 起可在 debug 面板切换骨架（验收抽屉型）；
-    // release 下 tuningAccess 恒为默认值 → 始终内置骨架，行为与改造前一致。
-    // P5 会把这里换成"用户导入的皮肤"。
-    // P5：外壳解析支持用户导入的皮肤。
-    //  - currentSkinId 是 user.skin.* 且 JSON 已就位 → 解析用户 JSON(fail-safe 内置)
-    //  - currentSkinId 是 user.skin.* 但 JSON 还没到位(冷启动 DataStore 异步读) → 先回落内置,
-    //    等 json 到位后 remember 重算再切过去(短暂闪一下内置,可接受)
-    //  - 其余(内置 id / null) → resolveById(原有行为不变)
-    val shell: AppShell = remember(tuningAccess.currentSkinId, tuningAccess.userSkinJson) {
-        val id = tuningAccess.currentSkinId
-        val json = tuningAccess.userSkinJson
-        if (id != null && id.startsWith("user.skin.") && json != null) {
-            SkinShellResolver.resolveUserSkin(json)
-        } else {
-            SkinShellResolver.resolveById(id)
-        }
+    // 样式切换持久化：当前选中的内置 skinId + 播放面板封面尺寸/圆角的覆盖。
+    // 用 SharedPreferences 单文件 (skin_switcher)；覆盖按 skinId 分键，仅当前选中的 id 有意义。
+    val context = LocalContext.current
+    val skinStore = remember(context) { SkinSwitcherStore(context.applicationContext) }
+    var currentSkinId by remember {
+        mutableStateOf(skinStore.activeId() ?: SkinShellResolver.DEFAULT_SKIN_ID)
+    }
+    var panelCoverSize by remember {
+        mutableStateOf<Float?>(skinStore.panelCoverSize(currentSkinId))
+    }
+    var panelCoverCorner by remember {
+        mutableStateOf<Float?>(skinStore.panelCoverCorner(currentSkinId))
+    }
+    // 解析外壳：当前选中是内置 id → resolveById(原有路径,行为零变化)。
+    // 不再有「user.skin.*」分支——用户自定义皮肤已被样式切换取代。
+    val shell: AppShell = remember(currentSkinId) {
+        SkinShellResolver.resolveById(currentSkinId)
     }
 
     BackHandler(enabled = showQueueSheet) {
@@ -156,11 +155,33 @@ fun AppRoot(
         }
     }
 
+    // 样式切换回调:用户切样式 → 写入 prefs + 把播放面板覆盖值切到新 id 的覆盖。
+    val onSkinSelected: (String) -> Unit = { id ->
+        currentSkinId = id
+        skinStore.setActiveId(id)
+        panelCoverSize = skinStore.panelCoverSize(id)
+        panelCoverCorner = skinStore.panelCoverCorner(id)
+    }
+    // 播放面板覆盖值变化 → 写入 prefs(按当前选中 id 分键)。
+    val onPanelCoverSizeChange: (Float) -> Unit = { v ->
+        panelCoverSize = v
+        skinStore.setPanelCoverSize(currentSkinId, v)
+    }
+    val onPanelCoverCornerChange: (Float) -> Unit = { v ->
+        panelCoverCorner = v
+        skinStore.setPanelCoverCorner(currentSkinId, v)
+    }
+
     MusicplayerTheme(darkTheme = isDarkTheme, variant = themeVariant) {
         SyncSystemBarsAppearance(isDarkTheme)
-        // 调参令牌下发必须在主题之内：排版读取方（AppScaffold / feature:home / 迷你条）
-        // 会向上查找 LocalXxxTokens，放在主题外会让它们解析到默认实例而非这里的实时值。
-        AppTuningProvider(controller = tuningController) {
+        // 样式切换里保留的「播放面板封面边长/圆角」通过 LocalPlaybackPanelTokens 实时下发:
+        //  - 任一为 null → 落到默认 PlaybackPanelTokens()(与改造前硬编码一致)
+        //  - 任一非 null → 用对应值,其余字段仍走默认值(当前仅这两个旋钮被样式切换覆盖)
+        val panelOverride = PlaybackPanelTokens(
+            coverSizeDp = panelCoverSize ?: PlaybackPanelTokens().coverSizeDp,
+            coverCornerDp = panelCoverCorner ?: PlaybackPanelTokens().coverCornerDp,
+        )
+        CompositionLocalProvider(LocalPlaybackPanelTokens provides panelOverride) {
         // 全站统一的"情绪校准"入口: 任何渲染歌曲详情对话框的页面
         // (曲库/歌手/专辑/本地音乐/播放页/详情页)自动获得"不像？标记"能力
         CompositionLocalProvider(
@@ -225,12 +246,6 @@ fun AppRoot(
                 AppNavHost(
                     navController = navController,
                     shell = shell,
-                    // P5: 用户皮肤当前快照(从 tuningAccess 拿)。
-                    hasUserSkin = tuningAccess.userSkinId != null,
-                    userSkinName = tuningAccess.userSkinName,
-                    userSkinId = tuningAccess.userSkinId,
-                    onImportUserSkin = tuningAccess.onImportUserSkin,
-                    onRestoreDefaultSkin = tuningAccess.onRestoreDefaultSkin,
                     uiState = uiState,
                     playerViewModel = playerViewModel,
                     permissionCoordinator = permissionCoordinator,
@@ -248,7 +263,14 @@ fun AppRoot(
                     playlistResumeViewModel = playlistResumeViewModel,
                     emotionViewModel = emotionViewModel,
                     moodTimeSlotViewModel = moodTimeSlotViewModel,
-                    onVersionLongPress = tuningAccess.onOpenPanel,
+                    // 样式切换:从 AppRoot 把"当前选中 id / 切样式回调 / 播放面板覆盖回调"
+                    // 透传到样式切换页(SKIN_SWITCHER 路由)。
+                    currentSkinId = currentSkinId,
+                    onSkinSelected = onSkinSelected,
+                    panelCoverSizeOverride = panelCoverSize,
+                    panelCoverCornerOverride = panelCoverCorner,
+                    onPanelCoverSizeChange = onPanelCoverSizeChange,
+                    onPanelCoverCornerChange = onPanelCoverCornerChange,
                 )
             }
 
@@ -302,20 +324,6 @@ fun AppRoot(
 
             ToastHost(toastHost = toastHost)
             AutoDismissToasts(toastHost = toastHost, durationMs = 2000L)
-
-            // 调试面板覆盖层（仅 debug 构建可达：release 的 controller 恒为 null）
-            if (tuningController != null && tuningController.showPanel) {
-                UiTuningPanel(
-                    tuning = tuningController.tuning,
-                    onTuningChange = tuningController.onTuningChange,
-                    onExport = tuningController.onExport,
-                    onReset = tuningController.onReset,
-                    onClose = { tuningController.onShowPanelChange(false) },
-                    skinOptions = tuningAccess.skinOptions,
-                    currentSkinId = tuningAccess.currentSkinId,
-                    onSkinChange = tuningAccess.onSkinChange,
-                )
-            }
         }
         }
         }

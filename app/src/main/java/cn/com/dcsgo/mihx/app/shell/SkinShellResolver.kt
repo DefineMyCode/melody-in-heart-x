@@ -36,7 +36,7 @@ object SkinShellResolver {
      *
      * 用户导入的皮肤在 P5 走另一条解析路径（resolveUserSkin）。
      */
-    val knownSkins: List<Skin> by lazy { listOf(DefaultSkin.skin(), DefaultSkin.minimalSheetSkin(), DefaultSkin.gridSampleSkin(), DefaultSkin.vinylSampleSkin()) }
+    val knownSkins: List<Skin> by lazy { listOf(DefaultSkin.skin(), DefaultSkin.minimalSheetSkin(), DefaultSkin.gridSampleSkin(), DefaultSkin.vinylSampleSkin(), DefaultSkin.sumiSampleSkin(), DefaultSkin.neteaseSampleSkin()) }
 
     /** 内置骨架 id；未知 id 一律回落它（fail-safe）。 */
     const val DEFAULT_SKIN_ID: String = DefaultSkin.ID
@@ -47,20 +47,7 @@ object SkinShellResolver {
         return resolve(skin)
     }
 
-    /**
-     * P5：装配"用户装的 JSON"为外壳。fail-safe 与启动路径一致——
-     * 任何解析错误都返回 DefaultShell.shell，**不抛异常**，由调用方决定是否
-     * 清理 DataStore 中的坏 JSON。
-     *
-     * 入口是 [cn.com.dcsgo.mihx.data.repository.UserSkinStore] 的 raw JSON 字符串。
-     * 解析失败时本方法不会清 DataStore（避免与"导入失败"的 UX 路径冲突）——
-     * 那是 [cn.com.dcsgo.mihx.app.shell.UserSkinImporter] 的事。
-     */
-    fun resolveUserSkin(json: String): AppShell =
-        when (val result = SkinParser.parse(json)) {
-            is SkinValidation.Valid -> resolve(result.skin)
-            is SkinValidation.Invalid -> DefaultShell.shell
-        }
+    fun resolveUserSkin(@Suppress("UNUSED_PARAMETER") json: String): AppShell = DefaultShell.shell
 
     /**
      * 描述里的页面 key → 顶级路由。
@@ -158,10 +145,16 @@ object SkinShellResolver {
      *
      * 只保留页面**认识**的 key（由 `feature/user` 的 `UserSections` 定义）：
      * 描述里写了未知 key 时，校验器已在导入期拒绝；这里再过滤一次是纵深防御。
+     *
+     * 2026-09-30：保留对老 P5 描述 `"customSkin"` 的字面兼容——
+     * 已交付的皮肤包 zip 写的就是 `customSkin`，装配时统一映射到
+     * [UserSections.SKIN_SWITCHER] 渲染（视觉上是同一种样式切换卡）。
      */
     private fun resolveMyPageSectionOrder(skin: Skin): List<String> {
         val sections = skin.pages[DefaultSkin.PAGE_ME]?.sections ?: return emptyList()
-        return sections.map { it.part }.filter(UserSections::isKnown)
+        return sections.map { it.part }
+            .map { if (it == SkinPartCatalog.CUSTOM_SKIN) UserSections.SKIN_SWITCHER else it }
+            .filter(UserSections::isKnown)
     }
 
     /**

@@ -31,8 +31,8 @@ object AppRoutes {
     const val SETTINGS = "settings"
     const val LYRICS = "lyrics"
 
-    /** P5：用户自定义皮肤页（独立入口,Q3 = 另开一个）。 */
-    const val USER_SKIN = "user-skin"
+    /** 样式切换独立页入口（替代原 P5 USER_SKIN，2026-09-30 用户拍板）。 */
+    const val SKIN_SWITCHER = "skin-switcher"
 
     fun playlistDetail(playlistId: Int): String = "playlist/$playlistId"
 

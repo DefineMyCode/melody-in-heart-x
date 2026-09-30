@@ -25,10 +25,13 @@ import androidx.navigation.navArgument
 import cn.com.dcsgo.mihx.app.permissions.PermissionCoordinator
 import cn.com.dcsgo.mihx.app.player.NowPlayingSurface
 import cn.com.dcsgo.mihx.app.player.NowPlayingVinylSurface
+import cn.com.dcsgo.mihx.app.player.NowPlayingSumiSurface
+import cn.com.dcsgo.mihx.app.player.NowPlayingNeteaseSurface
 import cn.com.dcsgo.mihx.app.player.SongPlaybackStrategy
 import cn.com.dcsgo.mihx.app.player.playWith
 import cn.com.dcsgo.mihx.app.shell.AppShell
 import cn.com.dcsgo.mihx.app.shell.AppTab
+import cn.com.dcsgo.mihx.app.shell.SkinSwitcherRoute
 import cn.com.dcsgo.mihx.app.shell.indexOfRoute
 import cn.com.dcsgo.mihx.app.playlist.PlaylistResumeViewModel
 import cn.com.dcsgo.mihx.core.model.Lyrics
@@ -72,7 +75,6 @@ import cn.com.dcsgo.mihx.core.model.EmotionSongUiRow
 import cn.com.dcsgo.mihx.feature.user.PlaybackStatsRoute
 import cn.com.dcsgo.mihx.feature.user.SongTopListRoute
 import cn.com.dcsgo.mihx.feature.user.UserRoute
-import cn.com.dcsgo.mihx.feature.user.UserSkinRoute
 import cn.com.dcsgo.mihx.feature.user.MoodTimeSlotRoute
 import cn.com.dcsgo.mihx.feature.user.MoodTimeSlotRouteActions
 import cn.com.dcsgo.mihx.feature.user.MoodTimeSlotRouteState
@@ -112,15 +114,6 @@ fun AppNavHost(
     navController: NavHostController,
     /** 运行期外壳（P2）：启动页与转场序号都由它决定，替代改造前写死的 AppRoutes.HOME。 */
     shell: AppShell,
-    // P5：用户皮肤当前快照(AppRoot 从 tuningAccess 透传过来)
-    hasUserSkin: Boolean = false,
-    userSkinName: String? = null,
-    userSkinId: String? = null,
-    // P5: 导入/还原入口（debug 才是真实现，release 桩返回 NotHandled）
-    onImportUserSkin: suspend (String) -> cn.com.dcsgo.mihx.feature.user.ImportSkinResult = {
-        _: String -> cn.com.dcsgo.mihx.feature.user.ImportSkinResult.NotHandled
-    },
-    onRestoreDefaultSkin: suspend () -> Unit = {},
     uiState: PlayerUiState,
     playerViewModel: PlayerViewModel,
     permissionCoordinator: PermissionCoordinator,
@@ -138,8 +131,14 @@ fun AppNavHost(
     playlistResumeViewModel: PlaylistResumeViewModel,
     emotionViewModel: cn.com.dcsgo.mihx.app.emotion.EmotionViewModel,
     moodTimeSlotViewModel: cn.com.dcsgo.mihx.app.mood.MoodTimeSlotViewModel,
-    /** UI 调参面板入口（debug 构建打开调试面板；release 为空实现） */
-    onVersionLongPress: () -> Unit = {},
+    /** 样式切换:AppRoot 透传过来的状态/回调,用于 SKIN_SWITCHER 路由页。 */
+    currentSkinId: String = cn.com.dcsgo.mihx.app.shell.SkinShellResolver.DEFAULT_SKIN_ID,
+    onSkinSelected: (String) -> Unit = {},
+    /** 当前选中样式在「样式切换」里的播放面板覆盖(null 表示未覆盖,落到全局默认)。 */
+    panelCoverSizeOverride: Float? = null,
+    panelCoverCornerOverride: Float? = null,
+    onPanelCoverSizeChange: (Float) -> Unit = {},
+    onPanelCoverCornerChange: (Float) -> Unit = {},
 ) {
     // 失败歌曲手动标记等 suspend 回调的协程作用域
     val navCoroutineScope = rememberCoroutineScope()
@@ -187,44 +186,81 @@ fun AppNavHost(
     ) {
         composable(AppRoutes.HOME) {
             // P3：播放页内容已抽成 NowPlayingSurface，Tab 与全局抽屉两种形态共用同一份实现。
-            // L4：皮肤描述里 pages.player.template = "vinyl" 时切到 NowPlayingVinylSurface
-            //     (黑胶形态:旋转封面 + 进度环 + 最简控制条)。
-            //     默认皮肤此字段为 CLASSIC → 继续走 NowPlayingSurface,行为零变化。
+            // L4：皮肤描述里 pages.player.template 决定播放页形态。
+            //   - classic: NowPlayingSurface(默认骨架走这条,行为零变化)
+            //   - vinyl:   NowPlayingVinylSurface(黑胶形态,内置皮肤 dcsgo.skin.vinyl)
+            //   - sumi:    NowPlayingSumiSurface(水墨青形态,内置皮肤 dcsgo.skin.sumi,2026-09-30)
+            //   - netease: NowPlayingNeteaseSurface(网易云式形态,内置皮肤 dcsgo.skin.netease,2026-09-30)
             val playerTemplate = shell.playerTemplate
-            if (playerTemplate == cn.com.dcsgo.mihx.app.shell.PlayerTemplate.VINYL) {
-                NowPlayingVinylSurface(
-                    playerViewModel = playerViewModel,
-                    uiState = uiState,
-                    onShowQueue = onShowQueue,
-                    loadSongInfo = loadSongInfo,
-                    showToast = showToast,
-                    deleteSongWithToast = deleteSongWithToast,
-                    playlistResumeViewModel = playlistResumeViewModel,
-                    onNavigateToLyrics = { navController.navigate(AppRoutes.LYRICS) },
-                    onNavigateToArtist = { artistName ->
-                        navController.navigate(AppRoutes.artistDetail(artistName))
-                    },
-                    onNavigateToAlbum = { albumName ->
-                        navController.navigate(AppRoutes.albumDetail(albumName))
-                    },
-                )
-            } else {
-                NowPlayingSurface(
-                    playerViewModel = playerViewModel,
-                    uiState = uiState,
-                    onShowQueue = onShowQueue,
-                    loadSongInfo = loadSongInfo,
-                    showToast = showToast,
-                    deleteSongWithToast = deleteSongWithToast,
-                    playlistResumeViewModel = playlistResumeViewModel,
-                    onNavigateToLyrics = { navController.navigate(AppRoutes.LYRICS) },
-                    onNavigateToArtist = { artistName ->
-                        navController.navigate(AppRoutes.artistDetail(artistName))
-                    },
-                    onNavigateToAlbum = { albumName ->
-                        navController.navigate(AppRoutes.albumDetail(albumName))
-                    },
-                )
+            when (playerTemplate) {
+                cn.com.dcsgo.mihx.app.shell.PlayerTemplate.VINYL ->
+                    NowPlayingVinylSurface(
+                        playerViewModel = playerViewModel,
+                        uiState = uiState,
+                        onShowQueue = onShowQueue,
+                        loadSongInfo = loadSongInfo,
+                        showToast = showToast,
+                        deleteSongWithToast = deleteSongWithToast,
+                        playlistResumeViewModel = playlistResumeViewModel,
+                        onNavigateToLyrics = { navController.navigate(AppRoutes.LYRICS) },
+                        onNavigateToArtist = { artistName ->
+                            navController.navigate(AppRoutes.artistDetail(artistName))
+                        },
+                        onNavigateToAlbum = { albumName ->
+                            navController.navigate(AppRoutes.albumDetail(albumName))
+                        },
+                    )
+                cn.com.dcsgo.mihx.app.shell.PlayerTemplate.SUMI ->
+                    NowPlayingSumiSurface(
+                        playerViewModel = playerViewModel,
+                        uiState = uiState,
+                        onShowQueue = onShowQueue,
+                        loadSongInfo = loadSongInfo,
+                        showToast = showToast,
+                        deleteSongWithToast = deleteSongWithToast,
+                        playlistResumeViewModel = playlistResumeViewModel,
+                        onNavigateToLyrics = { navController.navigate(AppRoutes.LYRICS) },
+                        onNavigateToArtist = { artistName ->
+                            navController.navigate(AppRoutes.artistDetail(artistName))
+                        },
+                        onNavigateToAlbum = { albumName ->
+                            navController.navigate(AppRoutes.albumDetail(albumName))
+                        },
+                    )
+                cn.com.dcsgo.mihx.app.shell.PlayerTemplate.NETEASE ->
+                    NowPlayingNeteaseSurface(
+                        playerViewModel = playerViewModel,
+                        uiState = uiState,
+                        onShowQueue = onShowQueue,
+                        loadSongInfo = loadSongInfo,
+                        showToast = showToast,
+                        deleteSongWithToast = deleteSongWithToast,
+                        playlistResumeViewModel = playlistResumeViewModel,
+                        onNavigateToLyrics = { navController.navigate(AppRoutes.LYRICS) },
+                        onNavigateToArtist = { artistName ->
+                            navController.navigate(AppRoutes.artistDetail(artistName))
+                        },
+                        onNavigateToAlbum = { albumName ->
+                            navController.navigate(AppRoutes.albumDetail(albumName))
+                        },
+                    )
+                cn.com.dcsgo.mihx.app.shell.PlayerTemplate.CLASSIC ->
+                    NowPlayingSurface(
+                        playerViewModel = playerViewModel,
+                        uiState = uiState,
+                        onShowQueue = onShowQueue,
+                        loadSongInfo = loadSongInfo,
+                        showToast = showToast,
+                        deleteSongWithToast = deleteSongWithToast,
+                        playlistResumeViewModel = playlistResumeViewModel,
+                        onNavigateToLyrics = { navController.navigate(AppRoutes.LYRICS) },
+                        onNavigateToArtist = { artistName ->
+                            navController.navigate(AppRoutes.artistDetail(artistName))
+                        },
+                        onNavigateToAlbum = { albumName ->
+                            navController.navigate(AppRoutes.albumDetail(albumName))
+                        },
+                    )
             }
         }
 
@@ -460,14 +496,10 @@ fun AppNavHost(
                     moodSlotConfigs = moodConfigs,
                     moodSlotEnabled = moodEnabled,
                     nowMinuteOfDay = moodNowMinute,
-                    onVersionLongPress = onVersionLongPress,
                     // P4 L2 分区化：我的页分区顺序来自骨架描述（可裁剪/重排）。
                     // 已由 SkinShellResolver 解析成零件名列表并归一化；
                     // 缺省或非法时回落到改造前顺序，行为零变化。
                     sectionOrder = shell.myPageSectionOrder,
-                    // P5：当前是否装有用户皮肤 + 皮肤名(若有)。
-                    hasUserSkin = hasUserSkin,
-                    userSkinName = userSkinName,
                 ),
                 actions = userRouteActions(
                     navController = navController,
@@ -476,21 +508,24 @@ fun AppNavHost(
                         showToast("已开始扫描，可离开本页，后台继续")
                     },
                     onOpenMoodTimeSlot = { navController.navigate(AppRoutes.MOOD_TIME_SLOT) },
-                    onOpenUserSkin = { navController.navigate(AppRoutes.USER_SKIN) },
+                    onOpenSkinSwitcher = { navController.navigate(AppRoutes.SKIN_SWITCHER) },
                 ),
             )
         }
 
-        // P5: 用户自定义皮肤独立页(Q3 = 另开一个入口)
-        composable(AppRoutes.USER_SKIN) {
-            UserSkinRoute(
-                hasUserSkin = hasUserSkin,
-                currentSkinName = userSkinName,
-                currentSkinId = userSkinId,
+        // 样式切换独立页：列出内置骨架并允许调整当前样式的播放面板封面边长/圆角。
+        composable(AppRoutes.SKIN_SWITCHER) {
+            SkinSwitcherRoute(
+                skinOptions = cn.com.dcsgo.mihx.app.shell.SkinShellResolver.knownSkins.map {
+                    it.id to it.name
+                },
+                currentSkinId = currentSkinId,
+                panelCoverSizeOverride = panelCoverSizeOverride,
+                panelCoverCornerOverride = panelCoverCornerOverride,
+                onSkinSelected = onSkinSelected,
+                onPanelCoverSizeChange = onPanelCoverSizeChange,
+                onPanelCoverCornerChange = onPanelCoverCornerChange,
                 onBack = { navController.navigateUp() },
-                onImportUserSkin = onImportUserSkin,
-                onRestoreDefaultSkin = onRestoreDefaultSkin,
-                onShowToast = showToast,
             )
         }
 

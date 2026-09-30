@@ -54,9 +54,6 @@ internal fun playlistRouteState(
      * 由 AppShell 携带的皮肤描述解析出来；默认值 = DEFAULT，与改造前一致。
      */
     songListTemplate: SongListTemplate = SongListTemplate.DEFAULT,
-    // P5：是否装有用户皮肤 + 皮肤名(供 CustomSkinSection 显示)
-    hasUserSkin: Boolean = false,
-    userSkinName: String? = null,
 ): PlaylistRouteState {
     val librarySongs = precomputedLibrarySongs ?: flatGroupedSongs(uiState, playerViewModel)
     return PlaylistRouteState(
@@ -95,17 +92,12 @@ internal fun userRouteState(
     moodSlotConfigs: List<cn.com.dcsgo.mihx.core.model.TimeSlotConfig> = emptyList(),
     moodSlotEnabled: Boolean = false,
     nowMinuteOfDay: Int = 0,
-    /** UI 调参面板入口（debug 构建才有实际动作） */
-    onVersionLongPress: () -> Unit = {},
     /**
      * 我的页分区顺序（L2 分区化，P4）。
      *
      * 由骨架描述解析后传入；默认值 = 改造前的写死顺序，故不传时行为零变化。
      */
     sectionOrder: List<String> = UserSections.DEFAULT_ORDER,
-    // P5：是否装有用户皮肤 + 皮肤名(供 CustomSkinSection 显示)
-    hasUserSkin: Boolean = false,
-    userSkinName: String? = null,
 ): UserRouteState = UserRouteState(
     todayDurationMs = snapshot.todayDurationMs,
     weekTotalMs = snapshot.weekTotalMs,
@@ -118,10 +110,7 @@ internal fun userRouteState(
     moodSlotConfigs = moodSlotConfigs,
     moodSlotEnabled = moodSlotEnabled,
     nowMinuteOfDay = nowMinuteOfDay,
-    onVersionLongPress = onVersionLongPress,
     sectionOrder = sectionOrder,
-    hasUserSkin = hasUserSkin,
-    userSkinName = userSkinName,
 )
 
 internal fun playStatsRouteState(

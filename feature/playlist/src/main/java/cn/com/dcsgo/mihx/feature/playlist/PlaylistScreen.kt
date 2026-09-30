@@ -121,6 +121,11 @@ fun PlaylistScreen(
     onAddSongToNextPlay: (Song) -> Unit = {},
     onResumePlaylist: (Song, List<Song>) -> Unit = { _, _ -> },
     onDismissResume: () -> Unit = {},
+    /**
+     * 歌曲/歌手/专辑列表的渲染模板（L3 行模板化，2026-09-29）。
+     * 来自皮肤描述的 `songList.template` 字段；默认 = DEFAULT，与改造前一致。
+     */
+    songListTemplate: SongListTemplate = SongListTemplate.DEFAULT,
 ) {
     // ── 本地音乐视图切换 ──
     // 用 rememberSaveable 保存，进入多版本管理/秒切歌单等子页面返回后仍停留在本地音乐视图
@@ -353,27 +358,50 @@ fun PlaylistScreen(
                             onDelete = { showDeleteConfirm = it },
                             onRename = { showRenameDialog = it }
                         )
-                        LibraryTab.ARTISTS -> ArtistListView(
-                            artists = libraryArtists.filter { artist ->
-                                librarySearchQuery.isBlank() ||
-                                    artist.name.contains(librarySearchQuery, ignoreCase = true)
-                            },
-                            // 有搜索内容时隐藏开关
-                            hideSingleSongArtists = librarySearchQuery.isBlank() && hideSingleSongArtists,
-                            onHideSingleSongArtistsChange = { hideSingleSongArtists = it },
-                            onArtistClick = onArtistClick,
-                        )
-                        LibraryTab.ALBUMS -> AlbumListView(
-                            albums = libraryAlbums.filter { album ->
-                                librarySearchQuery.isBlank() ||
-                                    album.name.contains(librarySearchQuery, ignoreCase = true) ||
-                                    album.artistNames.any { it.contains(librarySearchQuery, ignoreCase = true) }
-                            },
-                            // 有搜索内容时隐藏开关
-                            hideSingleSongAlbums = librarySearchQuery.isBlank() && hideSingleSongAlbums,
-                            onHideSingleSongAlbumsChange = { hideSingleSongAlbums = it },
-                            onAlbumClick = onAlbumClick,
-                        )
+                        LibraryTab.ARTISTS -> when (songListTemplate) {
+                            SongListTemplate.GRID -> ArtistGridListView(
+                                artists = libraryArtists.filter { artist ->
+                                    librarySearchQuery.isBlank() ||
+                                        artist.name.contains(librarySearchQuery, ignoreCase = true)
+                                },
+                                hideSingleSongArtists = librarySearchQuery.isBlank() && hideSingleSongArtists,
+                                onHideSingleSongArtistsChange = { hideSingleSongArtists = it },
+                                onArtistClick = onArtistClick,
+                                songsByArtist = songs.associate { it.artist to it }.filterKeys { it in libraryArtists.map(ArtistEntry::name) },
+                            )
+                            SongListTemplate.DEFAULT -> ArtistListView(
+                                artists = libraryArtists.filter { artist ->
+                                    librarySearchQuery.isBlank() ||
+                                        artist.name.contains(librarySearchQuery, ignoreCase = true)
+                                },
+                                hideSingleSongArtists = librarySearchQuery.isBlank() && hideSingleSongArtists,
+                                onHideSingleSongArtistsChange = { hideSingleSongArtists = it },
+                                onArtistClick = onArtistClick,
+                            )
+                        }
+                        LibraryTab.ALBUMS -> when (songListTemplate) {
+                            SongListTemplate.GRID -> AlbumGridListView(
+                                albums = libraryAlbums.filter { album ->
+                                    librarySearchQuery.isBlank() ||
+                                        album.name.contains(librarySearchQuery, ignoreCase = true) ||
+                                        album.artistNames.any { it.contains(librarySearchQuery, ignoreCase = true) }
+                                },
+                                hideSingleSongAlbums = librarySearchQuery.isBlank() && hideSingleSongAlbums,
+                                onHideSingleSongAlbumsChange = { hideSingleSongAlbums = it },
+                                onAlbumClick = onAlbumClick,
+                                songsByAlbum = songs.associate { it.album to it }.filterKeys { it in libraryAlbums.map(AlbumEntry::name) },
+                            )
+                            SongListTemplate.DEFAULT -> AlbumListView(
+                                albums = libraryAlbums.filter { album ->
+                                    librarySearchQuery.isBlank() ||
+                                        album.name.contains(librarySearchQuery, ignoreCase = true) ||
+                                        album.artistNames.any { it.contains(librarySearchQuery, ignoreCase = true) }
+                                },
+                                hideSingleSongAlbums = librarySearchQuery.isBlank() && hideSingleSongAlbums,
+                                onHideSingleSongAlbumsChange = { hideSingleSongAlbums = it },
+                                onAlbumClick = onAlbumClick,
+                            )
+                        }
                         LibraryTab.EMOTIONS -> EmotionLibraryView(
                             rows = emotionRows,
                             playlists = playlists,

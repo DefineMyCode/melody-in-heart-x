@@ -236,6 +236,7 @@ fun AppNavHost(
                     precomputedLibrarySongs = sharedLibrarySongs,
                     sortMode = songSortMode,
                     sortAscending = songSortAscending,
+                    songListTemplate = shell.librarySongListTemplate,
                 ),
                 // 列表页点歌(全曲库范围):非歌单来源,先结算旧歌单
                 actions = actions.copy(
@@ -280,6 +281,7 @@ fun AppNavHost(
                         EmotionSongUiRow(song = it.song, tags = it.tags, corrected = it.corrected)
                     },
                     precomputedLibrarySongs = sharedLibrarySongs,
+                    songListTemplate = shell.librarySongListTemplate,
                 ),
                 actions = actions.copy(
                     // 歌单内点歌:仅更新来源标记,不立即写记录;记录在退出应用/切换播放源时结算

@@ -96,7 +96,7 @@ class SkinExpressivenessTest {
               "header": { "title": "曲库", "subtitle": "1,103 首", "actions": [ { "icon": "search", "title": "搜索" } ] },
               "sections": [
                 { "part": "playlistShelf", "props": { "title": "歌单" } },
-                { "part": "songList",      "props": { "title": "全部歌曲", "source": "all", "template": "compact", "count": "7" } }
+                { "part": "songList",      "props": { "title": "全部歌曲", "source": "all", "template": "grid", "count": "7" } }
               ]
             },
             "me": {
@@ -147,10 +147,10 @@ class SkinExpressivenessTest {
 
     @Test
     fun `same part renders differently via row template`() {
-        // L3 性价比最高的证据：同一个 songList 零件，换 template 就从"心乐式"变"极简式"
-        val compact = requireValid(minimalStyle).pages.getValue("library")
+        // L3 性价比最高的证据：同一个 songList 零件，换 template 就从"心乐式"变"网格式"
+        val gridStyle = requireValid(minimalStyle).pages.getValue("library")
             .sections.first { it.part == SkinPartCatalog.SONG_LIST }
-        assertEquals("compact", compact.props["template"])
+        assertEquals("grid", gridStyle.props["template"])
 
         val standard = requireValid(neteaseStyle).pages.getValue("discover")
             .sections.first { it.part == SkinPartCatalog.SONG_LIST }

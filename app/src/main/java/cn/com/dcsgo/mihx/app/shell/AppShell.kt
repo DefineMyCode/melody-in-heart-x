@@ -1,5 +1,6 @@
 package cn.com.dcsgo.mihx.app.shell
 
+import cn.com.dcsgo.mihx.feature.playlist.SongListTemplate
 import cn.com.dcsgo.mihx.navigation.AppRoutes
 
 /**
@@ -41,6 +42,16 @@ data class AppShell(
      * 解析与归一化统一由 [SkinShellResolver] 完成。
      */
     val myPageSectionOrder: List<String> = emptyList(),
+    /**
+     * 曲库页 songList 渲染模板（L3 行模板化，2026-09-29）。
+     *
+     * 默认 DEFAULT = 改造前形态；皮肤描述里 `songList.template` 切到 grid 时，
+     * 歌手/专辑分段会以网格形态渲染。
+     *
+     * 仍放在 [AppShell] 里而非让 AppNavHost 读描述——同 [myPageSectionOrder] 一样，
+     * 解析与归一化统一由 [SkinShellResolver] 完成。
+     */
+    val librarySongListTemplate: SongListTemplate = SongListTemplate.DEFAULT,
 )
 
 /** 播放页进入方式（与皮肤描述对齐）。 */

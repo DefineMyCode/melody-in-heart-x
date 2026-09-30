@@ -60,6 +60,15 @@ object SkinPartCatalog {
 
     const val MY_OVERVIEW = "myOverview"
     const val SONG_LIST = "songList"
+
+    /**
+     * `songList.template` 字段的合法取值（L3 行模板化，2026-09-29）。
+     *
+     * 描述里 `template` 字段必须在该集合里，否则 [SkinParser] 拒绝该描述。
+     * 装配侧 [cn.com.dcsgo.mihx.app.shell.SongListAssembler] 用 [cn.com.dcsgo.mihx.feature.playlist.SongListTemplate.fromId]
+     * 做容错解析（未知值回落 default）——两边必须同步。
+     */
+    val SONG_LIST_TEMPLATES = setOf("default", "grid")
     const val SETTINGS = "settings"
     const val EMOTION_ANALYSIS = "emotionAnalysis"
     const val HEADER_WIDGET = "header"
@@ -90,14 +99,6 @@ object SkinPartCatalog {
     val SONG_LIST_SOURCES = setOf("all", "playlist", "artist", "album")
 
     /**
-     * 行模板。`default` 带封面，`compact` 纯文字。
-     *
-     * 这是 L3 性价比最高的部分：同一个 `songList` 零件，换个模板就能从"心乐式"变成
-     * "极简式"，无需新增渲染代码。
-     */
-    val ROW_TEMPLATES = setOf("default", "compact")
-
-    /**
      * `libraryTabs` 的段名。
      *
      * **必须与 `feature/playlist` 的 `LibraryTab` enum 逐字一致**：
@@ -126,6 +127,7 @@ object SkinPartCatalog {
         Part(MOOD_TIME_SLOT, Layer.L2_PAGE),
         Part(EMOTION_SCAN, Layer.L2_PAGE),
         Part(FILE_CHECK, Layer.L2_PAGE),
+        // songList.template 的合法值见 SONG_LIST_TEMPLATES —— 描述校验会拒掉任何不在该集合的取值
         Part(SONG_LIST, Layer.L2_PAGE, setOf("title", "hint", "source", "template", "count")),
         Part(SETTINGS, Layer.L2_PAGE),
         Part(EMOTION_ANALYSIS, Layer.L2_PAGE),

@@ -4,7 +4,9 @@ import cn.com.dcsgo.mihx.R
 import cn.com.dcsgo.mihx.core.skin.DefaultSkin
 import cn.com.dcsgo.mihx.core.skin.Skin
 import cn.com.dcsgo.mihx.core.skin.SkinParser
+import cn.com.dcsgo.mihx.core.skin.SkinPartCatalog
 import cn.com.dcsgo.mihx.core.skin.SkinValidation
+import cn.com.dcsgo.mihx.feature.playlist.SongListTemplate
 import cn.com.dcsgo.mihx.feature.user.UserSections
 import cn.com.dcsgo.mihx.navigation.AppRoutes
 
@@ -32,7 +34,7 @@ object SkinShellResolver {
      *
      * 用户导入的皮肤在 P5 才接进来。
      */
-    val knownSkins: List<Skin> by lazy { listOf(DefaultSkin.skin(), DefaultSkin.minimalSheetSkin()) }
+    val knownSkins: List<Skin> by lazy { listOf(DefaultSkin.skin(), DefaultSkin.minimalSheetSkin(), DefaultSkin.gridSampleSkin()) }
 
     /** 内置骨架 id；未知 id 一律回落它（fail-safe）。 */
     const val DEFAULT_SKIN_ID: String = DefaultSkin.ID
@@ -113,6 +115,7 @@ object SkinShellResolver {
             miniPlayer = skin.shell.miniPlayer,
             playerEntry = PlayerEntry.fromId(skin.playerEntry.id),
             myPageSectionOrder = resolveMyPageSectionOrder(skin),
+            librarySongListTemplate = resolveLibrarySongListTemplate(skin),
         )
     }
 
@@ -128,6 +131,26 @@ object SkinShellResolver {
     private fun resolveMyPageSectionOrder(skin: Skin): List<String> {
         val sections = skin.pages[DefaultSkin.PAGE_ME]?.sections ?: return emptyList()
         return sections.map { it.part }.filter(UserSections::isKnown)
+    }
+
+    /**
+     * 从描述里解析曲库页 songList 的渲染模板（L3 行模板化，2026-09-29）。
+     *
+     * 在 `pages.library.sectionsBySegment` 里遍历所有分段，找到第一个
+     * `part == "songList"` 的 section，取其 `template` props。未找到或值为空时回落到 DEFAULT。
+     *
+     * 这样默认骨架（含 songList.template="default"）解析结果 = DEFAULT，**与改造前一致**；
+     * 网格样本骨架含 songList.template="grid" 解析为 GRID。
+     *
+     * 容错：[SongListTemplate.fromId] 对未知值回落 DEFAULT（不会让页面崩）。
+     */
+    private fun resolveLibrarySongListTemplate(skin: Skin): SongListTemplate {
+        val library = skin.pages[DefaultSkin.PAGE_LIBRARY] ?: return SongListTemplate.DEFAULT
+        // 先在 sectionsBySegment 里找；老结构（直接 sections）也兜一下
+        val sections = library.sectionsBySegment.values.flatten().ifEmpty { library.sections }
+        val songListSection = sections.firstOrNull { it.part == SkinPartCatalog.SONG_LIST }
+            ?: return SongListTemplate.DEFAULT
+        return SongListTemplate.fromId(songListSection.props["template"])
     }
 
     /**

@@ -448,10 +448,10 @@ object SkinParser {
             // 值域校验：songList.template / source / count
             if (partName == SkinPartCatalog.SONG_LIST) {
                 props["template"]?.let { t ->
-                    if (t !in SkinPartCatalog.ROW_TEMPLATES) {
+                    if (t !in SkinPartCatalog.SONG_LIST_TEMPLATES) {
                         issues += SkinIssue(
                             SkinIssue.Code.INVALID_PROP_VALUE,
-                            "songList.template \"$t\" 非法，可用：${SkinPartCatalog.ROW_TEMPLATES.sorted().joinToString(" / ")}",
+                            "songList.template \"$t\" 非法，可用：${SkinPartCatalog.SONG_LIST_TEMPLATES.sorted().joinToString(" / ")}",
                             "$itemAt.props.template",
                         )
                     }

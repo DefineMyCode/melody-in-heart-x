@@ -71,6 +71,7 @@ import cn.com.dcsgo.mihx.core.model.EmotionSongUiRow
 import cn.com.dcsgo.mihx.feature.user.PlaybackStatsRoute
 import cn.com.dcsgo.mihx.feature.user.SongTopListRoute
 import cn.com.dcsgo.mihx.feature.user.UserRoute
+import cn.com.dcsgo.mihx.feature.user.UserSkinRoute
 import cn.com.dcsgo.mihx.feature.user.MoodTimeSlotRoute
 import cn.com.dcsgo.mihx.feature.user.MoodTimeSlotRouteActions
 import cn.com.dcsgo.mihx.feature.user.MoodTimeSlotRouteState
@@ -110,6 +111,15 @@ fun AppNavHost(
     navController: NavHostController,
     /** 运行期外壳（P2）：启动页与转场序号都由它决定，替代改造前写死的 AppRoutes.HOME。 */
     shell: AppShell,
+    // P5：用户皮肤当前快照(AppRoot 从 tuningAccess 透传过来)
+    hasUserSkin: Boolean = false,
+    userSkinName: String? = null,
+    userSkinId: String? = null,
+    // P5: 导入/还原入口（debug 才是真实现，release 桩返回 NotHandled）
+    onImportUserSkin: suspend (String) -> cn.com.dcsgo.mihx.feature.user.ImportSkinResult = {
+        _: String -> cn.com.dcsgo.mihx.feature.user.ImportSkinResult.NotHandled
+    },
+    onRestoreDefaultSkin: suspend () -> Unit = {},
     uiState: PlayerUiState,
     playerViewModel: PlayerViewModel,
     permissionCoordinator: PermissionCoordinator,
@@ -431,6 +441,9 @@ fun AppNavHost(
                     // 已由 SkinShellResolver 解析成零件名列表并归一化；
                     // 缺省或非法时回落到改造前顺序，行为零变化。
                     sectionOrder = shell.myPageSectionOrder,
+                    // P5：当前是否装有用户皮肤 + 皮肤名(若有)。
+                    hasUserSkin = hasUserSkin,
+                    userSkinName = userSkinName,
                 ),
                 actions = userRouteActions(
                     navController = navController,
@@ -439,7 +452,21 @@ fun AppNavHost(
                         showToast("已开始扫描，可离开本页，后台继续")
                     },
                     onOpenMoodTimeSlot = { navController.navigate(AppRoutes.MOOD_TIME_SLOT) },
+                    onOpenUserSkin = { navController.navigate(AppRoutes.USER_SKIN) },
                 ),
+            )
+        }
+
+        // P5: 用户自定义皮肤独立页(Q3 = 另开一个入口)
+        composable(AppRoutes.USER_SKIN) {
+            UserSkinRoute(
+                hasUserSkin = hasUserSkin,
+                currentSkinName = userSkinName,
+                currentSkinId = userSkinId,
+                onBack = { navController.navigateUp() },
+                onImportUserSkin = onImportUserSkin,
+                onRestoreDefaultSkin = onRestoreDefaultSkin,
+                onShowToast = showToast,
             )
         }
 

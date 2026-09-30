@@ -38,6 +38,9 @@ object UserSections {
     /** 本地文件校验入口卡。 */
     const val FILE_CHECK = "fileCheck"
 
+    /** P5：用户自定义皮肤入口卡(Q3 = 另开一个入口)。 */
+    const val CUSTOM_SKIN = "customSkin"
+
     /**
      * 改造前的写死顺序 —— 默认值，保证不传描述时行为与以前完全一致。
      *
@@ -49,6 +52,7 @@ object UserSections {
         MOOD_TIME_SLOT,
         EMOTION_SCAN,
         FILE_CHECK,
+        CUSTOM_SKIN,
     )
 
     /** 全部合法 key（供校验与测试使用）。 */

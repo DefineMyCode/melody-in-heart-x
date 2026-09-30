@@ -46,6 +46,21 @@ object SkinShellResolver {
     }
 
     /**
+     * P5：装配"用户装的 JSON"为外壳。fail-safe 与启动路径一致——
+     * 任何解析错误都返回 DefaultShell.shell，**不抛异常**，由调用方决定是否
+     * 清理 DataStore 中的坏 JSON。
+     *
+     * 入口是 [cn.com.dcsgo.mihx.data.repository.UserSkinStore] 的 raw JSON 字符串。
+     * 解析失败时本方法不会清 DataStore（避免与"导入失败"的 UX 路径冲突）——
+     * 那是 [cn.com.dcsgo.mihx.app.shell.UserSkinImporter] 的事。
+     */
+    fun resolveUserSkin(json: String): AppShell =
+        when (val result = SkinParser.parse(json)) {
+            is SkinValidation.Valid -> resolve(result.skin)
+            is SkinValidation.Invalid -> DefaultShell.shell
+        }
+
+    /**
      * 描述里的页面 key → 顶级路由。
      *
      * 目前是**固定映射**：P2 只支持"这几种页面被放在底栏"，

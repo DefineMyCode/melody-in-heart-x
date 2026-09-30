@@ -31,6 +31,9 @@ object AppRoutes {
     const val SETTINGS = "settings"
     const val LYRICS = "lyrics"
 
+    /** P5：用户自定义皮肤页（独立入口,Q3 = 另开一个）。 */
+    const val USER_SKIN = "user-skin"
+
     fun playlistDetail(playlistId: Int): String = "playlist/$playlistId"
 
     fun artistDetail(artistName: String): String = "artist/${Uri.encode(artistName)}"

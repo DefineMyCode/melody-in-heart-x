@@ -93,8 +93,19 @@ fun AppRoot(
     // P2：外壳来自皮肤描述。P3 起可在 debug 面板切换骨架（验收抽屉型）；
     // release 下 tuningAccess 恒为默认值 → 始终内置骨架，行为与改造前一致。
     // P5 会把这里换成"用户导入的皮肤"。
-    val shell: AppShell = remember(tuningAccess.currentSkinId) {
-        SkinShellResolver.resolveById(tuningAccess.currentSkinId)
+    // P5：外壳解析支持用户导入的皮肤。
+    //  - currentSkinId 是 user.skin.* 且 JSON 已就位 → 解析用户 JSON(fail-safe 内置)
+    //  - currentSkinId 是 user.skin.* 但 JSON 还没到位(冷启动 DataStore 异步读) → 先回落内置,
+    //    等 json 到位后 remember 重算再切过去(短暂闪一下内置,可接受)
+    //  - 其余(内置 id / null) → resolveById(原有行为不变)
+    val shell: AppShell = remember(tuningAccess.currentSkinId, tuningAccess.userSkinJson) {
+        val id = tuningAccess.currentSkinId
+        val json = tuningAccess.userSkinJson
+        if (id != null && id.startsWith("user.skin.") && json != null) {
+            SkinShellResolver.resolveUserSkin(json)
+        } else {
+            SkinShellResolver.resolveById(id)
+        }
     }
 
     BackHandler(enabled = showQueueSheet) {
@@ -214,6 +225,12 @@ fun AppRoot(
                 AppNavHost(
                     navController = navController,
                     shell = shell,
+                    // P5: 用户皮肤当前快照(从 tuningAccess 拿)。
+                    hasUserSkin = tuningAccess.userSkinId != null,
+                    userSkinName = tuningAccess.userSkinName,
+                    userSkinId = tuningAccess.userSkinId,
+                    onImportUserSkin = tuningAccess.onImportUserSkin,
+                    onRestoreDefaultSkin = tuningAccess.onRestoreDefaultSkin,
                     uiState = uiState,
                     playerViewModel = playerViewModel,
                     permissionCoordinator = permissionCoordinator,

@@ -1,5 +1,7 @@
 package cn.com.dcsgo.mihx.app.tuning
 
+import cn.com.dcsgo.mihx.feature.user.ImportSkinResult
+
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 
@@ -24,10 +26,22 @@ data class UiTuningAccess(
     val enabled: Boolean,
     val onOpenPanel: () -> Unit,
     val onExport: () -> Unit,
-    /** P3：骨架（皮肤）切换信息。release 恒为空/默认，不暴露任何切换入口。 */
+    /** P3：当前骨架（皮肤）id，与 [UiTuningController.skinOptions] 配合用于验收切换。 */
     val currentSkinId: String? = null,
     val skinOptions: List<Pair<String, String>> = emptyList(),
     val onSkinChange: (String) -> Unit = {},
+    // P5：用户导入/还原皮肤的回调。空实现是 release/未启用场景下的兜底；
+    // 入口本身在 [cn.com.dcsgo.mihx.feature.user.UserSkinRoute] 拼装。
+    //
+    // onImportUserSkin 收 JSON 文本，返回 [ImportSkinResult]。**导入失败时返回 [ImportSkinResult.Failed]**
+    // 含完整 issue 列表，由调用方在 bottom sheet 展示(Q2)。
+    val onImportUserSkin: suspend (String) -> ImportSkinResult = { _: String -> ImportSkinResult.NotHandled },
+    val onRestoreDefaultSkin: suspend () -> Unit = {},
+    // P5：用户皮肤当前快照(id + name + raw json),AppRoot 用 json 解析外壳。
+    // release 恒为 null。Has 与否决定 CustomSkinSection 显示"已装"/"未装"。
+    val userSkinId: String? = null,
+    val userSkinName: String? = null,
+    val userSkinJson: String? = null,
 )
 
 /**

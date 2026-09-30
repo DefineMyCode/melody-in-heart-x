@@ -96,6 +96,7 @@ object RouteAffinity {
     /** 「我的」分支下的子页面。 */
     private val USER_CHILDREN = setOf(
         AppRoutes.USER,
+        AppRoutes.USER_SKIN,
         AppRoutes.SETTINGS,
         AppRoutes.PLAYBACK_STATS,
         AppRoutes.FILE_CHECK,

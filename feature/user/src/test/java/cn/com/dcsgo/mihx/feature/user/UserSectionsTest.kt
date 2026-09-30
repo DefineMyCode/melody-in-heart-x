@@ -25,14 +25,27 @@ import java.io.File
 class UserSectionsTest {
 
     @Test
-    fun `default order matches the pre-refactor hardcoded order exactly`() {
-        // 改造前 UserScreen 里 LazyColumn 的 item 顺序（逐条对照源码历史）：
-        //   user_info → play_stats → mood_time_slot → emotion_scan → file_check
-        // 顺序错了会让"不传描述"的默认路径发生视觉变化，必须锁死。
+    fun `CUSTOM_SKIN key matches catalog whitelist string`() {
+        // ★★★ 多源同步测试: UserSections.CUSTOM_SKIN 必须与
+        // SkinPartCatalog.CUSTOM_SKIN 字符串字面相等 (两边都要改才能保持)。
+        // 这是 P3/L3 教训("装配 enum 与描述白名单漂移") 的同一类陷阱。
+        // 跨模块验证需要 :app 层 (架构门禁禁止 core 反向依赖 feature),
+        // 这里仅锁字面值,避免被未来重构误改。
+        assertEquals("customSkin", UserSections.CUSTOM_SKIN)
+    }
+
+    @Test
+    fun `default order has 5 hardcoded items then optional customSkin`() {
+        // P4 改造前 UserScreen 的 5 项顺序（逐条对照源码历史）必须保留不变 —
+        // 顺序错了会让"不传描述"的默认路径发生视觉变化。
+        // P5 新加 [CUSTOM_SKIN] 作为第 6 项, 描述里写就显示、不写就隐藏,
+        // 由 [UserSections.parse] 容错 (未知项过滤) + [SkinShellResolver] 装配层的
+        // "只识别页面里有的 part" 共同保证零回归。
         assertEquals(
             listOf("userInfo", "playStats", "moodTimeSlot", "emotionScan", "fileCheck"),
-            UserSections.DEFAULT_ORDER,
+            UserSections.DEFAULT_ORDER.take(5),
         )
+        assertEquals("customSkin", UserSections.DEFAULT_ORDER.last())
     }
 
     @Test

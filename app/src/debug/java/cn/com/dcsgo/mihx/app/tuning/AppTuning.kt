@@ -1,5 +1,7 @@
 package cn.com.dcsgo.mihx.app.tuning
 
+import cn.com.dcsgo.mihx.feature.user.ImportSkinResult
+
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
@@ -41,6 +43,18 @@ data class UiTuningAccess(
     val currentSkinId: String? = null,
     val skinOptions: List<Pair<String, String>> = emptyList(),
     val onSkinChange: (String) -> Unit = {},
+    // P5：用户导入/还原皮肤的回调。空实现是 release/未启用场景下的兜底；
+    // 入口本身在 [cn.com.dcsgo.mihx.feature.user.UserSkinRoute] 拼装。
+    //
+    // onImportUserSkin 收 JSON 文本，返回 [ImportSkinResult]。**导入失败时返回 [ImportSkinResult.Failed]**
+    // 含完整 issue 列表，由调用方在 bottom sheet 展示(Q2)。
+    val onImportUserSkin: suspend (String) -> ImportSkinResult = { _: String -> ImportSkinResult.NotHandled },
+    val onRestoreDefaultSkin: suspend () -> Unit = {},
+    // P5：用户皮肤当前快照(id + name + raw json),AppRoot 用 json 解析外壳。
+    // release 恒为 null。Has 与否决定 CustomSkinSection 显示"已装"/"未装"。
+    val userSkinId: String? = null,
+    val userSkinName: String? = null,
+    val userSkinJson: String? = null,
 )
 
 /**
@@ -88,6 +102,24 @@ internal fun rememberDebugTuning(): Pair<UiTuningController?, UiTuningAccess> {
         )
     }
 
+    // P5：用户皮肤存储。注意：rememberDebugTuning 是 @Composable internal,
+    // 直接 @Inject 不优雅；为保持原架构简洁,这里直接用 context 实例化。
+    // 该 store 内部用 applicationContext,不会泄漏 Activity。
+    val userSkinStore = remember(context) {
+        cn.com.dcsgo.mihx.data.repository.UserSkinStore(context.applicationContext)
+    }
+    // currentSkinId 也要把"user.skin.*"算进来。读取存储 + 解析后赋 id。
+    var userSkinId by remember { mutableStateOf<String?>(null) }
+    var userSkinName by remember { mutableStateOf<String?>(null) }
+    var userSkinJson by remember { mutableStateOf<String?>(null) }
+    androidx.compose.runtime.LaunchedEffect(Unit) {
+        userSkinStore.current.collect { stored ->
+            userSkinId = stored?.id
+            userSkinName = stored?.name
+            userSkinJson = stored?.json
+        }
+    }
+
     val controller = remember(tuning, showPanel, store) {
         UiTuningController(
             tuning = tuning,
@@ -112,11 +144,19 @@ internal fun rememberDebugTuning(): Pair<UiTuningController?, UiTuningAccess> {
         )
     }
 
-    val skinOptions = remember {
-        cn.com.dcsgo.mihx.app.shell.SkinShellResolver.knownSkins.map { it.id to it.name }
+    // P5：内置 + 用户装的合并展示（Q3 = 另开, 但 AppRoot 拼装时仍按"同一切换点"调用）
+    // 用 run {} 强类型,避免 userSkinId/userSkinName 是 String? 让整张表被推成 Pair<String?, String?>
+    val skinOptions: List<Pair<String, String>> = remember(userSkinId, userSkinName) {
+        val builtin: List<Pair<String, String>> =
+            cn.com.dcsgo.mihx.app.shell.SkinShellResolver.knownSkins.map { it.id to it.name }
+        val uid: String? = userSkinId
+        val uname: String? = userSkinName
+        if (uid != null && uname != null) {
+            builtin + (uid!! to uname!!)
+        } else builtin
     }
 
-    val access = remember(controller, currentSkinId, skinOptions) {
+    val access = remember(controller, currentSkinId, skinOptions, userSkinId, userSkinJson) {
         UiTuningAccess(
             enabled = true,
             onOpenPanel = controller.onShowPanelChange.let { { it(true) } },
@@ -126,6 +166,44 @@ internal fun rememberDebugTuning(): Pair<UiTuningController?, UiTuningAccess> {
             onSkinChange = { id ->
                 currentSkinId = id
                 skinPrefs.edit().putString("skin_id", id).apply()
+            },
+            // P5：导入。Route 里读 JSON 文本后调这里;校验 + 存 DataStore + 切皮肤。
+            // 失败返回 Failed(issues) → bottom sheet 展示(Q2)。
+            onImportUserSkin = { json: String ->
+                try {
+                    when (val result = cn.com.dcsgo.mihx.core.skin.SkinParser.parse(json)) {
+                        is cn.com.dcsgo.mihx.core.skin.SkinValidation.Valid -> {
+                            val id = cn.com.dcsgo.mihx.data.repository.SkinIdDeriver.derive(json)
+                            val name = cn.com.dcsgo.mihx.data.repository.SkinIdDeriver.extractName(
+                                json,
+                                fallback = id,
+                            )
+                            // 调用方(UserSkinRoute)已在协程里, 直接挂起, 不阻塞主线程
+                            userSkinStore.save(json, id, name)
+                            // 切到 user skin
+                            currentSkinId = id
+                            skinPrefs.edit().putString("skin_id", id).apply()
+                            ImportSkinResult.Success(id = id, name = name)
+                        }
+                        is cn.com.dcsgo.mihx.core.skin.SkinValidation.Invalid ->
+                            ImportSkinResult.Failed(issues = result.issues)
+                    }
+                } catch (t: Throwable) {
+                    ImportSkinResult.Error(message = t.message ?: "未知错误")
+                }
+            },
+            userSkinId = userSkinId,
+            userSkinName = userSkinName,
+            userSkinJson = userSkinJson,
+            // P5：还原默认(Q4)。清 DataStore + 把 currentSkinId 切回内置默认,
+            // 强制 AppRoot 重新解析。
+            onRestoreDefaultSkin = {
+                try {
+                    userSkinStore.clear()   // suspend:调用方已在协程里
+                    val defaultId = cn.com.dcsgo.mihx.app.shell.SkinShellResolver.DEFAULT_SKIN_ID
+                    currentSkinId = defaultId
+                    skinPrefs.edit().putString("skin_id", defaultId).apply()
+                } catch (_: Throwable) { /* noop:还原失败不清空当前选择,避免半状态 */ }
             },
         )
     }

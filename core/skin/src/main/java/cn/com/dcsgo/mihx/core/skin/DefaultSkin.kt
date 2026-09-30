@@ -121,7 +121,8 @@ object DefaultSkin {
                 { "part": "playStats" },
                 { "part": "moodTimeSlot" },
                 { "part": "emotionScan" },
-                { "part": "fileCheck" }
+                { "part": "fileCheck" },
+                { "part": "customSkin" }
               ]
             }
           },
@@ -210,7 +211,8 @@ object DefaultSkin {
               "sections": [
                 { "part": "userInfo" },
                 { "part": "playStats" },
-                { "part": "emotionScan" }
+                { "part": "emotionScan" },
+                { "part": "customSkin" }
               ]
             }
           },
@@ -293,7 +295,8 @@ object DefaultSkin {
             "sections": [
               { "part": "userInfo" },
               { "part": "playStats" },
-              { "part": "emotionScan" }
+              { "part": "emotionScan" },
+              { "part": "customSkin" }
             ]
           }
         },

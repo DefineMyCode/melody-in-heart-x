@@ -87,6 +87,8 @@ internal fun userRouteActions(
     navController: NavHostController,
     onEmotionScanNow: () -> Unit = {},
     onOpenMoodTimeSlot: () -> Unit = {},
+    // P5：用户皮肤入口(默认空实现 = release 或未启用时不跳)
+    onOpenUserSkin: () -> Unit = {},
 ): UserRouteActions = UserRouteActions(
     onShowSettings = { navController.navigate(AppRoutes.SETTINGS) },
     onShowPlaybackStats = { navController.navigate(AppRoutes.PLAYBACK_STATS) },
@@ -94,6 +96,7 @@ internal fun userRouteActions(
     onEmotionScanNow = onEmotionScanNow,
     onOpenEmotionAnalysis = { navController.navigate(AppRoutes.EMOTION_ANALYSIS) },
     onOpenMoodTimeSlot = onOpenMoodTimeSlot,
+    onOpenUserSkin = onOpenUserSkin,
 )
 
 internal fun playStatsRouteActions(

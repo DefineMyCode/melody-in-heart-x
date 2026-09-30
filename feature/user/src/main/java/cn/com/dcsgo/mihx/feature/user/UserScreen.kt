@@ -65,6 +65,10 @@ Unit = {},
      * 皮肤描述可通过 `myOverview` 的 `sections` 属性裁剪/重排这里的分区。
      */
     sectionOrder: List<String> = UserSections.DEFAULT_ORDER,
+    // P5：用户自定义皮肤入口。点击进入独立 route (AppRoutes.USER_SKIN)。
+    hasUserSkin: Boolean = false,
+    userSkinName: String? = null,
+    onOpenUserSkin: () -> Unit = {},
 ) {
     Box(
         modifier = Modifier
@@ -123,6 +127,16 @@ Unit = {},
                             validationResult = validationResult,
                             isValidating = isValidating,
                             onOpenFileCheck = onOpenFileCheck
+                        )
+                    }
+
+                    // P5：用户自定义皮肤入口(Q3 = 另开一个)。
+                    // 该分区在描述里写就显示，不写就隐藏——由 UserSections.parse 容错过滤。
+                    UserSections.CUSTOM_SKIN -> item(key = "custom_skin", contentType = "header") {
+                        CustomSkinSection(
+                            hasUserSkin = hasUserSkin,
+                            currentSkinName = userSkinName,
+                            onClick = onOpenUserSkin,
                         )
                     }
                 }

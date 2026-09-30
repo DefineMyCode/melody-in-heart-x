@@ -58,6 +58,13 @@ object SkinPartCatalog {
     const val EMOTION_SCAN = "emotionScan"
     const val FILE_CHECK = "fileCheck"
 
+    /**
+     * P5：用户导入皮肤入口卡。
+     * 在 [UserSections] 单独成一个分区(Q3 = 另开一个入口),
+     * 与其他分区解耦。
+     */
+    const val CUSTOM_SKIN = "customSkin"
+
     const val MY_OVERVIEW = "myOverview"
     const val SONG_LIST = "songList"
 
@@ -127,6 +134,8 @@ object SkinPartCatalog {
         Part(MOOD_TIME_SLOT, Layer.L2_PAGE),
         Part(EMOTION_SCAN, Layer.L2_PAGE),
         Part(FILE_CHECK, Layer.L2_PAGE),
+        // P5: 用户皮肤入口卡。layout/content 由 feature/user 的 CustomSkinSection 装配。
+        Part(CUSTOM_SKIN, Layer.L2_PAGE),
         // songList.template 的合法值见 SONG_LIST_TEMPLATES —— 描述校验会拒掉任何不在该集合的取值
         Part(SONG_LIST, Layer.L2_PAGE, setOf("title", "hint", "source", "template", "count")),
         Part(SETTINGS, Layer.L2_PAGE),

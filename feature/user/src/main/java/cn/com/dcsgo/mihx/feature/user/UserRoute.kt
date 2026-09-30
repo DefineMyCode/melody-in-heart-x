@@ -38,6 +38,9 @@ data class UserRouteState(
      * 默认 = 改造前的写死顺序，故**不传时行为零变化**；由 :app 从皮肤描述解析后注入。
      */
     val sectionOrder: List<String> = UserSections.DEFAULT_ORDER,
+    // P5：用户自定义皮肤。name 为 null 时表示"未导入"。
+    val hasUserSkin: Boolean = false,
+    val userSkinName: String? = null,
 )
 
 data class UserRouteActions(
@@ -48,6 +51,7 @@ data class UserRouteActions(
     val onOpenEmotionAnalysis: () -> Unit = {},
     /** 进入随心播放增强配置页 */
     val onOpenMoodTimeSlot: () -> Unit = {},
+    val onOpenUserSkin: () -> Unit = {},
 )
 
 @Composable
@@ -75,5 +79,8 @@ fun UserRoute(
         onVersionLongPress = state.onVersionLongPress,
         onOpenMoodTimeSlot = actions.onOpenMoodTimeSlot,
         sectionOrder = state.sectionOrder,
+        hasUserSkin = state.hasUserSkin,
+        userSkinName = state.userSkinName,
+        onOpenUserSkin = actions.onOpenUserSkin,
     )
 }

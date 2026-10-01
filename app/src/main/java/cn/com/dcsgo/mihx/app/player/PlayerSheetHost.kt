@@ -65,6 +65,8 @@ fun PlayerSheetHost(
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
+        dragHandle = null,
+        sheetGesturesEnabled = false,
         sheetState = sheetState,
         containerColor = MaterialTheme.colorScheme.surface,
         modifier = modifier,

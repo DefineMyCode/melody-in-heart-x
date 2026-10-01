@@ -15,6 +15,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
@@ -153,9 +154,17 @@ fun AppNavHost(
         flatGroupedSongs(uiState, playerViewModel)
     }
 
+    // B 方案:启动页在本窗口生命周期内固定,不跟随 shell.startRoute 变化。
+    // 背景:NavGraph.equals 是结构判等(相同 routes + 相同 startDestinationId),NavController.setGraph
+    // 判等相等时走 else 分支——原地替换 destination(新 content 生效)且**不清返回栈**;判等不等才清栈。
+    // 切样式时若 startDestination 跟着换(playlist↔home)→ 判等失败 → 清栈 → 被踢回起始页。
+    // 固定后切样式仍相等 → 栈保留、新样式内容照常生效;下次冷启动 rememberSaveable 重算即落到新样式启动页。
+    // 用 rememberSaveable 而非 remember:配置变更(旋转)后与已保存的返回栈保持同一 start,不清栈。
+    val initialStartRoute = rememberSaveable { shell.startRoute }
+
     NavHost(
         navController = navController,
-        startDestination = shell.startRoute,
+        startDestination = initialStartRoute,
         enterTransition = {
             val from = tabOrdinal(initialState.destination.route, shell.tabs)
             val to = tabOrdinal(targetState.destination.route, shell.tabs)

@@ -333,11 +333,11 @@ fun AppRoot(
                     showToast = toastHost::showToast,
                     deleteSongWithToast = ::deleteSongWithToast,
                     playlistResumeViewModel = playlistResumeViewModel,
-                    // SHEET 形态下用 31dp 顶 padding 抵消 sheet 顶部 drag handle,
-                    // 让「状态栏→封面」≈71dp(与默认三页形态一致)。
-                    // M3 1.3 ModalBottomSheet 不支持隐藏默认 drag handle(1.4+ 才有 sheetDragHandle),
+                    // SHEET 形态下用 40dp 顶 padding 抵消 sheet 顶部 drag handle + sheet 内顶 padding,
+                    // 让「状态栏→封面」≈88dp 与默认三页形态一致。
+                    // M3 1.3 ModalBottomSheet 不支持隐藏默认 drag handle;实测 1.4 stable 也无 sheetDragHandle,
                     // 这条参数先对齐间距,handle 横条保留。
-                    topContentPaddingDp = if (shell.playerEntry == PlayerEntry.SHEET) 31.dp else 16.dp,
+                    topContentPaddingDp = if (shell.playerEntry == PlayerEntry.SHEET) 40.dp else 16.dp,
                     onNavigateToLyrics = { showLyricsInSheet = true },
                     onNavigateToArtist = { artistName ->
                         showPlayerSheet = false

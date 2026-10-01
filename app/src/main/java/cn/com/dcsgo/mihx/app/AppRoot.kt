@@ -87,6 +87,9 @@ fun AppRoot(
     // 仅当骨架声明 playerEntry = SHEET 时可达；默认骨架为 TAB，此值恒为 false，
     // 因此默认骨架的行为与改造前完全一致。
     var showPlayerSheet by remember { mutableStateOf(false) }
+    // 抽屉内嵌的歌词(2026-09-30)——抽屉内点封面→切到歌词,关歌词→回抽屉。
+    // 仅在 SHEET 骨架可达；TAB 骨架下词条仍走 NavHost 独立路由 AppRoutes.LYRICS。
+    var showLyricsInSheet by remember { mutableStateOf(false) }
     val uiState by playerViewModel.uiState.collectAsStateWithLifecycle()
 
     // 样式切换持久化：当前选中的内置 skinId + 播放面板封面尺寸/圆角的覆盖。
@@ -293,9 +296,33 @@ fun AppRoot(
 
             // P3：全局播放抽屉。仅当骨架声明 playerEntry = SHEET 时可能为 true。
             // 内容与 Tab 形态共用同一个 NowPlayingSurface，避免两套实现漂移。
+            //
+            // 2026-09-30：抽屉内嵌歌词——onDismiss 优先级：先关抽屉内歌词，再关抽屉；
+            // 点封面不再 jump 独立词条路由，避免"关抽屉再跳页"的两段式跳转。
             PlayerSheetHost(
                 isShown = showPlayerSheet,
-                onDismiss = { showPlayerSheet = false },
+                // 关抽屉时优先关词条：这样下滑/返回只会"卸掉一层"而不是直接退出。
+                onDismiss = {
+                    if (showLyricsInSheet) {
+                        showLyricsInSheet = false
+                    } else {
+                        showPlayerSheet = false
+                    }
+                },
+                showLyrics = showLyricsInSheet,
+                onLyricsBack = { showLyricsInSheet = false },
+                lyricsState = cn.com.dcsgo.mihx.feature.lyrics.LyricsRouteState(
+                    currentSong = uiState.currentSong,
+                    currentPositionMs = playerViewModel.positionMs.collectAsStateWithLifecycle().value,
+                    isPlaying = uiState.isPlaying,
+                    fontScale = lyricFontScale,
+                ),
+                lyricsActions = cn.com.dcsgo.mihx.feature.lyrics.LyricsRouteActions(
+                    onBackClick = { showLyricsInSheet = false },
+                    onSeekTo = playerViewModel::seekTo,
+                    onFontScaleChange = settingsViewModel::setLyricFontScale,
+                ),
+                loadLyrics = mediaMetadataViewModel::lyricsFor,
             ) {
                 NowPlayingSurface(
                     playerViewModel = playerViewModel,
@@ -305,10 +332,7 @@ fun AppRoot(
                     showToast = toastHost::showToast,
                     deleteSongWithToast = ::deleteSongWithToast,
                     playlistResumeViewModel = playlistResumeViewModel,
-                    onNavigateToLyrics = {
-                        showPlayerSheet = false
-                        navController.navigate(AppRoutes.LYRICS)
-                    },
+                    onNavigateToLyrics = { showLyricsInSheet = true },
                     onNavigateToArtist = { artistName ->
                         showPlayerSheet = false
                         navController.navigate(AppRoutes.artistDetail(artistName))

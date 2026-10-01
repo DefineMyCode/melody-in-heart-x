@@ -85,13 +85,8 @@ fun LuckyPlayEntryBar(
                     text = "随心播放",
                     style = MaterialTheme.typography.bodySmall,
                     fontWeight = FontWeight.SemiBold,
-                    fontSize = 13.sp,
+                    fontSize = 15.sp,
                     color = MaterialTheme.colorScheme.onSurface,
-                )
-                Text(
-                    text = "随机挑一首开始播放",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
             Spacer(modifier = Modifier.width(12.dp))

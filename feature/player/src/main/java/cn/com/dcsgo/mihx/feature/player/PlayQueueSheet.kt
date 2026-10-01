@@ -79,11 +79,9 @@ fun PlayQueueSheet(
     onClearQueue: () -> Unit = {},
     onDismiss: () -> Unit = {},
     /**
-     * Toast 状态（保留接线,2026-10-01 决定 sheet 内不再单独画 ToastHost——见
-     * PlayerSheetHost 的 toastHost 参数注释,根因是 ModalBottomSheet 半屏会让
-     * 主窗口顶部仍可见,sheet 内再画一份会产生双 toast）。
+     * Toast 状态。sheet 内会挂一个与主窗口共享此状态的 ToastHost——通过窗口焦点
+     * 协调只让聚焦窗口画(见 ToastHost 文档),既不双 toast 也不会被遮住看不见。
      */
-    @Suppress("UNUSED_PARAMETER")
     toastHost: cn.com.dcsgo.mihx.ui.components.ToastHostState? = null,
 ) {
     if (!isShown) return
@@ -129,8 +127,8 @@ fun PlayQueueSheet(
         sheetState = sheetState,
         containerColor = MaterialTheme.colorScheme.surface
     ) {
-        // ⚠️ 不要在这里挂 ToastHost——sheet 半屏时主窗口顶部仍可见,两处都挂会双 toast;
-        // toast 只由主窗口(AppRoot)画,位置在屏幕顶部。详见 ToastHost.kt 顶部注释。
+        // sheet 内挂 ToastHost(焦点协调只让聚焦窗口画,避免双 toast——见 ToastHost 文档)。
+        Box(modifier = Modifier.fillMaxWidth()) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -217,6 +215,13 @@ fun PlayQueueSheet(
 
             // 底部间距
             Spacer(modifier = Modifier.height(24.dp))
+        }
+        if (toastHost != null) {
+            cn.com.dcsgo.mihx.ui.components.ToastHost(
+                toastHost = toastHost,
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
         }
     }
 }

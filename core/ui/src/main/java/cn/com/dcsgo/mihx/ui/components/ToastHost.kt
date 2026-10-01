@@ -25,16 +25,20 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import android.view.ViewTreeObserver
 import kotlinx.coroutines.delay
 
 /**
@@ -108,6 +112,17 @@ fun rememberToastHost(): ToastHostState = remember { ToastHostState() }
  * 放置在 UI 顶层（如 Scaffold 外层），会从顶部弹出通知。
  * 仅显示最新一条通知。
  *
+ * ## 多窗口协调（2026-10-01 两轮迭代定稿）
+ *
+ * 主窗口与 sheet（ModalBottomSheet = 独立 dialog 窗口）内各挂一个 [ToastHost] 时，
+ * 通过窗口焦点协调：**每个 [ToastHost] 只在自己窗口聚焦时画**。窗口焦点任一时刻
+ * 只属于一个窗口，天然互斥——既不会双 toast（sheet 半屏时主窗口仍可见），又不会
+ * 在 sheet 全屏时 toast 被遮住看不见（sheet 自己的 [ToastHost] 接管）。
+ *
+ * ⚠️ 焦点判定用 [LocalView] + ViewTreeObserver 而不是 `WindowInfo.isWindowFocused`：
+ * 后者是普通属性不是 State,焦点切换不会触发重组（官方 WindowFocusObserver 是
+ * internal 不可用,2026-10-01 实踩）。
+ *
  * @param toastHost    Toast 状态管理
  * @param modifier     修饰符
  */
@@ -116,6 +131,23 @@ fun ToastHost(
     toastHost: ToastHostState,
     modifier: Modifier = Modifier,
 ) {
+    // 窗口焦点 → Compose State（焦点切换触发重组，让出/接管即时生效）
+    val view = LocalView.current
+    val focusedState = remember { mutableStateOf(view.hasWindowFocus()) }
+    DisposableEffect(view) {
+        val listener = ViewTreeObserver.OnWindowFocusChangeListener { focused ->
+            focusedState.value = focused
+        }
+        view.viewTreeObserver.addOnWindowFocusChangeListener(listener)
+        onDispose { view.viewTreeObserver.removeOnWindowFocusChangeListener(listener) }
+    }
+
+    // 协调规则：窗口焦点在任一时刻只属于一个窗口（主窗口 / 抽屉 / 队列 sheet 互斥），
+    // 所以每个 ToastHost 只需「自己窗口聚焦时画」——天然只有一个在画，不会双 toast。
+    // sheet 上叠 AlertDialog（清空确认框）时焦点在 dialog 上 → 所有 ToastHost 让出,
+    // dialog 关闭后焦点回 sheet → sheet 的 ToastHost 焦点 State 变 true 触发重组接管。
+    if (!focusedState.value) return
+
     // 顶层 Column：wrap-content 自然撑开，statusBars padding 避开状态栏。
     // ⚠️ 不能换成 Box + contentAlignment（Box wrap 高度 0，内容被裁剪，2026-10-01 实踩）。
     Column(

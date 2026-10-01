@@ -13,7 +13,7 @@ fun PlayerQueueSheetHost(
     onRemoveSong: (Int) -> Unit,
     onClearQueue: () -> Unit,
     onDismiss: () -> Unit,
-    /** 保留接线,但队列 sheet 内不再挂 ToastHost(避免双 toast,2026-10-01)——见 ToastHost.kt 注释。 */
+    /** sheet 内挂焦点协调的 ToastHost(只让聚焦窗口画,避免双 toast)——见 ToastHost 文档。 */
     toastHost: cn.com.dcsgo.mihx.ui.components.ToastHostState? = null,
 ) {
     PlayQueueSheet(

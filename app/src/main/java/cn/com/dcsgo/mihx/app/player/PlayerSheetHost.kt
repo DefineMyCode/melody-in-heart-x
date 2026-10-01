@@ -1,6 +1,8 @@
 package cn.com.dcsgo.mihx.app.player
 
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
@@ -12,6 +14,7 @@ import cn.com.dcsgo.mihx.core.model.Song
 import cn.com.dcsgo.mihx.feature.lyrics.LyricsRoute
 import cn.com.dcsgo.mihx.feature.lyrics.LyricsRouteActions
 import cn.com.dcsgo.mihx.feature.lyrics.LyricsRouteState
+import cn.com.dcsgo.mihx.ui.components.ToastHost
 import cn.com.dcsgo.mihx.ui.components.ToastHostState
 
 /**
@@ -43,10 +46,12 @@ import cn.com.dcsgo.mihx.ui.components.ToastHostState
  * 使用默认 confirmValueChange（允许 Hidden），关闭意图一律由 `onDismissRequest`
  * 通知上层；上层把 `isShown` 置 false，由 `if (!isShown) return` 卸载整个 sheet。
  *
- * **4. 不要在 sheet 内再挂 ToastHost（2026-10-01 用户报告双 toast bug）。**
+ * **4. sheet 内可以挂 ToastHost,但必须靠焦点协调防双 toast（2026-10-01 两轮迭代）。**
  * ModalBottomSheet 即使全展开也只占下半屏,主窗口顶部仍可见——sheet 内和主窗口
- * 各挂一个 ToastHost 时,同一份 [ToastHostState] 会被两个窗口各画一份 toast。
- * toast 只由主窗口画（AppRoot 的 ToastHost）,位置在屏幕顶部(期望位置)。
+ * 各挂一个 ToastHost 时,同一份状态会被两个窗口各画一份 toast。解法见
+ * [ToastHost] 文档:每个 ToastHost 只在自己窗口聚焦时画(焦点天然互斥)。
+ * 注意不要在 sheet 内容 Box 里只包一层(对齐错误会导致 toast 画在 sheet 本体
+ * 顶部=屏幕中部)——sheet 内 toast 的位置就是 sheet 内容顶部,可接受。
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -54,8 +59,11 @@ fun PlayerSheetHost(
     isShown: Boolean,
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
-    /** 保留接线（调用方仍传）,但 sheet 内不再挂 ToastHost——见上方坑 4。 */
-    @Suppress("UNUSED_PARAMETER") toastHost: ToastHostState? = null,
+    /**
+     * Toast 状态。sheet 内会挂一个与主窗口共享此状态的 [ToastHost]——通过窗口焦点
+     * 协调只让聚焦窗口画(见 [ToastHost] 文档),既不双 toast 也不会被遮住看不见。
+     */
+    toastHost: ToastHostState? = null,
     /** 抽屉级 showLyrics 状态（外部管）。点封面=true，返回=true，点击歌词=true 路由同点封面。 */
     showLyrics: Boolean = false,
     onLyricsBack: () -> Unit = {},
@@ -79,15 +87,22 @@ fun PlayerSheetHost(
         containerColor = MaterialTheme.colorScheme.surface,
         modifier = modifier,
     ) {
-        // 抽屉内容：歌词或播放页。不要在这里挂 ToastHost（见上方坑 4）。
-        if (showLyrics) {
-            LyricsRoute(
-                state = lyricsState,
-                actions = lyricsActions.copy(onBackClick = onLyricsBack),
-                loadLyrics = loadLyrics,
-            )
-        } else {
-            content()
+        // 抽屉内容：歌词或播放页。
+        // sheet 内挂 ToastHost(焦点协调只让聚焦窗口画,避免双 toast)——
+        // 抽屉全屏展开时若只靠主窗口画,toast 会被完全遮住看不见(2026-10-01 用户反馈)。
+        Box(modifier = Modifier.fillMaxWidth()) {
+            if (showLyrics) {
+                LyricsRoute(
+                    state = lyricsState,
+                    actions = lyricsActions.copy(onBackClick = onLyricsBack),
+                    loadLyrics = loadLyrics,
+                )
+            } else {
+                content()
+            }
+            if (toastHost != null) {
+                ToastHost(toastHost = toastHost, modifier = Modifier.fillMaxWidth())
+            }
         }
     }
 }

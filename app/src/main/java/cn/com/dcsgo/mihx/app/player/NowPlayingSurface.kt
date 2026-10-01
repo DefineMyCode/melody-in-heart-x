@@ -6,6 +6,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import cn.com.dcsgo.mihx.app.playlist.PlaylistResumeViewModel
 import cn.com.dcsgo.mihx.core.common.AppLog
@@ -44,6 +46,9 @@ fun NowPlayingSurface(
     onNavigateToLyrics: () -> Unit,
     onNavigateToArtist: (String) -> Unit,
     onNavigateToAlbum: (String) -> Unit,
+    /** 2026-09-30：SHEET 抽屉形态下需要更大的顶 padding 抵消 sheet 顶部 drag handle,
+     * 让「状态栏底→封面」视觉对齐默认三页（实测三页≈71dp）。默认 16dp = 三页形态。 */
+    topContentPaddingDp: androidx.compose.ui.unit.Dp = 16.dp,
 ) {
     // 播放位置窄流：只在本内容订阅，不驱动整壳重组
     val positionMs by playerViewModel.positionMs.collectAsStateWithLifecycle()
@@ -67,6 +72,7 @@ fun NowPlayingSurface(
         }
     }
     HomeRoute(
+        topContentPaddingDp = topContentPaddingDp,
         state = HomeRouteState(
             currentSong = uiState.currentSong,
             isPlaying = uiState.isPlaying,

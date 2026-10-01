@@ -50,6 +50,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import cn.com.dcsgo.mihx.core.common.time.formatDurationTime
@@ -68,6 +69,8 @@ import cn.com.dcsgo.mihx.ui.icons.iconRes
  */
 @Composable
 fun HomeScreen(
+    /** 顶部 padding（默认 16dp）。SHEET 抽屉形态下需要更大值——抽屉顶部 M3 ModalBottomSheet 默认会渲染 drag handle 占据 ~26dp,这里加大 padding 让「状态栏→封面」视觉对齐默认三页（≈71dp）。 */
+    topContentPaddingDp: Dp = 16.dp,
     currentSong: Song?,
     isPlaying: Boolean,
     currentPositionMs: Long,
@@ -122,7 +125,7 @@ fun HomeScreen(
         ) {
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 88.dp),
+                contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = topContentPaddingDp, bottom = 88.dp),
                 verticalArrangement = Arrangement.spacedBy(LocalSpacingTokens.current.sectionSpacingDp.dp)
             ) {
                 item(key = "album_cover") {

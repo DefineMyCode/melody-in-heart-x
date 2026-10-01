@@ -77,7 +77,13 @@ fun PlayQueueSheet(
     onSongClick: (Int) -> Unit = {},      // 参数是索引
     onRemoveSong: (Int) -> Unit = {},     // 参数是队列索引
     onClearQueue: () -> Unit = {},
-    onDismiss: () -> Unit = {}
+    onDismiss: () -> Unit = {},
+    /**
+     * Toast 状态（2026-10-01 修：队列 sheet 是独立 dialog 窗口,盖住主窗口的 toast）。
+     * 与播放抽屉同一修法——本窗口内叠一层 [cn.com.dcsgo.mihx.ui.components.ToastHost],
+     * 共用同一 [cn.com.dcsgo.mihx.ui.components.ToastHostState],后开窗口遮住先开窗口,不重复。
+     */
+    toastHost: cn.com.dcsgo.mihx.ui.components.ToastHostState? = null,
 ) {
     if (!isShown) return
 
@@ -122,6 +128,7 @@ fun PlayQueueSheet(
         sheetState = sheetState,
         containerColor = MaterialTheme.colorScheme.surface
     ) {
+        Box(modifier = Modifier.fillMaxWidth()) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -208,6 +215,14 @@ fun PlayQueueSheet(
 
             // 底部间距
             Spacer(modifier = Modifier.height(24.dp))
+        }
+        // 队列窗口内的 toast 层（与主窗口那份共用同一状态）。
+        if (toastHost != null) {
+            cn.com.dcsgo.mihx.ui.components.ToastHost(
+                toastHost = toastHost,
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
         }
     }
 }

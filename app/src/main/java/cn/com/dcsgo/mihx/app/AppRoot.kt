@@ -315,6 +315,8 @@ fun AppRoot(
             // 点封面不再 jump 独立词条路由，避免"关抽屉再跳页"的两段式跳转。
             PlayerSheetHost(
                 isShown = showPlayerSheet,
+                // 抽屉是独立 dialog 窗口,会盖住主窗口的 toast——同状态在抽屉窗口再画一层(2026-10-01 修)。
+                toastHost = toastHost,
                 // 关抽屉时优先关词条：这样下滑/返回只会"卸掉一层"而不是直接退出。
                 onDismiss = {
                     if (showLyricsInSheet) {
@@ -362,6 +364,8 @@ fun AppRoot(
             PlayerQueueSheetHost(
                 playQueue = uiState.playQueue,
                 isShown = showQueueSheet,
+                // 同抽屉:队列 sheet 也是独立 dialog 窗口,盖主窗口 toast(2026-10-01 修)。
+                toastHost = toastHost,
                 currentSongId = uiState.currentSong?.id,
                 onSongClick = { index ->
                     playerViewModel.playQueueItem(index)

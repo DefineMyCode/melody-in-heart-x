@@ -1,6 +1,8 @@
 package cn.com.dcsgo.mihx.app.player
 
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
@@ -12,6 +14,8 @@ import cn.com.dcsgo.mihx.core.model.Song
 import cn.com.dcsgo.mihx.feature.lyrics.LyricsRoute
 import cn.com.dcsgo.mihx.feature.lyrics.LyricsRouteActions
 import cn.com.dcsgo.mihx.feature.lyrics.LyricsRouteState
+import cn.com.dcsgo.mihx.ui.components.ToastHost
+import cn.com.dcsgo.mihx.ui.components.ToastHostState
 
 /**
  * 全局播放抽屉（P3）。
@@ -48,6 +52,15 @@ fun PlayerSheetHost(
     isShown: Boolean,
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
+    /**
+     * Toast 状态（2026-10-01 修 bug：抽屉盖住主窗口的 toast）。
+     *
+     * **根因**：[ToastHost] 原本只画在主窗口，而 [ModalBottomSheet] 渲染在**独立 dialog 窗口**
+     * 且窗口层级更高——抽屉一开,主窗口的 toast 被整个盖住看不见。
+     * **修法**：抽屉自己的窗口里再叠一层 [ToastHost]（同一 [ToastHostState],状态共享,
+     * 关窗即卸载,不会重复显示——两个窗口不会同时可见:后开的窗口完全遮住先开的）。
+     */
+    toastHost: ToastHostState? = null,
     /** 抽屉级 showLyrics 状态（外部管）。点封面=true，返回=true，点击歌词=true 路由同点封面。 */
     showLyrics: Boolean = false,
     onLyricsBack: () -> Unit = {},
@@ -71,14 +84,20 @@ fun PlayerSheetHost(
         containerColor = MaterialTheme.colorScheme.surface,
         modifier = modifier,
     ) {
-        if (showLyrics) {
-            LyricsRoute(
-                state = lyricsState,
-                actions = lyricsActions.copy(onBackClick = onLyricsBack),
-                loadLyrics = loadLyrics,
-            )
-        } else {
-            content()
+        Box(modifier = Modifier.fillMaxWidth()) {
+            if (showLyrics) {
+                LyricsRoute(
+                    state = lyricsState,
+                    actions = lyricsActions.copy(onBackClick = onLyricsBack),
+                    loadLyrics = loadLyrics,
+                )
+            } else {
+                content()
+            }
+            // 抽屉窗口内的 toast 层（与主窗口那份共用同一状态,见 toastHost 参数文档）。
+            if (toastHost != null) {
+                ToastHost(toastHost = toastHost, modifier = Modifier.fillMaxWidth())
+            }
         }
     }
 }

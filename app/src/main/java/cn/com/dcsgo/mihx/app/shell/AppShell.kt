@@ -210,3 +210,27 @@ fun shouldShowMiniPlayer(
     activeRoute: String?,
     hasCurrentSong: Boolean,
 ): Boolean = hasCurrentSong && shell.miniPlayer && activeRoute != shell.playerRoute
+
+/**
+ * 「随心播放」入口条是否应显示（2026-10-01 用户拍板：双页样式、队列为空时充当迷你条的位置）。
+ *
+ * **纯策略函数，可在 JVM 上直接单测**（与 [shouldShowMiniPlayer] 同风格）。
+ *
+ * 显示条件，三条同时成立：
+ *  1. 骨架是抽屉型（`playerEntry == SHEET`，即极简双页）——
+ *     默认三页的播放页 Tab 自带「随心播放」FAB，不需要这条；
+ *  2. 无当前歌曲（队列为空）——有歌时该位置由迷你条占用；
+ *  3. 不在播放页路由上（与迷你条同一条对称判定）。
+ *
+ * 两条互斥且覆盖抽屉型的全部状态：`shouldShowMiniPlayer` 为 true（有歌），
+ * 本函数必为 false；反之亦然。
+ */
+fun shouldShowLuckyPlayEntry(
+    shell: AppShell,
+    activeRoute: String?,
+    hasCurrentSong: Boolean,
+): Boolean =
+    shell.playerEntry == PlayerEntry.SHEET &&
+        shell.miniPlayer &&
+        !hasCurrentSong &&
+        activeRoute != shell.playerRoute

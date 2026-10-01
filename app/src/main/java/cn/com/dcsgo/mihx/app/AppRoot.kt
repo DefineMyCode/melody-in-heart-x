@@ -244,6 +244,19 @@ fun AppRoot(
                 onPlayPauseClick = playerViewModel::togglePlayPause,
                 onPreviousClick = playerViewModel::playPrevious,
                 onNextClick = playerViewModel::playNext,
+                // 双页样式、队列为空:入口条触发随心播放(逻辑与播放页 FAB 同源,照抄 NowPlayingSurface)。
+                onLuckyPlayClick = {
+                    val started = playerViewModel.playRandomQueue()
+                    if (started) {
+                        // 情境化随心播放归因(§4.5):让"这首歌为什么被选中"可解释
+                        playerViewModel.currentMoodSlotName()?.let { slotName ->
+                            toastHost.showToast("已按「$slotName」为你随机播放")
+                        }
+                    } else {
+                        toastHost.showToast("还没有可播放的音乐，请先导入歌曲吧~")
+                    }
+                    playlistResumeViewModel.switchSource(null, uiState.currentSong?.id)
+                },
                 onNavigateToHome = {
                     // P3：抽屉型骨架没有"播放页 Tab"，迷你条点击的语义变成"拉起抽屉"；
                     // 默认骨架（TAB）保持原语义不变（导航到播放页）。

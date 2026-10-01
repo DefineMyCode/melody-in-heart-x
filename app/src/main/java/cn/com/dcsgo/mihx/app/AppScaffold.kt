@@ -27,9 +27,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import cn.com.dcsgo.mihx.app.shell.AppShell
 import cn.com.dcsgo.mihx.app.shell.AppTab
+import cn.com.dcsgo.mihx.app.shell.LuckyPlayEntryBar
 import cn.com.dcsgo.mihx.app.shell.PlayerEntry
 import cn.com.dcsgo.mihx.app.shell.indexOfRoute
 import cn.com.dcsgo.mihx.app.shell.playerRoute
+import cn.com.dcsgo.mihx.app.shell.shouldShowLuckyPlayEntry
 import cn.com.dcsgo.mihx.app.shell.shouldShowMiniPlayer
 import cn.com.dcsgo.mihx.app.shell.tabAt
 import cn.com.dcsgo.mihx.core.model.Song
@@ -67,6 +69,12 @@ fun AppScaffold(
     onNavigateToHome: () -> Unit,
     swipeEnabled: Boolean = true,
     /**
+     * 2026-10-01：随心播放入口条回调（双页样式、队列为空时,迷你条位置显示入口条）。
+     *
+     * 与 [onNavigateToHome] 一样由 AppRoot 提供（需要 toast/播放列表恢复等 App 级能力）。
+     */
+    onLuckyPlayClick: () -> Unit = {},
+    /**
      * P3：播放抽屉是否正处于打开状态。
      *
      * 抽屉打开时必须隐藏迷你条——否则同一首歌会出现两处控制，且底层条目被遮挡。
@@ -100,6 +108,7 @@ fun AppScaffold(
                     onTabSelected = onTabSelected,
                     swipeEnabled = swipeEnabled,
                     miniPlayerHiddenBySheet = miniPlayerHiddenBySheet,
+                    onLuckyPlayClick = onLuckyPlayClick,
                     content = content,
                 )
             }
@@ -119,6 +128,7 @@ fun AppScaffold(
                     onNavigateToHome = onNavigateToHome,
                     onTabSelected = onTabSelected,
                     swipeEnabled = swipeEnabled,
+                    onLuckyPlayClick = onLuckyPlayClick,
                     content = content,
                     modifier = Modifier.weight(1f),
                 )
@@ -152,6 +162,8 @@ private fun ScaffoldContentColumn(
     onTabSelected: (AppTab) -> Unit,
     swipeEnabled: Boolean = true,
     miniPlayerHiddenBySheet: Boolean = false,
+    /** 随心播放入口条回调（见 [shouldShowLuckyPlayEntry] 的显示条件）。 */
+    onLuckyPlayClick: () -> Unit = {},
     content: @Composable () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -205,6 +217,12 @@ private fun ScaffoldContentColumn(
                 onNextClick = onNextClick,
                 onNavigateToHome = onNavigateToHome,
             )
+        } else if (
+            shouldShowLuckyPlayEntry(shell, activeRoute, currentSong != null) &&
+            !miniPlayerHiddenBySheet
+        ) {
+            // 双页样式、队列为空：迷你条位置改显示「随心播放」入口条（2026-10-01）。
+            LuckyPlayEntryBar(onLuckyPlayClick = onLuckyPlayClick)
         }
     }
 }

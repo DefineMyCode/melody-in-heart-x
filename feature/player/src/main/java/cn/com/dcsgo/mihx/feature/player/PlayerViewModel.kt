@@ -9,6 +9,7 @@ import cn.com.dcsgo.mihx.core.model.PlayQueue
 import cn.com.dcsgo.mihx.core.model.Playlist
 import cn.com.dcsgo.mihx.core.model.Song
 import cn.com.dcsgo.mihx.domain.model.DeleteSongResult
+import cn.com.dcsgo.mihx.domain.model.DuplicateSongGroup
 import cn.com.dcsgo.mihx.domain.model.FileCheckMode
 import cn.com.dcsgo.mihx.domain.model.LocalFileValidationResult
 import cn.com.dcsgo.mihx.domain.model.SongSortMode
@@ -193,6 +194,23 @@ class PlayerViewModel @Inject constructor(
     /** 在后台校验本地歌曲文件有效性并清理失效数据（mode 决定元数据刷新范围）。 */
     fun validateLocalFiles(mode: FileCheckMode = FileCheckMode.QUICK) {
         runtime.validateLocalFiles(mode)
+    }
+
+    // ── 重复文件去重 ──
+    /** 重复歌曲分组（真实路径相同）。 */
+    val duplicateGroups: StateFlow<List<DuplicateSongGroup>> = runtime.duplicateGroups
+
+    /** 是否正在扫描重复。 */
+    val isScanningDuplicates: StateFlow<Boolean> = runtime.isScanningDuplicates
+
+    /** 在后台扫描曲库重复（真实路径相同）。 */
+    fun scanDuplicateSongs() {
+        runtime.scanDuplicateSongs()
+    }
+
+    /** 清理全部重复组，保留每组 songId 最小的一条。 */
+    fun deduplicateAll() {
+        runtime.deduplicateAll()
     }
 
     // ── 本地音乐排序 ──

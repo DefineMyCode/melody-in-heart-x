@@ -4,6 +4,7 @@ import cn.com.dcsgo.mihx.core.model.AlbumEntry
 import cn.com.dcsgo.mihx.core.model.ArtistEntry
 import cn.com.dcsgo.mihx.core.model.Song
 import cn.com.dcsgo.mihx.domain.model.DeleteSongResult
+import cn.com.dcsgo.mihx.domain.model.DuplicateSongGroup
 import cn.com.dcsgo.mihx.domain.model.FileCheckMode
 import cn.com.dcsgo.mihx.domain.model.LocalFileValidationResult
 
@@ -42,4 +43,17 @@ interface SongRepository {
      * DEEP：URI 存活的全部歌曲重新提取。更新就地保留 songId（统计/情绪/歌单关联不断）。
      */
     suspend fun validateAndCleanupLocalFiles(mode: FileCheckMode): LocalFileValidationResult
+
+    /**
+     * 扫描曲库中同一物理文件（真实路径相同）重复入库的重复组。
+     * 必须以 suspend 暴露并由实现侧调度到 IO。
+     */
+    suspend fun scanDuplicateSongGroups(): List<DuplicateSongGroup>
+
+    /**
+     * 清理重复：每组保留 songId 最小的一条，移除其余重复项。
+     * 重复项仅从曲库移除（歌单引用+持久化），不删除底层物理文件（保留项仍指向它）。
+     * @return 清理掉的重复歌曲 id 列表
+     */
+    suspend fun deduplicateSongs(groups: List<DuplicateSongGroup>): List<Int>
 }

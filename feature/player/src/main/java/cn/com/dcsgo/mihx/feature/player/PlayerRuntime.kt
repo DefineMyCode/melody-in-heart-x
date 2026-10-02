@@ -11,6 +11,7 @@ import cn.com.dcsgo.mihx.domain.playback.BluetoothPlaybackMonitorFactory
 import cn.com.dcsgo.mihx.domain.playback.ControllerPlaybackStateSynchronizer
 import cn.com.dcsgo.mihx.domain.playback.PlaybackDurationMonitorFactory
 import cn.com.dcsgo.mihx.domain.model.DeleteSongResult
+import cn.com.dcsgo.mihx.domain.model.DuplicateSongGroup
 import cn.com.dcsgo.mihx.domain.model.FileCheckMode
 import cn.com.dcsgo.mihx.domain.model.LocalFileValidationResult
 import cn.com.dcsgo.mihx.domain.model.SongSortMode
@@ -681,6 +682,51 @@ internal class PlayerRuntime(
     /** 用户确认校验结果后清除，入口徽标消失 */
     fun acknowledgeValidationResult() {
         _validationResult.value = null
+    }
+
+    // ── 重复文件去重（文件校验的一部分） ──
+    private val _duplicateGroups = MutableStateFlow<List<DuplicateSongGroup>>(emptyList())
+    val duplicateGroups: StateFlow<List<DuplicateSongGroup>> = _duplicateGroups.asStateFlow()
+
+    private val _isScanningDuplicates = MutableStateFlow(false)
+    val isScanningDuplicates: StateFlow<Boolean> = _isScanningDuplicates.asStateFlow()
+
+    /** 在后台扫描曲库重复（真实路径相同）。完成后存入 [duplicateGroups]。 */
+    fun scanDuplicateSongs() {
+        if (_isScanningDuplicates.value) return
+        _isScanningDuplicates.value = true
+        scope.launch {
+            try {
+                val groups = withContext(dispatchers.io) {
+                    songRepository.scanDuplicateSongGroups()
+                }
+                _duplicateGroups.value = groups
+                AppLog.info(TAG, "scanDuplicateSongs: found ${groups.size} duplicate groups")
+            } catch (e: Exception) {
+                AppLog.error(TAG, "scanDuplicateSongs failed", e)
+            } finally {
+                _isScanningDuplicates.value = false
+            }
+        }
+    }
+
+    /** 清理全部重复组，返回被移除的歌曲 id 数。 */
+    fun deduplicateAll() {
+        val groups = _duplicateGroups.value
+        if (groups.isEmpty()) return
+        scope.launch {
+            try {
+                val removed = withContext(dispatchers.io) {
+                    songRepository.deduplicateSongs(groups)
+                }
+                AppLog.info(TAG, "deduplicateAll: removed ${removed.size} songs")
+                // 清空扫描结果与校验徽标
+                _duplicateGroups.value = emptyList()
+                _validationResult.value = null
+            } catch (e: Exception) {
+                AppLog.error(TAG, "deduplicateAll failed", e)
+            }
+        }
     }
 
     fun importFolder(treeUri: Uri, onResult: (Int) -> Unit) {

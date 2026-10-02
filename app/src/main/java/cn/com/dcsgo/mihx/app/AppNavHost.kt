@@ -549,10 +549,14 @@ fun AppNavHost(
         composable(AppRoutes.FILE_CHECK) {
             val validationResult by playerViewModel.validationResult.collectAsStateWithLifecycle()
             val isValidating by playerViewModel.isValidating.collectAsStateWithLifecycle()
+            val duplicateGroups by playerViewModel.duplicateGroups.collectAsStateWithLifecycle()
+            val isScanningDuplicates by playerViewModel.isScanningDuplicates.collectAsStateWithLifecycle()
             FileCheckRoute(
                 state = FileCheckRouteState(
                     validationResult = validationResult,
                     isValidating = isValidating,
+                    duplicateGroups = duplicateGroups,
+                    isScanningDuplicates = isScanningDuplicates,
                 ),
                 actions = FileCheckRouteActions(
                     onBack = navController::navigateUp,
@@ -561,6 +565,8 @@ fun AppNavHost(
                         playerViewModel.acknowledgeValidationResult()
                         navController.navigateUp()
                     },
+                    onScanDuplicates = { playerViewModel.scanDuplicateSongs() },
+                    onDeduplicateAll = { playerViewModel.deduplicateAll() },
                 ),
             )
         }

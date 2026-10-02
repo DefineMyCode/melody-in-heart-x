@@ -4,6 +4,7 @@ import cn.com.dcsgo.mihx.core.model.AlbumEntry
 import cn.com.dcsgo.mihx.core.model.ArtistEntry
 import cn.com.dcsgo.mihx.core.model.Song
 import cn.com.dcsgo.mihx.domain.model.DeleteSongResult
+import cn.com.dcsgo.mihx.domain.model.DuplicateSongGroup
 import cn.com.dcsgo.mihx.domain.model.FileCheckMode
 import cn.com.dcsgo.mihx.domain.model.LocalFileValidationResult
 import cn.com.dcsgo.mihx.domain.repository.SongRepository
@@ -36,4 +37,10 @@ class SongRepositoryAdapter @Inject constructor(
 
     override suspend fun validateAndCleanupLocalFiles(mode: FileCheckMode): LocalFileValidationResult =
         musicRepository.validateAndCleanupLocalFiles(mode)
+
+    override suspend fun scanDuplicateSongGroups(): List<DuplicateSongGroup> =
+        musicRepository.scanDuplicateSongGroups()
+
+    override suspend fun deduplicateSongs(groups: List<DuplicateSongGroup>): List<Int> =
+        musicRepository.deduplicateSongs(groups)
 }

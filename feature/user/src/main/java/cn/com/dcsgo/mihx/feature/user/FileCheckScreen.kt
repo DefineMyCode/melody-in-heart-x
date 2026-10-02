@@ -17,13 +17,16 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.DeleteSweep
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.WarningAmber
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -37,7 +40,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import cn.com.dcsgo.mihx.domain.model.DuplicateSongGroup
 import cn.com.dcsgo.mihx.domain.model.FileCheckMode
 import cn.com.dcsgo.mihx.domain.model.LocalFileValidationResult
 
@@ -52,9 +57,13 @@ import cn.com.dcsgo.mihx.domain.model.LocalFileValidationResult
 fun FileCheckScreen(
     validationResult: LocalFileValidationResult?,
     isValidating: Boolean,
+    duplicateGroups: List<DuplicateSongGroup>,
+    isScanningDuplicates: Boolean,
     onBack: () -> Unit,
     onRunValidation: (FileCheckMode) -> Unit,
     onAcknowledge: () -> Unit,
+    onScanDuplicates: () -> Unit = {},
+    onDeduplicateAll: () -> Unit = {},
 ) {
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -98,6 +107,17 @@ fun FileCheckScreen(
                     onAcknowledge = onAcknowledge,
                 )
             }
+
+            // ── 重复文件去重区块（独立于文件校验） ──
+            Spacer(modifier = Modifier.height(28.dp))
+            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+            Spacer(modifier = Modifier.height(20.dp))
+            DuplicateContent(
+                duplicateGroups = duplicateGroups,
+                isScanning = isScanningDuplicates,
+                onScan = onScanDuplicates,
+                onDeduplicateAll = onDeduplicateAll,
+            )
         }
     }
 }
@@ -273,5 +293,102 @@ private fun ResultRow(label: String, value: String, emphasized: Boolean = false)
             fontWeight = FontWeight.Bold,
             color = if (emphasized) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
         )
+    }
+}
+
+/** 重复文件去重区块：扫描曲库中真实路径相同的重复歌曲，一键清理。 */
+@Composable
+private fun DuplicateContent(
+    duplicateGroups: List<DuplicateSongGroup>,
+    isScanning: Boolean,
+    onScan: () -> Unit,
+    onDeduplicateAll: () -> Unit,
+) {
+    Text(
+        text = "重复文件清理",
+        style = MaterialTheme.typography.titleMedium,
+        fontWeight = FontWeight.Bold,
+    )
+    Spacer(modifier = Modifier.height(8.dp))
+    Text(
+        text = "同一首歌曲因从不同文件夹（父目录/子目录）重复导入，可能出现多条重复记录。\n" +
+            "点击扫描可检测库里真实路径相同的重复歌曲；清理时会保留最早导入的一条，移除此重复项（不影响底层音乐文件）。",
+        style = MaterialTheme.typography.bodyMedium,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        textAlign = TextAlign.Center,
+    )
+    Spacer(modifier = Modifier.height(16.dp))
+
+    when {
+        isScanning -> {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(20.dp),
+                    strokeWidth = 2.dp,
+                )
+                Spacer(modifier = Modifier.width(10.dp))
+                Text(
+                    text = "正在扫描重复…",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
+        duplicateGroups.isEmpty() -> {
+            OutlinedButton(
+                onClick = onScan,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Search,
+                    contentDescription = null,
+                    modifier = Modifier.size(16.dp),
+                )
+                Spacer(modifier = Modifier.width(6.dp))
+                Text("扫描重复歌曲")
+            }
+        }
+        else -> {
+            val dupCount = duplicateGroups.sumOf { it.duplicates.size }
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                ),
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text(
+                        text = "发现 ${duplicateGroups.size} 组重复（共 ${dupCount} 首待清理）",
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold,
+                    )
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Text(
+                        text = duplicateGroups.joinToString("，") { it.keep.title }.take(80),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Button(
+                        onClick = onDeduplicateAll,
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.DeleteSweep,
+                            contentDescription = null,
+                            modifier = Modifier.size(16.dp),
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text("一键清理重复（保留最早导入的一条）")
+                    }
+                }
+            }
+        }
     }
 }

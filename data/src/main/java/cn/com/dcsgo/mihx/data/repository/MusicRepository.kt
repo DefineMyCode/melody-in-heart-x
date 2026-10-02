@@ -16,7 +16,9 @@ import cn.com.dcsgo.mihx.data.local.migration.LegacyJsonMigration
 import cn.com.dcsgo.mihx.data.util.AlbumArtExtractor
 import cn.com.dcsgo.mihx.data.util.AudioFileUtils
 import cn.com.dcsgo.mihx.data.util.AudioMetadataExtractor
+import cn.com.dcsgo.mihx.data.util.SongPathResolver
 import cn.com.dcsgo.mihx.domain.model.DeleteSongResult
+import cn.com.dcsgo.mihx.domain.model.DuplicateSongGroup
 import cn.com.dcsgo.mihx.domain.model.FileCheckMode
 import cn.com.dcsgo.mihx.domain.model.LocalFileValidationResult
 import kotlinx.coroutines.CoroutineScope
@@ -370,9 +372,16 @@ class MusicRepository(
         // 创建对应歌单（已在 IO 线程，无需额外同步，但锁内操作）
         val playlist = lock.write { createPlaylistInternal(folderName) }
 
-        // 已存在 URI 集合，用于快速去重（O(1) 查找）
+        // 已存在 URI 集合 + 真实路径集合，用于快速去重（O(1) 查找）。
+        // uri 不同但真实文件路径相同（同一物理文件经不同 SAF tree 重复导入）也能拦下。
+        val existingSongSnapshot = lock.read { songs.toList() }
         val importUris = ConcurrentHashMap.newKeySet<Uri>().apply {
-            addAll(lock.read { songs.mapNotNullTo(mutableSetOf()) { it.uri } })
+            addAll(existingSongSnapshot.mapNotNullTo(mutableSetOf()) { it.uri })
+        }
+        val existingRealPaths = ConcurrentHashMap.newKeySet<String>().apply {
+            addAll(existingSongSnapshot.mapNotNullTo(mutableSetOf()) {
+                SongPathResolver.resolveRealPath(ctx, it.uri)
+            })
         }
 
         // 封面提取并行度：最多同时 8 个，避免 ContentResolver 过载
@@ -388,8 +397,17 @@ class MusicRepository(
                     val docFile = audioFile.file
                     val fileUri = docFile.uri
 
-                    // 去重检查
+                    // 去重检查：uri 相同 或 真实物理路径相同(经不同 tree 重复导入)都跳过
                     if (!importUris.add(fileUri)) {
+                        onProgress?.invoke(processedCount.incrementAndGet(), audioFiles.size)
+                        return@async null
+                    }
+                    val realPath = SongPathResolver.resolveRealPath(ctx, fileUri)
+                    if (realPath != null && !existingRealPaths.add(realPath)) {
+                        AppLog.info(
+                            TAG,
+                            "addFolder: skip duplicate real path (imported via another tree) -> $realPath"
+                        )
                         onProgress?.invoke(processedCount.incrementAndGet(), audioFiles.size)
                         return@async null
                     }
@@ -750,6 +768,78 @@ class MusicRepository(
             mode = mode,
         )
     }
+
+    /**
+     * 扫描曲库中同一物理文件（真实路径相同）重复入库的重复组。
+     *
+     * 依赖 [SongPathResolver] 将每条歌曲 URI 解析为真实磁盘路径做归一；
+     * 解析不出的歌曲（无法定位物理文件）不进组，避免误判。
+     *
+     * @return 存在重复的组；只返回 [DuplicateSongGroup.isDuplicate] 为 true 的组
+     */
+    suspend fun scanDuplicateSongGroups(): List<DuplicateSongGroup> = withContext(Dispatchers.IO) {
+        val ctx = context ?: return@withContext emptyList()
+        val snapshot = lock.read { songs.toList() }
+
+        // path → (song) 分组，保留每次 map 的最小 songId（即最早导入）
+        val byPath = HashMap<String, MutableList<Song>>()
+        snapshot.forEach { song ->
+            val p = SongPathResolver.resolveRealPath(ctx, song.uri) ?: return@forEach
+            byPath.getOrPut(p) { mutableListOf() }.add(song)
+        }
+
+        byPath.map { (path, songs) ->
+            DuplicateSongGroup(
+                realPath = path,
+                songs = songs.sortedBy { it.id },
+            )
+        }
+            .filter { it.isDuplicate }
+            .sortedBy { it.keep.id }
+    }
+
+    /**
+     * 清理重复：保留每组 songId 最小的一条，移除其余重复项。
+     *
+     * 重复项**只从曲库移除**（songIds 引用 + 持久化），**不删除底层物理文件**
+     * （保留项仍指向同一文件，删物理文件会连保留项一起毁掉）。
+     * 同时清理重复项在播放统计/秒切/情绪等关联数据中的记录。
+     *
+     * @param groupIds 要从哪些组清理重复（传 null = 清理全部重复组）
+     * @return 清理掉的重复歌曲 id 列表
+     */
+    suspend fun deduplicateSongs(groups: List<DuplicateSongGroup>): List<Int> =
+        withContext(Dispatchers.IO) {
+            if (groups.isEmpty()) return@withContext emptyList()
+
+            val toRemove = groups
+                .filter { it.isDuplicate }
+                .flatMap { it.duplicates }
+                .map { it.id }
+                .toSet()
+            if (toRemove.isEmpty()) return@withContext emptyList()
+
+            lock.write {
+                for (index in playlists.indices) {
+                    val playlist = playlists[index]
+                    val kept = playlist.songIds.filterNot { it in toRemove }
+                    if (kept.size != playlist.songIds.size) {
+                        playlists[index] = playlist.copy(songIds = kept)
+                        updatePlaylistSongCount(playlist.id)
+                    }
+                }
+                songs.removeAll { it.id in toRemove }
+                persistSongs()
+                persistPlaylists()
+            }
+
+            // 清除重复项在播放统计 / 秒切 / 情绪等表里的孤儿关联
+            cleanupMissingSongAssociations(toRemove)
+
+            notifySongsChanged()
+            AppLog.info(TAG, "deduplicateSongs: removed ${toRemove.size} duplicate songs")
+            toRemove.toList()
+        }
 
     /** 快速校验指纹：文件大小 + 最后修改时间。任一变化即视为可能变化。 */
     private fun hasFileFingerprintChanged(song: Song): Boolean {

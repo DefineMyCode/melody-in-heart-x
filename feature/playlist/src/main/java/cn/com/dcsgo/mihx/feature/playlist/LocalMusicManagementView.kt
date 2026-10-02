@@ -287,6 +287,7 @@ fun LocalMusicManagementView(
                     SongItem(
                         song = song,
                         isCurrentPlaying = isPlaying && currentSong?.id == song.id,
+                        showDuration = true,
                         isSelectMode = selection.isSelectMode,
                         isSelected = isSelected,
                         modifier = Modifier.locateHighlightFlash(song.id, locateHighlight),
@@ -404,6 +405,7 @@ fun LocalMusicManagementView(
         ) {
             SurfaceBar(
                 selectedCount = selection.selectedIds.size,
+                selectedDurationMs = selectedSongs.sumOf { it.durationMs },
                 onAddToPlaylist = { showAddToPlaylistDialog = true },
                 onClear = selection::exitSelectMode
             )

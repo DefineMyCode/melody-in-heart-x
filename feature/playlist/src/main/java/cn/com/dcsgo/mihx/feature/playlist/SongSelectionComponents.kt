@@ -131,11 +131,6 @@ fun SongListActionBar(
                     fontWeight = FontWeight.Medium
                 )
             }
-            Text(
-                text = "已选 $selectedCount 首",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
         }
     }
 }

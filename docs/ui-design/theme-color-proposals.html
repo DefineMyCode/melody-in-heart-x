@@ -121,9 +121,7 @@
   设置页主题卡自动多出 3 个色块（实现为循环枚举），无需改其它页面。本稿为设计确认稿。
 </div>
 
-<script>
-// ===== 数据：现有 + 3 套新主题 =====
-const THEMES = {
+<script>const THEMES = {
   MONO:{label:"墨色 · 现有",color:"#E6E6E6",cover:["#C7C7C7","#E9E9E9"],note:"#161616",
     day:{bg0:"#F4F4F4",bg1:"#FFFFFF",bg2:"#FAFAFA",bg3:"#EFEFEF",bg4:"#E6E6E6",out1:"#E7E7E7",out2:"#CFCFCF",text1:"#141414",text2:"#575757",text3:"#989898",accent:"#161616",onAccent:"#FFFFFF",accent2:"#575757"},
     night:{bg0:"#000000",bg1:"#0A0A0A",bg2:"#121212",bg3:"#1B1B1B",bg4:"#252525",out1:"#1C1C1C",out2:"#2C2C2C",text1:"#D0D0D0",text2:"#9A9A9A",text3:"#6B6B6B",accent:"#E6E6E6",onAccent:"#0A0A0A",accent2:"#9A9A9A"}},
@@ -148,26 +146,13 @@ const THEMES = {
   SUNRISE:{label:"晨光霞粉",color:"#F2A6A0",desc:"破晓 · 云霞初醒",cover:["#F2C4B8","#D0746B"],note:"#FDF0ED",
     day:{bg0:"#FBF4F1",bg1:"#FFFFFF",bg2:"#F8ECE8",bg3:"#F2E0DB",bg4:"#EAD2CC",out1:"#F2E2DD",out2:"#DFC0B8",text1:"#322026",text2:"#6A4B52",text3:"#9C7780",accent:"#A8473F",onAccent:"#FFFFFF",accent2:"#E08E82"},
     night:{bg0:"#000000",bg1:"#170E0E",bg2:"#1D1313",bg3:"#261818",bg4:"#301E1E",out1:"#311D1C",out2:"#4A2A28",text1:"#F3E2E0",text2:"#C2A09E",text3:"#87605F",accent:"#F2A6A0",onAccent:"#3A1210",accent2:"#C26A63"}}
-};
+}
+
+function accentContrast(tok){function L(h){let c=h.slice(1).match(/../g).map(x=>parseInt(x,16)/255).map(v=>v<=0.04045?v/12.92:Math.pow((v+0.055)/1.055,2.4));return 0.2126*c[0]+0.7152*c[1]+0.0722*c[2]}const la=L(tok.accent),lb=L(tok.onAccent);return ((Math.max(la,lb)+0.05)/(Math.min(la,lb)+0.05)).toFixed(2);}
 
 let state = {theme:"INDIGO", mode:"night"};
 const ROW_ORDER = ["MONO","VER","INDIGO","SAGE","AMBER","SKY","FRESH","SUNRISE"];
 
-function accentContrast(t){ // relative luminance, returns ratio
-  function L(h){let c=h.slice(1).match(/../g).map(x=>parseInt(x,16)/255).map(v=>v<=0.04045?v/12.92:Math.pow((v+0.055)/1.055,2.4));return 0.2126*c[0]+0.7152*c[1]+0.0722*c[2]}
-  const la=L(t.accent),lb=L(t.onAccent);return ((Math.max(la,lb)+0.05)/(Math.min(la,lb)+0.05)).toFixed(2);
-}
-
-// ===== 渲染主题按钮 =====
-const themeRow=document.getElementById("themeRow");
-ROW_ORDER.forEach(id=>{const t=THEMES[id];const b=document.createElement("button");b.className="themebtn"+(state.theme===id?" active":"");
-  b.innerHTML=`<span class="dot" style="background:${t.color}"></span>${t.label}${t.desc?`<span style="color:#8a8aa5;font-size:11px;font-weight:400">${t.desc}</span>`:""}`;
-  b.onclick=()=>{state.theme=id;render()};themeRow.appendChild(b);});
-
-const modeRow=document.getElementById("modeRow");
-[["night","◆ 深夜(OLED)"],["day","◇ 昼"]].forEach(([m,lab])=>{const b=document.createElement("button");b.className="modebtn"+(state.mode===m?" active":"");b.textContent=lab;b.onclick=()=>{state.mode=m;render()};modeRow.appendChild(b);});
-
-// ===== 组件片段 =====
 function icons(){return {
  lib:`<svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 6h16v2H4V6zm0 5h16v2H4v-2zm0 5h10v2H4v-2z"/></svg>`,
  play:`<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>`,
@@ -180,21 +165,19 @@ function icons(){return {
  heart:`<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-8-5-8-11a4.5 4.5 0 018-3 4.5 4.5 0 018 3c0 6-8 11-8 11z"/></svg>`,
  queue:`<svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 6h16v2H4V6zm0 5h16v2H4v-2zm0 5h10v2H4v-2z"/></svg>`,
 }};
-function thumbText(name){const m={灵:"灵",韵:"韵",夜:"夜",海:"海",林:"林",山:"山",晨:"晨",砂:"砂",岸:"岸",声:"声"};const s=name.split("")[0];return m[s]||s}
-function row(n,title,sub,time,active,art){const I=icons();return `<div class="row ${active?"active":""}"><div class="rowthumb" style="background:${art[0]};color:${art[1]}">${thumbText(title)}</div><div class="r-meta"><div class="r-title">${title}${active?'<span style="padding-left:6px">':""}</div><div class="r-sub">${sub}</div></div>${active?`<div class="eq" style="margin-right:4px"><i></i><i></i><i></i><i></i></div>`:""}<div class="r-time">${time}</div></div>`}
+function thumbText(name){return (name||"声").split("")[0]}
+function row(title,sub,time,active,art){const I=icons();return `<div class="row ${active?"active":""}"><div class="rowthumb" style="background:${art[0]};color:${art[1]}">${thumbText(title)}</div><div class="r-meta"><div class="r-title">${title}${active?'<span style="padding-left:6px">':""}</div><div class="r-sub">${sub}</div></div>${active?`<div class="eq" style="margin-right:4px"><i></i><i></i><i></i><i></i></div>`:""}<div class="r-time">${time}</div></div>`}
 
 function renderShell(t, isDark){
-  const I=icons();
-  const coverTone = isDark? t.cover[0]: t.cover[1];
-  const vals={...t,onAccent:t.onAccent};
-  const css=Object.keys(vals).filter(k=>!["desc","cover","note","color"].includes(k)&&k!=="onAccent2v")
-    .filter(k=>["bg0","bg1","bg2","bg3","bg4","out1","out2","text1","text2","text3","accent","onAccent","accent2"].includes(k))
-    .map(k=>`--${k}:${vals[k]}`).join(";");
+  const I=icons(); const tok=isDark?t.night:t.day;
+  const coverTone=isDark?t.cover[0]:t.cover[1];
+  const keys=["bg0","bg1","bg2","bg3","bg4","out1","out2","text1","text2","text3","accent","onAccent","accent2"];
+  const css=keys.map(k=>`--${k}:${tok[k]}`).join(";");
   return `<div class="app" style="${css}">
     <div class="statusbar"><span>21:47</span><span>▮▮▯</span></div>
     ${renderMid(t,isDark)}
     <div class="mini"><div class="mini-cover" style="background:${coverTone}"></div>
-      <div class="mini-meta"><div class="mini-title" style="color:${t.text1}">夜航星 · 深海回响</div><div class="mini-prog"><i></i></div></div>
+      <div class="mini-meta"><div class="mini-title" style="color:${tok.text1}">夜航星 · 深海回响</div><div class="mini-prog"><i></i></div></div>
       <div class="playbtn">${I.play}</div></div>
     <div class="bottombar">
       <div class="tb"><span class="tb-ic">${I.lib}</span>曲库</div>
@@ -205,10 +188,10 @@ function renderShell(t, isDark){
 }
 
 function renderMid(t,isDark){
-  const I=icons();const coverTone=isDark?t.cover[0]:t.cover[1];
+  const I=icons(); const tok=isDark?t.night:t.day; const coverTone=isDark?t.cover[0]:t.cover[1];
   return `<div class="app-content">
-    <div class="aritst-line"><span>Hi-Res 无损</span><span class="hires">Hi-Res</span></div>
-    <div class="songtitle" style="color:${t.text1}">夜航星</div>
+    <div class="aritst-line"><span><span class="hires">Hi-Res</span></div>
+    <div class="songtitle" style="color:${tok.text1}">夜航星</div>
     <div class="albumline">深海回响 · 银河唱片</div>
     <div class="cover" style="background:${coverTone};color:${t.note}"><span class="note">● 黑胶</span></div>
     <div class="progress"><div class="prog-bar"><i></i></div><div class="times"><span>2:14</span><span>4:37</span></div></div>
@@ -219,52 +202,49 @@ function renderMid(t,isDark){
       <div class="ctrl md">${I.next}</div>
       <div class="ctrl" style="font-size:15px">${I.repeat}</div>
     </div>
-    <div class="lyric">让深海的 <b>光束</b> 替我照亮</div>
-    <div class="row active" style="margin-top:10px"><div class="rowthumb" style="background:${coverTone}"></div><div class="r-meta"><div class="r-title" style="color:${t.accent}">夜航星</div><div class="r-sub">深海回响</div></div><div class="eq" style="margin-right:4px"><i></i><i></i><i></i><i></i></div><div class="r-time">2:14</div></div>
+    <div class="lyric">让深海的 <b style="color:${tok.accent}">光束</b> 替我照亮</div>
+    <div class="row active" style="margin-top:10px"><div class="rowthumb" style="background:${coverTone}"></div><div class="r-meta"><div class="r-title" style="color:${tok.accent}">夜航星</div><div class="r-sub">深海回响</div></div><div class="eq" style="margin-right:4px"><i></i><i></i><i></i><i></i></div><div class="r-time">2:14</div></div>
   </div>`;
 }
 
 function renderLibrary(t,isDark){
-  const I=icons();const coverTone=isDark?t.cover[0]:t.cover[1];
+  const I=icons(); const tok=isDark?t.night:t.day; const coverTone=isDark?t.cover[0]:t.cover[1];
   return `<div class="app-content">
-    <div class="search"><svg viewBox="0 0 24 24" width="14" height="14" fill="${t.text3}"><path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 10-.7.7l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0A4.5 4.5 0 1114 9.5 4.5 4.5 0 019.5 14z"/></svg>搜索音乐、歌单、艺术家…</div>
-    ${row("","深夜歌单","内心独白 · 18首","18首",false,[coverTone,t.note])}
-    ${row("","深海专辑","Ocean Deep · 2025","2025",false,[coverTone,t.note])}
-    ${row("","晨雾情绪","平静 · 专注 · 入眠","12:44",true,[coverTone,t.note])}
+    <div class="search"><svg viewBox="0 0 24 24" width="14" height="14" fill="${tok.text3}"><path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 10-.7.7l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0A4.5 4.5 0 1114 9.5 4.5 4.5 0 019.5 14z"/></svg>搜索音乐、歌单、艺术家…</div>
+    ${row("深夜歌单","内心独白 · 18首","18首",false,[coverTone,t.note])}
+    ${row("深海专辑","Ocean Deep · 2025","2025",false,[coverTone,t.note])}
+    ${row("晨雾情绪","平静 · 专注 · 入眠","12:44",true,[coverTone,t.note])}
     <div class="seg"><div class="seg-inner"><span class="seg-item on">情绪</span><span class="seg-item">时段</span><span class="seg-item">全部</span></div></div>
     ${row("晴天相伴","晴朗 · 活力","3:21",false,[coverTone,t.note])}
     ${row("夜深人静","入眠 · 低频","5:02",false,[coverTone,t.note])}
   </div>`;
 }
 
-// ===== token 表 =====
 function tokenTable(t){
-  const keys=[["bg0","页面底色","--bg0"],["bg1","卡片/顶栏","--bg1"],["bg2","搜索框","--bg2"],["bg3","分段控件","--bg3"],["bg4","弹窗浮层","--bg4"],["out1","极淡分隔","--out1"],["out2","边框/描边","--out2"],["text1","主文字","--text1"],["text2","次文字","--text2"],["text3","弱文字","--text3"],["accent","强调色","--accent"],["accent2","过渡色","--accent2"]];
-  // onaccent separate
-  return `<table class="toktable"><tr><th>令牌</th><th>用途</th><th>色值</th><th>身份</th></tr>
-  ${keys.map(([k,u])=>`<tr><td>${k}</td><td>${u}</td><td><span class="swatch" style="background:${t[k]}"></span><span class="hex">${t[k]}</span></td><td style="color:${t[k]}">${k}</td></tr>`).join("")}
-  <tr><td>onAccent</td><td>强调色上的图文</td><td><span class="swatch" style="background:${t.onAccent}"></span><span class="hex">${t.onAccent}</span></td><td></td></tr>
+  const row=isNoop=>{};
+  const keys=[["bg0","页面底色"],["bg1","卡片/顶栏"],["bg2","搜索框"],["bg3","分段控件"],["bg4","弹窗浮层"],["out1","极淡分隔"],["out2","边框/描边"],["text1","主文字"],["text2","次文字"],["text3","弱文字"],["accent","强调色"],["accent2","过渡色"]];
+  const tok = state.mode==="night"? t.night : t.day;
+  return `<table class="toktable"><tr><th>令牌</th><th>用途</th><th>色值</th><th>当前模式</th></tr>
+  ${keys.map(([k,u])=>`<tr><td>${k}</td><td>${u}</td><td><span class="swatch" style="background:${tok[k]}"></span><span class="hex">${tok[k]}</span></td><td style="font-size:11px"><b style="color:${tok.accent}">${tok[k]}</b></td></tr>`).join("")}
+  <tr><td>onAccent</td><td>强调色上的图文</td><td><span class="swatch" style="background:${tok.onAccent}"></span><span class="hex">${tok.onAccent}</span></td><td></td></tr>
   </table>`;
 }
 
 function render(){
-  const t=THEMES[state.theme];const isDark=state.mode==="night";
+  const t=THEMES[state.theme]; const isDark=state.mode==="night"; const tok=isDark?t.night:t.day;
   const stage=document.getElementById("stage");
-  const ratio=accentContrast(t);
-  // 为每套主题的 cover/note 生成 hex（用了 fallback）
-  const coverA = (t.cover||[])[0];const coverB=(t.cover||[])[1];
-  const show = `${THEMES.MONO},${THEMES.VER},${THEMES.INDIGO},${THEMES.SAGE},${THEMES.AMBER}`;
+  const ratio=accentContrast(tok);
   document.querySelectorAll(".themebtn").forEach((b,i)=>b.classList.toggle("active",ROW_ORDER[i]===state.theme));
-  document.querySelectorAll(".modebtn").forEach((b,i)=>b.classList.toggle("active",(i===0&&state.mode==="night")||(i===1&&state.mode==="day")));
+  document.querySelectorAll(".modebtn").forEach((b,i)=>b.classList.toggle("active",(i===0&&isDark)||(i===1&&!isDark)));
   stage.innerHTML=`<div class="showcase">
     <div>
-      <h3>▼ 播放页 · 当前选中主题</h3>
+      <h3>▼ 播放页 · ${t.label}</h3>
       <div class="phone"><div class="notch"></div>${renderShell(t,isDark)}</div>
       <div class="note" style="margin-top:12px">对比度 <span class="contrast">${ratio}:1 （onAccent / accent，WCAG AA ≥4.5）</span></div>
     </div>
     <div>
       <h3>▼ 我的曲库 · 同一主题</h3>
-      <div class="phone"><div class="notch"></div><div class="app" style="...">${renderLibrary(t,isDark).replace('class="app-content"','class="app-content" style="padding-top:36px"')}</div></div>
+      <div class="phone"><div class="notch"></div><div class="app" style="">${renderLibrary(t,isDark)}</div></div>
     </div>
     <div class="col" style="max-width:420px">
       <h3>▼ token 明细 · ${t.label} ${isDark?"深夜":"昼"}</h3>
@@ -273,6 +253,13 @@ function render(){
     </div>
   </div>`;
 }
+
+const themeRow=document.getElementById("themeRow");
+ROW_ORDER.forEach((id,ix)=>{const t=THEMES[id];const b=document.createElement("button");b.className="themebtn"+(state.theme===id?" active":"");
+  b.innerHTML=`<span class="dot" style="background:${t.color}"></span>${t.label}${t.desc?`<span style="color:#8a8aa5;font-size:11px;font-weight:400">${t.desc}</span>`:""}`;
+  b.onclick=()=>{state.theme=id;render()};themeRow.appendChild(b);});
+const modeRow=document.getElementById("modeRow");
+[["night","◆ 深夜(OLED)"],["day","◇ 昼"]].forEach(([m,lab])=>{const b=document.createElement("button");b.className="modebtn"+(state.mode===m?" active":"");b.textContent=lab;b.onclick=()=>{state.mode=m;render()};modeRow.appendChild(b);});
 
 render();
 </script>

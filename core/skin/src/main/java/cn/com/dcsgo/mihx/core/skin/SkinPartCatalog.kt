@@ -89,18 +89,6 @@ object SkinPartCatalog {
      */
     val SONG_LIST_TEMPLATES = setOf("default", "grid")
 
-    /**
-     * `player.template` 字段的合法取值(L4 播放页形态,2026-09-30)。
-     *
-     * 描述里 `player.template` 字段必须在该集合里,否则 [SkinParser] 拒绝该描述。
-     * 装配侧 [cn.com.dcsgo.mihx.app.shell.PlayerTemplate.fromId] 容错解析(未知值回落 classic)。
-     * 两边必须同步——参见 [PlayerTemplateCatalogTest] 的同款对照测试。
-     *
-     * 2026-09-30 新增 `sumi`(水墨青,内置皮肤 `dcsgo.skin.sumi`)和 `netease`(网易云式,
-     * 内置皮肤 `dcsgo.skin.netease`)。
-     */
-    val PLAYER_TEMPLATES = setOf("classic", "vinyl", "sumi", "netease")
-
     const val SETTINGS = "settings"
     const val EMOTION_ANALYSIS = "emotionAnalysis"
     const val HEADER_WIDGET = "header"

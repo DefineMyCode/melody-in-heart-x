@@ -4,9 +4,7 @@ import cn.com.dcsgo.mihx.feature.playlist.SongListTemplate
 import cn.com.dcsgo.mihx.navigation.AppRoutes
 
 /**
- * 运行期应用外壳（P2）。
- *
- * 设计文档：`docs/architecture/PLUGIN_SHELL_DESIGN.md` §六 P2
+ * 应用外壳（P2）。
  *
  * 背景：此前 `AppDestinations` 是**编译期 enum**（固定 3 项），底栏项目数写死，
  * 无法被描述驱动。P2 把它替换为**运行期**的 tab 列表，来源是皮肤描述
@@ -52,16 +50,6 @@ data class AppShell(
      * 解析与归一化统一由 [SkinShellResolver] 完成。
      */
     val librarySongListTemplate: SongListTemplate = SongListTemplate.DEFAULT,
-    /**
-     * 播放页渲染模板(L4 播放页形态,2026-09-30)。
-     *
-     * 默认 CLASSIC = 改造前形态;皮肤描述里 `player.template` 切到 vinyl 时,
-     * HOME composable 会走 [cn.com.dcsgo.mihx.app.player.NowPlayingVinylSurface] 渲染黑胶版。
-     *
-     * 仍放在 [AppShell] 里而非让 AppNavHost 读描述——同 [myPageSectionOrder] / [librarySongListTemplate] 一样,
-     * 解析与归一化统一由 [SkinShellResolver] 完成。
-     */
-    val playerTemplate: PlayerTemplate = PlayerTemplate.CLASSIC,
 )
 
 /**

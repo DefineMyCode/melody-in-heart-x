@@ -382,23 +382,13 @@ object SkinParser {
             }
         }
 
-        // page-level template (L3 扩展位; L4 播放页形态承接)
-        // - player 页: PLAYER_TEMPLATES 白名单(classic/vinyl)
-        // - library 页: 保留位但不强制校验(L3 的细粒度模板走 songList.props.template)
-        val template = obj.optString("template", "").trim().ifEmpty { null }
-        if (template != null && pageKey == DefaultSkin.PAGE_PLAYER && template !in SkinPartCatalog.PLAYER_TEMPLATES) {
-            issues += SkinIssue(
-                SkinIssue.Code.INVALID_PROP_VALUE,
-                "播放页 template \"$template\" 不在白名单 ${SkinPartCatalog.PLAYER_TEMPLATES} 中",
-                "$at.template",
-            )
-        }
+        // page-level template: L3 的细粒度模板走 songList.props.template（见 parseSections），
+        // 这里不做页级 template 校验。
 
         return SkinPage(
             fixedOneScreen = obj.optBoolean("fixedOneScreen", false),
             header = header,
             search = obj.optBoolean("search", false),
-            template = if (issues.any { it.field == "$at.template" }) null else template,
             segments = segments,
             defaultSegment = defaultSegment,
             sections = sections,

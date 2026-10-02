@@ -25,9 +25,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import cn.com.dcsgo.mihx.app.permissions.PermissionCoordinator
 import cn.com.dcsgo.mihx.app.player.NowPlayingSurface
-import cn.com.dcsgo.mihx.app.player.NowPlayingVinylSurface
-import cn.com.dcsgo.mihx.app.player.NowPlayingSumiSurface
-import cn.com.dcsgo.mihx.app.player.NowPlayingNeteaseSurface
 import cn.com.dcsgo.mihx.app.player.SongPlaybackStrategy
 import cn.com.dcsgo.mihx.app.player.playWith
 import cn.com.dcsgo.mihx.app.shell.AppShell
@@ -198,82 +195,24 @@ fun AppNavHost(
     ) {
         composable(AppRoutes.HOME) {
             // P3：播放页内容已抽成 NowPlayingSurface，Tab 与全局抽屉两种形态共用同一份实现。
-            // L4：皮肤描述里 pages.player.template 决定播放页形态。
-            //   - classic: NowPlayingSurface(默认骨架走这条,行为零变化)
-            //   - vinyl:   NowPlayingVinylSurface(黑胶形态,内置皮肤 dcsgo.skin.vinyl)
-            //   - sumi:    NowPlayingSumiSurface(水墨青形态,内置皮肤 dcsgo.skin.sumi,2026-09-30)
-            //   - netease: NowPlayingNeteaseSurface(网易云式形态,内置皮肤 dcsgo.skin.netease,2026-09-30)
-            val playerTemplate = shell.playerTemplate
-            when (playerTemplate) {
-                cn.com.dcsgo.mihx.app.shell.PlayerTemplate.VINYL ->
-                    NowPlayingVinylSurface(
-                        playerViewModel = playerViewModel,
-                        uiState = uiState,
-                        onShowQueue = onShowQueue,
-                        loadSongInfo = loadSongInfo,
-                        showToast = showToast,
-                        deleteSongWithToast = deleteSongWithToast,
-                        playlistResumeViewModel = playlistResumeViewModel,
-                        onNavigateToLyrics = { navController.navigate(AppRoutes.LYRICS) },
-                        onNavigateToArtist = { artistName ->
-                            navController.navigate(AppRoutes.artistDetail(artistName))
-                        },
-                        onNavigateToAlbum = { albumName ->
-                            navController.navigate(AppRoutes.albumDetail(albumName))
-                        },
-                    )
-                cn.com.dcsgo.mihx.app.shell.PlayerTemplate.SUMI ->
-                    NowPlayingSumiSurface(
-                        playerViewModel = playerViewModel,
-                        uiState = uiState,
-                        onShowQueue = onShowQueue,
-                        loadSongInfo = loadSongInfo,
-                        showToast = showToast,
-                        deleteSongWithToast = deleteSongWithToast,
-                        playlistResumeViewModel = playlistResumeViewModel,
-                        onNavigateToLyrics = { navController.navigate(AppRoutes.LYRICS) },
-                        onNavigateToArtist = { artistName ->
-                            navController.navigate(AppRoutes.artistDetail(artistName))
-                        },
-                        onNavigateToAlbum = { albumName ->
-                            navController.navigate(AppRoutes.albumDetail(albumName))
-                        },
-                    )
-                cn.com.dcsgo.mihx.app.shell.PlayerTemplate.NETEASE ->
-                    NowPlayingNeteaseSurface(
-                        playerViewModel = playerViewModel,
-                        uiState = uiState,
-                        onShowQueue = onShowQueue,
-                        loadSongInfo = loadSongInfo,
-                        showToast = showToast,
-                        deleteSongWithToast = deleteSongWithToast,
-                        playlistResumeViewModel = playlistResumeViewModel,
-                        onNavigateToLyrics = { navController.navigate(AppRoutes.LYRICS) },
-                        onNavigateToArtist = { artistName ->
-                            navController.navigate(AppRoutes.artistDetail(artistName))
-                        },
-                        onNavigateToAlbum = { albumName ->
-                            navController.navigate(AppRoutes.albumDetail(albumName))
-                        },
-                    )
-                cn.com.dcsgo.mihx.app.shell.PlayerTemplate.CLASSIC ->
-                    NowPlayingSurface(
-                        playerViewModel = playerViewModel,
-                        uiState = uiState,
-                        onShowQueue = onShowQueue,
-                        loadSongInfo = loadSongInfo,
-                        showToast = showToast,
-                        deleteSongWithToast = deleteSongWithToast,
-                        playlistResumeViewModel = playlistResumeViewModel,
-                        onNavigateToLyrics = { navController.navigate(AppRoutes.LYRICS) },
-                        onNavigateToArtist = { artistName ->
-                            navController.navigate(AppRoutes.artistDetail(artistName))
-                        },
-                        onNavigateToAlbum = { albumName ->
-                            navController.navigate(AppRoutes.albumDetail(albumName))
-                        },
-                    )
-            }
+            // L4 播放页形态（黑胶/水墨/网易云）验收后判定不符合预期，已整体下线（见 git 历史），
+            // 播放页固定走 classic 形态。
+            NowPlayingSurface(
+                playerViewModel = playerViewModel,
+                uiState = uiState,
+                onShowQueue = onShowQueue,
+                loadSongInfo = loadSongInfo,
+                showToast = showToast,
+                deleteSongWithToast = deleteSongWithToast,
+                playlistResumeViewModel = playlistResumeViewModel,
+                onNavigateToLyrics = { navController.navigate(AppRoutes.LYRICS) },
+                onNavigateToArtist = { artistName ->
+                    navController.navigate(AppRoutes.artistDetail(artistName))
+                },
+                onNavigateToAlbum = { albumName ->
+                    navController.navigate(AppRoutes.albumDetail(albumName))
+                },
+            )
         }
 
 

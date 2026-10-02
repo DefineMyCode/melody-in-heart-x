@@ -120,21 +120,7 @@ object SkinShellResolver {
             playerEntry = PlayerEntry.fromId(skin.playerEntry.id),
             myPageSectionOrder = resolveMyPageSectionOrder(skin),
             librarySongListTemplate = resolveLibrarySongListTemplate(skin),
-            playerTemplate = resolvePlayerTemplate(skin),
         )
-    }
-
-    /**
-     * 从描述里解析播放页渲染模板(L4 播放页形态,2026-09-30)。
-     *
-     * 描述里 `pages.player.template` 是 [SkinPartCatalog.PLAYER_TEMPLATES] 中的字符串。
-     * 缺省/null/未知值 → [PlayerTemplate.CLASSIC](与改造前一致,行为零变化)。
-     *
-     * 容错:[PlayerTemplate.fromId] 对未知值回落 CLASSIC(不会让页面崩)。
-     */
-    private fun resolvePlayerTemplate(skin: Skin): PlayerTemplate {
-        val playerPage = skin.pages[DefaultSkin.PAGE_PLAYER] ?: return PlayerTemplate.CLASSIC
-        return PlayerTemplate.fromId(playerPage.template)
     }
 
     /**

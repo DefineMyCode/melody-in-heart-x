@@ -80,19 +80,6 @@ data class SkinPage(
     val fixedOneScreen: Boolean = false,
     val header: SkinPageHeader? = null,
     val search: Boolean = false,
-    /**
-     * 页级模板选择（可选）。
-     *
-     * - `library`：`SongListTemplate` 的合法值（`"default"` / `"grid"`），见 [SkinPartCatalog.SONG_LIST_TEMPLATES]。
-     * - `player`：`PlayerTemplate` 的合法值（`"classic"` / `"vinyl"`），见 [SkinPartCatalog.PLAYER_TEMPLATES]。
-     *
-     * L3 通过 `songList` section 的 `props.template` 表达（细化到行模板），
-     * 这里保留页级位置留给未来其他页面的页级模板扩展。
-     *
-     * 默认 null 表示「未指定」→ 装配侧按各自页面的默认形态渲染（行为零变化）。
-     */
-    val template: String? = null,
-    /** 分段页签（如有）；每段各自有分区列表。 */
     val segments: List<String> = emptyList(),
     val defaultSegment: String? = null,
     /** 无分段时的分区；有分段时用 [sectionsBySegment]。 */

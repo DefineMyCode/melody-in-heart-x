@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>重复文件清理 — 概述+详情设计稿</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:#e8e6e1; font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif; display:flex; gap:36px; padding:40px; justify-content:center; flex-wrap:wrap; color:#1c1b19; }
+  .cap { text-align:center; font-size:12px; color:#999; margin-top:8px; }
+  .phone { width:390px; background:#fff; border-radius:32px; overflow:hidden; box-shadow:0 12px 40px rgba(0,0,0,.15); height:820px; display:flex; flex-direction:column; }
+  .bar { height:40px; display:flex; align-items:flex-end; justify-content:center; }
+  .bar i { width:110px; height:5px; border-radius:3px; background:#1c1b19; opacity:.9; margin-bottom:6px; }
+  .topbar { display:flex; align-items:center; padding:6px 14px 10px; gap:8px; }
+  .topbar .back { width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#f4f2ee; font-size:18px; }
+  .topbar .title { font-size:18px; font-weight:700; flex:1; padding-left:4px; }
+  .content { flex:1; padding:12px 18px 20px; overflow-y:auto; }
+  .card { border-radius:18px; padding:18px; margin-bottom:20px; }
+  .card-1 { background:#f7f5f0; } .card-2 { background:#f1f5f1; } .card-3 { background:#f7f5f0; }
+  .card h3 { font-size:15px; font-weight:700; margin-bottom:10px; display:flex; align-items:center; gap:7px; }
+  .card h3 .dot { width:8px;height:8px;border-radius:2px; background:#c04f42; }
+  .card-2 h3 .dot { background:#4a7a4a; }
+  .card p { font-size:13px; line-height:1.65; color:#55524d; margin-bottom:6px; }
+  .btn { display:flex; align-items:center; justify-content:center; gap:6px; width:100%; padding:12px; border-radius:12px; font-size:14px; font-weight:600; border:none; cursor:pointer; margin-top:10px; }
+  .btn-primary { background:#c04f42; color:#fff; }
+  .btn-outline { background:#fff; border:1.5px solid #d8d2c8; color:#3a3731; }
+  .warn { background:#fff; border:1px solid #e3ddd4; border-radius:10px; padding:9px 12px; font-size:12.5px; color:#7a3a34; margin:8px 0 2px; display:flex; gap:7px; }
+  .warn b { font-weight:700; }
+  .badge-green { font-size:11px; padding:2px 7px; border-radius:9px; background:#e8f0e8; color:#3a6b3a; font-weight:600; margin-left:6px; }
+  /* 概述卡 */
+  .overview { background:#f1f5f1; border:1.5px solid #dfe7df; border-radius:16px; padding:16px 18px; display:flex; align-items:center; gap:14px; }
+  .overview .num { font-size:28px; font-weight:800; color:#3a6b3a; line-height:1; }
+  .overview .lbl { font-size:13px; color:#55524d; }
+  .overview .sub { font-size:12px; color:#8a857c; margin-top:3px; }
+  .overview .go { margin-left:auto; font-size:13px; color:#3a6b3a; font-weight:600; display:flex; align-items:center; }
+  /* 详情列表 */
+  .dup-item { background:#fff;border:1px solid #e6e0d6;border-radius:12px;padding:12px 14px;margin-bottom:9px;}
+  .dup-item .name{font-size:13.5px;font-weight:600;display:flex;justify-content:space-between;align-items:center;}
+  .dup-item .name .n{color:#3a6b3a;font-size:12px;font-weight:700;background:#eef4ee;padding:2px 8px;border-radius:8px;}
+  .dup-item .path{font-size:11.5px;color:#8a857c;margin-top:4px;word-break:break-all;line-height:1.5;}
+  .dup-item .path b{color:#55524d;font-weight:600;}
+  .countbar { font-size:12.5px; color:#77716a; text-align:center; padding:8px 0 2px; }
+</style>
+</head>
+<body>
+
+<!-- 状态1：初始 -->
+<div class="phone">
+  <div class="cap">① 初始状态</div>
+  <div class="bar"><i></i></div>
+  <div class="topbar"><div class="back">←</div><div class="title">文件校验</div></div>
+  <div class="content">
+    <div class="card card-1">
+      <h3><span class="dot"></span>文件校验</h3>
+      <p>扫描每首歌曲对应的本地文件是否存在，并检查与数据库是否一致。文件已缺失的歌曲将从曲库与歌单中移除。</p>
+      <p style="font-size:12.5px;color:#777">快速：按指纹预筛 · 深度：全库重读元数据</p>
+      <button class="btn btn-primary">快速校验</button>
+      <button class="btn btn-outline">深度校验（全库重新读取元数据）</button>
+    </div>
+    <div class="card card-2">
+      <h3><span class="dot"></span>重复文件清理</h3>
+      <p>同一首歌曲因从不同文件夹重复导入，可能出现多条重复记录。</p>
+      <div class="warn"><b>仅删除数据库中的重复数据</b>，不会删除任何音乐文件。</div>
+      <button class="btn btn-outline">扫描重复歌曲</button>
+    </div>
+  </div>
+</div>
+
+<!-- 状态2：扫描后概述 -->
+<div class="phone">
+  <div class="cap">② 扫描后 · 概述</div>
+  <div class="bar"><i></i></div>
+  <div class="topbar"><div class="back">←</div><div class="title">文件校验</div></div>
+  <div class="content">
+    <div class="card card-1">
+      <h3><span class="dot"></span>文件校验</h3>
+      <p>扫描每首歌曲对应的本地文件是否存在。</p>
+      <button class="btn btn-outline">快速校验</button>
+    </div>
+    <div class="card card-2">
+      <h3><span class="dot"></span>重复文件清理 <span class="badge-green">已扫描</span></h3>
+      <div class="overview">
+        <div class="num">7</div>
+        <div>
+          <div class="lbl">发现重复的歌曲</div>
+          <div class="sub">共 7 组 · 清理后将移除 19 条重复记录</div>
+        </div>
+        <div class="go">查看详情</div>
+      </div>
+      <div class="warn"><b>仅删除数据库中的重复数据</b>，不会删除任何音乐文件。</div>
+      <button class="btn btn-outline" style="color:#3a6b3a;border-color:#c4d6c4;background:#fff">重新扫描</button>
+      <button class="btn btn-primary">一键清理全部重复</button>
+    </div>
+    <button class="btn" style="background:#c9c4ba;color:#fff;margin-top:6px">确认完成</button>
+  </div>
+</div>
+
+<!-- 状态3：详情页 -->
+<div class="phone">
+  <div class="cap">③ 详情页（点「查看详情」进入）</div>
+  <div class="bar"><i></i></div>
+  <div class="topbar"><div class="back">←</div><div class="title">重复文件详情</div></div>
+  <div class="content">
+    <div class="card card-2" style="padding:14px 16px;margin-bottom:12px">
+      <div style="font-size:15px;font-weight:700;">发现 7 组重复</div>
+      <div style="font-size:12.5px;color:#777;margin-top:3px;">重复歌曲共 19 条 · 清理仅移除数据库记录，不删除音乐文件</div>
+    </div>
+    <div class="dup-item">
+      <div class="name">Night Cruising — 牛尾憲輔 <span class="n">3 条</span></div>
+      <div class="path"><b>重复路径：</b>/storage/emulated/0/音乐-全部/网易云2026-04-19/<br>Night Cruising.flac</div>
+    </div>
+    <div class="dup-item">
+      <div class="name">群像 — 中島美嘉 <span class="n">2 条</span></div>
+      <div class="path"><b>重复路径：</b>/storage/emulated/0/音乐/群像.flac</div>
+    </div>
+    <div class="dup-item">
+      <div class="name">Lemon — 米津玄師 <span class="n">3 条</span></div>
+      <div class="path"><b>重复路径：</b>/storage/emulated/0/音乐/网易云缓存/Lemon.flac</div>
+    </div>
+    <div class="dup-item">
+      <div class="name">打上花火 — DAOKO <span class="n">2 条</span></div>
+      <div class="path"><b>重复路径：</b>/storage/emulated/0/音乐/打上花火.flac</div>
+    </div>
+    <div class="dup-item">
+      <div class="name">星野源 — 恋 <span class="n">3 条</span></div>
+      <div class="path"><b>重复路径：</b>/storage/emulated/0/音乐-全部/星野源/恋.flac</div>
+    </div>
+    <div class="countbar">— 仅展示前 5 条，共 7 组仍可下滑 —</div>
+  </div>
+</div>
+
+</body>
+</html>

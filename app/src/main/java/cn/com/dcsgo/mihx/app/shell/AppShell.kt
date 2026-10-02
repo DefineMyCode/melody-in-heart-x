@@ -82,14 +82,6 @@ data class AppTab(
     /** 该 tab 指向的顶级路由。 */
     val route: String,
     val label: String,
-    /**
-     * 图标资源 id。
-     *
-     * 说明：改造前底栏是**纯文字**（`TextBottomBar` 只渲染 label），图标字段虽存在于
-     * `AppDestinations` 却从未被使用。这里保留该字段以免描述里的 `icon` 丢失信息，
-     * 但**底栏仍渲染纯文字**——这是"与现状逐页无差异"的一部分。
-     */
-    val iconResId: Int,
 )
 
 /**

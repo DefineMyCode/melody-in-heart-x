@@ -1,6 +1,5 @@
 package cn.com.dcsgo.mihx.app.shell
 
-import cn.com.dcsgo.mihx.R
 import cn.com.dcsgo.mihx.core.skin.DefaultSkin
 import cn.com.dcsgo.mihx.core.skin.Skin
 import cn.com.dcsgo.mihx.core.skin.SkinParser
@@ -28,13 +27,7 @@ object SkinShellResolver {
     /**
      * 当前可选的骨架集合（皮肤）。
      *
-     * 登记的内置骨架用于验收与开关测试：
-     *  - 默认骨架（3 Tab，与改造前一致）
-     *  - 抽屉型骨架（2 Tab + 播放为全局抽屉，即用户举例的那套）
-     *  - 网格样本骨架（3 Tab + 曲库歌手/专辑段走网格）
-     *  - 黑胶样本骨架（3 Tab + 播放页切到黑胶形态）
-     *
-     * 用户导入的皮肤在 P5 走另一条解析路径（resolveUserSkin）。
+     * 登记的内置骨架用于验收与开关测试：默认骨架（3 Tab）/ 抽屉型骨架（2 Tab + 播放为全局抽屉）。
      */
     val knownSkins: List<Skin> by lazy { listOf(DefaultSkin.skin(), DefaultSkin.minimalSheetSkin()) }
 
@@ -47,8 +40,6 @@ object SkinShellResolver {
         return resolve(skin)
     }
 
-    fun resolveUserSkin(@Suppress("UNUSED_PARAMETER") json: String): AppShell = DefaultShell.shell
-
     /**
      * 描述里的页面 key → 顶级路由。
      *
@@ -60,32 +51,6 @@ object SkinShellResolver {
         "player" to AppRoutes.HOME,
         "me" to AppRoutes.USER,
     )
-
-    /**
-     * 图标名 → drawable 资源 id。
-     *
-     * 只登记 `SkinPartCatalog.iconNames` 里真实存在的名字；缺失的退回一个安全默认值。
-     * 底栏目前渲染纯文字（与现状一致），该映射供 P4 的网格/快捷入口等零件使用。
-     */
-    private val ICON_TO_RES = mapOf(
-        "library" to R.drawable.queue_music_24,
-        "play" to R.drawable.ic_play,
-        "pause" to R.drawable.pause_24,
-        "prev" to R.drawable.skip_previous_24,
-        "next" to R.drawable.skip_next_24,
-        "shuffle" to R.drawable.shuffle_24,
-        "me" to R.drawable.ic_person_24,
-        "settings" to R.drawable.settings_24,
-        "sliders" to R.drawable.settings_24,
-        "list" to R.drawable.bar_chart_4_bars_24,
-        "download" to R.drawable.vertical_align_bottom_24,
-        "music" to R.drawable.queue_music_24,
-    )
-
-    /** 图标兜底：描述里写了合法名字但宿主暂无对应 drawable 时用它。 */
-    private val FALLBACK_ICON = R.drawable.queue_music_24
-
-    fun iconRes(iconName: String): Int = ICON_TO_RES[iconName] ?: FALLBACK_ICON
 
     /**
      * 把校验通过的描述解析成运行期外壳。
@@ -104,7 +69,6 @@ object SkinShellResolver {
                     id = tab.id,
                     route = it,
                     label = tab.label,
-                    iconResId = iconRes(tab.icon),
                 )
             }
         }.ifEmpty { DefaultShell.shell.tabs }
@@ -197,19 +161,16 @@ object DefaultShell {
                 id = "tab-library",
                 route = AppRoutes.PLAYLIST,
                 label = "曲库",
-                iconResId = R.drawable.queue_music_24,
             ),
             AppTab(
                 id = "tab-player",
                 route = AppRoutes.HOME,
                 label = "播放",
-                iconResId = R.drawable.ic_play,
             ),
             AppTab(
                 id = "tab-me",
                 route = AppRoutes.USER,
                 label = "我的",
-                iconResId = R.drawable.ic_person_24,
             ),
         ),
         startRoute = AppRoutes.HOME,

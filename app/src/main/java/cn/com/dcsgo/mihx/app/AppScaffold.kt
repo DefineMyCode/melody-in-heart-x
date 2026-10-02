@@ -28,7 +28,6 @@ import androidx.compose.ui.unit.dp
 import cn.com.dcsgo.mihx.app.shell.AppShell
 import cn.com.dcsgo.mihx.app.shell.AppTab
 import cn.com.dcsgo.mihx.app.shell.LuckyPlayEntryBar
-import cn.com.dcsgo.mihx.app.shell.PlayerEntry
 import cn.com.dcsgo.mihx.app.shell.indexOfRoute
 import cn.com.dcsgo.mihx.app.shell.playerRoute
 import cn.com.dcsgo.mihx.app.shell.shouldShowLuckyPlayEntry
@@ -294,7 +293,3 @@ private fun TextNavRail(
         }
     }
 }
-
-/** 供 P3 判断：该骨架是否把播放页放在底栏（[PlayerEntry.TAB]）而不是抽屉。 */
-internal fun AppShell.usesPlayerTab(): Boolean =
-    playerEntry == PlayerEntry.TAB && tabs.any { it.id == "tab-player" }

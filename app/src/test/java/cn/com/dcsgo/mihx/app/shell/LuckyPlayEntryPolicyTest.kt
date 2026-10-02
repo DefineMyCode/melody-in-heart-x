@@ -19,8 +19,8 @@ class LuckyPlayEntryPolicyTest {
 
     private val sheetShell = AppShell(
         tabs = listOf(
-            AppTab("tab-library", AppRoutes.PLAYLIST, "曲库", 0),
-            AppTab("tab-me", AppRoutes.USER, "我的", 0),
+            AppTab("tab-library", AppRoutes.PLAYLIST, "曲库"),
+            AppTab("tab-me", AppRoutes.USER, "我的"),
         ),
         startRoute = AppRoutes.PLAYLIST,
         miniPlayer = true,

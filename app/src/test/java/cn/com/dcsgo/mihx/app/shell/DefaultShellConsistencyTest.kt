@@ -100,16 +100,4 @@ class DefaultShellConsistencyTest {
         assertEquals(2, resolved.tabs.size)
         assertEquals(listOf("A", "B"), resolved.tabs.map { it.label })
     }
-
-    @Test
-    fun `icon names in the default skin all resolve to a real drawable`() {
-        // 底栏目前渲染纯文字，但 P4 的网格/快捷入口要用图标；缺映射不该崩
-        val skin = DefaultSkin.skin()
-        skin.shell.bottomBar.forEach { tab ->
-            assertTrue(
-                "图标 \"${tab.icon}\" 应能解析出资源 id",
-                SkinShellResolver.iconRes(tab.icon) != 0,
-            )
-        }
-    }
 }

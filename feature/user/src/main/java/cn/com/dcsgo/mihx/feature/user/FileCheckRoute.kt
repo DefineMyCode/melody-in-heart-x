@@ -28,6 +28,8 @@ data class FileCheckRouteActions(
     val onScanDuplicates: () -> Unit = {},
     /** 一键清理全部重复 */
     val onDeduplicateAll: () -> Unit = {},
+    /** 打开重复文件详情页 */
+    val onOpenDetail: () -> Unit = {},
 )
 
 @Composable
@@ -45,5 +47,6 @@ fun FileCheckRoute(
         onAcknowledge = actions.onAcknowledge,
         onScanDuplicates = actions.onScanDuplicates,
         onDeduplicateAll = actions.onDeduplicateAll,
+        onOpenDetail = actions.onOpenDetail,
     )
 }

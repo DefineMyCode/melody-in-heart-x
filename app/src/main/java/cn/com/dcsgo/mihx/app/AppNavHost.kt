@@ -65,6 +65,7 @@ import cn.com.dcsgo.mihx.feature.settings.SettingsRouteState
 import cn.com.dcsgo.mihx.feature.user.FileCheckRoute
 import cn.com.dcsgo.mihx.feature.user.FileCheckRouteActions
 import cn.com.dcsgo.mihx.feature.user.FileCheckRouteState
+import cn.com.dcsgo.mihx.feature.user.DuplicateDetailScreen
 import cn.com.dcsgo.mihx.feature.user.EmotionAnalysisActions
 import cn.com.dcsgo.mihx.feature.user.EmotionAnalysisRoute
 import cn.com.dcsgo.mihx.feature.user.EmotionAnalysisState
@@ -567,7 +568,18 @@ fun AppNavHost(
                     },
                     onScanDuplicates = { playerViewModel.scanDuplicateSongs() },
                     onDeduplicateAll = { playerViewModel.deduplicateAll() },
+                    onOpenDetail = {
+                        navController.navigate(AppRoutes.DUPLICATE_DETAIL)
+                    },
                 ),
+            )
+        }
+
+        composable(AppRoutes.DUPLICATE_DETAIL) {
+            val duplicateGroups by playerViewModel.duplicateGroups.collectAsStateWithLifecycle()
+            DuplicateDetailScreen(
+                duplicateGroups = duplicateGroups,
+                onBack = navController::navigateUp,
             )
         }
 

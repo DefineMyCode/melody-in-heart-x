@@ -869,6 +869,12 @@ fun AppNavHost(
                             when (variant) {
                                 ThemeVariant.MONO -> "已切换为墨色主题"
                                 ThemeVariant.VERMILION -> "已切换为朱砂 · 心有乐章主题"
+                                ThemeVariant.INDIGO -> "已切换为靛蓝静夜主题"
+                                ThemeVariant.SAGE -> "已切换为苔藓森野主题"
+                                ThemeVariant.AMBER -> "已切换为琥珀暖忆主题"
+                                ThemeVariant.SKY -> "已切换为天空澄明主题"
+                                ThemeVariant.FRESH -> "已切换为新叶青翠主题"
+                                ThemeVariant.SUNRISE -> "已切换为晨光霞粉主题"
                             },
                         )
                     },

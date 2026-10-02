@@ -150,45 +150,55 @@ private fun ValidatingContent() {
 
 @Composable
 private fun IdleContent(onRunValidation: (FileCheckMode) -> Unit) {
-    Spacer(modifier = Modifier.height(40.dp))
-    Box(
-        modifier = Modifier
-            .size(64.dp),
-        contentAlignment = Alignment.Center,
-    ) {
-        Icon(
-            imageVector = Icons.Default.CheckCircle,
-            contentDescription = null,
-            modifier = Modifier.size(64.dp),
-            tint = MaterialTheme.colorScheme.primaryContainer,
-        )
-    }
     Spacer(modifier = Modifier.height(20.dp))
-    Text(
-        text = "校验本地歌曲文件",
-        style = MaterialTheme.typography.titleMedium,
-        fontWeight = FontWeight.Bold,
-    )
-    Spacer(modifier = Modifier.height(8.dp))
-    Text(
-        text = "扫描每首歌曲对应的本地文件是否存在，并检查与数据库是否一致。\n文件已缺失（如被外部删除）的歌曲将从曲库与歌单中移除，\n同时清理播放统计、秒切、播放事件等关联数据。\n\n快速校验还会按文件指纹（大小+修改时间）预筛，重新提取有变化歌曲的元数据（歌手/专辑/封面），歌曲的播放统计与情绪标记保留。\n深度校验则对全部歌曲重新提取元数据，耗时更长。",
-        style = MaterialTheme.typography.bodyMedium,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-        textAlign = TextAlign.Center,
-    )
-    Spacer(modifier = Modifier.height(28.dp))
-    Button(
-        onClick = { onRunValidation(FileCheckMode.QUICK) },
+    Card(
         modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(18.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+        ),
     ) {
-        Text("快速校验")
-    }
-    Spacer(modifier = Modifier.height(10.dp))
-    OutlinedButton(
-        onClick = { onRunValidation(FileCheckMode.DEEP) },
-        modifier = Modifier.fillMaxWidth(),
-    ) {
-        Text("深度校验（全库重新读取元数据）")
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(18.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Spacer(modifier = Modifier.height(18.dp))
+            Icon(
+                imageVector = Icons.Default.CheckCircle,
+                contentDescription = null,
+                modifier = Modifier.size(44.dp),
+                tint = MaterialTheme.colorScheme.primaryContainer,
+            )
+            Spacer(modifier = Modifier.height(14.dp))
+            Text(
+                text = "校验本地歌曲文件",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = "扫描每首歌曲对应的本地文件是否存在，并检查与数据库是否一致。\n文件已缺失（如被外部删除）的歌曲将从曲库与歌单中移除，\n同时清理播放统计、秒切、播放事件等关联数据。\n\n快速校验还会按文件指纹（大小+修改时间）预筛，重新提取有变化歌曲的元数据（歌手/专辑/封面），歌曲的播放统计与情绪标记保留。\n深度校验则对全部歌曲重新提取元数据，耗时更长。",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center,
+            )
+            Spacer(modifier = Modifier.height(20.dp))
+            Button(
+                onClick = { onRunValidation(FileCheckMode.QUICK) },
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text("快速校验")
+            }
+            Spacer(modifier = Modifier.height(10.dp))
+            OutlinedButton(
+                onClick = { onRunValidation(FileCheckMode.DEEP) },
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text("深度校验（全库重新读取元数据）")
+            }
+        }
     }
 }
 
@@ -308,128 +318,138 @@ private fun DuplicateContent(
     onDeduplicateAll: () -> Unit,
     onOpenDetail: () -> Unit,
 ) {
-    Text(
-        text = "重复文件清理",
-        style = MaterialTheme.typography.titleMedium,
-        fontWeight = FontWeight.Bold,
-    )
-    Spacer(modifier = Modifier.height(8.dp))
-    Text(
-        text = "同一首歌曲因从不同文件夹（父目录/子目录）重复导入，可能出现多条重复记录。",
-        style = MaterialTheme.typography.bodyMedium,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-    )
-    Spacer(modifier = Modifier.height(8.dp))
-    DuplicateSafeNote()
-    Spacer(modifier = Modifier.height(16.dp))
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(18.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+        ),
+    ) {
+        Column(modifier = Modifier.padding(18.dp)) {
+            Text(
+                text = "重复文件清理",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+            )
+            Spacer(modifier = Modifier.height(6.dp))
+            Text(
+                text = "同一首歌曲因从不同文件夹（父目录/子目录）重复导入，可能出现多条重复记录。",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Spacer(modifier = Modifier.height(10.dp))
+            DuplicateSafeNote()
+            Spacer(modifier = Modifier.height(14.dp))
 
-    when {
-        isScanning -> {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                CircularProgressIndicator(
-                    modifier = Modifier.size(20.dp),
-                    strokeWidth = 2.dp,
-                )
-                Spacer(modifier = Modifier.width(10.dp))
-                Text(
-                    text = "正在扫描重复…",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-        }
-        duplicateGroups.isEmpty() -> {
-            OutlinedButton(
-                onClick = onScan,
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Search,
-                    contentDescription = null,
-                    modifier = Modifier.size(16.dp),
-                )
-                Spacer(modifier = Modifier.width(6.dp))
-                Text("扫描重复歌曲")
-            }
-        }
-        else -> {
-            val groupCount = duplicateGroups.size
-            val dupCount = duplicateGroups.sumOf { it.duplicates.size }
-            // 概述卡：展示发现组数与可清理记录数，完整列表进详情页
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable(onClick = onOpenDetail),
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                ),
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text(
-                        text = "$groupCount",
-                        style = MaterialTheme.typography.headlineMedium,
-                        fontWeight = FontWeight.ExtraBold,
-                        color = MaterialTheme.colorScheme.onSecondaryContainer,
-                    )
-                    Spacer(modifier = Modifier.width(14.dp))
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = "发现重复的歌曲",
-                            style = MaterialTheme.typography.bodyMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSecondaryContainer,
+            when {
+                isScanning -> {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(20.dp),
+                            strokeWidth = 2.dp,
                         )
-                        Spacer(modifier = Modifier.height(2.dp))
+                        Spacer(modifier = Modifier.width(10.dp))
                         Text(
-                            text = "共 $groupCount 组 · 清理后将移除 $dupCount 条重复记录",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.7f),
+                            text = "正在扫描重复…",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
-                    Spacer(modifier = Modifier.width(10.dp))
-                    Text(
-                        text = "查看详情",
-                        style = MaterialTheme.typography.labelLarge,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary,
-                    )
                 }
-            }
-            Spacer(modifier = Modifier.height(10.dp))
-            OutlinedButton(
-                onClick = onScan,
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Refresh,
-                    contentDescription = null,
-                    modifier = Modifier.size(16.dp),
-                )
-                Spacer(modifier = Modifier.width(6.dp))
-                Text("重新扫描")
-            }
-            Spacer(modifier = Modifier.height(10.dp))
-            Button(
-                onClick = onDeduplicateAll,
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                Icon(
-                    imageVector = Icons.Default.DeleteSweep,
-                    contentDescription = null,
-                    modifier = Modifier.size(16.dp),
-                )
-                Spacer(modifier = Modifier.width(6.dp))
-                Text("一键清理全部重复（移除 $dupCount 条）")
+                duplicateGroups.isEmpty() -> {
+                    OutlinedButton(
+                        onClick = onScan,
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Search,
+                            contentDescription = null,
+                            modifier = Modifier.size(16.dp),
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text("扫描重复歌曲")
+                    }
+                }
+                else -> {
+                    val groupCount = duplicateGroups.size
+                    val dupCount = duplicateGroups.sumOf { it.duplicates.size }
+                    // 概述卡：展示发现组数与可清理记录数，完整列表进详情页
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable(onClick = onOpenDetail),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                        ),
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Text(
+                                text = "$groupCount",
+                                style = MaterialTheme.typography.headlineMedium,
+                                fontWeight = FontWeight.ExtraBold,
+                                color = MaterialTheme.colorScheme.onSecondaryContainer,
+                            )
+                            Spacer(modifier = Modifier.width(14.dp))
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = "发现重复的歌曲",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSecondaryContainer,
+                                )
+                                Spacer(modifier = Modifier.height(2.dp))
+                                Text(
+                                    text = "共 $groupCount 组 · 清理后将移除 $dupCount 条重复记录",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.7f),
+                                )
+                            }
+                            Spacer(modifier = Modifier.width(10.dp))
+                            Text(
+                                text = "查看详情",
+                                style = MaterialTheme.typography.labelLarge,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary,
+                            )
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(10.dp))
+                    OutlinedButton(
+                        onClick = onScan,
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Refresh,
+                            contentDescription = null,
+                            modifier = Modifier.size(16.dp),
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text("重新扫描")
+                    }
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Button(
+                        onClick = onDeduplicateAll,
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.DeleteSweep,
+                            contentDescription = null,
+                            modifier = Modifier.size(16.dp),
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text("一键清理全部重复（移除 $dupCount 条）")
+                    }
+                }
             }
         }
     }

@@ -552,12 +552,14 @@ fun AppNavHost(
             val isValidating by playerViewModel.isValidating.collectAsStateWithLifecycle()
             val duplicateGroups by playerViewModel.duplicateGroups.collectAsStateWithLifecycle()
             val isScanningDuplicates by playerViewModel.isScanningDuplicates.collectAsStateWithLifecycle()
+            val hasScannedDuplicates by playerViewModel.hasScannedDuplicates.collectAsStateWithLifecycle()
             FileCheckRoute(
                 state = FileCheckRouteState(
                     validationResult = validationResult,
                     isValidating = isValidating,
                     duplicateGroups = duplicateGroups,
                     isScanningDuplicates = isScanningDuplicates,
+                    hasScannedDuplicates = hasScannedDuplicates,
                 ),
                 actions = FileCheckRouteActions(
                     onBack = navController::navigateUp,

@@ -691,6 +691,9 @@ internal class PlayerRuntime(
     private val _isScanningDuplicates = MutableStateFlow(false)
     val isScanningDuplicates: StateFlow<Boolean> = _isScanningDuplicates.asStateFlow()
 
+    private val _hasScannedDuplicates = MutableStateFlow(false)
+    val hasScannedDuplicates: StateFlow<Boolean> = _hasScannedDuplicates.asStateFlow()
+
     /** 在后台扫描曲库重复（真实路径相同）。完成后存入 [duplicateGroups]。 */
     fun scanDuplicateSongs() {
         if (_isScanningDuplicates.value) return
@@ -701,6 +704,7 @@ internal class PlayerRuntime(
                     songRepository.scanDuplicateSongGroups()
                 }
                 _duplicateGroups.value = groups
+                _hasScannedDuplicates.value = true
                 AppLog.info(TAG, "scanDuplicateSongs: found ${groups.size} duplicate groups")
             } catch (e: Exception) {
                 AppLog.error(TAG, "scanDuplicateSongs failed", e)
@@ -720,8 +724,9 @@ internal class PlayerRuntime(
                     songRepository.deduplicateSongs(groups)
                 }
                 AppLog.info(TAG, "deduplicateAll: removed ${removed.size} songs")
-                // 清空扫描结果与校验徽标
                 _duplicateGroups.value = emptyList()
+                _hasScannedDuplicates.value = false
+                // 清空扫描结果与校验徽标
                 _validationResult.value = null
             } catch (e: Exception) {
                 AppLog.error(TAG, "deduplicateAll failed", e)

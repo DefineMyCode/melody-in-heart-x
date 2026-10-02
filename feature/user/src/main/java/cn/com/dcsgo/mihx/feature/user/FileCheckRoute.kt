@@ -16,6 +16,8 @@ data class FileCheckRouteState(
     val duplicateGroups: List<DuplicateSongGroup> = emptyList(),
     /** 是否正在扫描重复 */
     val isScanningDuplicates: Boolean = false,
+    /** 是否已执行过重复扫描（区分"未扫"与"扫描后无重复"） */
+    val hasScannedDuplicates: Boolean = false,
 )
 
 data class FileCheckRouteActions(
@@ -42,6 +44,7 @@ fun FileCheckRoute(
         isValidating = state.isValidating,
         duplicateGroups = state.duplicateGroups,
         isScanningDuplicates = state.isScanningDuplicates,
+        hasScannedDuplicates = state.hasScannedDuplicates,
         onBack = actions.onBack,
         onRunValidation = actions.onRunValidation,
         onAcknowledge = actions.onAcknowledge,

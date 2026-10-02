@@ -203,6 +203,9 @@ class PlayerViewModel @Inject constructor(
     /** 是否正在扫描重复。 */
     val isScanningDuplicates: StateFlow<Boolean> = runtime.isScanningDuplicates
 
+    /** 是否已执行过重复扫描（无论结果空/非空，用于区分"未扫"与"扫描后无重复"）。 */
+    val hasScannedDuplicates: StateFlow<Boolean> = runtime.hasScannedDuplicates
+
     /** 在后台扫描曲库重复（真实路径相同）。 */
     fun scanDuplicateSongs() {
         runtime.scanDuplicateSongs()

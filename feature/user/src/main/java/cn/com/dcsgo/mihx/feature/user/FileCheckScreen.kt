@@ -60,6 +60,7 @@ fun FileCheckScreen(
     isValidating: Boolean,
     duplicateGroups: List<DuplicateSongGroup>,
     isScanningDuplicates: Boolean,
+    hasScannedDuplicates: Boolean,
     onBack: () -> Unit,
     onRunValidation: (FileCheckMode) -> Unit,
     onAcknowledge: () -> Unit,
@@ -117,6 +118,7 @@ fun FileCheckScreen(
             DuplicateContent(
                 duplicateGroups = duplicateGroups,
                 isScanning = isScanningDuplicates,
+                hasScanned = hasScannedDuplicates,
                 onScan = onScanDuplicates,
                 onDeduplicateAll = onDeduplicateAll,
                 onOpenDetail = onOpenDetail,
@@ -182,7 +184,8 @@ private fun IdleContent(onRunValidation: (FileCheckMode) -> Unit) {
                 text = "扫描每首歌曲对应的本地文件是否存在，并检查与数据库是否一致。\n文件已缺失（如被外部删除）的歌曲将从曲库与歌单中移除，\n同时清理播放统计、秒切、播放事件等关联数据。\n\n快速校验还会按文件指纹（大小+修改时间）预筛，重新提取有变化歌曲的元数据（歌手/专辑/封面），歌曲的播放统计与情绪标记保留。\n深度校验则对全部歌曲重新提取元数据，耗时更长。",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth(),
+                textAlign = TextAlign.Start,
             )
             Spacer(modifier = Modifier.height(20.dp))
             Button(
@@ -314,6 +317,7 @@ private fun ResultRow(label: String, value: String, emphasized: Boolean = false)
 private fun DuplicateContent(
     duplicateGroups: List<DuplicateSongGroup>,
     isScanning: Boolean,
+    hasScanned: Boolean,
     onScan: () -> Unit,
     onDeduplicateAll: () -> Unit,
     onOpenDetail: () -> Unit,
@@ -360,7 +364,8 @@ private fun DuplicateContent(
                         )
                     }
                 }
-                duplicateGroups.isEmpty() -> {
+                !hasScanned -> {
+                    // 尚未扫描：显示扫描按钮
                     OutlinedButton(
                         onClick = onScan,
                         modifier = Modifier.fillMaxWidth(),
@@ -372,6 +377,40 @@ private fun DuplicateContent(
                         )
                         Spacer(modifier = Modifier.width(6.dp))
                         Text("扫描重复歌曲")
+                    }
+                }
+                duplicateGroups.isEmpty() -> {
+                    // 已扫描但未发现重复：给明确结果，避免用户以为功能没执行
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.CheckCircle,
+                            contentDescription = null,
+                            modifier = Modifier.size(20.dp),
+                            tint = MaterialTheme.colorScheme.primary,
+                        )
+                        Spacer(modifier = Modifier.width(10.dp))
+                        Text(
+                            text = "未发现重复文件，曲库干净",
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(10.dp))
+                    OutlinedButton(
+                        onClick = onScan,
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Refresh,
+                            contentDescription = null,
+                            modifier = Modifier.size(16.dp),
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text("重新扫描")
                     }
                 }
                 else -> {

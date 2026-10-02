@@ -282,9 +282,6 @@ fun EmotionLibraryView(
                 ) {
                     Text("添加到歌单")
                 }
-                TextButton(onClick = { selection.exitSelectMode() }) {
-                    Text("退出")
-                }
                 }
             }
         }

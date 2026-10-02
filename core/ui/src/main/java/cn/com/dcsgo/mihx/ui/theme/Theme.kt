@@ -36,101 +36,107 @@ private data class ErrorPalette(
     val onErrorContainer: Color,
 )
 
-private fun paletteToColorScheme(palette: ThemePalette, isDark: Boolean): ColorScheme {
+private fun tokensToColorScheme(tokens: ThemeTokens, isDark: Boolean): ColorScheme {
     val error = if (isDark) DarkErrorPalette else LightErrorPalette
-    val inverseSurface = if (isDark) palette.text1 else palette.bg0
-    val inverseOnSurface = if (isDark) palette.bg0 else palette.text1
+    val inverseSurface = if (isDark) Color(tokens.text1) else Color(tokens.bg0)
+    val inverseOnSurface = if (isDark) Color(tokens.bg0) else Color(tokens.text1)
     return if (isDark) {
         darkColorScheme(
-            primary = palette.accent,
-            onPrimary = palette.onAccent,
-            primaryContainer = palette.bg4,
-            onPrimaryContainer = palette.text1,
-            inversePrimary = palette.accent2,
-            secondary = palette.accent2,
-            onSecondary = palette.onAccent2,
-            secondaryContainer = palette.bg3,
-            onSecondaryContainer = palette.text1,
-            tertiary = palette.accent2,
-            onTertiary = palette.onAccent2,
-            tertiaryContainer = palette.bg4,
-            onTertiaryContainer = palette.text1,
-            background = palette.bg0,
-            onBackground = palette.text1,
-            surface = palette.bg0,
-            onSurface = palette.text1,
-            surfaceVariant = palette.bg3,
-            onSurfaceVariant = palette.text2,
-            surfaceTint = palette.accent,
+            primary = Color(tokens.accent),
+            onPrimary = Color(tokens.onAccent),
+            primaryContainer = Color(tokens.bg4),
+            onPrimaryContainer = Color(tokens.text1),
+            inversePrimary = Color(tokens.accent2),
+            secondary = Color(tokens.accent2),
+            onSecondary = Color(tokens.onAccent2),
+            secondaryContainer = Color(tokens.bg3),
+            onSecondaryContainer = Color(tokens.text1),
+            tertiary = Color(tokens.accent2),
+            onTertiary = Color(tokens.onAccent2),
+            tertiaryContainer = Color(tokens.bg4),
+            onTertiaryContainer = Color(tokens.text1),
+            background = Color(tokens.bg0),
+            onBackground = Color(tokens.text1),
+            surface = Color(tokens.bg0),
+            onSurface = Color(tokens.text1),
+            surfaceVariant = Color(tokens.bg3),
+            onSurfaceVariant = Color(tokens.text2),
+            surfaceTint = Color(tokens.accent),
             inverseSurface = inverseSurface,
             inverseOnSurface = inverseOnSurface,
             error = error.error,
             onError = error.onError,
             errorContainer = error.errorContainer,
             onErrorContainer = error.onErrorContainer,
-            outline = palette.out2,
-            outlineVariant = palette.out1,
+            outline = Color(tokens.out2),
+            outlineVariant = Color(tokens.out1),
             scrim = Color(0xFF000000),
-            surfaceBright = palette.bg1,
-            surfaceDim = palette.bg4,
-            surfaceContainerLowest = palette.bg1,
-            surfaceContainerLow = palette.bg2,
-            surfaceContainer = palette.bg3,
-            surfaceContainerHigh = palette.bg4,
-            surfaceContainerHighest = palette.bg4,
+            surfaceBright = Color(tokens.bg1),
+            surfaceDim = Color(tokens.bg4),
+            surfaceContainerLowest = Color(tokens.bg1),
+            surfaceContainerLow = Color(tokens.bg2),
+            surfaceContainer = Color(tokens.bg3),
+            surfaceContainerHigh = Color(tokens.bg4),
+            surfaceContainerHighest = Color(tokens.bg4),
         )
     } else {
         lightColorScheme(
-            primary = palette.accent,
-            onPrimary = palette.onAccent,
-            primaryContainer = palette.bg4,
-            onPrimaryContainer = palette.text1,
-            inversePrimary = palette.accent2,
-            secondary = palette.accent2,
-            onSecondary = palette.onAccent2,
-            secondaryContainer = palette.bg3,
-            onSecondaryContainer = palette.text1,
-            tertiary = palette.accent2,
-            onTertiary = palette.onAccent2,
-            tertiaryContainer = palette.bg4,
-            onTertiaryContainer = palette.text1,
-            background = palette.bg0,
-            onBackground = palette.text1,
-            surface = palette.bg0,
-            onSurface = palette.text1,
-            surfaceVariant = palette.bg3,
-            onSurfaceVariant = palette.text2,
-            surfaceTint = palette.accent,
+            primary = Color(tokens.accent),
+            onPrimary = Color(tokens.onAccent),
+            primaryContainer = Color(tokens.bg4),
+            onPrimaryContainer = Color(tokens.text1),
+            inversePrimary = Color(tokens.accent2),
+            secondary = Color(tokens.accent2),
+            onSecondary = Color(tokens.onAccent2),
+            secondaryContainer = Color(tokens.bg3),
+            onSecondaryContainer = Color(tokens.text1),
+            tertiary = Color(tokens.accent2),
+            onTertiary = Color(tokens.onAccent2),
+            tertiaryContainer = Color(tokens.bg4),
+            onTertiaryContainer = Color(tokens.text1),
+            background = Color(tokens.bg0),
+            onBackground = Color(tokens.text1),
+            surface = Color(tokens.bg0),
+            onSurface = Color(tokens.text1),
+            surfaceVariant = Color(tokens.bg3),
+            onSurfaceVariant = Color(tokens.text2),
+            surfaceTint = Color(tokens.accent),
             inverseSurface = inverseSurface,
             inverseOnSurface = inverseOnSurface,
             error = error.error,
             onError = error.onError,
             errorContainer = error.errorContainer,
             onErrorContainer = error.onErrorContainer,
-            outline = palette.out2,
-            outlineVariant = palette.out1,
+            outline = Color(tokens.out2),
+            outlineVariant = Color(tokens.out1),
             scrim = Color(0xFF000000),
-            surfaceBright = palette.bg1,
-            surfaceDim = palette.bg4,
-            surfaceContainerLowest = palette.bg1,
-            surfaceContainerLow = palette.bg2,
-            surfaceContainer = palette.bg3,
-            surfaceContainerHigh = palette.bg4,
-            surfaceContainerHighest = palette.bg4,
+            surfaceBright = Color(tokens.bg1),
+            surfaceDim = Color(tokens.bg4),
+            surfaceContainerLowest = Color(tokens.bg1),
+            surfaceContainerLow = Color(tokens.bg2),
+            surfaceContainer = Color(tokens.bg3),
+            surfaceContainerHigh = Color(tokens.bg4),
+            surfaceContainerHighest = Color(tokens.bg4),
         )
     }
 }
 
+/**
+ * 主题令牌来源：显式传入的 tokens 优先（调试面板 / 未来的外观包），否则取内置预设。
+ */
 @Composable
-private fun paletteFor(darkTheme: Boolean, variant: ThemeVariant): ThemePalette = when (variant) {
-    ThemeVariant.MONO -> if (darkTheme) MonoDarkColors else MonoLightColors
-    ThemeVariant.VERMILION -> if (darkTheme) VermilionNightColors else VermilionDayColors
-}
+private fun resolveTokens(
+    darkTheme: Boolean,
+    variant: ThemeVariant,
+    tokens: ThemeTokens?,
+): ThemeTokens = tokens ?: ThemeTokens.builtin(variant, darkTheme)
 
 @Composable
 fun MusicplayerTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     variant: ThemeVariant = ThemeVariant.MONO,
+    // 显式令牌覆盖（调试面板实时调色 / 未来的外观包）。null = 用 variant 对应的内置预设。
+    tokens: ThemeTokens? = null,
     // Dynamic color is available on Android 12+，默认关闭以使用品牌色
     dynamicColor: Boolean = false,
     content: @Composable () -> Unit
@@ -141,7 +147,7 @@ fun MusicplayerTheme(
             if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         }
 
-        else -> paletteToColorScheme(palette = paletteFor(darkTheme, variant), isDark = darkTheme)
+        else -> tokensToColorScheme(tokens = resolveTokens(darkTheme, variant, tokens), isDark = darkTheme)
     }
 
     MaterialTheme(

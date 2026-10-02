@@ -2,6 +2,8 @@ package cn.com.dcsgo.mihx.feature.home
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import cn.com.dcsgo.mihx.core.model.PlayMode
 import cn.com.dcsgo.mihx.core.model.Song
 
@@ -49,8 +51,11 @@ fun HomeRoute(
     state: HomeRouteState,
     actions: HomeRouteActions,
     showToast: (String) -> Unit,
+    /** 透传给 HomeScreen 的顶部 padding。SHEET 抽屉形态传 31.dp 让「状态栏→封面」对齐默认三页（默认 16dp）。 */
+    topContentPaddingDp: androidx.compose.ui.unit.Dp = 16.dp,
 ) {
     HomeScreen(
+        topContentPaddingDp = topContentPaddingDp,
         currentSong = state.currentSong,
         isPlaying = state.isPlaying,
         currentPositionMs = state.currentPositionMs,

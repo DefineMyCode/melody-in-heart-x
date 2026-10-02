@@ -77,7 +77,12 @@ fun PlayQueueSheet(
     onSongClick: (Int) -> Unit = {},      // 参数是索引
     onRemoveSong: (Int) -> Unit = {},     // 参数是队列索引
     onClearQueue: () -> Unit = {},
-    onDismiss: () -> Unit = {}
+    onDismiss: () -> Unit = {},
+    /**
+     * Toast 状态。sheet 内会挂一个与主窗口共享此状态的 ToastHost——通过窗口焦点
+     * 协调只让聚焦窗口画(见 ToastHost 文档),既不双 toast 也不会被遮住看不见。
+     */
+    toastHost: cn.com.dcsgo.mihx.ui.components.ToastHostState? = null,
 ) {
     if (!isShown) return
 
@@ -122,6 +127,8 @@ fun PlayQueueSheet(
         sheetState = sheetState,
         containerColor = MaterialTheme.colorScheme.surface
     ) {
+        // sheet 内挂 ToastHost(焦点协调只让聚焦窗口画,避免双 toast——见 ToastHost 文档)。
+        Box(modifier = Modifier.fillMaxWidth()) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -208,6 +215,13 @@ fun PlayQueueSheet(
 
             // 底部间距
             Spacer(modifier = Modifier.height(24.dp))
+        }
+        if (toastHost != null) {
+            cn.com.dcsgo.mihx.ui.components.ToastHost(
+                toastHost = toastHost,
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
         }
     }
 }

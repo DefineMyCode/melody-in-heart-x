@@ -26,6 +26,12 @@ data class UserRouteState(
     val moodSlotEnabled: Boolean = false,
     /** 当前时刻分钟数（0–1439），判定入口卡"生效中"态 */
     val nowMinuteOfDay: Int = 0,
+    /**
+     * 我的页分区顺序（L2 分区化，2026-09-29 P4）。
+     *
+     * 默认 = 改造前的写死顺序，故**不传时行为零变化**；由 :app 从皮肤描述解析后注入。
+     */
+    val sectionOrder: List<String> = UserSections.DEFAULT_ORDER,
 )
 
 data class UserRouteActions(
@@ -36,6 +42,8 @@ data class UserRouteActions(
     val onOpenEmotionAnalysis: () -> Unit = {},
     /** 进入随心播放增强配置页 */
     val onOpenMoodTimeSlot: () -> Unit = {},
+    /** 进入样式切换页 */
+    val onOpenSkinSwitcher: () -> Unit = {},
 )
 
 @Composable
@@ -61,5 +69,7 @@ fun UserRoute(
         moodSlotEnabled = state.moodSlotEnabled,
         nowMinuteOfDay = state.nowMinuteOfDay,
         onOpenMoodTimeSlot = actions.onOpenMoodTimeSlot,
+        sectionOrder = state.sectionOrder,
+        onOpenSkinSwitcher = actions.onOpenSkinSwitcher,
     )
 }

@@ -34,6 +34,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import cn.com.dcsgo.mihx.core.common.time.formatDurationTime
 
 // ─────────────────────────────────────────────────────────────────
 // 文件管理区域
@@ -192,6 +193,7 @@ private fun FileManagementButton(
 @Composable
 fun SurfaceBar(
     selectedCount: Int,
+    selectedDurationMs: Long,
     onAddToPlaylist: () -> Unit,
     onClear: () -> Unit
 ) {
@@ -204,7 +206,11 @@ fun SurfaceBar(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
-            text = "已选 $selectedCount 首",
+            text = if (selectedDurationMs > 0L) {
+                "已选 $selectedCount 首 · 共 ${formatDurationTime(selectedDurationMs)}"
+            } else {
+                "已选 $selectedCount 首"
+            },
             style = MaterialTheme.typography.titleSmall,
             fontWeight = FontWeight.Bold
         )

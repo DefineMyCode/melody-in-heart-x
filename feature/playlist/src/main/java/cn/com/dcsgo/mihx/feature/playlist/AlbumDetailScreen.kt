@@ -308,6 +308,7 @@ fun AlbumDetailScreen(
         ) {
             SurfaceBar(
                 selectedCount = selection.selectedIds.size,
+                selectedDurationMs = selectedSongs.sumOf { it.durationMs },
                 onAddToPlaylist = { showBatchDialog = true },
                 onClear = selection::exitSelectMode,
             )

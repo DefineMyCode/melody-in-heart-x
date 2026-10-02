@@ -35,6 +35,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import cn.com.dcsgo.mihx.core.model.Song
+import cn.com.dcsgo.mihx.ui.theme.LocalMiniPlayerTokens
 import kotlinx.coroutines.flow.StateFlow
 
 /**
@@ -62,6 +63,7 @@ fun MusicPlayerBottomBar(
     onNextClick: () -> Unit,
     onNavigateToHome: () -> Unit,
 ) {
+    val mini = LocalMiniPlayerTokens.current
     val currentPositionMs by positionMs.collectAsStateWithLifecycle()
     Column(
         modifier = Modifier
@@ -85,8 +87,8 @@ fun MusicPlayerBottomBar(
             // 左侧：封面（40dp，可点击跳转首页）
             Box(
                 modifier = Modifier
-                    .size(40.dp)
-                    .clip(RoundedCornerShape(8.dp))
+                    .size(mini.coverSizeDp.dp)
+                    .clip(RoundedCornerShape(mini.coverCornerDp.dp))
                     .background(MaterialTheme.colorScheme.primaryContainer)
                     .clickable(onClick = onNavigateToHome)
             ) {
@@ -94,7 +96,7 @@ fun MusicPlayerBottomBar(
                     AsyncImage(
                         model = currentSong.albumArtUri,
                         contentDescription = "专辑封面",
-                        modifier = Modifier.size(40.dp),
+                        modifier = Modifier.size(mini.coverSizeDp.dp),
                         contentScale = ContentScale.Crop
                     )
                 } else {
@@ -143,7 +145,7 @@ fun MusicPlayerBottomBar(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(top = 5.dp)
-                        .height(2.5.dp)
+                        .height(mini.progressHeightDp.dp)
                         .clip(RoundedCornerShape(2.dp))
                         .background(MaterialTheme.colorScheme.outlineVariant)
                 ) {
@@ -162,7 +164,7 @@ fun MusicPlayerBottomBar(
             // 右侧：36dp 圆形播放按钮
             Box(
                 modifier = Modifier
-                    .size(36.dp)
+                    .size(mini.playButtonSizeDp.dp)
                     .clip(CircleShape)
                     .background(MaterialTheme.colorScheme.primary),
                 contentAlignment = Alignment.Center

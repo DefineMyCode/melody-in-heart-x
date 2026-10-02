@@ -20,7 +20,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.MusicNote
+import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -41,8 +41,7 @@ fun UserScreen(
     onShowSettings: () -> Unit = {},
     todayDurationMs: Long = 0L,
     weekTotalMs: Long = 0L,
-    onOpenPlaybackStats: () ->
-Unit = {},
+    onOpenPlaybackStats: () -> Unit = {},
     validationResult: LocalFileValidationResult? = null,
     isValidating: Boolean = false,
     onOpenFileCheck: () -> Unit = {},
@@ -56,6 +55,15 @@ Unit = {},
     moodSlotEnabled: Boolean = false,
     nowMinuteOfDay: Int = 0,
     onOpenMoodTimeSlot: () -> Unit = {},
+    /**
+     * 分区顺序（L2 分区化，2026-09-29 P4）。
+     *
+     * 默认 [UserSections.DEFAULT_ORDER] = 改造前的写死顺序，因此**不传时行为零变化**。
+     * 皮肤描述可通过 `myOverview` 的 `sections` 属性裁剪/重排这里的分区。
+     */
+    sectionOrder: List<String> = UserSections.DEFAULT_ORDER,
+    /** 进入样式切换页（替代 2026-09-30 之前的「自定义皮肤」入口）。 */
+    onOpenSkinSwitcher: () -> Unit = {},
 ) {
     Box(
         modifier = Modifier
@@ -69,46 +77,125 @@ Unit = {},
             ),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            item(key = "user_info", contentType = "header") {
-                UserInfoSection(onSettingsClick = onShowSettings)
-            }
+            // L2：按描述给的顺序渲染；未知 key 由 UserSections.parse 过滤，
+            // 因此这里不用再做防御——但为稳妥仍用 when-else 忽略未知项。
+            sectionOrder.forEach { key ->
+                when (key) {
+                    UserSections.USER_INFO -> item(key = "user_info", contentType = "header") {
+                        UserInfoSection(onSettingsClick = onShowSettings)
+                    }
 
-            item(key = "play_stats", contentType = "header") {
-                PlayStatsSection(
-                    todayDurationMs = todayDurationMs,
-                    weekTotalMs = weekTotalMs,
-                    onOpenPlaybackStats = onOpenPlaybackStats,
+                    UserSections.PLAY_STATS -> item(key = "play_stats", contentType = "header") {
+                        PlayStatsSection(
+                            todayDurationMs = todayDurationMs,
+                            weekTotalMs = weekTotalMs,
+                            onOpenPlaybackStats = onOpenPlaybackStats,
+                        )
+                    }
+
+                    UserSections.MOOD_TIME_SLOT -> item(key = "mood_time_slot", contentType = "header") {
+                        MoodTimeSlotSection(
+                            configs = moodSlotConfigs,
+                            enabled = moodSlotEnabled,
+                            nowMinuteOfDay = nowMinuteOfDay,
+                            onClick = onOpenMoodTimeSlot,
+                        )
+                    }
+
+                    UserSections.EMOTION_SCAN -> item(key = "emotion_scan", contentType = "header") {
+                        EmotionScanSection(
+                            analyzedCount = emotionAnalyzedCount,
+                            totalCount = emotionTotalCount,
+                            scanning = emotionScanning,
+                            paused = emotionPaused,
+                            onScanNow = onEmotionScanNow,
+                            onOpenDetail = onOpenEmotionAnalysis,
+                        )
+                    }
+
+                    UserSections.FILE_CHECK -> item(key = "file_check", contentType = "header") {
+                        FileCheckSection(
+                            validationResult = validationResult,
+                            isValidating = isValidating,
+                            onOpenFileCheck = onOpenFileCheck,
+                        )
+                    }
+
+                    UserSections.SKIN_SWITCHER -> item(key = "skin_switcher", contentType = "header") {
+                        SkinSwitcherSection(onClick = onOpenSkinSwitcher)
+                    }
+                }
+            }
+        }
+    }
+}
+
+/**
+ * 「样式切换」入口卡（替代原 [CustomSkinSection]，2026-09-30 用户拍板）。
+ *
+ * 视觉与其他入口卡（播放统计/文件校验/情境化随心播放）保持一致：
+ * - 44dp 圆形 primaryContainer 图标容器；
+ * - 标题 + 副标 + 右侧 KeyboardArrowRight。
+ *
+ * 副标说明当前选中样式名（由 :app 侧通过 UserRouteActions 之外的状态携带，
+ * 这里为简单只展示静态文案 "切换内置样式 / 调节播放面板尺寸")。
+ */
+@Composable
+fun SkinSwitcherSection(
+    currentSkinName: String? = null,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Card(
+        modifier = modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick),
+        shape = RoundedCornerShape(14.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+        ),
+        border = BorderStroke(0.5.dp, MaterialTheme.colorScheme.outlineVariant),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+    ) {
+        Row(
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(44.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.primaryContainer),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Palette,
+                    contentDescription = "样式切换",
+                    modifier = Modifier.size(22.dp),
+                    tint = MaterialTheme.colorScheme.primary,
                 )
             }
-
-            // 情境化随心播放增强入口卡（第 5 卡，视觉对齐其他入口卡）
-            item(key = "mood_time_slot", contentType = "header") {
-                MoodTimeSlotSection(
-                    configs = moodSlotConfigs,
-                    enabled = moodSlotEnabled,
-                    nowMinuteOfDay = nowMinuteOfDay,
-                    onClick = onOpenMoodTimeSlot,
+            Spacer(modifier = Modifier.width(12.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = "样式切换",
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+                Text(
+                    text = currentSkinName?.let { "当前: $it" }
+                        ?: "切换内置样式 / 调节播放面板尺寸",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
                 )
             }
-
-            item(key = "emotion_scan", contentType = "header") {
-                EmotionScanSection(
-                    analyzedCount = emotionAnalyzedCount,
-                    totalCount = emotionTotalCount,
-                    scanning = emotionScanning,
-                    paused = emotionPaused,
-                    onScanNow = onEmotionScanNow,
-                    onOpenDetail = onOpenEmotionAnalysis,
-                )
-            }
-
-            item(key = "file_check", contentType = "header") {
-                FileCheckSection(
-                    validationResult = validationResult,
-                    isValidating = isValidating,
-                    onOpenFileCheck = onOpenFileCheck
-                )
-            }
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
         }
     }
 }

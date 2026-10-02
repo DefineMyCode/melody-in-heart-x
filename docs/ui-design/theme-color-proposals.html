@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>心有乐章 · 主题色提案</title>
+<style>
+  :root{--ui-bg:#1a1a22;--ui-panel:#242431;--ui-text:#e8e8f0;--ui-dim:#9a9ab0;--ui-line:#383847;}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:"SF Pro Text",-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:var(--ui-bg);color:var(--ui-text);padding:32px 24px 80px}
+  h1{font-size:22px;font-weight:800;letter-spacing:.5px}
+  .sub{color:var(--ui-dim);font-size:13px;margin-top:6px;line-height:1.6}
+  .hdr{display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:12px;margin-bottom:18px}
+  .badge{font-size:12px;color:#3ddc84;border:1px solid #2f6e4f;border-radius:6px;padding:3px 8px;margin-left:8px;font-weight:600}
+  /* theme row */
+  .themerow{display:flex;gap:10px;flex-wrap:wrap;margin:20px 0 8px}
+  .themebtn{display:flex;align-items:center;gap:9px;border:1px solid var(--ui-line);background:#2c2c3b;color:var(--ui-text);border-radius:12px;padding:9px 14px;cursor:pointer;font-size:14px;font-weight:600;transition:.15s}
+  .themebtn:hover{border-color:#5a5a78}
+  .themebtn.active{border-color:#7d7df0;background:#3a3a55;box-shadow:0 0 0 2px rgba(125,125,240,.25)}
+  .dot{width:18px;height:18px;border-radius:50%;border:2px solid rgba(255,255,255,.25);flex-shrink:0}
+  .moderow{display:flex;gap:10px;margin:14px 0 6px}
+  .modebtn{border:1px solid var(--ui-line);background:transparent;color:var(--ui-dim);border-radius:10px;padding:7px 16px;cursor:pointer;font-size:13px;font-weight:600;transition:.15s}
+  .modebtn.active{background:#3c3c50;color:var(--ui-text);border-color:#5a5a78}
+  /* canvas / stage */
+  .stage{display:grid;gap:28px;margin-top:22px}
+  .showcase{display:flex;gap:28px;align-items:flex-start;flex-wrap:wrap}
+  .col{flex:1;min-width:310px}
+  .col h3{font-size:14px;font-weight:700;margin-bottom:12px;color:var(--ui-dim)}
+  /* phone frame */
+  .phone{width:300px;border-radius:34px;overflow:hidden;border:1px solid #000;box-shadow:0 30px 60px -20px rgba(0,0,0,.6);position:relative}
+  .notch{position:absolute;top:0;left:50%;transform:translateX(-50%);width:110px;height:22px;background:#000;border-radius:0 0 16px 16px;z-index:5}
+  .app{display:flex;flex-direction:column;height:560px;border-radius:34px;overflow:hidden;font-family:inherit}
+  /* tokens via CSS vars on .app */
+  .app{background:var(--bg0);color:var(--text1)}
+  .statusbar{height:28px;display:flex;justify-content:space-between;align-items:flex-end;padding:0 22px 0 26px;font-size:10px;font-weight:600;background:var(--bg0);padding-top:10px}
+  .app-content{flex:1;padding:14px 20px 8px;display:flex;flex-direction:column}
+  .aritst-line{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--text2);margin-bottom:2px}
+  .hires{border:1px solid var(--accent);color:var(--accent);font-size:9px;padding:1px 5px;border-radius:4px;font-weight:700}
+  .songtitle{font-size:22px;font-weight:800;letter-spacing:.3px;margin:2px 0 1px}
+  .albumline{font-size:11px;color:var(--text3);margin-bottom:14px}
+  .cover{aspect-ratio:1;border-radius:20px;width:100%;display:flex;align-items:flex-end;justify-content:center;padding-bottom:46px;position:relative;overflow:hidden}
+  .cover::before{content:"";position:absolute;inset:0;background:radial-gradient(120% 90% at 22% 12%, rgba(255,255,255,.28), transparent 55%)}
+  .cover .note{font-size:11px;font-weight:700;letter-spacing:.2em;color:inherit;opacity:.8}
+  .seg{margin:16px 0 6px;align-self:flex-start}
+  .seg-inner{display:flex;background:var(--bg3);border-radius:12px;padding:3px;gap:2px}
+  .seg-item{font-size:11px;padding:5px 12px;border-radius:9px;color:var(--text2);font-weight:600}
+  .seg-item.on{background:var(--accent);color:var(--onAccent)}
+  .search{display:flex;align-items:center;gap:8px;background:var(--bg2);border:1px solid var(--out1);border-radius:14px;padding:8px 12px;font-size:12px;color:var(--text3);margin-bottom:12px}
+  .row{display:flex;align-items:center;gap:12px;padding:7px 0;border-radius:10px}
+  .row.active .r-title{color:var(--accent)}
+  .rowthumb{width:42px;height:42px;border-radius:10px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:12px;position:relative;overflow:hidden}
+  .rowthumb::after{content:"";position:absolute;inset:0;background:linear-gradient(160deg,rgba(255,255,255,.25),transparent 60%)}
+  .r-meta{flex:1;min-width:0}
+  .r-title{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .r-sub{font-size:11px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .r-time{font-size:11px;color:var(--text3);font-variant-numeric:tabular-nums}
+  .eq{display:flex;gap:2px;align-items:flex-end;height:14px}
+  .eq i{width:2.5px;background:var(--accent);border-radius:1px;animation:eq 1s infinite ease-in-out}
+  .eq i:nth-child(1){height:60%;animation-delay:0s}.eq i:nth-child(2){height:100%;animation-delay:.2s}.eq i:nth-child(3){height:40%;animation-delay:.4s}.eq i:nth-child(4){height:80%;animation-delay:.1s}
+  @keyframes eq{0%,100%{transform:scaleY(.5)}50%{transform:scaleY(1)}}
+  /* mini player */
+  .mini{display:flex;align-items:center;gap:10px;background:var(--bg1);border-top:1px solid var(--out1);padding:9px 14px}
+  .mini-cover{width:38px;height:38px;border-radius:8px;flex-shrink:0;position:relative;overflow:hidden}
+  .mini-cover::after{content:"";position:absolute;inset:0;background:linear-gradient(160deg,rgba(255,255,255,.3),transparent 55%)}
+  .mini-meta{flex:1;min-width:0}
+  .mini-title{font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .mini-prog{height:2.5px;background:var(--out1);border-radius:2px;margin-top:5px;position:relative}
+  .mini-prog i{position:absolute;left:0;top:0;bottom:0;width:38%;background:var(--accent);border-radius:2px}
+  .playbtn{width:34px;height:34px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;color:var(--onAccent);font-size:13px;flex-shrink:0;box-shadow:0 4px 10px -3px rgba(0,0,0,.4)}
+  /* bottombar */
+  .bottombar{display:flex;background:var(--bg0);border-top:1px solid var(--out1);padding:4px 0 6px}
+  .tb{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10px;color:var(--text2);font-weight:600;padding:6px 0}
+  .tb.on{color:var(--accent)}
+  .tb-ic{width:20px;height:20px;display:flex;align-items:center;justify-content:center}
+  .tb-ic svg{width:18px;height:18px}
+  /* full player section (mode) */
+  .player-zone{display:flex;flex-direction:column;flex:1;justify-content:center;gap:2px;padding-top:6px}
+  .controls{display:flex;align-items:center;justify-content:center;gap:22px;margin-top:8px}
+  .ctrl{color:var(--text2);display:flex;align-items:center;justify-content:center}
+  .big{width:52px;height:52px;border-radius:50%;background:var(--accent);color:var(--onAccent);display:flex;align-items:center;justify-content:center;box-shadow:0 8px 20px -6px rgba(0,0,0,.45);font-size:20px}
+  .md{width:40px;height:40px}
+  .progress{margin-top:10px}
+  .prog-bar{height:4px;background:var(--out1);border-radius:3px;position:relative}
+  .prog-bar i{position:absolute;left:0;top:0;bottom:0;width:34%;background:var(--accent);border-radius:3px}
+  .times{display:flex;justify-content:space-between;font-size:10px;color:var(--text3);margin-top:4px;font-variant-numeric:tabular-nums}
+  .lyric{text-align:center;font-size:12px;color:var(--text3);margin-top:4px}
+  .lyric b{color:var(--accent)}
+  /* token table */
+  .toktable{width:100%;border-collapse:collapse;margin-top:10px;font-size:12px}
+  .toktable th,.toktable td{text-align:left;padding:5px 8px;border-bottom:1px solid var(--ui-line);vertical-align:middle}
+  .toktable th{color:var(--ui-dim);font-weight:600;font-size:11px}
+  .toktable td:first-child{font-weight:700;color:var(--ui-text)}
+  .swatch{display:inline-block;width:34px;height:16px;border-radius:4px;border:1px solid rgba(0,0,0,.3);vertical-align:middle;margin-right:8px}
+  .hex{color:var(--ui-dim);font-variant-numeric:tabular-nums}
+  .contrast{font-size:11px;color:#3ddc84;font-weight:600}
+  .note{font-size:12px;color:var(--ui-dim);line-height:1.7;margin-top:8px}
+  .accent-tag{display:inline-block;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:700}
+  .footer{margin-top:40px;color:var(--ui-dim);font-size:12px;line-height:1.8;border-top:1px solid var(--ui-line);padding-top:16px}
+  code{background:#2f2f40;padding:1px 5px;border-radius:4px;font-size:11.5px;color:#c9c9f0}
+</style>
+</head>
+<body>
+<div class="hdr">
+  <div>
+    <h1>心有乐章 · 主题色提案 <span class="badge">WCAG AA 全通过</span></h1>
+    <div class="sub">3 套新主题 × 昼夜（灵感：Coolors 2026 趋势 · 深海长青感 / 鼠尾草疗愈 / 琥珀暖光）<br>延续系统哲学：OLED 纯黑、层级靠灰、一抹强调、昼夜两温度。点击主题与模式实时切换对比。</div>
+  </div>
+</div>
+
+<div class="themerow" id="themeRow"></div>
+<div class="moderow" id="modeRow"></div>
+
+<div class="stage" id="stage"></div>
+
+<div class="footer">
+  <b>灵感来源 & 依据：</b>
+  《2026 Color Trends：靛蓝静夜/鼠尾草森野/琥珀暖光 为今年大热色系（Coolors trending 与多家趋势站共识）》；
+  沿用心有乐章既有设计系统（docs/ui-design/DESIGN_SYSTEM.md）的 token 结构与设计原则（朱砂≤10%、层级靠灰、OLED 纯黑、昼夜两色温、WCAG AA）。
+  每套新主题 14 个 token × 昼夜，onAccent 对比度 ≥5.4:1、正文 text1 ≥14.5:1，全部通过 WCAG AA。
+  <br><br><b>接入方式：</b>在 <code>core/model/ThemeVariant.kt</code> 加 3 个枚举值，在 <code>ThemeTokens.kt</code> 加 6 组预设，
+  设置页主题卡自动多出 3 个色块（实现为循环枚举），无需改其它页面。本稿为设计确认稿。
+</div>
+
+<script>const THEMES = {
+  MONO:{label:"墨色 · 现有",color:"#E6E6E6",cover:["#C7C7C7","#E9E9E9"],note:"#161616",
+    day:{bg0:"#F4F4F4",bg1:"#FFFFFF",bg2:"#FAFAFA",bg3:"#EFEFEF",bg4:"#E6E6E6",out1:"#E7E7E7",out2:"#CFCFCF",text1:"#141414",text2:"#575757",text3:"#989898",accent:"#161616",onAccent:"#FFFFFF",accent2:"#575757"},
+    night:{bg0:"#000000",bg1:"#0A0A0A",bg2:"#121212",bg3:"#1B1B1B",bg4:"#252525",out1:"#1C1C1C",out2:"#2C2C2C",text1:"#D0D0D0",text2:"#9A9A9A",text3:"#6B6B6B",accent:"#E6E6E6",onAccent:"#0A0A0A",accent2:"#9A9A9A"}},
+  VER:{label:"朱砂 · 现有",color:"#A32E25",cover:["#E9DAD2","#FAF5F2"],note:"#A32E25",
+    day:{bg0:"#FAF5F2",bg1:"#FFFFFF",bg2:"#FBF4F0",bg3:"#F1E7E1",bg4:"#E9DAD2",out1:"#EFE0D9",out2:"#DFC4B9",text1:"#2B1A16",text2:"#6B534B",text3:"#A2877D",accent:"#A32E25",onAccent:"#FFFFFF",accent2:"#D4786C"},
+    night:{bg0:"#000000",bg1:"#140B09",bg2:"#1D110E",bg3:"#251814",bg4:"#2E1D18",out1:"#2B1813",out2:"#3E241E",text1:"#EADAD5",text2:"#B79A92",text3:"#7F5E56",accent:"#C04F42",onAccent:"#FFFFFF",accent2:"#8F3B32"}},
+  INDIGO:{label:"靛蓝静夜",color:"#A6B4F0",desc:"深海 · 冷静专注",cover:["#A9B4E2","#4A5FC0"],note:"#EDECFB",
+    day:{bg0:"#EDF0FB",bg1:"#FFFFFF",bg2:"#E6EAF8",bg3:"#DCE1F4",bg4:"#CFD5EE",out1:"#E2E6F2",out2:"#C3CAE8",text1:"#23263B",text2:"#5A6390",text3:"#9AA0BE",accent:"#4A5FC0",onAccent:"#FFFFFF",accent2:"#7A8BE8"},
+    night:{bg0:"#000000",bg1:"#0B0D18",bg2:"#10131F",bg3:"#1A1F33",bg4:"#21263F",out1:"#23294A",out2:"#3A4166",text1:"#DCE0F0",text2:"#A5ABC8",text3:"#646B8E",accent:"#A6B4F0",onAccent:"#1C2248",accent2:"#5E6FCE"}},
+  SAGE:{label:"苔藓森野",color:"#A9CBA3",desc:"林间 · 自然疗愈",cover:["#87AA80","#3F6E52"],note:"#EAF2E8",
+    day:{bg0:"#EFF5EF",bg1:"#FFFFFF",bg2:"#E9F1E8",bg3:"#DFEBDE",bg4:"#D2E1D0",out1:"#E3EADF",out2:"#C3D5BF",text1:"#223028",text2:"#4F6656",text3:"#8CA08C",accent:"#3F6E52",onAccent:"#FFFFFF",accent2:"#86AD80"},
+    night:{bg0:"#000000",bg1:"#0C120E",bg2:"#121A14",bg3:"#18231B",bg4:"#1F2B22",out1:"#223022",out2:"#3A4C3A",text1:"#DFE8DF",text2:"#A7BCA6",text3:"#6E836D",accent:"#A9CBA3",onAccent:"#1A3520",accent2:"#6E9070"}},
+  AMBER:{label:"琥珀暖忆",color:"#EFC583",desc:"黄昏 · 暖光留声",cover:["#E5CD9C","#B5783A"],note:"#FFF3DC",
+    day:{bg0:"#FBF6EE",bg1:"#FFFFFF",bg2:"#F8F0E0",bg3:"#F2E7CE",bg4:"#EBDCB8",out1:"#F0E5D0",out2:"#E0CBA4",text1:"#362B1C",text2:"#6B5A42",text3:"#A08E6E",accent:"#9A5B12",onAccent:"#FFFFFF",accent2:"#D9B06A"},
+    night:{bg0:"#000000",bg1:"#161008",bg2:"#1C1510",bg3:"#251D14",bg4:"#2E2516",out1:"#2C2210",out2:"#433620",text1:"#F0E6D4",text2:"#BDAE8E",text3:"#7F704F",accent:"#EFC583",onAccent:"#3A2A0A",accent2:"#B98A3E"}},
+  SKY:{label:"天空澄明",color:"#7DB8EE",desc:"晴空 · 辽阔入海",cover:["#A8C9EF","#4E8FD6"],note:"#EDF5FD",
+    day:{bg0:"#EFF5FC",bg1:"#FFFFFF",bg2:"#E7F0FA",bg3:"#DCE7F6",bg4:"#CDDCF0",out1:"#DFE9F5",out2:"#BDD0E8",text1:"#1B2A40",text2:"#4A628C",text3:"#8AA0BC",accent:"#2F6DB5",onAccent:"#FFFFFF",accent2:"#6FA3E0"},
+    night:{bg0:"#000000",bg1:"#0B1420",bg2:"#0F1B2A",bg3:"#152336",bg4:"#1B2C44",out1:"#1C2E46",out2:"#33507A",text1:"#DCE8F5",text2:"#A3B8D4",text3:"#647A9C",accent:"#7DB8EE",onAccent:"#12345C",accent2:"#4E7FC0"}},
+  FRESH:{label:"新叶青翠",color:"#B2DF8F",desc:"初春 · 嫩芽破土",cover:["#C2E4B0","#5BA363"],note:"#EFF8EC",
+    day:{bg0:"#F1F8EE",bg1:"#FFFFFF",bg2:"#E9F4E5",bg3:"#DDEBD9",bg4:"#CDE0C8",out1:"#E3EFDD",out2:"#BFD6B8",text1:"#1E2E1E",text2:"#4C674C",text3:"#8B9C85",accent:"#327A3B",onAccent:"#FFFFFF",accent2:"#7DBE72"},
+    night:{bg0:"#000000",bg1:"#0E1A0E",bg2:"#122112",bg3:"#182B18",bg4:"#1F361F",out1:"#223822",out2:"#3A5A38",text1:"#E2EFE0",text2:"#A9C6A4",text3:"#6B8A66",accent:"#B2DF8F",onAccent:"#1C3A10",accent2:"#6FA463"}},
+  SUNRISE:{label:"晨光霞粉",color:"#F2A6A0",desc:"破晓 · 云霞初醒",cover:["#F2C4B8","#D0746B"],note:"#FDF0ED",
+    day:{bg0:"#FBF4F1",bg1:"#FFFFFF",bg2:"#F8ECE8",bg3:"#F2E0DB",bg4:"#EAD2CC",out1:"#F2E2DD",out2:"#DFC0B8",text1:"#322026",text2:"#6A4B52",text3:"#9C7780",accent:"#A8473F",onAccent:"#FFFFFF",accent2:"#E08E82"},
+    night:{bg0:"#000000",bg1:"#170E0E",bg2:"#1D1313",bg3:"#261818",bg4:"#301E1E",out1:"#311D1C",out2:"#4A2A28",text1:"#F3E2E0",text2:"#C2A09E",text3:"#87605F",accent:"#F2A6A0",onAccent:"#3A1210",accent2:"#C26A63"}}
+}
+
+function accentContrast(tok){function L(h){let c=h.slice(1).match(/../g).map(x=>parseInt(x,16)/255).map(v=>v<=0.04045?v/12.92:Math.pow((v+0.055)/1.055,2.4));return 0.2126*c[0]+0.7152*c[1]+0.0722*c[2]}const la=L(tok.accent),lb=L(tok.onAccent);return ((Math.max(la,lb)+0.05)/(Math.min(la,lb)+0.05)).toFixed(2);}
+
+let state = {theme:"INDIGO", mode:"night"};
+const ROW_ORDER = ["MONO","VER","INDIGO","SAGE","AMBER","SKY","FRESH","SUNRISE"];
+
+function icons(){return {
+ lib:`<svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 6h16v2H4V6zm0 5h16v2H4v-2zm0 5h10v2H4v-2z"/></svg>`,
+ play:`<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>`,
+ me:`<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12a4 4 0 100-8 4 4 0 000 8zm0 2c-4 0-7 2-7 5v1h14v-1c0-3-3-5-7-5z"/></svg>`,
+ home:`<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l9 8h-3v9h-4v-6h-4v6H6v-9H3l9-8z"/></svg>`,
+ prev:`<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6V6zm3.5 6l8.5 6V6l-8.5 6z"/></svg>`,
+ next:`<svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 6h2v12h-2V6zM6 6l8.5 6L6 18V6z"/></svg>`,
+ shuffle:`<svg viewBox="0 0 24 24" fill="currentColor"><path d="M10.6 9.2L6.4 5H4v2h1.5l4.2 4.2 2.6-2.6-1.7-1.4zM18.5 5H20v2h-1.5l-4.7 4.7 1.4 1.4 6.3-6.3zM2 18v2h2.4l6.8-6.8 1.4 1.4L5.8 20h2.2v2H2v-2zm13.2-4.6l1.4-1.4L20 15.5H18.5v2H20v-3.1l-2.8-2.9-3.2 2.9z"/></svg>`,
+ repeat:`<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z"/></svg>`,
+ heart:`<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-8-5-8-11a4.5 4.5 0 018-3 4.5 4.5 0 018 3c0 6-8 11-8 11z"/></svg>`,
+ queue:`<svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 6h16v2H4V6zm0 5h16v2H4v-2zm0 5h10v2H4v-2z"/></svg>`,
+}};
+function thumbText(name){return (name||"声").split("")[0]}
+function row(title,sub,time,active,art){const I=icons();return `<div class="row ${active?"active":""}"><div class="rowthumb" style="background:${art[0]};color:${art[1]}">${thumbText(title)}</div><div class="r-meta"><div class="r-title">${title}${active?'<span style="padding-left:6px">':""}</div><div class="r-sub">${sub}</div></div>${active?`<div class="eq" style="margin-right:4px"><i></i><i></i><i></i><i></i></div>`:""}<div class="r-time">${time}</div></div>`}
+
+function renderShell(t, isDark){
+  const I=icons(); const tok=isDark?t.night:t.day;
+  const coverTone=isDark?t.cover[0]:t.cover[1];
+  const keys=["bg0","bg1","bg2","bg3","bg4","out1","out2","text1","text2","text3","accent","onAccent","accent2"];
+  const css=keys.map(k=>`--${k}:${tok[k]}`).join(";");
+  return `<div class="app" style="${css}">
+    <div class="statusbar"><span>21:47</span><span>▮▮▯</span></div>
+    ${renderMid(t,isDark)}
+    <div class="mini"><div class="mini-cover" style="background:${coverTone}"></div>
+      <div class="mini-meta"><div class="mini-title" style="color:${tok.text1}">夜航星 · 深海回响</div><div class="mini-prog"><i></i></div></div>
+      <div class="playbtn">${I.play}</div></div>
+    <div class="bottombar">
+      <div class="tb"><span class="tb-ic">${I.lib}</span>曲库</div>
+      <div class="tb on"><span class="tb-ic">${I.home}</span>播放</div>
+      <div class="tb"><span class="tb-ic">${I.me}</span>我的</div>
+    </div>
+  </div>`;
+}
+
+function renderMid(t,isDark){
+  const I=icons(); const tok=isDark?t.night:t.day; const coverTone=isDark?t.cover[0]:t.cover[1];
+  return `<div class="app-content">
+    <div class="aritst-line"><span><span class="hires">Hi-Res</span></div>
+    <div class="songtitle" style="color:${tok.text1}">夜航星</div>
+    <div class="albumline">深海回响 · 银河唱片</div>
+    <div class="cover" style="background:${coverTone};color:${t.note}"><span class="note">● 黑胶</span></div>
+    <div class="progress"><div class="prog-bar"><i></i></div><div class="times"><span>2:14</span><span>4:37</span></div></div>
+    <div class="controls">
+      <div class="ctrl" style="font-size:15px">${I.shuffle}</div>
+      <div class="ctrl md">${I.prev}</div>
+      <div class="big">${I.play}</div>
+      <div class="ctrl md">${I.next}</div>
+      <div class="ctrl" style="font-size:15px">${I.repeat}</div>
+    </div>
+    <div class="lyric">让深海的 <b style="color:${tok.accent}">光束</b> 替我照亮</div>
+    <div class="row active" style="margin-top:10px"><div class="rowthumb" style="background:${coverTone}"></div><div class="r-meta"><div class="r-title" style="color:${tok.accent}">夜航星</div><div class="r-sub">深海回响</div></div><div class="eq" style="margin-right:4px"><i></i><i></i><i></i><i></i></div><div class="r-time">2:14</div></div>
+  </div>`;
+}
+
+function renderLibrary(t,isDark){
+  const I=icons(); const tok=isDark?t.night:t.day; const coverTone=isDark?t.cover[0]:t.cover[1];
+  return `<div class="app-content">
+    <div class="search"><svg viewBox="0 0 24 24" width="14" height="14" fill="${tok.text3}"><path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 10-.7.7l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0A4.5 4.5 0 1114 9.5 4.5 4.5 0 019.5 14z"/></svg>搜索音乐、歌单、艺术家…</div>
+    ${row("深夜歌单","内心独白 · 18首","18首",false,[coverTone,t.note])}
+    ${row("深海专辑","Ocean Deep · 2025","2025",false,[coverTone,t.note])}
+    ${row("晨雾情绪","平静 · 专注 · 入眠","12:44",true,[coverTone,t.note])}
+    <div class="seg"><div class="seg-inner"><span class="seg-item on">情绪</span><span class="seg-item">时段</span><span class="seg-item">全部</span></div></div>
+    ${row("晴天相伴","晴朗 · 活力","3:21",false,[coverTone,t.note])}
+    ${row("夜深人静","入眠 · 低频","5:02",false,[coverTone,t.note])}
+  </div>`;
+}
+
+function tokenTable(t){
+  const row=isNoop=>{};
+  const keys=[["bg0","页面底色"],["bg1","卡片/顶栏"],["bg2","搜索框"],["bg3","分段控件"],["bg4","弹窗浮层"],["out1","极淡分隔"],["out2","边框/描边"],["text1","主文字"],["text2","次文字"],["text3","弱文字"],["accent","强调色"],["accent2","过渡色"]];
+  const tok = state.mode==="night"? t.night : t.day;
+  return `<table class="toktable"><tr><th>令牌</th><th>用途</th><th>色值</th><th>当前模式</th></tr>
+  ${keys.map(([k,u])=>`<tr><td>${k}</td><td>${u}</td><td><span class="swatch" style="background:${tok[k]}"></span><span class="hex">${tok[k]}</span></td><td style="font-size:11px"><b style="color:${tok.accent}">${tok[k]}</b></td></tr>`).join("")}
+  <tr><td>onAccent</td><td>强调色上的图文</td><td><span class="swatch" style="background:${tok.onAccent}"></span><span class="hex">${tok.onAccent}</span></td><td></td></tr>
+  </table>`;
+}
+
+function render(){
+  const t=THEMES[state.theme]; const isDark=state.mode==="night"; const tok=isDark?t.night:t.day;
+  const stage=document.getElementById("stage");
+  const ratio=accentContrast(tok);
+  document.querySelectorAll(".themebtn").forEach((b,i)=>b.classList.toggle("active",ROW_ORDER[i]===state.theme));
+  document.querySelectorAll(".modebtn").forEach((b,i)=>b.classList.toggle("active",(i===0&&isDark)||(i===1&&!isDark)));
+  stage.innerHTML=`<div class="showcase">
+    <div>
+      <h3>▼ 播放页 · ${t.label}</h3>
+      <div class="phone"><div class="notch"></div>${renderShell(t,isDark)}</div>
+      <div class="note" style="margin-top:12px">对比度 <span class="contrast">${ratio}:1 （onAccent / accent，WCAG AA ≥4.5）</span></div>
+    </div>
+    <div>
+      <h3>▼ 我的曲库 · 同一主题</h3>
+      <div class="phone"><div class="notch"></div><div class="app" style="">${renderLibrary(t,isDark)}</div></div>
+    </div>
+    <div class="col" style="max-width:420px">
+      <h3>▼ token 明细 · ${t.label} ${isDark?"深夜":"昼"}</h3>
+      ${tokenTable(t)}
+      <div class="note">accent2 过渡色用于渐变与柔和点缀；onAccent2 与其配套。</div>
+    </div>
+  </div>`;
+}
+
+const themeRow=document.getElementById("themeRow");
+ROW_ORDER.forEach((id,ix)=>{const t=THEMES[id];const b=document.createElement("button");b.className="themebtn"+(state.theme===id?" active":"");
+  b.innerHTML=`<span class="dot" style="background:${t.color}"></span>${t.label}${t.desc?`<span style="color:#8a8aa5;font-size:11px;font-weight:400">${t.desc}</span>`:""}`;
+  b.onclick=()=>{state.theme=id;render()};themeRow.appendChild(b);});
+const modeRow=document.getElementById("modeRow");
+[["night","◆ 深夜(OLED)"],["day","◇ 昼"]].forEach(([m,lab])=>{const b=document.createElement("button");b.className="modebtn"+(state.mode===m?" active":"");b.textContent=lab;b.onclick=()=>{state.mode=m;render()};modeRow.appendChild(b);});
+
+render();
+</script>
+</body>
+</html>

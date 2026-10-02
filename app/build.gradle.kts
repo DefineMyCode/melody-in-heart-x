@@ -30,8 +30,8 @@ android {
         applicationId = "cn.com.dcsgo.mihx"
         minSdk = 33
         targetSdk = 36
-        versionCode = 35
-        versionName = "3.7.2"
+        versionCode = 39
+        versionName = "3.7.2-skin-switcher"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
@@ -123,6 +123,7 @@ dependencies {
     implementation(project(":core:model"))
     implementation(project(":core:common"))
     implementation(project(":core:ui"))
+    implementation(project(":core:skin"))
     implementation(project(":domain"))
     implementation(project(":data"))
     implementation(project(":player"))

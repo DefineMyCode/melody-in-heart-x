@@ -31,6 +31,8 @@ data class PlaylistRouteState(
     val sortAscending: Boolean = true,
     val playCounts: Map<Int, Int> = emptyMap(),
     val lastPlayedAt: Map<Int, Long> = emptyMap(),
+    /** songList 模板(L3 行模板化, 2026-09-29); 默认 DEFAULT = 改造前形态 */
+    val songListTemplate: SongListTemplate = SongListTemplate.DEFAULT,
 )
 
 data class PlaylistRouteActions(
@@ -154,5 +156,6 @@ fun PlaylistRoute(
         },
         onResumePlaylist = actions.onResumePlaylist,
         onDismissResume = actions.onDismissResume,
+        songListTemplate = state.songListTemplate,
     )
 }

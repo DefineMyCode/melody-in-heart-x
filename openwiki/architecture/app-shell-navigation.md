@@ -191,11 +191,23 @@ Parameterized routes are always built through the `AppRoutes` helper functions, 
 
 ### `AppDestinations` mapping
 
-`AppDestinations` is the three-entry bottom tab enum — `PLAYLIST` (曲库), `HOME` (播放), `USER` (我的) — in that ordinal order. `fromRoute(route)` maps every sub-page to its owning tab: Settings, playback stats (all sub-pages), song top list, emotion analysis, and mood time slot → `USER`; playlist detail, `artist/…`, `album/…`, version management/comparison, quick-skip → `PLAYLIST`; everything else (Home, lyrics) → `HOME`. This single mapping drives:
+> **P2 改造（2026-09-29）**：`AppDestinations`（编译期三项目举）已被**移除**，改为运行期外壳
+> `cn.com.dcsgo.mihx.app.shell.AppShell`（底栏项来自皮肤描述）。下述映射语义**原样保留**，
+> 只是迁移到 `RouteAffinity.owningTopLevelRoute(route)`（同样是纯函数），
+> 并额外支持"底栏项数可变"（2 项极简双页 / 3 项默认 / 最多 5 项）。
+> 启动页也从写死的 `AppRoutes.HOME` 改为 `shell.startRoute`（默认骨架取值不变）。
+> 详见 `docs/architecture/PLUGIN_SHELL_DESIGN.md` 与 `app/src/main/java/cn/com/dcsgo/mihx/app/shell/`。
 
-1. **Bottom-bar highlight sync** — a `LaunchedEffect(activeRoute)` recomputes `currentDestination` on every back-stack change, so returning from a child page can't leave a stale tab highlighted.
-2. **Tab transitions** — `AppNavHost`'s `enterTransition`/`exitTransition` compare `tabOrdinal(initialState)` vs `tabOrdinal(targetState)` (also `AppDestinations.fromRoute`): forward slides the new page in from the right, backward from the left (300 ms tween + fade); same-tab routes get `EnterTransition.None`, and pop transitions are disabled. Navigating between two children of the same tab therefore animates as "no transition".
-3. **Edge swipe paging** — `AppScaffold` consumes horizontal drags (96 dp threshold) and moves to `AppDestinations.entries[ordinal ± 1]`; it is disabled on the lyrics route (`swipeEnabled = activeRoute != AppRoutes.LYRICS`) to avoid accidental tab switches while reading.
+`RouteAffinity.owningTopLevelRoute(route)` maps every sub-page to its owning tab: Settings, playback stats (all sub-pages), song top list, emotion analysis, and mood time slot → `AppRoutes.USER`; playlist detail, `artist/…`, `album/…`, version management/comparison, quick-skip → `AppRoutes.PLAYLIST`; everything else (Home, lyrics) → `AppRoutes.HOME`. This single mapping drives:
+
+1. **Bottom-bar highlight sync** — the highlight is now **derived** from `activeRoute` + the tab list (`tabs.indexOfRoute(activeRoute)`) rather than synced into a local `AppDestinations` state variable. This removes the stale-highlight failure mode at its root: there is no copy that can go out of date.
+2. **Tab transitions** — `AppNavHost`'s `enterTransition`/`exitTransition` compare `tabOrdinal(initialState.destination.route, shell.tabs)` vs the target (same `indexOfRoute`): forward slides the new page in from the right, backward from the left (300 ms tween + fade); same-tab routes get `EnterTransition.None`, and pop transitions are disabled. Navigating between two children of the same tab therefore animates as "no transition".
+3. **Edge swipe paging** — `AppScaffold` consumes horizontal drags (96 dp threshold) and moves to `tabs.indexOfRoute(activeRoute) ± 1` via `tabs.tabAt(...)` (null at the边界, replacing `getOrNull`); it is disabled on the lyrics route (`swipeEnabled = activeRoute != AppRoutes.LYRICS`) to avoid accidental tab switches while reading.
+
+**Mini player visibility** (was `currentDestination != HOME && currentSong != null`) is now
+`shouldShowMiniPlayer(shell, activeRoute, hasCurrentSong)` in the `shell` package. It compares the
+**route** instead of the owning tab — equivalent for the default skeleton, and the only correct test
+for a skeleton where the player page is not a bottom-bar tab (e.g. the sheet skeleton).
 
 Tab destinations navigate with the standard bottom-nav recipe: `popUpTo(startDestination) { saveState = true }`, `launchSingleTop`, `restoreState = true`.
 

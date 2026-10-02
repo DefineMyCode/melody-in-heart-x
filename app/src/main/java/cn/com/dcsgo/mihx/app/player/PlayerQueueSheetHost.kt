@@ -13,6 +13,8 @@ fun PlayerQueueSheetHost(
     onRemoveSong: (Int) -> Unit,
     onClearQueue: () -> Unit,
     onDismiss: () -> Unit,
+    /** sheet 内挂焦点协调的 ToastHost(只让聚焦窗口画,避免双 toast)——见 ToastHost 文档。 */
+    toastHost: cn.com.dcsgo.mihx.ui.components.ToastHostState? = null,
 ) {
     PlayQueueSheet(
         playQueue = playQueue,
@@ -22,5 +24,6 @@ fun PlayerQueueSheetHost(
         onRemoveSong = onRemoveSong,
         onClearQueue = onClearQueue,
         onDismiss = onDismiss,
+        toastHost = toastHost,
     )
 }

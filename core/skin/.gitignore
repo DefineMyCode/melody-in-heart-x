@@ -1,0 +1,5 @@
+# Module build output
+/build/
+/.cxx/
+/.externalNativeBuild/
+/captures/

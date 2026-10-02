@@ -15,6 +15,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
@@ -23,8 +24,13 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import cn.com.dcsgo.mihx.app.permissions.PermissionCoordinator
+import cn.com.dcsgo.mihx.app.player.NowPlayingSurface
 import cn.com.dcsgo.mihx.app.player.SongPlaybackStrategy
 import cn.com.dcsgo.mihx.app.player.playWith
+import cn.com.dcsgo.mihx.app.shell.AppShell
+import cn.com.dcsgo.mihx.app.shell.AppTab
+import cn.com.dcsgo.mihx.app.shell.SkinSwitcherRoute
+import cn.com.dcsgo.mihx.app.shell.indexOfRoute
 import cn.com.dcsgo.mihx.app.playlist.PlaylistResumeViewModel
 import cn.com.dcsgo.mihx.core.model.Lyrics
 import cn.com.dcsgo.mihx.core.model.Song
@@ -77,7 +83,6 @@ import cn.com.dcsgo.mihx.feature.user.VersionComparisonRouteState
 import cn.com.dcsgo.mihx.feature.user.VersionManagementRoute
 import cn.com.dcsgo.mihx.feature.user.VersionManagementRouteActions
 import cn.com.dcsgo.mihx.feature.user.VersionManagementRouteState
-import cn.com.dcsgo.mihx.navigation.AppDestinations
 import cn.com.dcsgo.mihx.navigation.AppRoutes
 import cn.com.dcsgo.mihx.ui.components.SongInfoDialog
 import cn.com.dcsgo.mihx.ui.components.LocalEmotionCorrectionController
@@ -85,8 +90,16 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.launch
 
-/** 路由 → 其所属底部 Tab 的序号（嵌套路由如设置/统计也映射到所属 Tab，同一 Tab 内序号相同则无转场） */
-private fun tabOrdinal(route: String?): Int = AppDestinations.fromRoute(route).ordinal
+/**
+ * 路由 → 其所属底部 Tab 的序号（嵌套路由如设置/统计也映射到所属 Tab，同一 Tab 内序号相同则无转场）。
+ *
+ * P2 改造：原实现取 `AppDestinations.fromRoute(route).ordinal`（编译期枚举序号）；
+ * 现在序号由**运行期 tab 列表**决定，因此 tab 数量可变（默认骨架仍是 3 项，序号与改造前一致）。
+ */
+private fun tabOrdinal(
+    route: String?,
+    tabs: List<AppTab>,
+): Int = tabs.indexOfRoute(route)
 
 /** 当前时刻的当日分钟数（0–1439），供情境化随心播放入口卡/配置页判定"生效中" */
 private fun currentMinuteOfDay(): Int =
@@ -97,6 +110,8 @@ private fun currentMinuteOfDay(): Int =
 @Composable
 fun AppNavHost(
     navController: NavHostController,
+    /** 运行期外壳（P2）：启动页与转场序号都由它决定，替代改造前写死的 AppRoutes.HOME。 */
+    shell: AppShell,
     uiState: PlayerUiState,
     playerViewModel: PlayerViewModel,
     permissionCoordinator: PermissionCoordinator,
@@ -114,6 +129,17 @@ fun AppNavHost(
     playlistResumeViewModel: PlaylistResumeViewModel,
     emotionViewModel: cn.com.dcsgo.mihx.app.emotion.EmotionViewModel,
     moodTimeSlotViewModel: cn.com.dcsgo.mihx.app.mood.MoodTimeSlotViewModel,
+    /** 样式切换:AppRoot 透传过来的状态/回调,用于 SKIN_SWITCHER 路由页。 */
+    currentSkinId: String = cn.com.dcsgo.mihx.app.shell.SkinShellResolver.DEFAULT_SKIN_ID,
+    onSkinSelected: (String) -> Unit = {},
+    /** 当前选中样式在「样式切换」里的播放面板覆盖(null 表示未覆盖,落到全局默认)。 */
+    panelCoverSizeOverride: Float? = null,
+    panelCoverCornerOverride: Float? = null,
+    onPanelCoverSizeChange: (Float) -> Unit = {},
+    onPanelCoverCornerChange: (Float) -> Unit = {},
+    /** 歌手/专辑网格布局开关（全局，不分样式）。 */
+    gridLayoutEnabled: Boolean = false,
+    onGridLayoutChange: (Boolean) -> Unit = {},
 ) {
     // 失败歌曲手动标记等 suspend 回调的协程作用域
     val navCoroutineScope = rememberCoroutineScope()
@@ -125,12 +151,20 @@ fun AppNavHost(
         flatGroupedSongs(uiState, playerViewModel)
     }
 
+    // B 方案:启动页在本窗口生命周期内固定,不跟随 shell.startRoute 变化。
+    // 背景:NavGraph.equals 是结构判等(相同 routes + 相同 startDestinationId),NavController.setGraph
+    // 判等相等时走 else 分支——原地替换 destination(新 content 生效)且**不清返回栈**;判等不等才清栈。
+    // 切样式时若 startDestination 跟着换(playlist↔home)→ 判等失败 → 清栈 → 被踢回起始页。
+    // 固定后切样式仍相等 → 栈保留、新样式内容照常生效;下次冷启动 rememberSaveable 重算即落到新样式启动页。
+    // 用 rememberSaveable 而非 remember:配置变更(旋转)后与已保存的返回栈保持同一 start,不清栈。
+    val initialStartRoute = rememberSaveable { shell.startRoute }
+
     NavHost(
         navController = navController,
-        startDestination = AppRoutes.HOME,
+        startDestination = initialStartRoute,
         enterTransition = {
-            val from = tabOrdinal(initialState.destination.route)
-            val to = tabOrdinal(targetState.destination.route)
+            val from = tabOrdinal(initialState.destination.route, shell.tabs)
+            val to = tabOrdinal(targetState.destination.route, shell.tabs)
             when {
                 // 目标 Tab 序号更大（左滑/前进）：新页从右滑入 + 淡入
                 to > from ->
@@ -144,8 +178,8 @@ fun AppNavHost(
             }
         },
         exitTransition = {
-            val from = tabOrdinal(initialState.destination.route)
-            val to = tabOrdinal(targetState.destination.route)
+            val from = tabOrdinal(initialState.destination.route, shell.tabs)
+            val to = tabOrdinal(targetState.destination.route, shell.tabs)
             when {
                 to > from ->
                     slideOutHorizontally(tween(300, easing = FastOutSlowInEasing)) { -it } +
@@ -160,150 +194,27 @@ fun AppNavHost(
         popExitTransition = { ExitTransition.None },
     ) {
         composable(AppRoutes.HOME) {
-            // 播放位置窄流：只在当前目的地（播放页）订阅，不驱动整壳重组
-            val positionMs by playerViewModel.positionMs.collectAsStateWithLifecycle()
-            // M-6（评审 2026-09-03）：定时关闭剩余毫秒窄流——倒计时每秒 tick 只驱动
-            // 定时关闭 Chip 局部重组，不写主 UiState 导致整壳重组。
-            val sleepTimerRemainingMs by playerViewModel.sleepTimerRemainingMs.collectAsStateWithLifecycle()
-            // 播放页"更多"功能对话框状态
-            var songForInfo by remember { mutableStateOf<Song?>(null) }
-            var songInfo by remember { mutableStateOf<SongInfo?>(null) }
-            var songForAddToPlaylist by remember { mutableStateOf<Song?>(null) }
-            var songForDelete by remember { mutableStateOf<Song?>(null) }
-            LaunchedEffect(songForInfo) {
-                val uri = songForInfo?.uri
-                if (uri != null) {
-                    // m6（评审 2026-09-03）：底层走 Room runBlocking 桥，DB 异常会让协程崩溃，这里兜底。
-                    songInfo = runCatching { songForInfo?.let { loadSongInfo(it) } }
-                        .onFailure {
-                            AppLog.error("AppNavHost", "loadSongInfo failed: ${it.message}", it)
-                        }
-                        .getOrNull()
-                }
-            }
-            HomeRoute(
-                state = HomeRouteState(
-                    currentSong = uiState.currentSong,
-                    isPlaying = uiState.isPlaying,
-                    currentPositionMs = positionMs,
-                    durationMs = uiState.durationMs,
-                    playMode = uiState.playQueue.playMode,
-                    isInfinitePlay = uiState.isInfinitePlay,
-                    sameNameSongs = uiState.sameNameSongs,
-                    isSleepTimerActive = uiState.isSleepTimerActive,
-                    sleepTimerRemainingMs = sleepTimerRemainingMs,
-                    sleepTimerPlayLastSong = uiState.sleepTimerPlayLastSong,
-                    sleepTimerPausePending = uiState.sleepTimerPausePending,
-                ),
-                actions = HomeRouteActions(
-                    onPlayPauseClick = playerViewModel::togglePlayPause,
-                    onPreviousClick = playerViewModel::playPrevious,
-                    onNextClick = playerViewModel::playNext,
-                    onStartSeeking = playerViewModel::startSeeking,
-                    onEndSeeking = playerViewModel::endSeeking,
-                    onSeekTo = playerViewModel::seekTo,
-                    onQueueClick = onShowQueue,
-                    onTogglePlayMode = {
-                        playerViewModel.togglePlayMode()
-                        playerViewModel.currentPlayMode.label
-                    },
-                    onSwitchVersion = playerViewModel::switchToVersion,
-                    onShowLyrics = { navController.navigate(AppRoutes.LYRICS) },
-                    onArtistClick = { artistName ->
-                        navController.navigate(AppRoutes.artistDetail(artistName))
-                    },
-                    onAlbumClick = { albumName ->
-                        navController.navigate(AppRoutes.albumDetail(albumName))
-                    },
-                    onLuckyPlayClick = {
-                        val started = playerViewModel.playRandomQueue()
-                        if (started) {
-                            // 情境化随心播放归因（§4.5）：让"这首歌为什么被选中"可解释
-                            playerViewModel.currentMoodSlotName()?.let { slotName ->
-                                showToast("已按「$slotName」为你随机播放")
-                            }
-                        } else {
-                            showToast("还没有可播放的音乐，请先导入歌曲吧~")
-                        }
-                        playlistResumeViewModel.switchSource(null, uiState.currentSong?.id)
-                        started
-                    },
-                    onStartInfinitePlay = {
-                        val started = playerViewModel.startInfinitePlay()
-                        if (started) {
-                            playerViewModel.currentMoodSlotName()?.let { slotName ->
-                                showToast("已按「$slotName」开启无限随机播放")
-                            }
-                        }
-                        playlistResumeViewModel.switchSource(null, uiState.currentSong?.id)
-                        started
-                    },
-                    onStopInfinitePlay = playerViewModel::stopInfinitePlay,
-                    onRelatedPlayClick = { song ->
-                        val added = playerViewModel.playRelatedSongs(song)
-                        playlistResumeViewModel.switchSource(null, uiState.currentSong?.id)
-                        if (added > 0) {
-                            showToast("已关联 $added 首歌曲")
-                        } else {
-                            showToast("未检索到关联歌曲")
-                        }
-                    },
-                    onSleepTimerStart = { minutes, playLast ->
-                        playerViewModel.startSleepTimer(minutes, playLast)
-                        showToast("已设置定时关闭：${minutes}分钟后暂停播放")
-                    },
-                    onSleepTimerCancel = {
-                        playerViewModel.cancelSleepTimer()
-                        showToast("已取消定时关闭")
-                    },
-                    onShowSongInfo = { song ->
-                        songForInfo = song
-                        songInfo = null
-                    },
-                    onAddToPlaylist = { song -> songForAddToPlaylist = song },
-                    onDeleteSong = { song -> songForDelete = song },
-                ),
+            // P3：播放页内容已抽成 NowPlayingSurface，Tab 与全局抽屉两种形态共用同一份实现。
+            // L4 播放页形态（黑胶/水墨/网易云）验收后判定不符合预期，已整体下线（见 git 历史），
+            // 播放页固定走 classic 形态。
+            NowPlayingSurface(
+                playerViewModel = playerViewModel,
+                uiState = uiState,
+                onShowQueue = onShowQueue,
+                loadSongInfo = loadSongInfo,
                 showToast = showToast,
+                deleteSongWithToast = deleteSongWithToast,
+                playlistResumeViewModel = playlistResumeViewModel,
+                onNavigateToLyrics = { navController.navigate(AppRoutes.LYRICS) },
+                onNavigateToArtist = { artistName ->
+                    navController.navigate(AppRoutes.artistDetail(artistName))
+                },
+                onNavigateToAlbum = { albumName ->
+                    navController.navigate(AppRoutes.albumDetail(albumName))
+                },
             )
-            // 歌曲详细信息对话框（更多菜单 → 查看歌曲详细信息）
-            val infoSong = songForInfo
-            val currentSongInfo = songInfo
-            if (infoSong != null && currentSongInfo != null) {
-                SongInfoDialog(
-                    song = infoSong,
-                    songInfo = currentSongInfo,
-                    onDismiss = {
-                        songForInfo = null
-                        songInfo = null
-                    },
-                )
-            }
-            // 添加到歌单对话框（更多菜单 → 添加到歌单）
-            songForAddToPlaylist?.let { song ->
-                SingleSongAddToPlaylistDialog(
-                    song = song,
-                    playlists = uiState.playlists,
-                    onDismiss = { songForAddToPlaylist = null },
-                    onSelectPlaylist = { playlist ->
-                        playerViewModel.addSongToPlaylist(playlist.id, song.id)
-                        showToast("已添加到歌单「${playlist.name}」")
-                        songForAddToPlaylist = null
-                    },
-                    onCreatePlaylist = playerViewModel::createPlaylist,
-                )
-            }
-            // 删除确认对话框（更多菜单 → 删除，与本地音乐交互一致）
-            songForDelete?.let { song ->
-                DeleteSongConfirmDialog(
-                    song = song,
-                    onDismiss = { songForDelete = null },
-                    onConfirm = {
-                        songForDelete = null
-                        deleteSongWithToast(song.id)
-                    },
-                )
-            }
         }
+
 
         composable(AppRoutes.LYRICS) {
             // 播放位置窄流：只在歌词页订阅，随位置推进只重组歌词内容
@@ -346,6 +257,7 @@ fun AppNavHost(
                     precomputedLibrarySongs = sharedLibrarySongs,
                     sortMode = songSortMode,
                     sortAscending = songSortAscending,
+                    songListTemplate = shell.librarySongListTemplate,
                 ),
                 // 列表页点歌(全曲库范围):非歌单来源,先结算旧歌单
                 actions = actions.copy(
@@ -390,6 +302,7 @@ fun AppNavHost(
                         EmotionSongUiRow(song = it.song, tags = it.tags, corrected = it.corrected)
                     },
                     precomputedLibrarySongs = sharedLibrarySongs,
+                    songListTemplate = shell.librarySongListTemplate,
                 ),
                 actions = actions.copy(
                     // 歌单内点歌:仅更新来源标记,不立即写记录;记录在退出应用/切换播放源时结算
@@ -534,6 +447,10 @@ fun AppNavHost(
                     moodSlotConfigs = moodConfigs,
                     moodSlotEnabled = moodEnabled,
                     nowMinuteOfDay = moodNowMinute,
+                    // P4 L2 分区化：我的页分区顺序来自骨架描述（可裁剪/重排）。
+                    // 已由 SkinShellResolver 解析成零件名列表并归一化；
+                    // 缺省或非法时回落到改造前顺序，行为零变化。
+                    sectionOrder = shell.myPageSectionOrder,
                 ),
                 actions = userRouteActions(
                     navController = navController,
@@ -542,7 +459,26 @@ fun AppNavHost(
                         showToast("已开始扫描，可离开本页，后台继续")
                     },
                     onOpenMoodTimeSlot = { navController.navigate(AppRoutes.MOOD_TIME_SLOT) },
+                    onOpenSkinSwitcher = { navController.navigate(AppRoutes.SKIN_SWITCHER) },
                 ),
+            )
+        }
+
+        // 样式切换独立页：列出内置骨架并允许调整当前样式的播放面板封面边长/圆角。
+        composable(AppRoutes.SKIN_SWITCHER) {
+            SkinSwitcherRoute(
+                skinOptions = cn.com.dcsgo.mihx.app.shell.SkinShellResolver.knownSkins.map {
+                    it.id to it.name
+                },
+                currentSkinId = currentSkinId,
+                panelCoverSizeOverride = panelCoverSizeOverride,
+                panelCoverCornerOverride = panelCoverCornerOverride,
+                onSkinSelected = onSkinSelected,
+                onPanelCoverSizeChange = onPanelCoverSizeChange,
+                onPanelCoverCornerChange = onPanelCoverCornerChange,
+                gridLayoutEnabled = gridLayoutEnabled,
+                onGridLayoutChange = onGridLayoutChange,
+                onBack = { navController.navigateUp() },
             )
         }
 
@@ -933,6 +869,12 @@ fun AppNavHost(
                             when (variant) {
                                 ThemeVariant.MONO -> "已切换为墨色主题"
                                 ThemeVariant.VERMILION -> "已切换为朱砂 · 心有乐章主题"
+                                ThemeVariant.INDIGO -> "已切换为靛蓝静夜主题"
+                                ThemeVariant.SAGE -> "已切换为苔藓森野主题"
+                                ThemeVariant.AMBER -> "已切换为琥珀暖忆主题"
+                                ThemeVariant.SKY -> "已切换为天空澄明主题"
+                                ThemeVariant.FRESH -> "已切换为新叶青翠主题"
+                                ThemeVariant.SUNRISE -> "已切换为晨光霞粉主题"
                             },
                         )
                     },

@@ -18,6 +18,7 @@ android {
 
 dependencies {
     implementation(project(":core:model"))
+    implementation(project(":core:skin"))
     implementation(project(":core:common"))
     implementation(project(":core:ui"))
     implementation(project(":domain"))
@@ -26,4 +27,6 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.androidx.material.icons.extended)
     implementation(libs.coil.compose)
+    implementation(libs.androidx.activity.compose)
+    testImplementation(libs.junit)
 }

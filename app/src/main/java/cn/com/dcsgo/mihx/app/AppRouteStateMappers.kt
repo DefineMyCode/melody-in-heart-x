@@ -11,9 +11,11 @@ import cn.com.dcsgo.mihx.feature.home.PlayStatsRouteState
 import cn.com.dcsgo.mihx.feature.player.PlayerUiState
 import cn.com.dcsgo.mihx.feature.player.PlayerViewModel
 import cn.com.dcsgo.mihx.feature.playlist.PlaylistRouteState
+import cn.com.dcsgo.mihx.feature.playlist.SongListTemplate
 import cn.com.dcsgo.mihx.feature.user.PlaybackStatsRouteState
 import cn.com.dcsgo.mihx.feature.user.SongTopListRouteState
 import cn.com.dcsgo.mihx.feature.user.UserRouteState
+import cn.com.dcsgo.mihx.feature.user.UserSections
 
 /**
  * 路由 State 派生映射
@@ -47,6 +49,11 @@ internal fun playlistRouteState(
     /** 本地音乐排序（持久化设置） */
     sortMode: SongSortMode = SongSortMode.IMPORT_ORDER,
     sortAscending: Boolean = true,
+    /**
+     * songList 模板（L3 行模板化，2026-09-29）。
+     * 由 AppShell 携带的皮肤描述解析出来；默认值 = DEFAULT，与改造前一致。
+     */
+    songListTemplate: SongListTemplate = SongListTemplate.DEFAULT,
 ): PlaylistRouteState {
     val librarySongs = precomputedLibrarySongs ?: flatGroupedSongs(uiState, playerViewModel)
     return PlaylistRouteState(
@@ -57,6 +64,7 @@ internal fun playlistRouteState(
         libraryAlbums = uiState.libraryAlbums,
         sortMode = sortMode,
         sortAscending = sortAscending,
+        songListTemplate = songListTemplate,
         playCounts = uiState.playCounts,
         lastPlayedAt = uiState.lastPlayedAt,
         selectedPlaylist = selectedPlaylist,
@@ -84,6 +92,12 @@ internal fun userRouteState(
     moodSlotConfigs: List<cn.com.dcsgo.mihx.core.model.TimeSlotConfig> = emptyList(),
     moodSlotEnabled: Boolean = false,
     nowMinuteOfDay: Int = 0,
+    /**
+     * 我的页分区顺序（L2 分区化，P4）。
+     *
+     * 由骨架描述解析后传入；默认值 = 改造前的写死顺序，故不传时行为零变化。
+     */
+    sectionOrder: List<String> = UserSections.DEFAULT_ORDER,
 ): UserRouteState = UserRouteState(
     todayDurationMs = snapshot.todayDurationMs,
     weekTotalMs = snapshot.weekTotalMs,
@@ -96,6 +110,7 @@ internal fun userRouteState(
     moodSlotConfigs = moodSlotConfigs,
     moodSlotEnabled = moodSlotEnabled,
     nowMinuteOfDay = nowMinuteOfDay,
+    sectionOrder = sectionOrder,
 )
 
 internal fun playStatsRouteState(

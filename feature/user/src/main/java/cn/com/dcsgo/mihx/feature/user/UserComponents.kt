@@ -91,7 +91,7 @@ fun UserInfoSection(
             Text(
                 text = stringResource(R.string.app_introduction),
                 style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
     }

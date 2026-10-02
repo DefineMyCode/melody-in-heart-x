@@ -45,6 +45,7 @@ import cn.com.dcsgo.mihx.core.model.EmotionSongUiRow
 import cn.com.dcsgo.mihx.core.model.Playlist
 import cn.com.dcsgo.mihx.core.model.Song
 import cn.com.dcsgo.mihx.core.model.SongInfo
+import cn.com.dcsgo.mihx.core.common.time.formatDurationTime
 import cn.com.dcsgo.mihx.ui.components.BatchAddToPlaylistDialog
 import cn.com.dcsgo.mihx.ui.components.SingleSongAddToPlaylistDialog
 import cn.com.dcsgo.mihx.ui.components.SongInfoDialog
@@ -257,7 +258,11 @@ fun EmotionLibraryView(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
-                    text = "已选 ${selection.selectedIds.size} 首",
+                    text = if (selectedSongs.isNotEmpty()) {
+                        "已选 ${selection.selectedIds.size} 首 · 共 ${formatDurationTime(selectedSongs.sumOf { it.durationMs })}"
+                    } else {
+                        "已选 ${selection.selectedIds.size} 首"
+                    },
                     style = MaterialTheme.typography.bodyMedium,
                     modifier = Modifier.weight(1f),
                 )
@@ -276,9 +281,6 @@ fun EmotionLibraryView(
                     onClick = { showBatchDialog = true },
                 ) {
                     Text("添加到歌单")
-                }
-                TextButton(onClick = { selection.exitSelectMode() }) {
-                    Text("退出")
                 }
                 }
             }
@@ -346,6 +348,7 @@ private fun EmotionLibrarySongItem(
     SongItem(
         song = row.song,
         isCurrentPlaying = isCurrentPlaying,
+        showDuration = true,
         isSelectMode = isSelectMode,
         isSelected = isSelected,
         onSongClick = onSongClick,

@@ -143,16 +143,15 @@ private fun ValidatingContent() {
     )
     Spacer(modifier = Modifier.height(8.dp))
     Text(
-        text = "校验在后台运行，不会暂停播放；可继续听歌或浏览其它页面，\n完成后回到本页即可查看结果。",
+        text = "校验在后台运行，不会暂停播放；可继续听歌或浏览其它页面，完成后回到本页即可查看结果。",
         style = MaterialTheme.typography.bodyMedium,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
-        textAlign = TextAlign.Center,
+        textAlign = TextAlign.Start,
     )
 }
 
 @Composable
 private fun IdleContent(onRunValidation: (FileCheckMode) -> Unit) {
-    Spacer(modifier = Modifier.height(20.dp))
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(18.dp),
@@ -166,14 +165,6 @@ private fun IdleContent(onRunValidation: (FileCheckMode) -> Unit) {
                 .padding(18.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Spacer(modifier = Modifier.height(18.dp))
-            Icon(
-                imageVector = Icons.Default.CheckCircle,
-                contentDescription = null,
-                modifier = Modifier.size(44.dp),
-                tint = MaterialTheme.colorScheme.primaryContainer,
-            )
-            Spacer(modifier = Modifier.height(14.dp))
             Text(
                 text = "校验本地歌曲文件",
                 style = MaterialTheme.typography.titleMedium,
@@ -211,7 +202,6 @@ private fun ResultContent(
     onRerun: (FileCheckMode) -> Unit,
     onAcknowledge: () -> Unit,
 ) {
-    Spacer(modifier = Modifier.height(32.dp))
     Box(
         modifier = Modifier
             .size(64.dp),

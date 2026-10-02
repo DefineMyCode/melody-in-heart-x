@@ -192,13 +192,13 @@ private fun ThemeVariantCard(
 ) {
     val swatchColors = when (variant) {
         ThemeVariant.MONO -> listOf(
-            Color(0xFF000000),
-            Color(0xFFD0D0D0),
+            Color(0xFFE6E6E6),
+            Color(0xFF161616),
             Color(0xFFF4F4F4),
         )
         ThemeVariant.VERMILION -> listOf(
-            Color(0xFF000000),
             Color(0xFFC04F42),
+            Color(0xFFA32E25),
             Color(0xFFFAF5F2),
         )
         ThemeVariant.INDIGO -> listOf(

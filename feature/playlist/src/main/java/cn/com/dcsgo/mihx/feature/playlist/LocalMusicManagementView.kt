@@ -216,7 +216,9 @@ fun LocalMusicManagementView(
             // 本地音乐标题 + 操作按钮
             item(key = "local_header", contentType = "header") {
                 var showSortMenu by remember { mutableStateOf(false) }
-                Box {
+                // ⚠️ 必须是 Column：SongListActionBar 会发射「第一行 + 多选时第二行」两个顶层节点，
+                // 若用 Box(非堆叠)两行会重叠(2026-10-02 修:全选压住'本地音乐'/排序与'已选N首'叠一起)。
+                Column {
                     SongListActionBar(
                         title = "本地音乐",
                         totalCount = localSongs.size,

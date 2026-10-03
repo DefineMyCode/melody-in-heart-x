@@ -50,6 +50,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import cn.com.dcsgo.mihx.core.model.ThemeMode
 import cn.com.dcsgo.mihx.core.model.ThemeVariant
+import cn.com.dcsgo.mihx.core.model.ScreenOrientationMode
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -59,6 +60,8 @@ fun SettingsScreen(
     onThemeModeChange: (ThemeMode) -> Unit,
     themeVariant: ThemeVariant,
     onThemeVariantChange: (ThemeVariant) -> Unit,
+    screenOrientationMode: ScreenOrientationMode,
+    onScreenOrientationModeChange: (ScreenOrientationMode) -> Unit,
     globalUniformRandomEnabled: Boolean,
     onGlobalUniformRandomEnabledChange: (Boolean) -> Unit,
     dailyListeningGoalMinutes: Int,
@@ -100,6 +103,10 @@ fun SettingsScreen(
                     onThemeModeChange = onThemeModeChange,
                     themeVariant = themeVariant,
                     onThemeVariantChange = onThemeVariantChange,
+                )
+                SettingsOrientationSelector(
+                    screenOrientationMode = screenOrientationMode,
+                    onScreenOrientationModeChange = onScreenOrientationModeChange,
                 )
                 SettingsSwitchRow(
                     title = "全局均匀随机",
@@ -178,6 +185,62 @@ private fun SettingsThemeSelector(
                     modifier = Modifier.weight(1f),
                     onClick = { onThemeVariantChange(variant) },
                 )
+            }
+        }
+    }
+}
+
+@Composable
+private fun SettingsOrientationSelector(
+    screenOrientationMode: ScreenOrientationMode,
+    onScreenOrientationModeChange: (ScreenOrientationMode) -> Unit,
+) {
+    Column(modifier = Modifier.padding(vertical = 12.dp)) {
+        Text(
+            text = "屏幕方向",
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onSurface,
+        )
+        Text(
+            text = "自动旋转开 = 跟随系统；也可手动固定为横屏或竖屏",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            ScreenOrientationMode.entries.forEach { mode ->
+                val selected = mode == screenOrientationMode
+                val containerColor = if (selected) {
+                    MaterialTheme.colorScheme.primary
+                } else {
+                    MaterialTheme.colorScheme.surfaceVariant
+                }
+                val contentColor = if (selected) {
+                    MaterialTheme.colorScheme.onPrimary
+                } else {
+                    MaterialTheme.colorScheme.onSurfaceVariant
+                }
+                Row(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(containerColor)
+                        .clickable { onScreenOrientationModeChange(mode) }
+                        .padding(vertical = 10.dp),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        text = mode.label,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = contentColor,
+                        fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
+                    )
+                }
             }
         }
     }

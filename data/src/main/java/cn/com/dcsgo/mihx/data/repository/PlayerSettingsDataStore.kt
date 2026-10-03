@@ -25,6 +25,7 @@ object PlayerSettingsKeys {
 
     val THEME_MODE = stringPreferencesKey("theme_mode")
     val THEME_VARIANT = stringPreferencesKey("theme_variant")
+    val SCREEN_ORIENTATION_MODE = stringPreferencesKey("screen_orientation_mode")
     val DARK_THEME = booleanPreferencesKey(LEGACY_DARK_THEME)
     val GLOBAL_UNIFORM_RANDOM_ENABLED = booleanPreferencesKey(LEGACY_GLOBAL_UNIFORM_RANDOM_ENABLED)
     val BLUETOOTH_PLAYBACK_MONITORING_ENABLED = booleanPreferencesKey(LEGACY_BLUETOOTH_PLAYBACK_MONITORING_ENABLED)

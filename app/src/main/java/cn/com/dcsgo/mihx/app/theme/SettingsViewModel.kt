@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import cn.com.dcsgo.mihx.core.model.ThemeMode
 import cn.com.dcsgo.mihx.core.model.ThemeVariant
+import cn.com.dcsgo.mihx.core.model.ScreenOrientationMode
 import cn.com.dcsgo.mihx.domain.repository.PlayerSettingsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -22,6 +23,9 @@ class SettingsViewModel @Inject constructor(
     val themeVariant: StateFlow<ThemeVariant> = settingsRepository.themeVariant
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), ThemeVariant.MONO)
 
+    val screenOrientationMode: StateFlow<ScreenOrientationMode> = settingsRepository.screenOrientationMode
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), ScreenOrientationMode.SENSOR_AUTO)
+
     val lyricFontScale: StateFlow<Float> = settingsRepository.lyricFontScale
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), 1f)
 
@@ -34,6 +38,12 @@ class SettingsViewModel @Inject constructor(
     fun setThemeVariant(variant: ThemeVariant) {
         viewModelScope.launch {
             settingsRepository.setThemeVariant(variant)
+        }
+    }
+
+    fun setScreenOrientationMode(mode: ScreenOrientationMode) {
+        viewModelScope.launch {
+            settingsRepository.setScreenOrientationMode(mode)
         }
     }
 

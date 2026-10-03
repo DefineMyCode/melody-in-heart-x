@@ -2,6 +2,7 @@ package cn.com.dcsgo.mihx.feature.settings
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
+import cn.com.dcsgo.mihx.core.model.ScreenOrientationMode
 import cn.com.dcsgo.mihx.core.model.ThemeMode
 import cn.com.dcsgo.mihx.core.model.ThemeVariant
 
@@ -9,6 +10,7 @@ import cn.com.dcsgo.mihx.core.model.ThemeVariant
 data class SettingsRouteState(
     val themeMode: ThemeMode,
     val themeVariant: ThemeVariant,
+    val screenOrientationMode: ScreenOrientationMode,
     val globalUniformRandomEnabled: Boolean,
     val dailyListeningGoalMinutes: Int,
 )
@@ -17,6 +19,7 @@ data class SettingsRouteActions(
     val onBack: () -> Unit,
     val onThemeModeChange: (ThemeMode) -> Unit,
     val onThemeVariantChange: (ThemeVariant) -> Unit,
+    val onScreenOrientationModeChange: (ScreenOrientationMode) -> Unit,
     val onGlobalUniformRandomEnabledChange: (Boolean) -> Unit,
     val onDailyListeningGoalMinutesChange: (Int) -> Unit,
     val onRequestBluetoothPermission: () -> Unit,
@@ -34,6 +37,8 @@ fun SettingsRoute(
         onThemeModeChange = actions.onThemeModeChange,
         themeVariant = state.themeVariant,
         onThemeVariantChange = actions.onThemeVariantChange,
+        screenOrientationMode = state.screenOrientationMode,
+        onScreenOrientationModeChange = actions.onScreenOrientationModeChange,
         globalUniformRandomEnabled = state.globalUniformRandomEnabled,
         onGlobalUniformRandomEnabledChange = actions.onGlobalUniformRandomEnabledChange,
         dailyListeningGoalMinutes = state.dailyListeningGoalMinutes,

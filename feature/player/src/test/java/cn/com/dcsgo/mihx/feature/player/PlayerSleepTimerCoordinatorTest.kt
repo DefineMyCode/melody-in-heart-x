@@ -35,6 +35,7 @@ class PlayerSleepTimerCoordinatorTest {
 
         override val themeMode: Flow<cn.com.dcsgo.mihx.core.model.ThemeMode> = emptyFlow()
         override val themeVariant: Flow<cn.com.dcsgo.mihx.core.model.ThemeVariant> = emptyFlow()
+        override val screenOrientationMode: Flow<cn.com.dcsgo.mihx.core.model.ScreenOrientationMode> = emptyFlow()
         override val globalUniformRandomEnabled: Flow<Boolean> = emptyFlow()
         override val bluetoothPlaybackMonitoringEnabled: Flow<Boolean> = emptyFlow()
         override val playbackNotificationEnabled: Flow<Boolean> = emptyFlow()
@@ -45,6 +46,7 @@ class PlayerSleepTimerCoordinatorTest {
         override val songSortMode: Flow<SongSortMode> = emptyFlow()
         override val songSortAscending: Flow<Boolean> = emptyFlow()
         override fun currentGlobalUniformRandomEnabled(): Boolean = false
+        override fun currentScreenOrientationMode(): cn.com.dcsgo.mihx.core.model.ScreenOrientationMode = cn.com.dcsgo.mihx.core.model.ScreenOrientationMode.SENSOR_AUTO
         override fun currentBluetoothPlaybackMonitoringEnabled(): Boolean = false
         override fun currentPlaybackNotificationEnabled(): Boolean = false
         override fun currentDailyListeningGoalMinutes(): Int = 0
@@ -66,6 +68,7 @@ class PlayerSleepTimerCoordinatorTest {
         override suspend fun setSongSortAscending(ascending: Boolean) = Unit
         override suspend fun setThemeMode(mode: cn.com.dcsgo.mihx.core.model.ThemeMode) = Unit
         override suspend fun setThemeVariant(variant: cn.com.dcsgo.mihx.core.model.ThemeVariant) = Unit
+        override suspend fun setScreenOrientationMode(mode: cn.com.dcsgo.mihx.core.model.ScreenOrientationMode) = Unit
         override suspend fun setGlobalUniformRandomEnabled(enabled: Boolean) = Unit
         override suspend fun setBluetoothPlaybackMonitoringEnabled(enabled: Boolean) = Unit
         override suspend fun setPlaybackNotificationEnabled(enabled: Boolean) = Unit

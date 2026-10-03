@@ -2,12 +2,14 @@ package cn.com.dcsgo.mihx.domain.repository
 
 import cn.com.dcsgo.mihx.core.model.ThemeMode
 import cn.com.dcsgo.mihx.core.model.ThemeVariant
+import cn.com.dcsgo.mihx.core.model.ScreenOrientationMode
 import cn.com.dcsgo.mihx.domain.model.SongSortMode
 import kotlinx.coroutines.flow.Flow
 
 interface PlayerSettingsRepository {
     val themeMode: Flow<ThemeMode>
     val themeVariant: Flow<ThemeVariant>
+    val screenOrientationMode: Flow<ScreenOrientationMode>
     val globalUniformRandomEnabled: Flow<Boolean>
     val bluetoothPlaybackMonitoringEnabled: Flow<Boolean>
     val playbackNotificationEnabled: Flow<Boolean>
@@ -15,6 +17,7 @@ interface PlayerSettingsRepository {
     val dailyListeningGoalMinutes: Flow<Int>
 
     fun currentGlobalUniformRandomEnabled(): Boolean
+    fun currentScreenOrientationMode(): ScreenOrientationMode
     fun currentBluetoothPlaybackMonitoringEnabled(): Boolean
     fun currentPlaybackNotificationEnabled(): Boolean
     fun currentDailyListeningGoalMinutes(): Int
@@ -23,6 +26,7 @@ interface PlayerSettingsRepository {
     fun setPlaybackNotificationEnabledBlocking(enabled: Boolean)
     suspend fun setThemeMode(mode: ThemeMode)
     suspend fun setThemeVariant(variant: ThemeVariant)
+    suspend fun setScreenOrientationMode(mode: ScreenOrientationMode)
     suspend fun setGlobalUniformRandomEnabled(enabled: Boolean)
     suspend fun setBluetoothPlaybackMonitoringEnabled(enabled: Boolean)
     suspend fun setPlaybackNotificationEnabled(enabled: Boolean)

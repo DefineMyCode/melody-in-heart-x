@@ -1,6 +1,7 @@
 package cn.com.dcsgo.mihx.app
 
 import android.app.Activity
+import android.content.pm.ActivityInfo
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -42,6 +43,7 @@ import cn.com.dcsgo.mihx.app.shell.withGridLayout
 import androidx.compose.ui.unit.dp
 import cn.com.dcsgo.mihx.core.model.ThemeMode
 import cn.com.dcsgo.mihx.core.model.ThemeVariant
+import cn.com.dcsgo.mihx.core.model.ScreenOrientationMode
 import cn.com.dcsgo.mihx.domain.model.DeleteSongResult
 import cn.com.dcsgo.mihx.feature.player.PlayerViewModel
 import cn.com.dcsgo.mihx.navigation.AppRoutes
@@ -77,6 +79,7 @@ fun AppRoot(
     val themeMode by settingsViewModel.themeMode.collectAsStateWithLifecycle()
     val themeVariant by settingsViewModel.themeVariant.collectAsStateWithLifecycle()
     val lyricFontScale by settingsViewModel.lyricFontScale.collectAsStateWithLifecycle()
+    val screenOrientationMode by settingsViewModel.screenOrientationMode.collectAsStateWithLifecycle()
     val systemDarkTheme = isSystemInDarkTheme()
     val isDarkTheme = when (themeMode) {
         ThemeMode.SYSTEM -> systemDarkTheme
@@ -96,6 +99,16 @@ fun AppRoot(
     // 样式切换持久化：当前选中的内置 skinId + 播放面板封面尺寸/圆角的覆盖。
     // 用 SharedPreferences 单文件 (skin_switcher)；覆盖按 skinId 分键，仅当前选中的 id 有意义。
     val context = LocalContext.current
+    // 屏幕方向设置：应用当前配置到 Activity（自动/横屏/竖屏）
+    LaunchedEffect(screenOrientationMode) {
+        val activity = context as? Activity ?: return@LaunchedEffect
+        val orientation = when (screenOrientationMode) {
+            ScreenOrientationMode.SENSOR_AUTO -> ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+            ScreenOrientationMode.LANDSCAPE -> ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
+            ScreenOrientationMode.PORTRAIT -> ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT
+        }
+        activity.requestedOrientation = orientation
+    }
     val skinStore = remember(context) { SkinSwitcherStore(context.applicationContext) }
     var currentSkinId by remember {
         // 样式列表收紧到「默认三页 / 极简双页」两套(2026-09-30)后,旧 prefs 里可能存着
@@ -286,6 +299,8 @@ fun AppRoot(
                     onThemeModeChange = settingsViewModel::setThemeMode,
                     themeVariant = themeVariant,
                     onThemeVariantChange = settingsViewModel::setThemeVariant,
+                    screenOrientationMode = screenOrientationMode,
+                    onScreenOrientationModeChange = settingsViewModel::setScreenOrientationMode,
                     lyricFontScale = lyricFontScale,
                     onLyricFontScaleChange = settingsViewModel::setLyricFontScale,
                     loadLyrics = mediaMetadataViewModel::lyricsFor,

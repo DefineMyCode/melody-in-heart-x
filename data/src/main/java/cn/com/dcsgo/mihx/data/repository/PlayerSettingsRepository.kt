@@ -7,6 +7,7 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.Preferences
 import cn.com.dcsgo.mihx.core.model.ThemeMode
 import cn.com.dcsgo.mihx.core.model.ThemeVariant
+import cn.com.dcsgo.mihx.core.model.ScreenOrientationMode
 import cn.com.dcsgo.mihx.domain.model.SongSortMode
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -43,6 +44,11 @@ class PlayerSettingsRepository(
     override val themeVariant: Flow<ThemeVariant> = settingsStore.data.map { preferences ->
         val stored = preferences[PlayerSettingsKeys.THEME_VARIANT]
         ThemeVariant.entries.firstOrNull { it.name == stored } ?: ThemeVariant.MONO
+    }
+
+    override val screenOrientationMode: Flow<ScreenOrientationMode> = settingsStore.data.map { preferences ->
+        val stored = preferences[PlayerSettingsKeys.SCREEN_ORIENTATION_MODE]
+        ScreenOrientationMode.entries.firstOrNull { it.name == stored } ?: ScreenOrientationMode.SENSOR_AUTO
     }
 
     override val globalUniformRandomEnabled: Flow<Boolean> = settingsStore.data.map { preferences ->
@@ -102,6 +108,12 @@ class PlayerSettingsRepository(
         }
     }
 
+    override fun currentScreenOrientationMode(): ScreenOrientationMode {
+        return runBlocking(Dispatchers.IO) {
+            screenOrientationMode.first()
+        }
+    }
+
     override fun currentBluetoothPlaybackMonitoringEnabled(): Boolean {
         return runBlocking(Dispatchers.IO) {
             bluetoothPlaybackMonitoringEnabled.first()
@@ -150,6 +162,12 @@ class PlayerSettingsRepository(
     override suspend fun setThemeVariant(variant: ThemeVariant) {
         settingsStore.edit { preferences ->
             preferences[PlayerSettingsKeys.THEME_VARIANT] = variant.name
+        }
+    }
+
+    override suspend fun setScreenOrientationMode(mode: ScreenOrientationMode) {
+        settingsStore.edit { preferences ->
+            preferences[PlayerSettingsKeys.SCREEN_ORIENTATION_MODE] = mode.name
         }
     }
 

@@ -37,6 +37,7 @@ import cn.com.dcsgo.mihx.core.model.Song
 import cn.com.dcsgo.mihx.core.model.SongInfo
 import cn.com.dcsgo.mihx.core.model.ThemeMode
 import cn.com.dcsgo.mihx.core.model.ThemeVariant
+import cn.com.dcsgo.mihx.core.model.ScreenOrientationMode
 import cn.com.dcsgo.mihx.domain.repository.PlaybackStatsSnapshot
 import cn.com.dcsgo.mihx.feature.home.HomeRoute
 import cn.com.dcsgo.mihx.feature.home.HomeRouteActions
@@ -121,6 +122,8 @@ fun AppNavHost(
     onThemeModeChange: (ThemeMode) -> Unit,
     themeVariant: ThemeVariant,
     onThemeVariantChange: (ThemeVariant) -> Unit,
+    screenOrientationMode: ScreenOrientationMode,
+    onScreenOrientationModeChange: (ScreenOrientationMode) -> Unit,
     lyricFontScale: Float,
     onLyricFontScaleChange: (Float) -> Unit,
     loadLyrics: suspend (Song) -> Lyrics,
@@ -868,6 +871,7 @@ fun AppNavHost(
                 state = SettingsRouteState(
                     themeMode = themeMode,
                     themeVariant = themeVariant,
+                    screenOrientationMode = screenOrientationMode,
                     globalUniformRandomEnabled = uiState.globalUniformRandomEnabled,
                     dailyListeningGoalMinutes = uiState.dailyListeningGoalMinutes,
                 ),
@@ -896,6 +900,12 @@ fun AppNavHost(
                                 ThemeVariant.FRESH -> "已切换为新叶青翠主题"
                                 ThemeVariant.SUNRISE -> "已切换为晨光霞粉主题"
                             },
+                        )
+                    },
+                    onScreenOrientationModeChange = { mode ->
+                        onScreenOrientationModeChange(mode)
+                        showToast(
+                            "屏幕方向：${mode.label}",
                         )
                     },
                     onGlobalUniformRandomEnabledChange = { enabled ->

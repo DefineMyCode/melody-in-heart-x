@@ -106,7 +106,7 @@ jobs:
         run: |
           TAG="${{ steps.version.outputs.tag }}"
           APK="${{ steps.version.outputs.apk }}"
-          # tag 推送时 release 已存在则复用,不存在则用 tag message 作说明创建
+          # tag 推送时 release 已存在则复用; 不存在则以 tag message(附注 tag 的 -m 内容)作为 release notes 创建
           gh release view "$TAG" >/dev/null 2>&1 \
-            || gh release create "$TAG" --title "$TAG" --generate-notes
+            || gh release create "$TAG" --title "$TAG" --notes-tag "$TAG"
           gh release upload "$TAG" "$APK" --clobber

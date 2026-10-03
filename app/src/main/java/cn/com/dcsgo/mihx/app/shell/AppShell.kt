@@ -189,7 +189,7 @@ fun shouldShowMiniPlayer(
     shell: AppShell,
     activeRoute: String?,
     hasCurrentSong: Boolean,
-): Boolean = hasCurrentSong && shell.miniPlayer && activeRoute != shell.playerRoute
+): Boolean = hasCurrentSong && shell.miniPlayer && RouteAffinity.owningTopLevelRoute(activeRoute) != shell.playerRoute
 
 /**
  * 「随心播放」入口条是否应显示（2026-10-01 用户拍板：双页样式、队列为空时充当迷你条的位置）。

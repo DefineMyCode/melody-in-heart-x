@@ -1,6 +1,7 @@
 name: Release Build
 
-# push v* tag 自动构建签名 release APK 并发布 GitHub Release + 同步 Gitee Release
+# push v* tag 自动构建签名 release APK 并发布 GitHub Release。
+# Gitee Release 由 Hermes 在 CI 完成后手动同步(上传超时且耗时>构建, 2026-10-03 用户定)。
 on:
   push:
     tags:
@@ -109,52 +110,3 @@ jobs:
           gh release view "$TAG" >/dev/null 2>&1 \
             || gh release create "$TAG" --title "$TAG" --generate-notes
           gh release upload "$TAG" "$APK" --clobber
-
-      - name: Sync to Gitee Release
-        env:
-          GITEE_TOKEN: ${{ secrets.GITEE_TOKEN }}
-        run: |
-          TAG="${{ steps.version.outputs.tag }}"
-          APK="${{ steps.version.outputs.apk }}"
-          export GITEE_TOKEN
-          # 全 python 完成: 读 GitHub release 说明 → 查/建 Gitee release → 传附件。
-          # 不经 shell 变量中转, 避免 release 正文中的引号破坏命令行。
-          python3 - <<'PY'
-          import json, os, subprocess, sys, urllib.request, urllib.parse
-          token = os.environ["GITEE_TOKEN"]
-          tag = "${{ steps.version.outputs.tag }}"
-          apk = "${{ steps.version.outputs.apk }}"
-          base = "https://gitee.com/api/v5/repos/deng-chongshuang_admin/melody-in-heart-x/releases"
-
-          def req(url, data=None):
-              r = urllib.request.Request(url, data=json.dumps(data).encode() if data else None,
-                                         headers={"Content-Type": "application/json"} if data else {})
-              return json.load(urllib.request.urlopen(r))
-
-          body = subprocess.run(
-              ["gh", "release", "view", tag, "--json", "body", "--jq", ".body"],
-              capture_output=True, text=True,
-          ).stdout.strip() or tag
-
-          try:
-              existing = req(f"{base}?access_token={urllib.parse.quote(token)}&per_page=100")
-              rid = next((r["id"] for r in existing if isinstance(r, dict) and r.get("tag_name") == tag), 0)
-          except Exception as e:
-              print(f"list releases failed: {e}")
-              rid = 0
-          if not rid:
-              created = req(f"{base}?access_token={urllib.parse.quote(token)}",
-                            {"tag_name": tag, "target_commitish": "main", "name": tag, "body": body})
-              rid = created.get("id", 0)
-          if not rid:
-              sys.exit("::error::Gitee release 创建失败")
-
-          att = subprocess.run(
-              ["curl", "-s", "-X", "POST",
-               f"{base}/{rid}/attach_files",
-               "-F", f"access_token={token}", "-F", f"file=@{apk}"],
-              capture_output=True, text=True)
-          result = json.loads(att.stdout)
-          assert result.get("name"), result
-          print(f"Gitee attachment OK: {result['name']}")
-          PY

@@ -11,55 +11,52 @@ import cn.com.dcsgo.mihx.core.common.AppLog
 import cn.com.dcsgo.mihx.core.model.Song
 import java.io.File
 import java.io.FileOutputStream
+import java.security.MessageDigest
+import java.util.concurrent.atomic.AtomicInteger
 
 private const val TAG = "AlbumArtExtractor"
 private const val CACHE_DIR_NAME = "album_art"
 private const val TARGET_ALBUM_ART_PX = 512
 /** 内嵌封面原始字节读取上限（字节）。超限视为异常封面不缓存，避免整幅超大图全量解码。 */
-private const val MAX_ART_BYTES = 8 * 1024 * 1024 // 8MB
+internal const val MAX_ART_BYTES = 8 * 1024 * 1024 // 8MB
 
 object AlbumArtExtractor {
 
+    // ── 封面缓存统计（验证按内容哈希去重的效果），导入前用 [resetCacheStats] 清零 ──
+    private val cacheHitCounter = AtomicInteger(0)
+    private val cacheWriteCounter = AtomicInteger(0)
+    val cacheHitCount: Int get() = cacheHitCounter.get()
+    val cacheWriteCount: Int get() = cacheWriteCounter.get()
+
+    fun resetCacheStats() {
+        cacheHitCounter.set(0)
+        cacheWriteCounter.set(0)
+    }
+
     /**
      * 获取歌曲封面 URI：
-     * 1. 先从缓存文件读取（已提取过的）
-     * 2. 再从 MediaStore album art 构造
-     * 3. 最后尝试从 SAF 文件元数据提取并缓存
+     * 1. 先从 MediaStore album art 构造
+     * 2. 再从音频元数据提取内嵌封面，按内容哈希缓存（同图只解码/压缩/落盘一次，且不会盖错封面）
      * @param ctx  Application context
      * @param songUri  歌曲的 URI
-     * @param songId   歌曲在仓库内的唯一 ID（用于缓存文件命名）
+     * @param preExtractedBytes 元数据提取时已拿到内嵌封面字节；传了就不再二次打开 MMR
      * @return 封面 URI，无则返回 null
      */
-    fun getAlbumArtUri(ctx: Context, songUri: Uri?, songId: Int): Uri? {
+    fun getAlbumArtUri(
+        ctx: Context,
+        songUri: Uri?,
+        preExtractedBytes: ByteArray? = null,
+    ): Uri? {
         if (songUri == null) return null
 
-        // 1. 尝试从缓存文件读取
-        val cachedUri = getCachedAlbumArt(ctx, songId)
-        if (cachedUri != null) return cachedUri
-
-        // 2. MediaStore URI：尝试读取 album art
+        // 1. MediaStore URI：尝试读取 album art
         val mediaStoreUri = getMediaStoreAlbumArt(ctx, songUri)
         if (mediaStoreUri != null) return mediaStoreUri
 
-        // 3. SAF URI：尝试从音频文件元数据提取并缓存
-        return extractAndCacheAlbumArt(ctx, songUri, songId)
-    }
-
-    /**
-     * 从缓存目录读取已保存的封面文件
-     */
-    private fun getCachedAlbumArt(ctx: Context, songId: Int): Uri? {
-        val cacheDir = File(ctx.cacheDir, CACHE_DIR_NAME)
-        val file = File(cacheDir, "album_$songId.jpg")
-        return if (file.exists()) Uri.fromFile(file) else null
-    }
-
-    /** 元数据刷新时清除指定歌曲的封面缓存，下次 [getAlbumArtUri] 会重新从文件提取 */
-    fun invalidateCache(ctx: Context, songId: Int) {
-        val file = File(File(ctx.cacheDir, CACHE_DIR_NAME), "album_$songId.jpg")
-        if (file.exists() && !file.delete()) {
-            AppLog.debug(TAG, "invalidateCache: failed to delete ${file.name}")
-        }
+        // 2. SAF URI：从元数据取封面字节，按内容哈希缓存。
+        //    调用方已在提取元数据时打开过 MMR 拿到内嵌封面字节，直接复用可省一次 setDataSource
+        val artBytes = preExtractedBytes ?: readEmbeddedArtBytes(ctx, songUri) ?: return null
+        return cacheArtBytes(ctx, artBytes)
     }
 
     /**
@@ -97,10 +94,10 @@ object AlbumArtExtractor {
     }
 
     /**
-     * 用 MediaMetadataRetriever 从音频文件元数据中提取封面图，
-     * 压缩后保存到缓存目录，返回 file:// URI
+     * 用 MediaMetadataRetriever 从音频文件元数据中读取内嵌封面原始字节。
+     * @return 内嵌封面字节（不超过 [MAX_ART_BYTES]），无封面或读取失败返回 null
      */
-    private fun extractAndCacheAlbumArt(ctx: Context, songUri: Uri, songId: Int): Uri? {
+    private fun readEmbeddedArtBytes(ctx: Context, songUri: Uri): ByteArray? {
         var retriever: MediaMetadataRetriever? = null
         try {
             retriever = MediaMetadataRetriever()
@@ -137,50 +134,70 @@ object AlbumArtExtractor {
                 AppLog.warning(TAG, "Embedded album art ${artBytes.size} exceeds ${MAX_ART_BYTES} bytes, skipped")
                 return null
             }
-
-            // 先采样解码到 ~512px 量级，避免整幅超大内嵌封面导致内存尖峰
-            val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
-            BitmapFactory.decodeByteArray(artBytes, 0, artBytes.size, bounds)
-            // 解码器无法给出尺寸时拒绝解码（避免 sampleSize=1 整幅原稿解码）
-            if (bounds.outWidth <= 0 || bounds.outHeight <= 0) {
-                AppLog.warning(TAG, "Album art bounds undecodable ($bounds), skipped")
-                return null
-            }
-            var sampleSize = 1
-            while (
-                bounds.outWidth / (sampleSize * 2) >= TARGET_ALBUM_ART_PX &&
-                bounds.outHeight / (sampleSize * 2) >= TARGET_ALBUM_ART_PX
-            ) {
-                sampleSize *= 2
-            }
-            val decodeOptions = BitmapFactory.Options().apply { inSampleSize = sampleSize }
-            val original = BitmapFactory.decodeByteArray(artBytes, 0, artBytes.size, decodeOptions)
-                ?: return null
-
-            val scaled = scaleBitmap(original, TARGET_ALBUM_ART_PX)
-            // 只在确实创建了新 bitmap 时回收 original，避免双重回收
-            if (scaled !== original) {
-                original.recycle()
-            }
-
-            // 保存到缓存
-            val cacheDir = File(ctx.cacheDir, CACHE_DIR_NAME)
-            if (!cacheDir.exists()) cacheDir.mkdirs()
-
-            val artFile = File(cacheDir, "album_$songId.jpg")
-            FileOutputStream(artFile).use { fos ->
-                scaled.compress(Bitmap.CompressFormat.JPEG, 85, fos)
-            }
-            scaled.recycle()
-
-            AppLog.info(TAG, "Album art cached: ${artFile.absolutePath}")
-            return Uri.fromFile(artFile)
+            return artBytes
         } catch (e: Exception) {
-            AppLog.warning(TAG, "extractAndCacheAlbumArt failed for $songUri: ${e.message}")
+            AppLog.warning(TAG, "readEmbeddedArtBytes failed for $songUri: ${e.message}")
             return null
         } finally {
             try { retriever?.release() } catch (_: Exception) {}
         }
+    }
+
+    /**
+     * 把已提取的内嵌封面字节按内容哈希缓存；同哈希命中则直接复用缓存文件，跳过解码/压缩/写盘。
+     * @return file:// URI（缓存文件），无则返回 null
+     */
+    private fun cacheArtBytes(ctx: Context, artBytes: ByteArray): Uri? {
+        val cacheDir = File(ctx.cacheDir, CACHE_DIR_NAME)
+        if (!cacheDir.exists()) cacheDir.mkdirs()
+
+        val hash = contentHash(artBytes)
+        val artFile = File(cacheDir, "art_$hash.jpg")
+        if (artFile.exists()) {
+            cacheHitCounter.incrementAndGet()
+            AppLog.debug(TAG, "Album art cache hit: ${artFile.name}")
+            return Uri.fromFile(artFile)
+        }
+
+        // 先采样解码到 ~512px 量级，避免整幅超大内嵌封面导致内存尖峰
+        val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+        BitmapFactory.decodeByteArray(artBytes, 0, artBytes.size, bounds)
+        // 解码器无法给出尺寸时拒绝解码（避免 sampleSize=1 整幅原稿解码）
+        if (bounds.outWidth <= 0 || bounds.outHeight <= 0) {
+            AppLog.warning(TAG, "Album art bounds undecodable ($bounds), skipped")
+            return null
+        }
+        var sampleSize = 1
+        while (
+            bounds.outWidth / (sampleSize * 2) >= TARGET_ALBUM_ART_PX &&
+            bounds.outHeight / (sampleSize * 2) >= TARGET_ALBUM_ART_PX
+        ) {
+            sampleSize *= 2
+        }
+        val decodeOptions = BitmapFactory.Options().apply { inSampleSize = sampleSize }
+        val original = BitmapFactory.decodeByteArray(artBytes, 0, artBytes.size, decodeOptions)
+            ?: return null
+
+        val scaled = scaleBitmap(original, TARGET_ALBUM_ART_PX)
+        // 只在确实创建了新 bitmap 时回收 original，避免双重回收
+        if (scaled !== original) {
+            original.recycle()
+        }
+
+        FileOutputStream(artFile).use { fos ->
+            scaled.compress(Bitmap.CompressFormat.JPEG, 85, fos)
+        }
+        scaled.recycle()
+
+        cacheWriteCounter.incrementAndGet()
+        AppLog.info(TAG, "Album art cached: ${artFile.absolutePath}")
+        return Uri.fromFile(artFile)
+    }
+
+    /** 封面原始字节的内容哈希（SHA-1），用作按内容去重的缓存文件名 */
+    private fun contentHash(bytes: ByteArray): String {
+        val digest = MessageDigest.getInstance("SHA-1").digest(bytes)
+        return digest.joinToString("") { "%02x".format(it.toInt() and 0xFF) }
     }
 
     /**
@@ -191,7 +208,7 @@ object AlbumArtExtractor {
         val currentUri = song.albumArtUri
         if (currentUri == null) {
             // 从没有尝试过提取封面，现在尝试
-            return getAlbumArtUri(ctx, song.uri, song.id)
+            return getAlbumArtUri(ctx, song.uri)
         }
 
         // 检查当前封面 URI 是否还有效
@@ -200,7 +217,7 @@ object AlbumArtExtractor {
             if (file.exists()) return currentUri
             // 文件不存在，重新提取
             AppLog.debug(TAG, "Album art cache missing for song ${song.id}, re-extracting...")
-            return getAlbumArtUri(ctx, song.uri, song.id)
+            return getAlbumArtUri(ctx, song.uri)
         }
 
         // 非 file:// 的 URI（如 MediaStore albumart），直接返回

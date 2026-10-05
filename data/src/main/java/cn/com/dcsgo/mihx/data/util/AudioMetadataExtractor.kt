@@ -26,6 +26,12 @@ object AudioMetadataExtractor {
         val durationMs: Long = 0L,
     )
 
+    /** 单次 MMR 打开同时拿到的结果：基础元数据 + 内嵌封面原始字节（超限视为无封面，为 null） */
+    data class ExtractedMetadataWithArt(
+        val metadata: ExtractedMetadata,
+        val embeddedArtBytes: ByteArray?,
+    )
+
     /**
      * 从音频文件提取元数据
      * @param ctx Application context
@@ -71,6 +77,91 @@ object AudioMetadataExtractor {
         } catch (e: Exception) {
             AppLog.warning(TAG, "extractMetadata failed for $uri: ${e.message}")
             return ExtractedMetadata(title = fallbackTitle, artist = "未知艺术家", album = "", sampleRate = 0)
+        } finally {
+            try { retriever?.release() } catch (_: Exception) {}
+        }
+    }
+
+    /**
+     * 单次 MediaMetadataRetriever 打开，同时提取元数据和内嵌封面字节。
+     * 相比分别调用 [extractMetadata] 与封面提取各打开一次 MMR，导入大文件夹时
+     * 省掉一半的 setDataSource 开销（这是导入阶段最重的原生操作）。
+     */
+    fun extractMetadataWithEmbeddedArt(
+        ctx: Context,
+        uri: Uri,
+        fallbackTitle: String,
+    ): ExtractedMetadataWithArt {
+        var retriever: MediaMetadataRetriever? = null
+        try {
+            retriever = MediaMetadataRetriever()
+
+            // 方式1：直接用 URI（适用于 file:// 和部分 content:// URI）
+            try {
+                retriever.setDataSource(ctx, uri)
+            } catch (e: Exception) {
+                AppLog.warning(TAG, "setDataSource(uri) failed, trying fd: ${e.message}")
+                // 方式2：通过 ContentResolver 打开 fd（适用于 SAF content:// URI）
+                try {
+                    val fd = ctx.contentResolver.openFileDescriptor(uri, "r")
+                    if (fd != null) {
+                        fd.use { parcel ->
+                            retriever.setDataSource(parcel.fileDescriptor)
+                        }
+                    } else {
+                        AppLog.warning(TAG, "openFileDescriptor returned null for $uri")
+                        return ExtractedMetadataWithArt(
+                            metadata = ExtractedMetadata(title = fallbackTitle, artist = "未知艺术家", album = "", sampleRate = 0),
+                            embeddedArtBytes = null,
+                        )
+                    }
+                } catch (e2: Exception) {
+                    AppLog.warning(TAG, "setDataSource(fd) also failed for $uri: ${e2.message}")
+                    return ExtractedMetadataWithArt(
+                        metadata = ExtractedMetadata(title = fallbackTitle, artist = "未知艺术家", album = "", sampleRate = 0),
+                        embeddedArtBytes = null,
+                    )
+                }
+            }
+
+            val title = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE)
+                ?.takeIf { it.isNotBlank() }
+                ?: fallbackTitle
+
+            val artist = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST)
+                ?.takeIf { it.isNotBlank() }
+                ?: retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ALBUMARTIST)
+                    ?.takeIf { it.isNotBlank() }
+                    ?: "未知艺术家"
+
+            val album = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ALBUM)
+                ?.takeIf { it.isNotBlank() }
+                ?: ""
+
+            val sampleRate = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_SAMPLERATE)
+                ?.toIntOrNull() ?: 0
+
+            val durationMs = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
+                ?.toLongOrNull() ?: 0L
+
+            // 内嵌封面：超限视为无封面，避免超大图进入后续解码/压缩
+            val artBytes = retriever.embeddedPicture
+                ?.takeIf { it.isNotEmpty() && it.size <= MAX_ART_BYTES }
+
+            AppLog.debug(
+                TAG,
+                "extractMetadataWithEmbeddedArt: title=$title, artist=$artist, album=$album, sampleRate=$sampleRate, durationMs=$durationMs"
+            )
+            return ExtractedMetadataWithArt(
+                metadata = ExtractedMetadata(title = title, artist = artist, album = album, sampleRate = sampleRate, durationMs = durationMs),
+                embeddedArtBytes = artBytes,
+            )
+        } catch (e: Exception) {
+            AppLog.warning(TAG, "extractMetadataWithEmbeddedArt failed for $uri: ${e.message}")
+            return ExtractedMetadataWithArt(
+                metadata = ExtractedMetadata(title = fallbackTitle, artist = "未知艺术家", album = "", sampleRate = 0),
+                embeddedArtBytes = null,
+            )
         } finally {
             try { retriever?.release() } catch (_: Exception) {}
         }

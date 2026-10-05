@@ -1,5 +1,6 @@
 package cn.com.dcsgo.mihx.app.permissions
 
+import android.Manifest
 import android.content.pm.PackageManager
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -56,7 +57,11 @@ fun rememberPermissionCoordinator(
         if (granted) {
             pendingRequest?.onGranted?.invoke()
         } else {
-            currentOnPermissionDenied.value(pendingRequest?.deniedMessage ?: "权限请求被拒绝")
+            if (pendingRequest?.onDenied != null) {
+                pendingRequest.onDenied.invoke()
+            } else {
+                currentOnPermissionDenied.value(pendingRequest?.deniedMessage ?: "权限请求被拒绝")
+            }
         }
     }
 
@@ -64,6 +69,7 @@ fun rememberPermissionCoordinator(
         permission: String,
         deniedMessage: String,
         onGranted: () -> Unit,
+        onDenied: (() -> Unit)? = null,
     ) {
         if (ContextCompat.checkSelfPermission(context, permission) == PackageManager.PERMISSION_GRANTED) {
             onGranted()
@@ -71,6 +77,7 @@ fun rememberPermissionCoordinator(
             pendingPermissionRequest = RuntimePermissionRequest(
                 deniedMessage = deniedMessage,
                 onGranted = onGranted,
+                onDenied = onDenied,
             )
             permissionLauncher.launch(permission)
         }
@@ -79,7 +86,14 @@ fun rememberPermissionCoordinator(
     return remember(context, folderPickerLauncher, permissionLauncher) {
         PermissionCoordinator(
             requestAudioFolderAccess = {
-                folderPickerLauncher.launch(null)
+                // READ_MEDIA_AUDIO 仅用于加速扫描，SAF 导入路径不依赖它。故静默请求：
+                // 无论是否授权都打开目录选择器；拒绝时不弹"权限被拒"提示，避免打扰。
+                requestPermissionIfNeeded(
+                    permission = Manifest.permission.READ_MEDIA_AUDIO,
+                    deniedMessage = "未授予音频权限，仍可通过文件夹选择导入（扫描较慢）",
+                    onGranted = { folderPickerLauncher.launch(null) },
+                    onDenied = { folderPickerLauncher.launch(null) },
+                )
             },
             requestNotificationPermission = { onGranted ->
                 RuntimePermissionPolicy.notificationPermission()?.let { spec ->
@@ -106,4 +120,5 @@ fun rememberPermissionCoordinator(
 private data class RuntimePermissionRequest(
     val deniedMessage: String,
     val onGranted: () -> Unit,
+    val onDenied: (() -> Unit)? = null,
 )

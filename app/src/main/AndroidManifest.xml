@@ -11,6 +11,9 @@
     <!-- ── 蓝牙音频权限：用于读取已连接蓝牙音频设备状态 ── -->
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
 
+    <!-- ── 媒体音频权限：用于快速扫描（File 直遍历）；被拒时仍走 SAF 目录选择导入 ── -->
+    <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
+
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"

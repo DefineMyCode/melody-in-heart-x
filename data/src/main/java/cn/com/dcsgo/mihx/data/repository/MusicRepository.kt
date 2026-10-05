@@ -1,7 +1,10 @@
 package cn.com.dcsgo.mihx.data.repository
 
+import android.Manifest
 import android.content.Context
+import android.content.pm.PackageManager
 import android.net.Uri
+import android.provider.DocumentsContract
 import androidx.annotation.VisibleForTesting
 import androidx.documentfile.provider.DocumentFile
 import cn.com.dcsgo.mihx.core.common.AppLog
@@ -34,6 +37,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.withContext
+import java.io.File
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.locks.ReentrantReadWriteLock
@@ -179,14 +183,18 @@ class MusicRepository(
         onFinished?.invoke()
     }
 
-    /** 快照当前歌曲列表并排入 Room 落盘队列（无 Room 时为空操作，仅出现在纯内存测试中）。 */
-    private fun persistSongs() {
+    /** 快照当前歌曲列表并排入 Room 落盘队列（无 Room 时为空操作，仅出现在纯内存测试中）。
+     *  @param onPersisted Room 全量写入（含歌手/专辑目录重建）完成后回调。
+     *  用于修正「先即时通知 UI → 异步落盘」竞态：歌手/专辑目录读自 Room，落盘完成前
+     *  UI 刷新会读到旧目录，须等落盘完成后再补一次通知。 */
+    private fun persistSongs(onPersisted: (() -> Unit)? = null) {
         val room = roomDataSource ?: return
         val snapshot: List<Song>
         lock.read { snapshot = songs.toList() }
         val now = System.currentTimeMillis()
         persistScope.launch {
             room.persistSongs(snapshot, importedAt = now)
+            onPersisted?.invoke()
         }
         AppLog.debug(TAG, "persistSongs: queued ${snapshot.size} songs to Room")
     }
@@ -308,7 +316,7 @@ class MusicRepository(
                         songs[idx] = songs[idx].copy(albumArtUri = update.newUri)
                     }
                 }
-                persistSongs()
+                persistSongs { notifySongsChanged() }
             }
             AppLog.info(TAG, "refreshAllAlbumArt: updated ${updates.size} covers")
         }
@@ -352,15 +360,23 @@ class MusicRepository(
         val folderName = rootDoc.name ?: treeUri.lastPathSegment ?: "新文件夹"
         AppLog.info(TAG, "addFolder: scanning selected folder")
 
-        // 递归扫描音频和 LRC 文件（同步，很快）
+        // 递归扫描音频和 LRC 文件。
+        // 优先用 java.io.File 直遍历真实路径（需 READ_MEDIA_AUDIO 且目录在主存储，
+        // 省掉逐目录的 DocumentsProvider 往返，可快两个数量级）；不满足或结果为空时回退 SAF 枚举。
         val audioFiles = mutableListOf<ScannedAudioFile>()
         val lrcFilesByKey = mutableMapOf<String, Uri>()
         val scanStartedAt = PerformanceTrace.nowMs()
-        collectLibraryFiles(rootDoc, audioFiles, lrcFilesByKey, depth = 0, relativeDir = "")
+        val fastScanUsed = tryFastFileScan(ctx, treeUri, audioFiles, lrcFilesByKey)
+        if (!fastScanUsed || audioFiles.isEmpty()) {
+            audioFiles.clear()
+            lrcFilesByKey.clear()
+            collectLibraryFiles(rootDoc, audioFiles, lrcFilesByKey, depth = 0, relativeDir = "")
+        }
         PerformanceTrace.log(
             operation = "music_import_scan",
             elapsedMs = PerformanceTrace.nowMs() - scanStartedAt,
             metadata = mapOf(
+                "scanMode" to if (fastScanUsed && audioFiles.isNotEmpty()) "file" else "saf",
                 "audioFileCount" to audioFiles.size,
                 "lrcFileCount" to lrcFilesByKey.size,
             ),
@@ -384,18 +400,23 @@ class MusicRepository(
             })
         }
 
-        // 封面提取并行度：最多同时 8 个，避免 ContentResolver 过载
-        val semaphore = Semaphore(8)
+        // 并行度：按可用核心自适应，clamp 到 [4, 16]（I/O 等待型负载，低配机防内存尖峰/高配机充分并行）
+        val cores = Runtime.getRuntime().availableProcessors()
+        val parallelism = cores.coerceIn(4, 16)
+        val semaphore = Semaphore(parallelism)
+        AppLog.info(TAG, "addFolder: parallelism=$parallelism (cores=$cores)")
         val processedCount = AtomicInteger(0)
         val addedCount = AtomicInteger(0)
+
+        // 清零封面缓存统计，便于导入结束后核对按内容哈希去重的效果
+        AlbumArtExtractor.resetCacheStats()
 
         // 并行处理所有文件
         audioFiles.map { audioFile ->
             async(Dispatchers.IO) {
                 semaphore.acquire()
                 try {
-                    val docFile = audioFile.file
-                    val fileUri = docFile.uri
+                    val fileUri = audioFile.uri
 
                     // 去重检查：uri 相同 或 真实物理路径相同(经不同 tree 重复导入)都跳过
                     if (!importUris.add(fileUri)) {
@@ -412,26 +433,34 @@ class MusicRepository(
                         return@async null
                     }
 
-                    val displayName = docFile.name ?: "未知"
+                    val displayName = audioFile.displayName
                     val fallbackTitle = AudioFileUtils.stripAudioExtension(displayName)
 
-                    // 从音频元数据提取标题、艺术家、专辑和采样率
-                    val metadata = AudioMetadataExtractor.extractMetadata(ctx, fileUri, fallbackTitle)
+                    // 单次 MMR 打开同时提取元数据 + 内嵌封面字节（省一次 setDataSource，导入大文件夹的主要优化）
+                    val extracted = AudioMetadataExtractor.extractMetadataWithEmbeddedArt(
+                        ctx,
+                        fileUri,
+                        fallbackTitle,
+                    )
 
                     val songId: Int
                     val albumArtUri: Uri?
 
-                    // 封面提取也在 IO 线程完成，避免主线程阻塞
+                    // 封面解码/压缩/落盘也在 IO 线程完成，避免主线程阻塞
                     lock.write { songId = nextId++ }
-                    albumArtUri = AlbumArtExtractor.getAlbumArtUri(ctx, fileUri, songId)
+                    albumArtUri = AlbumArtExtractor.getAlbumArtUri(
+                        ctx,
+                        fileUri,
+                        preExtractedBytes = extracted.embeddedArtBytes,
+                    )
 
                     val song = Song(
                         id = songId,
-                        title = metadata.title,
-                        artist = metadata.artist,
-                        album = metadata.album,
-                        sampleRate = metadata.sampleRate,
-                        durationMs = metadata.durationMs,
+                        title = extracted.metadata.title,
+                        artist = extracted.metadata.artist,
+                        album = extracted.metadata.album,
+                        sampleRate = extracted.metadata.sampleRate,
+                        durationMs = extracted.metadata.durationMs,
                         uri = fileUri,
                         albumArtUri = albumArtUri,
                         lrcUri = lrcFilesByKey[audioFile.matchKey],
@@ -454,11 +483,16 @@ class MusicRepository(
 
         updatePlaylistSongCount(playlist.id)
         // 持久化歌曲和歌单数据
-        persistSongs()
+        persistSongs { notifySongsChanged() }
         persistPlaylists()
         // 通知 UI 刷新（歌曲、歌单、曲库歌手/专辑目录）
         notifySongsChanged()
         val finalAddedCount = addedCount.get()
+        AppLog.info(
+            TAG,
+            "addFolder: album art stats: uniqueCached=${AlbumArtExtractor.cacheWriteCount} " +
+                "cacheHits=${AlbumArtExtractor.cacheHitCount}"
+        )
         AppLog.info(TAG, "addFolder: added $finalAddedCount songs (skipped ${audioFiles.size - finalAddedCount})")
         PerformanceTrace.log(
             operation = "music_import_folder",
@@ -496,13 +530,106 @@ class MusicRepository(
                     collectLibraryFiles(file, audioFiles, lrcFilesByKey, depth + 1, childDir)
                 }
                 file.isFile && AudioFileUtils.isAudioFile(file.type, fileName) -> {
-                    audioFiles += ScannedAudioFile(file, lrcMatchKey(relativeDir, fileName))
+                    audioFiles += ScannedAudioFile(file.uri, file.name ?: "未知", lrcMatchKey(relativeDir, fileName))
                 }
                 file.isFile && fileName?.endsWith(".lrc", ignoreCase = true) == true -> {
                     lrcFilesByKey.putIfAbsent(lrcMatchKey(relativeDir, fileName), file.uri)
                 }
             }
         }
+    }
+
+    /**
+     * 尝试用真实路径 + java.io.File 直接递归枚举（替代 SAF 逐目录 DocumentsProvider 查询）。
+     * 仅当：已授权 READ_MEDIA_AUDIO、目录位于主外部存储且可被 File API 访问。
+     * @return true 表示已走 File 快扫（结果可能为空，调用方需在为空时回退 SAF）
+     */
+    private fun tryFastFileScan(
+        ctx: Context,
+        treeUri: Uri,
+        audioFiles: MutableList<ScannedAudioFile>,
+        lrcFilesByKey: MutableMap<String, Uri>,
+    ): Boolean {
+        if (ctx.checkSelfPermission(Manifest.permission.READ_MEDIA_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+            AppLog.info(TAG, "tryFastFileScan: skip, READ_MEDIA_AUDIO not granted")
+            return false
+        }
+        val rootReal = SongPathResolver.resolveRealPath(ctx, treeUri)
+        if (rootReal == null) {
+            AppLog.info(TAG, "tryFastFileScan: skip, cannot resolve real path for $treeUri")
+            return false
+        }
+        val rootFile = File(rootReal)
+        if (!rootFile.isDirectory) {
+            AppLog.info(TAG, "tryFastFileScan: skip, not a directory: $rootReal")
+            return false
+        }
+        val docId = try {
+            // tree URI 的 docId 要用 getTreeDocumentId（getDocumentId 只接受 document URI）
+            DocumentsContract.getTreeDocumentId(treeUri)
+        } catch (e: Exception) {
+            AppLog.info(TAG, "tryFastFileScan: skip, cannot get tree docId: ${e.message}")
+            return false
+        }
+        val storageRel = docId.substringAfter("primary:", "").trimEnd('/')
+        if (storageRel.isEmpty()) {
+            AppLog.info(TAG, "tryFastFileScan: skip, not primary storage: docId=$docId")
+            return false
+        }
+        AppLog.info(TAG, "addFolder: fast File scan enabled at $rootReal")
+        collectLibraryFilesFromRealPath(
+            dir = rootFile,
+            treeUri = treeUri,
+            audioFiles = audioFiles,
+            lrcFilesByKey = lrcFilesByKey,
+            depth = 0,
+            relativeDir = "",
+            relFromStorage = storageRel,
+        )
+        return true
+    }
+
+    /**
+     * 用 java.io.File 递归收集真实路径下的音频与 LRC，最多 3 层。
+     * 每个文件仍用 tree URI + docId 构造 document URI（与 SAF 路径产出的 URI 完全一致，
+     * 去重/路径归一/播放均无需改动）；lrc 读取走 ContentResolver，依赖 tree 持久化权限而非媒体权限。
+     */
+    private fun collectLibraryFilesFromRealPath(
+        dir: File,
+        treeUri: Uri,
+        audioFiles: MutableList<ScannedAudioFile>,
+        lrcFilesByKey: MutableMap<String, Uri>,
+        depth: Int,
+        relativeDir: String,
+        relFromStorage: String,
+    ) {
+        if (depth > 3) return
+        dir.listFiles()?.forEach { file ->
+            val fileName = file.name ?: return@forEach
+            when {
+                file.isDirectory -> {
+                    val childDir = listOf(relativeDir, fileName).filter { it.isNotBlank() }.joinToString("/")
+                    val childRel = listOf(relFromStorage, fileName).filter { it.isNotBlank() }.joinToString("/")
+                    collectLibraryFilesFromRealPath(file, treeUri, audioFiles, lrcFilesByKey, depth + 1, childDir, childRel)
+                }
+                file.isFile && AudioFileUtils.isAudioFile(null, fileName) -> {
+                    val docUri = treeDocumentUri(treeUri, relFromStorage, fileName)
+                    audioFiles += ScannedAudioFile(docUri, fileName, lrcMatchKey(relativeDir, fileName))
+                }
+                file.isFile && fileName.endsWith(".lrc", ignoreCase = true) -> {
+                    lrcFilesByKey.putIfAbsent(
+                        lrcMatchKey(relativeDir, fileName),
+                        treeDocumentUri(treeUri, relFromStorage, fileName),
+                    )
+                }
+            }
+        }
+    }
+
+    /** 用 tree URI + 相对存储路径构造 document URI（纯字符串拼接，不触发 provider 查询） */
+    private fun treeDocumentUri(treeUri: Uri, relFromStorage: String, fileName: String): Uri {
+        val rel = if (relFromStorage.isBlank()) fileName else "$relFromStorage/$fileName"
+        return DocumentsContract.buildDocumentUriUsingTree(treeUri, "primary:$rel")
     }
 
     private fun lrcMatchKey(relativeDir: String, fileName: String?): String {
@@ -652,7 +779,7 @@ class MusicRepository(
             }
             songs.removeAt(songIndex)
 
-            persistSongs()
+            persistSongs { notifySongsChanged() }
             persistPlaylists()
             // 情绪行(含 ~4KB embedding)一并清理, 防删除歌曲在 song_emotions 留孤儿
             melodyDao?.let { dao ->
@@ -727,7 +854,7 @@ class MusicRepository(
                     }
                 }
                 songs.removeAll { it.id in missingIds }
-                persistSongs()
+                persistSongs { notifySongsChanged() }
                 persistPlaylists()
             }
 
@@ -829,7 +956,7 @@ class MusicRepository(
                     }
                 }
                 songs.removeAll { it.id in toRemove }
-                persistSongs()
+                persistSongs { notifySongsChanged() }
                 persistPlaylists()
             }
 
@@ -897,12 +1024,12 @@ class MusicRepository(
                         (meta.durationMs > 0L && meta.durationMs != song.durationMs)
                     if (!changed) return@async false
 
-                    // 封面：仅当专辑/歌手变化时重取（同一首歌换封面极少见; 重取前清缓存）
+                    // 封面：仅当专辑/歌手变化时重取（同一首歌换封面极少见）。
+                    // 缓存按内容哈希命名：封面内容没变会自动复用旧文件，变了会落新哈希文件，无需手动清缓存
                     var newArtUri = song.albumArtUri
                     if (meta.album != song.album || meta.artist != song.artist) {
                         try {
-                            AlbumArtExtractor.invalidateCache(ctx, song.id)
-                            newArtUri = AlbumArtExtractor.getAlbumArtUri(ctx, uri, song.id)
+                            newArtUri = AlbumArtExtractor.getAlbumArtUri(ctx, uri)
                         } catch (e: Exception) {
                             AppLog.debug(TAG, "art refresh failed song=${song.id}: ${e.message}")
                         }
@@ -947,7 +1074,7 @@ class MusicRepository(
                 }
             }.awaitAll().count { it }
         }.also { updated = it }
-        persistSongs()
+        persistSongs { notifySongsChanged() }
         updated
     }
 
@@ -1034,7 +1161,8 @@ class MusicRepository(
     }
 
     private data class ScannedAudioFile(
-        val file: DocumentFile,
+        val uri: Uri,
+        val displayName: String,
         val matchKey: String,
     )
 }

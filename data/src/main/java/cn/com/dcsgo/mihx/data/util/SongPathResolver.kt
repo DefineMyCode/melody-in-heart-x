@@ -71,7 +71,7 @@ object SongPathResolver {
             "primary" -> File(Environment.getExternalStorageDirectory(), relative).absolutePath
             else -> storageRootFor(type)?.let { File(it, relative).absolutePath }
         } ?: return null
-        return normalize(full).takeIf { File(it).exists() }
+        return normalize(full)?.takeIf { File(it).exists() }
     }
 
     private fun storageRootFor(type: String): String? {
@@ -91,7 +91,7 @@ object SongPathResolver {
         if (idx < 0) return null
         val rel = decoded.substring(idx + "primary:".length).takeIf { it.isNotBlank() } ?: return null
         val full = File(Environment.getExternalStorageDirectory(), rel).absolutePath
-        return normalize(full).takeIf { File(it).exists() }
+        return normalize(full)?.takeIf { File(it).exists() }
     }
 
     /** 归一：去掉尾部斜杠，统一用 / 。 */

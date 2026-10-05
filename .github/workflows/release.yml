@@ -107,7 +107,8 @@ jobs:
         run: |
           TAG="${{ steps.version.outputs.tag }}"
           APK="${{ steps.version.outputs.apk }}"
-          # tag 推送时 release 已存在则复用; 不存在则以 tag message(附注 tag 的 -m 内容)作为 release notes 创建
+          # 确保 annotated tag 对象在本地(dispatch 时 actions/checkout 可能未拉全 tag), 便于 --notes-from-tag 读取其 message
+          git fetch origin "refs/tags/$TAG:refs/tags/$TAG" --depth 1 --force 2>/dev/null || true
           gh release view "$TAG" >/dev/null 2>&1 \
-            || gh release create "$TAG" --title "$TAG" --notes-from-tag "$TAG"
+            || gh release create "$TAG" --title "$TAG" --notes-from-tag
           gh release upload "$TAG" "$APK" --clobber

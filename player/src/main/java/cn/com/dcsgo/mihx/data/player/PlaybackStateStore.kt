@@ -67,22 +67,67 @@ class PlaybackStateStore(
     ) {
         try {
             val playbackSongId = currentSongId ?: queue.currentSong?.id
-            if (queue.isEmpty && !isInfinitePlay && playbackSongId == null) {
-                // 空会话保存：跳过写入，但**不再清空已有快照**。
+            if (queue.isEmpty && !isInfinitePlay) {
+                // 空会话保存：**绝不把「空队列」写进快照覆盖既有队列**。
                 //
-                // 背景（2026-09-03 真机回归）：UI 重建窗口（新 ViewModel 尚未完成
+                // 背景一（2026-09-03 真机回归）：UI 重建窗口（新 ViewModel 尚未完成
                 // restore/初始数据加载）存在瞬时「全空」状态（queue=0, currentSongId=null），
                 // autosaver/事件保存在这个窗口一拍，若按旧逻辑 clear()，会把之前 5s 落盘的
                 // 有效快照删掉，随后 restore 读到「无快照」、播放队列恒为空。
+                //
+                // 背景二（live-session 重连回归）：服务端仍在播、进程未死时重建 ViewModel，
+                // 首帧 controller 快照同步先置 currentSong + isPlaying（playQueue 尚未恢复），
+                // 进度 ticker 启动后 autosaver 每 5s 保存一拍「空队列 + 有 currentSong」。
+                // 旧 guard 只挡「空队列 + 无 currentSongId」，这一拍会把队列 JSON 写成空数组，
+                // 覆盖掉 5s 前落盘的有效队列；随后 restore（allowEmpty=currentSongId!=null）
+                // 「成功」恢复出空队列，之后每次杀进程重启都拿到空队列、队列与进度丢失。
+                //
+                // 语义：空队列一律不写队列 JSON——
+                // - 已有快照：保留队列，仅更新当前歌曲与位置（restore 端 withCurrentSongId 校正索引）；
+                // - 无快照但有当前歌：写空队列 + 歌曲/位置，restore 按 currentSongId 兜底单曲队列；
+                // - 全空且无快照：不写任何键。
                 // 显式清空（用户清队列/结束播放）走 clearPlaybackState()，语义不受影响。
                 runBlocking(Dispatchers.IO) {
-                    val hasExisting =
-                        currentPreferences()[PlaybackStateKeys.PLAY_QUEUE_JSON] != null
-                    logger.info(
-                        TAG,
-                        "save skip empty session: existingSnapshot=$hasExisting" +
-                            if (hasExisting) " (kept)" else ""
-                    )
+                    var wroteSomething = false
+                    store.edit { preferences ->
+                        val existingQueueJson = preferences[PlaybackStateKeys.PLAY_QUEUE_JSON]
+                        when {
+                            existingQueueJson != null && playbackSongId != null -> {
+                                // 保留既有队列，只更新当前歌曲与位置
+                                preferences[PlaybackStateKeys.CURRENT_SONG_ID] = playbackSongId
+                                preferences[PlaybackStateKeys.PLAY_POSITION_MS] = positionMs.coerceAtLeast(0L)
+                                wroteSomething = true
+                                logger.info(
+                                    TAG,
+                                    "save skip empty session: kept queue, " +
+                                        "updated currentSong=$playbackSongId position=${positionMs}ms"
+                                )
+                            }
+                            existingQueueJson == null && playbackSongId != null -> {
+                                preferences[PlaybackStateKeys.PLAY_QUEUE_JSON] = serializer.encodeQueue(queue)
+                                preferences[PlaybackStateKeys.CURRENT_SONG_ID] = playbackSongId
+                                preferences[PlaybackStateKeys.PLAY_POSITION_MS] = positionMs.coerceAtLeast(0L)
+                                wroteSomething = true
+                                logger.info(
+                                    TAG,
+                                    "save empty session: no existing queue, " +
+                                        "wrote currentSong=$playbackSongId position=${positionMs}ms"
+                                )
+                            }
+                            else -> {
+                                // 全空且无既有快照：不写任何键，也保留 legacy 回退（旧迁移路径）
+                                logger.info(
+                                    TAG,
+                                    "save skip empty session: existingSnapshot=${existingQueueJson != null}" +
+                                        if (existingQueueJson != null) " (kept)" else ""
+                                )
+                            }
+                        }
+                    }
+                    // 仅在确实写入 DataStore 后才清除 legacy 键，避免把尚未迁移的 legacy 队列丢掉
+                    if (wroteSomething) {
+                        clearLegacyPrefs()
+                    }
                 }
                 return
             }
@@ -213,6 +258,13 @@ class PlaybackStateStore(
             )
                 ?.withCurrentSongId(restored.currentSongId, allSongs)
                 ?: return null
+            if (queue.songs.isEmpty()) {
+                logger.info(
+                    TAG,
+                    "restore decoded EMPTY queue: availableSongs=${allSongs.size}, " +
+                        "currentSongId=${restored.currentSongId}, json=${restored.queueJson}"
+                )
+            }
             RestoredPlaybackState(queue, restored.positionMs, restored.isInfinitePlay, infinitePlayedSongIds)
         } catch (e: Exception) {
             logger.error(TAG, "restore playback state failed", e)

@@ -45,15 +45,17 @@ class PlayerPersistenceFacade(
 
     /** 仅在 IO 线程读取并解码播放状态，返回 null 表示无需恢复；由调用方在合适线程 [applyRestoreResult] */
     fun restorePlaybackState(): PlaybackRestoreResult? {
-        val result = playbackRestoreCoordinator.restore(state().songs)
+        val librarySongs = state().songs
+        val result = playbackRestoreCoordinator.restore(librarySongs)
         // 诊断：区分「无快照(null)」与「解码出空/少歌队列」——两者在 UI 上都表现为队列空，
         // 但根因完全不同（保存缺失 vs 快照 songId 匹配不上当前曲库）。
         log(
             if (result == null) {
-                "restore read: no snapshot to restore"
+                "restore read: no snapshot to restore (librarySongs=${librarySongs.size})"
             } else {
                 "restore read: ${result.queue.songs.size} songs, index=${result.queue.currentIndex}, " +
-                    "infinite=${result.isInfinitePlay}, playable=${result.playableSession != null}"
+                    "infinite=${result.isInfinitePlay}, playable=${result.playableSession != null} " +
+                    "(librarySongs=${librarySongs.size})"
             }
         )
         return result

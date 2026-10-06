@@ -145,6 +145,30 @@ class PlaybackStateStoreTest {
     }
 
     @Test
+    fun emptySessionSaveWithCurrentSongKeepsExistingQueueAndUpdatesPosition() = runStoreTest { store, _ ->
+        store.save(PlayQueue().setQueue(songs(1, 2, 3), startIndex = 0), positionMs = 100L)
+
+        // live-session 重连窗口的瞬时状态：队列尚未恢复、但 currentSongId 已被首帧快照置位。
+        // 不得用空队列覆盖既有 3 首队列，否则杀进程重启后播放队列恒空（2026-10-06 回归）。
+        store.save(PlayQueue(), positionMs = 5_000L, currentSongId = 2)
+
+        val restored = store.restore(songs(1, 2, 3))
+        assertEquals(listOf(1, 2, 3), restored?.queue?.songs?.map { it.id })
+        assertEquals(2, restored?.queue?.currentSong?.id)
+        assertEquals(5_000L, restored?.positionMs)
+    }
+
+    @Test
+    fun emptySessionSaveWithCurrentSongWithoutExistingQueueRestoresSingleSong() = runStoreTest { store, _ ->
+        store.save(PlayQueue(), positionMs = 60_000L, currentSongId = 2)
+
+        val restored = store.restore(songs(1, 2, 3))
+        assertEquals(listOf(2), restored?.queue?.songs?.map { it.id })
+        assertEquals(0, restored?.queue?.currentIndex)
+        assertEquals(60_000L, restored?.positionMs)
+    }
+
+    @Test
     fun restoreFallsBackToLegacyPrefsAndNextSaveClearsLegacyState() = runBlocking {
         val legacyPrefs = FakeSharedPreferences(
             mapOf(

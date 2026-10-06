@@ -35,7 +35,9 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.util.concurrent.ConcurrentHashMap
@@ -69,6 +71,9 @@ class MusicRepository(
      */
     @Volatile
     private var libraryLoaded = false
+
+    /** 串行化首次全量恢复（loadSongs），避免启动期并发调用互相短路返回空曲库（2026-10-06）。 */
+    private val loadMutex = Mutex()
 
     private val roomDataSource = melodyDao?.let(::RoomMusicLibraryDataSource)
 
@@ -118,7 +123,6 @@ class MusicRepository(
 
     /** 启动时恢复歌单和歌曲（先跑一次旧 JSON 只读迁移，再从 Room 读取） */
     suspend fun loadPersistedSongs() {
-        libraryLoaded = true
         withContext(Dispatchers.IO) {
             try {
                 legacyJsonMigration?.migrateIfNeeded()
@@ -127,19 +131,25 @@ class MusicRepository(
                 AppLog.error(TAG, "loadPersistedSongs: failed: ${e.message}", e)
             }
         }
+        // 标志在恢复完成后才置位——旧实现先置位再恢复，并发 loadSongs（情绪 VM/Worker 与播放器
+        // 启动同时触发）会在恢复进行中短路返回空曲库，导致播放状态 restore 拿到 0 首（队列丢失）。
+        libraryLoaded = true
     }
 
     /**
      * 恢复并返回全库歌曲。
      * m7（评审 2026-09-03）：启动后首次调用做全量 Room 恢复 + 目录同步；
      * 之后再调用（如情绪扫描 Worker）只返回当前快照，避免每次都清空重灌全表。
+     *
+     * 并发安全（2026-10-06）：启动时 PlayerViewModel 与 EmotionViewModel 同时触发 loadSongs，
+     * 用互斥锁串行化「首次全量恢复」，后到者等前一个完成后直接返回已恢复的曲库，
+     * 不再出现「库还没恢复完就返回空列表」导致播放队列/进度无法恢复的竞态。
      */
-    suspend fun loadSongs(): List<Song> {
+    suspend fun loadSongs(): List<Song> = loadMutex.withLock {
         if (!libraryLoaded) {
             loadPersistedSongs()
-            libraryLoaded = true
         }
-        return getSongs()
+        getSongs()
     }
 
     /** 测试用：重置「已加载」标志，使下一次 [loadSongs] 重新走全量恢复 */

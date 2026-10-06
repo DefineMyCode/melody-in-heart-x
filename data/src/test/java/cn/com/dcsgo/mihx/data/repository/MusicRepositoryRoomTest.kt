@@ -17,6 +17,8 @@ import cn.com.dcsgo.mihx.data.local.entity.QuickSkipShortPlayEntity
 import cn.com.dcsgo.mihx.data.local.entity.SongArtistCrossRef
 import cn.com.dcsgo.mihx.data.local.entity.SongEntity
 import cn.com.dcsgo.mihx.data.local.entity.SongGroupOverrideEntity
+import kotlinx.coroutines.async
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -194,8 +196,32 @@ class MusicRepositoryRoomTest {
         assertEquals(dao.albums.first { it.name == "Album Y" }.albumId, songsById.getValue(3).albumId)
     }
 
+    @Test
+    fun concurrentLoadSongsWaitsForFirstRestoreAndReturnsFullLibrary() = runBlocking {
+        // 启动期 PlayerViewModel 与 EmotionViewModel 同时触发 loadSongs：
+        // 后到者的 loadSongs 必须等首次全量恢复完成，不能因 libraryLoaded 提前置位
+        // 而短路返回空曲库（2026-10-06 播放队列/进度无法恢复的竞态根因）。
+        val dao = FakeMelodyDao().apply {
+            songs += listOf(songEntity(1), songEntity(2), songEntity(3))
+            songsDelayMs = 100L
+        }
+        val repository = MusicRepository(melodyDao = dao)
+
+        val first = async { repository.loadSongs() }
+        delay(5) // 让首次恢复进入 DAO 查询（被阻塞，尚未完成）
+        val second = async { repository.loadSongs() }
+        val firstResult = first.await()
+        val secondResult = second.await()
+
+        assertEquals(listOf(1, 2, 3), firstResult.map { it.id })
+        assertEquals(listOf(1, 2, 3), secondResult.map { it.id })
+        assertEquals(listOf(1, 2, 3), repository.getSongs().map { it.id })
+    }
+
     private class FakeMelodyDao : MelodyDao {
         val songs = mutableListOf<SongEntity>()
+        /** 测试钩子：首次 songs() 查询放慢，用于复现「恢复进行中并发 loadSongs」竞态 */
+        var songsDelayMs: Long = 0L
         val playlists = mutableListOf<PlaylistEntity>()
         val playlistSongRefs = mutableListOf<PlaylistSongCrossRef>()
         val songGroupOverrides = mutableListOf<SongGroupOverrideEntity>()
@@ -208,7 +234,14 @@ class MusicRepositoryRoomTest {
         val songArtistRefs = mutableListOf<SongArtistCrossRef>()
         val songEmotions = mutableListOf<SongEmotionEntity>()
 
-        override suspend fun songs(): List<SongEntity> = songs.sortedBy { it.id }
+        override suspend fun songs(): List<SongEntity> {
+            if (songsDelayMs > 0L) {
+                val d = songsDelayMs
+                songsDelayMs = 0L
+                delay(d)
+            }
+            return songs.sortedBy { it.id }
+        }
 
         override suspend fun songCount(): Int = songs.size
         override suspend fun playlists(): List<PlaylistEntity> = playlists.sortedBy { it.id }

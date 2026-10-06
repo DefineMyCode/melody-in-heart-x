@@ -201,8 +201,28 @@ class PlayerPersistenceFacadeTest {
             currentSongId: Int?,
         ) {
             val playbackSongId = currentSongId ?: queue.currentSong?.id
-            if (queue.isEmpty && !isInfinitePlay && playbackSongId == null) {
-                clear()
+            if (queue.isEmpty && !isInfinitePlay) {
+                // 与 PlaybackStateStore.save 保持一致：空会话不写队列 JSON，
+                // 已有快照时保留队列只更新歌曲/位置，无快照但有当前歌时写空队列兜底单曲。
+                val existing = saved
+                when {
+                    existing != null && playbackSongId != null -> {
+                        saved = existing.copy(
+                            positionMs = positionMs.coerceAtLeast(0L),
+                            currentSongId = playbackSongId,
+                        )
+                    }
+                    existing == null && playbackSongId != null -> {
+                        saved = SavedPlaybackState(
+                            queue = queue,
+                            positionMs = positionMs.coerceAtLeast(0L),
+                            isInfinitePlay = false,
+                            infinitePlayedSongIds = emptySet(),
+                            currentSongId = playbackSongId,
+                        )
+                    }
+                    else -> Unit
+                }
                 return
             }
             saved = SavedPlaybackState(

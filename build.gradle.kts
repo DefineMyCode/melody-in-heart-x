@@ -486,7 +486,8 @@ tasks.register("verifyProductArchitecture") {
             fail("AppMediaSessionService must be declared by the :player manifest, not the :app manifest.")
         }
         listOf(
-            "android.permission.READ_MEDIA_AUDIO",
+            // READ_MEDIA_AUDIO 仅用于加速导入扫描(2026-10-06 用户拍板接受): 已授权时 java.io.File
+            // 直遍历快几个数量级, SAF 文档树仍是主路径与兜底, 拒绝时静默回退 SAF。不走 READ_EXTERNAL_STORAGE。
             "android.permission.READ_EXTERNAL_STORAGE",
         ).forEach { permission ->
             if (appManifest.contains(permission)) {

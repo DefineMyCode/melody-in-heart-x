@@ -16,26 +16,31 @@ class PlayerPersistenceFacade(
     private val log: (String) -> Unit,
 ) {
     fun savePlaybackStateAsync(positionMs: Long = currentPlaybackPositionMs()) {
-        // 先捕获位置，再把 DataStore 写移到 IO，避免播放中主线程每秒阻塞写盘
+        // 位置与完整状态快照都在调用线程捕获，再移到 IO 落盘：
+        // 避免保存排队期间 UI 切了队列/换歌，IO 执行时读到落后一拍的旧队列（2026-10-06）。
+        val snapshot = state()
         launchIo {
-            savePlaybackState(positionMs)
+            savePlaybackState(snapshot, positionMs)
         }
     }
 
     fun savePlaybackState(positionMs: Long = currentPlaybackPositionMs()) {
-        val current = state()
+        savePlaybackState(state(), positionMs)
+    }
+
+    private fun savePlaybackState(snapshot: PlayerUiState, positionMs: Long) {
         // 诊断：确认 5s autosaver 与事件保存确实在写盘、写入的是否是预期数据。
         log(
-            "save playback state: queue=${current.playQueue.songs.size}, index=${current.playQueue.currentIndex}, " +
-                "infinite=${current.isInfinitePlay}, position=${positionMs}ms, " +
-                "currentSongId=${current.currentSong?.id}"
+            "save playback state: queue=${snapshot.playQueue.songs.size}, index=${snapshot.playQueue.currentIndex}, " +
+                "infinite=${snapshot.isInfinitePlay}, position=${positionMs}ms, " +
+                "currentSongId=${snapshot.currentSong?.id}"
         )
         playbackStateStore.save(
-            queue = current.playQueue,
+            queue = snapshot.playQueue,
             positionMs = positionMs,
-            isInfinitePlay = current.isInfinitePlay,
-            infinitePlayedSongIds = current.infinitePlayedSongIds,
-            currentSongId = current.currentSong?.id,
+            isInfinitePlay = snapshot.isInfinitePlay,
+            infinitePlayedSongIds = snapshot.infinitePlayedSongIds,
+            currentSongId = snapshot.currentSong?.id,
         )
     }
 

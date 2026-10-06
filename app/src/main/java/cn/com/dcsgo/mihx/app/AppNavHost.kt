@@ -247,6 +247,8 @@ fun AppNavHost(
                 deleteSongWithToast,
                 playlistResumeViewModel,
             )
+            // 情绪标签列只在进入曲库/歌单页时才开始收集，避免冷启动无情绪页面也做全库读取
+            LaunchedEffect(Unit) { emotionViewModel.observe() }
             val emotionRowsUi by emotionViewModel.rows.collectAsStateWithLifecycle()
             val songSortMode by playerViewModel.songSortMode.collectAsStateWithLifecycle()
             val songSortAscending by playerViewModel.songSortAscending.collectAsStateWithLifecycle()
@@ -295,6 +297,8 @@ fun AppNavHost(
                 deleteSongWithToast,
                 playlistResumeViewModel,
             )
+            // 情绪标签列只在进入歌单详情页时才开始收集
+            LaunchedEffect(Unit) { emotionViewModel.observe() }
             val emotionRowsUi by emotionViewModel.rows.collectAsStateWithLifecycle()
             PlaylistRoute(
                 state = playlistRouteState(
@@ -417,7 +421,8 @@ fun AppNavHost(
             val validationResult by playerViewModel.validationResult.collectAsStateWithLifecycle()
             val isValidating by playerViewModel.isValidating.collectAsStateWithLifecycle()
             val emotionStatus by emotionViewModel.status.collectAsStateWithLifecycle()
-            LaunchedEffect(Unit) { emotionViewModel.refresh() }
+            // 进入我的页才启动情绪状态流收集并刷新（observe 幂等；冷启动不触发全库读取）
+            LaunchedEffect(Unit) { emotionViewModel.observe(); emotionViewModel.refresh() }
             val snapshot by produceState(PlaybackStatsSnapshot.EMPTY) {
                 // C-2（评审 2026-09-03）：底层是 Room runBlocking 桥，DB 异常统一兜底空快照。
                 // 性能：先取缓存立即渲染（切页零等待），再后台刷新替换为新值。
@@ -771,7 +776,9 @@ fun AppNavHost(
             val emotionStatus by emotionViewModel.status.collectAsStateWithLifecycle()
             // 校准控制器必须在 composable 上下文读取（CompositionLocal）
             val emotionCorrectionController = LocalEmotionCorrectionController.current
+            // 进入情绪详情页才启动状态流收集并刷新（observe 幂等）
             LaunchedEffect(Unit) {
+                emotionViewModel.observe()
                 emotionViewModel.refresh()
             }
             // 失败歌曲行：songId → 标题/标记状态映射（2026-09-04 失败标记 UI）。

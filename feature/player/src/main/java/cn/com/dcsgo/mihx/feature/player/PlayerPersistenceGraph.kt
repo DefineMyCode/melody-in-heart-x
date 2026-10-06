@@ -3,6 +3,7 @@ package cn.com.dcsgo.mihx.feature.player
 import android.os.SystemClock
 import cn.com.dcsgo.mihx.core.common.CoroutineDispatchers
 import cn.com.dcsgo.mihx.core.model.PlayQueue
+import cn.com.dcsgo.mihx.core.model.Song
 import cn.com.dcsgo.mihx.domain.playback.PlaybackRestoreCoordinator
 import cn.com.dcsgo.mihx.domain.playback.PlaybackRestoreResult
 import cn.com.dcsgo.mihx.domain.playback.PlaybackStateStorageFactory
@@ -22,12 +23,14 @@ internal class PlayerPersistenceGraph(
     /** 是否存在正在播放的 live session: 若是，restorePlaybackState 不覆盖 live player */
     private val hasLiveSession: () -> Boolean,
     private val log: (String) -> Unit,
+    /** 恢复可播判定（默认按 uri 非空）；测试可注入不依赖 android.net.Uri 的判据 */
+    private val isPlayable: (Song) -> Boolean = { it.uri != null },
 ) {
     private val playbackStateStore by lazy {
         playbackStateStorageFactory.create()
     }
     private val playbackRestoreCoordinator: PlaybackRestoreCoordinator by lazy {
-        PlaybackRestoreCoordinator(playbackStateStore::restore)
+        PlaybackRestoreCoordinator(playbackStateStore::restore, isPlayable)
     }
     private val persistenceFacade: PlayerPersistenceFacade by lazy {
         PlayerPersistenceFacade(
@@ -82,7 +85,10 @@ internal class PlayerPersistenceGraph(
         // 读取与 controller 连接并行：谁先完成都等另一方，再在 maybeApplyRestore 里
         // 依据 controller 真实状态做「完整恢复 or 仅恢复 UI 队列」的决策，消除竞态。
         scope.launch(dispatchers.io) {
-            val result = persistenceFacade.restorePlaybackState()
+            // 兜底：协调器/解码任何未预期的异常都不该静默吞掉恢复，留日志可查（2026-10-06）。
+            val result = runCatching { persistenceFacade.restorePlaybackState() }
+                .onFailure { e -> log("restore read FAILED: ${e.message}") }
+                .getOrNull()
             if (result != null) {
                 withContext(dispatchers.main) {
                     pendingRestore = result

@@ -121,8 +121,9 @@ class MusicRepository(
     // 启动恢复：Room 为唯一持久化来源；旧版 JSON 只在迁移时只读消费
     // ─────────────────────────────────────────────────────────────
 
-    /** 启动时恢复歌单和歌曲（先跑一次旧 JSON 只读迁移，再从 Room 读取） */
-    suspend fun loadPersistedSongs() {
+    /** 启动时恢复歌单和歌曲（先跑一次旧 JSON 只读迁移，再从 Room 读取）。
+     *  仅供 [loadSongs] 内部调用（受 loadMutex 串行保护）；外部一律走 [loadSongs]，避免绕过互斥锁。 */
+    private suspend fun loadPersistedSongs() {
         withContext(Dispatchers.IO) {
             try {
                 legacyJsonMigration?.migrateIfNeeded()

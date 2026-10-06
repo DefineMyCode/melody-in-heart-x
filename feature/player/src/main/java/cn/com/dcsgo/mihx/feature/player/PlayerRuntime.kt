@@ -852,11 +852,21 @@ internal class PlayerRuntime(
 
     private fun loadInitialData(afterInitialSnapshot: () -> Unit) {
         scope.launch {
+            // 恢复触发只执行一次：曲库加载成功（库内 afterInitialSnapshot）或失败（catch 兜底）
+            // 都必须放行，否则 Room 恢复抛异常时快照永不读、播放队列/进度静默丢失（2026-10-06）。
+            var restoreTriggered = false
+            val triggerRestore = {
+                if (!restoreTriggered) {
+                    restoreTriggered = true
+                    afterInitialSnapshot()
+                }
+            }
             try {
-                libraryFacade.loadInitialData(afterInitialSnapshot)
+                libraryFacade.loadInitialData(triggerRestore)
             } catch (e: Exception) {
-                AppLog.error(TAG, "loadInitialData failed", e)
+                AppLog.error(TAG, "loadInitialData failed, still attempting restore", e)
                 _uiState.update { it.copy(isLoading = false) }
+                triggerRestore()
             }
         }
     }

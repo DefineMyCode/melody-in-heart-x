@@ -7,6 +7,7 @@ import androidx.work.Data
 import androidx.work.ExistingWorkPolicy
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
+import cn.com.dcsgo.mihx.core.common.AppLog
 import cn.com.dcsgo.mihx.core.model.Song
 import cn.com.dcsgo.mihx.core.model.SongEmotion
 import cn.com.dcsgo.mihx.domain.repository.PlayerSettingsRepository
@@ -18,6 +19,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -112,8 +114,22 @@ class EmotionViewModel @Inject constructor(
     /** rows 重建判据指纹: 计数/校准/暂停/刷新变化才全量解析 */
     private var lastRowsKey = ""
 
-    init {
-        viewModelScope.launch {
+    /** 状态流收集 job：由 [observe] 幂等启动，避免冷启动无情绪页面时也做全库读取 */
+    private var observeJob: Job? = null
+
+    /**
+     * 启动状态流收集（幂等）。
+     *
+     * 原本在 init 无条件收集：冷启动即使情绪页/卡片没打开，也会立即做
+     * buildStatus/buildRows → songRepository.loadSongs() + 情绪表查询，
+     * 既增加冷启动开销，又是与 PlayerViewModel 并发 loadSongs 的竞态来源
+     * （2026-10-06 播放队列/进度无法恢复）。改为由消费 status/rows 的页面
+     * 在可见时调用本方法；进入任一情绪相关页面后即常驻 VM 作用域。
+     */
+    fun observe() {
+        if (observeJob?.isActive == true) return
+        AppLog.info("EmotionViewModel", "observe(): start emotion status flow collection")
+        observeJob = viewModelScope.launch {
             scanSignal.flatMapLatest { sig ->
                 if (sig.manualRunning || sig.periodicRunning) {
                     // 扫描中: 2s 节奏刷计数; workInfo/progress 推送也会即时触发

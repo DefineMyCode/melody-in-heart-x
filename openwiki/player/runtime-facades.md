@@ -3,9 +3,6 @@ type: "Architecture"
 title: "PlayerRuntime and the Facade Catalog"
 description: "How PlayerViewModel stays a thin delegator, how PlayerRuntime composes ~18 facades through five graph objects wired by lambda injection, and the narrow-flow, startup, restore, teardown, and extension rules that govern any change to the player feature."
 tags: [player, facade, runtime, composition-root, hilt, narrow-flow, state-sync, testing]
-verified:
-  - by: openwiki/0.5.0
-    at: 2026-09-07T13:49:59.042Z
 sources:
   - id: openwiki-source-5610fe170bf45c0b63fb5ac9
     resource: repo://app/src/main/java/cn/com/dcsgo/mihx/app/di/PlayerModule.kt
@@ -75,7 +72,10 @@ sources:
     resource: repo://feature/player/src/test/java/cn/com/dcsgo/mihx/feature/player/PlayerRandomQueueFacadeTest.kt
   - id: openwiki-source-e0c3384d9aa25ad5cfc535e4
     resource: repo://feature/player/src/test/java/cn/com/dcsgo/mihx/feature/player/PlayerStartupFacadeTest.kt
-generated: { by: "openwiki/0.5.0", at: "2026-09-07T13:49:59.042Z" }
+generated: { by: "openwiki/0.5.0", at: "2026-10-10T11:15:45.800Z" }
+verified:
+  - by: openwiki/0.5.0
+    at: 2026-10-10T11:15:45.800Z
 ---
 
 # PlayerRuntime and the Facade Catalog
@@ -166,8 +166,8 @@ Eighteen facades, grouped by concern. Each row is the facade's single reason to 
 
 **Persistence**
 
-- `PlayerPersistenceFacade` (+ `PlaybackStateStorage` port, `PlaybackRestoreCoordinator`) — saves queue/position/infinite state/current song to the storage port (async path captures the position first, then moves the DataStore write to IO), clears it, reads the restore result on IO, and applies it: full restore (UI + `prepareControllerQueue`, no autoplay) when there is no live session, UI-queue-shadow-only otherwise, because controller snapshot sync never fills `songs`.
-- Supporting cast assembled in `PlayerPersistenceGraph`: `PlayerPlaybackStateAutosaver` throttles periodic saves to one per `DEFAULT_INTERVAL_MS = 5_000` (crash-recovery granularity; explicit saves on pause/switch/exit remain the backstop).
+- `PlayerPersistenceFacade` (+ `PlaybackStateStorage` port, `PlaybackRestoreCoordinator`) — saves queue/position/infinite state/current song to the storage port; the async path captures both the full `PlayerUiState` snapshot and the position on the calling thread, then moves the DataStore write to IO so the save can never read a stale queue or position that the UI changed while the IO save was queued. It clears the state, reads/decodes the restore result on IO (`restorePlaybackState`), and applies it: full restore (UI + `prepareControllerQueue` at the snapshot position, no autoplay) when there is no live session, UI-queue-shadow-only otherwise — restoring UI queue, current song, and same-name songs but leaving position/isPlaying to the live controller sync — because controller snapshot sync never fills `songs`.
+- Supporting cast assembled in `PlayerPersistenceGraph`: `PlayerPlaybackStateAutosaver` throttles periodic saves to one per `DEFAULT_INTERVAL_MS = 5_000` measured against `SystemClock.elapsedRealtime` (crash-recovery granularity; explicit saves on pause/switch/exit remain the backstop).
 
 **Library and import**
 
@@ -196,6 +196,15 @@ Non-facade helpers in the same package: `PlayerControllerStateAdapter` (Media3 c
 - The decision uses `hasLiveSession` = "controller queue non-empty" (`liveSessionActive()` — **not** `position > 0`, which misreads to 0 before `buildAsync` connects and would overwrite a playing session). Live session → UI queue shadow only; otherwise → full restore including `prepareControllerQueue` at the snapshot position.
 
 When the playback controller is unavailable (connection failure, or pending actions dropped by the bounded FIFO), `handleControllerUnavailable` logs, still calls `onControllerReady()` so a pending restore can never hang, and writes the reason plus the dropped-action count into `errorMessage`.
+
+`PlayerPlaybackStateAutosaver` throttles the periodic save path: `onPlaybackPosition` elapses wall-clock time against `SystemClock.elapsedRealtime()` and, once `DEFAULT_INTERVAL_MS = 5_000` has passed, syncs the controller state and then launches the IO save. The 5 s cadence is crash-recovery granularity; explicit saves on pause/switch/exit stay the backstop.
+
+### Runtime-level responsibilities beyond the facades
+
+Not every behavior is a facade: a couple of settings and the file-check domain are orchestrated directly on `PlayerRuntime`.
+
+- **Song sort mode** — `songSortMode` and `songSortAscending` are `Flow<SongSortMode>`/`Flow<Boolean>` re-exposed straight from `playerSettingsRepository` (with `currentSongSortMode()`/`currentSongSortAscending()` for on-demand reads), and `setSongSortMode`/`setSongSortAscending` persist through `scope.launch { playerSettingsRepository.setSongSortMode(mode) }`.
+- **File-check domain** — `validateLocalFiles(mode)` runs `songRepository.validateAndCleanupLocalFiles(mode)` on IO and parks the `LocalFileValidationResult` in the `validationResult` StateFlow until the user acknowledges it (`acknowledgeValidationResult`). The duplicate-file scan is orchestrated here too: `scanDuplicateSongs()` calls `songRepository.scanDuplicateSongGroups()` on IO and publishes into a `duplicateGroups` StateFlow (guarded by `isScanningDuplicates`, flagged by `hasScannedDuplicates`), and `deduplicateAll()` calls `songRepository.deduplicateSongs(groups)`, then clears the groups, the scan flag, and the validation badge.
 
 ## The narrow-flow design
 

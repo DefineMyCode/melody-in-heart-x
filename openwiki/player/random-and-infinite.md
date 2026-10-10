@@ -3,14 +3,13 @@ type: "Concept"
 title: "Random Playback and Infinite Random"
 description: "The random selection chain: RandomQueuePlanner batch selection with recent-play eviction, UniformRandomPlanner play-count tiered preemption, infinite-play queue refill with wrap handling, and how the global uniform-random setting and mood-slot attribution are wired in."
 tags: [player, random, uniform-random, infinite-play, refill, mood-slot]
-verified:
-  - by: openwiki/0.5.0
-    at: 2026-09-07T13:49:59.042Z
 sources:
-  - id: openwiki-source-c997f8c2a81730fe7eb841ae
-    resource: repo://app/src/main/java/cn/com/dcsgo/mihx/app/AppNavHost.kt
+  - id: openwiki-source-4ca5f9c29b016f072d8ed57c
+    resource: repo://app/src/main/java/cn/com/dcsgo/mihx/app/AppRoot.kt
   - id: openwiki-source-5610fe170bf45c0b63fb5ac9
     resource: repo://app/src/main/java/cn/com/dcsgo/mihx/app/di/PlayerModule.kt
+  - id: openwiki-source-c5e9b6973b445a58e095b661
+    resource: repo://app/src/main/java/cn/com/dcsgo/mihx/app/player/NowPlayingSurface.kt
   - id: openwiki-source-9645009bf4cd7f02b15b26de
     resource: repo://core/model/src/main/java/cn/com/dcsgo/mihx/core/model/PlayQueue.kt
   - id: openwiki-source-29a14d2aa8324beadcd09368
@@ -31,6 +30,8 @@ sources:
     resource: repo://domain/src/test/java/cn/com/dcsgo/mihx/domain/playback/RandomQueuePlannerTest.kt
   - id: openwiki-source-0612dc00d9b1dcddcd4e8895
     resource: repo://domain/src/test/java/cn/com/dcsgo/mihx/domain/playback/UniformRandomPlannerTest.kt
+  - id: openwiki-source-9bf703f956169c01467c7d72
+    resource: repo://feature/home/src/main/java/cn/com/dcsgo/mihx/feature/home/HomeRoute.kt
   - id: openwiki-source-de2bd591186ef143f8a8f0e8
     resource: repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerErrorFacade.kt
   - id: openwiki-source-0a840abe5bf9183316c47b4e
@@ -57,7 +58,10 @@ sources:
     resource: repo://player/src/main/java/cn/com/dcsgo/mihx/data/player/PlaybackStateStore.kt
   - id: openwiki-source-f0e058e6091ef385898fb85e
     resource: repo://player/src/test/java/cn/com/dcsgo/mihx/data/player/MediaItemWrapDetectionTest.kt
-generated: { by: "openwiki/0.5.0", at: "2026-09-07T13:49:59.042Z" }
+generated: { by: "openwiki/0.5.0", at: "2026-10-10T11:15:45.800Z" }
+verified:
+  - by: openwiki/0.5.0
+    at: 2026-10-10T11:15:45.800Z
 ---
 
 # Random Playback and Infinite Random
@@ -186,16 +190,18 @@ When the mood time-slot enhancement is active (`moodSlotEnabled` + a `TimeSlotCo
 
 ### UI entry and attribution toasts
 
-`AppNavHost`'s `HomeRouteActions` wire the entries:
+The two entry points are wired in the app shell rather than the domain/feature layer:
 
-- `onLuckyPlayClick` → `playerViewModel.playRandomQueue()`; on success it calls `playerViewModel.currentMoodSlotName()` and shows `"已按「$slotName」为你随机播放"`; on failure `"还没有可播放的音乐，请先导入歌曲吧~"`.
-- `onStartInfinitePlay` → `playerViewModel.startInfinitePlay()`; on success `"已按「$slotName」开启无限随机播放"`.
+- **`NowPlayingSurface`** (the player surface shared by the Home tab and the global drawer) wires `onLuckyPlayClick` → `playerViewModel.playRandomQueue()` and `onStartInfinitePlay` → `playerViewModel.startInfinitePlay()`. On success each reads `playerViewModel.currentMoodSlotName()` and shows the *mood attribution* toast — `"已按「$slotName」为你随机播放"` / `"已按「$slotName」开启无限随机播放"` — and on lucky-play failure shows `"还没有可播放的音乐，请先导入歌曲吧~"`. Both actions end with `playlistResumeViewModel.switchSource(null, ...)`, resetting the playlist-resume source.
+- **`AppRoot`** duplicates the lucky-play wiring for the empty-queue entry bar (`LuckyPlayEntryBar`, the double-page style mini-bar slot when the queue is empty), calling `playRandomQueue()` with the same attribution toast and catch-all import hint.
+- **`HomeRouteActions`** (`feature/home`) provides the create/start/infinite callback pair with simpler generic toasts — `"已生成随机队列，开始播放~"` / `"已开启无限随机播放模式，随机播放全部歌曲~"` — and the import hint on failure.
 
-`currentMoodSlotName()` delegates to the facade's `currentMoodSlot()` — the **same** `activeMoodSlot()` evaluation the random decision used, so the toast attributing "why this song" can never disagree with the actual filter. Both actions also reset the playlist-resume source. The configuration UI side (slots, tags, counts) is covered in `/openwiki/concepts/mood-time-slot.md`.
+`currentMoodSlotName()` on `PlayerViewModel` delegates to `PlayerRuntime.currentMoodSlot()` → the facade's `currentMoodSlot()` — the **same** `activeMoodSlot()` evaluation the random decision used, so the toast attributing "why this song" can never disagree with the actual filter. The configuration UI side (slots, tags, counts) is covered in `/openwiki/concepts/mood-time-slot.md`.
 
 ## State, lifecycle, and persistence
 
-- `recentPlayedSongIds` lives **in memory** on the facade instance — lucky-play eviction history is not persisted; a process restart starts with a clean slate. `infinitePlayedSongIds` and `isInfinitePlay` **are persisted**: `PlayerPersistenceFacade` saves them through `PlaybackStateStore` (`INFINITE_PLAYED_IDS` alongside the queue JSON) and restore re-applies both, with saved played-ids filtered to songs still present in the library; an empty queue is allowed to persist while infinite mode is on. Infinite play therefore survives process death.
+- `recentPlayedSongIds` lives **in memory** on the facade instance — lucky-play eviction history is not persisted; a process restart starts with a clean slate. `infinitePlayedSongIds` and `isInfinitePlay` **are persisted**: `PlayerPersistenceFacade` saves them through `PlaybackStateStore` (`IS_INFINITE_PLAY` / `INFINITE_PLAYED_IDS` alongside the queue JSON) and restore re-applies both, with saved played-ids filtered to songs still present in the library; an empty queue is allowed to restore while infinite mode is on (`allowEmpty = isInfinitePlay`). Infinite play therefore survives process death.
+- **Save path**: `PlayerPersistenceFacade` captures the position and full state snapshot on the caller thread and only then moves the DataStore write to IO via `launchIo` (`savePlaybackStateAsync` → `savePlaybackState(snapshot, positionMs)`). The position is read up front by the default `currentPlaybackPositionMs()` argument and threaded into the snapshot, so an IO-thread save cannot read a stale position or a queue swapped mid-save. `PlaybackStateStore.save(...)` also skips writing an empty-session queue that would clobber an existing snapshot (keeps the queue, updates song+position only).
 - Exit paths: `stopInfinitePlay` clears the flags; any queue replacement via `setPlayQueue` (default `exitInfinitePlay = true`) exits too; `playRandomQueue` exits explicitly as above.
 - `playRelatedSongs` is the exception that keeps infinite mode alive: it replaces the queue with current + related songs (`exitInfinitePlay = false`) and re-seeds `infinitePlayedSongIds` with exactly those ids so the next refill reaches *outside* the new queue.
 

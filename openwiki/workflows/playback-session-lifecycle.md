@@ -1,11 +1,11 @@
 ---
 type: Workflow
-title: "工作流：播放会话生命周期"
-description: "端到端讲一次完整播放会话：冷启动装配与主线程纪律、MediaController 连接与快照恢复的 live-session 决策、设置队列与开播、Media3 切歌事件翻译与 PlayDurationTracker 结算、无限补队列、定时关闭/蓝牙断连/单项回绕等会话内旁路，以及进程被杀后的恢复闭环。"
+title: "Playback Session Lifecycle"
+description: "End-to-end walk through one complete playback session: cold-start assembly and main-thread discipline, MediaController connect with the snapshot-restore live-session decision, queue setup and playback start, Media3 song-change translation with PlayDurationTracker settlement, infinite refill, in-session bypaths (sleep timer, Bluetooth disconnect, single-item loop rewind), and the recovery loop after process death."
 tags: [player, playback-session, cold-start, state-restore, media-controller, duration-settlement, sleep-timer, bluetooth, quick-skip, process-death-recovery]
 verified:
   - by: openwiki/0.5.0
-    at: 2026-09-07T13:49:59.042Z
+    at: 2026-10-10T11:15:45.800Z
 sources:
   - id: openwiki-source-daad64f3ba82b5b0ff4a8d94
     resource: repo://domain/src/main/java/cn/com/dcsgo/mihx/domain/playback/ControllerPlaybackStateSynchronizer.kt
@@ -49,6 +49,8 @@ sources:
     resource: repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerViewModel.kt
   - id: openwiki-source-ca2d7e504c1ad19cbaff9046
     resource: repo://feature/player/src/test/java/cn/com/dcsgo/mihx/feature/player/PlayerPersistenceFacadeTest.kt
+  - id: openwiki-source-6cbc32290e81c1e4b344fe2b
+    resource: repo://feature/player/src/test/java/cn/com/dcsgo/mihx/feature/player/PlayerPersistenceGraphTest.kt
   - id: openwiki-source-e0c3384d9aa25ad5cfc535e4
     resource: repo://feature/player/src/test/java/cn/com/dcsgo/mihx/feature/player/PlayerStartupFacadeTest.kt
   - id: openwiki-source-7657c9f7c862e7d55acc0b62
@@ -63,14 +65,14 @@ sources:
     resource: repo://player/src/main/java/cn/com/dcsgo/mihx/data/player/PlayDurationTracker.kt
   - id: openwiki-source-f0e058e6091ef385898fb85e
     resource: repo://player/src/test/java/cn/com/dcsgo/mihx/data/player/MediaItemWrapDetectionTest.kt
-generated: { by: "openwiki/0.5.0", at: "2026-09-07T13:49:59.042Z" }
+generated: { by: "openwiki/0.5.0", at: "2026-10-10T11:15:45.800Z" }
 ---
 
-# 工作流：播放会话生命周期
+# Workflow: Playback Session Lifecycle
 
-本页把一次完整播放会话从头到尾串起来：**应用启动 → facade 初始化与 MediaController 连接 → 播放状态快照恢复决策 → 设置队列与开播 → 切歌/结算/自动补队列 → 时长统计与秒切 → 进程被杀后的恢复闭环**。单点细节不在此展开：队列与窗口同步见 `/openwiki/player/queue-architecture.md`，随机与无限补队列见 `/openwiki/player/random-and-infinite.md`，facade 编排目录见 `/openwiki/player/runtime-facades.md`，状态机不变量与恢复决策规则见 `/openwiki/player/state-machine.md`，服务端/控制器集成面见 `/openwiki/player/service-and-controller.md`。
+This page stitches one complete playback session start to finish: **app startup → facade initialization and MediaController connect → playback-snapshot restore decision → queue setup and playback start → song change / settlement / auto refill → duration tracking and quick-skip → in-session bypaths → the recovery loop after a process kill**. Per-point detail is not expanded here: dual queue / window synchronization lives in `/openwiki/player/queue-architecture.md`, random and infinite refill in `/openwiki/player/random-and-infinite.md`, the facade wiring catalog in `/openwiki/player/runtime-facades.md`, state-machine invariants and restore-decision rules in `/openwiki/player/state-machine.md`, and the service/controller integration surface in `/openwiki/player/service-and-controller.md`.
 
-## 冷启动到开播：时序总览
+## Cold start to playback: timeline overview
 
 ```mermaid
 sequenceDiagram
@@ -85,197 +87,204 @@ sequenceDiagram
     participant PG as PlayerPersistenceGraph
     participant LIB as PlayerLibraryFacade
 
-    App->>App: onCreate 安装日志与未捕获异常兜底
+    App->>App: onCreate installs logging and uncaught-exception fallback
     Act->>Root: setContent AppRoot
-    Root->>VM: viewModel 经 Hilt 创建
-    VM->>RT: runtimeFactory.create viewModelScope 装配各 facade
-    VM->>RT: init 调 runtime.start
-    RT->>RT: IO 线程读 4 项设置并恢复定时关闭
-    RT->>SU: startupFacade.start 主线程执行
-    SU->>SVC: startService 启动播放服务
+    Root->>VM: viewModel created via Hilt
+    VM->>RT: runtimeFactory.create viewModelScope wires up facades
+    VM->>RT: init calls runtime.start
+    RT->>RT: IO thread reads 4 settings and restores the sleep timer
+    RT->>SU: startupFacade.start runs on main
+    SU->>SVC: startService starts the playback service
     SU->>PC: connectMediaController
-    PC->>SVC: SessionToken + buildAsync 异步绑定
-    SU->>LIB: loadInitialData 传入 afterInitialSnapshot 回调
-    LIB->>LIB: IO 读曲库并刷新快照
-    LIB->>PG: afterInitialSnapshot 触发 restorePlaybackState
-    PG->>PG: IO 读 DataStore 快照 产出 pendingRestore
-    PC-->>PG: 连接成功 首帧快照同步后 onControllerReady
-    Note over PC,PG: 连接与快照读取并行 谁先完成都等另一方
-    PG->>PG: maybeApplyRestore 依据 controller 队列决策 live 与否
-    RT->>RT: refreshMoodSlotCache 异步拉时段配置与词条快照
-    RT->>RT: 仅当设置开启时初始化蓝牙监听
+    PC->>SVC: SessionToken + buildAsync async binding
+    SU->>LIB: loadInitialData passes afterInitialSnapshot callback
+    LIB->>LIB: IO reads library and refreshes snapshot
+    LIB->>PG: afterInitialSnapshot triggers restorePlaybackState
+    PG->>PG: IO reads DataStore snapshot to produce pendingRestore
+    PC-->>PG: connect success after first-frame snapshot sync calls onControllerReady
+    Note over PC,PG: connect and snapshot read run in parallel; either waits for the other
+    PG->>PG: maybeApplyRestore decides live vs full restore from controller queue
+    RT->>RT: refreshMoodSlotCache pulls time-slot config and tag snapshot asynchronously
+    RT->>RT: initializes Bluetooth monitor only when the setting is on
 ```
 
-*冷启动到开播：UI 链逐层装配后，`startupFacade.start` 依次启动服务、连接 controller、加载曲库（首快照后触发恢复读取），恢复决策等「连接」与「快照读取」两条异步线在 `PlayerPersistenceGraph` 汇合后才做；情境化随心播放的时段/词条快照在启动后异步拉取，不阻塞任何一步。*
+*Cold start to playback: after the UI chain wires up layer by layer, `startupFacade.start` starts the service, connects the controller, and loads the library (the restore read is triggered after the first snapshot); the restore decision waits until the "connect" and "snapshot read" async lines converge in `PlayerPersistenceGraph`; contextual-play time-slot/tag snapshots are pulled asynchronously after startup without blocking any step.*
 
-## 阶段 0：进程装配与主线程纪律
+## Phase 0: process assembly and main-thread discipline
 
-- **进程入口**：`MelodyApplication`（`@HiltAndroidApp`）在 `onCreate` 安装 `AppLog`（`BuildConfig.DEBUG` 控制级别）、全局未捕获异常兜底（先记脱敏日志再交系统处理器），并调度情绪批扫 `EmotionScanScheduler.schedule`。图片栈（Coil `ImageLoaderFactory`）延迟到首次加载，缩短冷启动路径。
-- **UI 装配**：`MainActivity`（`@AndroidEntryPoint`）只做 `setContent { AppRoot() }`；`AppRoot` 在 Activity 作用域经 `viewModel()` 创建 `PlayerViewModel` 等 Hilt ViewModel。
-- **运行时装配**：`PlayerViewModel` 是**纯委托门面**——唯一构造参数是 `PlayerRuntimeFactory`，构造体里 `runtimeFactory.create(viewModelScope)` 构建 `PlayerRuntime`（feature 的组合根），`init { runtime.start() }` 点火；所有公开方法都是一行转发。
-- **主线程纪律**：`PlayerRuntime.start()` 把启动路径的阻塞源全部移出主帧——4 项 DataStore 设置（全局均匀随机、蓝牙监听、播放通知、每日听歌目标）与定时关闭恢复（2 读 + 可能 1 写）都在 `dispatchers.io` 上完成，然后才在主线程执行 `startupFacade.start()`；最后异步 `refreshMoodSlotCache()` 拉取时段配置与情绪词条快照（`@Volatile` 缓存，配置页保存后经 `refreshMoodSlots()` 主动刷新），并**仅当**持久化的 `bluetoothPlaybackMonitoringEnabled` 为 true 时 `bluetoothGraph.initialize()`。
+- **Process entry**: `MelodyApplication` (`@HiltAndroidApp`) installs in `onCreate` `AppLog` (level controlled by `BuildConfig.DEBUG`), a global uncaught-exception fallback (first logs a redacted message, then hands off to the system handler), and schedules the emotion batch scan `EmotionScanScheduler.schedule`. The image stack (Coil `ImageLoaderFactory`) is deferred to first load to shorten the cold-start path.
+- **UI assembly**: `MainActivity` (`@AndroidEntryPoint`) only does `setContent { AppRoot() }`; `AppRoot` creates `PlayerViewModel` and other Hilt ViewModels through `viewModel()` in the Activity scope.
+- **Runtime assembly**: `PlayerViewModel` is a **pure delegation facade** — its only constructor parameter is `PlayerRuntimeFactory`, the constructor builds `PlayerRuntime` (the feature composition root) with `runtimeFactory.create(viewModelScope)`, and `init { runtime.start() }` ignites it; every public method is a one-line forward.
+- **Main-thread discipline**: `PlayerRuntime.start()` moves all blocking sources on the startup path off the main frame — the 4 DataStore-backed settings (global uniform random, Bluetooth monitoring, playback notification, daily listening goal) and the sleep-timer restore (2 reads + possibly 1 write) all finish on `dispatchers.io` before `startupFacade.start()` runs on the main thread; afterwards `refreshMoodSlotCache()` asynchronously pulls the time-slot config and emotion-tag snapshot (`@Volatile` caches, refreshed tactically by `refreshMoodSlots()` after settings-page saves), and the Bluetooth monitor is initialized **only when** the persisted `bluetoothPlaybackMonitoringEnabled` is true via `bluetoothGraph.initialize()`.
 
-`PlayerStartupFacade` 把开机步骤固化为**固定顺序**：`startService` → `connectMediaController` → `loadInitialData`（把 `restorePlaybackState` 作为 `afterInitialSnapshot` 回调传入，恢复读取刻意排在曲库首快照之后，因为快照解码要用刚加载的曲库过滤失效歌曲）→ `listenForSongChanges`。该顺序由 `PlayerStartupFacadeTest` 逐条锁定。
+`PlayerStartupFacade` fixes the boot steps into a **fixed order**: `startService` → `connectMediaController` → `loadInitialData` (passing `restorePlaybackState` as the `afterInitialSnapshot` callback; the restore read is deliberately placed after the library's first snapshot because snapshot decoding uses the just-loaded library to filter out obsolete songs) → `listenForSongChanges`. This order is locked down by `PlayerStartupFacadeTest`.
 
-## 阶段 1：服务启动与 MediaController 连接
+## Phase 1: service start and MediaController connect
 
-- **startService 不用 FGS**：`PlaybackController.startService` 用 `context.startService(...)` 而非 `startForegroundService(...)`。原因记录在注释里（2026-09-03 ANR 回归修复）：`startForegroundService` 强制 5 秒内 `startForeground()`，而 `MediaSessionService` 只在有媒体项/激活播放时才发通知——冷启动空会话永不触发，系统判定 FGS 超时。该方法唯一调用链是 UI 冷启动（Activity 前台），`startService` 合法；即使将来有后台拉起，`connect()` 的 SessionToken 机制也能绑定服务。
-- **connect**：`SessionToken` + `MediaController.Builder.buildAsync()` 异步绑定，成功后先 `addListener`、`drainPendingActions`（重放连接前积压的 UI 命令，上限 64 条 FIFO），再回调 `onConnected(snapshot)`。`PlayerMediaControllerGraph.connect` 用首帧快照同步 `controllerStateAdapter` 之后才触发 `onConnected` → `persistenceGraph.onControllerReady()`——**恢复决策由此才有可信的 controller 状态**。
-- **连接失败的兜底**：连接失败会 `abortPendingActions` 并回调 `onControllerUnavailable`；`PlayerRuntime.handleControllerUnavailable` 写日志、把原因与丢弃数写进 `errorMessage`，但**仍然调用 `persistenceGraph.onControllerReady()`** 放行恢复决策——否则 `pendingRestore` 永久悬挂、UI 队列永不恢复。
+- **startService does not use FGS**: `PlaybackController.startService` uses `context.startService(...)` rather than `startForegroundService(...)`. The reason is recorded in a comment (2026-09-03 ANR regression fix): `startForegroundService` forces `startForeground()` within 5 seconds, but `MediaSessionService` only posts its notification once media items exist / playback is active — under a cold-start empty session the call never fires and the system flags an FGS timeout. The method's only call chain is the foreground UI cold start (Activity foreground), where `startService` is legal; even a future background launch can bind through the `connect()` SessionToken mechanism.
+- **connect**: `SessionToken` + `MediaController.Builder.buildAsync()` bind asynchronously; on success, `addListener` and `drainPendingActions` (replays UI commands queued while disconnected, FIFO capped at 64) run first, then `onConnected(snapshot)` fires. `PlayerMediaControllerGraph.connect` uses the first-frame snapshot to sync `controllerStateAdapter` before it triggers `onConnected` → `persistenceGraph.onControllerReady()` — **this is why the restore decision gets a trustworthy controller state**.
+- **Connection-failure fallback**: a failed connect aborts pending actions and reports `onControllerUnavailable`; `PlayerRuntime.handleControllerUnavailable` logs, writes the reason and dropped count into `errorMessage`, but **still calls `persistenceGraph.onControllerReady()`** to release the restore decision — otherwise `pendingRestore` would hang forever and the UI queue would never recover.
 
-## 阶段 2：快照恢复决策（live session 判据）
+## Phase 2: snapshot-restore decision (live-session criterion)
 
-恢复要回答的问题是：**服务端是否还有正在播放的 live session？** 回答错就会拿 DataStore 快照覆盖正在播放的会话（进度回退）或把可恢复的会话丢掉。实现收敛在 `PlayerPersistenceGraph`：
+The restore question is: **does the server still have a live playing session?** Answering wrong either overwrites a playing session with the DataStore snapshot (progress rollback) or discards a recoverable session. The implementation converges in `PlayerPersistenceGraph`:
 
-1. **两条异步线并行**：`restorePlaybackState()` 在 `dispatchers.io` 读 DataStore 并解码（`PlaybackRestoreCoordinator.restore(state().songs)` 产出 `PlaybackRestoreResult`），回到主线程写 `pendingRestore`；controller 连接成功（或失败兜底）置 `controllerReady`。**谁先完成都等另一方**，`maybeApplyRestore()` 在两个标志都就绪前不做任何决策。
-2. **live session 唯一判据**：`liveSessionActive()` = `controllerQueueInfo()?.mediaItemCount ?: 0 > 0`。刻意不用「播放位置 > 0」猜——restore 的 IO 读取可能先于 MediaController 连接完成（`buildAsync` 异步跨进程绑定），此时 `currentPlaybackPositionMs` 退化成 UI 状态值（重建后恒 0），会把 live session 误判成无会话。
-3. **双分支应用**（`PlayerPersistenceFacade.applyRestoreResult`）：
+1. **Two async lines in parallel**: `restorePlaybackState()` reads and decodes DataStore on `dispatchers.io` (`PlaybackRestoreCoordinator.restore(state().songs)` produces a `PlaybackRestoreResult`), returns to main to write `pendingRestore`; the controller connection success (or failure fallback) sets `controllerReady`. **Whichever finishes first waits for the other** — `maybeApplyRestore()` makes no decision until both flags are ready.
+2. **The sole live-session criterion**: `liveSessionActive()` = `controllerQueueInfo()?.mediaItemCount ?: 0 > 0`. It deliberately does not guess with "playback position > 0" — the restore IO read can finish before MediaController connects (`buildAsync` binds asynchronously cross-process), at which point `currentPlaybackPositionMs` degrades to a UI-state value (always 0 after a rebuild) and would misclassify a live session as none.
+3. **Two-branch apply** (`PlayerPersistenceFacade.applyRestoreResult`):
 
-| controller 队列 | 分支 | UI 侧 | controller 侧 |
+| controller queue | branch | UI side | controller side |
 | --- | --- | --- | --- |
-| 空（冷启动/服务端空会话） | **完整恢复** `restoreController=true` | 恢复 `playQueue`、无限播放状态、`currentSong`、恢复点位置、`isPlaying=false` | `prepareControllerQueue(queue, currentIndex, positionMs)` 灌队列与恢复点位置，**不自动播放** |
-| 非空（live session） | **仅 UI 队列影子** `restoreController=false` | 照常恢复队列影子 + `currentSong`/`sameNameSongs`；位置与播放状态留给连接后的 `syncControllerPlaybackState` | **绝不触碰**——不重建队列、不写位置 |
+| empty (cold start / server empty session) | **full restore** `restoreController=true` | restores `playQueue`, infinite-play state, `currentSong`, restore-point position, `isPlaying=false` | `prepareControllerQueue(queue, currentIndex, positionMs)` fills the queue and restore-point position, **no autoplay** |
+| non-empty (live session) | **UI queue shadow only** `restoreController=false` | restores the queue shadow plus `currentSong`/`sameNameSongs`; position and playing state are left to the post-connect `syncControllerPlaybackState` | **never touched** — no queue rebuild, no position write |
 
-两条不变量（详见 `/openwiki/player/state-machine.md`「反直觉硬约束三」）：
+Two invariants (detailed in `/openwiki/player/state-machine.md` "constraint three"):
 
-- **UI 队列影子在任何分支都必须恢复**：controller 的快照同步只调整 `currentIndex`、不会填充 `songs`，跳过 UI 侧会让播放队列重建后恒为空，无限播放状态一并丢失。
-- **重建队列的守卫有两道**：决策层只在无 live session 时调 `prepareControllerQueue`；`PlaybackController.prepareQueue` 内部还有第二道守卫（`mediaItemCount > 0` 直接跳过）。它是 `playQueue/prepareQueue/syncQueue` 三个队列命令中唯一允许带 live-session 守卫的地方，`playQueue` 明确禁止加（否则用户点歌请求会被静默吞掉）。
+- **The UI queue shadow must be restored in both branches**: controller snapshot sync only adjusts `currentIndex`, never fills `songs`; skipping the UI side would leave the playback queue permanently empty after a rebuild and lose the infinite-play state.
+- **Rebuilding the queue has two guards**: the decision layer only calls `prepareControllerQueue` when no live session exists; `PlaybackController.prepareQueue` carries a second guard internally (`mediaItemCount > 0` early-returns). It is the only one of the three queue commands (`playQueue`/`prepareQueue`/`syncQueue`) allowed to carry a live-session guard; `playQueue` is explicitly forbidden from adding one (otherwise a user tap-to-play request would be silently swallowed).
 
-完整恢复分支的可播会话由 `PlaybackRestoreCoordinator` 升级产出：队列当前歌曲可播放时构造 `RestoredPlayableSession(song, positionMs, sameNameSongs)`，同名版本按采样率降序，与全量恢复路径共用同一数据。
+The full-restore branch's playable session is produced by `PlaybackRestoreCoordinator`'s upgrade step: when the restored queue's current song is playable it builds `RestoredPlayableSession(song, positionMs, sameNameSongs)`, same-name versions sorted by sample rate descending, sharing the same data as the full restore path.
 
-## 阶段 3：设置队列与开播
+## Phase 3: setup queue and start playback
 
-以用户点歌/「随心播放」/歌单整播为代表的队列替换链：
+The queue-replacement chain (user song tap / "contextual play" / playlist playback):
 
-1. UI → `PlayerRuntime.setPlayQueue` → `PlayerQueueFacade.setPlayQueue`：`PlaybackQueueActionPlanner.replaceQueue` 生成新 `PlayQueue`（经 `QueueManager.createQueue` 构建 `playOrderIds`）+ `PlayQueueIndex(startIndex)` 动作 + `exitInfinitePlay` 标志。
-2. `applyPlan` 把计划写进 `PlayerUiState`（含退出无限播放、`nextPlayState` 等），随后执行播放动作 `playFromQueue(queue, index)`。
-3. `playFromQueue` 先过 `PlayerErrorFacade` 的**可播守卫**：目标歌无 uri 不开播，写「「标题」的本地文件不存在，无法播放」；可播才进 `playbackSessionGraph.startQueuePlayback`。
-4. `PlaybackSessionCoordinator.startQueuePlayback` 经 `controllerQueuePlanner::plan` 规划窗口化 controller 队列（业务队列 → 播放窗口，见 queue-architecture 页），`PlaybackController.playQueue` 以 `REPEAT_MODE_ALL` + `setMediaItems` + `prepare()` + `play()` 开播；同时 `durationTracker.startPlayback(song.id, duration)` 启动计时并返回 `trackedSongId`/`sameNameSong`。
-5. 单曲播放（如库外单点）走 `playSingle`：`REPEAT_MODE_OFF` + `setMediaItem`，同样启动跟踪。
+1. UI → `PlayerRuntime.setPlayQueue` → `PlayerQueueFacade.setPlayQueue`: `PlaybackQueueActionPlanner.replaceQueue` generates a new `PlayQueue` (built by `QueueManager.createQueue` producing `playOrderIds`) + a `PlayQueueIndex(startIndex)` action + the `exitInfinitePlay` flag.
+2. `applyPlan` writes the plan into `PlayerUiState` (including exiting infinite play and `nextPlayState`), then executes the playback action `playFromQueue(queue, index)`.
+3. `playFromQueue` first passes `PlayerErrorFacade`'s **playability guard**: a target song without a uri does not start, writing `the local file for "«title»" cannot be played`; only playable songs reach `playbackSessionGraph.startQueuePlayback`.
+4. `PlaybackSessionCoordinator.startQueuePlayback` plans the windowed controller queue via `controllerQueuePlanner::plan` (business queue → playback window, see the queue-architecture page), and `PlaybackController.playQueue` starts it with `REPEAT_MODE_ALL` + `setMediaItems` + `prepare()` + `play()`; simultaneously `durationTracker.startPlayback(song.id, duration)` starts the timer and returns `trackedSongId`/`sameNameSong`.
+5. Single-song playback (e.g. out-of-library single tap) uses `playSingle`: `REPEAT_MODE_OFF` + `setMediaItem`, same tracking start.
 
-controller 的真实状态此后经高频 `onEvents` 快照回流：`PlayerControllerStateFacade.syncControllerPlaybackState` 把快照映射回 `PlayerUiState`（mediaId → Song 解析、队列索引对齐、时长校正），并在「快照在播、解析出歌曲且 `trackedSongId != controllerSong.id`」时产出 `PlaybackStart`（每首歌只启动一次跟踪）。`isPlaying` 跃变必须补发 ticker 通知、进度渲染只走 `positionMs` 窄流等约束见 state-machine 页硬约束一/二。
+The controller's real state from there flows back through high-frequency `onEvents` snapshots: `PlayerControllerStateFacade.syncControllerPlaybackState` maps the snapshot back into `PlayerUiState` (mediaId → Song resolution, queue-index alignment, duration correction) and emits a `PlaybackStart` when "the snapshot is playing, a song resolves, and `trackedSongId != controllerSong.id`" (tracking starts once per song). The `isPlaying` transition must emit a ticker notification, and progress rendering only goes through the `positionMs` narrow flow — see constraints one/two in the state-machine page.
 
-## 阶段 4：切歌与结算路径
+## Phase 4: song change and settlement paths
 
-### Media3 事件翻译
+### Media3 event translation
 
-```mermaid
+<!-- openwiki: mermaid parse failed and this diagram was converted to a text fence so it does not break rendering. Fix the diagram source and restore the mermaid fence. Parser error: Heuristic: an unescaped angle bracket inside a label breaks rendering; rephrase the label. -->
+```text
 flowchart TD
     EV["Media3 Player.Listener"] --> TRANS["onMediaItemTransition reason AUTO SEEK REPEAT"]
-    EV --> PWR["onPlayWhenReadyChanged END_OF_MEDIA_ITEM 暂停"]
-    EV --> DISC["onPositionDiscontinuity AUTO 间断"]
+    EV --> PWR["onPlayWhenReadyChanged END_OF_MEDIA_ITEM pause"]
+    EV --> DISC["onPositionDiscontinuity AUTO discontinuity"]
     EV --> ST["onPlaybackStateChanged STATE_ENDED"]
-    TRANS --> W{"isMediaItemWrap 索引回绕判定"}
-    W -->|"是 wrapped"| ME["onMediaItemEnded songId wrapped=true"]
-    W -->|"否"| ME2["onMediaItemEnded songId wrapped=false"]
+    TRANS --> W{"isMediaItemWrap index-wrap judgment"}
+    W -->|"yes wrapped"| ME["onMediaItemEnded songId wrapped=true"]
+    W -->|"no"| ME2["onMediaItemEnded songId wrapped=false"]
     PWR --> ME3["onMediaItemEnded null false"]
-    DISC --> RW{"isSingleItemLoopRewind 命中"}
-    RW -->|"是"| ME4["onMediaItemEnded songId false"]
+    DISC --> RW{"isSingleItemLoopRewind hit"}
+    RW -->|"yes"| ME4["onMediaItemEnded songId false"]
     ME --> H["handleMediaItemEnded"]
     ME2 --> H
     ME3 --> H
     ME4 --> H
-    ST --> PE["handlePlaybackEnded 仅置 isPlaying=false 位置归零"]
-    H --> STOP["stopPlayback 结算旧曲目并清 trackedSongId"]
-    STOP --> RE{"无限播放且 wrapped 或剩余 ≤ 5"}
-    RE -->|"是"| REFILL["refillInfinitePlayQueue"]
-    RE -->|"否"| MODE
+    ST --> PE["handlePlaybackEnded only sets isPlaying=false position zeroed"]
+    H --> STOP["stopPlayback settles old track and clears trackedSongId"]
+    STOP --> RE{"infinite play and wrapped or remaining <= 5"}
+    RE -->|"yes"| REFILL["refillInfinitePlayQueue"]
+    RE -->|"no"| MODE
     REFILL --> MODE["restorePlayModeAfterNextSong"]
-    MODE --> SLEEP["onSongEnded 播完最后一曲收尾"]
-    STOP --> NEXT["下一帧快照产出 PlaybackStart raw 次数加一 新会话计时"]
+    MODE --> SLEEP["onSongEnded wrap up after final song"]
+    STOP --> NEXT["next snapshot emits PlaybackStart raw count +1 and new session timer"]
 ```
 
-*切歌与结算：四类 Media3 信号全部汇入 `handleMediaItemEnded`（或终态收尾），该入口按固定顺序完成「结算旧曲目 → 无限补队列 → 恢复 add-next 模式 → 定时关闭钩子」，随后下一帧快照以新会话重新开始跟踪。*
+*Song change and settlement: all four Media3 signal classes flow into `handleMediaItemEnded` (or the terminal wrap-up); that entry runs the fixed sequence "settle old track → infinite refill → restore add-next mode → sleep-timer hook", then the next snapshot resumes tracking as a new session.*
 
-翻译规则要点：
+Translation-rule highlights:
 
-- **回绕按索引判定而非 reason**：`isMediaItemWrap`（新索引 0、旧索引是窗口最后一首）——Media3 对 `REPEAT_MODE_ALL` 尾部回绕上报 `SEEK`（手动下一首）或 `AUTO`（自然结束），`REPEAT` 只表示单曲重复。`wrapped` 标志是无限补队列的触发器（回绕后剩余数量重新变大，仅靠剩余阈值会漏补）。
-- **手动切歌也走同一入口**：耳机/锁屏/通知栏的 SEEK 切歌若不进 `onMediaItemEnded`，无限播放不会补队列；`PLAYLIST_CHANGED` 是应用自身重建窗口产生的，不触发。
-- **`STATE_ENDED`（队列尽头自然停下）只做 UI 收尾**：`handlePlaybackEnded` 置 `isPlaying=false`、位置 0，不参与结算。
+- **Wrap is decided by index, not reason**: `isMediaItemWrap` (new index 0, previous index was the window's last item) — Media3 reports the `REPEAT_MODE_ALL` tail wrap as `SEEK` (manual next) or `AUTO` (natural end), while `REPEAT` only means single-item repeat. The `wrapped` flag is the infinite-refill trigger (after a wrap the remaining count grows large again, so a threshold-only rule would miss the refill).
+- **Manual next goes through the same entry**: headset/lock-screen/notification SEEK skips must reach `onMediaItemEnded` or infinite play would never refill; `PLAYLIST_CHANGED` (the app's own window rebuild) does not trigger it.
+- **`STATE_ENDED` (natural stop at queue end) only does UI wrap-up**: `handlePlaybackEnded` sets `isPlaying=false`, position 0, and does not settle.
 
-### `handleMediaItemEnded` 的固定副作用序列
+### The fixed side-effect sequence of `handleMediaItemEnded`
 
-`PlayerMediaEventFacade.handleMediaItemEnded(startedSongId, wrapped)` 依次：
+`PlayerMediaEventFacade.handleMediaItemEnded(startedSongId, wrapped)` in order:
 
-1. **停止旧曲目跟踪**：`stopPlaybackTracking()`（触发 `PlayDurationTracker.stopPlayback` → 结算，见下节）+ `clearTrackedSong()`。清 `trackedSongId` 是「每首歌只启动一次跟踪」的另一半：下一首歌的快照才能再次产出 `PlaybackStart`。
-2. **无限补队列**：处于无限播放且（`wrapped` 或 `remainingMediaItems() <= DEFAULT_REFILL_THRESHOLD = 5`）时 `refillInfinitePlayQueue(startedSongId, advanceAfterWrap = wrapped)`。`advanceAfterWrap` 把当前项跳到第一首新补充的歌并从 0 开始播，避免回绕后重播旧窗口；普通扩展则 `syncPlayerQueue` 同步窗口。细节见 `/openwiki/player/random-and-infinite.md`。
-3. **恢复 add-next 播放模式**：`QueueManager.restorePlayModeAfterNextSong` 仅当「当前歌 == `nextPlaySongId`」时把队列模式恢复为 `playModeBeforeNext`、用 `startedSongId` 校正业务队列当前项、清空临时标志，并 `syncPlayerQueue` 重排窗口。
-4. **定时关闭钩子**：`onSleepTimerSongEnded()` 处理「播完最后一曲」的到点暂停（见阶段 6）。
+1. **Stop old-track tracking**: `stopPlaybackTracking()` (triggers `PlayDurationTracker.stopPlayback` → settlement, see next section) + `clearTrackedSong()`. Clearing `trackedSongId` is the other half of "track once per song": only the next song's snapshot can emit another `PlaybackStart`.
+2. **Infinite refill**: while in infinite play and (`wrapped` or `remainingMediaItems() <= DEFAULT_REFILL_THRESHOLD = 5`) call `refillInfinitePlayQueue(startedSongId, advanceAfterWrap = wrapped)`. `advanceAfterWrap` jumps the current item to the first newly-refilled song and starts it from 0, avoiding a replay of the old window after a wrap; a normal expansion calls `syncPlayerQueue` to sync the window. Details in `/openwiki/player/random-and-infinite.md`.
+3. **Restore the add-next play mode**: `QueueManager.restorePlayModeAfterNextSong` only when "current song == `nextPlaySongId`" restores the queue mode to `playModeBeforeNext`, corrects the business queue's current item with `startedSongId`, clears the temp flags, and `syncPlayerQueue` re-orders the window.
+4. **Sleep-timer hook**: `onSleepTimerSongEnded()` handles the "pause after the final song" deadline (see Phase 6).
 
-### 非无限队列的窗口回灌
+### Window refill for non-infinite queues
 
-快照同步本身兼任回灌触发点：`PlayerRuntime` 给 `onControllerPlaybackSynced` 接的钩子在「业务队列非空、未处于无限播放、controller 剩余媒体项 ≤ 5」时调用 `syncPlayerQueue` 把业务队列重新灌给 controller，保证顺序播放模式下接近窗口尾时窗口自动续上。
+Snapshot sync doubles as a refill trigger point: the hook `PlayerRuntime` wires to `onControllerPlaybackSynced` calls `syncPlayerQueue` when "the business queue is non-empty, not in infinite play, and the controller's remaining media items ≤ 5", re-feeding the business queue to the controller so a sequential play mode auto-tops up its window near the tail.
 
-## 阶段 5：时长统计与秒切闭环
+## Phase 5: duration tracking and quick-skip loop
 
-`PlayDurationTracker`（`:player`，经 `PlaybackDurationMonitorFactory` 注入）是结算的执行者，全部 Room 写操作走独立 `SupervisorJob + Dispatchers.IO` scope（普通 Job 下一次 Room 异常会杀死整个 scope，「播放不计次」且无日志——M-5 整改）：
+`PlayDurationTracker` (`:player`, injected via `PlaybackDurationMonitorFactory`) is the settlement executor; all Room writes run on a dedicated `SupervisorJob + Dispatchers.IO` scope (a plain Job would let one Room exception kill the whole scope, silently dropping "play count" without logs — the M-5 fix):
 
-- **计时粒度**：1s tick（`UPDATE_INTERVAL_MS = 1000`）只在 `isPlaying && !isSeeking` 时累计；seek 期间不计入、结束后重置时间戳。
-- **新会话**：`startPlayback(songId, durationMs, initialPlayedMs)` 先结算上一首，再对新歌 `incrementRawPlayCount(+1)`（原始播放次数）；`initialPlayedMs` 把杀进程恢复点之前已播的时长计入基数，避免「被杀前已播 + 恢复后听完」却因计时器归零不满足完播阈值。
-- **有效播放判定**（`stopPlayback` → `settlePlayback`，IO 协程）：累计达歌曲时长 **90%**（`COMPLETION_RATE_THRESHOLD = 0.9`）**或超 5 分钟**（长歌兜底）计一次有效播放 `increment(songId)`。
-- **秒切联动**：
-  - 秒切列表中的歌**达标（有效播放）后自动移出列表**并重置短播计数——用户听过整首就不再被视为「想跳过」；
-  - **< 5 秒**（`SHORT_PLAY_THRESHOLD_MS = 5000`）的短播累计 2 次（`SHORT_PLAY_COUNT_THRESHOLD = 2`）自动加入秒切列表——反复点开即跳过的歌被系统归入秒切。
-- **会话记录**：有正向时长的播放都 `recordPlaybackSession`（startedAt 由时长反推），供今日/本周/本月统计聚合。
+- **Tick granularity**: 1s tick (`UPDATE_INTERVAL_MS = 1000`) accumulates only while `isPlaying && !isSeeking`; seek windows are excluded and the timestamp resets afterward.
+- **New session**: `startPlayback(songId, durationMs, initialPlayedMs)` settles the previous track, then `incrementRawPlayCount(+1)` (raw play count) for the new song; `initialPlayedMs` seeds the pre-kill restore-point listening time into the base so "already played before the kill + finished after restore" still meets the completion threshold instead of zeroing the timer.
+- **Effective-play judgment** (`stopPlayback` → `settlePlayback`, IO coroutine): accumulated time reaching **90%** of the song duration (`COMPLETION_RATE_THRESHOLD = 0.9`) **or over 5 minutes** (long-song fallback) counts one effective play `increment(songId)`.
+- **Quick-skip linkage**:
+  - A song on the quick-skip list is **auto-removed after an effective play** and its short-play counter resets — once the user has listened all the way through, it is no longer treated as "wants to skip";
+  - a **< 5s** (`SHORT_PLAY_THRESHOLD_MS = 5000`) short play accumulated 2 times (`SHORT_PLAY_COUNT_THRESHOLD = 2`) auto-adds the song to the quick-skip list — songs repeatedly opened and skipped get classified by the system.
+- **Session records**: any play with positive duration calls `recordPlaybackSession` (startedAt derived from the duration), feeding today/week/month aggregation.
 
-**单项队列循环回绕是秒切场景的结算差异所在**：`REPEAT_MODE_ALL` 下队列只剩一首歌（秒切/歌单/专辑/歌手只剩一首）时，自然播完回绕到同一项，窗口索引 0→0 不变，Media3 **不触发 `onMediaItemTransition`**——结算逻辑（有效播放 +1、达标移出秒切列表）永远不会执行，且计时器跨循环累计。`PlaybackController` 用 `isSingleItemLoopRewind` 从 `onPositionDiscontinuity` 兜底识别：`AUTO` 间断 + 单项窗口 + 0→0 + 新位置 ≤ 2s + 旧位置接近结尾（时长已知按 `duration − 5s` 精判，未知回退 30s 保守阈值，缓冲重连不产生回 0 的 AUTO 间断，手动拖回开头是 SEEK 原因不误判）。识别后主动按一次播完结算，之后以新会话继续循环计时。
+**Single-item queue loop-wrap is the settlement difference for the quick-skip scenario**: under `REPEAT_MODE_ALL` a queue reduced to one song (quick-skip/playlist/album/artist with one left) wraps back to the same item with window index 0→0 unchanged, so Media3 **never fires `onMediaItemTransition`** — settlement (effective play +1, removal from the quick-skip list) would never run and the timer accumulates across loops. `PlaybackController` uses `isSingleItemLoopRewind` from `onPositionDiscontinuity` as the fallback: `AUTO` discontinuity + single-item window + 0→0 + new position ≤ 2s + old position near the end (precise via `duration − 5s` when duration is known, conservative ≥ 30s otherwise; buffering reconnection does not produce a back-to-0 AUTO discontinuity, and a manual scrub to the start is a SEEK reason, not a false positive). After detecting it, it settles the finished play once, then continues loop timing as a new session.
 
-## 阶段 6：会话内旁路
+## Phase 6: in-session bypaths
 
-### 定时关闭（SleepTimerCoordinator）
+### Sleep timer (SleepTimerCoordinator)
 
-- **设置**：`start(minutes, playLastSong)` 把结束时间戳与「播完最后一曲」标志持久化（DataStore），写离散 UI 状态并启动每秒 ticker。
-- **窄流纪律（M-6）**：倒计时每秒 tick **只写 `sleepTimerRemainingMs` 窄流**（仅定时关闭 Chip 局部订阅），不再写主 UiState——否则倒计时激活期间整壳每秒重组。离散事件（启动/取消/到期）才走 `updateState`。
-- **播完最后一曲模式**：到点时若 `playLastSong` 且正在播放，`fire()` 只置 `sleepTimerPausePending` 并**显式复位窄流**，等当前歌曲自然结束——该结束信号正是阶段 4 `handleMediaItemEnded` 末尾的 `onSleepTimerSongEnded()`：pending 时暂停并取消。
-- **取消/到点必须显式复位窄流**：tick 值不在 uiState，`NarrowFlowSync` 的值对比感知不到归零，cancel 与 fire 都要调 `resetSleepTimerNarrowFlow`，否则 Chip 上残留倒计时（2026-09-03 回归修复）。
-- **跨重启恢复**：`restore()` 在启动时读持久化的 `endAtMs`——已过期直接清零，未过期则恢复激活状态与 ticker。这就是 `PlayerRuntime.start()` 在 IO 线程做的「定时器恢复」。
+- **Setup**: `start(minutes, playLastSong)` persists the end timestamp and the "play the last song" flag (DataStore), writes discrete UI state, and starts a per-second ticker.
+- **Narrow-flow discipline (M-6)**: the countdown's per-second tick **only writes the `sleepTimerRemainingMs` narrow flow** (subscribed only by the sleep-timer Chip), never the main UiState — otherwise the whole shell recomposes every second during an active countdown. Discrete events (start/cancel/expiry) go through `updateState`.
+- **Play-the-last-song mode**: at the deadline, when `playLastSong` and playing, `fire()` only sets `sleepTimerPausePending` and **explicitly resets the narrow flow**, waiting for the current song's natural end — that end signal is exactly the `onSleepTimerSongEnded()` at the tail of Phase 4's `handleMediaItemEnded`: while pending, pause and cancel.
+- **Cancel/expiry must explicitly reset the narrow flow**: tick values are not in uiState, so `NarrowFlowSync`'s value comparison cannot observe a zeroing; both cancel and fire call `resetSleepTimerNarrowFlow`, otherwise a stale countdown remains on the Chip (2026-09-03 regression fix).
+- **Cross-restart restore**: `restore()` reads the persisted `endAtMs` at startup — an expired one is zeroed directly, an unexpired one restores the active state and ticker. This is the "timer restore" `PlayerRuntime.start()` runs on the IO thread.
 
-### 蓝牙断连暂停
+### Bluetooth disconnect pause
 
-`BluetoothPlaybackCoordinator`（`:player`，实现 `:domain` 的 `BluetoothPlaybackMonitor`）收敛两条自动暂停规则：
+`BluetoothPlaybackCoordinator` (`:player`, implements `:domain`'s `BluetoothPlaybackMonitor`) collapses two auto-pause rules:
 
-1. **蓝牙断连暂停**：`wasPlayingThroughBluetooth && !state.isA2dpConnected && isPlaying()` 才调 `pausePlayback()`——「之前经蓝牙在播、A2DP 刚断、还在播」三个条件同时满足，避免误伤从未经蓝牙的会话；
-2. **音频中断暂停**：`onAudioInterrupted` 且在播时暂停。
+1. **Bluetooth disconnect pause**: `wasPlayingThroughBluetooth && !state.isA2dpConnected && isPlaying()` only then calls `pausePlayback()` — all three conditions ("was playing through Bluetooth, A2DP just dropped, still playing") must hold, protecting sessions that never went through Bluetooth;
+2. **Audio-interruption pause**: pause when `onAudioInterrupted` fires while playing.
 
-`isPlaying`/`pausePlayback` 都是构造注入的 lambda（`PlayerRuntime` 接到 `_uiState.value.isPlaying` 与 `playbackBridgeFacade.pausePlayback()`），协调器不依赖运行时。**初始化是用户设置门控的**：启动时仅当持久化开关为 true 才 `bluetoothGraph.initialize()`；用户在设置页开启时走 `initializeBluetoothPlayback()`（写设置 + 更新 uiState + 初始化图）。架构门禁要求 `PlayerStartupFacade` 不得提及蓝牙、启动路径不得请求蓝牙权限。
+`isPlaying`/`pausePlayback` are constructor-injected lambdas (`PlayerRuntime` wires them to `_uiState.value.isPlaying` and `playbackBridgeFacade.pausePlayback()`), so the coordinator does not depend on the runtime. **Initialization is user-setting gated**: at startup it initializes only when the persisted switch is true; enabling it from the Settings page goes through `initializeBluetoothPlayback()` (writes the setting + updates uiState + initializes the graph). The architectural gate requires `PlayerStartupFacade` never mention Bluetooth, and the startup path never request Bluetooth permission.
 
-### 会话收尾（ViewModel 销毁）
+### Session wrap-up (ViewModel destruction)
 
-`PlayerRuntime.onCleared` → `PlayerLifecycleFacade.onCleared` 按固定顺序收尾：同步一次 controller 快照 → 保存播放状态 → 释放 playback controller → 释放蓝牙监听 → 释放时长跟踪器（内部结算在播曲目）→ 停止进度 ticker。服务启动侧则包在 try/log 里，失败不崩溃。
+`PlayerRuntime.onCleared` → `PlayerLifecycleFacade.onCleared` wraps up in a fixed order: sync one controller snapshot → save playback state → release the playback controller → release Bluetooth monitoring → release the duration tracker (internally settles the playing track) → stop the progress ticker. The service-start side is wrapped in try/log so a failure never crashes.
 
-## 阶段 7：进程被杀后的恢复闭环
+## Phase 7: recovery loop after process death
 
-崩溃/杀进程前的落盘由**三条独立路径**承担（进度渲染的 200ms 节拍本身不触碰磁盘）：
+Three **independent paths** cover the pre-crash/kill write (the 200ms progress-render beat itself never touches disk):
 
-1. **周期兜底**：`PlayerPlaybackProgressTicker`（200ms，只写 `positionMs` 窄流）每次直写同时喂 `persistenceGraph.onPlaybackPosition` → `PlayerPlaybackStateAutosaver` 按 `SystemClock.elapsedRealtime` 节流到**每 5 秒**（`DEFAULT_INTERVAL_MS`，崩溃恢复粒度）执行 `syncPlaybackState()`（拉一次最新 controller 快照校正状态）+ `savePlaybackStateAsync`。
-2. **离散事件保存**：暂停（真实暂停才落盘，buffering 抖动不算）、队列操作、切歌等显式触发 `savePlaybackStateAsync`——先在调用线程捕获位置，再把 DataStore 写移到 IO。
-3. **服务端退出快照**：`AppMediaSessionService` 在 `onDestroy`/`onTaskRemoved` 调 `saveCurrentPlaybackSnapshot`：songId 与位置在调用线程**同步读取**（ExoPlayer 只能在其应用线程访问），DataStore 写入挂到进程级 `ApplicationScope` 协程（挂起版 `persistCurrentPlaybackSnapshot`）——只覆写 `CURRENT_SONG_ID` 与 `PLAY_POSITION_MS` 并**保留队列 JSON**，服务实例销毁后落盘协程仍能跑完。
+1. **Periodic fallback**: `PlayerPlaybackProgressTicker` (200ms, writes only the `positionMs` narrow flow) feeds the same tick into `persistenceGraph.onPlaybackPosition` → `PlayerPlaybackStateAutosaver` throttles to **every 5 seconds** (`DEFAULT_INTERVAL_MS`, crash-recovery granularity) measured by `SystemClock.elapsedRealtime`, executing `syncPlaybackState()` (pulls one latest controller snapshot to correct state) then `savePlaybackStateAsync`.
+2. **Discrete-event save**: pause (only a real pause persists, buffering jitter does not), queue operations, song changes, etc. explicitly trigger `savePlaybackStateAsync` — it first captures the position **and the full UI state snapshot** on the calling thread, then moves the DataStore write to IO.
+3. **Server-exit snapshot**: `AppMediaSessionService` in `onDestroy`/`onTaskRemoved` calls `saveCurrentPlaybackSnapshot`: songId and position are read **synchronously** on the calling thread (ExoPlayer is only accessible on its application thread), while the DataStore write is attached to the process-level `ApplicationScope` coroutine (the suspend `persistCurrentPlaybackSnapshot`) — which overwrites only `CURRENT_SONG_ID` and `PLAY_POSITION_MS` and **preserves the queue JSON** — so the write completes after the service instance is destroyed.
 
-`PlaybackStateStore` 还有一条**空会话保护**：队列空、无无限播放、无 currentSongId 的保存跳过写入但**保留已有快照**——UI 重建窗口存在瞬时「全空」状态，若按旧逻辑 clear 会把 5 秒前落盘的有效快照删掉，导致重启后播放队列恒为空。显式清空（用户清队列）走 `clearPlaybackState()`。
+`PlaybackStateStore` also has an **empty-session protection** with three sub-branches when the queue is empty and infinite play is off:
 
-重启后的闭环回到阶段 2 的双分支：
+- **existing queue JSON present + a current song**: keep the existing queue, update only the current song and position — the transient "all-empty and has currentSong" beat during a live-session reconnect would otherwise write the queue JSON as an empty array over the valid snapshot written 5 seconds earlier, and every later process kill would restore an empty queue;
+- **no existing snapshot + a current song**: write an empty queue plus song and position, so restore falls back to a single-song queue by `currentSongId`;
+- **all empty + no snapshot**: write nothing (also keeps the legacy migration fallback); explicit clearing (user clears the queue / ends playback) goes through `clearPlaybackState()`.
 
-- **进程死了、服务也死了**：controller 队列为空 → 完整恢复分支，队列与恢复点位置灌回 controller 但不自动播放（等用户按播放），`isPlaying=false`。
-- **服务还活着**（息屏/后台回来、ViewModel 重建）：非空 live session → 只回填 UI 队列影子，真实位置与播放状态由首帧快照同步带回，ticker 由 `syncControllerPlaybackState` 的 isPlaying 跃变通知拉起。
-- **统计不断档**：恢复后首个 `PlaybackStart` 把快照位置作为 `initialPlayedMs` 传入 `PlayDurationTracker`，被杀前的收听时长计入结算基数。
-- **定时器不断档**：未过期的定时关闭由 `restore()` 恢复倒计时。
+The post-restart loop returns to Phase 2's two branches:
 
-## 测试锚点
+- **Process dead and service dead**: controller queue empty → full-restore branch: queue and restore-point position are reloaded into the controller without autoplay (waiting for the user to press play), `isPlaying=false`.
+- **Service still alive** (screen-off/background return, ViewModel rebuild): non-empty live session → only the UI queue shadow is backfilled; the real position and playing state come back via the first-frame snapshot sync, and the ticker is started by `syncControllerPlaybackState`'s isPlaying transition notification.
+- **Stats do not break**: after restore the first `PlaybackStart` passes the snapshot position as `initialPlayedMs` into `PlayDurationTracker`, so pre-kill listening time counts toward settlement.
+- **Timer does not break**: an unexpired sleep timer is restored by `restore()` countdown.
 
-改本页覆盖的任一环节前，先跑对应窄验证（命令见 `/openwiki/testing/test-map.md`）：
+## Test anchors
 
-- **`PlayerStartupFacadeTest`**——锁定开机步骤的精确顺序，含「恢复读取在曲库首快照之后触发」。
-- **`PlayerPersistenceFacadeTest`**——锁定「异步保存先捕获位置再移 IO」、完整恢复应用队列与可播会话、**live session 下仅恢复 UI 队列而 controller 完全不被触动**（位置与 isPlaying 不被覆盖）、无限播放状态恢复、队列索引陈旧时仍按 currentSong 落盘。
-- **`PlayerMediaEventFacadeTest`**——锁定 `handleMediaItemEnded` 副作用序列：停止跟踪/清 trackedSongId、尾部与回绕触发补队列（含回绕即使在剩余充足时也补）、非无限模式不补、add-next 模式恢复并同步队列。
-- **`PlayerPlaybackStateAutosaverTest`**——锁定保存节流：首次立即、之后按间隔节流、`reset` 放行下一次。
-- **`PlayerSleepTimerCoordinatorTest`**——锁定窄流交互回归：cancel 归零必须走显式复位入口、start 写离散状态并持久化 endAt、播完最后一曲只置 pending 不立即取消、`onSongEnded` 才暂停收尾。
-- **`MediaItemWrapDetectionTest`**（`:player`）——锁定索引回绕判定的全部边界：尾→0 命中、顺序前进/单步后退/未知前索引/新索引非 0 排除、2 首小窗口倒退视为回绕（补队列 planner 自动去重，误判无害）、空/单项窗口不可能回绕。
-- 配套：`SingleItemLoopRewindDetectionTest`（`:player`）锁定单项循环回绕判定的阈值边界与「手动 seek 不得计为播完」防刷用例。
+Before changing any part this page covers, run the matching narrow verification (commands in `/openwiki/testing/test-map.md`):
 
-## 相关页面
+- **`PlayerStartupFacadeTest`** — locks the exact boot-step order, including "restore read runs after the library's first snapshot".
+- **`PlayerPersistenceFacadeTest`** — locks "async save captures the snapshot/position before moving to IO", full-restore application of queue and playable session, **the live-session UI-queue-only restore with the controller completely untouched** (position and isPlaying not overwritten), infinite-play state restore, and falling back to currentSong when the queue index is stale.
+- **`PlayerPersistenceGraphTest`** — locks the restore handshake in both orders (restore-read-first vs controller-ready-first), live-session UI-only restore, connection-failure fallback releasing the decision, and no-snapshot applying nothing; this logic is the cluster for four past regressions.
+- **`PlayerMediaEventFacadeTest`** — locks `handleMediaItemEnded`'s side-effect sequence: stop tracking/clear trackedSongId, tail and wrap triggering refill (including wrap-with-sufficient-remaining), non-infinite no refill, add-next mode restore with queue sync.
+- **`PlayerPlaybackStateAutosaverTest`** — locks save throttling: first immediate, then throttled by interval, `reset` allowing the next.
+- **`PlayerPlaybackSessionGraphTest`** — locks startQueuePlayback/prepareQueue/single playback session behavior.
+- **`PlayerSleepTimerCoordinatorTest`** — locks the narrow-flow interaction regression: cancel zeroing must go through the explicit reset entry, start writes discrete state and persists endAt, play-last-song only sets pending instead of cancelling immediately, `onSongEnded` then pauses.
+- **`MediaItemWrapDetectionTest`** (`:player`) — locks every index-wrap boundary: tail→0 hit, sequential-forward/single-back/unknown-previous-index/new-index-not-0 excluded, 2-song small-window backward treated as wrap (the refill planner de-duplicates automatically, so a false positive is harmless), empty/single-item windows can never wrap.
+- Companion: `SingleItemLoopRewindDetectionTest` (`:player`) locks the single-item loop-wrap judgment's threshold boundaries and the "manual seek must not count as a finished play" anti-cheat case.
 
-- `/openwiki/player/state-machine.md` —— 播放状态机、快照映射与恢复决策的规范不变量。
-- `/openwiki/player/queue-architecture.md` —— 业务队列与 controller 窗口的双队列模型与逐操作同步流程。
-- `/openwiki/player/random-and-infinite.md` —— 随机/无限补队列的 planner 语义与 `advanceAfterWrap`。
-- `/openwiki/player/runtime-facades.md` —— `PlayerRuntime` 组合根与 18 个 facade 的职责目录。
-- `/openwiki/player/service-and-controller.md` —— 服务端生命周期、pending actions、事件翻译与蓝牙组件。
+## Related pages
+
+- `/openwiki/player/state-machine.md` — canon invariants for the playback state machine, snapshot mapping, and restore decisions.
+- `/openwiki/player/queue-architecture.md` — the dual-queue model (business queue vs controller window) and per-operation sync flow.
+- `/openwiki/player/random-and-infinite.md` — random/infinite refill planner semantics and `advanceAfterWrap`.
+- `/openwiki/player/runtime-facades.md` — the `PlayerRuntime` composition root and the responsibility catalog of its facades.
+- `/openwiki/player/service-and-controller.md` — server lifecycle, pending actions, event translation, and Bluetooth components.

@@ -1,14 +1,11 @@
 ---
 type: Operations
-title: 构建、校验与发布运维
-description: 汇总 debug/release/benchmark 三种构建变体与常用命令矩阵、verifyProductArchitecture 全量规则清单、Room schema 导出流程、Baseline Profile 与 Macrobenchmark 运维、release 签名/ABI/R8 发布约束，以及关键版本兼容规则，作为提交前和发布前的操作手册。
+title: Build, Verification & Release Operations
+description: Aggregates the debug/release/benchmark build variants and command matrix, the full verifyProductArchitecture rule checklist, the Room schema export flow, Baseline Profile & Macrobenchmark operations, release signing/ABI/R8 constraints, and key version-compability rules — the pre-commit and pre-release runbook for melody-in-heart.
 tags: [android, gradle, build, verification, release, baseline-profile, architecture-gate, room, macrobenchmark]
-verified:
-  - by: openwiki/0.5.0
-    at: 2026-09-07T13:49:59.042Z
 sources:
-  - id: openwiki-source-6d4b4e707b8d60b6ccfa3425
-    resource: repo://.github/workflows/openwiki-update.yml
+  - id: openwiki-source-4d1d392666be6dfdd7a91a2e
+    resource: repo://.github/workflows/release.yml
   - id: openwiki-source-ea70eb6c045047448e446296
     resource: repo://.gitignore
   - id: openwiki-source-8037e2358a2c4f9b2c722a11
@@ -31,6 +28,8 @@ sources:
     resource: repo://app/src/main/res/xml/data_extraction_rules.xml
   - id: openwiki-source-1c484cbac1560c88d6bddc5f
     resource: repo://benchmark/build.gradle.kts
+  - id: openwiki-source-56b6a52542b58a12030ef3ee
+    resource: repo://benchmark/src/main/java/cn/com/dcsgo/mihx/benchmark/BaselineProfileGenerator.kt
   - id: openwiki-source-4dc68853faeaaf9aef56e78b
     resource: repo://benchmark/src/main/java/cn/com/dcsgo/mihx/benchmark/ScrollBenchmark.kt
   - id: openwiki-source-f90eb2ce767b9455d448efd3
@@ -75,115 +74,128 @@ sources:
     resource: repo://player/src/test/java/cn/com/dcsgo/mihx/player/window/PlaybackWindowPerformanceShapeTest.kt
   - id: openwiki-source-e620d7484b72a53c7fa812cd
     resource: repo://settings.gradle.kts
-generated: { by: "openwiki/0.5.0", at: "2026-09-07T13:49:59.042Z" }
+generated: { by: "openwiki/0.5.0", at: "2026-10-10T11:15:45.800Z" }
+verified:
+  - by: openwiki/0.5.0
+    at: 2026-10-10T11:15:45.800Z
 ---
 
-# 构建、校验与发布运维
+# Build, Verification & Release Operations
 
-本页是 `melody-in-heart`（applicationId `cn.com.dcsgo.mihx`）提交前与发布前的操作手册。所有质量门槛由两条机制承担：**命令矩阵**（Gradle 生命周期任务）与 **`verifyProductArchitecture`**（根 `build.gradle.kts` 中约 580 行的自定义校验任务，在每次 `check` 时对全仓库源码树做静态断言）。模块边界的设计动机见 `/openwiki/architecture/module-graph.md`，Room/DataStore 细节见 `/openwiki/architecture/data-persistence.md`。
+This page is the pre-commit and pre-release runbook for `melody-in-heart` (applicationId `cn.com.dcsgo.mihx`). Every quality gate is carried by two mechanisms: the **command matrix** (Gradle lifecycle tasks) and **`verifyProductArchitecture`** (a ~580-line custom verification task in the root `build.gradle.kts` that statically asserts the whole source tree on every `check`). The design rationale for the module boundaries lives in `/openwiki/architecture/module-graph.md`; Room/DataStore details live in `/openwiki/architecture/data-persistence.md`.
 
-## 1. 提交前命令矩阵
+## 1. Pre-commit command matrix
 
-所有命令在项目根目录执行，Windows 用 `.\gradlew.bat`，macOS/Linux 用 `./gradlew`。
+All commands run from the project root; use `.\gradlew.bat` on Windows and `./gradlew` on macOS/Linux.
 
-### 1.1 三种构建变体
+### 1.1 The three build variants
 
-| 变体 | 定义位置 | 关键差异 |
+| Variant | Definition | Key differences |
 | --- | --- | --- |
-| `debug`（默认） | `buildTypes { debug { ... } }` | 不做混淆/收缩；`applicationIdSuffix = ".debug"` + `versionNameSuffix = "-debug"`，可与 release 同机共存安装；保留全 ABI 以兼容模拟器 |
-| `release` | `buildTypes { release { ... } }` | `isMinifyEnabled = true`（R8）+ `isShrinkResources = true` + `proguard-android-optimize.txt`；`ndk.abiFilters += "arm64-v8a"` 仅出 64 位包；`resConfigs("zh", "en")` 裁剪依赖库翻译资源 |
-| `benchmark` | `create("benchmark")` | `initWith(getByName("release"))` 继承 release 全部设置，但改用 **debug 签名**、`isDebuggable = false`；在继承的 `arm64-v8a` 之上追加 `x86_64`（真机 + x86_64 模拟器都要能跑）；`matchingFallbacks += listOf("release")` |
+| `debug` (default) | `buildTypes { debug { ... } }` | No minification/shrinking; `applicationIdSuffix = ".debug"` + `versionNameSuffix = "-debug"` so it can be installed alongside release on the same device; keeps full ABI for emulator compatibility |
+| `release` | `buildTypes { release { ... } }` | `isMinifyEnabled = true` (R8) + `isShrinkResources = true` + `proguard-android-optimize.txt`; `ndk.abiFilters += "arm64-v8a"` ships a 64-bit only package; `resConfigs("zh", "en")` trims dependency-library translation resources |
+| `benchmark` | `create("benchmark")` | `initWith(getByName("release"))` inherits all release settings but uses **debug signing** and `isDebuggable = false`; appends `x86_64` on top of the inherited `arm64-v8a` (must run on both real devices and x86_64 emulators); `matchingFallbacks += listOf("release")` |
 
-### 1.2 常用命令
+### 1.2 Common commands
 
 ```bash
-# 构建 APK
+# Build APK
 .\gradlew.bat :app:assembleDebug
 .\gradlew.bat :app:assembleRelease
 .\gradlew.bat :app:assembleBenchmark
 
-# 单模块快速编译（不打包 APK，改代码后最快反馈）
+# Single-module fast compile (no APK; fastest feedback after a change)
 .\gradlew.bat :data:compileDebugKotlin
 .\gradlew.bat :player:compileDebugKotlin
+.\gradlew.bat :core:skin:compileDebugKotlin
 
-# 全量 JVM 单元测试（无需设备；覆盖 debug/release/benchmark 单测变体）
+# Full JVM unit tests (no device; covers debug/release/benchmark test variants)
 .\gradlew.bat test
 
-# 单模块 / 单测试类
+# Single module / single test class
+.\gradlew.bat :core:skin:test
 .\gradlew.bat :player:test --tests "cn.com.dcsgo.mihx.player.window.ControllerQueuePlannerTest"
 
-# 需要真机或模拟器的测试
-.\gradlew.bat :app:connectedAndroidTest      # Compose instrumentation 测试
-.\gradlew.bat :benchmark:connectedCheck      # Macrobenchmark（含 Baseline Profile 生成）
+# Tests requiring a device or emulator
+.\gradlew.bat :app:connectedAndroidTest   # Compose instrumentation tests
+.\gradlew.bat :benchmark:connectedCheck   # Macrobenchmark (includes Baseline Profile generation)
 
-# 格式化与架构门槛
-.\gradlew.bat spotlessCheck                  # 只查格式
-.\gradlew.bat spotlessApply                  # 自动格式化
-.\gradlew.bat verifyProductArchitecture      # 只查架构/隐私/发布约束
-.\gradlew.bat check                          # 提交前全量门槛
+# Formatting and architecture gates
+.\gradlew.bat spotlessCheck              # format check only
+.\gradlew.bat spotlessApply              # auto-format
+.\gradlew.bat verifyProductArchitecture  # architecture/privacy/release constraints only
+.\gradlew.bat check                      # full pre-commit gate
 ```
 
-`connectedAndroidTest` 与 `:benchmark:connectedCheck` 必须有真机/模拟器；MIUI 真机可能因 ROM 限制无法跑 macrobenchmark 的自动授权/帧确认步骤（见 `docs/refactor/PRODUCT_REFACTOR_AUDIT.md`）。
+`:app:generateBaselineProfile` regenerates the Baseline Profile (see §4). `connectedAndroidTest` and `:benchmark:connectedCheck` require a real device/emulator; MIUI real devices may be unable to run Macrobenchmark's automatic authorization/frame-confirmation steps because of ROM limitations (see `docs/refactor/PRODUCT_REFACTOR_AUDIT.md`).
 
-### 1.3 `check` 聚合了什么
+### 1.3 What `check` aggregates
 
-根 `build.gradle.kts` 末尾把 `check` 挂到三组任务上：根级 `spotlessCheck`、根级 `verifyProductArchitecture`、以及全部 14 个子项目的 `check`。同时 `subprojects` 块让每个子项目自己的 `check` 依赖其 `spotlessCheck`（Kotlin/Kotlin 脚本/XML 三类格式规则）。因此 `check` 失败可能是格式、架构断言或单元测试三者之一，输出中 `GradleException` 的消息会直接指明是哪条规则。
+The root `build.gradle.kts` wires `check` to three sets of tasks: the root-level `spotlessCheck`, the root-level `verifyProductArchitecture`, and `check` for all 15 subprojects. Meanwhile the `subprojects` block makes each subproject's `check` depend on its own `spotlessCheck` (three formatting rules: Kotlin, Kotlin script, XML). So a `check` failure is one of formatting, architecture assertion, or unit tests; the `GradleException` message in the output names the failing rule.
 
 ```mermaid
 flowchart TD
     CHECK["gradlew check"] --> SPOT["spotlessCheck (root + every subproject)"]
     CHECK --> ARCH["verifyProductArchitecture"]
-    CHECK --> SUB["each of the 14 module checks"]
+    CHECK --> SUB["each of the 15 module checks"]
     SUB --> MODSPOT["module spotlessCheck"]
     SUB --> MODTEST["module unit tests (all variants)"]
     ARCH --> FAIL["fail(message) throws GradleException"]
 ```
 
-*提交门槛的聚合关系：格式、架构断言与各模块单测都会在 `check` 中执行；`verifyProductArchitecture` 的每条规则失败都以 `GradleException` 终止构建。*
+*Aggregation of the commit gate: formatting, architecture assertions, and per-module unit tests all run in `check`; every `verifyProductArchitecture` rule failure aborts the build with a `GradleException`.*
 
-## 2. `verifyProductArchitecture` 规则清单
+## 2. The `verifyProductArchitecture` rule checklist
 
-任务本体在根 `build.gradle.kts`（`tasks.register("verifyProductArchitecture")`，`group = "verification"`）。实现方式：`doLast` 中自根目录 `walkTopDown` 收集 `kt/kts/java/xml/toml` 文本文件（跳过 `build/`、`.gradle/`、`.git/`、`.idea/`），逐条断言，失败即 `fail(message)` 抛 `GradleException`。**没有增量与白名单机制**——任何新增文件/模块都会进入下一轮扫描。
+The task lives in the root `build.gradle.kts` (`tasks.register("verifyProductArchitecture")`, `group = "verification"`). Implementation: inside `doLast`, `walkTopDown` from the root collects `kt/kts/java/xml/toml` text files (skipping `build/`, `.gradle/`, `.git/`, `.idea/`), asserting rule by rule, failing with `fail(message)` → `GradleException`. **There is no incremental or whitelist mechanism** — any newly added file/module enters the next scan.
 
-| # | 类别 | 强制内容（摘要） |
+| # | Category | Enforced content (summary) |
 | --- | --- | --- |
-| 1 | 格式化基础设施 | Spotless 必须留在 version catalog；根构建声明 `alias(libs.plugins.spotless)`；`check` 必须依赖 `spotlessCheck` |
-| 2 | 模块清单与 `.gitignore` | `settings.gradle.kts` 必须包含全部 14 个模块（`:app`、`:core:model`、`:core:common`、`:core:ui`、`:domain`、`:data`、`:player`、6 个 `:feature:*`、`:benchmark`）；每个模块目录的 `.gitignore` 必须含 `/build/`、`/.cxx/`、`/.externalNativeBuild/`、`/captures/` |
-| 3 | Hilt 入口 | `MelodyApplication`=`@HiltAndroidApp`、`MainActivity`=`@AndroidEntryPoint`、`AppMediaSessionService`（`:player`）=`@AndroidEntryPoint`、`PlayerViewModel`=`@HiltViewModel`，四个文件必须存在且带注解 |
-| 4 | DI 模块存在性 | `app/di/` 的 `CoroutineModule`/`LoggerModule`/`PlayerModule` 与 `data/di/` 的 `RepositoryModule`/`DatabaseModule`/`DataStoreModule` 必须存在，且都是 `@Module` + `@InstallIn(SingletonComponent::class)` 的同名模块 |
-| 5 | 架构文档存在性 | `docs/architecture/PLAYBACK_STATE_MACHINE.md` 必须存在并包含 8 个状态词与 `AppMediaSessionService`/`PlaybackController`/`ControllerPlaybackStateSynchronizer`/`PlayerControllerStateFacade`/`PlayerMediaEventFacade`；`docs/refactor/PRODUCT_REFACTOR_AUDIT.md` 必须包含 `Verified`、`Still Not Fully Proven`、`.\gradlew.bat test`、`:app:assembleRelease`、`:app:assembleBenchmark`、`Macrobenchmark`、`:benchmark` |
-| 6 | benchmark 模块形状 | `benchmark/build.gradle.kts` + `StartupBenchmark.kt` 必须存在；build 文件必须含 `libs.plugins.android.test`、`targetProjectPath = ":app"`、`androidx.benchmark.macro.junit4`；`StartupBenchmark` 必须含 `MacrobenchmarkRule`、`StartupTimingMetric`、`StartupMode.COLD`、`startActivityAndWait`、`packageName = "cn.com.dcsgo.mihx"` |
-| 7 | PerformanceTrace 锚点 | `core/common/.../PerformanceTrace.kt` 必须存在；`MusicRepository` 必须保留 `music_import_scan`、`music_import_folder` 埋点；`PlaybackController` 必须保留 `controller_play_queue`、`controller_prepare_queue`、`controller_sync_queue`、`play_next_command` 埋点 |
-| 8 | 播放窗口性能形状测试 | `player/src/test/.../PlaybackWindowPerformanceShapeTest.kt` 必须存在并覆盖 `100`、`500`、`1_000`、`71`、`WindowedControllerQueuePlanner`（100/500/1000 首歌队列下 controller 窗口 ≤ 71 项） |
-| 9 | 历史遗留禁用 | 全仓库禁止 `com.dcsgo.data.model` 遗留包引用、禁止 `PlayerViewModelComponents`/`PlayerViewModelComponentFactory`（旧手工装配中枢，已拆为 `PlayerRuntime` + facade/graph）、禁止 Android Things 依赖字符串 |
-| 10 | 模块依赖边界 | `feature/**/build.gradle.kts` 禁止 `project(":data")`、`project(":player")` 与任何 `project(":feature:…")`；`feature/domain/player` 的源码禁止 `import cn.com.dcsgo.mihx.data.repository.*|data.local.*`（实现层导入不得外泄）；`MusicRepository` 不得声明 `SongRepository`/`PlaylistRepository`/`MusicImportRepository`/`AlbumArtRepository` 超类型，且四个 `*RepositoryAdapter.kt` 必须存在并实现对应接口；`player/window/` 禁止 import `cn.com.dcsgo.mihx.data.player`；`:core:model` 不得有 res XML 与 `R.(drawable\|string\|color\|dimen\|raw)`/`android.R.` 引用 |
-| 11 | feature Route/Screen 模式 | `:feature:lyrics`/`:feature:settings` 必须有 `XxxRoute.kt`+`XxxScreen.kt`；播放统计/秒切歌曲（`:feature:home`）与版本管理（`:feature:user`）同样必须 Route+Screen 化；`AppOverlay.kt`/`AppOverlayHost.kt`/`OverlayRoute.kt` 一旦出现即失败；`:feature:home` 禁止直接 import `cn.com.dcsgo.mihx.ui.lyrics`（歌词 UI 只能经 `:feature:lyrics` 导航） |
-| 12 | 权限与设置策略 | `PlayerStartupFacade` 禁止出现 `Bluetooth`；`SettingsScreen` 必须包含「蓝牙播放监听」「申请蓝牙权限」入口；蓝牙监听/播放通知必须是 `PlayerSettingsRepository`（`bluetoothPlaybackMonitoringEnabled`/`playbackNotificationEnabled`）→ DataStore（`BLUETOOTH_PLAYBACK_MONITORING_ENABLED`/`PLAYBACK_NOTIFICATION_ENABLED`）→ `PlayerUiState` 的持久化设置；`AppNavHost`/`AppRoot` 禁止用局部 `remember { }` 持有这两类状态；`PermissionCoordinator` 必须提供带 `onGranted` 回调的通知权限请求；`MainActivity`/`AppRoot`/`PlayerRuntime`/`PlayerStartupFacade` 四个启动路径文件禁止出现 `requestNotificationPermission(`/`requestBluetoothConnectPermission(`/`POST_NOTIFICATIONS`/`BLUETOOTH_CONNECT`（权限只能由用户在设置中触发） |
-| 13 | LazyColumn 稳定 key | `app/core/feature` 的 Kotlin 文件中 `items`/`itemsIndexed` 必须在 160 字符内声明 `key =`；裸 `item { }` 禁止 |
-| 14 | 日志通道 | 除 `AppLogger.kt` 本体外，禁止 `Log.(d|i|w|e|v|wtf)(` 直接调用——一切日志走 `AppLog`/`AppLogger` |
-| 15 | Manifest 约束 | `:app` manifest 禁止声明 `AppMediaSessionService`（必须由 `:player` manifest 声明）；禁止声明 `READ_MEDIA_AUDIO`/`READ_EXTERNAL_STORAGE`（导入只走 SAF 文档树） |
-| 16 | release/benchmark 构建配置 | `app` 的 `release` 块必须含 `isMinifyEnabled = true` 与 `isShrinkResources = true`；必须存在 `create("benchmark")` 且 `initWith(getByName("release"))` |
-| 17 | 隐私/备份排除 | `backup_rules.xml` 与 `data_extraction_rules.xml` 必须各自包含全部 10 项排除（见 §3.3） |
-| 18 | Room schema 不可变 | `data/schemas/.../MelodyDatabase/` 的 `1.json`/`2.json`/`3.json` 必须存在；v1 禁止含 `quick_skip_short_play_counts`、v2 必须含且禁止含 `lrcUri`、v3 必须含 `lrcUri`；`DatabaseModule` 必须注册 `Migration(1, 2)`、`Migration(2, 3)` 并 `addMigrations(MIGRATION_1_2, MIGRATION_2_3)` |
+| 1 | Formatting infrastructure | Spotless must stay in the version catalog; the root build declares `alias(libs.plugins.spotless)`; `check` must depend on `spotlessCheck` |
+| 2 | Module inventory & `.gitignore` | `settings.gradle.kts` must contain all 15 modules (`:app`, `:core:model`, `:core:common`, `:core:ui`, `:core:skin`, `:domain`, `:data`, `:player`, six `:feature:*`, `:benchmark`); each module directory's `.gitignore` must include `/build/`, `/.cxx/`, `/.externalNativeBuild/`, `/captures/` |
+| 3 | Hilt entry points | `MelodyApplication`=`@HiltAndroidApp`, `MainActivity`=`@AndroidEntryPoint`, `AppMediaSessionService` (`:player`)=`@AndroidEntryPoint`, `PlayerViewModel`=`@HiltViewModel`; the four files must exist with the annotations |
+| 4 | DI module existence | `app/di/` `CoroutineModule`/`LoggerModule`/`PlayerModule` and `data/di/` `RepositoryModule`/`DatabaseModule`/`DataStoreModule` must exist, each a same-named `@Module` + `@InstallIn(SingletonComponent::class)` |
+| 5 | Architecture docs presence | `docs/architecture/PLAYBACK_STATE_MACHINE.md` must exist and contain the 8 states plus `AppMediaSessionService`/`PlaybackController`/`ControllerPlaybackStateSynchronizer`/`PlayerControllerStateFacade`/`PlayerMediaEventFacade`; `docs/refactor/PRODUCT_REFACTOR_AUDIT.md` must contain `Verified`, `Still Not Fully Proven`, `.\gradlew.bat test`, `:app:assembleRelease`, `:app:assembleBenchmark`, `Macrobenchmark`, `:benchmark` |
+| 6 | benchmark module shape | `benchmark/build.gradle.kts` + `StartupBenchmark.kt` must exist; the build file must contain `libs.plugins.android.test`, `targetProjectPath = ":app"`, `androidx.benchmark.macro.junit4`; `StartupBenchmark` must contain `MacrobenchmarkRule`, `StartupTimingMetric`, `StartupMode.COLD`, `startActivityAndWait`, `packageName = "cn.com.dcsgo.mihx"` |
+| 7 | PerformanceTrace anchors | `core/common/.../PerformanceTrace.kt` must exist; `MusicRepository` must keep `music_import_scan`/`music_import_folder`; `PlaybackController` must keep `controller_play_queue`/`controller_prepare_queue`/`controller_sync_queue`/`play_next_command` |
+| 8 | Playback window performance shape test | `player/src/test/.../PlaybackWindowPerformanceShapeTest.kt` must exist and cover `100`, `500`, `1_000`, `71`, `WindowedControllerQueuePlanner` (controller window ≤ 71 items under 100/500/1000-song queues) |
+| 9 | Legacy ban | whole repo forbids the `com.dcsgo.data.model` legacy package references, `PlayerViewModelComponents`/`PlayerViewModelComponentFactory` (the old manual-assembly hub, split into `PlayerRuntime` + facade/graph), and Android Things dependency strings |
+| 10 | Module dependency boundaries | `feature/**/build.gradle.kts` forbids `project(":data")`, `project(":player")`, and any `project(":feature:…")`; `feature/domain/player` sources forbid `import cn.com.dcsgo.mihx.data.repository.*|data.local.*`; `MusicRepository` must not declare `SongRepository`/`PlaylistRepository`/`MusicImportRepository`/`AlbumArtRepository` supertypes, and the four `*RepositoryAdapter.kt` must exist and implement the interfaces; `player/window/` forbids importing `cn.com.dcsgo.mihx.data.player`; `:core:model` must have no res XML and no `R.(drawable\|string\|color\|dimen\|raw)`/`android.R.` references |
+| 11 | Feature Route/Screen pattern | `:feature:lyrics`/`:feature:settings` must have `XxxRoute.kt`+`XxxScreen.kt`; play statistics / quick-skip songs (`:feature:home`) and version management (`:feature:user`) likewise must be Route+Screen ized; `AppOverlay.kt`/`AppOverlayHost.kt`/`OverlayRoute.kt` fail immediately if present; `:feature:home` must not directly import `cn.com.dcsgo.mihx.ui.lyrics` |
+| 12 | Permission & settings policy | `PlayerStartupFacade` must not contain `Bluetooth`; `SettingsScreen` must expose「蓝牙播放监听」「申请蓝牙权限」entries; Bluetooth playback listening / playback notification must be persisted `PlayerSettingsRepository` (`bluetoothPlaybackMonitoringEnabled`/`playbackNotificationEnabled`) → DataStore (`BLUETOOTH_PLAYBACK_MONITORING_ENABLED`/`PLAYBACK_NOTIFICATION_ENABLED`) → `PlayerUiState` settings; `AppNavHost`/`AppRoot` must not hold either state in local `remember { }`; `PermissionCoordinator` must offer a notification permission request with an `onGranted` callback; the four startup-path files (`MainActivity`/`AppRoot`/`PlayerRuntime`/`PlayerStartupFacade`) must not contain `requestNotificationPermission(`/`requestBluetoothConnectPermission(`/`POST_NOTIFICATIONS`/`BLUETOOTH_CONNECT` (permissions may only be triggered by the user in Settings) |
+| 13 | LazyColumn stable keys | `app/core/feature` Kotlin files must declare `key =` within 160 chars of an `items`/`itemsIndexed` call; bare `item { }` is forbidden |
+| 14 | Logging channel | apart from `AppLogger.kt` itself, direct `Log.(d|i|w|e|v|wtf)(` calls are forbidden — all logging goes through `AppLog`/`AppLogger` |
+| 15 | Manifest placement | the `:app` manifest must not declare `AppMediaSessionService` (the `:player` manifest must); it must not declare `READ_EXTERNAL_STORAGE` (which is forbidden for SAF folder import); **`READ_MEDIA_AUDIO` IS permitted** — it is declared in the `:app` manifest so an already-granted device can fast-scan via `java.io.File`, with SAF document tree remaining the primary path and fallback |
+| 16 | release/benchmark build config | `app`'s `release` block must contain `isMinifyEnabled = true` and `isShrinkResources = true`; `create("benchmark")` must exist with `initWith(getByName("release"))` |
+| 17 | Privacy/backup exclusions | `backup_rules.xml` and `data_extraction_rules.xml` must each contain all required exclusions (see §3.3) |
+| 18 | Room schema immutability | `data/schemas/.../MelodyDatabase/` `1.json`/`2.json`/`3.json` must exist; v1 must not contain `quick_skip_short_play_counts`, v2 must contain it and must not contain `lrcUri`, v3 must contain `lrcUri`; `DatabaseModule` must register `Migration(1, 2)`, `Migration(2, 3)` and `addMigrations(MIGRATION_1_2, MIGRATION_2_3)` |
 
-**release 块的正则陷阱（改动 `app/build.gradle.kts` 前必读）**：任务用正则 `release\s*\{([\s\S]*?)\n\s*\}` 截取 release 块做规则 16 的检查，该正则在**第一个闭合花括号**处截断。因此签名决策（`releaseSigningConfig`）被刻意移到 `buildTypes` 之外、`release` 块内只保留一行 `signingConfig = releaseSigningConfig` 赋值；若在 release 块内加入嵌套花括号（如再放一个 `ndk {}` 之外的子块且把 `isMinifyEnabled` 挤到其后），检查会被截断而误报或漏检。`ndk { abiFilters += "arm64-v8a" }` 位于块尾是安全的，但新增配置应遵循「平铺赋值、不加嵌套」的约定。
+**The release-block regex trap (read before touching `app/build.gradle.kts`)**: the task extracts the release block with `release\s*\{([\s\S]*?)\n\s*\}` for rule 16, which truncates at the **first closing brace**. That is why the signing decision (`releaseSigningConfig`) is deliberately kept outside `buildTypes`, leaving a single `signingConfig = releaseSigningConfig` line inside the release block; adding a nested brace block inside `release` (e.g. pushing `isMinifyEnabled` after a nested sub-block) makes the check truncate and mis-detect or miss failures. `ndk { abiFilters += "arm64-v8a" }` at the end is safe because it follows the checks; new config should follow the "flat assignments, no nesting" convention.
 
-## 3. release 发布约束
+### 2.1 Skin and "我的" page invariants (enforced by unit tests, not the gate)
 
-### 3.1 ABI 与资源裁剪
+The `verifyProductArchitecture` gate does **not** scan `:core:skin` internals; the skin conventions are locked by focused unit tests instead:
 
-`minSdk 33` 起真实设备全部是 64 位，release 只打 `arm64-v8a`；`resConfigs("zh", "en")` 裁掉依赖库的其他语言翻译，显著缩小 `resources.arsc`。审计记录 release APK 约 6–7 MB（`docs/refactor/PRODUCT_REFACTOR_AUDIT.md`）。debug/benchmark 保留多 ABI 以兼容 x86_64 模拟器。
+- **`LibrarySegmentsMatchSourceTest`** (`:core:skin`) reads the `:feature:playlist` `LibraryTab` enum source and asserts the description's library-page segments match it word-for-word (including order) — a deliberate guard against the P1 "description proves itself" trap.
+- **`UserSectionsTest`** (`:feature:user`, 10 cases) asserts `UserSections` keys/`DEFAULT_ORDER` line up with the pre-refactor hardcoded order, that `UserSections.SKIN_SWITCHER == "skinSwitcher"` equals `SkinPartCatalog.SKIN_SWITCHER` literally, and that `parse` is tolerant of unknown/blank input (filtering to known keys).
+- **`SkinSwitcherCatalogConsistencyTest`** (`:app`) keeps `UserSections.SKIN_SWITCHER` and `SkinPartCatalog.SKIN_SWITCHER` from drifting apart, since `SkinShellResolver` maps both the `skinSwitcher` and legacy `customSkin` part names to the same `UserSections.SKIN_SWITCHER` partition.
 
-### 3.2 R8 与 ProGuard 规则
+## 3. Release constraints
 
-release 启用 R8 混淆 + 资源收缩，规则文件 `app/proguard-rules.pro` 手工保留：
+### 3.1 ABI & resource trimming
 
-- manifest/会话入口：`MelodyApplication`、`MainActivity`、`AppMediaSessionService`；
-- Hilt/Room/Media3 反射所需属性（`Signature`、`RuntimeVisibleAnnotations` 等）；
-- `MelodyDatabase` 与全部 entity 类（便于诊断 release 崩溃）；
-- `FfmpegAudioDecoder`/`FfmpegLibrary`——`:player` 的 `FfmpegPcmDecoder` 通过反射驱动 Jellyfin FFmpeg 扩展的 package-private 解码器（`FfmpegLibraryProbe` 以 `Class.forName` 探测），R8 改名/裁剪会直接破坏解码路径。
+Since `minSdk 33`, all real devices are 64-bit, so release ships only `arm64-v8a`; `resConfigs("zh", "en")` trims other languages' translated resources for the dependency libraries, shrinking `resources.arsc`. The audit records the release APK at roughly 6.2 MB (`docs/refactor/PRODUCT_REFACTOR_AUDIT.md`). debug/benchmark keep multiple ABIs to stay compatible with x86_64 emulators.
 
-### 3.3 签名策略与隐私排除
+### 3.2 R8 & ProGuard rules
+
+Release enables R8 minification + resource shrinking. `app/proguard-rules.pro` manually keeps:
+
+- manifest/session entry points: `MelodyApplication`, `MainActivity`, `AppMediaSessionService`;
+- Hilt/Room/Media3 reflection-required attributes (`Signature`, `RuntimeVisibleAnnotations`, etc.);
+- `MelodyDatabase` and all entity classes (so release crashes stay diagnosable);
+- `FfmpegAudioDecoder`/`FfmpegLibrary` — `:player`'s `FfmpegPcmDecoder` reflectively drives the Jellyfin FFmpeg extension's package-private decoders (`FfmpegLibraryProbe` probes with `Class.forName`); R8 renaming/trimming would break the decode path.
+
+### 3.3 Signing strategy & privacy exclusions
 
 ```mermaid
 flowchart TD
@@ -194,83 +206,87 @@ flowchart TD
     REQ -->|"no"| DBG["warn + fall back to debug signing (local only, not publishable)"]
 ```
 
-*release 签名决策：`keystore.properties`（已 gitignore，含 `storeFile/storePassword/keyAlias/keyPassword`）缺失时，本地构建回退 debug 签名并告警；发布/CI 必须传 `-PrequireReleaseSigning=true`，缺失密钥直接失败，避免误出 debug 签名的“正式包”。*
+*Release signing decision: when `keystore.properties` (gitignored; holds `storeFile/storePassword/keyAlias/keyPassword`) is missing, a local build falls back to debug signing with a warning; releases/CI must pass `-PrequireReleaseSigning=true`, which fails the build without the key so a debug-signed "official" APK can't slip out.*
 
-隐私排除是规则 17 的清单，两个规则文件（`backup_rules.xml` 的 `<full-backup-content>` 与 `data_extraction_rules.xml` 的 `cloud-backup` + `device-transfer`）必须各含全部条目：遗留 SharedPreferences（`music_player_prefs.xml`、`play_stats_prefs.xml`、`quick_skip_songs_prefs.xml`）、Room 全家（`melody.db`、`-journal`、`-shm`、`-wal`）、DataStore（`datastore/player_settings.preferences_pb`、`datastore/playback_state.preferences_pb`）、专辑封面缓存（`cache/album_art/` 等）。依据：库/播放状态绑定本机（SAF URI 出设备即失效），备份只会增加恢复负载与隐私面。**新增持久化文件时必须同步加进两个规则文件，否则架构门槛失败。**
+The privacy exclusions are rule 17's checklist; both rule files (`backup_rules.xml`'s `<full-backup-content>` and `data_extraction_rules.xml`'s `cloud-backup` + `device-transfer`) must each contain every entry: the legacy SharedPreferences files (`music_player_prefs.xml`, `play_stats_prefs.xml`, `quick_skip_songs_prefs.xml`); the full Room family (`melody.db`, `melody.db-journal`, `melody.db-shm`, `melody.db-wal`); the DataStore files (`datastore/player_settings.preferences_pb`, `datastore/playback_state.preferences_pb`, and the newer `datastore/playlist_resume.preferences_pb`, `datastore/mood_time_slot.preferences_pb`, `datastore/emotion_failures.preferences_pb`); and the album-art caches (`album_art_cache/`, `album_art/`, `cache/album_art/`). Rationale: library/playback state is device-bound (SAF URIs become invalid off-device), so backup only adds restore load and privacy surface. **When adding a new persisted file, add it to both rule files, or the architecture gate fails** (rule 17's required subset — the three prefs, the four melody.db variants, `player_settings` + `playback_state` DataStore files, and `cache/album_art/` — is the hard gate; the other DataStore/cache paths are part of the source rule files).
 
-## 4. Baseline Profile 与 `:benchmark` 模块
+## 4. Baseline Profile & the `:benchmark` module
 
-### 4.1 Baseline Profile 流转
+### 4.1 Baseline Profile flow
 
-- 产物：`app/src/main/baselineProfiles/baseline-prof.txt`，约 2425 条规则（由 Pixel 6 模拟器生成，见审计文档）。
-- 打包：release 构建自动打包，`androidx.profileinstaller`（1.4.1，`app` 依赖）负责安装，提升冷启动与首屏滚动。
-- 再生成：跑 `:app:generateBaselineProfile` 或 `:benchmark:connectedCheck`，`BaselineProfileGenerator` 覆盖启动 + 首页/播放页与歌单页滚动路径后回写同一文件。改了启动路径或首页列表实现后应重新生成。
+- Artifact: `app/src/main/baselineProfiles/baseline-prof.txt` (~2425 rules, generated on a Pixel 6 emulator per the audit doc).
+- Packaging: release builds package it automatically; `androidx.profileinstaller` (1.4.1, an `app` dependency) installs it to improve cold start and first-screen scrolling.
+- Regeneration: run `:app:generateBaselineProfile` or `:benchmark:connectedCheck`; `BaselineProfileGenerator` covers startup + home/player and playlist-page scrolling paths and rewrites the same file. Regenerate after changing the startup path or home-list implementation.
 
-### 4.2 `:benchmark` 模块
+### 4.2 The `:benchmark` module
 
-| 类 | 指标 / 规则 | 行为 |
+| Class | Metric / rule | Behavior |
 | --- | --- | --- |
-| `StartupBenchmark` | `StartupTimingMetric`，`StartupMode.COLD`，5 次迭代 | `pressHome()` 后 `startActivityAndWait()` 测冷启动 |
-| `ScrollBenchmark` | `FrameTimingMetric`（P50/P90/P95 帧时间），冷启动 | 首页上下各滑动 3 次，覆盖 LazyColumn 项创建/复用路径 |
-| `BaselineProfileGenerator` | `BaselineProfileRule.collect` | 启动 + 滚动采集，产物写回 `baseline-prof.txt` |
+| `StartupBenchmark` | `StartupTimingMetric`, `StartupMode.COLD`, 5 iterations per test | Two cold-start tests: `coldStartupWithoutBaselineProfile` (`CompilationMode.None()`) vs `coldStartupWithBaselineProfile` (`CompilationMode.Partial(baselineProfileMode = Requirement)`); each does `pressHome()` then `startActivityAndWait()` to measure cold start with/without baseline-profile precompilation |
+| `ScrollBenchmark` | `FrameTimingMetric` (P50/P90/P95 frame times), cold start, 5 iterations | Swipes the home screen down and up 3 times each, covering LazyColumn item creation/reuse paths |
+| `BaselineProfileGenerator` | `BaselineProfileRule.collect` | Startup + scroll collection; writes back to `baseline-prof.txt` |
 
-模块形状：`com.android.test` 插件、`targetProjectPath = ":app"`、`android.experimental.self-instrumenting = true`、仅启用 `benchmark` 变体（`androidComponents.beforeVariants` 过滤）、debug 签名、`testInstrumentationRunnerArguments["androidx.benchmark.suppressErrors"] = "EMULATOR"`（模拟器结果带警告不中断）。运行需真机/模拟器；MIUI ROM 可能阻断 macrobenchmark 的自动授权/帧确认步骤；审计记录的模拟器冷启动中位数约 810 ms（软件渲染），真机验收仍未完成。
+Module shape: `com.android.test` plugin, `targetProjectPath = ":app"`, `android.experimental.self-instrumenting = true`, only the `benchmark` variant enabled (`androidComponents.beforeVariants` filter), debug signing, and `testInstrumentationRunnerArguments["androidx.benchmark.suppressErrors"] = "EMULATOR"` (emulator results are flagged as warnings, not aborted). Running requires a real device/emulator; MIUI ROMs may block Macrobenchmark's automatic authorization/frame-confirmation steps; the audit records an emulator cold-start median of ~810 ms (software-rendered) and notes real-device acceptance is still incomplete.
 
-### 4.3 PerformanceTrace 埋点策略
+### 4.3 `PerformanceTrace` anchor strategy
 
-`core/common` 的 `PerformanceTrace` 是刻意设计的可观测性开关，不是日志副作用：
+`core/common`'s `PerformanceTrace` is a deliberate observability switch, not a logging side effect:
 
-- `isEnabled` 初始值 = `BuildConfig.DEBUG`：**debug 默认全开，release 默认静默**（隐私 + 音量决策）；
-- `allow(operation)`/`disallow(operation)` 提供 release 白名单，关键播放链路可在线上继续输出；
-- `measure { }`/`log { }` 输出经 `AppLog.info`，metadata 会先走 `redactSensitiveValuesForLog()` 脱敏；
-- `core/common` 为此显式开启 `buildFeatures { buildConfig = true }`。
+- `isEnabled` initial value = `BuildConfig.DEBUG`: **debug defaults to on, release stays silent** (privacy + volume decision);
+- `allow(operation)`/`disallow(operation)` provide a release whitelist so key playback paths can keep emitting in production;
+- `measure { }`/`log { }` output through `AppLog.info`, with metadata going through `redactSensitiveValuesForLog()` first;
+- `core/common` explicitly turns on `buildFeatures { buildConfig = true }` for this.
 
-锚点（被架构门槛锁定）：`MusicRepository` 的 `music_import_scan`/`music_import_folder`，`PlaybackController` 的 `play_next_command`/`controller_play_queue`/`controller_prepare_queue`/`controller_sync_queue`。删除或改名这些字符串字面量会让 `verifyProductArchitecture` 失败。配套的 `PlaybackWindowPerformanceShapeTest` 在 JVM 层锁住 100/500/1000 首歌队列的窗口形状（51–71 项）。
+Anchors (locked by the architecture gate): `MusicRepository`'s `music_import_scan`/`music_import_folder`, and `PlaybackController`'s `play_next_command`/`controller_play_queue`/`controller_prepare_queue`/`controller_sync_queue`. Deleting or renaming these string literals fails `verifyProductArchitecture`. The companion `PlaybackWindowPerformanceShapeTest` locks the window shape (51–71 items) of 100/500/1000-song queues at the JVM layer.
 
-## 5. Room schema 流程
+## 5. Room schema flow
 
-`:data` 通过 KSP 导出 schema：`ksp { arg("room.schemaLocation", "$projectDir/schemas") }`，`MelodyDatabase` 声明 `version = 10, exportSchema = true`，历史快照在 `data/schemas/cn.com.dcsgo.mihx.data.local.MelodyDatabase/1.json…10.json`。每次实体/DAO 变更的工作流：
+`:data` exports schemas via KSP: `ksp { arg("room.schemaLocation", "$projectDir/schemas") }`, with `MelodyDatabase` declaring `version = 10, exportSchema = true`; historical snapshots live in `data/schemas/cn.com.dcsgo.mihx.data.local.MelodyDatabase/1.json…10.json`. Workflow for any entity/DAO change:
 
-1. 修改 `data/src/main/java/cn/com/dcsgo/mihx/data/local/{entity,dao}` 下的实体/DAO。
-2. `MelodyDatabase` 版本号 +1（当前 10 → 11）。
-3. 构建一次 `:data`，KSP 自动在 `data/schemas/.../` 生成新版本 JSON（不要手写）。
-4. 在 `DatabaseModule` 增加 `Migration(N, N+1)` 并加入 `addMigrations(...)`（现有 `MIGRATION_1_2`…`MIGRATION_9_10` 全部注册）。
-5. 涉及复杂搬数的迁移补一个聚焦单测。
-6. **绝不修改已存在的 schema JSON**——它们是不可变快照，`verifyProductArchitecture` 规则 18 会以 v1/v2/v3 的内容差异检测篡改。
+1. Modify the entity/DAO under `data/src/main/java/cn/com/dcsgo/mihx/data/local/{entity,dao}`.
+2. Bump `MelodyDatabase` version by 1 (currently 10 → 11).
+3. Build `:data` once — KSP auto-generates the new-version JSON in `data/schemas/.../` (don't hand-write).
+4. Add `Migration(N, N+1)` in `DatabaseModule` and join it into `addMigrations(...)` (all current `MIGRATION_1_2`…`MIGRATION_9_10` are registered).
+5. Add a focused unit test for complex data-migration migrations.
+6. **Never modify an existing schema JSON** — they are immutable snapshots, and rule 18 detects tampering by the v1/v2/v3 content deltas.
 
-完整迁移史（1→2 建 `quick_skip_short_play_counts`，2→3 加 `lrcUri`，……9→10 加 `embeddingB64` 等情感字段）见 `/openwiki/architecture/data-persistence.md`。
+The full migration history (1→2 adds `quick_skip_short_play_counts`, 2→3 adds `lrcUri`, …9→10 adds `embeddingB64` and other emotion fields) is in `/openwiki/architecture/data-persistence.md`.
 
-## 6. 关键版本与兼容约束
+## 6. Key versions & compatibility constraints
 
-| 项 | 值 | 约束 |
+| Item | Value | Constraint |
 | --- | --- | --- |
-| Kotlin | 2.0.21 | Compose 编译器已内置于 Kotlin 2.0+，模块必须应用 `org.jetbrains.kotlin.plugin.compose`（`kotlin-compose` 别名）；**禁止再写 `composeOptions { kotlinCompilerExtensionVersion }`**——旧机制在新插件下无效 |
-| KSP | 2.0.21-1.0.28 | 前缀必须与 Kotlin 版本精确一致，升级 Kotlin 必须同步升级 KSP |
-| AGP | 8.13.2 | `compileSdk 36`；`:benchmark` 用 `com.android.test` 同版本插件 |
-| Compose BOM | 2025.09.01 | Compose 版本统一由 BOM 管理 |
-| Media3 | 1.9.0 + Jellyfin FFmpeg `1.9.0+1` | FFmpeg 解码走反射（见 §3.2 的 keep 规则），升级 Media3 需验证 `FfmpegLibraryProbe` 仍能命中 |
-| Room / Hilt / DataStore | 2.6.1 / 2.52 / 1.1.1 | Room schema 导出见 §5 |
-| minSdk / targetSdk | 33 / 36 | Java 11 字节码（`compileOptions`/`jvmTarget` 全模块统一 `VERSION_11`） |
-| versionName / versionCode | 3.7.0 / 33 | 以 `app/build.gradle.kts` 为准 |
+| Kotlin | 2.0.21 | Compose compiler is built into Kotlin 2.0+; modules must apply `org.jetbrains.kotlin.plugin.compose` (the `kotlin-compose` alias); **the old `composeOptions { kotlinCompilerExtensionVersion }` block is forbidden** — it is ineffective under the new plugin |
+| KSP | 2.0.21-1.0.28 | Prefix must match the Kotlin version exactly; upgrading Kotlin requires a synchronized KSP upgrade |
+| AGP | 8.13.2 | `compileSdk 36`; `:benchmark` uses `com.android.test` at the same version |
+| Compose BOM | 2025.09.01 | Compose versions are centralized via the BOM |
+| Media3 | 1.9.0 + Jellyfin FFmpeg `1.9.0+1` | FFmpeg decoding is reflective (see §3.2 keep rules); after a Media3 upgrade, verify `FfmpegLibraryProbe` still hits |
+| Room / Hilt / DataStore | 2.6.1 / 2.52 / 1.1.1 | Room schema export per §5 |
+| minSdk / targetSdk | 33 / 36 | Java 11 bytecode (`compileOptions`/`jvmTarget` set to `VERSION_11` repo-wide) |
+| versionName / versionCode | 3.10.2 / 44 | Authoritative in `app/build.gradle.kts` |
 
-### 6.1 Windows 确定性构建配置
+### 6.1 Deterministic Windows build config
 
-`gradle.properties` 的三行配置组合是 Windows 上可复现校验的前提：
+`gradle.properties`' three lines are the prerequisite for reproducible verification on Windows:
 
-- `kotlin.compiler.execution.strategy=in-process`：Kotlin 编译在 Gradle daemon 内执行。此前 Kotlin daemon 在 Windows 上会因 client marker 文件权限失败并在构建中途回退，导致增量结果不稳定；in-process 消除了该故障源，也因此 **`org.gradle.jvmargs`（`-Xmx2048m`）就是编译实际可用的堆**（`kotlin.daemon.jvmargs=-Xmx1536m` 仅对 out-of-process daemon 生效）。
-- `org.gradle.parallel=true` + `org.gradle.caching=true`：多模块并行 + 构建缓存。
-- `android.nonTransitiveRClass=true`：各模块 R 类只含自己声明的资源，**跨模块不得用 R 类引用资源**（与规则 10 的 `:core:model` 纯净性检查互补）。
+- `kotlin.compiler.execution.strategy=in-process`: Kotlin compilation runs inside the Gradle daemon. Previously the Kotlin daemon failed on Windows over client-marker file permissions and fell back mid-build, making incremental results unstable; in-process removes that failure source, which also means **`org.gradle.jvmargs` (`-Xmx2048m`) is the heap compilation actually has available** (`kotlin.daemon.jvmargs=-Xmx1536m` only affects out-of-process daemons).
+- `org.gradle.parallel=true` + `org.gradle.caching=true`: multi-module parallel build + build cache.
+- `android.nonTransitiveRClass=true`: each module's R class holds only its own declared resources, so **r classes must not be used to reference resources across modules** (complementing rule 10's `:core:model` purity check).
 
-**文档漂移提醒**：`CLAUDE.md` 的 Key Versions 表已落后于实际配置（其写 3072 MB 堆、Compose BOM 2024.09.00、versionName 3.5.1/versionCode 29）。`gradle.properties`、`gradle/libs.versions.toml` 与 `app/build.gradle.kts` 才是权威来源；改版本时先看目录文件，并顺手修 `CLAUDE.md`。
+**Doc-drift note**: `CLAUDE.md`'s Key Versions table has fallen behind the real config (it still lists Compose BOM 2024.09.00 and versionName 3.5.1/versionCode 29). `gradle.properties`, `gradle/libs.versions.toml`, and `app/build.gradle.kts` are the authoritative sources; when bumping versions, read those first and fix `CLAUDE.md` while you're there.
 
-## 7. AGENTS.md 与 OpenWiki 约定
+### 6.2 Skin module boundaries
 
-- **优先改源码与 `docs/`，不要手改生成页**。`openwiki/` 由定时 GitHub Actions 工作流（`.github/workflows/openwiki-update.yml`，每日 08:00 UTC）用 `openwiki code --update` 重新生成并以 PR 形式提交；手改会被下次运行覆盖。架构事实应写进 `docs/architecture/*.md`（部分内容还被规则 5 锁定），再由 OpenWiki 重新收录。
-- **新增日志必须走 `AppLog`/`AppLogger`**（规则 14 硬性强制）。`AndroidAppLogger` 的行为：`debug/info/warning` 仅在 `BuildConfig.DEBUG` 时输出，`error` 始终输出；所有通道的消息与堆栈都会做 `redactSensitiveValuesForLog()` 脱敏（`content://`、`file://`、蓝牙 MAC、设备名、Windows/POSIX 路径替换为占位符）。因此 **release 下实际只有 error 通道会出日志，且已脱敏**——不要为了"release 能看到日志"绕开 AppLog 直写 `android.util.Log`。`AppLog.install(AndroidAppLogger(BuildConfig.DEBUG))` 在 `MelodyApplication.onCreate` 完成装配，未安装前使用静默默认实现。
-- **优先最窄的安静验证**（AGENTS.md）：改动哪个模块就跑哪个模块的 `compileDebugKotlin`/`test`，全量 `check` 留给提交前；失败输出必须完整保留，不要截断。
+`:core:skin` deliberately carries **no UI dependency**: it depends only on `org.json` and `:core:model` (for `ThemeVariant`), and holds no routing knowledge — the description must be headlessly parseable and validate on-device without UI (also what makes it unit-testable). Only `:app` and `:feature:user` depend on it; the part → host-artifact mapping (routes, drawable ids, section order) happens in `:app`'s `SkinShellResolver`, and `:feature:user` owns both the `UserSections` partition metadata and the skin-switcher section. `:core:skin`'s `build.gradle.kts` must not add a Compose dependency or `R.*`/`AppRoutes` references, or it defeats the module layering the gate enforces.
 
-## 相关页面
+## 7. AGENTS.md & OpenWiki conventions
 
-- `/openwiki/architecture/module-graph.md` —— 模块分层与依赖边界的完整推导（本页规则 10 的设计背景）
-- `/openwiki/architecture/data-persistence.md` —— Room/DataStore 持久化细节与完整迁移史（本页 §5 的展开）
-- `/openwiki/quickstart.md`、`/openwiki/testing/test-map.md` —— 快速上手与测试地图
+- **Prefer changing source and `docs/`, don't hand-edit generated pages.** `openwiki/` is generated from source via `openwiki code --update` (see `/openwiki/.run.json`/`.last-update.json` for the current/last runs); AGENTS.md instructs treating source and tests as authoritative and letting OpenWiki regenerate. The old scheduled `.github/workflows/openwiki-update.yml` workflow is **no longer present** — the only workflow in `.github/workflows/` is `release.yml` — so OpenWiki is refreshed by manual/on-demand `openwiki code --update` runs rather than a daily 08:00 UTC job. Hand-edits to generated pages will be overwritten on the next run; architecture facts belong in `docs/architecture/*.md` (some of which rule 5 locks), then get re-ingested by OpenWiki.
+- **New logging must go through `AppLog`/`AppLogger`** (hard rule 14). `AndroidAppLogger` behavior: `debug/info/warning` only emit when `BuildConfig.DEBUG`, `error` always emits; all channels redact messages and stacks through `redactSensitiveValuesForLog()` (`content://`, `file://`, Bluetooth MACs, device names, Windows/POSIX paths replaced with placeholders). So **in release only the error channel actually emits, and it is redacted** — don't bypass `AppLog` for raw `android.util.Log` just to see logs in release. `AppLog.install(AndroidAppLogger(BuildConfig.DEBUG))` is wired in `MelodyApplication.onCreate`; before install the no-op default is used.
+- **Prefer the narrowest quiet validation** (AGENTS.md): compile/test only the module you changed — e.g. `:core:skin:test` — and leave the full `check` for pre-commit; preserve complete failure output without truncation.
+
+## Related pages
+
+- `/openwiki/architecture/module-graph.md` — full derivation of module layering and dependency boundaries (design background for rule 10 and §6.2)
+- `/openwiki/architecture/data-persistence.md` — Room/DataStore persistence details and the complete migration history (§5's expansion)
+- `/openwiki/quickstart.md`, `/openwiki/testing/test-map.md` — quick start and test map

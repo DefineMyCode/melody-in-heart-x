@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "pageVersion": "sha256:0c3f77297037a864ccaeda51fa489bc697deddfc122a6a68291cf08db9b77610",
+  "pageVersion": "sha256:873e82fbab4db82cdd26d3f6c27705e9dcda3b8ed2dcbf7cac2b664b663d365b",
   "claims": [
     {
       "id": "claim_47005b718caa43588a20c9e8d0efd384",
@@ -18,18 +18,14 @@
     },
     {
       "id": "claim_7c5f6a2213fb4b0c8e9407b20c950dc5",
-      "statement": "EmotionViewModel.startManualScan clears the paused flag (setEmotionScanPaused(false)) BEFORE enqueueing, so a worker start never reads a stale pause value, then enqueues a one-time manual scan (input KEY_MANUAL=true, unique name emotion_manual_scan, default ExistingWorkPolicy.KEEP) with no charging constraint; the 'My' page entry card triggers this and toasts that the scan continues in background.",
+      "statement": "EmotionViewModel.startManualScan clears the paused flag (setEmotionScanPaused(false)) BEFORE enqueueing, so a worker start never reads a stale pause value, then enqueues a one-time manual scan (input KEY_MANUAL=true, unique name emotion_manual_scan, default ExistingWorkPolicy.KEEP) with no charging constraint; the 'My' page entry card onEmotionScanNow triggers this and toasts that the scan continues in background.",
       "evidence": [
         {
-          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/AppNavHost.kt#L538-L545",
-          "version": "repo-lines-v1:sha256:a1ead5d06cb1ae6a7ae513e0a232a902559d617e06eed7acb262a1fde12b6b92:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNGM0ZmE4NmM3NjkzZGNlNmVjNWNiOGRhYWE3ZGZmMGNlNWJlYmQ3NGUxZjFlNjNjOTg2YjVhYjg4ODI0YjJjZiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZjBkOWY3MzRiZTVhYTAzOTM1YzQ5OWI3MTQxMTM1NWNlZmFjMmEyYmY1Nzk4OWUxMjQ2ZDM1YTczNTJjN2U5YSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYjM5MzdiZTY3NGExMTYwYzdkOTQwZGEwYWUxMzk5ZGFlOWI5YTRhZGRjZDU5YzAxMjVlN2Y4MTQ2NzllOGU2MCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNmJjYjI4YTA0ZjYwMDVhMGM0MzI3MDUzODhmNGViMmRiOTA5NjczNDdhMjY1ZjhiZjlhMDhkMDg5ODkxNDY4MSJ9"
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/AppNavHost.kt#L466-L469",
+          "version": "repo-lines-v1:sha256:a9cfd8f46fb2c5433ee481c100d0d2fdd45fb15df9648a0b1a477c868517cd16:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZjYzOTdlZDEwYjViNDQ3NjkwMmEyMWVjOGZiMzQ1ODJjM2M5NWY1ZmM4MjVlM2JlOGRmNWRiZTVkMGMzMjRiZSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNmU0Y2VmZTE4YzYwNGVjZmM2M2VjMTk2OTE1NTZkZWRlM2JhMWRjY2I3OGFiY2FiZDIwMjgyMzRiMjcyMTQxMCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMDYyNWMyZGJmYjk2ZTMzN2FkZjFhNTA0NDViMjIzMGYyNmEzNGQ4YTA5NDYyODNmZjQzNzQxZWNlNGYxOGQ0MiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZWQ0NmE0OGY0ODA1NzM4M2E1NTc4MDRmMzMzMjMxMTZhMjY0MjA3MmMwZDVmOTY2YjM5M2JlMTk2ODU3NjNmNSJ9"
         },
         {
-          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/emotion/EmotionScanWorker.kt#L149-L160",
-          "version": "repo-lines-v1:sha256:8d8b7f72b6c93c058c91ffa33f64b37f397dfda7daf87d6f7102efad200bab75:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQ1Y2JhNDhhMDNhMTU2MTY3Y2E1NWY0MzI3ZGUwMGQyZDlmMGVhZTQ4NjhhOTljY2NlYWMyZTUzNTVkODE4NTUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjE5ZTc2MzU1Y2YxMTk5NDgwYzNmOTk4MzZiMTQ4NmM4NDFkODkxZmFhZDkwNGM2MDhlMDkzMDIyZDM3NTdhZWUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
-        },
-        {
-          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/emotion/EmotionViewModel.kt#L204-L210",
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/emotion/EmotionViewModel.kt#L220-L226",
           "version": "repo-lines-v1:sha256:e5d0196da9ff9c79b235e2a375aff80d7cb2a1786d084020c4094cdc6a4655b9:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMmMzMTBhNTYyYTJjYzgxNTYxMzllZjFkYmQ1NTdhOWJlN2VkZTY2MGY4YmQyNTRiMmFkZjhhODE5OTJhZDMyYiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDg5M2Y0MGUzNzgxZWI4OTZjODJkMDQ2YTA4MDY3YTExZTM1Y2RmMmYxZGZhZjI2ZmVhOTBiOGRiNjY3NjQxMyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiOTk5YmRlZmVlYWNhNjM0MGUwMjkwZGM4NmU4ODljODlkNWUxODlhYTViYTQ0YjU4NWIzYjcwNzM0ZjRhNjJkOCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYjEwNGU3YWE4NGIyZjA2ZTdjYzM3NzI0MWQyNjBhYjVkNzIyMzU0MTNhYmQwNjQ2Nzc1NGFmZTQzNzZkMGNiMCJ9"
         }
       ]
@@ -60,11 +56,11 @@
     },
     {
       "id": "claim_9f38f6c3888b4c6dbc62a3d446f17c91",
-      "statement": "On each song EmotionScanWorker reports progress (KEY_PROGRESS_CURRENT = song title), then on success calls SongEmotionRepository.upsert and EmotionFailureRepository.clear(songId); on failure it calls EmotionFailureRepository.record(songId, reason); any thrown exception is caught and downgraded to Failure(INFERENCE_ERROR) so the batch continues.",
+      "statement": "On each song EmotionScanWorker reports progress (KEY_PROGRESS_CURRENT = song title), then before persisting any result it checks the song is still present in the current library snapshot via musicRepository().observeSongsSnapshot() — a song deleted mid-batch has its Success/Failure result skipped (no orphan emotion row, no orphan failure record, v3.10.2); otherwise on success it calls SongEmotionRepository.upsert and EmotionFailureRepository.clear(songId), on failure it calls EmotionFailureRepository.record(songId, reason); any thrown exception is caught and downgraded to Failure(INFERENCE_ERROR) so the batch continues.",
       "evidence": [
         {
-          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/emotion/EmotionScanWorker.kt#L65-L126",
-          "version": "repo-lines-v1:sha256:6bf0c98c4daee3a77d1f9cc9910b795cef06a4fc9663aa3c94ddb5774a497e61:eyJzZWxlY3RlZExpbmVDb3VudCI6NjIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQxODFlNmZkMTc3Y2Y3Zjg1YzAwNDY1MTc5ZDlmZTEwMjYzZDc4ZTcwNzc0YTQ0NThmOTZjMTZkNjU5ZWEzMzQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjEzNzEzZWI0YzZlMThkZWRlZjhmOWFhYTEwYTEyZDcxZTc2MGI5YjZlNTcyOGExOTNiY2VhNDAwNmQ3MjM5MGUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjEzZmZhZGZhMmIwYTIyZmIyYzliYTkwMWQzZTY4ZWQ4YzkxNDU5YjM5ODdhMjI2NGU0MTAzMzQ5NThiNjk2ZTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxYWFlZTUyNjFjNTI3OWE2MzZjNzgxYjM2NGQ3ZmE1ZDIyYzQ3OTAxY2I4NDc1YzVhZGZmMjkyMzQwNjc3ZTYifQ"
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/emotion/EmotionScanWorker.kt#L80-L119",
+          "version": "repo-lines-v1:sha256:9a37d6a44e2cc2161fd6bd06b42c5274304a9eecbe06c1c059de538f8dada8af:eyJzZWxlY3RlZExpbmVDb3VudCI6NDAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU4YTBlYTllZjFiOTYzM2Y3ZDVjZGEzOTEzMzI5YTM2MzI5MDkxNzdkZTUzYWQyNjg4NWYwZjI2ZWRhZjk2MDIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU1MjJjNDJjZDE5YzZkMDNkODA4YzQ1MjcyMDU1MjgyNWI3ZWExYzViNDkxYjIxODUxMWNhYzc0MTVjZjlkOWIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjU5Nzk1YTVkNGI3NmQ5ZDljNGU1NWQ0ZTY0MDJjYzQ2NDBjODAzNWUxY2MyYjBhZjU3ZTU2ZjllNzkxZDM3ZjkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjRjODU1Zjk2NmIxYmIxMTI2MmRlYTUyMGI2NmFiMGUwNzRmY2Y2ZTRhMTFkYWQ2NTU2NDdjOTkzN2ZkMGRjMDUifQ"
         }
       ]
     },
@@ -198,7 +194,7 @@
         },
         {
           "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/data/player/EmotionAnalyzer.kt#L400-L411",
-          "version": "repo-lines-v1:sha256:5749523c3cec6113e2d5fc05a9e8ceb7475c469206f31f31dd2161cca7ec6d72:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImYyZTQzZDgxZGM0M2I4NWE0MmZjY2EwNDA5Njk4ZjczMGMyODNmOTI5NzBiYTdhYzNmMGY4MDg0ZGE0MDBkZTkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRjZTY4YmZmYjJjNjM1ZTcyZmFmODIyMjUyNTYzYmEzOGI0MzFlZTg5MjZmZTM1Y2JjMzIyODM4NDMxZjQ0NzEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImFhNzIyMjQxMGM3ZmU5ZDI1ZWQyZWEzZjc2ZTc3NWJmNGU1ODBlNDE4YmU2MzNiYmNjZGM1MWVkNjBhZDlmM2YiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoyLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjM3OTRkMDJhODEyMTk0NGQxNzZkMjY1ZTliYjljYzU5ZjZhYjg5MGJjYWRmOGFlZmRlYmRiYmI0ZjJlYTg0NDQifQ"
+          "version": "repo-lines-v1:sha256:b11d33e0171be1f34c7798b8e6f41efbc1ad234d8426d30a1e859d8358895830:eyJzZWxlY3RlZExpbmVDb3VudCI6MjIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImYyZTQzZDgxZGM0M2I4NWE0MmZjY2EwNDA5Njk4ZjczMGMyODNmOTI5NzBiYTdhYzNmMGY4MDg0ZGE0MDBkZTkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjFiMDk2MWYyNGUxMTQxZjcwNjdmZjdjOWNiYmViNWE1OGVhMjY3M2VjNDlhOTMxZTU0ZTlhYmZmNzFhOTkxYzAiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImFhNzIyMjQxMGM3ZmU5ZDI1ZWQyZWEzZjc2ZTc3NWJmNGU1ODBlNDE4YmU2MzNiYmNjZGM1MWVkNjBhZDlmM2YiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoyLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjM3OTRkMDJhODEyMTk0NGQxNzZkMjY1ZTliYjljYzU5ZjZhYjg5MGJjYWRmOGFlZmRlYmRiYmI0ZjJlYTg0NDQifQ"
         }
       ]
     },
@@ -272,11 +268,15 @@
     },
     {
       "id": "claim_0a37117a06e14a6d95b777de87159f58",
-      "statement": "EmotionViewModel is an all-Flow state machine shared by the 'My' page emotion card and the emotion-analysis detail page: it combines a manual refresh tick, the manual job's WorkInfo flow (treating ENQUEUED as well as RUNNING as scanning so the button reacts instantly and process-death recovery re-pushes state), the periodic job's WorkInfo flow, and the emotionScanPaused DataStore flow; while scanning it rebuilds status every 2 s, otherwise once per signal change.",
+      "statement": "EmotionViewModel is an all-Flow state machine shared by the 'My' page emotion card and the emotion-analysis detail page: it combines a manual refresh tick, the manual job's WorkInfo flow (treating ENQUEUED as well as RUNNING as scanning so the button reacts instantly and process-death recovery re-pushes state), the periodic job's WorkInfo flow, and the emotionScanPaused DataStore flow; while scanning it rebuilds status every 2 s, otherwise once per signal change. On 2026-10-06 the flow collection was made lazy and idempotent (observe() started by consuming pages, not unconditionally in init) because cold-start collection caused a concurrent loadSongs() race with PlayerViewModel that broke the play queue.",
       "evidence": [
         {
-          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/emotion/EmotionViewModel.kt#L60-L134",
-          "version": "repo-lines-v1:sha256:def9c892d39d7bfac45f102075560122114092c1a084c1c4c4325585589567e5:eyJzZWxlY3RlZExpbmVDb3VudCI6NzUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVhZjIyY2YwNzMyNTkyYzI0NzE0MWNiZTYxZWZhMTEwMTI2MTJmNWEzMTIyYjlhZjliYmFmNTJmNTcyNGQxOTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijc5YWQyODc0MDg1Yzg1ZGM3MmMzYTFlY2VhN2I2NjYyMmVlNTFkYTA1YTRhNmIyOGU1MjU0YzNlYjdlOTM0ODIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijc5YzA1M2ZlYjIzOWUyOWFhOTViYTM1MDE4NmRkY2Y2YTNlN2JhODhkZjA3Nzc2NWUzNDQwYTAyY2YxN2VhMTcifQ"
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/emotion/EmotionViewModel.kt#L117-L150",
+          "version": "repo-lines-v1:sha256:4818733ead3a31836f51aefb87af31427f401ad4edaa0fdbb20e3423bf16b570:eyJzZWxlY3RlZExpbmVDb3VudCI6MzQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijg0ZDUyYzZkZGNjYTc4MzU4NTVhOGFjODc1YjRhN2FjMDljY2M4ZThkZjRjMzZkNGI2YzRhM2UwODc2NDQ4NmIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjViYWQ4MDIzM2RjZjM2ZmViNTVhNmRlMWIwMjkwZjEyOTIwMDIyNDgzYjc0ZWExYTc3M2QzNGJjNTlkZDgyOTEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijc5YzA1M2ZlYjIzOWUyOWFhOTViYTM1MDE4NmRkY2Y2YTNlN2JhODhkZjA3Nzc2NWUzNDQwYTAyY2YxN2VhMTcifQ"
+        },
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/emotion/EmotionViewModel.kt#L91-L106",
+          "version": "repo-lines-v1:sha256:2f81df52c9302b725bd0eca142cfd921d69a781f55548b1a0ba31c5a62d2c4e5:eyJzZWxlY3RlZExpbmVDb3VudCI6MTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU1NDY2OGNhZjNiYjU3ZTQ3MTBmZmFiODMzNGU1NWVlYjY4NDAxMDdiNDExOWJmZGQ1ZDY1ZjU0YzIyNjRmZWYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImJmZmU0YmMwYjJlMDYxNGUyZjllMThkOTYwOTcwMTUyZDRhMWFlZDg5ZjM2NDUyNjc2YWY5NjgxY2ExMTc0MzMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjBlZTdjZGRjOWNiODVjYmRhN2VmNmY4MDA2NzcwOGJkZTAzMjdjYmQxMTRiMDYyMjZlZjZiN2JmYTUyZWQ1NzMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjNlZTVlNjFhNGRlZmVjMDQzMjA5YjQ3NDUwZjYzODhkNTUwMTIzNWI4N2ZlNmE5YmJlN2Y2YjVlNjFhMDA2OWIifQ"
         }
       ]
     },
@@ -366,7 +366,7 @@
       "evidence": [
         {
           "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/AppNavHost.kt#L335-L349",
-          "version": "repo-lines-v1:sha256:7560fb6a39d67541fc4670e1fcd8c2275b8443988a535f0291be5517d437d305:eyJzZWxlY3RlZExpbmVDb3VudCI6MTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjlmZjdmNmJkMTE5ZTc0YjUyODMwODc1NjI5OTE2OGE3ZjkwMDQ0N2UwMGNhM2I2YTk5ZWVhZGM1NzA1YjRiYzkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImYwZDlmNzM0YmU1YWEwMzkzNWM0OTliNzE0MTEzNTVjZWZhYzJhMmJmNTc5ODllMTI0NmQzNWE3MzUyYzdlOWEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImI1YjljZjQ3MzRmNjE2MDIyMzM4MzcxMjU2ZDhjMGY1MjhlY2M2NDhiMDIzODJjNjQ3ODQzM2FmODE0NmRmZWYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImIwMGJiZTljZTgxMmY5NmE1NjQzYjk2MzlhMDkwYzdhNDJhZjUwYmNiZDk5NjdlOTZjZDQwNmY2YjVlNGEzYjUifQ"
+          "version": "repo-lines-v1:sha256:f68a4d1b71ba04353c42b6e5ef81937121fff79f4da9c31bd1604d050a0c6c45:eyJzZWxlY3RlZExpbmVDb3VudCI6MTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY2NWMyZmFhOTI1YjkyMDMwYmRkNWVkZDlkMTZjOWViOWVkYjA2NmE1MGI1OGJhNTNmODg0YzFkNDU1YzZiMjgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImYwZDlmNzM0YmU1YWEwMzkzNWM0OTliNzE0MTEzNTVjZWZhYzJhMmJmNTc5ODllMTI0NmQzNWE3MzUyYzdlOWEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImI1YjljZjQ3MzRmNjE2MDIyMzM4MzcxMjU2ZDhjMGY1MjhlY2M2NDhiMDIzODJjNjQ3ODQzM2FmODE0NmRmZWYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImIwMGJiZTljZTgxMmY5NmE1NjQzYjk2MzlhMDkwYzdhNDJhZjUwYmNiZDk5NjdlOTZjZDQwNmY2YjVlNGEzYjUifQ"
         },
         {
           "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/emotion/EmotionViewModel.kt#L190-L202",
@@ -431,6 +431,6 @@
   ],
   "verification": {
     "by": "openwiki/0.5.0",
-    "at": "2026-09-07T13:49:59.042Z"
+    "at": "2026-10-10T11:15:45.800Z"
   }
 }

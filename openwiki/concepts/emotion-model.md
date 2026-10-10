@@ -3,9 +3,6 @@ type: "Domain Model"
 title: "情绪领域模型与词表（SongEmotion / EmotionGroup / emotionTagsOf）"
 description: "讲解情绪功能的分层双轨领域模型：SongEmotion 的 V/A 曲线与用户校准字段、EmotionGroup 10 组 V-A 锚定中文词表（含 auto=false 的 WITTY 组）、emotionTagsOf 展示词条判定，以及 Room song_emotions 表的存储形态与重扫/校准写语义。"
 tags: [emotion, valence-arousal, song-emotion, room, android]
-verified:
-  - by: openwiki/0.5.0
-    at: 2026-09-07T13:49:59.042Z
 sources:
   - id: openwiki-source-96607d29d5086ea5d14045e9
     resource: repo://app/src/main/java/cn/com/dcsgo/mihx/app/AppMediaMetadataViewModel.kt
@@ -57,7 +54,10 @@ sources:
     resource: repo://feature/user/src/main/java/cn/com/dcsgo/mihx/feature/user/MoodSlotEditDialog.kt
   - id: openwiki-source-a387c3f7bac0eb0d8fb59638
     resource: repo://player/src/main/java/cn/com/dcsgo/mihx/data/player/EmotionAnalyzer.kt
-generated: { by: "openwiki/0.5.0", at: "2026-09-07T13:49:59.042Z" }
+generated: { by: "openwiki/0.5.0", at: "2026-10-10T11:15:45.800Z" }
+verified:
+  - by: openwiki/0.5.0
+    at: 2026-10-10T11:15:45.800Z
 ---
 
 # 情绪领域模型与词表
@@ -209,7 +209,7 @@ flowchart TD
 ## 用户校准链路
 
 - **入口 UI**：`EmotionCalibrateDialog` 按 10 组分行展示全部词（39 词，`FlowRow` 换行），多选上限 `MAX_TAGS = 4`（选中态必须用 `SnapshotStateList`，这是注释里记录的重组 bug 教训）；已校准歌曲提供"恢复自动"出口（空词保存即清标记）；预勾选当前展示词条，用户可点掉/增补。
-- **控制器**：`:core:ui` 定义 `LocalEmotionCorrectionController`（默认 null），`AppRoot` 在 NavHost 顶层一次性提供——任何渲染歌曲详情情绪区的页面自动获得"不像？标记"能力，无需逐层透传回调。保存成功刷新 `EmotionViewModel`；保存失败（无分析行时清空词、或词表非法）弹 toast，文案仍为"这首歌还没完成分析"。
+- **控制器**：`:core:ui` 定义 `LocalEmotionCorrectionController`（默认 null），`AppRoot` 在最外层 `CompositionLocalProvider` 一次性提供（包住 NavHost 所在的 `AppScaffold`，见 `AppRoot` L219-233）——任何渲染歌曲详情情绪区的页面自动获得"不像？标记"能力，无需逐层透传回调。保存成功刷新 `EmotionViewModel`；保存失败（无分析行时清空词返回 false、或词表非法）弹 toast，文案仍为"这首歌还没完成分析"。
 - **换算与落库**：`AppMediaMetadataViewModel.saveEmotionCorrection` 中，空词 → `clearCorrection`；非空词 → `EmotionGroup.avgOfWords` 换算为组锚点均值坐标后调 `saveCorrection(songId, v, a, words)`。仓库的 `runBlocking(IO)` 桥统一搬到 `Dispatchers.Default` 执行，避免主线程直调。
 - **user-only 行的呈现**：详情区对曲线不足 2 窗的行（user-only 行典型形态）不 early-return，而是显示词条列表并标注"已由你标记（自动分析失败，词条以你的标记为准）"；情绪分析详情页的失败歌曲也通过同一个 `EmotionCalibrateDialog` 标记（tags-only 模式：originals 传空、"恢复自动"不可见）。
 

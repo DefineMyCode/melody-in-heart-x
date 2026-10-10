@@ -3,9 +3,6 @@ type: Concept
 title: 播放状态机与状态恢复
 description: 产品级播放状态机（idle/preparing/ready/playing/paused/buffering/ended/error）如何围绕 Media3 事件运转：ControllerPlaybackStateSynchronizer 的单点快照映射、positionMs 窄流与 ticker 的启停约束、播放状态持久化解耦，以及进程重建后依据 controller 队列判据区分 live session 与完整恢复的决策规则。
 tags: [player, playback-state-machine, media3, media-controller, state-restore, persistence, narrow-flow, synchronizer]
-verified:
-  - by: openwiki/0.5.0
-    at: 2026-09-07T13:49:59.042Z
 sources:
   - id: openwiki-source-eb260f3c4b962822ae793282
     resource: repo://docs/architecture/PLAYBACK_STATE_MACHINE.md
@@ -49,7 +46,10 @@ sources:
     resource: repo://player/src/main/java/cn/com/dcsgo/mihx/data/player/PlayDurationTracker.kt
   - id: openwiki-source-a489ea0751bef8ba68043f26
     resource: repo://player/src/main/java/cn/com/dcsgo/mihx/data/player/SongMediaItemMapper.kt
-generated: { by: "openwiki/0.5.0", at: "2026-09-07T13:49:59.042Z" }
+generated: { by: "openwiki/0.5.0", at: "2026-10-10T11:15:45.800Z" }
+verified:
+  - by: openwiki/0.5.0
+    at: 2026-10-10T11:15:45.800Z
 ---
 
 # 播放状态机与状态恢复
@@ -180,7 +180,7 @@ live session 场景（息屏/后台回来、配置变更、ViewModel 重建）�
 ### PlaybackStateStore 与快照序列化
 
 - `PlaybackStateStore`（`:player`，实现 `:domain` 的 `PlaybackStateStorage` 与 `PlaybackStateRepository`）把五个键写入 DataStore `playback_state`：`play_queue_json`（队列 JSON）、`play_position_ms`、`is_infinite_play`、`infinite_played_ids`、`current_song_id`；旧版 SharedPreferences（`music_player_prefs`）作为读取回退，成功保存后即清除（迁移）。写失败只经 `AppLogger` 留痕，**绝不打断播放控制**。
-- **空会话保护**：队列空且无 `isInfinitePlay` 且无 `currentSongId` 的保存会跳过写入但**保留已有快照**——UI 重建窗口存在瞬时"全空"状态，旧逻辑的 `clear()` 会把 5 秒前落盘的有效快照删掉，导致重启后播放队列恒为空（2026-09-03 真机回归）。显式清空（用户清队列/结束播放）走 `clearPlaybackState()`。
+- **空会话保护**：只要队列空且非无限播放，保存就不覆写队列 JSON，并按下述三支分派：有既有队列且有当前歌 → 保留队列、仅更新 `currentSongId` 与位置；无既有队列但有当前歌 → 写空队列 + `currentSongId`/位置（restore 按 `currentSongId` 兜底单曲队列）；全空且无既有快照 → 不写任何键并保留 legacy 回退（仅真正写入 DataStore 后才清 legacy）。这同时挡住了两类回归：UI 重建窗口的瞬时"全空"，以及 live-session 重连时首帧快照同步置 `currentSong` 后 autosaver 先落一盘"空队列+有 currentSong"（会把 5 秒前落盘的有效队列覆盖成空数组，之后每次杀进程都拿到空队列）——否则队列与进度恒丢失。显式清空（用户清队列/结束播放）走 `clearPlaybackState()`。
 - `PlaybackStateSnapshotSerializer` 把 `songIds`/`currentIndex`/`playMode`/`playOrderIds` 按出现次数编码为 JSON 数组（重复入队语义得以保留）；解码按当前曲库过滤失效歌曲、`currentIndex` 缺失或 JSON 损坏返回 null、`allowEmpty` 仅在无限播放或有 currentSongId 时放行空队列、无限播放已播 id 过滤到仍存在的歌曲。
 - `saveCurrentPlaybackSnapshot`/挂起版 `persistCurrentPlaybackSnapshot` 只覆写 `CURRENT_SONG_ID` 与 `PLAY_POSITION_MS` 并**保留队列 JSON**：用于把最后在播歌曲与进度覆盖到既有队列上（队列索引陈旧时恢复端按 `currentSongId` 校正，歌曲不在已存队列时以单曲队列兜底）。
 

@@ -1,14 +1,18 @@
 {
   "schemaVersion": 1,
-  "pageVersion": "sha256:78d2cde92ef7c82bd01b45f0bc009fccffe9c7a0f6044bd3300edaaee40c2a5e",
+  "pageVersion": "sha256:e13ef34d527b33b187164b4ac518b521c043778d37cb6e1ee414379950bc2f13",
   "claims": [
     {
       "id": "claim_466622531e04474fbe41f37e24ac9842",
-      "statement": "The project registers exactly 14 modules in settings.gradle.kts (:app, :core:model, :core:common, :core:ui, :domain, :data, :player, six :feature:* modules, :benchmark), which is the same list verifyProductArchitecture requires.",
+      "statement": "The project registers exactly 15 modules in settings.gradle.kts (:app, :core:model, :core:common, :core:ui, :core:skin, :domain, :data, :player, six :feature:* modules, :benchmark), which is the same list verifyProductArchitecture requires; each module must keep a .gitignore with /build/, /.cxx/, /.externalNativeBuild/, /captures/.",
       "evidence": [
         {
-          "resource": "repo://settings.gradle.kts#L22-L37",
-          "version": "repo-lines-v1:sha256:787428a5d5181e2f997fc99f8c946ff79e8e31ab2019cc2cf2a4b78ed7e95516:eyJzZWxlY3RlZExpbmVDb3VudCI6MTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImRlZDY5YzRlNjFmNjFjYzg0YThhYjgyOWUwYzkwMTJhZjM4YjI4MTg0YjU3ZGJmMDJhNGE5ZTIwZjA3MTEyYjgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjhjMDZiOGM4NTFmZDI0YmMxODEzYzkzYThkYjI2MGM5M2NjODdkNTY4NDk1NTM4YzNkYzU1NDkxMjhiZDgwMzIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjE5ZTc2MzU1Y2YxMTk5NDgwYzNmOTk4MzZiMTQ4NmM4NDFkODkxZmFhZDkwNGM2MDhlMDkzMDIyZDM3NTdhZWUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImZhZmJhMDUyN2MzOTUzYzRiNmUwZTViNTczOWJhODM2MTJmODA1M2JjZGM5NDY2NzMwMTkzY2QxZDU5MGI0MDgifQ"
+          "resource": "repo://build.gradle.kts#L76-L92",
+          "version": "repo-lines-v1:sha256:d4b652714e00f492d36fda68b4b684f6704fa9371008e33e494e6834bfbf1676:eyJzZWxlY3RlZExpbmVDb3VudCI6MTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU3MzRiZDA4YTk1ZmVmNzI0MjRlYjUwNmM4NGMzYWI1NGI1MGE3OGI3MTEyODgxODcyY2E3YzRhY2JmOWZkMWEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU5MDlhNTNhNjE4ZDAyOGUxZDMwMDBjMGE3YWJjZWVjYmU1ZmIzN2Y0ZTUxMWVmZTQ2NjQzZmFkNmU2Njg3MmYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImM4OTczYjE2ODgzZTU3NWU0YWFlNDg4YjE0OWNmMTQ0YWUzZjk2MTRkNzg4NjdlMTExMzk2ZWVkZDk5YWYwYzkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImM5MzQ5ZWE5MWQ2ZjZmMTZmZWY3OTE2OWJhMDU1YTJmN2E3ZWQ1MjI2MGVjMDliMzFjOWFkNzk1NGY4MDdlZmQifQ"
+        },
+        {
+          "resource": "repo://settings.gradle.kts#L22-L39",
+          "version": "repo-lines-v1:sha256:e27364e35b8aae2be42f40259b994f6517a17d7dd22f5e5614e8c1a4c89888a5:eyJzZWxlY3RlZExpbmVDb3VudCI6MTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImRlZDY5YzRlNjFmNjFjYzg0YThhYjgyOWUwYzkwMTJhZjM4YjI4MTg0YjU3ZGJmMDJhNGE5ZTIwZjA3MTEyYjgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZhZmJhMDUyN2MzOTUzYzRiNmUwZTViNTczOWJhODM2MTJmODA1M2JjZGM5NDY2NzMwMTkzY2QxZDU5MGI0MDgiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjE5ZTc2MzU1Y2YxMTk5NDgwYzNmOTk4MzZiMTQ4NmM4NDFkODkxZmFhZDkwNGM2MDhlMDkzMDIyZDM3NTdhZWUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
         }
       ]
     },
@@ -73,12 +77,12 @@
       "statement": ":app is the only module that depends on every other module (:core:*, :domain, :data, :player and all six features); AppNavHost.kt is the single composition point that wires feature Route composables together, so no feature renders another feature's UI.",
       "evidence": [
         {
-          "resource": "repo://app/build.gradle.kts#L121-L134",
-          "version": "repo-lines-v1:sha256:02641d411d51f6ba64a22d485cbb1a75e5043480d16d852b06c7fa18cfae716a:eyJzZWxlY3RlZExpbmVDb3VudCI6MTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImNiYTMxNDVhZWUwZGEwNTkyNGQzYWQwYjFlZWI0YWRlNzc2MWI2NjdkOGE5NjE0NmRlZWYzOWFiZDFjZTQ4Y2IiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQwNmY5NjU3ZmM2ZWE5NjMzMjcyMDY1MWIzMDJkMDc2YTgwMzExYzQ3NWJmZDBkMTU4ZDE2MjViNGNkNTAyYjMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjE5ZTc2MzU1Y2YxMTk5NDgwYzNmOTk4MzZiMTQ4NmM4NDFkODkxZmFhZDkwNGM2MDhlMDkzMDIyZDM3NTdhZWUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjdjMDc4ZDAyODg3YThkNzRlZjk4MWJjZWEzM2Q4NTRjNDFlOTBkMzc3N2Y1NGExMDUyMWJjMjNmMDM0MTRkZWQifQ"
+          "resource": "repo://app/build.gradle.kts#L123-L135",
+          "version": "repo-lines-v1:sha256:15530f0e7050ec1103584b65f0d1f15d4005692e5c29e815229023aa462a1e1e:eyJzZWxlY3RlZExpbmVDb3VudCI6MTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNmOTg1YThmZDg2YjdkZTdhMTI3OWVhMDIxNjYwZjE1NzViOTg0Nzg5NDY3YzBiNDI3Y2JhZmIwZDJhMDkzYTgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQwNmY5NjU3ZmM2ZWE5NjMzMjcyMDY1MWIzMDJkMDc2YTgwMzExYzQ3NWJmZDBkMTU4ZDE2MjViNGNkNTAyYjMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjFiMDZkYTA3ODFhODI3YmYwYmI1OWFhMDQ3Yjc5YjFjZjQwZTM0ZDkwMTBhZGFkMzk3MmM0YmIwNjA4ODRmMGEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjdjMDc4ZDAyODg3YThkNzRlZjk4MWJjZWEzM2Q4NTRjNDFlOTBkMzc3N2Y1NGExMDUyMWJjMjNmMDM0MTRkZWQifQ"
         },
         {
-          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/AppNavHost.kt#L35-L81",
-          "version": "repo-lines-v1:sha256:4562394aafea2093e13bceba23a38eb871f51eb694ff3c0f3eb5b3c1c676bc2c:eyJzZWxlY3RlZExpbmVDb3VudCI6NDcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImViYzQ3OWFjM2JhYWQ5NGM3MDM0NzExYmNjN2JhOTBkYjBhNzljODQwZmM3YmUxYjIzN2VmODI3YjQxNTA4OTgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijc5YjhmMjAxODc2MzY3MWM2NThiZjVkMTEyNjU5OWExM2U2NDU0N2E4NTJlM2JlMmNiN2E4NGZmY2VjYmM0MWUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjJjYmY0Yjg1ZWJkNTUxNGYzOTU3NTVkMzg4YmYwMDU4MmFmMTRjMDM1ZmE2M2Y2ZWQ2NzBlYTNlNDliN2RjYzEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImQyMDhhZmQ3YmYyZTYzZmE5MjZjZTA2M2NjNTRjNjdlODU0NDc3OGQzZTg5YWE1YWRjNzBiMzFmZmMzNGNmMDMifQ"
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/AppNavHost.kt#L112-L147",
+          "version": "repo-lines-v1:sha256:544d6d3c00c55cb73555c090d59b62eec9c4cb4307be444bee382a88811e00a2:eyJzZWxlY3RlZExpbmVDb3VudCI6MzYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjJlOGQ5NzlhM2JiNjU4M2YyOWJhYmZlZmJlNGM4YjUwMGMxMDcxOWJjOTc4ODgwNzYyMTlhYWY3NTUzZDAzOGIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNmMTYzZjc3ODZjNDJjYTg4OTI3MGY3NTNhNzgwNjI2NDI2YzAzZjk3M2EwNWFkZWFlZGQ0ZmE0ZDI3MGYwZDUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImZlODkzYzdkMmE1NjY3ZWE3YWJmMThjMjAyNmVmMmE4YmI5MDZjZDBhZjA5MzE2YzViZmNkNjU0YzY1MmQ3YTAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQ5ZWM0YmZjZDQ0NDM0YWNkMTZjZmM2MTBkMmRiYzk5MzFjOGQ0M2M5M2ZiYzNkYTU0ZGU0MGVmYWI4MmYyZDkifQ"
         }
       ]
     },
@@ -280,19 +284,19 @@
     },
     {
       "id": "claim_2e6bc46dbea24e1cbc6943380f7f7e42",
-      "statement": "The gate fixes release build shape and manifest placement: :app release must set isMinifyEnabled = true and isShrinkResources = true, a benchmark build type must inherit release settings, the :app manifest must not declare AppMediaSessionService (it lives in the :player manifest) nor request READ_MEDIA_AUDIO/READ_EXTERNAL_STORAGE (import is SAF document-tree based).",
+      "statement": "The gate fixes release build shape: :app release must set isMinifyEnabled = true and isShrinkResources = true, a benchmark build type must exist with initWith(getByName(\"release\")), and the :app manifest must not declare AppMediaSessionService (it lives in the :player manifest) nor request READ_EXTERNAL_STORAGE (SAF document-tree import). READ_MEDIA_AUDIO is allowed: it accelerates import via java.io.File direct traversal when granted, with SAF as the primary path and fallback.",
       "evidence": [
         {
-          "resource": "repo://build.gradle.kts#L483-L494",
-          "version": "repo-lines-v1:sha256:8d81bb8ee1dfaabffe5e686f858f007f206b997e2227cffe42746cbb21e456f9:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImMxYzJiNDE2YjhiM2ExZDk3MWRkYWYzYWU4YzIxZTNjYzEwNjQxM2E4NGQxODVmMmU1MTg2YTU4OTYxNTJmODIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjAzODVlYWY1NDRhZGUzZTY3M2M0NmMwZmNkMjlhZjFjOTBjNGYxNjc4MjEwYWMxYTViZWEwNjg1NGJjMTkzZjkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImQxZDMwZjU0NWFkZjgwMzUzZmRjZWJkZThmNTQ3MjVlZGM2NTYxMGI1MzAzMGIzMzQ3YWExNWFiMDRhOTBiODgifQ"
+          "resource": "repo://app/src/main/AndroidManifest.xml#L11-L15",
+          "version": "repo-lines-v1:sha256:9128a2b2b690d27d443453baedf366adf519ceea15fb8581f2b2cec7cb94efee:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZDIxZWNjMTZjNjliZGEzN2EzNDU2M2I5Y2MwNzhmZWM1NWExNWFiZThmMTZiNDQ1ZTA2YzQxNjdhMGU4YmE5MiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDkyMDRmNjc2ZDFlMzkyMDA2ZThmYTdiODc4NGI2ZTU1OWUwNDFhMTMxOGNhZGM3YWVjMmRkY2JjMTdkN2Y2ZSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiOWU2MDBjYTgxMjQ1OTQ1YWI1NzMxNDlhZmQ4YTVlZjhjNzkxNjI1NTFhNDA0MWJhMDFiMDljNWExNzNjZGVmNCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYzhkMTAyNjRmNDYzZjE1ZDE1MDVlMmQwNmI0OTkxMTMzMjA5NTM5YTZjMjAyMDc1NDMzNDNhMGU5NWJhMzY2NCJ9"
         },
         {
-          "resource": "repo://build.gradle.kts#L504-L522",
-          "version": "repo-lines-v1:sha256:f1e737581843c12ef1dd25fdb204afef947480146a14a92aea4caf913a612a68:eyJzZWxlY3RlZExpbmVDb3VudCI6MTksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBmMDFhZGEyYjRlMzM3NjNkY2U5MGQzMTM1MGNiYzM1NWYyMjg2YThjMDBlNDcyNDY1MzdmNGYyYmYzNWVjZTEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjQ4ZjU4ZWQwZTE0N2ExYjYyMjI0NzZlNzI1NmQ0YmQ5YjQ3OWJiNDA5OGJlOTRjMzIxYjA5OTVlZWUwYWQ4NjgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjY1YTY2MDRmODJhYmY1NDQ3NWI3ZTQzNTRlNWVlN2Y0MThiZTY1YjQ0NTA4YzBjZTY2NDUzN2JkOTFlYjAwNWIifQ"
+          "resource": "repo://build.gradle.kts#L484-L496",
+          "version": "repo-lines-v1:sha256:f170d76d26699badb610a3b4653d7a78625bf6bf8ae55df3905bd6fb7d6221f8:eyJzZWxlY3RlZExpbmVDb3VudCI6MTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImMxYzJiNDE2YjhiM2ExZDk3MWRkYWYzYWU4YzIxZTNjYzEwNjQxM2E4NGQxODVmMmU1MTg2YTU4OTYxNTJmODIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjAzODVlYWY1NDRhZGUzZTY3M2M0NmMwZmNkMjlhZjFjOTBjNGYxNjc4MjEwYWMxYTViZWEwNjg1NGJjMTkzZjkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImQxZDMwZjU0NWFkZjgwMzUzZmRjZWJkZThmNTQ3MjVlZGM2NTYxMGI1MzAzMGIzMzQ3YWExNWFiMDRhOTBiODgifQ"
         },
         {
-          "resource": "repo://player/src/main/AndroidManifest.xml#L1-L10",
-          "version": "repo-lines-v1:sha256:3358b8efa67184bd624ac8ce6b721f046fd318fa5c48e4cbb49ce59e5dedec97:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQzOGRmYjA5MGQ3YjE5MTgyNjY5OTA4YTg5MTE4NjM2OGQ0YWY1YjAxOWE5ZTcxNjhlNGMwOGM5MjgyN2I1NGQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImJjMzY3NmVjMzcyYjRmN2MxZTViZDY2MjNlYzY1NTdjNDgwNjE1N2ZlNWEwZjAwNTI3Zjg0M2QwYmY0ZjkwMjUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImI4MmJjODkzZDNkNzJiYTEzYWY1YzFiN2Y4ODIwMWFjZTJhZjcwODE4YWU0NzJiNDM5ZjhiODRhN2E2OGI2OTUifQ"
+          "resource": "repo://build.gradle.kts#L512-L524",
+          "version": "repo-lines-v1:sha256:3b5da5415a185cfece3425aa052607df6e05e520a25c125a641041ddc3a5dbf9:eyJzZWxlY3RlZExpbmVDb3VudCI6MTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImYzMWVjNjVlNGY1M2QzYzdiYWE1MGNiMzhiNDMzNWMzMzY0OWNmNmE0NTA0YWUwN2U0ZThhMDFiOGUwYWZhN2EiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjI5NzBhYTc1NWRkNTI0NWI1MzJlNmEyNmU3ZjJiMGY5Y2NjYWI2ZjA3OGZlYTdhYTY4NDU3MGY5ZTY3NWNmZWQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjY1YTY2MDRmODJhYmY1NDQ3NWI3ZTQzNTRlNWVlN2Y0MThiZTY1YjQ0NTA4YzBjZTY2NDUzN2JkOTFlYjAwNWIifQ"
         }
       ]
     },
@@ -357,10 +361,94 @@
           "version": "repo-lines-v1:sha256:028d3523e815fbcda36485c72cfe473b7cc64d6f57f961af38e84cf7318764bd:eyJzZWxlY3RlZExpbmVDb3VudCI6MTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjJjNjM4YmNmMTBiZjg5YTQwYzhmMzVlNmQ5ZDUxMTI4ZmJmZTFmNjRhMDQ4MjlhZDljMTZmMjcxZWJiM2IwN2YiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjMwYzFmMTg4ZjE0MmVkN2E4MjQ2ODBiMjA3MTcyYzU1MTliYzYxNGE0OGZkYTdjZjE2N2VkYjhkZGY3OTk1NmMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjJkOTg1NjJjMWJiOWY2YTUxOTdjMTQwMzNlMjU0YWJkYWYyZjA4NDc1NDIzOTQ4Y2JhYTJjYjQ4OGI5OGNmNDMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijg0MDU5ZjVkNzc0ZDkxZDNiZTJjZDJlZGM1ZGY0YTQ3OGZmMWUyOGM4OTA3MWYzYmVkNmVhNDdjN2VkNTRkNzAifQ"
         }
       ]
+    },
+    {
+      "id": "claim_70d8effbccda4d6d867d5dfd723de436",
+      "statement": ":core:skin (namespace cn.com.dcsgo.mihx.core.skin) is a bottom-layer core module depending only on :core:model (for ThemeVariant) and org.json; it carries no Android resources, no R.* ids and no Compose runtime, so a skin description is headlessly parseable and unit-testable. It is consumed only by :app and :feature:user.",
+      "evidence": [
+        {
+          "resource": "repo://app/build.gradle.kts#L126-L126",
+          "version": "repo-lines-v1:sha256:2a0fee454f9cdd69962ad2768fe53a2cbb29525288435af0d5ada996c33187c4:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMmEwZmVlNDU0ZjljZGQ2OTk2MmFkMjc2OGZlNTNhMmNiYjI5NTI1Mjg4NDM1YWYwZDVhZGE5OTZjMzMxODdjNCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMmEwZmVlNDU0ZjljZGQ2OTk2MmFkMjc2OGZlNTNhMmNiYjI5NTI1Mjg4NDM1YWYwZDVhZGE5OTZjMzMxODdjNCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNjVhZjg2YjkzMWE5Y2Y4Mzk3NzE3ZGM5OTUxZDNiYmZjMTNlNTc4M2YyNWNiYzQ1ODYxZjcwZWUxMmM1Njg5MCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZjBlNDU4YjY5YWQzNmZmNjE0MTBlZGNjMzA3NDQ0Y2FlOWEwZDA3ZmUzNWQ4NzdjNTViMTRjMzFlYmNkYzA2MyJ9"
+        },
+        {
+          "resource": "repo://core/skin/build.gradle.kts#L23-L28",
+          "version": "repo-lines-v1:sha256:9da72184061f62cdaef6861cd686e905e0238d9426b37a0ddde3e34038460a58:eyJzZWxlY3RlZExpbmVDb3VudCI6NiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiY2JhMzE0NWFlZTBkYTA1OTI0ZDNhZDBiMWVlYjRhZGU3NzYxYjY2N2Q4YTk2MTQ2ZGVlZjM5YWJkMWNlNDhjYiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMmU3M2VhNTMwYjFkNjIxNTQxYjRkYmE1ZGEyMmYwYWViN2Q4ZmRlMDg5OTcwMTFhZGUxMzIxMGJiNjI2N2ZiMiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMTllNzYzNTVjZjExOTk0ODBjM2Y5OTgzNmIxNDg2Yzg0MWQ4OTFmYWFkOTA0YzYwOGUwOTMwMjJkMzc1N2FlZSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjEsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNDEyY2EzNDVjY2Y3NWJmOWMwODA2YmNlNjk1YmU4ZGU4MDhiNzk5ODQyNTFhN2E1NGQyMDJjZjYxMDFkZDQ1MSJ9"
+        },
+        {
+          "resource": "repo://feature/user/build.gradle.kts#L19-L24",
+          "version": "repo-lines-v1:sha256:885b825ebdc45b7089bbf935c654430d64b0512689b422a05d9c4af4f0ddf2e3:eyJzZWxlY3RlZExpbmVDb3VudCI6NiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiY2JhMzE0NWFlZTBkYTA1OTI0ZDNhZDBiMWVlYjRhZGU3NzYxYjY2N2Q4YTk2MTQ2ZGVlZjM5YWJkMWNlNDhjYiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDVhNGFmNzBlYjI5MTYwNmQxNDgxNWRlN2E1ZjE4MzQxYWVhYTRmY2E4Mzg3ODQ4YmMwMWNkZjM0YTE2YTlkOSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNmM4NTdiZGUyMmI4YjEwNDFjOTBiMzMzNGZkOGMwZTI0ZmU1OTA4NjBhODY0ZTc2OTU5NWRmMGRlZDc1OTk1NyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMjZhMTViZDA1YmI4ZWQzMGEwYmQ0N2Y4M2VmOWExODM4ODEyYWNhOWNjZTcyMjgyOTNhYzc4OGJjNGYyODI3MyJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_77d2a0f4fd8e43f5b678c5fb4bb9ac47",
+      "statement": "A skin is never executable code: it is a JSON description the host uses to assemble existing parts, so import carries zero composition-time crash risk. SkinParser validates fail-closed — unknown part names are rejected (never silently downgraded) via the SkinPartCatalog whitelist, unknown fields are ignored for forward compatibility, out-of-range tokens are clamped as warnings, schema version must equal 1, and validation returns all issues at once through the SkinValidation sealed type.",
+      "evidence": [
+        {
+          "resource": "repo://core/skin/src/main/java/cn/com/dcsgo/mihx/core/skin/Skin.kt#L6-L12",
+          "version": "repo-lines-v1:sha256:01599f56e8f0b113d6d2a1c4984168c132cc1fc5340e9f063f21df41f8af41fe:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYWVlMzVlMjYxZTk2Y2FhNzBmZmM2MWM1Nzk5MGU1ODEzM2VmZTFjMGRmMjg4ODE4YmQ0YWI5MGM3ZTY3NDUwZCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNjQ0MjlmNGZhZTQ4ZWU3MGYyNjBmYWE2YmU5OWRmOTYwOTVmNWNlMjk3ZTA0MDYxZjJiYzU0ZTIyZTJjOGM0YiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMzIzOWI0NGVkZGUyNjg3MDE1NjliY2EyOGMxNzBkMzUxOTNmNDE5YWE4YWNlM2Q0MDVhYmQ5MTA4MzEzMDM4OSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYTNjNDQ3MDA5N2QwMWI4YzMwMzU0ZTY2NjcyYTM5MTQ0N2NlODljOWI1OTk3ZTFmZmIxMTZlM2UxZTUxNjcwYiJ9"
+        },
+        {
+          "resource": "repo://core/skin/src/main/java/cn/com/dcsgo/mihx/core/skin/SkinIssue.kt#L73-L93",
+          "version": "repo-lines-v1:sha256:db104e58fb067e91a9834f65eb08d267eb2154626ee9d9cb597691fb1b29742f:eyJzZWxlY3RlZExpbmVDb3VudCI6MjEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImYwOTlmMDhmMWRlMTVkYjc0ZDZmZjM4Mzg0Y2FiNWExNTExMTZlNmI0Njg2NDg2ZWM4MDMyOGJhOGNmOGVjMGEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjE5ZTc2MzU1Y2YxMTk5NDgwYzNmOTk4MzZiMTQ4NmM4NDFkODkxZmFhZDkwNGM2MDhlMDkzMDIyZDM3NTdhZWUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        },
+        {
+          "resource": "repo://core/skin/src/main/java/cn/com/dcsgo/mihx/core/skin/SkinParser.kt#L17-L40",
+          "version": "repo-lines-v1:sha256:dd4e2305078d2a61178808f4f7a345d1ff7e8329fd2e68765efea6c3fed3318d:eyJzZWxlY3RlZExpbmVDb3VudCI6MjQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImIxYTIyZDY3ZWQ0NjhkYWZhOTQyNWVkZDM4OGU0ZWMyYzM4M2VmNDdiMTM5MzUzYjhjMWY1Yjc1YzRiYmE4OWIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQ3NzE4ZjVhOGUwYWYwMWQyNTVmZDBhOWY4NjM1MzU3NmYwOWExM2U2MmM5MDFlOWM4NGJkZmQ3MDY3MzZiMjAiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjY3YzllZTcxODZkMzFiMGY3ODkyN2M3YzI1MThiYTE4ZGU5OGQ4OWQwYTczMzkzYjY1MjZlMGJkODcxMjBhN2UiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjFhODU2M2Q5YjRkMGIxYzAxM2EwYTVjNjFlYjQzZGE5ZDNjNWM3MjA5YjFlMGQyNmM1YTY2NGNlYjY1NTE0YzgifQ"
+        },
+        {
+          "resource": "repo://core/skin/src/main/java/cn/com/dcsgo/mihx/core/skin/SkinParser.kt#L419-L429",
+          "version": "repo-lines-v1:sha256:b61d0bcef09508e558975f6fd0259a667e75d43374785417f6966220b4e59cc1:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjYzM2QzNjkzZjNhZTM2ZGEyZDkwN2RiNGYyNjdjY2IwMWJmNDllZGU3MjQxYTIyNTFkN2RiYmE3N2UxOTg4YmYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU1MjJjNDJjZDE5YzZkMDNkODA4YzQ1MjcyMDU1MjgyNWI3ZWExYzViNDkxYjIxODUxMWNhYzc0MTVjZjlkOWIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjEyZWUyZGNmNmVmNjM4OTcwYmZiZGU1YjkxNmI3ZWY2YTI0NTEyNjhkYWQ4NzhkODhhYzY3YzdiODUwMGY1NjciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjIzMjIxODNlYTUzZjFjOGVjMjc4MTQyMGZmNWE0NzE0NWJmNzU4MTlkYmI1ZDk1OWI1YTQ1YWIxZTJhN2FjODYifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_0d4d35a1ba034028a3a4e0c8bbd70358",
+      "statement": "The mapping from skin description symbols to host artifacts lives in :app, not :core:skin: SkinShellResolver maps page keys to routes (library→AppRoutes.PLAYLIST, player→AppRoutes.HOME, me→AppRoutes.USER) and part/icon names to drawables, keeping :core:skin free of routing and android.resource knowledge; the runtime AppShell and the SharedPreferences-backed SkinSwitcherStore also live in :app.",
+      "evidence": [
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/AppRoot.kt#L112-L140",
+          "version": "repo-lines-v1:sha256:5dc501c4a5f1548b91f06055bcc5cb9e7c7424c0f537efed84f36e264d4c8fa8:eyJzZWxlY3RlZExpbmVDb3VudCI6MjksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAyYmZmNWYzMTFiNDk2M2U4NzU5YWMyZWJmMjQwODdjNzFlNzUyZDRhOGRlMzI1NjE0YWFkZGNmMjY4MmQyMWEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjAyYWZlNDQ2NzJjMDg0NmIwZmRhYTlmOWJkOGQ4MGVhOWNlZDViYjExMzIwMjUxMzAwMWI2NjI3NDg4ZmM0ZmIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjkwYjRiMmE1NmU0YTcxMDBjMTVkODU0OWU2ODIwZDIxNmM3YjY1NTJmYWYxNmUxZmM2YTEwZGI2MmYzYzM0ZTMifQ"
+        },
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/shell/SkinShellResolver.kt#L15-L31",
+          "version": "repo-lines-v1:sha256:a97dcf6dc4659e1be5a86d9fc72fc85fc03f8af04c93851226aeafcd43673796:eyJzZWxlY3RlZExpbmVDb3VudCI6MTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImM2ZmJhMjQyMDhiY2E3MDllNWU3MjRkZGI2MGZmMWNkMThkNTZmZGE0OWZmMTcxNGEwNmQxNTQ2OTQzMDhlMzUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImNkMWUxZTI2MGJkYTc3MmZhYTk4MTU1ZDM4MDhmMDk1YzhiZDJhN2U5YTUzNmNiNzdiOWE0N2M3MTQ0NjE2NzgiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjM4ZWFkNDlhMGI2N2E2Mzc0Y2QwOGUyYWVmZWQ2NzYxNDdkMDExMDE4NjMxYTE2ZDc1N2FkYjE5MTc2M2FiZDQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImQ0YTkyZDBkOWFlOTcwMTBmMWNjZTY5MzQwOWZmNjUyNjRmMGQ4M2I4ZGUxZmE5YzQyYWI4NDRlZGU1ODk4MmMifQ"
+        },
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/shell/SkinShellResolver.kt#L49-L53",
+          "version": "repo-lines-v1:sha256:f1f5a04a9c0b86700b891687d02f3bd8b3e9f1d3fdece4bbf2632594c8647755:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYmM4ZmE4YzljN2IxMDJhNDg4MDY1ZWE4MzJiZmMzN2U3ODRkNzViMDJiOWY1YWIzMWVhNWVlODNhNDk4OGQwMyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMzBjMWYxODhmMTQyZWQ3YTgyNDY4MGIyMDcxNzJjNTUxOWJjNjE0YTQ4ZmRhN2NmMTY3ZWRiOGRkZjc5OTU2YyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYzJkNGNmMGRjYzg0ZjEwMDNhNGEwNGNkOThhY2EzMjBlOTUxNDNiMDVjMmUzNDg2OWY3YTczMGQwOTdlYWNlZiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTcwYWJiMTQ5OTYwOGFkMTI3M2E5YzcwNThmOTllZjk4MTRkM2FiZjlmZDljYjQ1MTczMzk0YWUzMWUxYmZlMyJ9"
+        },
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/shell/SkinSwitcherStore.kt#L22-L25",
+          "version": "repo-lines-v1:sha256:f49b1584f6947e1c76f793ffa2e95614f8ead949d012b3b7b2306a63a4533b18:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMWEzZTkwOGYyYWNiOTc4Y2M4YmYwMjJjZTdlZTU1YWI5YjYwZGE4OTg5ZmI5MjFjYzU4OWRmZjc3NzFlYzg3MiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMDFiYTQ3MTljODBiNmZlOTExYjA5MWE3YzA1MTI0YjY0ZWVlY2U5NjRlMDljMDU4ZWY4Zjk4MDVkYWNhNTQ2YiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiOGE1NDJmNzVlZDlhNWZmYTEyZjFlMTQyZGQ5N2Q0ZDlhYTUyZTZhYzIwODE0YTM2NWE3MjE1MWNmMGQxMjE1ZSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZjkwZjQxN2Q2ZTA5Yjg3NDg4NTFkZjJjMDZkODAyN2I4ZGJhZWE5ZTliNTg2YjZkZjY4MDIxZjM5YzNjNjQ0ZSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_d7b585d1f3a3410386c73ff9b1f60e75",
+      "statement": ":feature:user hosts the partitioned \"我的\" page metadata: UserSections part names (userInfo/playStats/moodTimeSlot/emotionScan/fileCheck/skinSwitcher) must match SkinPartCatalog constants, cross-checked by UserSectionsMatchDescriptionTest; :feature:user is the only feature module that depends on :core:skin. :feature:playlist hosts the library sorting helpers SongSorter and SortModeDropdownMenu.",
+      "evidence": [
+        {
+          "resource": "repo://core/skin/src/main/java/cn/com/dcsgo/mihx/core/skin/SkinPartCatalog.kt#L48-L67",
+          "version": "repo-lines-v1:sha256:4c06d0d2c4dde843844b7174d5691baf1c44f1c4a5e54286c99c24dad252285d:eyJzZWxlY3RlZExpbmVDb3VudCI6MjAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM5Y2JiYzY1NDY5ZGIxY2EyODQyZWZkOTdkZjdlZTJjZTZjYzE1NzE0ODJkMDFhMThiNzkwYTEwYzdjNTEwZjMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjVhNGFmYzI1ODI5NzNlZjkxMzk3NzkwYmIxMjNhZTM0ZWJlZmEwNjk3MjU4MDZhNmE1NDhkMzIwMDg2ZTc1Y2EiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijc3MmMwYWFmYWE4MmM4MzUyZWY3ZTAxODlmNWQ1MjEzYjhkZWZmOGM4NTQyYzBiMzc2MmRjYjAyMjliYWRlNmMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImI3ZjNjNGEwYWIzMjhkZmMxMDVmMDgyMDdhYzZiM2VmMmU2MjA1OGQxMzMyOTcyMGUxMzRiNTczOGMxYTc2YjAifQ"
+        },
+        {
+          "resource": "repo://feature/playlist/src/main/java/cn/com/dcsgo/mihx/feature/playlist/SongSorter.kt#L14-L24",
+          "version": "repo-lines-v1:sha256:beefc1cef9f977caa069a02577c711907df68a32345204f34f4c5c9480805ad5:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijc2NzliYjFmNDFkYzM3YzY3OGZhYWVhYTc0YTYyMGM2MTVkZDE0ZTY3YjRiODhmODAzOTViOGM2MmQ5NDdhNjciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijg1ZWQ4NTQ4MzJjNDc3ZmQzOWRkNzhlNTgyODBhMDdjNzUwNzVjMTA0ODU5MWEyNTE3OTk2MGJhOGUzOGJiZjYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjlhNzZlMjliZjk3NWE5ZjhmMWJkMTE2YzRjZTk1NGU1NmQyOTQ4N2I0ZjM3OTZjMzlkNGFlYjJhYjVmNGRlZDUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImMyZjZiMWM1OWYxNGEyM2VmZDE2MTk4NWUyNzM2MThjNDMzNThlNGVlNmIyYTc4ZDhmMmU5Njg1NzM2MTA3NzAifQ"
+        },
+        {
+          "resource": "repo://feature/playlist/src/main/java/cn/com/dcsgo/mihx/feature/playlist/SortModeDropdownMenu.kt#L26-L26",
+          "version": "repo-lines-v1:sha256:10e7afa87fa6c7d39757b770a8b5618a28025a3c19df37fc7320be8809011575:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMTBlN2FmYTg3ZmE2YzdkMzk3NTdiNzcwYThiNTYxOGEyODAyNWEzYzE5ZGYzN2ZjNzMyMGJlODgwOTAxMTU3NSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMTBlN2FmYTg3ZmE2YzdkMzk3NTdiNzcwYThiNTYxOGEyODAyNWEzYzE5ZGYzN2ZjNzMyMGJlODgwOTAxMTU3NSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiOGZjNjM0ZWViMGFmZTFlNGViYTE3YTM2OTg3YWNlYTdiYWI1MjBlZWI5ZTNhYjhiYmIzYWI5NjlmZTQ3MjVmYSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZDczNTI4NWI0ZWEyMmQzMzQyMmU2ZTU1YjkyMjExNzIwYzNiMTZlNmRjNThlZjQ5YjU2ZDIzN2JiNjIyOTE2NiJ9"
+        },
+        {
+          "resource": "repo://feature/user/build.gradle.kts#L19-L24",
+          "version": "repo-lines-v1:sha256:885b825ebdc45b7089bbf935c654430d64b0512689b422a05d9c4af4f0ddf2e3:eyJzZWxlY3RlZExpbmVDb3VudCI6NiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiY2JhMzE0NWFlZTBkYTA1OTI0ZDNhZDBiMWVlYjRhZGU3NzYxYjY2N2Q4YTk2MTQ2ZGVlZjM5YWJkMWNlNDhjYiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDVhNGFmNzBlYjI5MTYwNmQxNDgxNWRlN2E1ZjE4MzQxYWVhYTRmY2E4Mzg3ODQ4YmMwMWNkZjM0YTE2YTlkOSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNmM4NTdiZGUyMmI4YjEwNDFjOTBiMzMzNGZkOGMwZTI0ZmU1OTA4NjBhODY0ZTc2OTU5NWRmMGRlZDc1OTk1NyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMjZhMTViZDA1YmI4ZWQzMGEwYmQ0N2Y4M2VmOWExODM4ODEyYWNhOWNjZTcyMjgyOTNhYzc4OGJjNGYyODI3MyJ9"
+        }
+      ]
     }
   ],
   "verification": {
     "by": "openwiki/0.5.0",
-    "at": "2026-09-07T13:49:59.042Z"
+    "at": "2026-10-10T11:15:45.800Z"
   }
 }

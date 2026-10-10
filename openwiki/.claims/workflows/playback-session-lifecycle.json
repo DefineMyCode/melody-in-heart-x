@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "pageVersion": "sha256:d92d44012fd6f57ef8ce0f7e2e2c09d852492b5a3a95e689c354113c794b50c9",
+  "pageVersion": "sha256:067a04210f36e48438903d53ef33ed0b0db6ea20102cddb77657bda5f8a2a879",
   "claims": [
     {
       "id": "claim_7ec27e2bdd4443a789bce034bc194fcc",
@@ -96,7 +96,7 @@
       "evidence": [
         {
           "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerPersistenceGraph.kt#L75-L111",
-          "version": "repo-lines-v1:sha256:5ca3dbeeb7df9a1f7e4aba0f897ebca3ff14cc3c7c5ca6cf78f0113c48b8f56c:eyJzZWxlY3RlZExpbmVDb3VudCI6MzcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImM0ZWZmOThlMTE5Zjg3YjhiMjlmMzliNWFiYTA5YzBmZmEwM2ExMmU4MGM5OTgyM2JiNjlmNDg5MDA3ZmEyMTMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImRmNzMwOGVlODc1ZTBlNDdiNjdmZDIzMTgyZTdlOTk4YjE4MGJhMzk4M2NjNjViMjYwYjMxYjA2NWFmNTBkMmQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjA0NTUyYzgzMzU1YTJiYWQyMjNiZmI1NWYwN2YxZmE5MmFjMzliODc5ZWJkMGMwMmY1NWMzZWEzNmUxYTI5YmEifQ"
+          "version": "repo-lines-v1:sha256:bca595d879638a9f0b022378c7d3552a433c16f395b316b033426ae78bbaeedd:eyJzZWxlY3RlZExpbmVDb3VudCI6NDAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImM0ZWZmOThlMTE5Zjg3YjhiMjlmMzliNWFiYTA5YzBmZmEwM2ExMmU4MGM5OTgyM2JiNjlmNDg5MDA3ZmEyMTMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImRmNzMwOGVlODc1ZTBlNDdiNjdmZDIzMTgyZTdlOTk4YjE4MGJhMzk4M2NjNjViMjYwYjMxYjA2NWFmNTBkMmQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjA0NTUyYzgzMzU1YTJiYWQyMjNiZmI1NWYwN2YxZmE5MmFjMzliODc5ZWJkMGMwMmY1NWMzZWEzNmUxYTI5YmEifQ"
         }
       ]
     },
@@ -304,11 +304,11 @@
     },
     {
       "id": "claim_7aa2da8ff7584ab3a8b603ed60fde9c1",
-      "statement": "PlayerPersistenceFacade.savePlaybackStateAsync captures the current playback position on the calling thread before launching the DataStore write on IO, so the saved position reflects the moment of the event rather than the IO-scheduled write time; the synchronous save variant is reserved for teardown paths.",
+      "statement": "PlayerPersistenceFacade.savePlaybackStateAsync captures both the full PlayerUiState snapshot and the playback position on the calling thread before launching the DataStore write on IO (launchIo): this avoids the IO-scheduled write reading a stale queue after the UI switched queue/song while the save was queued; the synchronous savePlaybackState variant is used for teardown paths.",
       "evidence": [
         {
-          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerPersistenceFacade.kt#L18-L40",
-          "version": "repo-lines-v1:sha256:1a139448433fd1979f4b73f661299ee7a674f29ac602601b445a37c362ce7ead:eyJzZWxlY3RlZExpbmVDb3VudCI6MjMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImM3NDNmMGFkNGRlYjI2MGNiZGM3YmUwYTgxYzA0MTYyNDIwODYxZjFkYWZjNjVjOWE2NTBmZmUzNWI5YjUzODYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjM0NDdjYTU4ZTJlYTM5MDRiZjU3Yjk2YTYzM2FjMTgwOTc3MzNiYWFiNDM2NDgyM2M1Mjg2ZjRlNDRjM2I4NGQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImVmY2QyNTZjMjRmZTlmMDY5M2NiYThhNTYwMzI4N2FhNDM1MjdiZWUzOTM2ZGJmYzFiZjNlNjBiYmNiYTg4MDAifQ"
+          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerPersistenceFacade.kt#L18-L45",
+          "version": "repo-lines-v1:sha256:149890b94087bf6184646d95fb9f2b05e239bf686cc291d3dc445f456fe7ed0a:eyJzZWxlY3RlZExpbmVDb3VudCI6MjgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImM3NDNmMGFkNGRlYjI2MGNiZGM3YmUwYTgxYzA0MTYyNDIwODYxZjFkYWZjNjVjOWE2NTBmZmUzNWI5YjUzODYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjM0NDdjYTU4ZTJlYTM5MDRiZjU3Yjk2YTYzM2FjMTgwOTc3MzNiYWFiNDM2NDgyM2M1Mjg2ZjRlNDRjM2I4NGQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImVmY2QyNTZjMjRmZTlmMDY5M2NiYThhNTYwMzI4N2FhNDM1MjdiZWUzOTM2ZGJmYzFiZjNlNjBiYmNiYTg4MDAifQ"
         }
       ]
     },
@@ -332,11 +332,11 @@
     },
     {
       "id": "claim_48bdce3e586444139048ff43e4f69a54",
-      "statement": "PlaybackStateStore.save has an empty-session protection: a save with an empty queue, no infinite play, and no current song skips writing but preserves the existing snapshot — UI rebuild windows produce transient all-empty states, and clearing there used to delete the valid snapshot saved 5 seconds earlier, leaving the restored play queue permanently empty; explicit clearing (user clears the queue) goes through clearPlaybackState instead.",
+      "statement": "PlaybackStateStore.save has a three-branch empty-session protection when the queue is empty and infinite play is off: with an existing queue JSON plus a current song it keeps the queue and updates only CURRENT_SONG_ID and PLAY_POSITION_MS (so the transient all-empty + currentSong beat during live-session reconnect cannot overwrite the valid queue written 5 seconds earlier); with no existing snapshot plus a current song it writes an empty queue plus song and position so restore falls back to a single-song queue by currentSongId; with all-empty and no snapshot it writes nothing. Only the explicit-clear path goes through clearPlaybackState(); a naive previously-used clear() was the regression that deleted the valid snapshot.",
       "evidence": [
         {
-          "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/data/player/PlaybackStateStore.kt#L61-L88",
-          "version": "repo-lines-v1:sha256:e3dcdfe116e6a0755a936dd7935d9f9e70f53c3c6852c4ba6abf239ff83a9ccd:eyJzZWxlY3RlZExpbmVDb3VudCI6MjgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijc3MWRiYjA2NGNiNjRhMjgyZjMxMTc2Nzg2MWYxMTczYmEwY2RjMzg1NDBjYzE2NmZmMDI3YWExMGZhODgwZGEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU1MjJjNDJjZDE5YzZkMDNkODA4YzQ1MjcyMDU1MjgyNWI3ZWExYzViNDkxYjIxODUxMWNhYzc0MTVjZjlkOWIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjBlZDAzOTJlNTU2MThmMzFiNjhjYmYxOTQ3YmU5OTYzOWM5NjRmYzI3NDNiZjYxYzRlYmJhZGRhMjhiYjhkNmQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImI3Zjk4ZTRiN2VkYjZiN2NmOWNiZjEwODE3ZWM5ZmQ0ZTA3MWNjOTQ2NDAyOTViMDYxNTM4ZTA5ZGU0ZDQ0MmMifQ"
+          "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/data/player/PlaybackStateStore.kt#L61-L148",
+          "version": "repo-lines-v1:sha256:4035a81476366f5e9a0a7ea5916207a36ac74ff3d86086cee14d4ac937fed754:eyJzZWxlY3RlZExpbmVDb3VudCI6ODgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijc3MWRiYjA2NGNiNjRhMjgyZjMxMTc2Nzg2MWYxMTczYmEwY2RjMzg1NDBjYzE2NmZmMDI3YWExMGZhODgwZGEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU1MjJjNDJjZDE5YzZkMDNkODA4YzQ1MjcyMDU1MjgyNWI3ZWExYzViNDkxYjIxODUxMWNhYzc0MTVjZjlkOWIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjBlZDAzOTJlNTU2MThmMzFiNjhjYmYxOTQ3YmU5OTYzOWM5NjRmYzI3NDNiZjYxYzRlYmJhZGRhMjhiYjhkNmQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImE3MDUyOWJlOGQ1MjMyODQ5NjVhZjc0YmNjYzJkNDdkMTgyOGQ4NjJmOTkwY2EzNTAxYTk4ZjU2YWRlOTE0ODAifQ"
         }
       ]
     },
@@ -397,10 +397,20 @@
           "version": "repo-lines-v1:sha256:753c378e35dac9aad703a2008314f9e0a780b7697578d0f8affbbcdae8f9baa3:eyJzZWxlY3RlZExpbmVDb3VudCI6MzMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU0YjBkOWI1YWE2ZWNlYjI1ZGY2MjhkYmU5Mjg2OTI3ZWE2YTU5NWQ0OGQ4NDQyNmNmYjMzY2U0MmQwMDMwMzYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjdhZjBkODlkYjA0ZjIwMWJhMmM5OTMwNGQxNjA1YzRjNzE1MjkxYWNlYmIwYWI5MWRhYzA4NGNlNmJiYmRhYTQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjY4MGM4MDI4ZTU1ZDM3NmM0OTViODM2ZTE2ZWQ1YzE1NjNhZmM5ZjUxZWE1MDRlNmI1NTEyOWU4NzFkODg1MGUifQ"
         }
       ]
+    },
+    {
+      "id": "claim_720790d615834e42a40f191ddd881d93",
+      "statement": "PlayerPersistenceGraphTest locks the restore handshake in both completion orders (restore-read-first then controllerReady, and vice versa), the live-session UI-queue-only restore with the controller completely untouched, the connection-failure fallback releasing a pending restore, and the no-snapshot case applying nothing; this logic is the cluster of four past regressions (4fdb2ae/0cce0de/53af2cc/2026-10-06).",
+      "evidence": [
+        {
+          "resource": "repo://feature/player/src/test/java/cn/com/dcsgo/mihx/feature/player/PlayerPersistenceGraphTest.kt#L18-L172",
+          "version": "repo-lines-v1:sha256:d95fb0e0ff0879da388714e69a05d94ca902e7f69acb9c1a5604869bfde5e899:eyJzZWxlY3RlZExpbmVDb3VudCI6MTU1LCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiJlYWYyMmNmMDczMjU5MmMyNDcxNDFjYmU2MWVmYTExMDEyNjEyZjVhMzEyMmI5YWY5YmJhZjUyZjU3MjRkMTk0IiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI0ODkzZjQwZTM3ODFlYjg5NmM4MmQwNDZhMDgwNjdhMTFlMzVjZGYyZjFkZmFmMjZmZWE5MGI4ZGI2Njc2NDEzIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiI3MmExNGNmOTEzMDEyNDFmMDQ0ZTI3NDQ1YzVkMjE0Y2M2Nzk5OGUwODU0Mzg3NmFjNTY5NDY0N2VjYmM3MjU2IiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiI4ZmE5OWQ4NDcwYmU1MWM4ZjIxNjhlNzNkNDhiMzU5ZjEwNjE2YjQ2ZjcxYWNkNDRkMjRhOWI2NDEzZDIzOWE1In0"
+        }
+      ]
     }
   ],
   "verification": {
     "by": "openwiki/0.5.0",
-    "at": "2026-09-07T13:49:59.042Z"
+    "at": "2026-10-10T11:15:45.800Z"
   }
 }

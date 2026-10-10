@@ -1,3 +1,3 @@
 # Files
 
-- [测试地图：行为锁定与验证路径](test-map.md) - 把仓库测试按被锁定的行为整理成地图：随机/情绪时段/队列窗口/状态机持久化/数据层/权限通用六组测试锚点表、单测-instrumented-benchmark 三层验证分工，以及改各系统前建议的窄验证命令。
+- [Test Map: Behavior Locks and Verification Paths](test-map.md) - Maps the repository's tests onto the behaviors they lock — planner/mood-slot/queue-window/state-machine-persistence/data-layer/permission-common/unit tests plus the v3.10.2 skin-description, app-shell, and playlist template suites — and the JVM / instrumented / benchmark three-layer verification split, with narrow commands to run before changing each subsystem.

@@ -4,7 +4,7 @@ title: "Data Persistence: Room and DataStore"
 openwiki_generated: true
 verified:
   - by: openwiki/0.5.0
-    at: 2026-09-07T13:49:59.042Z
+    at: 2026-10-10T11:15:45.800Z
 sources:
   - id: openwiki-source-96607d29d5086ea5d14045e9
     resource: repo://app/src/main/java/cn/com/dcsgo/mihx/app/AppMediaMetadataViewModel.kt
@@ -72,14 +72,20 @@ sources:
     resource: repo://data/src/main/java/cn/com/dcsgo/mihx/data/repository/RoomMusicLibraryDataSource.kt
   - id: openwiki-source-20d823efa2e1a5f403b02d3e
     resource: repo://data/src/main/java/cn/com/dcsgo/mihx/data/repository/SongEmotionsRepository.kt
+  - id: openwiki-source-1314bf2c6ff1d9d527a30d17
+    resource: repo://data/src/main/java/cn/com/dcsgo/mihx/data/repository/SongRepositoryAdapter.kt
   - id: openwiki-source-f8d95aa838cf04a8eb5e5e43
     resource: repo://data/src/main/java/cn/com/dcsgo/mihx/data/repository/TimeSlotConfigStore.kt
+  - id: openwiki-source-556939dd1364840e33c6f8e5
+    resource: repo://data/src/main/java/cn/com/dcsgo/mihx/data/util/SongPathResolver.kt
   - id: openwiki-source-f7013cd630cb7c02c18915a3
     resource: repo://data/src/test/java/cn/com/dcsgo/mihx/data/local/migration/SharedPreferencesLegacyJsonMigrationTest.kt
   - id: openwiki-source-c0c66ec2e840e0a6915e7bfc
     resource: repo://data/src/test/java/cn/com/dcsgo/mihx/data/repository/PlayerSettingsRepositoryTest.kt
   - id: openwiki-source-0579d59281dd88200fb3ae19
     resource: repo://data/src/test/java/cn/com/dcsgo/mihx/data/repository/PlaylistResumeDataStoreTest.kt
+  - id: openwiki-source-6f066b97b53f49eacd4c62a0
+    resource: repo://domain/src/main/java/cn/com/dcsgo/mihx/domain/model/DuplicateSongGroup.kt
   - id: openwiki-source-ee8d5713acafafdce234f04d
     resource: repo://domain/src/main/java/cn/com/dcsgo/mihx/domain/playback/MoodSlotResolver.kt
   - id: openwiki-source-31721788a95f08f3d7c7f198
@@ -108,7 +114,7 @@ sources:
     resource: repo://player/src/test/java/cn/com/dcsgo/mihx/data/player/PlaybackStateSnapshotSerializerTest.kt
   - id: openwiki-source-bb5d79f6221db58b46df6291
     resource: repo://player/src/test/java/cn/com/dcsgo/mihx/data/player/PlaybackStateStoreTest.kt
-generated: { by: "openwiki/0.5.0", at: "2026-09-07T13:49:59.042Z" }
+generated: { by: "openwiki/0.5.0", at: "2026-10-10T11:15:45.800Z" }
 ---
 
 
@@ -181,6 +187,13 @@ erDiagram
 
 `RoomMusicLibraryDataSource.restore()` rebuilds domain objects from `songs` + `song_group_overrides` + `playlists` + refs at startup and calls `MelodyDao.syncLibraryCatalog` to sync the artist/album catalogs: idempotently insert missing atomic artists and albums, rebuild all `song_artist_cross_ref` rows, batch-backfill `songs.albumId` (avoiding the early per-song N+1 query regression), then delete orphan artists/albums.
 
+### File-check dedup scan and cleanup
+
+Detecting and removing songs that point at the same physical file is a persistence-coordinated flow exposed through `SongRepository.scanDuplicateSongGroups()`/`deduplicateSongs()` (delegated by `SongRepositoryAdapter` to `MusicRepository`, both suspend and dispatched to IO):
+
+- **Scan**: `scanDuplicateSongGroups()` snapshots the in-memory library and buckets each song by `SongPathResolver.resolveRealPath(context, uri)`, which normalizes a URI's real on-disk path (handling `file://`, MediaStore, and SAF document/tree URIs whose string prefixes differ even when they resolve to the same file). Unresolvable songs (null path) are excluded from any group so normalization failure never causes a false duplicate or deletion. Groups with `size > 1` return as `DuplicateSongGroup`s with songs sorted by ascending songId; `keep` is the earliest-imported (smallest id) entry.
+- **Cleanup**: `deduplicateSongs(groups)` collects every `duplicates.id`, then under the library write lock removes those ids from each playlist's `songIds` (updating song counts) and from `songs`, queuing full-table `persistSongs`/`persistPlaylists` snapshots. It then calls `cleanupMissingSongAssociations`, which purges the removed ids' orphan records from `play_stats`, `playback_events`, `quick_skip_songs`, `quick_skip_short_play_counts`, and `song_emotions`, and deletes now-orphaned artists/albums. **The underlying physical file is never deleted** — the kept entry still points at it, so deleting the file would destroy the survivor too.
+
 ### The playback_events index design
 
 The composite index `(startedAtMs, isEffectivePlay, songId)` on `playback_events` covers every time-range aggregation query: `totalDurationBetween` (duration), `distinctSongsBetween` (distinct songs), `dailyDurationsBetween` (per-day), and `playCountsBetween` (song TOP chart, fully index-covered). The v7→v8 migration replaced the single-column `startedAtMs` index created in v5→v6 with this composite index (the old one was a redundant prefix) and repaired the historical inconsistency of "fresh installs missing the index".
@@ -228,30 +241,33 @@ Each domain is its own `preferencesDataStore` file (independent key spaces). The
 
 ### 1. `player_settings` — PlayerSettingsDataStore
 
-`PlayerSettingsRepository` reads and writes every key in `PlayerSettingsKeys`: `theme_mode`/`theme_variant`, uniform-random toggle, Bluetooth playback monitoring, playback notification, lyric font scale, sleep timer (`sleep_timer_end_at_ms` + play-last-song), daily listening goal, emotion scan pause (`emotion_scan_paused`), the mood time-slot master switch (`mood_time_slot_enabled`), and local-music sorting (mode + direction). Reads carry a **legacy fallback**: when DataStore lacks a value, the legacy `dark_theme`-style keys are consulted; once the user explicitly writes (e.g. `setThemeMode`), the corresponding legacy key is deleted — old keys decay with use. The sleep timer's end time and play-last-song flag persist so that `PlayerSleepTimerCoordinator.restore()` resurrects unexpired countdowns after restart (expired ones reset to zero).
+`PlayerSettingsRepository` reads and writes every key in `PlayerSettingsKeys`: `theme_mode`/`theme_variant` (`theme_variant` defaults to `MONO`), `screen_orientation_mode` (default `SENSOR_AUTO`), uniform-random toggle, Bluetooth playback monitoring, playback notification, lyric font scale, sleep timer (`sleep_timer_end_at_ms` + play-last-song), daily listening goal, emotion scan pause (`emotion_scan_paused`), the mood time-slot master switch (`mood_time_slot_enabled`), and local-music sorting (`song_sort_mode` — first enum matching or `IMPORT_ORDER` — plus `song_sort_ascending` defaulting to `true`). The sort dimension and direction persist orthogonally.
+
+**Accessor split**: settings are exposed as reactive `Flow`s on the domain interface (e.g. `themeMode`, `songSortMode`, `songSortAscending`), while a parallel family of `currentXxx()`/`setXxxBlocking()` synchronously reads/writes the same keys through `runBlocking(Dispatchers.IO)`. Reads carry a **legacy fallback**: when DataStore lacks a value, the legacy `dark_theme`-style keys are consulted; once the user explicitly writes (e.g. `setThemeMode`), the corresponding legacy key is deleted — old keys decay with use. The sleep timer's end time and play-last-song flag persist so that `PlayerSleepTimerCoordinator.restore()` resurrects unexpired countdowns after restart (expired ones reset to zero).
 
 ### 2. `playback_state` — PlaybackStateStore + PlaybackStateSnapshotSerializer
 
 The process-death recovery data, living in `:player`:
 
 - **Keys**: `play_queue_json` (queue JSON), `play_position_ms`, `is_infinite_play`, `infinite_played_ids`, `current_song_id`.
-- **Save semantics**: an empty session (empty queue and no currentSongId) **skips the write but keeps any existing snapshot** — the UI-recreation window has a transient all-empty state, and the old clear behavior erased a valid snapshot written seconds earlier, leaving the queue permanently empty after restart (2026-09-03 regression). Explicit clearing goes through `clearPlaybackState()`. Save failures are logged and swallowed so playback control is never interrupted.
+- **Save semantics**: an empty session (empty queue, no currentSongId, not infinite play) **never writes the queue JSON over an existing snapshot** and never deletes it — the UI-recreation window has a transient all-empty state, and the old clear behavior erased a valid snapshot written seconds earlier, leaving the queue permanently empty after restart (2026-09-03 regression). The empty-session guard is more nuanced: with an existing snapshot it keeps the queue and only updates `current_song_id` + position; with no existing snapshot but a present `currentSongId` it writes a single-song queue for restore-time correction; only a fully empty save with no prior snapshot writes nothing. Explicit clearing goes through `clearPlaybackState()`, and legacy keys are cleared on write only when DataStore actually changed. Save failures are logged and swallowed so playback control is never interrupted.
 - **Serialization**: `PlaybackStateSnapshotSerializer` encodes the queue as `{songIds, currentIndex, playMode, playOrderIds}` JSON; decoding filters unavailable songs against the current library, clamps `currentIndex`, and repairs the play order; corrupt JSON returns null. Infinite-play played ids are filtered against available songs on decode too.
-- **Restore decision**: `PlayerPersistenceGraph` reads the snapshot on an IO coroutine (in parallel with controller connection) and waits for `controllerReady` before deciding via `hasLiveSession()` — if the service is still playing, only the UI queue shadow is backfilled (the live session is never overwritten); on a cold start with no session, UI and controller queue are fully restored (without autoplay). The full save/restore sequence is in `/openwiki/workflows/playback-session-lifecycle.md`.
+- **Restore decision**: `PlayerPersistenceGraph` lazily builds `PlaybackStateStore`, `PlaybackRestoreCoordinator`, `PlayerPersistenceFacade`, and `PlayerPlaybackStateAutosaver`. `restorePlaybackState()` reads and decodes the snapshot on an IO coroutine (in parallel with controller connection); `onControllerReady()` sets a `controllerReady` flag and both sides rendezvous in `maybeApplyRestore()`, which waits for `controllerReady` and a non-null `pendingRestore` before deciding via `hasLiveSession()` — if the service is still playing, only the UI queue shadow is backfilled (the live controller session is never overwritten, its snapshot sync sets `currentIndex` but not `songs`); on a cold start with no session, UI and controller queue are fully restored via `prepareControllerQueue` without autoplay. Restore also re-anchors the queue onto the stored `current_song_id` (`withCurrentSongId`), synthesizing a single-song queue if the song is absent from the saved queue. The full save/restore sequence is in `/openwiki/workflows/playback-session-lifecycle.md`.
 - **Safety-net writes**: `PlayerPlaybackStateAutosaver` persists every 5 seconds (`DEFAULT_INTERVAL_MS = 5_000L`) on playback position; `AppMediaSessionService` writes the final snapshot asynchronously on `onDestroy`/`onTaskRemoved` via a process-level scope (`persistCurrentPlaybackSnapshot` suspend variant) and, in the same coroutine, settles the playlist resume record (`recordCurrentSource`).
 
-```mermaid
+<!-- openwiki: mermaid parse failed and this diagram was converted to a text fence so it does not break rendering. Fix the diagram source and restore the mermaid fence. Parser error: Heuristic: a semicolon inside a label breaks rendering; rephrase the label. -->
+```text
 flowchart TD
     A["startup restorePlaybackState"] --> B["read DataStore snapshot on IO coroutine"]
     B -->|"no play_queue_json"| C["return null, nothing to restore"]
     B -->|"snapshot exists"| D["decode and filter against current library"]
-    D --> E["wait for controllerReady, in parallel with controller connect"]
+    D --> E["set pendingRestore; wait for controllerReady handshake"]
     E --> F{"hasLiveSession?"}
     F -->|"yes, service still playing"| G["backfill UI queue shadow only, never overwrite controller"]
     F -->|"no, cold start"| H["full restore of UI and controller queue, no autoplay"]
 ```
 
-*Playback snapshot restore decision: snapshot read and controller connection run in parallel; the final decision waits for both to remove the race.*
+*Playback snapshot restore decision: snapshot read and controller connection run in parallel and rendezvous in `maybeApplyRestore` (after `onControllerReady`) to remove the race.*
 
 ### 3. `playlist_resume` — PlaylistResumeDataStore
 
@@ -276,7 +292,7 @@ Emotion analysis failure records (same design as TimeSlotConfigStore): one key `
 
 ## The runBlocking(IO) bridge and its thread contract
 
-Several `:data` repositories bridge Room/DataStore with `runBlocking(Dispatchers.IO)` where the domain interface demands a synchronous signature: `SongEmotionsRepository` (get/getAll/upsert/saveCorrection…), `PlayStatsRepository` (getCounts/getRawPlayCounts/increment…), `QuickSkipSongsRepository`, the `currentXxx()/setXxxBlocking()` methods of `PlayerSettingsRepository`, and `PlaybackStateStore`'s save/restore.
+Several `:data` repositories bridge Room/DataStore with `runBlocking(Dispatchers.IO)` where the domain interface demands a synchronous signature: `SongEmotionsRepository` (get/getAll/upsert/saveCorrection…), `PlayStatsRepository` (getCounts/getRawPlayCounts/increment…), `QuickSkipSongsRepository`, the `currentXxx()/setXxxBlocking()` methods of `PlayerSettingsRepository`, and `PlaybackStateStore`'s save/restore/clear.
 
 **This is a contract callers must honor: these blocking bridges must not be called on the main thread** — callers switch threads themselves. Reference patterns:
 
@@ -292,10 +308,10 @@ For new repository methods prefer suspend/Flow APIs; add a blocking bridge only 
 
 - Legacy SharedPreferences: `music_player_prefs.xml`, `play_stats_prefs.xml`, `quick_skip_songs_prefs.xml`;
 - The full Room family: `melody.db`, `melody.db-journal`, `melody.db-shm`, `melody.db-wal`;
-- DataStore: `datastore/player_settings.preferences_pb`, `datastore/playback_state.preferences_pb`;
+- The five DataStore files: `datastore/player_settings.preferences_pb`, `datastore/playback_state.preferences_pb`, `datastore/playlist_resume.preferences_pb`, `datastore/mood_time_slot.preferences_pb`, `datastore/emotion_failures.preferences_pb`;
 - Album-art caches: `album_art_cache/`, `album_art/`, `cache/album_art/`.
 
-**This is a release checklist item**: `verifyProductArchitecture` walks a `requiredPrivacyExcludes` list against both rule files and fails on any missing entry. The restore semantics justify it — library/playback state is device-bound (SAF URIs die off-device, snapshots cannot match another device's library), so backing it up only adds restore payload and privacy surface. When adding a new persisted file (e.g. a new DataStore domain), add it to both rule files or the architecture gate will fail.
+**This is a release checklist item**: `verifyProductArchitecture` walks a `requiredPrivacyExcludes` list (legacy prefs, the Room family, the player_settings/playback_state DataStores, and `cache/album_art/`) against both rule files and fails on any missing entry. The restore semantics justify it — library/playback state is device-bound (SAF URIs die off-device, snapshots cannot match another device's library), so backing it up only adds restore payload and privacy surface. When adding a new persisted file (e.g. a new DataStore domain), add it to both rule files (and to `requiredPrivacyExcludes` where appropriate) or the architecture gate will fail.
 
 ## Key tests
 

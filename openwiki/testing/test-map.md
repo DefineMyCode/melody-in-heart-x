@@ -1,11 +1,11 @@
 ---
 type: Testing
-title: 测试地图：行为锁定与验证路径
-description: 把仓库测试按被锁定的行为整理成地图：随机/情绪时段/队列窗口/状态机持久化/数据层/权限通用六组测试锚点表、单测-instrumented-benchmark 三层验证分工，以及改各系统前建议的窄验证命令。
-tags: [testing, unit-tests, regression, verification, gradle, player, data]
+title: "Test Map: Behavior Locks and Verification Paths"
+description: Maps the repository's tests onto the behaviors they lock — planner/mood-slot/queue-window/state-machine-persistence/data-layer/permission-common/unit tests plus the v3.10.2 skin-description, app-shell, and playlist template suites — and the JVM / instrumented / benchmark three-layer verification split, with narrow commands to run before changing each subsystem.
+tags: [testing, unit-tests, regression, verification, gradle, player, data, skin, shell, template]
 verified:
   - by: openwiki/0.5.0
-    at: 2026-09-07T13:49:59.042Z
+    at: 2026-10-10T11:15:45.800Z
 sources:
   - id: openwiki-source-8037e2358a2c4f9b2c722a11
     resource: repo://AGENTS.md
@@ -13,6 +13,22 @@ sources:
     resource: repo://app/src/androidTest/java/cn/com/dcsgo/mihx/HomeScreenComposeTest.kt
   - id: openwiki-source-c2a1f3775d7b70925516b87d
     resource: repo://app/src/test/java/cn/com/dcsgo/mihx/app/permissions/RuntimePermissionPolicyTest.kt
+  - id: openwiki-source-fe58f035f4ebb58587ed5451
+    resource: repo://app/src/test/java/cn/com/dcsgo/mihx/app/shell/AppShellEquivalenceTest.kt
+  - id: openwiki-source-d7e0a0a9877af2b505d93f02
+    resource: repo://app/src/test/java/cn/com/dcsgo/mihx/app/shell/DefaultShellConsistencyTest.kt
+  - id: openwiki-source-19c9e7ab9fa30ad12ef03742
+    resource: repo://app/src/test/java/cn/com/dcsgo/mihx/app/shell/GridLayoutSwitchTest.kt
+  - id: openwiki-source-7e9709c357ded7bcfa8b4a1b
+    resource: repo://app/src/test/java/cn/com/dcsgo/mihx/app/shell/LibrarySongListTemplateTest.kt
+  - id: openwiki-source-eeca4833ad0dc66b19ad5e7d
+    resource: repo://app/src/test/java/cn/com/dcsgo/mihx/app/shell/LuckyPlayEntryPolicyTest.kt
+  - id: openwiki-source-0040b304dd9434d71728bd0c
+    resource: repo://app/src/test/java/cn/com/dcsgo/mihx/app/shell/SheetSkeletonTest.kt
+  - id: openwiki-source-9a67b3936e37eeadf78005b1
+    resource: repo://app/src/test/java/cn/com/dcsgo/mihx/app/shell/SkinSwitcherCatalogConsistencyTest.kt
+  - id: openwiki-source-89edf2ad9545cf58b7898621
+    resource: repo://app/src/test/java/cn/com/dcsgo/mihx/app/shell/SongListTemplateCatalogTest.kt
   - id: openwiki-source-9fec4be977076779f99d3b5d
     resource: repo://app/src/test/java/cn/com/dcsgo/mihx/ResolveResumeSongTest.kt
   - id: openwiki-source-f90eb2ce767b9455d448efd3
@@ -27,6 +43,14 @@ sources:
     resource: repo://core/common/src/test/java/cn/com/dcsgo/mihx/core/common/PerformanceTraceTest.kt
   - id: openwiki-source-131bcb2cdaccf1fede890a49
     resource: repo://core/model/src/test/java/cn/com/dcsgo/mihx/core/model/LyricsHighlightLeadTest.kt
+  - id: openwiki-source-3320f8290c308322a2fc8b78
+    resource: repo://core/skin/src/test/java/cn/com/dcsgo/mihx/core/skin/DefaultSkinTest.kt
+  - id: openwiki-source-e56879bb149cff0c441fc3bd
+    resource: repo://core/skin/src/test/java/cn/com/dcsgo/mihx/core/skin/LibrarySegmentsMatchSourceTest.kt
+  - id: openwiki-source-4144580dff4473f29853b10a
+    resource: repo://core/skin/src/test/java/cn/com/dcsgo/mihx/core/skin/SkinExpressivenessTest.kt
+  - id: openwiki-source-452d07c1780ac74346af3f26
+    resource: repo://core/skin/src/test/java/cn/com/dcsgo/mihx/core/skin/SkinParserValidationTest.kt
   - id: openwiki-source-c545006ce2a4ed14097a125f
     resource: repo://core/ui/src/test/java/cn/com/dcsgo/mihx/ui/components/SongEmotionSectionTest.kt
   - id: openwiki-source-0f1ea52b4adfffa8391b0e81
@@ -71,6 +95,8 @@ sources:
     resource: repo://feature/player/src/test/java/cn/com/dcsgo/mihx/feature/player/PlayerMediaEventFacadeTest.kt
   - id: openwiki-source-ca2d7e504c1ad19cbaff9046
     resource: repo://feature/player/src/test/java/cn/com/dcsgo/mihx/feature/player/PlayerPersistenceFacadeTest.kt
+  - id: openwiki-source-6cbc32290e81c1e4b344fe2b
+    resource: repo://feature/player/src/test/java/cn/com/dcsgo/mihx/feature/player/PlayerPersistenceGraphTest.kt
   - id: openwiki-source-847a1078428a6fbac760c85c
     resource: repo://feature/player/src/test/java/cn/com/dcsgo/mihx/feature/player/PlayerPlaybackStateAutosaverTest.kt
   - id: openwiki-source-b5318c575454b025c4e1b854
@@ -79,6 +105,12 @@ sources:
     resource: repo://feature/player/src/test/java/cn/com/dcsgo/mihx/feature/player/PlayerRandomQueueFacadeTest.kt
   - id: openwiki-source-0d78469d6fc56d18dbc3f026
     resource: repo://feature/player/src/test/java/cn/com/dcsgo/mihx/feature/player/PlayerSleepTimerCoordinatorTest.kt
+  - id: openwiki-source-448ff49caeaad696d5651add
+    resource: repo://feature/playlist/src/test/java/cn/com/dcsgo/mihx/feature/playlist/SongListTemplateTest.kt
+  - id: openwiki-source-c8a858b5bdf7aa5c3003c0fb
+    resource: repo://feature/playlist/src/test/java/cn/com/dcsgo/mihx/feature/playlist/SongSelectionControllerTest.kt
+  - id: openwiki-source-edd43d204b6c984f231decbf
+    resource: repo://feature/user/src/test/java/cn/com/dcsgo/mihx/feature/user/UserSectionsTest.kt
   - id: openwiki-source-04a93731443f6ff3e9f66921
     resource: repo://player/src/main/java/cn/com/dcsgo/mihx/data/player/PlaybackController.kt
   - id: openwiki-source-0b8d1ad8689331e8a8a22ee1
@@ -99,165 +131,209 @@ sources:
     resource: repo://player/src/test/java/cn/com/dcsgo/mihx/player/window/PlaybackWindowPerformanceShapeTest.kt
   - id: openwiki-source-9d7c39bdfe272c3574ef83bb
     resource: repo://player/src/test/java/cn/com/dcsgo/mihx/player/window/PlaybackWindowPlannerTest.kt
-generated: { by: "openwiki/0.5.0", at: "2026-09-07T13:49:59.042Z" }
+generated: { by: "openwiki/0.5.0", at: "2026-10-10T11:15:45.800Z" }
 ---
 
-# 测试地图：行为锁定与验证路径
+# Test Map: Behavior Locks and Verification Paths
 
-本页回答两个问题：**哪个不变量被哪个测试类锁定**，以及**改某系统前应该先跑哪些窄验证**。仓库测试以 JVM 单元测试为主体（纯 JUnit4 + 手写 fake，无 mocking 框架），planner 与 resolver 全部把 shuffle / `isPlayable` / 时钟等做成注入参数，因此核心业务决策不需要设备即可验证。提交门槛由 `check` 聚合（格式 + `verifyProductArchitecture` + 全部子模块单测），完整命令矩阵见 `/openwiki/operations/build-and-verification.md`；被测试锁定的各系统行为详解见 `/openwiki/player/random-and-infinite.md`、`/openwiki/player/queue-architecture.md`、`/openwiki/architecture/data-persistence.md`。
+This page answers two questions: **which invariant is locked by which test class**, and **which narrow verification to run before changing a subsystem**. The repository's tests are predominantly JVM unit tests (pure JUnit 4 + hand-written fakes, no mocking framework); every planner and resolver takes shuffle / `isPlayable` / clock as injected parameters, so the core business decisions are verified without a device. The pre-commit gate is aggregated by `check` (formatting + `verifyProductArchitecture` + all submodule unit tests); the full command matrix lives on `/openwiki/operations/build-and-verification.md`, and the behavior each test locks is elaborated on `/openwiki/player/random-and-infinite.md`, `/openwiki/player/queue-architecture.md`, and `/openwiki/architecture/data-persistence.md`.
 
-## 1. 三层验证分工
+## 1. Three-layer verification split
 
-| 层 | 命令 | 设备 | 职责 |
+| Layer | Command | Device | Responsibility |
 | --- | --- | --- | --- |
-| **JVM 单测** | `.\gradlew.bat :domain:test`、`:player:test`、`:data:test`、`:feature:player:test`、`:core:common:test`、`:app:test`（Windows；macOS/Linux 用 `./gradlew`） | 不需要 | 改逻辑的第一道闸。覆盖全部 planner/resolver/协调器/facade 编排/仓库持久化语义/快照序列化。**绝大多数行为回归都应在这一层被抓住** |
-| **Instrumented 测试** | `.\gradlew.bat :app:connectedAndroidTest` | 需要真机/模拟器 | Compose UI 层（`HomeScreenComposeTest` / `PlaylistScreenComposeTest` / `SettingsScreenComposeTest`），验证空态、播放控制、文案与 contentDescription 真实渲染 |
-| **Macrobenchmark** | `.\gradlew.bat :benchmark:connectedCheck` | 需要真机/模拟器 | 性能回归与 Baseline Profile 生成：`StartupBenchmark`（冷启动 5 次迭代）、`ScrollBenchmark`、`BaselineProfileGenerator`（产物写回 `app/src/main/baselineProfiles/baseline-prof.txt`，release 自动打包） |
+| **JVM unit tests** | `.\gradlew.bat :domain:test`, `:player:test`, `:data:test`, `:feature:player:test`, `:core:common:test`, `:core:skin:test`, `:feature:playlist:test`, `:feature:user:test`, `:app:test` (Windows; `./gradlew` on macOS/Linux) | Not needed | First gate for logic changes. Covers all planner/resolver/coordinator/facade orchestration/repository persistence semantics/snapshot serialization plus the skin-description, shell-equivalence, and playlist-template suites. **Almost every behavior regression should be caught here** |
+| **Instrumented tests** | `.\gradlew.bat :app:connectedAndroidTest` | Needs device/emulator | Compose UI layer (`HomeScreenComposeTest` / `PlaylistScreenComposeTest` / `SettingsScreenComposeTest`), verifying empty-state, playback controls, copy, and contentDescription actually render |
+| **Macrobenchmarks** | `.\gradlew.bat :benchmark:connectedCheck` | Needs device/emulator | Performance regression and Baseline Profile generation. `StartupBenchmark` (cold-start, 5 iterations) and `ScrollBenchmark` are **device-run macrobenchmarks, not JVM unit tests**; `BaselineProfileGenerator` writes `app/src/main/baselineProfiles/baseline-prof.txt`, which release builds bundle via `profileinstaller` |
 
 ```mermaid
 flowchart TD
-    CHANGE["代码改动"] --> KIND{"改了哪个系统？"}
-    KIND -->|"planner 与时段判定"| R1[":domain:test 加 --tests 类过滤"]
-    KIND -->|"facade 编排"| R2[":feature:player:test 窄过滤"]
-    KIND -->|"窗口与控制器队列"| R3[":player:test player.window 包"]
-    KIND -->|"持久化与数据层"| R4[":player:test 或 :data:test"]
-    KIND -->|"日志埋点权限"| R5[":core:common:test 或 :app:test"]
-    R1 --> GREEN{"窄验证全绿？"}
+    CHANGE["code change"] --> KIND{"which subsystem?"}
+    KIND -->|"planner and slot decisions"| R1[":domain:test with --tests class filter"]
+    KIND -->|"facade orchestration"| R2[":feature:player:test narrow filter"]
+    KIND -->|"controller window and queue"| R3[":player:test player.window package"]
+    KIND -->|"persistence and data layer"| R4[":player:test or :data:test"]
+    KIND -->|"logging trace permissions"| R5[":core:common:test or :app:test"]
+    KIND -->|"skin shell template"| R6[":core:skin:test plus :app:test shell package"]
+    R1 --> GREEN{"narrow all green?"}
     R2 --> GREEN
     R3 --> GREEN
     R4 --> GREEN
     R5 --> GREEN
-    GREEN -->|"提交前"| CHECK["gradlew check：spotless + verifyProductArchitecture + 全部子模块单测"]
-    CHECK --> DEVICE["需设备：:app:connectedAndroidTest（Compose UI）"]
-    CHECK --> BENCH["需设备：:benchmark:connectedCheck（性能回归与 Baseline Profile）"]
+    R6 --> GREEN
+    GREEN -->|"before commit"| CHECK["gradlew check: spotless + verifyProductArchitecture + all submodule unit tests"]
+    CHECK --> DEVICE["device needed: :app:connectedAndroidTest (Compose UI)"]
+    CHECK --> BENCH["device needed: :benchmark:connectedCheck (performance and Baseline Profile)"]
 ```
 
-*三层验证路径：JVM 单测做日常窄验证，`check` 是提交前全量门槛，设备层只在 UI 与性能断言时进入。*
+*Three verification paths: JVM unit tests are the daily narrow gate, `check` is the full pre-commit gate, and the device layer only enters for UI and performance assertions.*
 
-`check` 在根 `build.gradle.kts` 末尾聚合根级 `spotlessCheck`、根级 `verifyProductArchitecture` 与全部 14 个子项目的 `check`（各子项目 `check` 又跑自己的全部单测），所以它失败可能是格式、架构断言或单测三者之一——先看 `GradleException` 消息定位。
+`check` aggregates the root-level `spotlessCheck`, the root-level `verifyProductArchitecture`, and every subproject's own `check` (each of which runs that subproject's unit tests) at the end of root `build.gradle.kts`; a failure can therefore be formatting, an architecture assertion, or a unit test — read the `GradleException` message first.
 
-## 2. 回归底线：随机与情绪时段的 planner 测试
+## 2. Regression baseline: random and mood-slot planner tests
 
-情境化随心播放（时段 × 情绪词条）的设计文档 §7 实施清单第 7 条是明确的回归底线：**关闭开关后随心播放行为必须与增强前逐位一致，`RandomQueuePlanner` 既有测试全部不动且必须全绿**。这意味着：
+The contextual shuffle (slot × mood words) design's §7 checklist item 7 is an explicit regression floor: **with the switch off, shuffle behavior must be bit-identical to the pre-enhancement build, and all existing `RandomQueuePlanner` tests must stay untouched and green**. This means:
 
-- `RandomQueuePlannerTest`、`UniformRandomPlannerTest` 的每一条断言都是「现状」的定义，不是可以顺手重构的实现细节；增强只能发生在候选池入口（`PlayerRandomQueueFacade` 侧过滤），不能改变 planner 的筛选/分层/淘汰语义。
-- `PlayerRandomQueueFacadeTest` 中非 mood 前缀的用例（`playRandomQueueStartsSequentialQueueAndLeavesInfiniteMode` 等）承担同样的「关闭增强 = 现状」回归职责；`moodFilterDisabledKeepsOriginalBehavior` 与 `moodFilterInactiveOutsideSlotTime` 则把「开关关 / 时段未命中 ⇒ 行为与现状一致」直接写成断言。
-- 改这三个测试文件（或让它们变红）的 PR 默认是行为变更，必须在 PR 描述里显式声明并给出理由。
+- Every assertion in `RandomQueuePlannerTest` and `UniformRandomPlannerTest` defines "current behavior", not refactorable implementation detail; the enhancement may only occur at the candidate-pool entry (`PlayerRandomQueueFacade`-side filtering), never change the planner's filtering/layering/elimination semantics.
+- The non-mood-prefixed cases of `PlayerRandomQueueFacadeTest` (e.g. `playRandomQueueStartsSequentialQueueAndLeavesInfiniteMode`) carry the same "switch off = current behavior" regression duty; `moodFilterDisabledKeepsOriginalBehavior` and `moodFilterInactiveOutsideSlotTime` directly assert "switch off / slot time missed ⇒ behavior identical to current".
+- A PR that edits these three test files (or turns them red) is by default a behavior change and must declare it explicitly in the PR description.
 
-## 3. 按系统分组的测试锚点表
+## 3. Test anchors grouped by subsystem
 
-### 3.1 随机（RandomQueuePlanner / UniformRandomPlanner）
+### 3.1 Random (`RandomQueuePlanner` / `UniformRandomPlanner`)
 
-| 测试类 | 锁定的行为 |
+| Test class | Locked behavior |
 | --- | --- |
-| `domain/.../RandomQueuePlannerTest` | 随机队列计划语义：`recentSongIds` 淘汰（被淘汰歌不入批次、入选歌并入 recent 集合）；候选不足时清空历史重来并置 `resetHistory = true`；均匀随机开启时经近期过滤后仍取低播放次数歌；`planInfiniteStart` 只把**队列内可播**的歌记入覆盖集；`planInfiniteRefill` 排除已在队列的歌、保持既有排除集；无可播歌返回 `null` |
-| `domain/.../UniformRandomPlannerTest` | 分层抢占：开关关时退化为注入的 shuffle；开启时按原始播放次数动态分层、低层优先，低层足够名额绝不越层，不足则全取低层后由高层补齐；全部次数超过任何固定阈值时分层依然有效（阈值来自分布而非常量）；全体次数相同退化为纯随机；`orderSongs` 按次数分组、组内 shuffle；`buildPlayOrderIds` 在 `SHUFFLE` 模式下当前歌置顶、其余分层 |
+| `domain/.../RandomQueuePlannerTest` | Random-queue planning semantics: `recentSongIds` elimination (eliminated songs never enter a batch, picked songs join the recent set); when candidates are exhausted the history is cleared and re-drawn with `resetHistory = true`; with uniform random on, low-play-count songs are still preferred after recent-filtering; `planInfiniteStart` only records **queue-playable** songs into the coverage set; `planInfiniteRefill` excludes songs already in queue and keeps the existing exclusion set; returns `null` when no song is playable |
+| `domain/.../UniformRandomPlannerTest` | Layered preemption: switch off degrades to the injected shuffle; on, layers are built dynamically from raw play counts with the low layer preferred, low layer never exceeded when it has enough slots, and the high layer filling shortfall only; extra-tier layering stays effective even when all counts exceed any fixed threshold (the threshold comes from the distribution, not a constant); equal counts degrade to pure random; `orderSongs` groups by count and shuffles within a group; `buildPlayOrderIds` puts the current song first in `SHUFFLE` mode and layers the rest |
 
-均匀随机的兼容性是设计要求：情绪过滤后的候选池直接喂给 `selectSongs`，分层抢占逻辑不改一行即可生效——上述测试就是这条兼容性的证明。
+Uniform-random compatibility is a design requirement: the emotion-filtered candidate pool feeds straight into `selectSongs` with zero changes to the layering logic, and the above tests are the proof of that compatibility.
 
-### 3.2 情绪时段（MoodSlotResolver / facade 过滤与降级）
+### 3.2 Mood slots (`MoodSlotResolver` / facade filtering and degradation)
 
-| 测试类 | 锁定的行为 |
+| Test class | Locked behavior |
 | --- | --- |
-| `domain/.../MoodSlotResolverTest` | 全边角时段判定：普通区间左闭右开（start 整点命中、end 整点不命中）；跨午夜（`end <= start`，22:00–06:00 在 23:41/00:00/05:59 命中、06:00 与 21:59 不命中）；合法配置下全天逐分钟扫描至多一命中、非法数据多命中时确定性地取开始最早者；开关关 / 空配置恒不生效；校验错误分类（空名、名字超长 `NAME_MAX_LENGTH=20`、无词条、零长度、与既有时段重叠返回 `Conflict` 且点名冲突方、端点相接不重叠、同 id 编辑不算自我冲突）；`overlaps` 环形时间轴语义（跨午夜×清晨相交、两个跨午夜必相交、全天段与非零段必相交） |
-| `feature/player/.../PlayerRandomQueueFacadeTest`（mood 组） | facade 侧过滤与降级：命中时段时随机池收窄到带词条的歌；词条组合 0 首时**回退全库随机**并记录 "fall back to full library" 日志（不因空池启动失败）；未命中时段与开关关闭时行为与现状一致；与均匀随机叠加时过滤后仍走分层抢占（0 次歌排在 10 次歌前） |
+| `domain/.../MoodSlotResolverTest` | Full-corner slot decisions: normal ranges are left-closed/right-open (start on-the-hour hits, end on-the-hour does not); across-midnight (`end <= start`, 22:00–06:00 hits at 23:41/00:00/05:59, not at 06:00 or 21:59); a legal config hits at most one slot in an all-day per-minute scan, illegal multi-hit data deterministically picks the earliest start; switch off / empty config never applies; validation error taxonomy (empty name, overlong name `NAME_MAX_LENGTH=20`, no words, zero length, overlapping an existing slot returns `Conflict` naming the conflicting party, abutting endpoints are not overlaps, same-id edit is not self-conflict); `overlaps` circular-timeline semantics (across-midnight × morning intersects, two across-midnight slots always intersect, an all-day slot intersects any non-zero slot) |
+| `feature/player/.../PlayerRandomQueueFacadeTest` (mood group) | Facade-side filtering and degradation: when a slot hits, the random pool narrows to word-tagged songs; a 0-song word combination **falls back to full-library random** and logs "fall back to full library" (never fails to start on an empty pool); when the slot is missed or the switch is off the behavior is identical to current; stacked with uniform random, filtering still goes through layered preemption (a 0-count song ranks before a 10-count one) |
 
-时段判定与校验是 `:domain` 纯函数（`MoodSlotResolver` + `MoodSlotPolicy` 常量），配置编辑页 UI 与持久化两侧复用同一份 `validate`/`overlaps`，测试即契约——UI 不允许另写一份重叠判断。
+Slot decisions and validation are pure `:domain` functions (`MoodSlotResolver` + `MoodSlotPolicy` constants); the config-edit UI and persistence share the same `validate`/`overlaps` — the tests are the contract, and the UI must not write a second overlap implementation.
 
-### 3.3 队列与窗口（domain 与 player 两个 planner、同步器、性能形状、回绕检测）
+### 3.3 Queue and window (the domain and player planners, synchronizer, performance shape, wrap detection)
 
-| 测试类 | 锁定的行为 |
+| Test class | Locked behavior |
 | --- | --- |
-| `domain/.../ControllerQueuePlannerTest` | 可播顺序展开：空队列返回 `null`；`SEQUENTIAL` 保序且 `startIndex` 指向请求歌；`REVERSE` 倒序；`SHUFFLE` 按 `playOrderIds` 稳定展开；请求歌不可播时跳到下一个可播项 |
-| `player/.../ControllerQueuePlannerTest`（`:player` 侧同名类） | 控制器计划语义：`remainingAfterStart` 尾批检测；**重复歌曲完整保留**（`1,2,2,3` 不去重，重复 id 的 startIndex 按请求的出现次数解析）；「添加到下一首」后控制器顺序为 `1,2,5,3`；播放模式变更重建控制器顺序；全不可播返回 `null` |
-| `player/window/PlaybackWindowPlannerTest` | 窗口切片：`DEFAULT_PREVIOUS_COUNT=20` / `DEFAULT_NEXT_COUNT=50`，在队列首尾钳制；窗口内索引 ↔ 全队列索引的映射（`controllerStartIndex` / `fullQueueStartIndex`）；`REVERSE` 模式窗口按倒放顺序 |
-| `player/window/ControllerWindowSynchronizerTest` | 窗口缓存：非强制计划复用窗口但把 `startIndex` 重锚到当前歌；强制计划（如 `addSongAsNext` 后）使缓存失效并重算；空队列返回 `null`；稳定 shuffle / 反向播放顺序进入窗口 |
-| `player/window/PlaybackWindowPerformanceShapeTest` | 产品级性能形状：100 / 500 / 1000 首歌队列下控制器窗口恒 **≤ 71 项且 ≥ 51 项**（队列头/中/尾三点验证，含 1000 首稳定 shuffle 窗口不膨胀为全队列）。**这个测试文件本身被 `verifyProductArchitecture` 锁定存在性与关键词**（`100`、`500`、`1_000`、`71`、`WindowedControllerQueuePlanner`），删文件或改关键词会直接挂架构门槛 |
-| `player/.../MediaItemWrapDetectionTest` | 回绕判定：窗口尾（索引 70）→ 0 算回绕；正常前进、`previous` 一步、首切（`C.INDEX_UNSET`）、新索引非 0 都不算；**2 首小窗口的倒退视为回绕**（无害：补队列 planner 自动去重）；空/单项窗口不可能回绕。判定必须用索引而非 transition reason——Media3 在 `REPEAT_MODE_ALL` 下尾部回绕以 `SEEK` 原因上报 |
-| `player/.../SingleItemLoopRewindDetectionTest` | 单项队列循环回绕（`REPEAT_MODE_ALL` 下 0→0 不触发 `onMediaItemTransition`，只能靠 AUTO discontinuity + 位置回跳识别）：duration 已知时按「旧位置接近结尾」精确判定；未知时回退保守阈值（旧位置 < 30s 视为缓冲抖动不计）；`SEEK` 原因（手动拖回开头）不得计为播完（防刷）；多首队列、索引变化、新位置非 0 都不算；阈值边界值仍判定 |
+| `domain/.../ControllerQueuePlannerTest` | Playable-order expansion: empty queue returns `null`; `SEQUENTIAL` keeps order with `startIndex` pointing at the requested song; `REVERSE` reverses; `SHUFFLE` expands stably by `playOrderIds`; when the requested song is unplayable it jumps to the next playable item |
+| `player/.../ControllerQueuePlannerTest` (`:player`-side same-name class) | Controller planning semantics: `remainingAfterStart` tail-batch detection; **duplicate songs fully preserved** (`1,2,2,3` is not deduplicated, and a duplicate id's startIndex resolves to the requested occurrence); after "add as next", controller order is `1,2,5,3`; a play-mode change rebuilds controller order; all-unplayable returns `null` |
+| `player/window/PlaybackWindowPlannerTest` | Window slicing: `DEFAULT_PREVIOUS_COUNT=20` / `DEFAULT_NEXT_COUNT=50` clamped at queue boundaries; window-index ↔ full-queue-index mapping (`controllerStartIndex` / `fullQueueStartIndex`); in `REVERSE` mode the window follows reverse-play order |
+| `player/window/ControllerWindowSynchronizerTest` | Window caching: a non-forced plan reuses the window but re-anchors `startIndex` to the current song; a forced plan (like after `addSongAsNext`) invalidates the cache and recomputes; empty queue returns `null`; stable shuffle / reverse-play order enters the window |
+| `player/window/PlaybackWindowPerformanceShapeTest` | Product-level performance shape: for 100 / 500 / 1000-song queues the controller window always stays **≤ 71 and ≥ 51 items** (checked at queue head/middle/tail, including that a 1000-song stable shuffle window does not balloon to the whole queue). **`verifyProductArchitecture` locks this file's existence and keywords** (`100`, `500`, `1_000`, `71`, `WindowedControllerQueuePlanner`), so deleting the file or renaming keywords fails the architecture gate |
+| `player/.../MediaItemWrapDetectionTest` | Wrap decisions: window tail (index 70) → 0 counts as wrap; normal forward, one `previous` step, first switch (`C.INDEX_UNSET`), and a new non-zero index do not; **a backward step in a 2-song small window counts as wrap** (harmless: the refill planner dedups); empty/single-item windows cannot wrap. The decision must use indices, not the transition reason, because Media3 reports tail wraps under `REPEAT_MODE_ALL` as `SEEK` |
+| `player/.../SingleItemLoopRewindDetectionTest` | Single-item loop wrap (0→0 under `REPEAT_MODE_ALL` fires no `onMediaItemTransition`, so it is recognized only via AUTO discontinuity + position rewind-back): with known duration, "old position near the end" decides precisely; unknown duration falls back to a conservative threshold (old position < 30s treated as buffering jitter, not completion); a `SEEK` reason (manual drag to start) must not count as finished (anti-gaming); multi-song queues, index changes, and a non-zero new position never count; threshold boundary values still decide |
 
-### 3.4 状态机与持久化（状态同步、恢复协调、快照存储与序列化、facade 同名测试）
+### 3.4 State machine and persistence (state sync, restore coordination, snapshot store and serialization, same-name facade tests)
 
-| 测试类 | 锁定的行为 |
+| Test class | Locked behavior |
 | --- | --- |
-| `domain/.../ControllerPlaybackStateSynchronizerTest` | Media3 快照 → UI 状态映射：`mediaId`（= `Song.id.toString()`）映射回业务队列并更新 `currentIndex`，同时产出 duration 更新与播放开始事件；未知 `mediaId` 保持当前歌不动；已跟踪歌不重复发播放开始；buffering 中的暂停不计为真实暂停（`isPlayingTransition` 三态）；`QueueManager.restorePlayModeAfterNextSong` 只对相关歌恢复「下一首前」的播放模式，且播放顺序构建器可注入 |
-| `domain/.../PlaybackRestoreCoordinatorTest` | 启动恢复：存储无状态 → `null`；当前歌缺失或不可播 → 恢复队列但无可播会话；正常路径产出携带恢复位置与同名歌组（按采样率降序）的可播会话；**无限播放标记与覆盖集原样穿越恢复** |
-| `player/.../PlaybackStateStoreTest` | DataStore 快照存储：save/restore 往返保留队列、`currentIndex`、模式、`playOrderIds`、重复项与无限播放状态；恢复时过滤已不存在的歌；`saveCurrentPlaybackSnapshot` 用当前歌快照纠正索引/位置，甚至能为不在已存队列中的歌新建队列；**空会话保存（UI 重建窗口的瞬时全空状态）不得清掉已有快照**（2026-09-03 回归，注释点名）；无既有快照时空保存不写任何东西；恢复回退 legacy SharedPreferences，且下一次成功保存清掉 legacy 键 |
-| `player/.../PlaybackStateSnapshotSerializerTest` | 快照 JSON 健壮性：往返保留重复项/索引/模式/播放顺序；损坏 JSON 与缺必需 `currentIndex` 解码为 `null`（不抛异常）；缺可选字段取默认值；`infinitePlayedIds` 中畸形与不可用条目被静默丢弃 |
-| `:feature:player` 各 facade 同名测试 | 18 个 facade 每个都有同名 JVM 测试，用 fake 可调用对象记录副作用、验证纯 planner 之上的编排语义。代表锚点：`PlayerQueueFacadeTest`（setPlayQueue 更新状态 + 触发持久化）；`PlayerControllerQueueFacadeTest`（`remainingMediaItems` 优先控制器信息、无 items 时回退计划队列）；`PlayerMediaEventFacadeTest`（尾部/回绕触发补队列、非无限模式不补、「添加到下一首」后恢复播放模式并消费一次性标记）；`PlayerPersistenceFacadeTest`（异步保存前**先**捕获当前位置；live session 恢复跳过控制器但 UI 队列照常恢复）；`PlayerPlaybackStateAutosaverTest`（保存节流：立即一次后按间隔节流，`reset` 放行下一次） |
-| `feature/player/.../NarrowFlowSyncTest`、`PlayerSleepTimerCoordinatorTest` | 窄流回归基线（2026-09-03 进度条回跳修复）：离散 `uiState` 更新不得把陈旧位置/归零倒计时刷回窄流（对比基线必须是 update 前的 uiState 旧值）；真实位置变化（seek）、恢复路径、定时器启动必须传播到窄流；cancel 归零必须走显式复位入口 `resetSleepTimerNarrowFlow` |
+| `domain/.../ControllerPlaybackStateSynchronizerTest` | Media3 snapshot → UI state mapping: `mediaId` (`= Song.id.toString()`) maps back to the business queue and updates `currentIndex`, producing a duration update and a playback-start event; an unknown `mediaId` leaves the current song alone; a tracked song does not emit playback-start twice; a buffering pause is not a real pause (`isPlayingTransition` three-state); `QueueManager.restorePlayModeAfterNextSong` restores the pre-next-song play mode only for the relevant song, and the play-order builder is injectable |
+| `domain/.../PlaybackRestoreCoordinatorTest` | Startup restore: storage with no state → `null`; the current song missing or unplayable → restored queue but no playable session; the happy path yields a playable session carrying the restore position and the same-name song group (sorted by sample rate descending); **the infinite-play flag and coverage set traverse restore untouched** |
+| `player/.../PlaybackStateStoreTest` | DataStore snapshot store: save/restore round-trips keep queue, `currentIndex`, mode, `playOrderIds`, duplicate items, and infinite-play state; restore filters songs that no longer exist; `saveCurrentPlaybackSnapshot` corrects index/position from the live current song and can even create a queue for a song that was not in the saved queue; **an empty-session save (transient all-empty state during UI rebuild) must not erase an existing snapshot** (2026-09-03 regression, named in the test); an empty save with no prior snapshot writes nothing; an empty save carrying only a `currentSongId` keeps the existing queue but updates position (2026-10-06 live-session regression), or restores a single-song queue when no queue existed; restore falls back to legacy SharedPreferences and the next successful save clears the legacy keys |
+| `player/.../PlaybackStateSnapshotSerializerTest` | Snapshot JSON robustness: round-trip preserves duplicates/index/mode/play order; corrupt JSON and a missing required `currentIndex` decode to `null` (no exception); absent optional fields take defaults; malformed/unusable entries in `infinitePlayedIds` are silently dropped |
+| `:feature:player` same-name facade tests | 18 facades, each with a same-named JVM test that records side effects via a fake callable object to verify pure-planner orchestration above. Representative anchors: `PlayerQueueFacadeTest` (setPlayQueue updates state and triggers persistence); `PlayerControllerQueueFacadeTest` (`remainingMediaItems` prefers controller info, falls back to the planned queue when there are no items); `PlayerMediaEventFacadeTest` (tail/wrap triggers refill, non-infinite mode does not, and "add as next" restores play mode and consumes a one-shot marker); `PlayerPersistenceFacadeTest` (captures the current position **before** the async save; live-session restore skips the controller but restores the UI queue); `PlayerPlaybackStateAutosaverTest` (save throttling: one immediate save then throttled by interval, `reset` releases the next save) |
+| `feature/player/.../PlayerPersistenceFacadeTest` + `PlayerPersistenceGraphTest` | Persistence handshake regression: the `controllerReady` and `pendingRestore` flags converge in either order; a live session only refills the UI queue while an empty session fully restores; a connection failure fallback releases; no snapshot means no restore. This logic is the site of four past regressions (4fdb2ae/0cce0de/53af2cc/2026-10-06); the graph test uses `Dispatchers.Unconfined` so its internal `launch(io)/withContext(main)` runs synchronously without a coroutines-test dependency |
+| `feature/player/.../NarrowFlowSyncTest` + `PlayerSleepTimerCoordinatorTest` | Narrow-flow regression baselines (2026-09-03 progress-bar rewind fix): discrete `uiState` updates must not write stale position/reset countdown back into the narrow flow (the comparison baseline must be the pre-update `uiState` old value); real position changes (seek), the restore path, and timer start must propagate to the narrow flow; a cancel reset must go through the explicit reset entry `resetSleepTimerNarrowFlow` / `resetRemainingMs` rather than relying on a `uiState` value diff |
 
-### 3.5 数据层（Room 仓库、设置仓库、legacy 迁移、歌词解析）
+### 3.5 Data layer (Room repositories, settings repository, legacy migration, lyrics parsing)
 
-数据层单测**不启动 Android**：Room 仓库测试对每个测试文件内手写的 `FakeMelodyDao`（逐字段内存表）运行，设置/快照测试用 `PreferenceDataStoreFactory` + 临时文件跑真 DataStore；`:data` 显式引入真实 `org.json` 测试依赖（`testImplementation(libs.org.json)`），因为 Android SDK 的 org.json 在 JVM 上是抛异常的桩。
+The data-layer unit tests **do not start Android**: Room-repository tests run against a hand-written in-memory `FakeMelodyDao` per test file, and settings/snapshot tests run a real DataStore via `PreferenceDataStoreFactory` + a temp file; `:data` explicitly pulls in the real `org.json` test dependency (`testImplementation(libs.org.json)`) because the Android SDK's org.json is a stub that throws on the JVM.
 
-| 测试类 | 锁定的行为 |
+| Test class | Locked behavior |
 | --- | --- |
-| `data/repository/MusicRepositoryRoomTest` | 曲库仓库：启动从 Room 重建歌单交叉引用（按 `sortOrder`）并过滤孤儿引用；加歌入单持久化交叉引用且拒绝重复；无上下文时本地文件校验全保留；标题分组覆盖（`titleOverride`）写库/清库往返，恢复时驱动 `groupKey` |
-| `data/repository/PlayStatsRepositoryRoomTest` | 播放统计：`increment`/`incrementRawPlayCount`/`updatePlayDuration` 增量持久化并盖 `lastPlayedAt`；批量读缺失歌默认 0；`getRankedCounts` 确定性排序（同次数按 id 升序），`useRawCounts` 切换口径 |
-| `data/repository/QuickSkipSongsRepositoryRoomTest`、`PlaylistResumeDataStoreTest` | 秒切歌集合的成员判定/去重/短播计数重置；歌单续播 DataStore 的记录/覆盖/单歌单清除语义 |
-| `data/repository/PlayerSettingsRepositoryTest` | 设置持久化语义：无存储时取默认（主题 `SYSTEM`、变体 `MONO`、字体缩放 1）；legacy SharedPreferences 回退只发生一次——首次 DataStore 写入后 legacy 键被删除（dark theme、全局均匀随机两条路径各有断言） |
-| `data/local/migration/LegacyJsonSnapshotParserTest` | v1 JSON 快照解析：歌曲/歌单/分组覆盖/播放统计前缀键（`play_count_*`、`raw_play_count_*`、`play_duration_*`）/秒切歌与短播计数解析；可选字段缺失取中文默认值；损坏 JSON 逐段恢复不整体失败；重复 URI 去重但保留无 URI 歌；歌单引用只指向迁移后的歌并重排 `sortOrder` |
-| `data/local/migration/SharedPreferencesLegacyJsonMigrationTest` | 一次性迁移编排：全部数据写入 `FakeMelodyDao` 并写 `MigrationStateEntity` 完成标记；JSON 损坏时统计仍迁移、标记仍写（不重试）；**已有完成标记则完全跳过**（零写入） |
-| `data/util/LrcParserOffsetTest` | LRC `[offset:]` 标签回归（2026-09-03 歌词实时性优化——此前 offset 被直接丢弃）：正值整体提前（`timeMs += offset`）、负值延后、缺失/非法保持原时间戳、对多时间戳行的每个时间戳生效、空白内容返回 `null` |
+| `data/repository/MusicRepositoryRoomTest` | Library repository: startup rebuilds playlist cross-references from Room (by `sortOrder`) and filters orphan references; adding a song to a playlist persists the cross-reference and rejects duplicates; local file verification is fully preserved without a context; `titleOverride` group-override write/clear round-trips and drives `groupKey` on restore |
+| `data/repository/PlayStatsRepositoryRoomTest` | Play stats: `increment` / `incrementRawPlayCount` / `updatePlayDuration` persist incrementally and stamp `lastPlayedAt`; batch reads default missing songs to 0; `getRankedCounts` sorts deterministically (tie-break by id ascending) and `useRawCounts` switches the metric |
+| `data/repository/QuickSkipSongsRepositoryRoomTest` + `PlaylistResumeDataStoreTest` | Quick-skip member decisions/dedup/short-play-count reset; playlist-resume DataStore record/overwrite/single-song single-clear semantics |
+| `data/repository/PlayerSettingsRepositoryTest` | Settings persistence: defaults when nothing is stored (theme `SYSTEM`, variant `MONO`, lyric font scale 1, global uniform random on, Bluetooth monitoring off, playback notification off, daily listening goal 120 minutes); per-key legacy SharedPreferences fallback happens exactly once — after the first DataStore write the legacy key is deleted (with separate assertions for the dark-theme, global-uniform-random, Bluetooth-monitoring, and notification paths); non-legacy keys like `lyricFontScale` and `dailyListeningGoalMinutes` persist directly to DataStore. (The `themeVariant` and `screenOrientationMode` settings exist on `PlayerSettingsRepository`, but only `themeVariant` is exercised here; orientation is not covered by this file's current cases.) |
+| `data/local/migration/LegacyJsonSnapshotParserTest` | v1 JSON snapshot parsing: song/playlist/group-override/play-stat prefix keys (`play_count_*`, `raw_play_count_*`, `play_duration_*`)/quick-skip songs and short-play counts; optional-field absence takes Chinese defaults; corrupt JSON recovers per-segment instead of failing wholesale; duplicate URIs dedup while URI-less songs are kept; playlist references point only at migrated songs and `sortOrder` is re-ordered |
+| `data/local/migration/SharedPreferencesLegacyJsonMigrationTest` | One-shot migration orchestration: all data writes to `FakeMelodyDao` and writes the `MigrationStateEntity` completion marker; corrupt JSON still migrates stats and still writes the marker (no retry); **an existing completion marker means a full skip** (zero writes) |
+| `data/util/LrcParserOffsetTest` | LRC `[offset:]` tag regression (2026-09-03 lyrics-live optimization, previously the offset was dropped): a positive value advances everything (`timeMs += offset`), a negative delays it, a missing/invalid value keeps the original timestamp, it applies to every timestamp of a multi-timestamp line, and blank content returns `null` |
 
-### 3.6 权限与通用（`core:common`、`core:ui`、`app`）
+### 3.6 `:core:skin` description lock (v3.10.2)
 
-| 测试类 | 锁定的行为 |
+The skin-description suite locks the "description-driven shell == the current app structure, and the contract can express radically different shells" invariant. Several of these tests deliberately read source files rather than self-proving against the description, because the P1 lesson was that a self-proving test can lock in a wrong description (the library was once asserted to have 5 segments including a spurious 「歌曲」 that only exists on the artist/album detail pages).
+
+| Test class | Locked behavior |
 | --- | --- |
-| `app/.../RuntimePermissionPolicyTest` | 版本门槛：通知权限只在 API 33+（`TIRAMISU`）返回 `POST_NOTIFICATIONS` 规格；`BLUETOOTH_CONNECT` 只在 API 31+（`S`）返回规格，低版本返回 `null`（各带中文拒批文案） |
-| `core/common/.../AppLoggerTest` | 日志脱敏：`content://`、`file://` URI、POSIX/Windows 路径、蓝牙地址与设备名/`bluetoothName` 字段替换为占位符；`Throwable` 的消息与堆栈同样脱敏。这是规则 14（禁直写 `android.util.Log`）的行为背书 |
-| `core/common/.../PerformanceTraceTest` | 埋点：`measure` 透传块返回值；`log` 输出经 `AppLog` 且 metadata 先脱敏（`uri=content://<redacted>`）；release 静默由 `isEnabled` 控制，`allow`/`disallow` 白名单让关键操作在线上继续输出 |
-| `core/ui/.../SongEmotionSectionTest` | 情绪纯函数层：`smoothCurve` 保长降噪、短列表直通；`lowConfidence` 未定带（任一轴 \|值\| < 0.15）；`hasSignificantPeak` 峰值显著性；**词表封闭性**（10 组共 39 个不重复词，ABYSS 组 3 词，headline 为组首词）；逐窗投票近零弃权、按占比取前 `MAX_TAGS` 组；WITTY（鬼畜）组被排除在自动投票外（V-A 中心真空修复）但手动标记链路 `groupOf` 不受限 |
+| `core/skin/.../DefaultSkinTest` | The built-in skin JSON == today's app structure: 3 bottom tabs (曲库/播放/我的) matching `AppDestinations`; player is a normal tab, not a sheet; library page has exactly 4 segments (`LibraryTab`: 歌单/歌手/专辑/情绪) with a default of 歌单 and a search entry; every library segment has sections so none renders blank; the me page is fixed to one screen; surface token is `0` ("zero solid blocks" style); art size is `44dp` matching the delivered `VisTokens`; `startPage` is the player page because the app launches there. This is the P1 groundwork locked before P2 |
+| `core/skin/.../SkinParserValidationTest` | Fail-closed validation with precise reasons: every bad input must give a typed `SkinIssue.Code` plus the offending field — rejects non-JSON (`MALFORMED_JSON`), missing schema version, unsupported schema version (states which version is supported, currently `1`), **unknown part is rejected and fails closed** (never silently degraded; even a real androidx widget like `AndroidView` not in the catalog is rejected), unknown icon, tab targeting a missing page, duplicate tab ids, a single-entry bottom bar, missing start page, invalid player entry, invalid cover shape, invalid row template, invalid song-list source, negative song count, and a segment without sections so the page cannot render blank |
+| `core/skin/.../SkinExpressivenessTest` | The contract can express shells radically different from current: a NetEase-style skin (3 tabs 我的/发现/正在播放, card wall with surface=1, vinyl player page) and a minimal two-page skin (2 tabs + player as a global sheet with a persistent mini bar). Also locks the **scope boundary at L5/L6**: all three skins use only L1–L5 `SkinPartCatalog` parts and need no L6 presentation parts, and the catalog itself contains no L6/L7 entries. `songList` with `template: grid` proves one part renders differently per template |
+| `core/skin/.../NeteaseSkinJsonTest` | The shipped NetEase user-skin JSON (`dcsgo.skin.netease.json` under `/tmp/skinpack/`) parses cleanly through `SkinParser` (no bad-prop/bad-page/bad-section), and its parsed fields match design intent: `playerEntry = sheet`, 3 tabs labeled 我的/发现/云村, `surface = 1` (card wall, complementary to mihx default 0), and grid template on the artist/album song-list segments |
+| `core/skin/.../LibrarySegmentsMatchSourceTest` | Metadata-level lock: the description's library segments must match the `LibraryTab` enum **exactly** (including order) by parsing `feature/playlist`'s `PlaylistComponents.kt` directly; the `SkinPartCatalog.LIBRARY_SEGMENTS` whitelist must equal the `LibraryTab` labels; the source really has 4 segments and no 「歌曲」; and every described segment has `sectionsBySegment` defined. This catches the self-proving-test bug class the P4 correction exposed |
 
-另有 `core/model` 的 `LyricsHighlightLeadTest`（歌词行高亮提前量 `HIGHLIGHT_LEAD_MS` 的预滚动补偿语义）与 `app` 的 `ResolveResumeSongTest`（歌单续播歌解析：可播性/存在性/空 resume 三个 `null` 分支）——同属「行为即契约」的小型回归锁。
+### 3.7 `:app` shell and navigation (built-in skeleton/template/section catalogs locked against the app structure)
 
-## 4. 窄验证命令示例
+These live in `:app` because cross-module consistency — `:core:skin` vs a feature module — cannot be tested in either module (architecture gates forbid core→feature back-deps, and a feature cannot see `:core:skin`); `:app` sees both and acts as the assembly layer.
 
-原则（AGENTS.md）：**优先最窄的安静验证**——改哪个模块就跑哪个模块的测试，用 `--tests` 类过滤收敛到具体行为；全量 `check` 留给提交前。**失败输出必须完整保留**（不要截断、不要只贴 summary），`verifyProductArchitecture` 的失败消息会直接点名违规文件，单测失败会给出完整断言差异。
+| Test class | Locked behavior |
+| --- | --- |
+| `app/shell/AppShellEquivalenceTest` | Runtime-shell equivalence with the pre-refactor app: the built-in `DefaultShell.shell` keeps the three original tabs in the original order (曲库/播放/我的) mapped to `AppRoutes.PLAYLIST/HOME/USER`; tab ids are stable and unique (a duplicate id caused a dirty-tab rendering-key collision in the prototype); the start route is `AppRoutes.HOME` matching `AppNavHost`'s original `startDestination`; the mini player shows on the library page when a song is loaded and hides on the player page itself. Each assertion names the pre-refactor source it cross-checks |
+| `app/shell/DefaultShellConsistencyTest` | The two shells must agree: `DefaultShell.shell` (the startup Kotlin constants) and `SkinShellResolver.resolve(DefaultSkin.JSON)` (the description-driven path user skins will take) produce the same tabs, start route, mini-player, and player-entry settings; the built-in JSON still parses cleanly with zero warnings; and the start route is the player page, not the library (locks the P1 fidelity bug where `startPage` was wrongly written as library) |
+| `app/shell/SheetSkeletonTest` | The drawer-type skeleton is actually expressible and assemblable: the minimal sheet sample skin (2 tabs 曲库/我的, no player tab, `playerEntry = SHEET`, mini player as the drawer handle, start on the library page) passes validation with zero warnings — proving the description layer and shell layer genuinely support the user-requested "2 pages + global drawer" shape, not just an interface field |
+| `app/shell/LibrarySongListTemplateTest` | L3 template resolution: the default skeleton resolves to `SongListTemplate.DEFAULT` (zero visual change vs pre-refactor), the grid sample resolves to `SongListTemplate.GRID` (for device A/B acceptance), a skeleton with no songList part falls back to `DEFAULT`, and an unknown template value is rejected by the validator (fail-closed: a template is not silently ignored at runtime but strictly rejected at import) |
+| `app/shell/GridLayoutSwitchTest` | The global "artist/album grid layout" switch → shell mapping: switch on forces `GRID` regardless of skin across every `SkinShellResolver.knownSkins`; switch off keeps the skin's own template (must not overwrite the style's `songList.template`); and both builtin skins are list rows by default when the switch is off. Guards against the switch being mistaken for "per-style keyed" and against closing the switch overwriting the style's own parsed template |
+| `app/shell/LuckyPlayEntryPolicyTest` | The 「随心播放」 entry-bar display policy `shouldShowLuckyPlayEntry`: shows on the sheet shell when no song is drawn, never shows while a song is playing (and is mutually exclusive with `shouldShowMiniPlayer`), and never shows on the tab shell (default three pages) because the player page already has the FAB. Guards against an inverted condition, a missing `SHEET` limitation (default three pages showing it would duplicate the FAB), and non-mutual-exclusion with the mini player |
+| `app/shell/SongListTemplateCatalogTest` | L3 whitelist ↔ enum consistency: `SkinPartCatalog.SONG_LIST_TEMPLATES` must match the `SongListTemplate` enum's ids exactly (adding a template requires changing both sides), the whitelist contains `default` and `grid`, and has no duplicates. Prevents the "description legal but assembly breaks" / "assembly supports but validation rejects" mismatch between the `:core:skin` whitelist and the `:feature:playlist` enum |
+| `app/shell/SkinSwitcherCatalogConsistencyTest` | Cross-module section key: `UserSections.SKIN_SWITCHER` must equal `SkinPartCatalog.SKIN_SWITCHER` literally, so the user-page skin-switcher key and the description part catalog cannot drift apart (the same trap class as the L3 template-whitelist drift) |
+
+### 3.8 Playlist template and selection controller (`:feature:playlist`)
+
+| Test class | Locked behavior |
+| --- | --- |
+| `feature/playlist/.../SongListTemplateTest` | The L3 row-template enum contracts: `DEFAULT`/`GRID` ids equal the catalog whitelist strings (`default`/`grid`); `fromId` returns `DEFAULT` for unknown values in a fail-safe manner (null, empty, unknown, and case-sensitive `"GRID"` all degrade to `DEFAULT`); `fromId("grid")` returns `GRID`; all template ids are distinct and non-blank. Pure Kotlin, no Android/Compose dependency |
+| `feature/playlist/.../SongSelectionControllerTest` | Song-selection controller state logic: `filterSongs` returns all songs on a blank query and matches title or artist case-insensitively otherwise; `toggleSearch` closes and clears the query; `enterSelectMode`/`exitSelectMode` manage the multi-select selection set (toggle add/remove, exit clears selection) |
+
+### 3.9 Permissions and common (`core:common`, `core:ui`, `core:model`, `app`)
+
+| Test class | Locked behavior |
+| --- | --- |
+| `app/.../RuntimePermissionPolicyTest` | Version gates: the notification permission returns the `POST_NOTIFICATIONS` spec only on API 33+ (`TIRAMISU`); `BLUETOOTH_CONNECT` only on API 31+ (`S`); lower versions return `null` (each with its Chinese rejection copy) |
+| `core/common/.../AppLoggerTest` | Log redaction: `content://`, `file://` URIs, POSIX/Windows paths, Bluetooth addresses, and device names/`bluetoothName` fields replaced with placeholders; a `Throwable`'s message and stack are redacted too. This is the behavioral backing for rule 14 (no direct `android.util.Log`) |
+| `core/common/.../PerformanceTraceTest` | Tracing: `measure` passes through the block's return value; `log` writes via `AppLog` with metadata redacted first (`uri=content://<redacted>`); release silence is controlled by `isEnabled`, and `allow`/`disallow` whitelisting keeps critical operations logging in production |
+| `core/ui/.../SongEmotionSectionTest` | Emotion pure-function layer: `smoothCurve` preserves length and noise-reduces, short lists pass through; the `lowConfidence` indeterminate band (\|value\| < 0.15 on either axis); `hasSignificantPeak` significance; **vocabulary closure** (10 groups, 39 distinct words, the ABYSS group has 3, headline is the group's first word); per-window voting with near-zero abstention, taking the top `MAX_TAGS` groups by proportion; the WITTY group is excluded from automatic voting (V-A-center vacuum fix) but the manual-tag `groupOf` chain is unaffected |
+
+`core/model`'s `LyricsHighlightLeadTest` (the lyric-line highlight lead `HIGHLIGHT_LEAD_MS` pre-scroll compensation) and `app`'s `ResolveResumeSongTest` (playlist-resume song resolution: playability/existence/empty-resume `null` branches) belong to the same "behavior is the contract" family of small regression locks. `feature/user`'s `UserSectionsTest` locks the me-page section keys against history and the fallback order (5 hardcoded items then an optional `skinSwitcher`).
+
+## 4. Narrow verification command examples
+
+Principle (AGENTS.md): **prefer the narrowest quiet verification** — change one module, run that module's tests, and use `--tests` class filters to converge on the specific behavior; leave the full `check` for pre-commit. **Preserve failure output in full** (do not truncate, do not paste only a summary): `verifyProductArchitecture` failures name the offending file, and unit-test failures give the full assertion diff.
 
 ```bash
-# ① 改 planner / 时段判定（随机与情绪时段的回归底线）
+# ① changing a planner / slot decision (the random-and-mood-slot regression floor)
 .\gradlew.bat :domain:test --tests "cn.com.dcsgo.mihx.domain.playback.RandomQueuePlannerTest" --tests "cn.com.dcsgo.mihx.domain.playback.UniformRandomPlannerTest" --tests "cn.com.dcsgo.mihx.domain.playback.MoodSlotResolverTest"
 
-# ② 改 facade 编排（含 mood 过滤/降级、无限播放 refill）
+# ② changing facade orchestration (incl. mood filter/degrade, infinite-play refill)
 .\gradlew.bat :feature:player:test --tests "cn.com.dcsgo.mihx.feature.player.PlayerRandomQueueFacadeTest"
+.\gradlew.bat :feature:player:test --tests "cn.com.dcsgo.mihx.feature.player.PlayerPersistenceGraphTest" --tests "cn.com.dcsgo.mihx.feature.player.PlayerSleepTimerCoordinatorTest"
 
-# ③ 改控制器窗口 / 同步
+# ③ changing the controller window / sync
 .\gradlew.bat :player:test --tests "cn.com.dcsgo.mihx.player.window.*"
 .\gradlew.bat :domain:test --tests "cn.com.dcsgo.mihx.domain.playback.ControllerQueuePlannerTest"
 
-# ④ 改播放状态持久化（快照存储、序列化、恢复）
+# ④ changing playback-state persistence (snapshot store, serializer, restore)
 .\gradlew.bat :player:test --tests "cn.com.dcsgo.mihx.data.player.PlaybackStateStoreTest" --tests "cn.com.dcsgo.mihx.data.player.PlaybackStateSnapshotSerializerTest"
 .\gradlew.bat :domain:test --tests "cn.com.dcsgo.mihx.domain.playback.PlaybackRestoreCoordinatorTest"
 
-# ⑤ 改数据层 / 迁移
+# ⑤ changing the data layer / migration
 .\gradlew.bat :data:test
 
-# ⑥ 改日志 / 埋点 / 权限
+# ⑥ changing logging / tracing / permissions
 .\gradlew.bat :core:common:test
 .\gradlew.bat :app:test
 
-# ⑦ 提交前全量门槛（格式 + 架构断言 + 全部模块单测）
+# ⑦ changing the skin description / shell / template catalogs (v3.10.2)
+.\gradlew.bat :core:skin:test
+.\gradlew.bat :app:test --tests "cn.com.dcsgo.mihx.app.shell.*"
+.\gradlew.bat :feature:playlist:test --tests "cn.com.dcsgo.mihx.feature.playlist.*"
+
+# ⑧ pre-commit full gate (formatting + architecture assertion + all module unit tests)
 .\gradlew.bat check
 
-# ⑧ 设备层（需要真机/模拟器；UI 断言与性能回归）
+# ⑨ device layer (needs real device/emulator; UI assertions and performance regressions)
 .\gradlew.bat :app:connectedAndroidTest
 .\gradlew.bat :benchmark:connectedCheck
 ```
 
-操作提醒：
+Operational notes:
 
-- 一次 Gradle 调用可以带多个 `--tests` 过滤；通配 `--tests "cn.com.dcsgo.mihx.player.window.*"` 覆盖整个包。
-- 改 `MusicRepository` 导入/扫描或 `PlaybackController` 队列路径时，除了单测还要确认 `PerformanceTrace` 锚点字符串未被改名（`music_import_scan` 等）——`verifyProductArchitecture` 会直接失败。
-- 改了启动路径或首页列表实现后，跑一次 `:benchmark:connectedCheck` 重新生成 Baseline Profile；macrobenchmark 在 MIUI 真机上可能因 ROM 限制无法完成自动授权/帧确认步骤。
-- 快速编译反馈（不跑测试）可用 `.\gradlew.bat :player:compileDebugKotlin` 一类单模块编译任务。
+- One Gradle invocation accepts several `--tests` filters; the wildcard `--tests "cn.com.dcsgo.mihx.player.window.*"` covers a whole package.
+- When changing `MusicRepository` import/scans or a `PlaybackController` queue path, besides unit tests confirm the `PerformanceTrace` anchors were not renamed (e.g. `music_import_scan`) — `verifyProductArchitecture` fails directly on that.
+- After changing the startup path or home-list implementation, run `:benchmark:connectedCheck` once to regenerate the Baseline Profile; macrobenchmarks on MIUI device hardware can fail to complete auto-authorization/frame confirmation because of ROM limits.
+- For fast compile feedback (no tests) use a single-module compile task like `.\gradlew.bat :player:compileDebugKotlin`.
 
-## 相关页面
+## Related pages
 
-- `/openwiki/operations/build-and-verification.md` —— 命令矩阵、`verifyProductArchitecture` 全部规则、benchmark 与 Baseline Profile 运维
-- `/openwiki/player/random-and-infinite.md` —— 随机链路被锁行为的完整推导
-- `/openwiki/player/queue-architecture.md` —— 双队列模型与窗口管线的被锁不变量
-- `/openwiki/architecture/data-persistence.md` —— Room/DataStore 持久化与迁移史（§3.5 测试锚点的背景）
-- `/openwiki/player/state-machine.md` —— 播放状态机（§3.4 同步器测试的背景）
-- `/openwiki/concepts/emotion-model.md` —— 情绪词表与投票算法（§3.6 `SongEmotionSectionTest` 的背景）
+- `/openwiki/operations/build-and-verification.md` — command matrix, every `verifyProductArchitecture` rule, benchmark and Baseline Profile operations
+- `/openwiki/architecture/app-shell-navigation.md` — the shell/navigation structure the `:app` shell-equivalence tests verify
+- `/openwiki/architecture/data-persistence.md` — Room/DataStore persistence and migration history (the §3.5 anchor background)
+- `/openwiki/architecture/module-graph.md` — module boundaries that force the cross-module consistency tests into `:app`
+- `/openwiki/player/random-and-infinite.md` — full derivation of the locked random-chain behavior
+- `/openwiki/player/queue-architecture.md` — dual-queue model and the window pipeline's locked invariants
+- `/openwiki/player/runtime-facades.md` — the facade runtime side of the same-name facade tests

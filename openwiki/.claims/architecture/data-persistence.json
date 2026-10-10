@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "pageVersion": "sha256:37b4176d00409dc0572c222f8939dbd7874be277c990b1d32ff7bb4676138b05",
+  "pageVersion": "sha256:66d1e3c8872f561ebef73ef2f94e72917f4b3d1e431312063f595d58ab63d06b",
   "claims": [
     {
       "id": "claim_a58e9b50c6ea42629d60c985b88aef4d",
@@ -21,12 +21,8 @@
       "statement": "Room v10 contains exactly 13 entity tables: songs (library master with unique `uri` index), playlists, playlist_song_cross_ref (order-preserving many-to-many), play_stats, playback_events (per-session rows for day/week/month aggregation), quick_skip_songs, quick_skip_short_play_counts, song_group_overrides, migration_state, artists, albums, song_artist_cross_ref, and song_emotions (per-window V/A curve plus user calibration fields).",
       "evidence": [
         {
-          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/local/MelodyDatabase.kt#L20-L41",
-          "version": "repo-lines-v1:sha256:845de5f94a35426067f0148bcf8dc41894dd3b40b2d89aaf229793c3cc8ff7b8:eyJzZWxlY3RlZExpbmVDb3VudCI6MjIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQwNmYxZGI1MWFhM2I3OWY5OWM4ZjlhMTc5ZjQxYTcxNmY3YzU4Y2Y4M2ZlYjY1MjcwOGIwOWYxMzZmNGU2M2MiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjZlZjk1MmNiMTdlMjcwZDU1M2ZhNDJiZDFjNTc3NzVmNTE4YTZjNGY4NTNjYTM3MDQ0ODI1MmVlNGY1ZTBhOTEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
-        },
-        {
-          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/local/dao/MelodyDao.kt#L59-L402",
-          "version": "repo-lines-v1:sha256:38b69380c35a45d12d7f068dc3027f629225422de7e5a5ee829f1278410aa4a5:eyJzZWxlY3RlZExpbmVDb3VudCI6MzQ0LCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiIzNzRmNTEzZDViZGEyNjUzOGIwMjZjMmM1Y2I3ZmIxYjNlZTdhNTgyY2E0MTc5OTg2N2VhMmU4MTI3Zjg0NzIyIiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI0MTJjYTM0NWNjZjc1YmY5YzA4MDZiY2U2OTViZThkZTgwOGI3OTk4NDI1MWE3YTU0ZDIwMmNmNjEwMWRkNDUxIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiJhOTMxNjc2ZjJhOGVkNWQ5NzBjZTJmYzE1NmNjYjc2ZmU0YTRhMGFhODQ5ZDVjNzQ5ZTc1YmRkMDRhZTg5ODcxIiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiJhMjczMWFhMWNjM2NjZWZjZjdiY2UyYTYyODNlYTUzMTZiYWM5MGUyYTFjZDYwMmJmOWQ2ZjE4NWY0OTZmMmI2In0"
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/local/MelodyDatabase.kt#L20-L38",
+          "version": "repo-lines-v1:sha256:a0fd6b004455cd4ec95ae0cf890cdc50c53d590c2cedcc0e2eb035e4e4f262e1:eyJzZWxlY3RlZExpbmVDb3VudCI6MTksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQwNmYxZGI1MWFhM2I3OWY5OWM4ZjlhMTc5ZjQxYTcxNmY3YzU4Y2Y4M2ZlYjY1MjcwOGIwOWYxMzZmNGU2M2MiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZhZmJhMDUyN2MzOTUzYzRiNmUwZTViNTczOWJhODM2MTJmODA1M2JjZGM5NDY2NzMwMTkzY2QxZDU5MGI0MDgiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjZlZjk1MmNiMTdlMjcwZDU1M2ZhNDJiZDFjNTc3NzVmNTE4YTZjNGY4NTNjYTM3MDQ0ODI1MmVlNGY1ZTBhOTEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImU0YmYwODllNWQ1OWUwMGZlZGNjZjEyMmJiOTU0YWIyMDVmN2Q2N2RlM2ZmNTYwYmY5YzVhMDMxYmY5YWUzYTAifQ"
         },
         {
           "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/local/entity/SongEmotionEntity.kt",
@@ -65,16 +61,20 @@
       "statement": "MusicRepository persists the library as asynchronous full-table snapshots: changes are queued on a single-threaded IO scope (`Dispatchers.IO.limitedParallelism(1)`) that guarantees later snapshots supersede earlier ones, and `RoomMusicLibraryDataSource.persistSongs/persistPlaylists` replace whole tables inside `@Transaction` methods `replaceSongs`/`replacePlaylists` so main-thread UI actions never block on disk.",
       "evidence": [
         {
-          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/local/dao/MelodyDao.kt#L272-L292",
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/local/dao/MelodyDao.kt#L302-L322",
           "version": "repo-lines-v1:sha256:10793d088eb4ed5f737693984919dd7e547d4d11c6ffaa63b635d5a7a00cd4be:eyJzZWxlY3RlZExpbmVDb3VudCI6MjEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImNmZjg1ZmY3NmFhNTM2ZTNjMjFmYzQ2OWM3NjZiOTFjZjhhODgxZDcwOTBhNzNlOWUxODhiNzI4MDAzN2QzNzQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjFmMGZmMTk1ZTkzZTFhYTkwYjJlNjZkMDJhM2QzMmI5YmZjMjJmY2VmN2E1YjE3MWNmYzJmYjc1MTBmNWZjNzYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijc1NjcxYzkxMGFjY2ZlOTQ1NWE4NzA3OThjOTYxOTM2OTJmMGJhZWUwNTgwNDBmNGM4ZTg4ZTEyN2RmZjIwMjgifQ"
         },
         {
-          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/repository/MusicRepository.kt#L71-L190",
-          "version": "repo-lines-v1:sha256:3cbe4c6153268d6e906a8805107759ce93955a0e913f42c7371ab949ae5a1e91:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIwLCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiI3NGY3MzQzNzg4YTZmYzA0OTNiZjExNGJmYjgxNWRiNDFiYzQxMGNhYzY4NTY4MjViOGQ3ZDc5Mjg4ODY4ZjRkIiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI0ODkzZjQwZTM3ODFlYjg5NmM4MmQwNDZhMDgwNjdhMTFlMzVjZGYyZjFkZmFmMjZmZWE5MGI4ZGI2Njc2NDEzIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiI2ODFhMDBlN2YxOGNjMDJiNGZkOTAxNGI2MTI0NGVlOTJiOWVhNDEzOWZjODA0MTZmYTI2YjY3MTcyZDI0NDI3IiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiIxMWQ3N2ZhZGRlMTA1ZDJkOTZmNjhjNDg0YjExYjMxMjhhYmNjYzU4NDUyM2Q1M2JhMGQ5OWJiZjI3NDU4ZDM3In0"
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/repository/MusicRepository.kt#L197-L223",
+          "version": "repo-lines-v1:sha256:8a0a761dad06411ff04731600bcb77fd98a72e4d7c963ac98f47cc972ac014aa:eyJzZWxlY3RlZExpbmVDb3VudCI6MjcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjgyZmEzOWNhZDFmODY5MmVjMzk4ZGI0ODcwN2FjMGVmMDI4YzkxODI0MzNlZDA4YWQ5N2Y5ZjJiYTFhNjc2NDAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImY0MDE4YTFjNGJiMzI3M2NkMjYxM2NlZTRhMTdkOWUxZWYxOWVhYTZhYjlkZmRjNjA4ZDM0NWUxMmNmN2RjNWUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjRhN2Q0ODFlMjE1YzMwMmViNjMyY2U2NjI4MGFlYjQ1Yzc5MzY0ZGQxZWFhYjhjN2Q4ZGIzNWNjNDliOTI3YTQifQ"
         },
         {
-          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/repository/RoomMusicLibraryDataSource.kt#L20-L79",
-          "version": "repo-lines-v1:sha256:c6fb6d7f145db16672e9e1856c3949dd605e0b0f6ea0f88bfef0109d64385c0e:eyJzZWxlY3RlZExpbmVDb3VudCI6NjAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY4MGZlMTU3MzU1ZWQ1YjJhN2QyZDhhMTg0NzE0MjFkZmI4Mjg4ZmZjNzE5ZmMxNWRhY2EyMDc2ZjM1M2FjNjUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImRjY2NjMmY0ZTJmNTQ5ZGFjZGRlOTBmMzk5YWZiZjNhMDgyYmYyNTYxNDNlMjQzYjAzYmJhZWQ2NTkwMzNhYjAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjJhNzVkMzAwMTkyNzFmNmVmZmUyNTUyNDhlZWIxZDUwYTYyMWQ2YmM2MWU3NWI2Mzc4MGVlYTE0YWUwMWY5MGEifQ"
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/repository/MusicRepository.kt#L84-L93",
+          "version": "repo-lines-v1:sha256:eeb1077ceedf215f30a1e8bbed478af6338a7166142be1aaebed17c82f2b0333:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjhmNWRiNjQ5YWU2MDFhMGU5ZjkxYzc3OTU0NTllMTA4ZTAxNzdmMDg2ZTZjNmQwNGI5ZWYyMmQ2NzMzOGJmNzEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijc4YzA0MWU3NjNiZjhhNmFlNDUyMGFlNGY3ZDMwZWI1MjZhNjY0ZTg1Zjc0MmE0MGY0YTVhZjkxMmEzMmM0ZWEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImI0ZmIzZTZkMDA1NzdjOTM1NGFjNzViODNjYWRkMTZmY2Q0ZTk5MjE0M2EwMmM5ZTBjMTZmNmFkZTg4NDcyODgifQ"
+        },
+        {
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/repository/RoomMusicLibraryDataSource.kt#L58-L79",
+          "version": "repo-lines-v1:sha256:f6e19cb389f4d2b752d0dec91e4fbf82b499f8b7dffd45a911f7954b7e23ec64:eyJzZWxlY3RlZExpbmVDb3VudCI6MjIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjE4NTJlZWRhOTkxOThhOGYzOGZjZDY2OTNlYzE5NjY5ZDQxMDQyYmY3ODc2ZWIyMmE5OGUzZTE1MmFjMzY3MmUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImZmMGQ3NTk1MGRmMGZmOWEzZWU5NjYzOWRjYzhmZjVlYWVkYjQwZDY4MmJlYTkyNjIyYjUyMGRkODg3ZDkzZTkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjJhNzVkMzAwMTkyNzFmNmVmZmUyNTUyNDhlZWIxZDUwYTYyMWQ2YmM2MWU3NWI2Mzc4MGVlYTE0YWUwMWY5MGEifQ"
         }
       ]
     },
@@ -201,8 +201,8 @@
       "statement": "The legacy migration trigger point is `MusicRepository.loadPersistedSongs()`, which runs `migrateIfNeeded()` before restoring from Room — after the one-shot migration Room is the single source of truth and legacy JSON is never consulted again.",
       "evidence": [
         {
-          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/repository/MusicRepository.kt#L109-L124",
-          "version": "repo-lines-v1:sha256:629c93f7e39e0cdf172837359bd36da011f61cb56d77ba5cc01588484187648c:eyJzZWxlY3RlZExpbmVDb3VudCI6MTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRhNGQzN2I1Zjc1ZjU3NjQ0MjZiY2I1MTQ1NjNlMTc5YTVhZGZiNThiNDA4ZjdiMzJkOGFmODUzYjI4NjJiZDMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk2ZjYzNDMzMjAyZjQ2MGM5OTVhYTc1YmE4ZmNmMmJiNGM4NDkwOWMxMjI2OGU2ZmYxNjgxMzVhYWQ5ZTViZjIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijc2NTMxNTQ1ODI2OTlmMmNlMTQ4ZDYyZDA4NzI3N2RiNzM2YTJlN2E2NmNhZjRlZGI5MDZlZTJlYjUzZmQwZTMifQ"
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/repository/MusicRepository.kt#L124-L138",
+          "version": "repo-lines-v1:sha256:806b8a1e83f42258c2f2588589acc2377f8bc348a1288316cd683b5123b8c3ef:eyJzZWxlY3RlZExpbmVDb3VudCI6MTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjA1NDNjZjRhNmM5MWZhYWE1ZjM4ZmNkNGNkODc2M2VlZTkzZDBjNzAwNzZkNTA1NDI2OWViMjQyNTNmZGQ2OWYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjBlZDNkMmMxN2VmYzQ4M2U4Y2VlODNiNzFhZmE1NTY1NTQ3YzczYjJlZjNkZDRhYTczOWY2NjA0NDY1OWViMmEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijc2NTMxNTQ1ODI2OTlmMmNlMTQ4ZDYyZDA4NzI3N2RiNzM2YTJlN2E2NmNhZjRlZGI5MDZlZTJlYjUzZmQwZTMifQ"
         },
         {
           "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/repository/RoomMusicLibraryDataSource.kt#L20-L56",
@@ -212,33 +212,37 @@
     },
     {
       "id": "claim_78f98411786c42e0be1cc81495c99e81",
-      "statement": "The `player_settings` DataStore (owned by `PlayerSettingsRepository` via `PlayerSettingsKeys`) persists theme mode/variant, uniform-random, Bluetooth monitoring, playback notification, lyric font scale, sleep timer end time + play-last-song, daily listening goal, emotion-scan pause, the mood time-slot master switch (`mood_time_slot_enabled`), and local-music sort mode/direction; `DataStoreModule` provides it plus the legacy `music_player_prefs` SharedPreferences behind Hilt qualifiers.",
+      "statement": "The `player_settings` DataStore (owned by `PlayerSettingsRepository` via `PlayerSettingsKeys`/`PlayerSettingsDataStore`) persists theme mode/variant (variant defaults to MONO), screen-orientation mode (default SENSOR_AUTO), uniform-random, Bluetooth monitoring, playback notification, lyric font scale, sleep timer end time + play-last-song, daily listening goal, emotion-scan pause, the mood time-slot master switch (`mood_time_slot_enabled`), and local-music sort mode (default IMPORT_ORDER) + sort ascending (default true); `DataStoreModule` provides it plus the legacy `music_player_prefs` SharedPreferences behind Hilt qualifiers.",
       "evidence": [
         {
-          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/di/DataStoreModule.kt#L30-L56",
-          "version": "repo-lines-v1:sha256:2edd61a9a66e4b8d22f26df882a207ec23136a0146572cd52a8553c0df7b3164:eyJzZWxlY3RlZExpbmVDb3VudCI6MjcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU5NTVmNTFkN2UyOTIxN2MxMTk0NmJhMDA4NWNlYTVkYmZlOTAxZmE3MWU2ZmM5NjIxN2JlN2Q3OTllYTkzZjEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjM1ZjZhODMxNWQ3NjQ2Yjc5YmEwZjNiYmJhMjY3Y2Y4MmFkNTA1YWM3NGU5MjJlNTYxOThiM2JmZjA2OTg0ZmYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/di/DataStoreModule.kt#L30-L55",
+          "version": "repo-lines-v1:sha256:62e19d22f2746fcc50f84769770a6dd10a2c4d0932154fad755f25dbffe693bd:eyJzZWxlY3RlZExpbmVDb3VudCI6MjYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU5NTVmNTFkN2UyOTIxN2MxMTk0NmJhMDA4NWNlYTVkYmZlOTAxZmE3MWU2ZmM5NjIxN2JlN2Q3OTllYTkzZjEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjMwYzFmMTg4ZjE0MmVkN2E4MjQ2ODBiMjA3MTcyYzU1MTliYzYxNGE0OGZkYTdjZjE2N2VkYjhkZGY3OTk1NmMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjM1ZjZhODMxNWQ3NjQ2Yjc5YmEwZjNiYmJhMjY3Y2Y4MmFkNTA1YWM3NGU5MjJlNTYxOThiM2JmZjA2OTg0ZmYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
         },
         {
-          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/repository/PlayerSettingsDataStore.kt#L13-L49",
-          "version": "repo-lines-v1:sha256:53b566c9ceb1c019933d2ec0612b4eb2b8753db68fe19e259095207759155ee6:eyJzZWxlY3RlZExpbmVDb3VudCI6MzcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImMxMzc3NTI2YWQ5ZWM3MTNiNDY3MjQzZDY4MTFlYmU3NTljZThmMjkzYmI0NjY2NjViYzA3YTBlNjc3NzI0ZjQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjJkYjVjZmNmNjVkNjI5ZTQxN2YyMTY3MzJkMmFmOTcwNzdiN2Y1MTAxMmIwODI1ODI4NjZiYTAxZmZlMDRiMDYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijg2ZjBkM2JiOGE5NWU1MjUxZWZkMzFhNGNiMGI0ODNlNWVjZGRiNzYxNDNlODBkZDJmZGY0NmUxNGVjZmQ0OTgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/repository/PlayerSettingsDataStore.kt#L19-L51",
+          "version": "repo-lines-v1:sha256:795ba68dc68e6e418e67458138b78ec3684dcd82dd10be30887adbed6f80dbef:eyJzZWxlY3RlZExpbmVDb3VudCI6MzMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU1NWRhMjU5NjdhOTYzOTZlZmNiYzliZGM3OTYzYTQ2NDJkYjAzMzllNGU1ZGE2YTE3YjM2OWEwNjZjM2E5MDQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjcwYTE5YThhYWU2ZGUzZGI2ZmE4NmQ5ZWE0YWQxNDA5MmNhZGEwZWIwOGMwZjdlNjNkYjgzMTBkYTI3YjEzODQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
         },
         {
-          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/repository/PlayerSettingsRepository.kt#L30-L262",
-          "version": "repo-lines-v1:sha256:1f8911ada2d37a84ad7ef94d738539ba0d027294c9477da0c3ba0dca4678b74e:eyJzZWxlY3RlZExpbmVDb3VudCI6MjMzLCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiI2NDYzNTJhOTE3NDdhNzlkYjUzZDIyZjdhNWM2ZmNkMzM5YTgzZGUwZDEyNjA3N2MxZGJmOWQ1NjNkMTJjYzYzIiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI0ODkzZjQwZTM3ODFlYjg5NmM4MmQwNDZhMDgwNjdhMTFlMzVjZGYyZjFkZmFmMjZmZWE5MGI4ZGI2Njc2NDEzIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiI0MmVjZWVhZmRiNjI3ODk1YmQwZWQ2MDRjOWZjZWRiNjg2OTc4NjU2MThjYmQyNDQ5YTA2NmMwMDNlOTQ4YmYzIiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MSwiZm9sbG93aW5nQ29udGV4dEhhc2giOiI0MTJjYTM0NWNjZjc1YmY5YzA4MDZiY2U2OTViZThkZTgwOGI3OTk4NDI1MWE3YTU0ZDIwMmNmNjEwMWRkNDUxIn0"
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/repository/PlayerSettingsRepository.kt#L253-L280",
+          "version": "repo-lines-v1:sha256:1dd3a036579d85923181276e1007147646eae34e63056f6424ac11a8dae40c16:eyJzZWxlY3RlZExpbmVDb3VudCI6MjgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZiOTkyODk5OWJmOGUyNDE4NWRkYTg3MTk4ODNlZWQ0NWY4YzI1OWEyNzBmNWEzNDg3OThmN2I3MGYwNjk5MmEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk2ODFiYTBjNjA1MGE0MmY5MzZiMmMwYzRjNGVkNzJiNTc4MzllZDE3YjhhOTU3MGQ1MWE2ZDI4ZjUxYzkxOGUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        },
+        {
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/repository/PlayerSettingsRepository.kt#L31-L52",
+          "version": "repo-lines-v1:sha256:c2f8451fe33b2047741e41f0d64bd5e25678b6fadac63799f63d6c72e814da76:eyJzZWxlY3RlZExpbmVDb3VudCI6MjIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY0NjM1MmE5MTc0N2E3OWRiNTNkMjJmN2E1YzZmY2QzMzlhODNkZTBkMTI2MDc3YzFkYmY5ZDU2M2QxMmNjNjMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjQyZWNlZWFmZGI2Mjc4OTViZDBlZDYwNGM5ZmNlZGI2ODY5Nzg2NTYxOGNiZDI0NDlhMDY2YzAwM2U5NDhiZjMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjMzY2YwZDg5ZGRmZGUxNTk0NWRhY2Y2ZTg0YzU3MWIxMjYyZjBhOTBkOWVhZjcxMDBhODJlM2I1OGY4OWQxOTAifQ"
         }
       ]
     },
     {
       "id": "claim_8f0bfe02fed3460ea6668a8c4d0656eb",
-      "statement": "Player settings reads carry a legacy SharedPreferences fallback and the write path deletes the legacy key: when DataStore lacks a value the legacy `dark_theme`-style key is consulted, and an explicit write (e.g. `setThemeMode`) both writes DataStore and removes the legacy key, so legacy values decay with use.",
+      "statement": "Player settings reads carry a legacy SharedPreferences fallback and the write path deletes the legacy key: when DataStore lacks a value the legacy `dark_theme`-style key is consulted (theme additionally falls back through an in-DataStore `dark_theme` boolean before the SharedPreferences key), and an explicit write (e.g. `setThemeMode`) both writes DataStore and removes the legacy key, so legacy values decay with use.",
       "evidence": [
         {
-          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/repository/PlayerSettingsRepository.kt#L141-L181",
-          "version": "repo-lines-v1:sha256:4d0695a19c497e7664a710c3ac14bc0cc6af7fff844190eb80c1880fee0502eb:eyJzZWxlY3RlZExpbmVDb3VudCI6NDEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjVmOWI1Y2QzM2Q3NzNlNDQxM2Q2NTFhMjFkM2QzMGRhOTk3NjVlMzg2YThmNzcxNGU0NWU0MWU3Njg1M2QwYTMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk5OWJkZWZlZWFjYTYzNDBlMDI5MGRjODZlODg5Yzg5ZDVlMTg5YWE1YmE0NGI1ODViM2I3MDczNGY0YTYyZDgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjA5MzQ3NTUwMjk2NWUzZTY1NzJjY2YxNDAzZTZmZTE2ZmM3YzBmYWQzNzc2ZjI4NzNhNzFlNDdjMTExYmJhYjQifQ"
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/repository/PlayerSettingsRepository.kt#L153-L199",
+          "version": "repo-lines-v1:sha256:20c27f1e0c43fba16ce48758d2aab0a628bd43d0463a8110da5005cb1e770f57:eyJzZWxlY3RlZExpbmVDb3VudCI6NDcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjVmOWI1Y2QzM2Q3NzNlNDQxM2Q2NTFhMjFkM2QzMGRhOTk3NjVlMzg2YThmNzcxNGU0NWU0MWU3Njg1M2QwYTMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk5OWJkZWZlZWFjYTYzNDBlMDI5MGRjODZlODg5Yzg5ZDVlMTg5YWE1YmE0NGI1ODViM2I3MDczNGY0YTYyZDgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjA5MzQ3NTUwMjk2NWUzZTY1NzJjY2YxNDAzZTZmZTE2ZmM3YzBmYWQzNzc2ZjI4NzNhNzFlNDdjMTExYmJhYjQifQ"
         },
         {
-          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/repository/PlayerSettingsRepository.kt#L30-L61",
-          "version": "repo-lines-v1:sha256:ea64d6507c59e6b4d86d6562ba4c4d9d1d0aae328e849a0d4ac10413eb69d742:eyJzZWxlY3RlZExpbmVDb3VudCI6MzIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY0NjM1MmE5MTc0N2E3OWRiNTNkMjJmN2E1YzZmY2QzMzlhODNkZTBkMTI2MDc3YzFkYmY5ZDU2M2QxMmNjNjMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjQyZWNlZWFmZGI2Mjc4OTViZDBlZDYwNGM5ZmNlZGI2ODY5Nzg2NTYxOGNiZDI0NDlhMDY2YzAwM2U5NDhiZjMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjllZDIzZDExMjk2ZmYzZDk1YjJhZWFiMzg3NTg4ODA0Y2Y4N2ZhYTEyNGIxMDE4YzdlZjRmNWVlNzJkNzVjZTgifQ"
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/repository/PlayerSettingsRepository.kt#L31-L67",
+          "version": "repo-lines-v1:sha256:394b8783af5b4577ce91283f129399e9f179ae848b955f0eb0cc927fdb704b57:eyJzZWxlY3RlZExpbmVDb3VudCI6MzcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY0NjM1MmE5MTc0N2E3OWRiNTNkMjJmN2E1YzZmY2QzMzlhODNkZTBkMTI2MDc3YzFkYmY5ZDU2M2QxMmNjNjMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjQyZWNlZWFmZGI2Mjc4OTViZDBlZDYwNGM5ZmNlZGI2ODY5Nzg2NTYxOGNiZDI0NDlhMDY2YzAwM2U5NDhiZjMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjllZDIzZDExMjk2ZmYzZDk1YjJhZWFiMzg3NTg4ODA0Y2Y4N2ZhYTEyNGIxMDE4YzdlZjRmNWVlNzJkNzVjZTgifQ"
         },
         {
           "resource": "repo://data/src/test/java/cn/com/dcsgo/mihx/data/repository/PlayerSettingsRepositoryTest.kt#L21-L46",
@@ -284,15 +288,19 @@
     },
     {
       "id": "claim_89e27b8280f54caaa65a860cf0ab49c7",
-      "statement": "Playback snapshot save semantics: an empty session (empty queue, no currentSongId, not infinite play) skips the write but deliberately keeps any existing snapshot — the UI-recreation window produces transient all-empty states and the old clear-on-empty behavior erased a valid 5s-old snapshot leaving the queue permanently empty after restart (2026-09-03 regression); explicit clearing goes through `clear()`; save failures are logged and swallowed so playback control is never interrupted.",
+      "statement": "Playback snapshot save semantics: an empty session (empty queue, no currentSongId, not infinite play) never writes queue JSON over an existing DataStore snapshot — with an existing snapshot it keeps the queue and updates only currentSongId+position, with no snapshot but a present currentSongId it writes a single-song queue for restore-time correction, and only a fully empty save with no prior snapshot writes nothing; the old clear-on-empty behavior erased a valid 5s-old snapshot leaving the queue permanently empty after restart (2026-09-03 regression). Explicit clearing goes through `clear()`, legacy keys are cleared on write only when DataStore actually changed, and save failures are logged and swallowed so playback control is never interrupted.",
       "evidence": [
         {
-          "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/data/player/PlaybackStateStore.kt#L61-L109",
-          "version": "repo-lines-v1:sha256:e347a7793525f93959e09a259c9b1003ec3cd16c12e6a5f5a1266b245c6b8f4b:eyJzZWxlY3RlZExpbmVDb3VudCI6NDksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijc3MWRiYjA2NGNiNjRhMjgyZjMxMTc2Nzg2MWYxMTczYmEwY2RjMzg1NDBjYzE2NmZmMDI3YWExMGZhODgwZGEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjBlZDAzOTJlNTU2MThmMzFiNjhjYmYxOTQ3YmU5OTYzOWM5NjRmYzI3NDNiZjYxYzRlYmJhZGRhMjhiYjhkNmQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijg5ZjlhNzllMDkyMzM2NTEzMDVlOGViNTcyOTY2YzdmMzFhYzJiMmU5NWRmOWFlNmEyNzI1ZDY0YjdlMjVlMjMifQ"
+          "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/data/player/PlaybackStateStore.kt#L61-L154",
+          "version": "repo-lines-v1:sha256:11e8c1000a7c4c884fe1d49696e041fd8f83f167ff7406751a5ff1366c2ec23a:eyJzZWxlY3RlZExpbmVDb3VudCI6OTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijc3MWRiYjA2NGNiNjRhMjgyZjMxMTc2Nzg2MWYxMTczYmEwY2RjMzg1NDBjYzE2NmZmMDI3YWExMGZhODgwZGEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjBlZDAzOTJlNTU2MThmMzFiNjhjYmYxOTQ3YmU5OTYzOWM5NjRmYzI3NDNiZjYxYzRlYmJhZGRhMjhiYjhkNmQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijg5ZjlhNzllMDkyMzM2NTEzMDVlOGViNTcyOTY2YzdmMzFhYzJiMmU5NWRmOWFlNmEyNzI1ZDY0YjdlMjVlMjMifQ"
         },
         {
           "resource": "repo://player/src/test/java/cn/com/dcsgo/mihx/data/player/PlaybackStateStoreTest.kt#L127-L145",
-          "version": "repo-lines-v1:sha256:adb48ce8d9485c92b5aa19956129338d98703f72a97b59d53f15c02d9a28e750:eyJzZWxlY3RlZExpbmVDb3VudCI6MTksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRjZjA5ZWIwYzU3NDRmYjk3MzMxYjk4ZmYzZmJmMDVhNjAyYmEzZjdmNjdlNWRhNWJlOTA5NTAzM2Y2MjU4MjUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk0ZDJhMWZkODExN2Y0YWQwMGRlZTExYjc0YzEzYmZmNzM1YjFjMDczNzllZGM0YzJlZTY5ZWJlM2YxY2EzMGIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjRiYWJmYjg4MjNkZmRiNzZlODU3OWIxNWM1MDQzZDM5N2M5ZGE2NWY2ZmUxNDBhZjExZjU3MTlmNjhhZmFlNmYifQ"
+          "version": "repo-lines-v1:sha256:adb48ce8d9485c92b5aa19956129338d98703f72a97b59d53f15c02d9a28e750:eyJzZWxlY3RlZExpbmVDb3VudCI6MTksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRjZjA5ZWIwYzU3NDRmYjk3MzMxYjk4ZmYzZmJmMDVhNjAyYmEzZjdmNjdlNWRhNWJlOTA5NTAzM2Y2MjU4MjUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk0ZDJhMWZkODExN2Y0YWQwMGRlZTExYjc0YzEzYmZmNzM1YjFjMDczNzllZGM0YzJlZTY5ZWJlM2YxY2EzMGIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImE3MjM3NmU5ODFiN2E5YzZiYWFjODllYTllNTRjMjUxNmNkNTViMTU3MGY4M2Y2NWJmMWY0ODAxMDVmZTEwY2MifQ"
+        },
+        {
+          "resource": "repo://player/src/test/java/cn/com/dcsgo/mihx/data/player/PlaybackStateStoreTest.kt#L148-L170",
+          "version": "repo-lines-v1:sha256:87f28c960c0f74a09b9a1e439e2bc14a35ac07769fc61cf4cb1470940c3db52a:eyJzZWxlY3RlZExpbmVDb3VudCI6MjMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU0NWFjYWRkNzliN2MzOTc5OWNlZjdlMmE5NDAxM2YzNTQ3ZjQ0NmZmMzZmMDZjNDU5NGRhNTg1NWQzNDg2NzYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImU4ZWFmM2UxZGIyODRmNmE2ZmQ0ZTA2NmFlMmZiNjU0YWU2OGZkZmNmM2U3ZTRkY2E0YzJkZDIxNGE0OWI5ZDAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjM4YWFmOGUyZDVhMDhkODgyZTA4Y2QxYzZkNDM2YTM2OTFlYzYxMDNmM2YwMzIyNGIxMDFmMTU3NmUxNjQ5OWEifQ"
         }
       ]
     },
@@ -312,19 +320,19 @@
     },
     {
       "id": "claim_ca2e7e0b68eb4c828b89d261264bc563",
-      "statement": "Restore is a two-phase decision that removes the controller race: `PlayerPersistenceGraph` reads/decodes the snapshot on an IO coroutine in parallel with controller connection, then waits for `controllerReady` before consulting `hasLiveSession()` — a live session receives only the UI queue shadow backfill (never controller overwrite), while a cold start fully restores UI plus controller queue without autoplay; `restore` also re-anchors the queue onto the stored `current_song_id`, synthesizing a single-song queue if the song was not in the saved queue.",
+      "statement": "Restore is a two-phase decision that removes the controller race: `PlayerPersistenceGraph` lazily builds `PlaybackStateStore`, `PlaybackRestoreCoordinator`, `PlayerPersistenceFacade`, and `PlayerPlaybackStateAutosaver`; `restorePlaybackState()` reads/decodes the snapshot on an IO coroutine while the controller connects, `onControllerReady()` sets `controllerReady`, and both rendezvous in `maybeApplyRestore()` which waits for `controllerReady` and a non-null `pendingRestore` before consulting `hasLiveSession()` — a live session receives only the UI queue shadow backfill (never controller overwrite; the controller snapshot sync sets currentIndex but not songs), while a cold start fully restores UI plus controller queue without autoplay; `PlaybackStateStore.restore` also re-anchors the queue onto the stored `current_song_id`, synthesizing a single-song queue if the song was not in the saved queue.",
       "evidence": [
         {
           "resource": "repo://domain/src/main/java/cn/com/dcsgo/mihx/domain/playback/PlaybackRestoreCoordinator.kt#L48-L73",
           "version": "repo-lines-v1:sha256:afd5c48512d7bc6bc03cf04008078665f7422eac92b28ba5d25c7eb6478c326e:eyJzZWxlY3RlZExpbmVDb3VudCI6MjYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImJhY2QwODk4M2VjMTMzNjU2YzFlZDc4ZTRiMDE5OGJiMWQ1MmI0YjQ5OGMzZDY4NGJlNGIxZDQwMGIwMGIwYzkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImI0NmVmOTQyNDE4MjQxYThjOTRmNzJlYTFmOTE5ZDFjZDg3ZmMxOGFlZjM0Mzk3OTI5ZTE3ZWRjNWM3NTk5NzYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
         },
         {
-          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerPersistenceGraph.kt#L68-L111",
-          "version": "repo-lines-v1:sha256:da3c5d78d827d1b25327a3454d0fff51b09bd332bcfcf2f5d63a6fede8e972d7:eyJzZWxlY3RlZExpbmVDb3VudCI6NDQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM5Y2JiYzY1NDY5ZGIxY2EyODQyZWZkOTdkZjdlZTJjZTZjYzE1NzE0ODJkMDFhMThiNzkwYTEwYzdjNTEwZjMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImRkNmM3NTlhODdiZDBkNzlmMjMxODk0ZTI2MDZiMDg2NWI4OTAzM2VmMDgyYjEwNmM0Yjc0YThjZDUyNzY2ZmUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjA0NTUyYzgzMzU1YTJiYWQyMjNiZmI1NWYwN2YxZmE5MmFjMzliODc5ZWJkMGMwMmY1NWMzZWEzNmUxYTI5YmEifQ"
+          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerPersistenceGraph.kt#L29-L117",
+          "version": "repo-lines-v1:sha256:bd499df360fc85d6419dd0dc2b5c8217f70fc470aa0e8a5fde40c9c2c126cd88:eyJzZWxlY3RlZExpbmVDb3VudCI6ODksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI4NDJkN2RkNjRlMmJkZWU4ODYxMjI3ODA1NDU4ZDUxNzUyNWFiM2JiN2FlMmVkOWIyNGRlNzg3MTFmZTRhNTIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjQzNGY3ZTE2M2FiZTQxNTkzNGY4MGY4NTlmMDZiMTc4NmM3YTk0NzkzM2E5ZTJhOTM1ODk2ZGM1MDdiNGFhNDEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjA0NTUyYzgzMzU1YTJiYWQyMjNiZmI1NWYwN2YxZmE5MmFjMzliODc5ZWJkMGMwMmY1NWMzZWEzNmUxYTI5YmEifQ"
         },
         {
-          "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/data/player/PlaybackStateStore.kt#L177-L246",
-          "version": "repo-lines-v1:sha256:1230c689c8afedc2312a3de2d4402d240afdb9914323ecc4ffb1ad1b32b842fe:eyJzZWxlY3RlZExpbmVDb3VudCI6NzAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImIwMGQzN2YzZTM3MjY0OTBkZmQ1MzZhYTc2MjNkMjA1OTA1NmY2ZmNjZDE2MGQwNzk3ODFiNTgzMTQwODU0OTIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImZmMGQ3NTk1MGRmMGZmOWEzZWU5NjYzOWRjYzhmZjVlYWVkYjQwZDY4MmJlYTkyNjIyYjUyMGRkODg3ZDkzZTkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImY4MmNjNmQ1ODNkZjJjY2JjYmVkNWY4ZjQyYmY0MjBlZjI3NGU3ZTllM2Q0MDk0YzI1MzdiMGUyMzQzYzBhMWMifQ"
+          "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/data/player/PlaybackStateStore.kt#L222-L298",
+          "version": "repo-lines-v1:sha256:9d3c2b83caf00cd425745fe35ec6517c587ed12164b693408d140fbe19ec41b1:eyJzZWxlY3RlZExpbmVDb3VudCI6NzcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImIwMGQzN2YzZTM3MjY0OTBkZmQ1MzZhYTc2MjNkMjA1OTA1NmY2ZmNjZDE2MGQwNzk3ODFiNTgzMTQwODU0OTIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImZmMGQ3NTk1MGRmMGZmOWEzZWU5NjYzOWRjYzhmZjVlYWVkYjQwZDY4MmJlYTkyNjIyYjUyMGRkODg3ZDkzZTkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImY4MmNjNmQ1ODNkZjJjY2JjYmVkNWY4ZjQyYmY0MjBlZjI3NGU3ZTllM2Q0MDk0YzI1MzdiMGUyMzQzYzBhMWMifQ"
         }
       ]
     },
@@ -452,7 +460,7 @@
         },
         {
           "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/emotion/EmotionScanWorker.kt#L89-L111",
-          "version": "repo-lines-v1:sha256:b8999cdc5d49b25ebd83ffaaa76115ecdf45ca8bdf4b28d02ad207b1696fd647:eyJzZWxlY3RlZExpbmVDb3VudCI6MjMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjFhZTEzZmMyMWRkNmE1YTJkNjdlNjc0MmNmYzlmZmQ5Y2UwNDk4MWUwZGYyYWIxYTc3ZjM0NGZlMmNiODUyOTciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjVhMDJiNjMwODI0NTUwYmM0ODU2MzNlMmU1NmRiOGRkZjBiNzBlMzYwOWViOTY1NzE1MTIwZDYzMWRkMjViY2MiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjIxMjNhMmRjYWFiMDUwMGIzOGI1MGJhYzRhMTA5YzQ4NDdhYjY1MjJmMjY1NmFjYmEwN2NlZjQ0YTI0Y2IwYjcifQ"
+          "version": "repo-lines-v1:sha256:6adc47fb2af4807fcea2387c37791b21b859f8e6cb184ebe21bcb481a856ed8c:eyJzZWxlY3RlZExpbmVDb3VudCI6MzIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjFhZTEzZmMyMWRkNmE1YTJkNjdlNjc0MmNmYzlmZmQ5Y2UwNDk4MWUwZGYyYWIxYTc3ZjM0NGZlMmNiODUyOTciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjVhMDJiNjMwODI0NTUwYmM0ODU2MzNlMmU1NmRiOGRkZjBiNzBlMzYwOWViOTY1NzE1MTIwZDYzMWRkMjViY2MiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjIxMjNhMmRjYWFiMDUwMGIzOGI1MGJhYzRhMTA5YzQ4NDdhYjY1MjJmMjY1NmFjYmEwN2NlZjQ0YTI0Y2IwYjcifQ"
         },
         {
           "resource": "repo://domain/src/main/java/cn/com/dcsgo/mihx/domain/repository/EmotionFailureRepository.kt#L56-L63",
@@ -484,7 +492,7 @@
         },
         {
           "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/repository/PlayerSettingsRepository.kt#L75-L141",
-          "version": "repo-lines-v1:sha256:059c85e7217f576e253d67bbc71ced6088d0fbd7de8ed51d041541a10a813c3d:eyJzZWxlY3RlZExpbmVDb3VudCI6NjcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjUyOGQ1MDlmNzg2ZmUwMTA3Y2IyYzYwOTkzNzljMDU2NTM2ZDZmYTRiNTUxM2IyYWM0OWVjODY2NWE0Yjc2MGMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjVmOWI1Y2QzM2Q3NzNlNDQxM2Q2NTFhMjFkM2QzMGRhOTk3NjVlMzg2YThmNzcxNGU0NWU0MWU3Njg1M2QwYTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjJiZjkzYzk3YTY4NDZkZjg0YTVjYjU0Y2MzNTE4NWQzOTBlMjUyODE5MWRiNTRiN2NhZjEwZjIxZGY0OTEzZjgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjIyZDBiZDM4Nzk2NDgwZmU0YjIwMmFkNDFiY2Y5ZTNlN2E5NjkxOTYzYWQ5NWY3N2U1OTc5ZmQ5YzkzMGUzMzYifQ"
+          "version": "repo-lines-v1:sha256:0b9b2272fe9c1536bfe570db9537b6e540a02f0ca74470833d5eeb9b8e1cd9d6:eyJzZWxlY3RlZExpbmVDb3VudCI6NzMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjUyOGQ1MDlmNzg2ZmUwMTA3Y2IyYzYwOTkzNzljMDU2NTM2ZDZmYTRiNTUxM2IyYWM0OWVjODY2NWE0Yjc2MGMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjVmOWI1Y2QzM2Q3NzNlNDQxM2Q2NTFhMjFkM2QzMGRhOTk3NjVlMzg2YThmNzcxNGU0NWU0MWU3Njg1M2QwYTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjJiZjkzYzk3YTY4NDZkZjg0YTVjYjU0Y2MzNTE4NWQzOTBlMjUyODE5MWRiNTRiN2NhZjEwZjIxZGY0OTEzZjgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjIyZDBiZDM4Nzk2NDgwZmU0YjIwMmFkNDFiY2Y5ZTNlN2E5NjkxOTYzYWQ5NWY3N2U1OTc5ZmQ5YzkzMGUzMzYifQ"
         },
         {
           "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/repository/QuickSkipSongsRepository.kt#L26-L85",
@@ -514,24 +522,24 @@
         },
         {
           "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerPersistenceGraph.kt#L80-L93",
-          "version": "repo-lines-v1:sha256:3f237de2907eb45584dd409d0382d80c64eb5cb4754b1760f7408033cba3f958:eyJzZWxlY3RlZExpbmVDb3VudCI6MTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjA2NmZkZjkxZGU3MGE4MjA3M2YyZDAxNTAxNjFiMGFlMTAxYTI3ODdhYTVlNWQ1ZGQ0ZThkMWE0YzdiNTQwM2YiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImU5NjBkNzAwYWI0MGZmMGNjMzM3Yzc1ZDQ1YzYwOWVjMGRmYTJhMzQ3ZDdkMGQxOGY0YjMzOTZhODJkYTY5NzMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImEwNTdmOGQ3NmM5Zjk4YTQ3NjhkMTM4YjQ2OGNkOTc0OTU1NGVmM2M5MjQ4Y2ExYWQzMTQ2YzIxY2YwMWZmZTkifQ"
+          "version": "repo-lines-v1:sha256:afe88b8bc06054830985ff5e162117ec4a1f0b2660daba5b5218d32a371ce0b8:eyJzZWxlY3RlZExpbmVDb3VudCI6MTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjA2NmZkZjkxZGU3MGE4MjA3M2YyZDAxNTAxNjFiMGFlMTAxYTI3ODdhYTVlNWQ1ZGQ0ZThkMWE0YzdiNTQwM2YiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImU5NjBkNzAwYWI0MGZmMGNjMzM3Yzc1ZDQ1YzYwOWVjMGRmYTJhMzQ3ZDdkMGQxOGY0YjMzOTZhODJkYTY5NzMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImEwNTdmOGQ3NmM5Zjk4YTQ3NjhkMTM4YjQ2OGNkOTc0OTU1NGVmM2M5MjQ4Y2ExYWQzMTQ2YzIxY2YwMWZmZTkifQ"
         }
       ]
     },
     {
       "id": "claim_55ca23d4db874cd6abf3f273bdb6ac1e",
-      "statement": "Backup/privacy exclusions are a release checklist item: `backup_rules.xml` (`full-backup-content`) and `data_extraction_rules.xml` (`cloud-backup` and `device-transfer`) must both exclude the legacy SharedPreferences (`music_player_prefs.xml`, `play_stats_prefs.xml`, `quick_skip_songs_prefs.xml`), the full Room family (`melody.db`, `-journal`, `-shm`, `-wal`), the two DataStore files (`player_settings.preferences_pb`, `playback_state.preferences_pb`), and the album-art caches; `verifyProductArchitecture` fails the build if any entry is missing.",
+      "statement": "Backup/privacy exclusions are a release checklist item: `backup_rules.xml` (`full-backup-content`) and `data_extraction_rules.xml` (`cloud-backup` and `device-transfer`) must both exclude the legacy SharedPreferences (`music_player_prefs.xml`, `play_stats_prefs.xml`, `quick_skip_songs_prefs.xml`), the full Room family (`melody.db`, `-journal`, `-shm`, `-wal`), all five DataStore files (`player_settings`, `playback_state`, `playlist_resume`, `mood_time_slot`, `emotion_failures` `.preferences_pb`), and the album-art caches; `verifyProductArchitecture` walks a `requiredPrivacyExcludes` subset (legacy prefs, Room family, player_settings/playback_state DataStores, `cache/album_art/`) against both files and fails the build if any entry is missing.",
       "evidence": [
         {
           "resource": "repo://app/src/main/res/xml/backup_rules.xml",
-          "version": "repo-file-v1:sha256:80056e1cdc2eb13339c741a61a63b8a89838022dfceae1a223fd4196bc7eee51"
+          "version": "repo-file-v1:sha256:6adc82066ab66b3eec702478d2ccecd373033f39b2dfa2ce8e292f57ed86dc7d"
         },
         {
-          "resource": "repo://app/src/main/res/xml/data_extraction_rules.xml",
-          "version": "repo-file-v1:sha256:95ecc384349abd207950cfe67675e3dcb768c2f01992b593f99309f0b61154ca"
+          "resource": "repo://app/src/main/res/xml/data_extraction_rules.xml#L1-L37",
+          "version": "repo-lines-v1:sha256:df62aefbf66d48d338f13afff664bd4af86926a4b7aca08f96d114ae3d9d3239:eyJzZWxlY3RlZExpbmVDb3VudCI6MzcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQzOGRmYjA5MGQ3YjE5MTgyNjY5OTA4YTg5MTE4NjM2OGQ0YWY1YjAxOWE5ZTcxNjhlNGMwOGM5MjgyN2I1NGQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImJiMDA1NDU0MTFmMzFhNDRlOTBhYjBmNTJlNTIyNjAzODlmODU3NWJkNTYxZjA1Njg0MTIxOTIzZmU3MjYxZDAiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
         },
         {
-          "resource": "repo://build.gradle.kts#L524-L546",
+          "resource": "repo://build.gradle.kts#L526-L548",
           "version": "repo-lines-v1:sha256:1389e532acc35378d19d46c8d89b267096047a7fd0006383543f5a25a40e7a2f:eyJzZWxlY3RlZExpbmVDb3VudCI6MjMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU0NTMzNjY4OWFiM2EzODNmMTVjMjY3YTlkYjQ1YTA4YzE2MzU4NTAyNmNhOGU0MzU2MDc2NzFkYzMxNWI3ZjkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImU3YzI3MzRmYTQwNTU0MzU3NWQ3OGE3ZmQ4NTA0NDIzN2Q1ZTAzNmFjNDRlZWY2MTEyYjM3NGYwYmU5ZTk2NmIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjBmMWM1NGVkMDUyNmY0OGVhN2RlY2EwYjdmYTljODljMTljZTNhYzk4ODZiNTlmMmM4ODExZmUxMDVhY2Y3ZDcifQ"
         }
       ]
@@ -572,13 +580,39 @@
         },
         {
           "resource": "repo://player/src/test/java/cn/com/dcsgo/mihx/data/player/PlaybackStateStoreTest.kt#L20-L183",
-          "version": "repo-lines-v1:sha256:a3fd2c60e7ad3710a4f5572abe4de33081962758956557a8336df879933e7549:eyJzZWxlY3RlZExpbmVDb3VudCI6MTY0LCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiJkNDAxMDYzMDEwZTUwYmQ2NzllOTE0MWFlYTA0OTBmMzVlZTE5MjM5MjEwY2RiY2IxZDYyMmYzMTU4MDg1NjczIiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI0ODkzZjQwZTM3ODFlYjg5NmM4MmQwNDZhMDgwNjdhMTFlMzVjZGYyZjFkZmFmMjZmZWE5MGI4ZGI2Njc2NDEzIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiJiNjhmNTFlMzM4NDIzMThjYWY5ZjEwY2M0ZGZiY2IzY2M3M2I0Njc2MTU1ODk2YmViOGRjNDRkOTMxMjQ1Mjg1IiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiI4ZmE5OWQ4NDcwYmU1MWM4ZjIxNjhlNzNkNDhiMzU5ZjEwNjE2YjQ2ZjcxYWNkNDRkMjRhOWI2NDEzZDIzOWE1In0"
+          "version": "repo-lines-v1:sha256:b813d904d84e7d091fdf6b460a8424bb659ec19eadbe6405409275760387db90:eyJzZWxlY3RlZExpbmVDb3VudCI6MTg4LCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiJkNDAxMDYzMDEwZTUwYmQ2NzllOTE0MWFlYTA0OTBmMzVlZTE5MjM5MjEwY2RiY2IxZDYyMmYzMTU4MDg1NjczIiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI0ODkzZjQwZTM3ODFlYjg5NmM4MmQwNDZhMDgwNjdhMTFlMzVjZGYyZjFkZmFmMjZmZWE5MGI4ZGI2Njc2NDEzIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiJiNjhmNTFlMzM4NDIzMThjYWY5ZjEwY2M0ZGZiY2IzY2M3M2I0Njc2MTU1ODk2YmViOGRjNDRkOTMxMjQ1Mjg1IiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiI4ZmE5OWQ4NDcwYmU1MWM4ZjIxNjhlNzNkNDhiMzU5ZjEwNjE2YjQ2ZjcxYWNkNDRkMjRhOWI2NDEzZDIzOWE1In0"
+        }
+      ]
+    },
+    {
+      "id": "claim_bd15d738448a4a198d873f68bfd60ce9",
+      "statement": "Dedup persistence flow: `SongRepository.scanDuplicateSongGroups()`/`deduplicateSongs()` (delegated by `SongRepositoryAdapter` to `MusicRepository`, suspend and dispatched to IO) group songs by `SongPathResolver.resolveRealPath(uri)` (normalizing file/MediaStore/SAF URIs to the same on-disk path; unresolvable songs are excluded so normalization failure never causes a false positive), keep the smallest songId per path as the `keep` entry, and `deduplicateSongs` removes duplicates from the library under the write lock (playlist songIds + a full-table `persistSongs`/`persistPlaylists` snapshot) WITHOUT deleting the underlying physical file, then calls `cleanupMissingSongAssociations` to purge orphan records from play_stats, playback_events, quick_skip_songs, quick_skip_short_play_counts, song_emotions, and orphan artists/albums.",
+      "evidence": [
+        {
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/repository/MusicRepository.kt#L1092-L1103",
+          "version": "repo-lines-v1:sha256:e30ce87b0beef0c806477205fb6f1ec7bebe4f38c25a3c48c1cbc551ff5699d2:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxMjBhMjg0ODg2ZjFhOTljMmM4ZjRkZjIxYzFmNWJmNTc2Y2FiOGQ5N2Q0MTQxYzgwMDQxMWQ4ZTZlOWM5OWYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk4OWE0MzRlMDg1NDYxNTVmNmJkYWYxMTIyOWVjNTAyOTNlNjJjMjE2ZWVmYmNmODAxZTg5MTZjYzRjNDQ5ZWEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImQ4OGU1ZGM5YTEzNjk4ZGRmYmJiNTNkMTkxYTM1YjcwNzhjMDZmMzQ0NGQ5Mjg0YzZjYmIwMmRjMzgwNzQ4NzYifQ"
+        },
+        {
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/repository/MusicRepository.kt#L910-L980",
+          "version": "repo-lines-v1:sha256:23d5964b82515b45941bfbbc596059e2e0437d0b34a7ce846cb2af69b26e45f3:eyJzZWxlY3RlZExpbmVDb3VudCI6NzEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM5Y2JiYzY1NDY5ZGIxY2EyODQyZWZkOTdkZjdlZTJjZTZjYzE1NzE0ODJkMDFhMThiNzkwYTEwYzdjNTEwZjMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImZmMGQ3NTk1MGRmMGZmOWEzZWU5NjYzOWRjYzhmZjVlYWVkYjQwZDY4MmJlYTkyNjIyYjUyMGRkODg3ZDkzZTkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjVlN2Y4YjM2N2Y5OTlmNzZjM2EwZGIwYWQ2ODE3MmU4NzI3Njc3Y2M1OGY1YjY1MGViMDkzOTI4ODlkY2FlYmEifQ"
+        },
+        {
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/repository/SongRepositoryAdapter.kt#L41-L45",
+          "version": "repo-lines-v1:sha256:c634dbe2d958c295d886998e7e27d5a716e001bfabeb7f1a22ddda940db22514:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMGJmYjIyOGM3MTE3MzU0NmU3Mzk0YjU5MzBhMDJhNjhhM2UzMDViMmI2Njc0YTAwZDEyN2YxYWI1YjM5ZWQ2NyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYWU3NjBmMjgyZTFlMzY0MzEzMWFhMWVlZDY5ZjY5NTQxOWE1MGQ4NDdkNmRlNjE1OWM4MTU2NjFlZDlkYWY0ZCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMWZhZDcxZWU1NGFkZDcwMWJlOGQzYmU2N2FkYjYxYjk1MDFkOWFhZGZjNTEzYjhjZDcwYjI4ZTVhN2VlZmRlYiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjEsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNDEyY2EzNDVjY2Y3NWJmOWMwODA2YmNlNjk1YmU4ZGU4MDhiNzk5ODQyNTFhN2E1NGQyMDJjZjYxMDFkZDQ1MSJ9"
+        },
+        {
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/util/SongPathResolver.kt#L13-L39",
+          "version": "repo-lines-v1:sha256:aea3e1bdd082cfb7ca60ba9e07a51798ff53797ae7ae105b8a526b27f43b772c:eyJzZWxlY3RlZExpbmVDb3VudCI6MjcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVhZjIyY2YwNzMyNTkyYzI0NzE0MWNiZTYxZWZhMTEwMTI2MTJmNWEzMTIyYjlhZjliYmFmNTJmNTcyNGQxOTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijc5OWU5MDFlNjQzNzhjZTBjYjVkYzQwYzIxODJkMmY0Yzg3ODQyOTRmYzg3ZDQ0MDkzZjlhNmI3MDc2MmU2ZWEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjU1OWY1OWQxMzhhNDMwNzNlM2EyZWI4YzRkNTA3NDgyOTI3NzYxYzY5NGRhY2JmNGFhZWExNTVlZmVlODViYzIifQ"
+        },
+        {
+          "resource": "repo://domain/src/main/java/cn/com/dcsgo/mihx/domain/model/DuplicateSongGroup.kt#L5-L24",
+          "version": "repo-lines-v1:sha256:04603fe32ac586f691d20386ce4ffa4a31e3c6abf2d778548b9131c59a8fde1a:eyJzZWxlY3RlZExpbmVDb3VudCI6MjAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVhZjIyY2YwNzMyNTkyYzI0NzE0MWNiZTYxZWZhMTEwMTI2MTJmNWEzMTIyYjlhZjliYmFmNTJmNTcyNGQxOTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQ0NWZiOGEzZDRiODIxN2M0NDUzOWJiYTY3MDRmNDc0NGEzODkxZDRjNDUyOTVmYTEzZGE1MmFkZDcxNjYwMDEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
         }
       ]
     }
   ],
   "verification": {
     "by": "openwiki/0.5.0",
-    "at": "2026-09-07T13:49:59.042Z"
+    "at": "2026-10-10T11:15:45.800Z"
   }
 }

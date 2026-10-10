@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "pageVersion": "sha256:3abcb1754c935aa319a96fd22084ff2f7e9ac597cb815a1d2dd73691b1a2fede",
+  "pageVersion": "sha256:c09c92c20083362d5b84a70589977068b68fd5bd7758f7c1410e2944203f008f",
   "claims": [
     {
       "id": "claim_78728123d1944ce1b4df1ebcb4402109",
@@ -16,7 +16,7 @@
         },
         {
           "resource": "repo://benchmark/src/main/java/cn/com/dcsgo/mihx/benchmark/StartupBenchmark.kt#L11-L29",
-          "version": "repo-lines-v1:sha256:150027ad7bcc4c741e2c3d9b47ec7b7a418366658718f42c3b0dbef6a275f30e:eyJzZWxlY3RlZExpbmVDb3VudCI6MTksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjYwNDY3YmNkZWQ2OGM4M2NhODE5ZDA1NjYxYzgzZmViMThkOWNkNjA0ODk2MWJjYTAyMTdhNDAxM2E0MzQyYTAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQzNjNhMmU1ZjkyNGZjNDNjNGQ2ZjExY2E2YzlhZmQ4YjM3MmU3YTg2NTRiYmJlYmJmZTIwYmExOWU5ODE1ZWQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+          "version": "repo-lines-v1:sha256:a103b04a5a8cc79ee800181684a4cbcdcda9a807c5acf400fb223f7a6171e688:eyJzZWxlY3RlZExpbmVDb3VudCI6MzMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjYwNDY3YmNkZWQ2OGM4M2NhODE5ZDA1NjYxYzgzZmViMThkOWNkNjA0ODk2MWJjYTAyMTdhNDAxM2E0MzQyYTAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQzNjNhMmU1ZjkyNGZjNDNjNGQ2ZjExY2E2YzlhZmQ4YjM3MmU3YTg2NTRiYmJlYmJmZTIwYmExOWU5ODE1ZWQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
         },
         {
           "resource": "repo://build.gradle.kts#L580-L588",
@@ -204,7 +204,7 @@
       "evidence": [
         {
           "resource": "repo://player/src/test/java/cn/com/dcsgo/mihx/data/player/PlaybackStateStoreTest.kt#L22-L183",
-          "version": "repo-lines-v1:sha256:2d329121cbfe3c5aa5afbba581ffd5d6d8eb111b664b7c5e4d6222222704334d:eyJzZWxlY3RlZExpbmVDb3VudCI6MTYyLCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiI0Y2YwOWViMGM1NzQ0ZmI5NzMzMWI5OGZmM2ZiZjA1YTYwMmJhM2Y3ZjY3ZTVkYTViZTkwOTUwMzNmNjI1ODI1IiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI0ODkzZjQwZTM3ODFlYjg5NmM4MmQwNDZhMDgwNjdhMTFlMzVjZGYyZjFkZmFmMjZmZWE5MGI4ZGI2Njc2NDEzIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiJjYjA0M2JjNjhmNTg0ZWMwNDg1N2Q4YWEwMGNmOWE3MGVjMjlhMDRmMzgyNzZlODhmZTc5ODRmM2RlMGRiYzM0IiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiI4ZmE5OWQ4NDcwYmU1MWM4ZjIxNjhlNzNkNDhiMzU5ZjEwNjE2YjQ2ZjcxYWNkNDRkMjRhOWI2NDEzZDIzOWE1In0"
+          "version": "repo-lines-v1:sha256:f20d77a08bfd6ae245e4ba816db58aa7eeb77fc235d7ef32cfd8d7b78ac0c5b6:eyJzZWxlY3RlZExpbmVDb3VudCI6MTg2LCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiI0Y2YwOWViMGM1NzQ0ZmI5NzMzMWI5OGZmM2ZiZjA1YTYwMmJhM2Y3ZjY3ZTVkYTViZTkwOTUwMzNmNjI1ODI1IiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI0ODkzZjQwZTM3ODFlYjg5NmM4MmQwNDZhMDgwNjdhMTFlMzVjZGYyZjFkZmFmMjZmZWE5MGI4ZGI2Njc2NDEzIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiJjYjA0M2JjNjhmNTg0ZWMwNDg1N2Q4YWEwMGNmOWE3MGVjMjlhMDRmMzgyNzZlODhmZTc5ODRmM2RlMGRiYzM0IiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiI4ZmE5OWQ4NDcwYmU1MWM4ZjIxNjhlNzNkNDhiMzU5ZjEwNjE2YjQ2ZjcxYWNkNDRkMjRhOWI2NDEzZDIzOWE1In0"
         }
       ]
     },
@@ -387,10 +387,160 @@
           "version": "repo-lines-v1:sha256:02452df6cc73a040752beba57c8bddbeea8684a5c86821e689ab1f909ce48ef2:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMDI0NTJkZjZjYzczYTA0MDc1MmJlYmE1N2M4YmRkYmVlYTg2ODRhNWM4NjgyMWU2ODlhYjFmOTA5Y2U0OGVmMiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMDI0NTJkZjZjYzczYTA0MDc1MmJlYmE1N2M4YmRkYmVlYTg2ODRhNWM4NjgyMWU2ODlhYjFmOTA5Y2U0OGVmMiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMjQ2OGZmYWQ2OTlhMjkxZGY5ZjM2ZjMwODk4NzBiMDU2ZWIyNmMyODI2NDRiNmFmNTJlNTdlODUzYzQyYzk4MCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZDk0OGU5ZmVlNzkxN2MwOTljNGYwMzk2MmI4ZjQ4MjlmZTQ2Y2FhNWQ2NDgwN2M5MWU0OGQ5ZTE2ZTRkNDQ4YSJ9"
         }
       ]
+    },
+    {
+      "id": "claim_eec0eee1caa1456a8f515ac1af84b8ae",
+      "statement": "The v3.10.2 skin-description test suite (`core/skin`), read by the app-shell equivalence tests, locks the invariant that DefaultSkin.skin()'s built-in description equals today's app structure: 3 bottom tabs (曲库/播放/我的), player as a normal tab, a library page with exactly 4 segments (歌单/歌手/专辑/情绪) sourced from the `LibraryTab` enum, art size 44dp, and a player start route matching AppNavHost's original `startDestination = AppRoutes.HOME`.",
+      "evidence": [
+        {
+          "resource": "repo://core/skin/src/test/java/cn/com/dcsgo/mihx/core/skin/DefaultSkinTest.kt#L14-L93",
+          "version": "repo-lines-v1:sha256:c0cb67d3a3ee3834ee2077241c606ca5e608d0d329551968ced5368923e48901:eyJzZWxlY3RlZExpbmVDb3VudCI6ODAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImM4ZjJlY2YwOTE1Y2U1MGFlODg5MGYwZTFiOTliNmJiZTkwNWNmMzcwNTk3ZmIzNzU4NDFlZDIzZWFhMjgwODMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijc4NGNkYTU3NjE1MmFiMjViMzdjOWIzZmYyNWViODUzMmQ3ZDBjNjEyZjFiODI0MmYyYjAzYzE5MWYyYjBhMjgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        },
+        {
+          "resource": "repo://core/skin/src/test/java/cn/com/dcsgo/mihx/core/skin/LibrarySegmentsMatchSourceTest.kt#L26-L89",
+          "version": "repo-lines-v1:sha256:40ac264bb69644c15b016077ad8f4f215b4e64b446f6b24ecc7e2c6ee063537b:eyJzZWxlY3RlZExpbmVDb3VudCI6NjQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY5ZjZmZGMxN2Y4MzYyYWUwNzIxNTQ5ZjQ4YTUzZjZiZmViYWEyYWEzODUxMmU5MDk4NDVlNDBkODc3YmZlYTIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijg3ZDM5YzAwNjI5ZDhhOTNjYWQ2YWQ0NWI1NmYwYWExZWEyMDRjZGM2YzQzYWU1MmUzZTA2NjQyMjY3ZmZiYzEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImExY2YwMGIyNjBjNzIzOTMyODMwZGJlNzNiYzY0ZWEyMzJkYjdhNzM2YjUyNDZjMGVhMzQ0NTUzNGFlNDVhODUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_fa6c55ed1c3447229aea5a1620334ef7",
+      "statement": "SkinParserValidationTest locks fail-closed skin validation with precise typed reasons: non-JSON, missing/unsupported schema version (supported version `1` named in the message), unknown parts (fails closed, never silently degraded — even a real androidx widget not in the catalog), unknown icons, tab targeting a missing page, duplicate tab ids, a single-entry bottom bar, missing start page, invalid player entry / cover shape / row template / song-list source, and a segment without sections are all rejected by a specific `SkinIssue.Code`.",
+      "evidence": [
+        {
+          "resource": "repo://core/skin/src/test/java/cn/com/dcsgo/mihx/core/skin/SkinParserValidationTest.kt#L14-L166",
+          "version": "repo-lines-v1:sha256:fa6972e6f727aca9778bbe21b2b6e8132fa387a6cb20df1e2ef86c5274a3962c:eyJzZWxlY3RlZExpbmVDb3VudCI6MTUzLCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiJkMjhlNzdmYjgzYzAzOWMzNTNjOGE1OTFlNGFiZmMwMTczZDkxNTUwZTU2NTBhMmYwN2YzMzk4ZjhhNTBhOWZjIiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI0ODkzZjQwZTM3ODFlYjg5NmM4MmQwNDZhMDgwNjdhMTFlMzVjZGYyZjFkZmFmMjZmZWE5MGI4ZGI2Njc2NDEzIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiJmOWEyNzQ0MDZhNjlhY2ZkMWMzYWM2MzE4MzFlMzJiNGNjNjFjNjI3Mzc2ZDRkNGE0NTczZDhhOGU3MGNhZThjIiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiIyMzRlNTYwYWZiYjljMGQ3ZWRhYjNjMWYyMDJkZGVmOGY4OWI4ZjY0ODAxNzE0MWM4MjVlNzZiYzlhNTNhODNlIn0"
+        }
+      ]
+    },
+    {
+      "id": "claim_f4fa1f278df24365a800f2c00ffb9df0",
+      "statement": "The skin iframe contract can express shells radically different from today (NetEase-style 3-tab card-wall with vinyl player, and a minimal 2-tab sheet-drawer skin), and the scope boundary is locked at L5/L6: all three built-in skins use only L1–L5 SkinPartCatalog parts and the catalog itself contains no L6/L7 entries. A `songList` part renders differently per template (`grid` vs `default`).",
+      "evidence": [
+        {
+          "resource": "repo://core/skin/src/test/java/cn/com/dcsgo/mihx/core/skin/SkinExpressivenessTest.kt#L148-L158",
+          "version": "repo-lines-v1:sha256:3fdaf0808389e74c1e8d71049cd1c97785b98776f9cb0c2f521f000822750e07:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRjZjA5ZWIwYzU3NDRmYjk3MzMxYjk4ZmYzZmJmMDVhNjAyYmEzZjdmNjdlNWRhNWJlOTA5NTAzM2Y2MjU4MjUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImZmMGQ3NTk1MGRmMGZmOWEzZWU5NjYzOWRjYzhmZjVlYWVkYjQwZDY4MmJlYTkyNjIyYjUyMGRkODg3ZDkzZTkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQ4ZGRkM2I4MTNlNjhjNjBlYWZmNDY2NzFiNmIyNjg4NzRkYjExNzNhNzJmY2VkZjNlZDFkYWI3MmI3ODJjMDYifQ"
+        },
+        {
+          "resource": "repo://core/skin/src/test/java/cn/com/dcsgo/mihx/core/skin/SkinExpressivenessTest.kt#L18-L193",
+          "version": "repo-lines-v1:sha256:ca2b88bad0fb1656e18d74447c6ae8c2232529eb68aca43a629e94db19364b1a:eyJzZWxlY3RlZExpbmVDb3VudCI6MTc2LCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiJjNzJiNDkyODZmMmJiM2M2ZTM3MjgxNzc5Yjk2ODk2MzQ2MzBmNTYyNTQ1NjQ0NjJlODEwODg3NTFjZTIyYzQwIiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI0ODkzZjQwZTM3ODFlYjg5NmM4MmQwNDZhMDgwNjdhMTFlMzVjZGYyZjFkZmFmMjZmZWE5MGI4ZGI2Njc2NDEzIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiI5YWM2Yjg4NTQxYTZmZTRhYzhlMjQ5NDdkMjU2YWUzYjI4ZjdjYmJmODYwNGQ3M2I3YTFhMGZmMjMxYjFlOTlmIiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MSwiZm9sbG93aW5nQ29udGV4dEhhc2giOiI0MTJjYTM0NWNjZjc1YmY5YzA4MDZiY2U2OTViZThkZTgwOGI3OTk4NDI1MWE3YTU0ZDIwMmNmNjEwMWRkNDUxIn0"
+        }
+      ]
+    },
+    {
+      "id": "claim_9a447e51c2a64f59b49d85be67ef0712",
+      "statement": "The app-shell suite in `:app` locks the built-in skeleton/section/template catalogs against the app structure as cross-module consistency (which module-boundary gates force into `:app`): AppShellEquivalenceTest verifies DefaultShell keeps the pre-refactor tabs/order/routes/mini-player rules; DefaultShellConsistencyTest asserts the Kotlin-constant shell and the skin-JSON-resolved shell match; SheetSkeletonTest proves the two-tab sheet-drawer shape assembles; SongListTemplateCatalogTest forces `SkinPartCatalog.SONG_LIST_TEMPLATES` to equal the `SongListTemplate` enum ids; SkinSwitcherCatalogConsistencyTest forces `UserSections.SKIN_SWITCHER` to equal `SkinPartCatalog.SKIN_SWITCHER`.",
+      "evidence": [
+        {
+          "resource": "repo://app/src/test/java/cn/com/dcsgo/mihx/app/shell/AppShellEquivalenceTest.kt#L20-L60",
+          "version": "repo-lines-v1:sha256:aeb4a63cc755c6e6435faa178ca0e0b855929e42948d21b5194cd667f400457e:eyJzZWxlY3RlZExpbmVDb3VudCI6NDEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImEzMGQ2Yzk1MGI2ZTk5YjBlODkyNjI1YzUwZWYzMGU2ZjFhODJjZjQ1ZDAxNjgyNmYwMjQyYmI3MTdjM2NkYmUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjUzMDNjYzRlZDQ5YzExNTBiNmFlNGFiZDMxNmRiMWQxM2FlZmQ4OTRhNjQ0NjE5Y2M1N2FhODNhMmRmNDRjODUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImRkOGU3MzJlMTY3ZGVhZDc1MDRmZTg2NzcyMDdmMTM3YjIzMzNlODRlYzYxNzIwNjVhNDJmOGFlNjMyNDA3N2QiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImViZTMwYjRmMzQ5NWIxMWVmY2Y2MDg1MTlkNTQ4YzVjZDY1ZDY5OGM0MTk0NWQxMDE5MDdkYThhNjUyN2UzMGQifQ"
+        },
+        {
+          "resource": "repo://app/src/test/java/cn/com/dcsgo/mihx/app/shell/DefaultShellConsistencyTest.kt#L22-L60",
+          "version": "repo-lines-v1:sha256:4231dd49e5679c0b277433b4584fc98662a7c4c6d71578383154b331402b768a:eyJzZWxlY3RlZExpbmVDb3VudCI6MzksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM1YzBkNGEyYmM0NzQ2YzA1OWQ5ZmNjYjg5YTgwNjllNGJmYWE0NmRlYmE3ZGFlOTI3MDhhYzMxNjZmNGVlOTAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjFmZjQxNmNiN2QwNDNhYTg1M2FjMTMyMmQ3YThkY2M2ODBjMGNhNDlhZjkzZDI0OGZhZDYyOTE4OTE3YTc0NmEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjdkYjZlZjgxMTBmOWI4YjNmNWVmMTNjYjdkNmZhYTU3NWY2YjM0ZmU0ODNmOGY5MTMyYmJkODI2YzZmOTFlZWIifQ"
+        },
+        {
+          "resource": "repo://app/src/test/java/cn/com/dcsgo/mihx/app/shell/SheetSkeletonTest.kt#L20-L60",
+          "version": "repo-lines-v1:sha256:252c566d898f6c49b56479a78d9931f7dedeaf85e779a9d36028ed90b2081939:eyJzZWxlY3RlZExpbmVDb3VudCI6NDEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImM5Yjg1MDM1YjY1OWI2ZDc2MjUyN2Y0MDU4NTY2MTM5MDM3OWQ1ZThjMjllNGE3MjliM2IzNmRjZDVjNWVjMTAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQ5ZmNjNGM1MGRjMTJhYmFmYjYwOTNiNTQ3OTg4ZWJhMWQzNjNlMjAzZjFiY2Y5MGRlYzRhYjdmNWMwNjZlOTIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjU3NDcxZmU4ZTZkMTEyMGMzOGU1M2VhNzI4M2QzY2I2ZGEyNDViN2I0YzJkNmUyMzk4YjUwNGY0ODlmODBkYjMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImU4ZWFmM2UxZGIyODRmNmE2ZmQ0ZTA2NmFlMmZiNjU0YWU2OGZkZmNmM2U3ZTRkY2E0YzJkZDIxNGE0OWI5ZDAifQ"
+        },
+        {
+          "resource": "repo://app/src/test/java/cn/com/dcsgo/mihx/app/shell/SkinSwitcherCatalogConsistencyTest.kt#L25-L34",
+          "version": "repo-lines-v1:sha256:8782ac9b61c3977f90ff91cb029e9565cec6950bba2b3c2c0bfa218eca18b1a0:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZjMDY2NzRmYjhmNTU0NmZjOTc5YTRhOTY4YThkZjM5NTBmOGJiZWZlYTNlZjk0MDViNjUxMmQwZDkzNmRhN2YiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQ5YjE0OWNlNWUyZDEyYmZiNzhjYTRlYTFlZWQzMjFmNjEyMjdkYTJmMDIyYmQ2MDc3NjI5MDI3NmM4YjlhZDQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        },
+        {
+          "resource": "repo://app/src/test/java/cn/com/dcsgo/mihx/app/shell/SongListTemplateCatalogTest.kt#L28-L52",
+          "version": "repo-lines-v1:sha256:209afa4b475ca65013a02fa24edc8149dc94bff5676317a690a5a501c55caf06:eyJzZWxlY3RlZExpbmVDb3VudCI6MjUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQxZWRkN2MwMGM5ODZmNjMzYzFlNmRjOTBjNDljNGZkMzU2YjllOGFlOWQwNDM3ZWEwYzJmMjQwMmMxNzZkMWEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQzZTA5ZjJmMWQwMThkZmRiNmQwMzRkZjRhNWEwY2U0MzJhZGU4YjAwM2ZmNTllMzljM2RlY2FlNjJmNDc5OTkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_e7ccf1a1b7a94683b4b50a50e987ffbb",
+      "statement": "The library song-list row template maps from skin to Shell via LibrarySongListTemplateTest and GridLayoutSwitchTest: the default skeleton resolves to SongListTemplate.DEFAULT (zero visual change), a skeleton without a songList part falls back to DEFAULT, an unknown template is rejected fail-closed by the validator, and the global grid-layout switch forces GRID across all known skins while leaving the skin's own template untouched when off.",
+      "evidence": [
+        {
+          "resource": "repo://app/src/test/java/cn/com/dcsgo/mihx/app/shell/GridLayoutSwitchTest.kt#L18-L50",
+          "version": "repo-lines-v1:sha256:16858c1abfdfe863f76729412047132d063a79d4f946f73dbeed0f878c613d85:eyJzZWxlY3RlZExpbmVDb3VudCI6MzMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjdlZDE1NDYzODAwYTA1ZGI4NjU2NmVhNTZhOGI5YTFkYmQ4NDczYWJlMzFiZWE5NjA3ZGViMDg2NzM5OWM2MjciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImM2ZGViOGM5MTYxYTJiZWI1MWFhMzIwMjhmY2Q1NzcwNzExZDg3ZmQxOGZhY2U5MGZlOTQ1MDU3NTQ5YzRhMjciLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImU1YTNhZjZmZDEwMWJiNzZlMjlmMTgxY2FjMjQ1NTg0OGViMjUwYjgyZmQ5YjhkN2Q5Yzc4NDJjNmQwZTUwMjciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQ2MGFmZmIxYTdjZGIwNjEwNTA1ZWRhNWQ0OWY3MTllNWU0ZWUzNmMxMGJhYmQxOTkyMDNjNGYxZGM1NzdkYWEifQ"
+        },
+        {
+          "resource": "repo://app/src/test/java/cn/com/dcsgo/mihx/app/shell/LibrarySongListTemplateTest.kt#L26-L60",
+          "version": "repo-lines-v1:sha256:3da0f8acb70b6129978b7a139371693d33c090c550d15e871bfd9d121aa79acf:eyJzZWxlY3RlZExpbmVDb3VudCI6MzUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZhMGY2OTljZjNkMzdlZjM0NGY5YjA0ZTM3ZjAwYWJhM2FmNjhkNGQ2MDg2ZDcyMzlkZTk0MjBkZWEzZDUzYTgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ0ODJhNjdmNmYwMGE2OWY0ODg0ODY3NjRlYjYwNzJhYWM2ODEwM2ViYjgyNjFkYTk1MzljMDYzYmE5OTVlNjkiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImI4MDkxNTEwZjk4ZDdkYjVlODZiOWViZmVjZGQ0NjYwZmYwOWQ4ZTdiZDc5MzVkYjYzYzViZjI4OWMxZjMzMDkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijk1Y2Y0NjYyODVlYTgxODg4ZDFiZjQ2ZTAyYzYzYmMzYTQ4YTZlNThhNTAxYTNiYzkyYjFmN2FjMzczNzZhYTYifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_a577e20ac4d0401d90801be7557d44b5",
+      "statement": "PlayerSettingsRepositoryTest verifies DataStore-backed settings persistence with a real PreferenceDataStoreFactory plus a fake SharedPreferences: defaults when nothing is stored (theme SYSTEM, variant MONO, lyric font scale 1, global uniform random on, Bluetooth monitoring off, playback notification off, daily listening goal 120 min), and per-key legacy fallback happens exactly once — the first DataStore write deletes the legacy key for theme, global uniform random, Bluetooth monitoring, and notification.",
+      "evidence": [
+        {
+          "resource": "repo://data/src/test/java/cn/com/dcsgo/mihx/data/repository/PlayerSettingsRepositoryTest.kt#L19-L237",
+          "version": "repo-lines-v1:sha256:22d2b310eb80548f377c374046d37e34a6a2e08dbab41d5d8d8560c2cd66230f:eyJzZWxlY3RlZExpbmVDb3VudCI6MjE5LCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiJiY2E5YjZlMTI5ZDdiYzQ2M2YxNTM3ZmU1NjAwNGM0MDM2YTU2NTQxNzczNDE0Y2MyZWE0OWJkM2FjZGViOWZiIiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI0ODkzZjQwZTM3ODFlYjg5NmM4MmQwNDZhMDgwNjdhMTFlMzVjZGYyZjFkZmFmMjZmZWE5MGI4ZGI2Njc2NDEzIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiJiNjhmNTFlMzM4NDIzMThjYWY5ZjEwY2M0ZGZiY2IzY2M3M2I0Njc2MTU1ODk2YmViOGRjNDRkOTMxMjQ1Mjg1IiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiIyM2Q4YWE2M2I3YWZjOTBlZGJhODA0MjBiN2ExZWZiYTM5NTNlNjM0YjJlNjY0ZmU2OTU4YzExZmE2YjZhODI0In0"
+        }
+      ]
+    },
+    {
+      "id": "claim_e815bc46fc6c413bbbe65d51b31c6a91",
+      "statement": "PlayerPlaybackStateAutosaverTest and PlayerSleepTimerCoordinatorTest lock narrow-flow persistence and timer regressions from the 2026-09-03 progress-bar rewind fix: the autosaver saves once immediately then throttles by interval and `reset` releases the next save; the sleep-timer coordinator writes countdown ticks only to the narrow flow (uiState.sleepTimerRemainingMs stays at its initial value) so cancel/fire resets must go through the explicit `resetRemainingMs`/`resetSleepTimerNarrowFlow` entry rather than a uiState value diff.",
+      "evidence": [
+        {
+          "resource": "repo://feature/player/src/test/java/cn/com/dcsgo/mihx/feature/player/PlayerPlaybackStateAutosaverTest.kt#L8-L50",
+          "version": "repo-lines-v1:sha256:d8e78d9ff5a41a8d31fd0c908e7f63a5be0c20e80f1420ac4098d053a8045f2a:eyJzZWxlY3RlZExpbmVDb3VudCI6NDMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjhmM2Y3ODNiMzI0N2U2MDE1NzkwNzBhZDIwYjhjNDI4N2NjNmQ4MzU0MjI3NWIwNjhjNmY1NmY2ZmU5YjQxNjQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ0OGQ2MTRiMWFmNWRjOTY5ZWViZTE2ODk1ODIwY2VjNTlkMjc3N2M5OGE2ZmY5YjM1MTcyZTE3MDY0NWIwZGYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjcwY2U3NWQyNWFhZmEyOTQxYTMxODU4ZGRmNmJiNDY2YTNkNDQxZTM0ZWJhODg4MTM2YWU4Nzk4ZDA1YTliNTciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjRhODQzMWVkZWU5OTM5MDhkZjQ3MDdkOTcwMWI4ZTZlZDZlMmZlMDY4OGZhY2ZiNTBkMTEzNTQ2ZWQxOGM3MWIifQ"
+        },
+        {
+          "resource": "repo://feature/player/src/test/java/cn/com/dcsgo/mihx/feature/player/PlayerSleepTimerCoordinatorTest.kt#L18-L24",
+          "version": "repo-lines-v1:sha256:0d6b47b091f9b9826606da4601df81a4f1f4880e821d809cafbe629a92b91bf3:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZWFmMjJjZjA3MzI1OTJjMjQ3MTQxY2JlNjFlZmExMTAxMjYxMmY1YTMxMjJiOWFmOWJiYWY1MmY1NzI0ZDE5NCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYTI3YmZhNGQwMWFhOTNkNDhhY2ZmYzEzOWI3OTkxMzYzNGQzNzhkN2VjOTQ2N2NiNjdkN2ZiMmEyZGRiMTk5OSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNzJhMTRjZjkxMzAxMjQxZjA0NGUyNzQ0NWM1ZDIxNGNjNjc5OThlMDg1NDM4NzZhYzU2OTQ2NDdlY2JjNzI1NiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMWM5ZDNkY2Q2NGI2NGM5NDAwNmMzYTQzMTRlOGNmNWRjNGU5ZTkwNzRjNjRjM2M1YmNiYzc5YTVjMzJjMDlkNyJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_60738cb021ab45ef82ace09e496c9c01",
+      "statement": "PlayerPersistenceGraphTest locks the restore handshake of PlayerPersistenceGraph (a site of four regressions, 4fdb2ae/0cce0de/53af2cc/2026-10-06): the controllerReady and pendingRestore flags converge in either order, a live session only refills the UI queue while an empty session fully restores, a connection failure fallback releases, and no snapshot means no restore; it uses Dispatchers.Unconfined so the graph's internal launch-io/withContext-main runs synchronously without a coroutines-test dependency. PlaybackStateStoreTest extends its snapshot semantics with the 2026-10-06 case that an empty save carrying only a currentSongId keeps the existing queue and updates position, or restores a single-song queue when none existed.",
+      "evidence": [
+        {
+          "resource": "repo://feature/player/src/test/java/cn/com/dcsgo/mihx/feature/player/PlayerPersistenceGraphTest.kt#L18-L79",
+          "version": "repo-lines-v1:sha256:7294280536254b63dd9bf7d0030019bd2dc735380ea7bf8724b6dfd2c436a3e3:eyJzZWxlY3RlZExpbmVDb3VudCI6NjIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVhZjIyY2YwNzMyNTkyYzI0NzE0MWNiZTYxZWZhMTEwMTI2MTJmNWEzMTIyYjlhZjliYmFmNTJmNTcyNGQxOTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjJjODU3NzJkZTcxOGY0ZGVlZTUxMTFlMmM2NzU2MWUwYWVhNDJjNjQ1MWJjMmZhYzRlYzBjMzA4NDU5MmZhYzAiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjcyYTE0Y2Y5MTMwMTI0MWYwNDRlMjc0NDVjNWQyMTRjYzY3OTk4ZTA4NTQzODc2YWM1Njk0NjQ3ZWNiYzcyNTYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjdmMzYyNmIyODM3MGYzMzE0MzZhZGE5NmRiZjExOTE2NWYwNDNkMjBkNDJhZDdmNTE1NDk0NGVlODBiNDUyMmMifQ"
+        },
+        {
+          "resource": "repo://player/src/test/java/cn/com/dcsgo/mihx/data/player/PlaybackStateStoreTest.kt#L147-L169",
+          "version": "repo-lines-v1:sha256:d107b9f40cf0fd6544104e7beee7b4cc63e2263a72b1f7ac28c7e79e9de8151c:eyJzZWxlY3RlZExpbmVDb3VudCI6MjMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRjZjA5ZWIwYzU3NDRmYjk3MzMxYjk4ZmYzZmJmMDVhNjAyYmEzZjdmNjdlNWRhNWJlOTA5NTAzM2Y2MjU4MjUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjVmZmU4MGRlMDE4OWJhNzYyNTQyODBhNGQxNjVhNDFjMWEyODI1OWI0NGQ5ODZkZGZkOGY0MjRhMzhiODFmOTciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjRiYWJmYjg4MjNkZmRiNzZlODU3OWIxNWM1MDQzZDM5N2M5ZGE2NWY2ZmUxNDBhZjExZjU3MTlmNjhhZmFlNmYifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_a64a1002cc9b44de9ab7f044f9c8c0ee",
+      "statement": "The :feature:playlist SongListTemplateTest locks the L3 row-template enum: DEFAULT/GRID ids equal the catalog whitelist strings, fromId returns DEFAULT for unknown values in a fail-safe manner, and all template ids are distinct and non-blank; SongSelectionControllerTest locks the selection-controller state logic (case-insensitive title/artist filter, search toggle that clears the query, and multi-select enter/exit that manages the selected-id set).",
+      "evidence": [
+        {
+          "resource": "repo://feature/playlist/src/test/java/cn/com/dcsgo/mihx/feature/playlist/SongListTemplateTest.kt#L13-L46",
+          "version": "repo-lines-v1:sha256:5731ef432ad75058f3fed3958ca634af86431b62bcb26fa5092bb2bec35cb97b:eyJzZWxlY3RlZExpbmVDb3VudCI6MzQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ3YmJiZGNmMmUwMjE2NmYyMjMwYzEzYmI4M2YyMGI3NTk2ODNlYjc3MWY0MDNjNjk3ZGUyODkyZTAxODFjODkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjI3ZDk0MjZlOGNkZjliOTJlNTdhNWY1NjExMzkzZjgxNDc2YTYxZjM3NzMwY2Q1N2JmYmZkZTRkMTA1YTdmNmIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        },
+        {
+          "resource": "repo://feature/playlist/src/test/java/cn/com/dcsgo/mihx/feature/playlist/SongSelectionControllerTest.kt#L9-L59",
+          "version": "repo-lines-v1:sha256:690352d1bd78e531d0df009ad7b0bc7b38ff24223fdb4e8a2a7fd377eceb7374:eyJzZWxlY3RlZExpbmVDb3VudCI6NTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjczODBiMGIxZWRhNWI0YTE1Y2U3OWRkZjQ0Zjc5ZjFhOGE1YjJkMGE4YTExNTAzNzU3M2Q4MjBlNmUyMWNiNWYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjE4ZTE5N2ZhY2Y0Y2M2YmEyODFjNGM0MTgwMzljYTgzNmViMjlmNDlkZGIyMTcyMDkxZWEyYTNiYzM5ODY2ZGUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjcyYTE0Y2Y5MTMwMTI0MWYwNDRlMjc0NDVjNWQyMTRjYzY3OTk4ZTA4NTQzODc2YWM1Njk0NjQ3ZWNiYzcyNTYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImJjOTM2ZTk3NWE0NmI5NTMyZjM5MmEzZDAyNjQzZWQwN2FjZWMwZjJlMmE3N2NiODQ3NDkwNTNhZDhhZGIwMTkifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_2d691eff00204d94a6812a5437b6d7e5",
+      "statement": "LuckyPlayEntryPolicyTest locks the 「随心播放」 entry-bar policy shouldShowLuckyPlayEntry: shown on the sheet-drawer shell when no song is drawn, never shown while a song is playing (mutually exclusive with shouldShowMiniPlayer), and never shown on the tab shell because the player page already has the FAB — guarding inverted conditions, a missing SHEET limitation, and mini-player non-exclusion.",
+      "evidence": [
+        {
+          "resource": "repo://app/src/test/java/cn/com/dcsgo/mihx/app/shell/LuckyPlayEntryPolicyTest.kt#L18-L50",
+          "version": "repo-lines-v1:sha256:ddff5ca8af84e9763475cbfdb790742dd1440558ccf02b9ffe29c1a765ebf1c9:eyJzZWxlY3RlZExpbmVDb3VudCI6MzMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjViY2VhNjM0ZjVlMTBjNWU1MjcyNGRkZTQ5ZmM3YzY2NGY1ZGNhODUyNmM1NWNkOTdkOGNmOWMxYjA3ZmQ5MzciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjE0YjAzYTA3NmNiMGJiY2QwM2NkMWRkNjZjNzU3YTYwZmMwYWFjZjc0ODk0ZjM2NmJiMTRmMGQwYmVjMjFlNWIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjhiYWQxNDUyNWNmY2UyZGNjMDI4NzJhNDNhNjRmMWUzYzMxYjk2NzlkZTYzMmM3NjVkYmNiN2U2MGIyZmRiNWYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImU4ZWFmM2UxZGIyODRmNmE2ZmQ0ZTA2NmFlMmZiNjU0YWU2OGZkZmNmM2U3ZTRkY2E0YzJkZDIxNGE0OWI5ZDAifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_89b4c62f78154151aae970dfb60f8051",
+      "statement": "UserSectionsTest locks the me-page section keys and their order: the default order is 5 hardcoded items (userInfo, playStats, moodTimeSlot, emotionScan, fileCheck) plus an optional trailing skinSwitcher, all keys are distinct and non-blank, and UserSections.SKIN_SWITCHER equals the literal `skinSwitcher` so the page's recognized sections and the description's myOverview sections cannot drift apart.",
+      "evidence": [
+        {
+          "resource": "repo://feature/user/src/test/java/cn/com/dcsgo/mihx/feature/user/UserSectionsTest.kt#L25-L60",
+          "version": "repo-lines-v1:sha256:233f3e19be3199f3cfec64b41250a484b9d57303c53bf4ffa0555ad050ed8629:eyJzZWxlY3RlZExpbmVDb3VudCI6MzYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjIxMTdhMmU0ODY2MDQ4MzZmYzkxNmVhYjBhNzM4MTFiN2YzOTAxYmVkMmEwNWY0ZTc2MmYxMjJhYmYzYzkzZjgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY3Y2IwODBiNjhjMDFhOWNkMmM3OTZiZmExY2Q3MjE2M2YwODFhNTA5MjZhOTI0ZmQyZWRkZTgzZjI5NWUzNGMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjA0YmVmNjQ5ZTdjMjA2ODEyZTlhZjg1ZmM1ZjA3YWM5MWE0ZjBmZDhmMDFiODQwNGQ5Yzg2MjVmMzI5YmUxMjUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjE4M2RjMmJjNmM0ZTg1N2ZkMjEwY2E2MzdmNzNhYTgzMjUyODQwNmY4MjFhYTY0MTFmNDZlY2QxYjJhYWE0YjAifQ"
+        }
+      ]
     }
   ],
   "verification": {
     "by": "openwiki/0.5.0",
-    "at": "2026-09-07T13:49:59.042Z"
+    "at": "2026-10-10T11:15:45.800Z"
   }
 }

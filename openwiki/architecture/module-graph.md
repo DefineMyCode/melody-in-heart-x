@@ -3,16 +3,21 @@ type: "Architecture"
 title: "Module Layering and Dependency Boundaries"
 description: "How the app is layered across :app, :feature:*, :domain, :data, :player and :core:*, which dependency directions are legal, where Hilt binds :data/:player implementations to :domain interfaces and playback Ports, and how the ~530-line verifyProductArchitecture Gradle task turns those boundaries into hard build gates."
 tags: [architecture, gradle, multi-module, hilt, dependency-boundaries, android]
-verified:
-  - by: openwiki/0.5.0
-    at: 2026-09-07T13:49:59.042Z
 sources:
   - id: openwiki-source-3bfcb28142050978edf94754
     resource: repo://app/build.gradle.kts
+  - id: openwiki-source-186e96b8d6739f3745947903
+    resource: repo://app/src/main/AndroidManifest.xml
   - id: openwiki-source-c997f8c2a81730fe7eb841ae
     resource: repo://app/src/main/java/cn/com/dcsgo/mihx/app/AppNavHost.kt
+  - id: openwiki-source-4ca5f9c29b016f072d8ed57c
+    resource: repo://app/src/main/java/cn/com/dcsgo/mihx/app/AppRoot.kt
   - id: openwiki-source-5610fe170bf45c0b63fb5ac9
     resource: repo://app/src/main/java/cn/com/dcsgo/mihx/app/di/PlayerModule.kt
+  - id: openwiki-source-16a77b131483b2a89cb4acca
+    resource: repo://app/src/main/java/cn/com/dcsgo/mihx/app/shell/SkinShellResolver.kt
+  - id: openwiki-source-eb0c46ac18543ec012e13a11
+    resource: repo://app/src/main/java/cn/com/dcsgo/mihx/app/shell/SkinSwitcherStore.kt
   - id: openwiki-source-52b5e67fffabb8696d6cfcc6
     resource: repo://app/src/main/java/cn/com/dcsgo/mihx/MainActivity.kt
   - id: openwiki-source-254bbd50662077e2ffc872ad
@@ -23,6 +28,16 @@ sources:
     resource: repo://core/model/build.gradle.kts
   - id: openwiki-source-ad278d499a6d617246596b70
     resource: repo://core/model/src/main/java/cn/com/dcsgo/mihx/core/model/Song.kt
+  - id: openwiki-source-69570babfa5b1b1809a65b7b
+    resource: repo://core/skin/build.gradle.kts
+  - id: openwiki-source-81081ab0f2f5987a54bb7181
+    resource: repo://core/skin/src/main/java/cn/com/dcsgo/mihx/core/skin/Skin.kt
+  - id: openwiki-source-c43ee1f05324afb3ce2a7c0f
+    resource: repo://core/skin/src/main/java/cn/com/dcsgo/mihx/core/skin/SkinIssue.kt
+  - id: openwiki-source-9b0771db2ad57c0f9de0ebe4
+    resource: repo://core/skin/src/main/java/cn/com/dcsgo/mihx/core/skin/SkinParser.kt
+  - id: openwiki-source-01fdb840a5f4aae417b50bf3
+    resource: repo://core/skin/src/main/java/cn/com/dcsgo/mihx/core/skin/SkinPartCatalog.kt
   - id: openwiki-source-0f1ea52b4adfffa8391b0e81
     resource: repo://data/build.gradle.kts
   - id: openwiki-source-561e2128ae9736ccc7b9d185
@@ -53,10 +68,14 @@ sources:
     resource: repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerViewModel.kt
   - id: openwiki-source-1065c62af23dd6e4c7057fdb
     resource: repo://feature/player/src/test/java/cn/com/dcsgo/mihx/feature/player/PlayerControllerQueueFacadeTest.kt
+  - id: openwiki-source-a8c5016cd654f9af00ac6734
+    resource: repo://feature/playlist/src/main/java/cn/com/dcsgo/mihx/feature/playlist/SongSorter.kt
+  - id: openwiki-source-f583f3d6775eb16796ec584f
+    resource: repo://feature/playlist/src/main/java/cn/com/dcsgo/mihx/feature/playlist/SortModeDropdownMenu.kt
+  - id: openwiki-source-4d35a723c52a6abeb769fbd2
+    resource: repo://feature/user/build.gradle.kts
   - id: openwiki-source-431155803d48ed8be56e0ba9
     resource: repo://player/build.gradle.kts
-  - id: openwiki-source-6d69bdf8c32deed5d6af5ba1
-    resource: repo://player/src/main/AndroidManifest.xml
   - id: openwiki-source-7657c9f7c862e7d55acc0b62
     resource: repo://player/src/main/java/cn/com/dcsgo/mihx/data/player/AppMediaSessionService.kt
   - id: openwiki-source-04a93731443f6ff3e9f66921
@@ -67,35 +86,40 @@ sources:
     resource: repo://player/src/main/java/cn/com/dcsgo/mihx/player/window/WindowedControllerQueuePlanner.kt
   - id: openwiki-source-e620d7484b72a53c7fa812cd
     resource: repo://settings.gradle.kts
-generated: { by: "openwiki/0.5.0", at: "2026-09-07T13:49:59.042Z" }
+generated: { by: "openwiki/0.5.0", at: "2026-10-10T11:15:45.800Z" }
+verified:
+  - by: openwiki/0.5.0
+    at: 2026-10-10T11:15:45.800Z
 ---
 
 # Module Layering and Dependency Boundaries
 
-The product is a 14-module Android Gradle project (`melody-in-heart`, applicationId `cn.com.dcsgo.mihx`). Layers are arranged so that pure logic lives at the bottom (`:core:*`, `:domain`), platform mechanics live in the middle (`:data`, `:player`), UI features live at the top (`:feature:*`), and the `:app` shell is the only module allowed to see everything. Two mechanisms keep this from eroding: Gradle dependency declarations (narrow by construction) and `verifyProductArchitecture`, a custom verification task in the root `build.gradle.kts` whose ~530-line `doLast` block re-checks the whole tree on every `check` run.
+The product is a 15-module Android Gradle project (`melody-in-heart`, applicationId `cn.com.dcsgo.mihx`). Layers are arranged so that pure logic lives at the bottom (`:core:*`, `:domain`), platform mechanics live in the middle (`:data`, `:player`), UI features live at the top (`:feature:*`), and the `:app` shell is the only module allowed to see everything. Two mechanisms keep this from eroding: Gradle dependency declarations (narrow by construction) and `verifyProductArchitecture`, a custom verification task in the root `build.gradle.kts` whose ~530-line `doLast` block re-checks the whole tree on every `check` run.
 
 ## Layer responsibilities
 
 | Layer | Module(s) | Owns | Must not touch |
 | --- | --- | --- | --- |
-| App shell | `:app` | `MelodyApplication` (`@HiltAndroidApp`, logger install, Coil `ImageLoaderFactory`, uncaught-exception hook), `MainActivity` (`@AndroidEntryPoint`), `AppRoot`/`AppScaffold`/`AppNavHost`, bottom-tab destinations (`AppDestinations`: PLAYLIST / HOME / USER), `PermissionCoordinator`, app-level Hilt modules (`CoroutineModule`, `LoggerModule`, `PlayerModule`) | — (depends on every other module) |
-| Feature | `:feature:home`, `:feature:playlist`, `:feature:user`, `:feature:lyrics`, `:feature:player`, `:feature:settings` | Public `XxxRoute` + internal `XxxScreen` composables, `XxxRouteState`/`XxxRouteActions` data classes, feature ViewModels; `:feature:player` additionally hosts the `PlayerRuntime` facade graph | `:data`, `:player`, and any other `:feature:*` module |
+| App shell | `:app` | `MelodyApplication` (`@HiltAndroidApp`, logger install, Coil `ImageLoaderFactory`, uncaught-exception hook), `MainActivity` (`@AndroidEntryPoint`), `AppRoot`/`AppScaffold`/`AppNavHost`, the runtime `AppShell`/`AppTab` model and `SkinShellResolver`/`SkinSwitcherRoute`/`SkinSwitcherStore` (the shell-skinnning bridge between `:core:skin` descriptions and host routes/drawables), `PermissionCoordinator`, app-level Hilt modules (`CoroutineModule`, `LoggerModule`, `PlayerModule`) | — (depends on every other module) |
+| Feature | `:feature:home`, `:feature:playlist`, `:feature:user`, `:feature:lyrics`, `:feature:player`, `:feature:settings` | Public `XxxRoute` + internal `XxxScreen` composables, `XxxRouteState`/`XxxRouteActions` data classes, feature ViewModels; `:feature:player` additionally hosts the `PlayerRuntime` facade graph; `:feature:playlist` hosts the library sorting helpers (`SongSorter`, `SortModeDropdownMenu`, `SongListTemplate`); `:feature:user` hosts the partitioned "我的" page (`UserSections` metadata consumed by `:core:skin`) and depends on `:core:skin` to reference the part catalog | `:data`, `:player`, and any other `:feature:*` module |
 | Domain | `:domain` | Repository **interfaces** (`cn.com.dcsgo.mihx.domain.repository.*`), playback policy as pure logic (`QueueManager`, `PlaybackQueueActionPlanner`, `RandomQueuePlanner`, `ControllerQueuePlanner`, `ControllerPlaybackStateSynchronizer`, `PlaybackRestoreCoordinator`, ...), and the playback **Ports**/factories (see below) | No Android/Compose imports; only `:core:model` (as `api`) + `:core:common` |
 | Data | `:data` | Room `MelodyDatabase` (v10, 13 entities) + `MelodyDao` + `MIGRATION_1_2`…`MIGRATION_9_10`, DataStore wrappers (`player_settings`, `mood_time_slot`, legacy prefs), `MusicRepository` storage coordinator, narrow repository adapters, `SharedPreferencesLegacyJsonMigration` | `:feature:*`, `:player` |
 | Player | `:player` | `AppMediaSessionService` (Media3 `MediaSessionService` owning ExoPlayer), `PlaybackController` (MediaController client), windowed queue planning in `player/window/` (`WindowedControllerQueuePlanner`, `ControllerWindowSynchronizer`, `PlaybackWindowPlanner`), `PlaybackStateStore`, Bluetooth coordinators, `PlayDurationTracker`, FFmpeg/`EmotionAnalyzer` support, `di/AppCoroutineScopeModule` | `:feature:*`, `:data` |
-| Core | `:core:model`, `:core:common`, `:core:ui` | `:core:model`: data types (`Song`, `Playlist`, `PlayQueue`, `PlayMode`, `AlbumEntry`, `ArtistEntry`, `LyricLine`, `SongInfo`, `SongEmotion`, `TimeSlotConfig`, `ThemeMode`/`ThemeVariant`) with zero project dependencies (only compose-runtime for `@Stable`/`@Immutable` annotations); `:core:common`: `AppLog`/`AppLogger`, `PerformanceTrace`, `CoroutineDispatchers`, time helpers; `:core:ui`: `MusicplayerTheme` and shared Compose components (song lists, toasts, dialogs, lyrics view, icons) | `:core:model` must carry no Android resources and no `R.*` ids (enforced) |
+| Core | `:core:model`, `:core:common`, `:core:ui`, `:core:skin` | `:core:model`: data types (`Song`, `Playlist`, `PlayQueue`, `PlayMode`, `AlbumEntry`, `ArtistEntry`, `LyricLine`, `SongInfo`, `SongEmotion`, `TimeSlotConfig`, `ThemeMode`/`ThemeVariant`) with zero project dependencies (only compose-runtime for `@Stable`/`@Immutable` annotations); `:core:common`: `AppLog`/`AppLogger`, `PerformanceTrace`, `CoroutineDispatchers`, time helpers; `:core:ui`: `MusicplayerTheme` and shared Compose components (song lists, toasts, dialogs, lyrics view, icons); `:core:skin`: skin **description model + parser/validator** (`Skin`, `SkinPartCatalog`, `DefaultSkin`, `SkinParser`, `SkinIssue`) — intentionally UI-free | `:core:model` must carry no Android resources and no `R.*` ids (enforced); `:core:skin` is likewise UI- and Compose-free (no resources, no Compose runtime) |
 
-`:core:model` sits at the bottom with no project dependencies (it deliberately keeps only compose-runtime annotations, and `Song` stores an `android.net.Uri`); `:core:common` is standalone; `:core:ui` depends on `:core:model` and `:core:common`; `:domain` re-exports `:core:model` (`api(project(":core:model"))`) so every consumer gets the data types transitively.
+`:core:model` sits at the bottom with no project dependencies (it deliberately keeps only compose-runtime annotations, and `Song` stores an `android.net.Uri`); `:core:common` is standalone; `:core:ui` depends on `:core:model` and `:core:common`; `:core:skin` depends only on `:core:model` plus `org.json` (no Compose, no UI, so the whole description is parseable and unit-testable headlessly); `:domain` re-exports `:core:model` (`api(project(":core:model"))`) so every consumer gets the data types transitively.
 
 ## Dependency graph
 
 ```mermaid
 flowchart TD
-    APP[":app shell, AppNavHost, Hilt wiring"] --> FEAT[":feature:* Route and Screen modules"]
+    APP[":app shell, AppNavHost, SkinShellResolver, Hilt wiring"] --> FEAT[":feature:* Route and Screen modules"]
+    APP --> SKIN[":core:skin skin description model and parser"]
     APP --> PLAYER[":player Media3 service and controller"]
     APP --> DATA[":data Room and DataStore"]
     APP --> DOMAIN[":domain interfaces and playback policy"]
     APP --> CORE[":core:* model, common, ui"]
+    FEAT -->|"only :feature:user"| SKIN
     FEAT --> DOMAIN
     FEAT --> CORE
     PLAYER --> DOMAIN
@@ -105,13 +129,14 @@ flowchart TD
     DOMAIN --> CMODEL[":core:model pure data types"]
     DOMAIN --> CCOMMON[":core:common logging and dispatchers"]
     CORE --> CMODEL
+    SKIN --> CMODEL
 ```
 
-*Allowed dependency directions. Only `:app` may depend on all layers; arrows into `:data`/`:player` from `:feature:*` and between features are forbidden and enforced.*
+*Allowed dependency directions. Only `:app` may depend on all layers; arrows into `:data`/`:player` from `:feature:*` and between features are forbidden and enforced. `:core:skin` is a bottom-layer core module (depends only on `:core:model` + `org.json`) that, among the features, only `:feature:user` consumes directly.*
 
 The direction rules are:
 
-- **`feature → core:* + domain` only.** Every `:feature:*` build file declares exactly `implementation(project(":core:model"))`, `:core:common`, `:core:ui` and `:domain` (plus Compose/Coil/Hilt libraries). No feature declares `project(":data")` or `project(":player")`, and no feature declares another `project(":feature:…")` — cross-feature navigation goes through `:app` (`AppNavHost` composes `HomeRoute`, `LyricsRoute`, `PlaylistRoute`'s detail routes, `SettingsRoute`, and the `:feature:user` routes together).
+- **`feature → core:* + domain` only.** Every `:feature:*` build file declares `implementation(project(":core:model"))`, `:core:common`, `:core:ui` and `:domain` (plus Compose/Coil/Hilt libraries); `:feature:user` additionally declares `implementation(project(":core:skin"))`. No feature declares `project(":data")` or `project(":player")`, and no feature declares another `project(":feature:…")` — cross-feature navigation goes through `:app` (the runtime shell derives the bottom tabs and `AppNavHost` composes `HomeRoute`, `LyricsRoute`, `PlaylistRoute`'s detail routes, `SettingsRoute`, and the `:feature:user` routes together).
 - **`:player` and `:data` depend only on `core:* + domain`.** They reach each other's mechanics only through narrow interfaces/Ports provided by Hilt (see below), never through implementation imports.
 - **`:domain` has no Android dependencies.** Despite being an `com.android.library` module, no file under `domain/src/main/java` imports `android.*`, `androidx.*`, or Compose; its entire source surface is interfaces, data classes, and pure policy functions over `:core:model` types (only `:core:common` time helpers are imported for `SongVersionComparer`).
 
@@ -180,13 +205,25 @@ The `:feature:player` runtime must not know about Media3 service classes, Blueto
 
 Because `PlayerModule` is the single place where these ports meet their implementations, `:feature:player` compiles against interfaces only, and `:player` mechanics remain swappable and unit-testable (e.g. `PlayerControllerQueueFacadeTest` substitutes a fake `ControllerQueuePlannerPort`).
 
+## `:core:skin`: UI-free skin description model
+
+`:core:skin` (namespace `cn.com.dcsgo.mihx.core.skin`) is the newest core module, added to keep the "plugin shell" (path B: declarative JSON description + host part library) from leaking UI/routing knowledge into `:core`. A skin is **never executable code** — it is a JSON description the host uses to assemble existing parts, so import has zero composition-time crash risk and can be validated field-by-field with precise failure reasons. The module's whole surface is the description **model + parser/validator**:
+
+- `Skin` / `SkinTokens` / `SkinShell` / `SkinTab` / `SkinPage` / `SkinPageHeader` / `SkinHeaderAction` / `SkinSection` / `NowPlayingConfig` — the data model (bottom `tokens` for visuals, `shell.bottomBar` for tabs, `pages` assembled from `sections`, plus `playerEntry` TAB/SHEET and `nowPlaying`).
+- `SkinPartCatalog` — the **part whitelist** (fail-closed); it also carries the `skinSwitcher` / `customSkin` part names that map to `:feature:user`'s `UserSections.SKIN_SWITCHER`, `songList.template`/`source`/`count` value domains, and the `iconNames` icon table.
+- `SkinParser` — fail-closed parse/validate returning `SkinValidation` (all issues at once, aggregate `summary()`); unknown `part` **rejects** (no silent downgrade), unknown fields are ignored (forward compat), out-of-range tokens are clamped as warnings. Rejects unknown `ThemeVariant` ids via `KNOWN_THEMES = setOf("MONO", "VERMILION")`, enforces schema version 1 and 2–5 bottom-bar tabs.
+- `DefaultSkin` — the built-in default skeleton as a literal JSON string (not constructed in Kotlin), so the built-in and user-imported skins travel the **same** parse/validate path; `ID = "dcsgo.skin.builtin"`.
+- `SkinIssue` — structured failure reasons (`Code` + `message` + `field`) the UI renders directly and unit tests assert per-case.
+
+**Why it lives under `:core` and not `:app`:** the module deliberately carries no Android resources, no `R.*` ids, and no Compose runtime — it depends only on `:core:model` (for `ThemeVariant`) and `org.json`. That makes the description headlessly parseable and unit-testable. Only `:app` and `:feature:user` depend on it. The symbols → host artifacts mapping happens in `:app`'s `SkinShellResolver`, which resolves `part`/`icon`/page keys and `sections` into concrete routes (`library`→`AppRoutes.PLAYLIST`, `player`→`AppRoutes.HOME`, `me`→`AppRoutes.USER`), drawable ids and the `:feature:user` section order. `:core:skin` deliberately holds **no routing knowledge** — for the same dependency-direction reason as `:feature:player` avoiding `:player`, a `:core` module holding `R.drawable.*` or `AppRoutes` would break the module layering the gate enforces. `SkinSwitcherStore` (`SharedPreferences` `skin_switcher`) and the runtime `AppShell` (derived in `AppRoot` via `SkinShellResolver.resolveById(...)`) live in `:app`.
+
 ## verifyProductArchitecture: boundaries as build gates
 
 `tasks.register("verifyProductArchitecture")` in the root `build.gradle.kts` (group `verification`) walks the whole tree (`kt`/`kts`/`java`/`xml`/`toml`, skipping `build`/`.gradle`/`.git`/`.idea` dirs) inside one `doLast` block and throws `GradleException` on the first violated rule. It is text- and regex-based rather than AST-based — which is why comments and string literals can trip it. Two consequences documented in the code itself: the `release` buildType block must keep nested braces minimal because the rule extracts that block with a "first closing brace" regex (`app/build.gradle.kts` keeps `signingConfig = releaseSigningConfig` as its only inner assignment for exactly this reason), and `check` aggregates `spotlessCheck` + `verifyProductArchitecture` + every subproject's `check`, so a violation fails the standard pre-commit gate.
 
 Key enforced rules (see `/openwiki/operations/build-and-verification.md` for the operational workflow):
 
-- **Module manifest** — `settings.gradle.kts` must include all 14 required modules (`:app`, `:core:model`, `:core:common`, `:core:ui`, `:domain`, `:data`, `:player`, the six `:feature:*`, `:benchmark`); every one of them must keep a local `.gitignore` containing `/build/`, `/.cxx/`, `/.externalNativeBuild/`, `/captures/`.
+- **Module manifest** — `settings.gradle.kts` must include all 15 required modules (`:app`, `:core:model`, `:core:common`, `:core:ui`, `:core:skin`, `:domain`, `:data`, `:player`, the six `:feature:*`, `:benchmark`); every one of them must keep a local `.gitignore` containing `/build/`, `/.cxx/`, `/.externalNativeBuild/`, `/captures/`.
 - **Hilt assembly** — the four entry points must carry their annotations, and the six required Hilt modules must exist and remain `SingletonComponent` modules (`@Module` + `@InstallIn(SingletonComponent::class)`).
 - **Feature isolation** — no `feature/*/build.gradle.kts` may contain `project(":data")`, `project(":player")`, or any `project(":feature:…")`; no source under `feature/`, `domain/`, `player/` may import `cn.com.dcsgo.mihx.data.repository.*` or `cn.com.dcsgo.mihx.data.local.*`; `player/window/` may not import `cn.com.dcsgo.mihx.data.player` (window planners must depend on domain policy only).
 - **Route/Screen ownership** — `:feature:lyrics`, `:feature:settings`, `:feature:home`'s play-stats/quick-skip screens and `:feature:user`'s version-management screens must own their `*Route.kt`/`*Screen.kt` files; the retired overlay routing files (`AppOverlay.kt`, `AppOverlayHost.kt`, `OverlayRoute.kt`) must not reappear; `:feature:home` must navigate to `:feature:lyrics` instead of importing `cn.com.dcsgo.mihx.ui.lyrics` directly.
@@ -195,7 +232,7 @@ Key enforced rules (see `/openwiki/operations/build-and-verification.md` for the
 - **LazyColumn keys** — every `items`/`itemsIndexed`/`item {` call in `app`, `core` and `feature` sources must pass a stable `key =` (regex-scanned) so product-scale lists don't drop item state.
 - **Logging** — direct `Log.d/i/w/e/v/wtf(...)` calls are banned everywhere except `AppLogger.kt`; use `AppLog`/`AppLogger` (which redact URIs/paths in release).
 - **Privacy and backup excludes** — `app/src/main/res/xml/backup_rules.xml` and `data_extraction_rules.xml` must each exclude `music_player_prefs.xml`, `play_stats_prefs.xml`, `quick_skip_songs_prefs.xml`, `melody.db` (+`-journal`/`-shm`/`-wal`), `datastore/player_settings.preferences_pb`, `datastore/playback_state.preferences_pb` and `cache/album_art/`.
-- **Release build shape** — the `:app` `release` block must set `isMinifyEnabled = true` and `isShrinkResources = true`; a `benchmark` build type must exist with `initWith(getByName("release"))`; the `:app` manifest must not declare `AppMediaSessionService` nor request `READ_MEDIA_AUDIO`/`READ_EXTERNAL_STORAGE` (import is SAF document-tree based).
+- **Release build shape** — the `:app` `release` block must set `isMinifyEnabled = true` and `isShrinkResources = true`; a `benchmark` build type must exist with `initWith(getByName("release"))`; the `:app` manifest must not declare `AppMediaSessionService` nor request `READ_EXTERNAL_STORAGE` (SAF document-tree import). `READ_MEDIA_AUDIO` **is** allowed: it is used to accelerate import scanning via `java.io.File` direct traversal when granted, with SAF still the primary path and fallback.
 - **Observability anchors** — `MusicRepository` must keep the `music_import_scan`/`music_import_folder` `PerformanceTrace` operations and `PlaybackController` must keep `controller_play_queue`/`controller_prepare_queue`/`controller_sync_queue`/`play_next_command`; `PlaybackWindowPerformanceShapeTest` must keep covering 100/500/1_000/71-song window sizing; `:benchmark` must remain a real Macrobenchmark module (`targetProjectPath = ":app"`) with a `StartupBenchmark` using `MacrobenchmarkRule`, `StartupTimingMetric`, `StartupMode.COLD`.
 - **Privacy-sensitive startup rules** — Bluetooth playback monitoring must be user-triggered from Settings (`PlayerStartupFacade` must not mention Bluetooth; `SettingsScreen` must expose the 蓝牙播放监听/申请蓝牙权限 controls; the setting must be persisted through `PlayerSettingsRepository`/DataStore and surfaced via `PlayerUiState`), and no startup-path file (`MainActivity`, `AppRoot`, `PlayerRuntime`, `PlayerStartupFacade`) may request notification/Bluetooth permissions.
 - **Misc bans** — legacy `com.dcsgo.data.model` package references, the old `PlayerViewModelComponents`/`PlayerViewModelComponentFactory` assembly hub, Android Things dependencies, and `:core:model` resources/`R.*` ids are all rejected.
@@ -205,7 +242,7 @@ Full-module list and the missing-module failure message come straight from the `
 ## Adding a new feature module
 
 1. **Register it**: add `include(":feature:xxx")` to `settings.gradle.kts`.
-2. **Build file**: create `feature/xxx/build.gradle.kts` with the `kotlin-android` + `kotlin-compose` library plugins (add `ksp` + `hilt` only if the module declares DI entry points — today only `:feature:player` does) and depend on `implementation(project(":core:model"))`, `:core:common`, `:core:ui`, `:domain` — never `:data`, `:player`, or another feature.
+2. **Build file**: create `feature/xxx/build.gradle.kts` with the `kotlin-android` + `kotlin-compose` library plugins (add `ksp` + `hilt` only if the module declares DI entry points — today only `:feature:player` does) and depend on `implementation(project(":core:model"))`, `:core:common`, `:core:ui`, `:domain` — never `:data`, `:player`, or another feature. Only `:feature:user` additionally declares `implementation(project(":core:skin"))` (it owns the `UserSections` partition metadata and the skin switcher section that the skin descriptions reference).
 3. **`.gitignore`**: create `feature/xxx/.gitignore` containing `/build/`, `/.cxx/`, `/.externalNativeBuild/`, `/captures/` — the gate fails if any required module lacks it.
 4. **Route/Screen**: add a public `XxxRoute.kt` (receives `XxxRouteState` + `XxxRouteActions` + callback lambdas) and an internal `XxxScreen.kt`; the route/state/actions types are the module's entire public API.
 5. **Wire navigation**: register the destination in `app/.../AppNavHost.kt` and map it to a bottom tab in `AppDestinations` if it is a top-level page — `:app` is the only place cross-feature routing may happen.

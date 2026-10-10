@@ -5,7 +5,7 @@ description: ":player 层的 Android 集成面：AppMediaSessionService 的 ExoP
 tags: [player, media3, media-session, media-controller, exoplayer, bluetooth, playback-service, android]
 verified:
   - by: openwiki/0.5.0
-    at: 2026-09-07T13:49:59.042Z
+    at: 2026-10-10T11:15:45.800Z
 sources:
   - id: openwiki-source-5610fe170bf45c0b63fb5ac9
     resource: repo://app/src/main/java/cn/com/dcsgo/mihx/app/di/PlayerModule.kt

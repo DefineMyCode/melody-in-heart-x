@@ -3,9 +3,6 @@ type: Workflow
 title: "工作流：情绪分析全链路（批扫调度 → 端侧推理 → 落库 → 展示与校准回写）"
 description: "端到端讲清情绪数据从哪来、到哪去：WorkManager 批扫调度与失败重试、EmotionAnalyzer TFLite 推理管线与内存纪律、Room upsert、展示与用户校准回写，以及词表统计供情绪时段随心播放过滤。"
 tags: [emotion, workmanager, tflite, yamnet, background-work, room, android]
-verified:
-  - by: openwiki/0.5.0
-    at: 2026-09-07T13:49:59.042Z
 sources:
   - id: openwiki-source-96607d29d5086ea5d14045e9
     resource: repo://app/src/main/java/cn/com/dcsgo/mihx/app/AppMediaMetadataViewModel.kt
@@ -59,7 +56,10 @@ sources:
     resource: repo://player/src/main/java/cn/com/dcsgo/mihx/data/player/FfmpegPcmDecoder.kt
   - id: openwiki-source-ffc92826a36b287194b75abc
     resource: repo://player/src/main/java/cn/com/dcsgo/mihx/data/player/ShortAccum.kt
-generated: { by: "openwiki/0.5.0", at: "2026-09-07T13:49:59.042Z" }
+generated: { by: "openwiki/0.5.0", at: "2026-10-10T11:15:45.800Z" }
+verified:
+  - by: openwiki/0.5.0
+    at: 2026-10-10T11:15:45.800Z
 ---
 
 # 工作流：情绪分析全链路
@@ -88,11 +88,11 @@ sequenceDiagram
     W->>W: 取 pending（版本过期、有 uri、失败少于 3 次）
     loop 每首歌（周期一轮 40 首 / 手动一轮 300 首）
         W->>AN: analyze(songId, uri, MODEL_VERSION)
-        alt 成功
+        alt 成功且歌仍在当前曲库快照
             AN-->>W: Success（逐窗曲线 + 高潮 + embedding）
             W->>RE: upsert（继承已有用户校准）
             W->>FS: clear(songId)
-        else 失败
+        else 失败且歌仍在当前曲库快照
             AN-->>W: Failure（可展示原因）
             W->>FS: record(songId, reason)
         end
@@ -124,7 +124,7 @@ Worker 是 `CoroutineWorker`，经 `EntryPointAccessors.fromApplication(applicat
 
 pending 为空时直接 `Result.success()`（日志注明曲库已最新、因反复失败跳过几首）。
 
-**单首循环**对 `pending.take(batch)` 逐首执行：先查 `isStopped`（系统停止/超时截断）与 `isPaused()`（用户暂停，协作式），再 `setProgress(workDataOf(KEY_PROGRESS_CURRENT to song.title))` 推当前歌名给 UI，然后 `runCatching { analyzer.analyze(...) }`——连抛异常也兜底成 `Failure(INFERENCE_ERROR)`。成功走 `emotionRepository().upsert(result.emotion)` + `failureRepo.clear(song.id)`；失败走 `failureRepo.record(song.id, result.reason)`。**单首失败只记不抛，不阻断整批**。
+**单首循环**对 `pending.take(batch)` 逐首执行：先查 `isStopped`（系统停止/超时截断）与 `isPaused()`（用户暂停，协作式），再 `setProgress(workDataOf(KEY_PROGRESS_CURRENT to song.title))` 推当前歌名给 UI，然后 `runCatching { analyzer.analyze(...) }`——连抛异常也兜底成 `Failure(INFERENCE_ERROR)`。**落库前防孤儿校验（v3.10.2）**：批内可能发生用户删除该歌，所以在写入成功/失败记录之前先查 `musicRepository().observeSongsSnapshot()`，若当前曲库快照已不含该 songId 则**跳过 persist**（不写情绪行、不累计失败记录），防止产生孤儿情绪行/孤儿失败记录。未被删除则成功走 `emotionRepository().upsert(result.emotion)` + `failureRepo.clear(song.id)`；失败走 `failureRepo.record(song.id, result.reason)`。**单首失败只记不抛，不阻断整批**。
 
 **续排规则**是防死循环的核心（仅手动任务续排）：
 
@@ -207,6 +207,8 @@ APPEND 语义：同一唯一名的任务链，新批次排在**当前正在跑�
 ## 状态机与展示：EmotionViewModel
 
 `EmotionViewModel`（`@HiltViewModel`，我的页情绪卡 + 分析详情页共享同一实例）是**全 Flow 状态机**，不依赖「进页面才查询」：
+
+- **惰性观察（惰性 `observe()`）**：原来在 `init` 无条件收集，冷启动即使情绪页未打开也会立即 `buildStatus/buildRows` → `loadSongs()` + 情绪表查询（2026-10-06 与 `PlayerViewModel` 并发 `loadSongs` 竞态，导致播放队列/进度无法恢复）。改为由消费 `status`/`rows` 的页面在可见时调用幂等的 `observe()`（已有活跃 job 则直接返回）；进入任一情绪页后即常驻 VM 作用域。
 
 - **信号源**：`combine(tick, 手动任务 WorkInfo 流, 周期任务 WorkInfo 流, emotionScanPaused DataStore 流)`。手动任务 `RUNNING` **或 `ENQUEUED` 都算扫描中**——点击即有反馈（仅 RUNNING 会让按钮「点了没反应」）；杀进程重启后 WorkManager 恢复排队/运行态同样会自动推到这里，这就是**杀进程自动恢复推送**的实现基础。当前歌名取自最后一个 RUNNING 任务的 `progress[KEY_PROGRESS_CURRENT]`。
 - **节奏**：`scanSignal.flatMapLatest`——扫描中每 2s 轮询重建 status（workInfo/progress 推送也会即时触发）；空闲时只构建一次。

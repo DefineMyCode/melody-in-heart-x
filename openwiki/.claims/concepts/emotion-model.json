@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "pageVersion": "sha256:2de910dde5fd892ad74402aad77f2af69dd1d9d432678a330487e5b3fa96d259",
+  "pageVersion": "sha256:d1ad613692190bdb2ba62830b5fc07a4439dea78bfdc9b7031798b826ce97f84",
   "claims": [
     {
       "id": "claim_7e4a17a19aeb4d9fac20b89858af9b29",
@@ -246,15 +246,15 @@
     },
     {
       "id": "claim_c882fd64a0e94cafb4fa674ff621874a",
-      "statement": "用户校准链路：:core:ui 的 LocalEmotionCorrectionController（默认 null）由 AppRoot 在 NavHost 顶层一次性提供，任何渲染 SongEmotionSection 的页面自动获得\"不像？标记\"能力；保存走 AppMediaMetadataViewModel.saveEmotionCorrection（空词=clearCorrection 且要求已有行，否则 avgOfWords→saveCorrection），仓库 runBlocking(IO) 桥统一搬到 Dispatchers.Default，成功后刷新 EmotionViewModel、失败弹 toast。",
+      "statement": "用户校准链路：:core:ui 的 LocalEmotionCorrectionController（默认 null）由 AppRoot 在最外层 CompositionLocalProvider 一次性提供（包住 NavHost 所在 AppScaffold），任何渲染 SongEmotionSection 的页面自动获得\"不像？标记\"能力；保存走 AppMediaMetadataViewModel.saveEmotionCorrection（空词=clearCorrection 且要求已有行，否则 avgOfWords→saveCorrection），仓库 runBlocking(IO) 桥统一搬到 Dispatchers.Default，成功后刷新 EmotionViewModel、失败弹 toast。",
       "evidence": [
         {
           "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/AppMediaMetadataViewModel.kt#L31-L47",
           "version": "repo-lines-v1:sha256:6a9ebea91f0aa70c9e0d773ba6aaa995c586ba50d2bf800672008f7a269855ab:eyJzZWxlY3RlZExpbmVDb3VudCI6MTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjUxMjJkNjA4ZDY0MjRjYWIxODhmNzAyMDE3NzVmOTQxYzJhMzdhMTk1ZGZlYjY2ZWZlMTMzNjcwMTg1ZjUzN2UiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjVkYzAxOGIxY2Y2Y2FiNjUzNWIzNzFmN2MzOGQzNDNhOTYyZTE0ZjMxODkyODVhNjVmZTNjZTM2ZWE0OWI0YTYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
         },
         {
-          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/AppRoot.kt#L129-L146",
-          "version": "repo-lines-v1:sha256:3aff7d8078c165221078698a70b37b6f90a8ebcb24e045616e6dcf85f4da7312:eyJzZWxlY3RlZExpbmVDb3VudCI6MTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImRkOTM1NjY4YTdhODIxYWMzODcwNjBkZTJlZDgzYWM2MjBjZDdkOWZiODEyM2IxNGEyMzM5M2FhOWE0OTgzZDgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQwOTNkY2UwMmZhM2U1YzBiOGMxYzg2YWM2N2U4NzYzZTNhMjQ5YWFhZDAxZjlhOGVkZTJkNjcyNzE1MGJkNzgiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk5OWJkZWZlZWFjYTYzNDBlMDI5MGRjODZlODg5Yzg5ZDVlMTg5YWE1YmE0NGI1ODViM2I3MDczNGY0YTYyZDgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQ0NjU5MmRmNzgwNzg0YmRlMDU1YTZjNWYwZjZlMmZhMjIzYjkxNGRkYWYxMWY0YjY1N2I4ZDk2N2QyZWZiODIifQ"
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/AppRoot.kt#L216-L233",
+          "version": "repo-lines-v1:sha256:a5e0933c799b9886bae22c8621fe9e3f4b50ffe5c32e0dc820ab85e7ebfbc1b4:eyJzZWxlY3RlZExpbmVDb3VudCI6MTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBiODA1ZjlkMTJiZjE3ODgxNTFiNmJjOGVhZTQ2NGExMzJhNzNmM2NhMjNjMjc3Y2FmNWFkYjJiODhjMzRhZDYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZhMjBhMzkzNmY3ZDgxMmU1OWQ3OTIxZWE4ZTVhNDQ0MjI1Y2ZiM2E3ZTVhN2ExMjg2M2M4NDg4ZTU0NTEzMGMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImMzNmZjYTBjN2M2Y2Y5OWZiNDQ3OTdmM2Y1OTQ4YWRiNWE2YjdjNmYzMzA1MmY3ZmYyNTY4YTdiNDdhODUwYjIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImNhZWMxZWJiMTZkMDI4ZmI3NTI0NzU2ZGFmMGU0MGQyMDVjYjlmMWU0YTlkYzIyZDg5ZmZjY2I3OTc0YmMyNTIifQ"
         },
         {
           "resource": "repo://core/ui/src/main/java/cn/com/dcsgo/mihx/ui/components/EmotionCorrection.kt#L6-L17",
@@ -333,6 +333,6 @@
   ],
   "verification": {
     "by": "openwiki/0.5.0",
-    "at": "2026-09-07T13:49:59.042Z"
+    "at": "2026-10-10T11:15:45.800Z"
   }
 }

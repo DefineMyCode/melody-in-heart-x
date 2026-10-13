@@ -43,12 +43,18 @@ import cn.com.dcsgo.mihx.R
 fun LuckyPlayEntryBar(
     onLuckyPlayClick: () -> Unit,
     modifier: Modifier = Modifier,
+    /**
+     * 同 [cn.com.dcsgo.mihx.feature.player.MusicPlayerBottomBar.ownSystemInset]：
+     * 手机布局下由底部导航栏统一处理系统 inset，这里再 padding 会与导航栏之间
+     * 露出透明缝隙（2026-10-13 修复）；大屏布局下入口条是最底部元素，必须自己 padding。
+     */
+    ownSystemInset: Boolean = true,
 ) {
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .navigationBarsPadding()
-            .background(MaterialTheme.colorScheme.surfaceContainerLowest),
+            .background(MaterialTheme.colorScheme.surfaceContainerLowest)
+            .then(if (ownSystemInset) Modifier.navigationBarsPadding() else Modifier),
     ) {
         // 顶部 out1 分隔线（与迷你条同一处理）
         Box(

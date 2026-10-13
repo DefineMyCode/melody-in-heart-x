@@ -108,6 +108,7 @@ fun AppScaffold(
                     swipeEnabled = swipeEnabled,
                     miniPlayerHiddenBySheet = miniPlayerHiddenBySheet,
                     onLuckyPlayClick = onLuckyPlayClick,
+                    // 大屏布局没有底部导航栏，迷你条是最底部元素，须自己避让系统导航栏（默认 true）
                     content = content,
                 )
             }
@@ -128,6 +129,8 @@ fun AppScaffold(
                     onTabSelected = onTabSelected,
                     swipeEnabled = swipeEnabled,
                     onLuckyPlayClick = onLuckyPlayClick,
+                    // 手机布局：底部导航栏已处理系统 inset，迷你条/入口条不再自己 padding
+                    miniBarOwnsSystemInset = false,
                     content = content,
                     modifier = Modifier.weight(1f),
                 )
@@ -163,6 +166,14 @@ private fun ScaffoldContentColumn(
     miniPlayerHiddenBySheet: Boolean = false,
     /** 随心播放入口条回调（见 [shouldShowLuckyPlayEntry] 的显示条件）。 */
     onLuckyPlayClick: () -> Unit = {},
+    /**
+     * 迷你条 / 随心播放入口条是否需要自己处理系统导航栏 inset。
+     *
+     * 手机布局下其下方是应用底部导航栏 [TextBottomBar]，后者已 `navigationBarsPadding()`
+     * 处理系统手势条，迷你条/入口条再 padding 会在两者间露出透明缝隙（2026-10-13 修复）；
+     * 大屏布局下迷你条是最底部元素，必须自己 padding。默认 `true` 保持大屏行为。
+     */
+    miniBarOwnsSystemInset: Boolean = true,
     content: @Composable () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -215,13 +226,17 @@ private fun ScaffoldContentColumn(
                 onPreviousClick = onPreviousClick,
                 onNextClick = onNextClick,
                 onNavigateToHome = onNavigateToHome,
+                ownSystemInset = miniBarOwnsSystemInset,
             )
         } else if (
             shouldShowLuckyPlayEntry(shell, activeRoute, currentSong != null) &&
             !miniPlayerHiddenBySheet
         ) {
             // 双页样式、队列为空：迷你条位置改显示「随心播放」入口条（2026-10-01）。
-            LuckyPlayEntryBar(onLuckyPlayClick = onLuckyPlayClick)
+            LuckyPlayEntryBar(
+                onLuckyPlayClick = onLuckyPlayClick,
+                ownSystemInset = miniBarOwnsSystemInset,
+            )
         }
     }
 }

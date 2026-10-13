@@ -62,14 +62,23 @@ fun MusicPlayerBottomBar(
     onPreviousClick: () -> Unit,
     onNextClick: () -> Unit,
     onNavigateToHome: () -> Unit,
+    /**
+     * 迷你条是否要自己处理系统导航栏 inset。
+     *
+     * 手机布局下迷你条上方是应用底部导航栏，后者已通过 `navigationBarsPadding()`
+     * 处理系统手势条；迷你条再 padding 会与导航栏之间露出透明缝隙
+     * （2026-10-13 修复，背景改画在 padding 外侧，保证被遮住时无缝隙）。
+     * 大屏布局下迷你条是最底部元素，必须自己 padding。默认 `true` 保持既有行为。
+     */
+    ownSystemInset: Boolean = true,
 ) {
     val mini = LocalMiniPlayerTokens.current
     val currentPositionMs by positionMs.collectAsStateWithLifecycle()
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .navigationBarsPadding()
             .background(MaterialTheme.colorScheme.surfaceContainerLowest)
+            .then(if (ownSystemInset) Modifier.navigationBarsPadding() else Modifier)
     ) {
         // 顶部 out1 分隔线
         Box(

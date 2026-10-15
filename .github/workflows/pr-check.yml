@@ -2,10 +2,19 @@ name: PR Check
 
 # M-6（评审 2026-10-15）：PR / push 到 main 必须先过完整校验（单测 + spotless + 架构校验），
 # 与 CLAUDE.md「提交前跑 ./gradlew check」的约定保持一致；发版流水线（release.yml）也依赖同一校验。
+# 纯文档改动（docs/openwiki/markdown）不触发（2026-10-15 用户定）。
 on:
   pull_request:
+    paths-ignore:
+      - "docs/**"
+      - "openwiki/**"
+      - "**.md"
   push:
     branches: [main]
+    paths-ignore:
+      - "docs/**"
+      - "openwiki/**"
+      - "**.md"
 
 permissions:
   contents: read

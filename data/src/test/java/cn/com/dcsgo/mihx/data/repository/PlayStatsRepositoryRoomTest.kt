@@ -27,7 +27,7 @@ import kotlinx.coroutines.runBlocking
 class PlayStatsRepositoryRoomTest {
 
     @Test
-    fun incrementsAndDurationUpdatesPersistToRoom() {
+    fun incrementsAndDurationUpdatesPersistToRoom() = runBlocking {
         val dao = FakeMelodyDao().apply {
             playStats += PlayStatsEntity(
                 songId = 7,
@@ -49,7 +49,7 @@ class PlayStatsRepositoryRoomTest {
     }
 
     @Test
-    fun batchReadsUseRoomStatsAndDefaultMissingSongsToZero() {
+    fun batchReadsUseRoomStatsAndDefaultMissingSongsToZero() = runBlocking {
         val dao = FakeMelodyDao().apply {
             playStats += PlayStatsEntity(
                 songId = 2,

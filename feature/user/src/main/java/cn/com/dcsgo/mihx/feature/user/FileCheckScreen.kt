@@ -22,6 +22,7 @@ import androidx.compose.material.icons.filled.DeleteSweep
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.WarningAmber
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -34,9 +35,14 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -312,6 +318,38 @@ private fun DuplicateContent(
     onDeduplicateAll: () -> Unit,
     onOpenDetail: () -> Unit,
 ) {
+    // m-8（评审 2026-10-15）：一键清理属于破坏性批量操作（副本的播放统计/秒切标记会被清除），
+    // 先弹确认对话框再执行，防止误触。
+    var showDeduplicateConfirm by remember { mutableStateOf(false) }
+    val dupCount = duplicateGroups.sumOf { it.duplicates.size }
+
+    if (showDeduplicateConfirm) {
+        AlertDialog(
+            onDismissRequest = { showDeduplicateConfirm = false },
+            title = { Text("确认清理全部重复？") },
+            text = {
+                Text(
+                    text = "将移除 $dupCount 条重复记录（每组保留一条），" +
+                        "被移除记录的播放统计与秒切标记会一并清除。\n\n" +
+                        "此操作仅删除数据库中的重复条目，不会删除任何音乐文件。",
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    showDeduplicateConfirm = false
+                    onDeduplicateAll()
+                }) {
+                    Text("清理", color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeduplicateConfirm = false }) {
+                    Text("取消")
+                }
+            },
+        )
+    }
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(18.dp),
@@ -467,7 +505,7 @@ private fun DuplicateContent(
                     }
                     Spacer(modifier = Modifier.height(10.dp))
                     Button(
-                        onClick = onDeduplicateAll,
+                        onClick = { showDeduplicateConfirm = true },
                         modifier = Modifier.fillMaxWidth(),
                     ) {
                         Icon(

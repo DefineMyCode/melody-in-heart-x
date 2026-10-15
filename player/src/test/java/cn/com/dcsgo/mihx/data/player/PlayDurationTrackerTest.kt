@@ -80,26 +80,26 @@ class PlayDurationTrackerTest {
 private class FakePlayStatsRepository : PlayStatsRepository {
     val rawIncrements = mutableMapOf<Int, Int>()
 
-    override fun getCounts(songIds: List<Int>): Map<Int, Int> = emptyMap()
-    override fun getRawPlayCounts(songIds: List<Int>): Map<Int, Int> = emptyMap()
+    override suspend fun getCounts(songIds: List<Int>): Map<Int, Int> = emptyMap()
+    override suspend fun getRawPlayCounts(songIds: List<Int>): Map<Int, Int> = emptyMap()
     override suspend fun getRankedCounts(useRawCounts: Boolean, descending: Boolean): List<Pair<Int, Int>> = emptyList()
     override suspend fun getPlayCountsForSort(): Map<Int, Int> = emptyMap()
     override suspend fun getLastPlayedAtForSort(): Map<Int, Long> = emptyMap()
-    override fun increment(songId: Int): Int = 0
-    override fun incrementRawPlayCount(songId: Int): Int {
+    override suspend fun increment(songId: Int): Int = 0
+    override suspend fun incrementRawPlayCount(songId: Int): Int {
         rawIncrements[songId] = (rawIncrements[songId] ?: 0) + 1
         return rawIncrements[songId] ?: 0
     }
-    override fun recordCompletedPlay(songId: Int) = Unit
-    override fun recordPlaybackSession(songId: Int, startedAtMs: Long, durationMs: Long, isEffectivePlay: Boolean) = Unit
+    override suspend fun recordCompletedPlay(songId: Int) = Unit
+    override suspend fun recordPlaybackSession(songId: Int, startedAtMs: Long, durationMs: Long, isEffectivePlay: Boolean) = Unit
     override suspend fun playbackStatsSnapshot() = throw UnsupportedOperationException()
 }
 
 private class FakeQuickSkipRepository : QuickSkipRepository {
-    override fun getSongIds(): Set<Int> = emptySet()
-    override fun add(songId: Int): Boolean = false
-    override fun remove(songId: Int): Boolean = false
-    override fun contains(songId: Int): Boolean = false
-    override fun incrementShortPlayCount(songId: Int): Int = 0
-    override fun resetShortPlayCount(songId: Int) = Unit
+    override suspend fun getSongIds(): Set<Int> = emptySet()
+    override suspend fun add(songId: Int): Boolean = false
+    override suspend fun remove(songId: Int): Boolean = false
+    override suspend fun contains(songId: Int): Boolean = false
+    override suspend fun incrementShortPlayCount(songId: Int): Int = 0
+    override suspend fun resetShortPlayCount(songId: Int) = Unit
 }

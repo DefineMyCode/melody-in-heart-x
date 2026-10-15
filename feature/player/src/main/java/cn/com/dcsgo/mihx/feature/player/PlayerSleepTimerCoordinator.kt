@@ -5,6 +5,7 @@ import cn.com.dcsgo.mihx.domain.repository.PlayerSettingsRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
@@ -31,15 +32,15 @@ class PlayerSleepTimerCoordinator(
 ) {
     private var tickerJob: Job? = null
 
-    /** 应用启动时恢复未过期的定时关闭 */
-    fun restore() {
-        val endAtMs = settings.currentSleepTimerEndAtMs()
+    /** 应用启动时恢复未过期的定时关闭（M-5：改用设置流 first()，不再同步 runBlocking） */
+    suspend fun restore() {
+        val endAtMs = settings.sleepTimerEndAtMs.first()
         if (endAtMs <= 0L) return
         if (endAtMs <= System.currentTimeMillis()) {
-            settings.setSleepTimerEndAtMsBlocking(0L)
+            settings.setSleepTimerEndAtMs(0L)
             return
         }
-        val playLastSong = settings.currentSleepTimerPlayLastSong()
+        val playLastSong = settings.sleepTimerPlayLastSong.first()
         updateState {
             it.copy(
                 isSleepTimerActive = true,
@@ -52,10 +53,10 @@ class PlayerSleepTimerCoordinator(
     }
 
     /** 开始定时关闭 */
-    fun start(durationMinutes: Int, playLastSong: Boolean) {
+    suspend fun start(durationMinutes: Int, playLastSong: Boolean) {
         val endAtMs = System.currentTimeMillis() + durationMinutes.coerceAtLeast(1) * 60_000L
-        settings.setSleepTimerEndAtMsBlocking(endAtMs)
-        settings.setSleepTimerPlayLastSongBlocking(playLastSong)
+        settings.setSleepTimerEndAtMs(endAtMs)
+        settings.setSleepTimerPlayLastSong(playLastSong)
         updateState {
             it.copy(
                 isSleepTimerActive = true,
@@ -69,8 +70,8 @@ class PlayerSleepTimerCoordinator(
     }
 
     /** 取消定时关闭 */
-    fun cancel() {
-        settings.setSleepTimerEndAtMsBlocking(0L)
+    suspend fun cancel() {
+        settings.setSleepTimerEndAtMs(0L)
         tickerJob?.cancel()
         tickerJob = null
         // M-6 后倒计时 tick 只写窄流，uiState 值已不代表窄流——取消必须显式复位窄流，
@@ -89,7 +90,7 @@ class PlayerSleepTimerCoordinator(
     }
 
     /** 歌曲自然结束时调用：处理「播完最后一曲」的到点暂停 */
-    fun onSongEnded() {
+    suspend fun onSongEnded() {
         if (state().sleepTimerPausePending) {
             pausePlayback()
             cancel()
@@ -115,7 +116,7 @@ class PlayerSleepTimerCoordinator(
         }
     }
 
-    private fun fire() {
+    private suspend fun fire() {
         val current = state()
         val shouldFinishLastSong = current.sleepTimerPlayLastSong &&
             current.isPlaying &&

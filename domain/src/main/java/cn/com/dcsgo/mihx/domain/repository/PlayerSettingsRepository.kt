@@ -6,6 +6,15 @@ import cn.com.dcsgo.mihx.core.model.ScreenOrientationMode
 import cn.com.dcsgo.mihx.domain.model.SongSortMode
 import kotlinx.coroutines.flow.Flow
 
+/**
+ * 播放器设置仓库接口（域层）。
+ *
+ * M-5（评审 2026-10-15）：移除全部 current*() 同步快照与 setXxxBlocking 写入 ——
+ * 旧实现靠 runBlocking(IO) 桥 DataStore/SharedPreferences，迫使启动路径与 UI 点击线程阻塞。
+ * 现在统一为 Flow 观察 + suspend 写入：
+ * - 读取方要么 collect 对应 Flow，要么在挂起上下文 `first()` 取瞬时值；
+ * - Compose 里用 `stateIn/collectAsState`，stateIn 的占位初值只影响首帧。
+ */
 interface PlayerSettingsRepository {
     val themeMode: Flow<ThemeMode>
     val themeVariant: Flow<ThemeVariant>
@@ -16,14 +25,6 @@ interface PlayerSettingsRepository {
     val lyricFontScale: Flow<Float>
     val dailyListeningGoalMinutes: Flow<Int>
 
-    fun currentGlobalUniformRandomEnabled(): Boolean
-    fun currentScreenOrientationMode(): ScreenOrientationMode
-    fun currentBluetoothPlaybackMonitoringEnabled(): Boolean
-    fun currentPlaybackNotificationEnabled(): Boolean
-    fun currentDailyListeningGoalMinutes(): Int
-    fun setGlobalUniformRandomEnabledBlocking(enabled: Boolean)
-    fun setBluetoothPlaybackMonitoringEnabledBlocking(enabled: Boolean)
-    fun setPlaybackNotificationEnabledBlocking(enabled: Boolean)
     suspend fun setThemeMode(mode: ThemeMode)
     suspend fun setThemeVariant(variant: ThemeVariant)
     suspend fun setScreenOrientationMode(mode: ScreenOrientationMode)
@@ -32,18 +33,16 @@ interface PlayerSettingsRepository {
     suspend fun setPlaybackNotificationEnabled(enabled: Boolean)
     suspend fun setLyricFontScale(scale: Float)
     suspend fun setDailyListeningGoalMinutes(minutes: Int)
-    fun setDailyListeningGoalMinutesBlocking(minutes: Int)
 
     /** 定时关闭结束时间戳（epoch 毫秒，0 = 未设置） */
-    fun currentSleepTimerEndAtMs(): Long
+    val sleepTimerEndAtMs: Flow<Long>
     /** 定时关闭是否「播完最后一曲」 */
-    fun currentSleepTimerPlayLastSong(): Boolean
-    fun setSleepTimerEndAtMsBlocking(endAtMs: Long)
-    fun setSleepTimerPlayLastSongBlocking(enabled: Boolean)
+    val sleepTimerPlayLastSong: Flow<Boolean>
+    suspend fun setSleepTimerEndAtMs(endAtMs: Long)
+    suspend fun setSleepTimerPlayLastSong(enabled: Boolean)
 
     /** 情绪批扫手动暂停（详情页可暂停/继续） */
     val emotionScanPaused: Flow<Boolean>
-    fun currentEmotionScanPaused(): Boolean
     suspend fun setEmotionScanPaused(paused: Boolean)
 
     /**
@@ -51,16 +50,13 @@ interface PlayerSettingsRepository {
      * 开启后随心播放/无限随机在命中时段内只从时段配置的情绪词条歌曲中随机。
      */
     val moodTimeSlotEnabled: Flow<Boolean>
-    fun currentMoodTimeSlotEnabled(): Boolean
     suspend fun setMoodTimeSlotEnabled(enabled: Boolean)
 
     /** 本地音乐列表排序方式（默认 IMPORT_ORDER = 导入顺序） */
     val songSortMode: Flow<SongSortMode>
-    fun currentSongSortMode(): SongSortMode
     suspend fun setSongSortMode(mode: SongSortMode)
 
     /** 本地音乐列表排序方向（true = 升序，默认 true） */
     val songSortAscending: Flow<Boolean>
-    fun currentSongSortAscending(): Boolean
     suspend fun setSongSortAscending(ascending: Boolean)
 }

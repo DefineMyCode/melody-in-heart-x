@@ -103,27 +103,25 @@ fun NowPlayingSurface(
             onArtistClick = onNavigateToArtist,
             onAlbumClick = onNavigateToAlbum,
             onLuckyPlayClick = {
-                val started = playerViewModel.playRandomQueue()
-                if (started) {
-                    // 情境化随心播放归因（§4.5）：让"这首歌为什么被选中"可解释
-                    playerViewModel.currentMoodSlotName()?.let { slotName ->
-                        showToast("已按「$slotName」为你随机播放")
-                    }
-                } else {
-                    showToast("还没有可播放的音乐，请先导入歌曲吧~")
+                playerViewModel.playRandomQueue { started, _ ->
+                    showToast(
+                        if (started) "已生成随机队列，开始播放~"
+                        else "还没有可播放的音乐，请先导入歌曲吧~"
+                    )
                 }
                 playlistResumeViewModel.switchSource(null, uiState.currentSong?.id)
-                started
             },
             onStartInfinitePlay = {
-                val started = playerViewModel.startInfinitePlay()
-                if (started) {
-                    playerViewModel.currentMoodSlotName()?.let { slotName ->
-                        showToast("已按「$slotName」开启无限随机播放")
+                playerViewModel.startInfinitePlay { started, moodSlotName ->
+                    if (started) {
+                        moodSlotName?.let { slotName ->
+                            showToast("已按「$slotName」开启无限随机播放")
+                        }
+                    } else {
+                        showToast("还没有可播放的音乐，请先导入歌曲吧~")
                     }
                 }
                 playlistResumeViewModel.switchSource(null, uiState.currentSong?.id)
-                started
             },
             onStopInfinitePlay = playerViewModel::stopInfinitePlay,
             onRelatedPlayClick = { song ->

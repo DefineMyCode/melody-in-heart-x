@@ -25,14 +25,14 @@ class PlayerRandomQueueFacade(
     private val syncPlayerQueue: (PlayQueue) -> Unit,
     private val remainingMediaItems: () -> Int,
     private val playFromQueue: (PlayQueue, Int) -> Unit,
-    private val rawPlayCounts: (List<Int>) -> Map<Int, Int> = { emptyMap() },
+    private val rawPlayCounts: suspend (List<Int>) -> Map<Int, Int> = { emptyMap() },
     private val log: (String) -> Unit,
     private val planner: RandomQueuePlanner = RandomQueuePlanner(),
     // 情境化随心播放（一期）：每次随机时即时判定当前生效时段。
     // null = 未生效（开关关 / 无配置 / 无命中时段），随机行为与现状完全一致。
     private val moodSlotResolver: MoodSlotResolver = MoodSlotResolver(),
     private val moodSlotConfigs: () -> List<cn.com.dcsgo.mihx.core.model.TimeSlotConfig> = { emptyList() },
-    private val moodSlotEnabled: () -> Boolean = { false },
+    private val moodSlotEnabled: suspend () -> Boolean = { false },
     private val moodEmotionTagsOf: (Song) -> List<String> = { emptyList() },
     // 当前时刻（当日分钟数）；注入以便单测脱离真实时钟
     private val nowMinuteOfDay: () -> Int = {
@@ -43,11 +43,11 @@ class PlayerRandomQueueFacade(
 ) {
     private val recentPlayedSongIds = mutableSetOf<Int>()
 
-    /** 暴露当前生效的情境时段（供 UI 归因 toast；与 playRandomQueue 内部判定同源） */
-    internal fun currentMoodSlot(): MoodSlotState? = activeMoodSlot()
+    /** 暴露当前生效的情境时段（供归因；与 playRandomQueue 内部判定同源） */
+    internal suspend fun currentMoodSlot(): MoodSlotState? = activeMoodSlot()
 
     /** 当前生效的情境时段；null = 增强未生效 */
-    private fun activeMoodSlot(): MoodSlotState? {
+    private suspend fun activeMoodSlot(): MoodSlotState? {
         if (!moodSlotEnabled()) return null
         val hit = moodSlotResolver.hitSlot(moodSlotConfigs(), nowMinuteOfDay()) ?: return null
         return MoodSlotState(slotName = hit.name, tags = hit.tags.toSet())
@@ -76,10 +76,10 @@ class PlayerRandomQueueFacade(
     }
 
     /**
-     * 生成随机队列并开始顺序播放。
+     * 生成随机队列并开始顺序播放（M-5：suspend，rawPlayCounts 挂起查库，调用方负责调度）。
      * @return true 表示已生成队列并开始播放；false 表示库中无可播放歌曲，未开始播放。
      */
-    fun playRandomQueue(): Boolean {
+    suspend fun playRandomQueue(): Boolean {
         val mood = activeMoodSlot()
         val candidates = mood?.let { filterByMoodTags(state().songs, it) } ?: state().songs
         val plan = planner.planRandomQueue(
@@ -105,7 +105,7 @@ class PlayerRandomQueueFacade(
      * 开启无限随机播放。
      * @return true 表示已开启；false 表示库中无可播放歌曲，未开启。
      */
-    fun startInfinitePlay(): Boolean {
+    suspend fun startInfinitePlay(): Boolean {
         val current = state()
         val plan = planner.planInfiniteStart(
             allSongs = current.songs,
@@ -143,7 +143,7 @@ class PlayerRandomQueueFacade(
      * @param advanceAfterWrap 窗口尾部回绕后调用：把当前歌曲跳到第一首新补充的歌曲并从 0 开始播放。
      *                         否则保持当前歌曲不变，仅扩展队列（播放页下一首按钮的切歌前补队列路径）。
      */
-    fun refillInfinitePlayQueue(startedSongId: Int? = null, advanceAfterWrap: Boolean = false) {
+    suspend fun refillInfinitePlayQueue(startedSongId: Int? = null, advanceAfterWrap: Boolean = false) {
         val current = state()
         if (!current.isInfinitePlay) return
 

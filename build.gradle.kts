@@ -569,10 +569,14 @@ tasks.register("verifyProductArchitecture") {
         if (!schemaV3Text.contains("lrcUri")) {
             fail("Room schema v3 must include imported LRC URI support.")
         }
+        // m-4（评审 2026-10-15）：迁移本体移至 MelodyMigrations（供迁移回归测试引用），
+        // DatabaseModule 保留注册职责；规则随结构更新。
+        val melodyMigrationsText =
+            file("data/src/main/java/cn/com/dcsgo/mihx/data/local/migration/MelodyMigrations.kt").readText()
         val databaseModuleText = file("data/src/main/java/cn/com/dcsgo/mihx/data/di/DatabaseModule.kt").readText()
-        if (!databaseModuleText.contains("Migration(1, 2)") ||
-            !databaseModuleText.contains("Migration(2, 3)") ||
-            !databaseModuleText.contains("addMigrations(MIGRATION_1_2, MIGRATION_2_3)")
+        if (!melodyMigrationsText.contains("Migration(1, 2)") ||
+            !melodyMigrationsText.contains("Migration(2, 3)") ||
+            !databaseModuleText.contains("addMigrations(*MelodyMigrations.ALL)")
         ) {
             fail("MelodyDatabase must register the Room migrations from version 1 to 2 and 2 to 3.")
         }

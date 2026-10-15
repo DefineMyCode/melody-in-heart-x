@@ -126,11 +126,11 @@ class PlayerSettingsRepositoryTest {
         val repository = PlayerSettingsRepository(store, legacyPrefs)
 
         try {
-            assertTrue(repository.currentGlobalUniformRandomEnabled())
+            assertTrue(repository.globalUniformRandomEnabled.first())
 
             repository.setGlobalUniformRandomEnabled(false)
 
-            assertFalse(repository.currentGlobalUniformRandomEnabled())
+            assertFalse(repository.globalUniformRandomEnabled.first())
             assertEquals(false, store.data.first()[PlayerSettingsKeys.GLOBAL_UNIFORM_RANDOM_ENABLED])
             assertFalse(legacyPrefs.contains(PlayerSettingsKeys.LEGACY_GLOBAL_UNIFORM_RANDOM_ENABLED))
         } finally {
@@ -151,7 +151,7 @@ class PlayerSettingsRepositoryTest {
         val repository = PlayerSettingsRepository(store, legacyPrefs)
 
         try {
-            assertTrue(repository.currentGlobalUniformRandomEnabled())
+            assertTrue(repository.globalUniformRandomEnabled.first())
         } finally {
             scope.cancel()
             file.delete()
@@ -172,11 +172,11 @@ class PlayerSettingsRepositoryTest {
         val repository = PlayerSettingsRepository(store, legacyPrefs)
 
         try {
-            assertTrue(repository.currentBluetoothPlaybackMonitoringEnabled())
+            assertTrue(repository.bluetoothPlaybackMonitoringEnabled.first())
 
             repository.setBluetoothPlaybackMonitoringEnabled(false)
 
-            assertFalse(repository.currentBluetoothPlaybackMonitoringEnabled())
+            assertFalse(repository.bluetoothPlaybackMonitoringEnabled.first())
             assertEquals(false, store.data.first()[PlayerSettingsKeys.BLUETOOTH_PLAYBACK_MONITORING_ENABLED])
             assertFalse(legacyPrefs.contains(PlayerSettingsKeys.LEGACY_BLUETOOTH_PLAYBACK_MONITORING_ENABLED))
         } finally {
@@ -199,11 +199,11 @@ class PlayerSettingsRepositoryTest {
         val repository = PlayerSettingsRepository(store, legacyPrefs)
 
         try {
-            assertTrue(repository.currentPlaybackNotificationEnabled())
+            assertTrue(repository.playbackNotificationEnabled.first())
 
             repository.setPlaybackNotificationEnabled(false)
 
-            assertFalse(repository.currentPlaybackNotificationEnabled())
+            assertFalse(repository.playbackNotificationEnabled.first())
             assertEquals(false, store.data.first()[PlayerSettingsKeys.PLAYBACK_NOTIFICATION_ENABLED])
             assertFalse(legacyPrefs.contains(PlayerSettingsKeys.LEGACY_PLAYBACK_NOTIFICATION_ENABLED))
         } finally {
@@ -224,11 +224,11 @@ class PlayerSettingsRepositoryTest {
         val repository = PlayerSettingsRepository(store, legacyPrefs)
 
         try {
-            assertEquals(120, repository.currentDailyListeningGoalMinutes())
+            assertEquals(120, repository.dailyListeningGoalMinutes.first())
 
             repository.setDailyListeningGoalMinutes(60)
 
-            assertEquals(60, repository.currentDailyListeningGoalMinutes())
+            assertEquals(60, repository.dailyListeningGoalMinutes.first())
             assertEquals(60, store.data.first()[PlayerSettingsKeys.DAILY_LISTENING_GOAL_MINUTES])
         } finally {
             scope.cancel()

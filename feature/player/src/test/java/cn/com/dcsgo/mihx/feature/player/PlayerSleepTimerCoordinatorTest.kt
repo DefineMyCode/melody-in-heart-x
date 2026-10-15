@@ -8,6 +8,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
@@ -20,6 +21,8 @@ import org.junit.Test
  * - M-6 后倒计时 tick 只写窄流，uiState.sleepTimerRemainingMs 恒为初值；
  * - 因此 cancel/fire 对窄流的归零必须走显式复位入口 [PlayerSleepTimerCoordinator]
  *   的 resetRemainingMs，而不是依赖 uiState 值对比传播。
+ * M-5（2026-10-15）：设置仓库 suspend 化后 fake 以 MutableStateFlow 承载数据，
+ * start/cancel 变为挂起调用（runBlocking 驱动）。
  */
 class PlayerSleepTimerCoordinatorTest {
 
@@ -33,6 +36,20 @@ class PlayerSleepTimerCoordinatorTest {
         var endAtMs = 0L
         var playLastSong = false
 
+        private val endAtMsFlow = MutableStateFlow(0L)
+        private val playLastSongFlow = MutableStateFlow(false)
+
+        override val sleepTimerEndAtMs: Flow<Long> = endAtMsFlow
+        override val sleepTimerPlayLastSong: Flow<Boolean> = playLastSongFlow
+        override suspend fun setSleepTimerEndAtMs(endAtMs: Long) {
+            this.endAtMs = endAtMs
+            endAtMsFlow.value = endAtMs
+        }
+        override suspend fun setSleepTimerPlayLastSong(enabled: Boolean) {
+            playLastSong = enabled
+            playLastSongFlow.value = enabled
+        }
+
         override val themeMode: Flow<cn.com.dcsgo.mihx.core.model.ThemeMode> = emptyFlow()
         override val themeVariant: Flow<cn.com.dcsgo.mihx.core.model.ThemeVariant> = emptyFlow()
         override val screenOrientationMode: Flow<cn.com.dcsgo.mihx.core.model.ScreenOrientationMode> = emptyFlow()
@@ -45,26 +62,9 @@ class PlayerSleepTimerCoordinatorTest {
         override val moodTimeSlotEnabled: Flow<Boolean> = emptyFlow()
         override val songSortMode: Flow<SongSortMode> = emptyFlow()
         override val songSortAscending: Flow<Boolean> = emptyFlow()
-        override fun currentGlobalUniformRandomEnabled(): Boolean = false
-        override fun currentScreenOrientationMode(): cn.com.dcsgo.mihx.core.model.ScreenOrientationMode = cn.com.dcsgo.mihx.core.model.ScreenOrientationMode.SENSOR_AUTO
-        override fun currentBluetoothPlaybackMonitoringEnabled(): Boolean = false
-        override fun currentPlaybackNotificationEnabled(): Boolean = false
-        override fun currentDailyListeningGoalMinutes(): Int = 0
-        override fun setGlobalUniformRandomEnabledBlocking(enabled: Boolean) = Unit
-        override fun setBluetoothPlaybackMonitoringEnabledBlocking(enabled: Boolean) = Unit
-        override fun setPlaybackNotificationEnabledBlocking(enabled: Boolean) = Unit
-        override fun setDailyListeningGoalMinutesBlocking(minutes: Int) = Unit
-        override fun currentSleepTimerEndAtMs(): Long = endAtMs
-        override fun setSleepTimerEndAtMsBlocking(endAtMs: Long) { this.endAtMs = endAtMs }
-        override fun currentSleepTimerPlayLastSong(): Boolean = playLastSong
-        override fun setSleepTimerPlayLastSongBlocking(enabled: Boolean) { playLastSong = enabled }
-        override fun currentEmotionScanPaused(): Boolean = false
         override suspend fun setEmotionScanPaused(paused: Boolean) = Unit
-        override fun currentMoodTimeSlotEnabled(): Boolean = false
         override suspend fun setMoodTimeSlotEnabled(enabled: Boolean) = Unit
-        override fun currentSongSortMode(): SongSortMode = SongSortMode.IMPORT_ORDER
         override suspend fun setSongSortMode(mode: SongSortMode) = Unit
-        override fun currentSongSortAscending(): Boolean = true
         override suspend fun setSongSortAscending(ascending: Boolean) = Unit
         override suspend fun setThemeMode(mode: cn.com.dcsgo.mihx.core.model.ThemeMode) = Unit
         override suspend fun setThemeVariant(variant: cn.com.dcsgo.mihx.core.model.ThemeVariant) = Unit
@@ -89,9 +89,10 @@ class PlayerSleepTimerCoordinatorTest {
     @Test
     fun cancelResetsNarrowFlowAndClearsState() {
         val coordinator = coordinator()
-        coordinator.start(durationMinutes = 5, playLastSong = false)
-
-        coordinator.cancel()
+        runBlocking {
+            coordinator.start(durationMinutes = 5, playLastSong = false)
+            coordinator.cancel()
+        }
 
         assertEquals(0L, state.sleepTimerEndAtMs)
         assertFalse(state.isSleepTimerActive)
@@ -105,7 +106,7 @@ class PlayerSleepTimerCoordinatorTest {
     fun startWritesDiscreteStateAndPersistsEndAt() {
         val coordinator = coordinator()
 
-        coordinator.start(durationMinutes = 15, playLastSong = true)
+        runBlocking { coordinator.start(durationMinutes = 15, playLastSong = true) }
 
         assertTrue(state.isSleepTimerActive)
         assertTrue(state.sleepTimerEndAtMs > System.currentTimeMillis())
@@ -119,7 +120,7 @@ class PlayerSleepTimerCoordinatorTest {
         val coordinator = coordinator(playLastSong = true)
         // endAt 设为 50ms 后：ticker 首拍(未到点,写窄流)→ delay 1s → 第二拍 fire
         // （Unconfined scope：launch 后立即执行到第一个挂起点 delay,join 等待整个循环退出）
-        coordinator.start(durationMinutes = 5, playLastSong = true)
+        runBlocking { coordinator.start(durationMinutes = 5, playLastSong = true) }
         settings.endAtMs = System.currentTimeMillis() + 50L
         state = state.copy(
             isSleepTimerActive = true,
@@ -142,7 +143,9 @@ class PlayerSleepTimerCoordinatorTest {
     @Test
     fun onSongEndedAfterFirePausesAndCancels() {
         val coordinator = coordinator(playLastSong = true)
-        coordinator.start(durationMinutes = 5, playLastSong = true)
+        runBlocking {
+            coordinator.start(durationMinutes = 5, playLastSong = true)
+        }
         state = state.copy(isPlaying = true, currentSong = song(1), sleepTimerPausePending = true)
         narrowReset = false
 

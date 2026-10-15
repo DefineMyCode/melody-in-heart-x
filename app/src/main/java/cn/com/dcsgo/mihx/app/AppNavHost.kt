@@ -751,16 +751,19 @@ fun AppNavHost(
         }
 
         composable(AppRoutes.QUICK_SKIP_SONGS) {
+            // M-5（评审 2026-10-15）：列表改为消费 StateFlow（启动/增删/曲库变更时后台刷新），
+            // 原实现在此组合期 runBlocking 查库两次，每次重组都阻塞主线程。
+            val quickSkipSongs by playerViewModel.quickSkipSongs.collectAsStateWithLifecycle()
             QuickSkipSongsRoute(
                 state = QuickSkipSongsRouteState(
-                    songs = playerViewModel.getQuickSkipSongs(),
+                    songs = quickSkipSongs,
                     currentSong = uiState.currentSong,
                 ),
                 actions = QuickSkipSongsRouteActions(
                     onBack = navController::navigateUp,
                     // 点击秒切歌曲：整个秒切列表作为队列，从被点歌曲开始顺序播放
                     onSongClick = { song ->
-                        playerViewModel.playWith(song, SongPlaybackStrategy.scope(playerViewModel.getQuickSkipSongs()))
+                        playerViewModel.playWith(song, SongPlaybackStrategy.scope(quickSkipSongs))
                         playlistResumeViewModel.switchSource(null, uiState.currentSong?.id)
                     },
                     onDeleteSong = { song -> deleteSongWithToast(song.id) },

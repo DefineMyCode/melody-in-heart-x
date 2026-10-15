@@ -12,6 +12,7 @@ import cn.com.dcsgo.mihx.data.player.EmotionAnalyzer
 import cn.com.dcsgo.mihx.domain.repository.SongEmotionRepository
 import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.flow.first
 
 /**
  * 情绪批扫 Worker: 给曲库中未分析(或模型版本过期)的歌曲补 V/A 曲线.
@@ -135,11 +136,11 @@ class EmotionScanWorker(
         return Result.success()
     }
 
-    /** 用户是否手动暂停批扫(协作式: 当前歌曲跑完即停). */
-    private fun isPaused(): Boolean = runCatching {
+    /** 用户是否手动暂停批扫(协作式: 当前歌曲跑完即停). M-5: 改用情绪暂停流 first()，不再同步 runBlocking。 */
+    private suspend fun isPaused(): Boolean = runCatching {
         EntryPointAccessors.fromApplication(
             applicationContext, EmotionScanEntryPoint::class.java
-        ).settingsRepository().currentEmotionScanPaused()
+        ).settingsRepository().emotionScanPaused.first()
     }.getOrDefault(false)
 
     companion object {

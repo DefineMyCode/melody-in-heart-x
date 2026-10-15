@@ -35,8 +35,9 @@ data class HomeRouteActions(
     val onShowLyrics: () -> Unit,
     val onArtistClick: (String) -> Unit = {},
     val onAlbumClick: (String) -> Unit = {},
-    val onLuckyPlayClick: () -> Boolean,
-    val onStartInfinitePlay: () -> Boolean,
+    /** M-5：改 () -> Unit，结果（含归因时段名）由调用方在回调里 toast */
+    val onLuckyPlayClick: () -> Unit,
+    val onStartInfinitePlay: () -> Unit,
     val onStopInfinitePlay: () -> Unit,
     val onRelatedPlayClick: (Song) -> Unit = {},
     val onSleepTimerStart: (Int, Boolean) -> Unit = { _, _ -> },
@@ -91,23 +92,13 @@ fun HomeRoute(
         onTextCopied = { text -> showToast("已复制: $text") },
         onArtistClick = actions.onArtistClick,
         onAlbumClick = actions.onAlbumClick,
-        onLuckyPlayClick = {
-            val started = actions.onLuckyPlayClick()
-            showToast(
-                if (started) "已生成随机队列，开始播放~"
-                else "还没有可播放的音乐，请先导入歌曲吧~"
-            )
-        },
+        onLuckyPlayClick = actions.onLuckyPlayClick,
         onInfinitePlayClick = {
             if (state.isInfinitePlay) {
                 actions.onStopInfinitePlay()
                 showToast("已退出无限随机播放模式")
             } else {
-                val started = actions.onStartInfinitePlay()
-                showToast(
-                    if (started) "已开启无限随机播放模式，随机播放全部歌曲~"
-                    else "还没有可播放的音乐，请先导入歌曲吧~"
-                )
+                actions.onStartInfinitePlay()
             }
         },
         onRelatedPlayClick = {

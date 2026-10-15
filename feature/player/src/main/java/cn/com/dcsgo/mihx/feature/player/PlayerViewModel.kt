@@ -65,8 +65,11 @@ class PlayerViewModel @Inject constructor(
         runtime.start()
     }
 
-    /** Returns songs currently marked for quick skip. */
-    fun getQuickSkipSongs(): List<Song> = runtime.getQuickSkipSongs()
+    /**
+     * 秒切歌曲列表（M-5）：启动/增删/曲库变更时后台刷新，UI collectAsState 消费；
+     * 旧 getQuickSkipSongs() 在组合期同步查库，已移除。
+     */
+    val quickSkipSongs: StateFlow<List<Song>> = runtime.quickSkipSongs
 
     /** Adds a song to the quick-skip list. */
     fun addToQuickSkipSongs(songId: Int) {
@@ -218,12 +221,12 @@ class PlayerViewModel @Inject constructor(
 
     // ── 本地音乐排序 ──
 
-    /** 排序方式（持久化，跨会话记忆） */
+    /** 排序方式（持久化，跨会话记忆）。M-5：initialValue 用占位值，真实值随流即刻到达 */
     val songSortMode: StateFlow<SongSortMode> = runtime.songSortMode
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.Eagerly,
-            initialValue = runtime.currentSongSortMode(),
+            initialValue = SongSortMode.IMPORT_ORDER,
         )
 
     /** 排序方向（true = 升序） */
@@ -231,7 +234,7 @@ class PlayerViewModel @Inject constructor(
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.Eagerly,
-            initialValue = runtime.currentSongSortAscending(),
+            initialValue = true,
         )
 
     fun setSongSortMode(mode: SongSortMode) {
@@ -337,14 +340,14 @@ class PlayerViewModel @Inject constructor(
 
     /**
      * Builds a random queue and starts playback immediately.
-     * @return true 表示已生成随机队列并开始播放；false 表示库中无可播放歌曲，未开始播放。
+     * M-5（评审 2026-10-15）：改异步 + 回调 —— 原同步返回 Boolean 需要在主线程
+     * runBlocking 查播放计数。回调在主线程执行，可直接 toast。
+     *
+     * @param onResult started=是否已生成随机队列并开始播放；moodSlotName=命中的情境时段名（归因）
      */
-    fun playRandomQueue(): Boolean {
-        return runtime.playRandomQueue()
+    fun playRandomQueue(onResult: (started: Boolean, moodSlotName: String?) -> Unit = { _, _ -> }) {
+        runtime.playRandomQueue(onResult)
     }
-
-    /** 当前生效的情境时段名（null = 增强未生效）；供 UI 归因 toast，与随机判定同源 */
-    fun currentMoodSlotName(): String? = runtime.currentMoodSlot()?.slotName
 
     /**
      * 关联播放：清空播放队列，仅保留当前歌曲，再追加其关联专辑歌曲与关联歌手的所有歌曲（去重随机）。
@@ -356,10 +359,10 @@ class PlayerViewModel @Inject constructor(
 
     /**
      * Starts infinite random playback.
-     * @return true 表示已开启无限随机播放；false 表示库中无可播放歌曲，未开启。
+     * M-5：同 [playRandomQueue]，异步 + 回调。
      */
-    fun startInfinitePlay(): Boolean {
-        return runtime.startInfinitePlay()
+    fun startInfinitePlay(onResult: (started: Boolean, moodSlotName: String?) -> Unit = { _, _ -> }) {
+        runtime.startInfinitePlay(onResult)
     }
 
     /** Stops infinite playback mode. */

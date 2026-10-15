@@ -7,7 +7,6 @@ import cn.com.dcsgo.mihx.data.local.entity.PlayStatsEntity
 import cn.com.dcsgo.mihx.domain.repository.DayDuration
 import cn.com.dcsgo.mihx.domain.repository.PlaybackStatsSnapshot
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import java.time.DayOfWeek
 import java.time.LocalDate
@@ -30,55 +29,57 @@ private const val TAG = "PlayStatsRepository"
  * 原始播放次数规则（由调用方在开始新播放会话时调用 [incrementRawPlayCount]）：
  * - 歌曲开始播放即记一次
  * - 暂停后恢复不重复计数
+ *
+ * M-5（评审 2026-10-15）：接口改 suspend，直接挂起查询，不再 runBlocking 桥接。
  */
 class PlayStatsRepository(
     private val melodyDao: MelodyDao,
 ) : cn.com.dcsgo.mihx.domain.repository.PlayStatsRepository {
 
     /** 获取指定歌曲的播放次数 */
-    fun getCount(songId: Int): Int =
+    suspend fun getCount(songId: Int): Int =
         readStat(songId).playCount
 
     /** 将指定歌曲的播放次数 +1，返回新的次数 */
-    override fun increment(songId: Int): Int {
+    override suspend fun increment(songId: Int): Int {
         val now = System.currentTimeMillis()
         // SQL 原子自增（upsert + playCount=playCount+1），消除 read→write 两个独立事务间的 lost update
-        runBlocking(Dispatchers.IO) { melodyDao.incrementPlayCount(songId, now) }
+        withContext(Dispatchers.IO) { melodyDao.incrementPlayCount(songId, now) }
         val newCount = getCount(songId)
         AppLog.debug(TAG, "increment: song=$songId count=$newCount")
         return newCount
     }
 
     /** 获取指定歌曲的原始播放次数 */
-    fun getRawPlayCount(songId: Int): Int =
+    suspend fun getRawPlayCount(songId: Int): Int =
         readStat(songId).rawPlayCount
 
     /** 将指定歌曲的原始播放次数 +1，返回新的次数 */
-    override fun incrementRawPlayCount(songId: Int): Int {
+    override suspend fun incrementRawPlayCount(songId: Int): Int {
         val now = System.currentTimeMillis()
         // SQL 原子自增
-        runBlocking(Dispatchers.IO) { melodyDao.incrementRawPlayCount(songId, now) }
+        withContext(Dispatchers.IO) { melodyDao.incrementRawPlayCount(songId, now) }
         val newCount = getRawPlayCount(songId)
         AppLog.debug(TAG, "incrementRawPlayCount: song=$songId count=$newCount")
         return newCount
     }
 
     /** 获取指定歌曲的累计播放时长（毫秒） */
-    fun getPlayDuration(songId: Int): Long =
+    suspend fun getPlayDuration(songId: Int): Long =
         readStat(songId).totalDurationMs
 
     /** 更新指定歌曲的累计播放时长，返回新的时长 */
-    fun updatePlayDuration(songId: Int, durationMs: Long): Long {
+    suspend fun updatePlayDuration(songId: Int, durationMs: Long): Long {
         val now = System.currentTimeMillis()
         // SQL 原子累加
-        runBlocking(Dispatchers.IO) { melodyDao.addPlayDuration(songId, durationMs, now) }
+        withContext(Dispatchers.IO) { melodyDao.addPlayDuration(songId, durationMs, now) }
         val newDuration = getPlayDuration(songId)
         AppLog.debug(TAG, "updatePlayDuration: song=$songId duration=${newDuration}ms")
         return newDuration
     }
 
     /** 重置指定歌曲的累计播放时长 */
-    fun resetPlayDuration(songId: Int) {
+    suspend fun resetPlayDuration(songId: Int) {
         val current = readStat(songId)
         writeStat(current.copy(totalDurationMs = 0L))
         AppLog.debug(TAG, "resetPlayDuration: song=$songId")
@@ -89,7 +90,7 @@ class PlayStatsRepository(
      * @param songIds 歌曲 ID 列表
      * @return Map<songId, playCount>
      */
-    override fun getCounts(songIds: List<Int>): Map<Int, Int> = runBlocking(Dispatchers.IO) {
+    override suspend fun getCounts(songIds: List<Int>): Map<Int, Int> = withContext(Dispatchers.IO) {
         val fromDb = melodyDao.playStatsIn(songIds).associate { it.songId to it.playCount }
         songIds.associateWith { fromDb[it] ?: 0 }
     }
@@ -99,22 +100,22 @@ class PlayStatsRepository(
      * @param songIds 歌曲 ID 列表
      * @return Map<songId, rawPlayCount>
      */
-    override fun getRawPlayCounts(songIds: List<Int>): Map<Int, Int> = runBlocking(Dispatchers.IO) {
+    override suspend fun getRawPlayCounts(songIds: List<Int>): Map<Int, Int> = withContext(Dispatchers.IO) {
         val fromDb = melodyDao.playStatsIn(songIds).associate { it.songId to it.rawPlayCount }
         songIds.associateWith { fromDb[it] ?: 0 }
     }
 
-    override fun recordCompletedPlay(songId: Int) {
+    override suspend fun recordCompletedPlay(songId: Int) {
         increment(songId)
     }
 
-    override fun recordPlaybackSession(
+    override suspend fun recordPlaybackSession(
         songId: Int,
         startedAtMs: Long,
         durationMs: Long,
         isEffectivePlay: Boolean,
     ) {
-        runBlocking(Dispatchers.IO) {
+        withContext(Dispatchers.IO) {
             melodyDao.insertPlaybackEvent(
                 PlaybackEventEntity(
                     songId = songId,
@@ -187,7 +188,7 @@ class PlayStatsRepository(
     }
 
     /** 获取所有已有播放记录的 Map<songId, count> */
-    fun getAllCounts(): Map<Int, Int> = runBlocking(Dispatchers.IO) {
+    suspend fun getAllCounts(): Map<Int, Int> = withContext(Dispatchers.IO) {
         melodyDao.playStats().associate { it.songId to it.playCount }
     }
 
@@ -222,11 +223,11 @@ class PlayStatsRepository(
             .sortedWith(comparator)
     }
 
-    private fun readStat(songId: Int): PlayStatsEntity =
-        runBlocking(Dispatchers.IO) { melodyDao.playStat(songId) } ?: emptyStat(songId)
+    private suspend fun readStat(songId: Int): PlayStatsEntity =
+        withContext(Dispatchers.IO) { melodyDao.playStat(songId) } ?: emptyStat(songId)
 
-    private fun writeStat(stat: PlayStatsEntity) {
-        runBlocking(Dispatchers.IO) { melodyDao.upsertPlayStat(stat) }
+    private suspend fun writeStat(stat: PlayStatsEntity) {
+        withContext(Dispatchers.IO) { melodyDao.upsertPlayStat(stat) }
     }
 
     private fun emptyStat(songId: Int): PlayStatsEntity = PlayStatsEntity(

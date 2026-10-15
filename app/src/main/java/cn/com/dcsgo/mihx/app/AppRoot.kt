@@ -143,12 +143,6 @@ fun AppRoot(
         showQueueSheet = false
     }
 
-    LaunchedEffect(activeRoute) {
-        // P2：底栏高亮不再需要"同步"到本地状态——它由 activeRoute + 外壳派生（见 AppScaffold）。
-        // 这样从子页面滑走再回来后不会出现陈旧高亮（原实现靠这个 effect 修正）。
-        // 保留 effect 是为了将来皮肤热切换时能触发重组；当前无副作用。
-    }
-
     if (uiState.isLoading) {
         LoadingSplash()
         return
@@ -259,14 +253,15 @@ fun AppRoot(
                 onNextClick = playerViewModel::playNext,
                 // 双页样式、队列为空:入口条触发随心播放(逻辑与播放页 FAB 同源,照抄 NowPlayingSurface)。
                 onLuckyPlayClick = {
-                    val started = playerViewModel.playRandomQueue()
-                    if (started) {
-                        // 情境化随心播放归因(§4.5):让"这首歌为什么被选中"可解释
-                        playerViewModel.currentMoodSlotName()?.let { slotName ->
-                            toastHost.showToast("已按「$slotName」为你随机播放")
+                    playerViewModel.playRandomQueue { started, moodSlotName ->
+                        if (started) {
+                            // 情境化随心播放归因(§4.5):让"这首歌为什么被选中"可解释
+                            moodSlotName?.let { slotName ->
+                                toastHost.showToast("已按「$slotName」为你随机播放")
+                            }
+                        } else {
+                            toastHost.showToast("还没有可播放的音乐，请先导入歌曲吧~")
                         }
-                    } else {
-                        toastHost.showToast("还没有可播放的音乐，请先导入歌曲吧~")
                     }
                     playlistResumeViewModel.switchSource(null, uiState.currentSong?.id)
                 },

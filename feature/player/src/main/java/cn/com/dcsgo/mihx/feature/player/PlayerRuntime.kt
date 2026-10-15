@@ -30,6 +30,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
@@ -164,12 +165,10 @@ internal class PlayerRuntime(
     val isValidating: StateFlow<Boolean> = _isValidating.asStateFlow()
 
     // ── 本地音乐排序（持久化设置流） ──
+    // M-5（评审 2026-10-15）：current*() 同步快照移除，直接暴露设置流。
 
     val songSortMode: Flow<SongSortMode> = playerSettingsRepository.songSortMode
     val songSortAscending: Flow<Boolean> = playerSettingsRepository.songSortAscending
-
-    fun currentSongSortMode(): SongSortMode = playerSettingsRepository.currentSongSortMode()
-    fun currentSongSortAscending(): Boolean = playerSettingsRepository.currentSongSortAscending()
 
     fun setSongSortMode(mode: SongSortMode) {
         scope.launch { playerSettingsRepository.setSongSortMode(mode) }
@@ -189,6 +188,19 @@ internal class PlayerRuntime(
      */
     private val _sleepTimerRemainingMs = MutableStateFlow(0L)
     val sleepTimerRemainingMs: StateFlow<Long> = _sleepTimerRemainingMs.asStateFlow()
+
+    /**
+     * 秒切歌曲列表（M-5，评审 2026-10-15）：AppNavHost 此前在组合期同步查库
+     * （getQuickSkipSongs → runBlocking(IO)），每次重组两次。改为 StateFlow：
+     * 启动、增删、曲库变更时后台刷新，UI collectAsState 消费。
+     */
+    private val _quickSkipSongs = MutableStateFlow<List<Song>>(emptyList())
+    val quickSkipSongs: StateFlow<List<Song>> = _quickSkipSongs.asStateFlow()
+
+    private suspend fun refreshQuickSkipSongs() {
+        runCatching { _quickSkipSongs.value = quickSkipFacade.getQuickSkipSongs() }
+            .onFailure { AppLog.warning(TAG, "refreshQuickSkipSongs failed: ${it.message}") }
+    }
 
     /**
      * 统一的状态更新入口。当离散事件（seek、切歌、恢复、暂停等）写入
@@ -275,7 +287,6 @@ internal class PlayerRuntime(
     private val quickSkipFacade = PlayerQuickSkipFacade(
         quickSkipActions = quickSkipCoordinator,
         refreshPlaylists = playlistFacade::refresh,
-        launch = { task -> scope.launch { task() } },
     )
     private val controllerQueueFacade = PlayerControllerQueueFacade(
         state = { _uiState.value },
@@ -357,7 +368,7 @@ internal class PlayerRuntime(
         syncPlayerQueue = { queue -> playbackBridgeFacade.syncPlayerQueue(queue) },
         log = { message -> AppLog.debug(TAG, message) },
         playOrderBuilder = playOrderBuilder,
-        onSleepTimerSongEnded = sleepTimerCoordinator::onSongEnded,
+        onSleepTimerSongEnded = { scope.launch { sleepTimerCoordinator.onSongEnded() } },
     )
     private val versionFacade = PlayerVersionFacade(
         state = { _uiState.value },
@@ -419,7 +430,7 @@ internal class PlayerRuntime(
         rawPlayCounts = playStatsRepository::getRawPlayCounts,
         log = { message -> AppLog.debug(TAG, message) },
         moodSlotConfigs = { moodSlotConfigsCache },
-        moodSlotEnabled = { playerSettingsRepository.currentMoodTimeSlotEnabled() },
+        moodSlotEnabled = { playerSettingsRepository.moodTimeSlotEnabled.first() },
         moodEmotionTagsOf = { song -> moodEmotionTagsCache[song.id].orEmpty() },
     )
     private val lifecycleFacade = PlayerLifecycleFacade(
@@ -449,7 +460,9 @@ internal class PlayerRuntime(
             playFromQueue = errorFacade::playFromQueue,
             syncPlayerQueue = controllerQueueFacade::syncPlayerQueue,
             refillInfinitePlayQueue = { startedSongId, advanceAfterWrap ->
-                randomQueueFacade.refillInfinitePlayQueue(startedSongId, advanceAfterWrap)
+                // M-5：refill 内部要查播放计数（suspend），边界处放后台执行；
+                // 补队列是追加型维护操作，与其后 restorePlayMode 的先后不敏感。
+                scope.launch { randomQueueFacade.refillInfinitePlayQueue(startedSongId, advanceAfterWrap) }
             },
         )
     }
@@ -466,15 +479,15 @@ internal class PlayerRuntime(
     )
 
     fun start() {
-        // 启动时把 4 个 DataStore 设置读取 + 定时器恢复（共 6-7 次 runBlocking）移到 IO，
-        // 不再阻塞主线程的首帧。startupFacade.start() 仍在主线程执行。
+        // M-5（评审 2026-10-15）：设置读取改为挂起 first()（原 4 次 runBlocking(IO) 已随
+        // domain 接口 suspend 化消失），仍在 IO 上下文执行，不阻塞主线程首帧。
         scope.launch {
             val startupSettings = withContext(dispatchers.io) {
                 StartupSettings(
-                    globalUniformRandomEnabled = playerSettingsRepository.currentGlobalUniformRandomEnabled(),
-                    bluetoothPlaybackMonitoringEnabled = playerSettingsRepository.currentBluetoothPlaybackMonitoringEnabled(),
-                    playbackNotificationEnabled = playerSettingsRepository.currentPlaybackNotificationEnabled(),
-                    dailyListeningGoalMinutes = playerSettingsRepository.currentDailyListeningGoalMinutes(),
+                    globalUniformRandomEnabled = playerSettingsRepository.globalUniformRandomEnabled.first(),
+                    bluetoothPlaybackMonitoringEnabled = playerSettingsRepository.bluetoothPlaybackMonitoringEnabled.first(),
+                    playbackNotificationEnabled = playerSettingsRepository.playbackNotificationEnabled.first(),
+                    dailyListeningGoalMinutes = playerSettingsRepository.dailyListeningGoalMinutes.first(),
                 )
             }
             _uiState.update {
@@ -492,30 +505,37 @@ internal class PlayerRuntime(
             startupFacade.start()
             // 情境化随心播放：持续订阅时段配置与情绪词条流（M-2，低频、不阻塞启动）
             observeMoodSlotCaches()
+            // 秒切列表首次加载（M-5：组合期改为消费 StateFlow，不再同步查库）
+            refreshQuickSkipSongs()
             if (startupSettings.bluetoothPlaybackMonitoringEnabled) {
                 bluetoothGraph.initialize()
             }
         }
     }
 
-    fun getQuickSkipSongs(): List<Song> {
-        return quickSkipFacade.getQuickSkipSongs()
-    }
-
     fun addToQuickSkipSongs(songId: Int) {
-        quickSkipFacade.addToQuickSkipSongs(songId)
+        scope.launch {
+            quickSkipFacade.addToQuickSkipSongs(songId)
+            refreshQuickSkipSongs()
+        }
     }
 
     fun removeFromQuickSkipSongs(songId: Int) {
-        quickSkipFacade.removeFromQuickSkipSongs(songId)
+        scope.launch {
+            quickSkipFacade.removeFromQuickSkipSongs(songId)
+            refreshQuickSkipSongs()
+        }
     }
 
+    /** 依据最近一次刷新的秒切列表判断（M-5：不再同步查库） */
     fun isInQuickSkipSongs(songId: Int): Boolean {
-        return quickSkipFacade.isInQuickSkipSongs(songId)
+        return _quickSkipSongs.value.any { it.id == songId }
     }
 
     fun syncQuickSkipSongsToPlaylist() {
-        quickSkipFacade.syncQuickSkipSongsToPlaylist()
+        scope.launch {
+            quickSkipFacade.syncQuickSkipSongsToPlaylist()
+        }
     }
 
     fun switchToVersion(targetSong: Song) {
@@ -795,17 +815,27 @@ internal class PlayerRuntime(
         return versionFacade.resetSongGroupKey(song)
     }
 
-    fun playRandomQueue(): Boolean {
-        return randomQueueFacade.playRandomQueue()
+    /**
+     * 随心播放（M-5）：原同步返回 Boolean 会在主线程 runBlocking 查播放计数。
+     * 改为后台执行、结果经回调送回（scope = viewModelScope = Main，回调里可直接 toast）。
+     *
+     * @param onResult started=是否已生成队列开始播放；moodSlotName=命中的情境时段名（归因 toast）
+     */
+    fun playRandomQueue(onResult: (started: Boolean, moodSlotName: String?) -> Unit = { _, _ -> }) {
+        scope.launch {
+            val started = randomQueueFacade.playRandomQueue()
+            val moodSlotName = randomQueueFacade.currentMoodSlot()?.slotName
+            onResult(started, moodSlotName)
+        }
     }
 
-    /** 当前生效的情境时段（供 UI 归因 toast；与 facade 判定同源） */
-    internal fun currentMoodSlot(): MoodSlotState? {
-        return randomQueueFacade.currentMoodSlot()
-    }
-
-    fun startInfinitePlay(): Boolean {
-        return randomQueueFacade.startInfinitePlay()
+    /** 开启无限随机播放（M-5）：同 [playRandomQueue]，异步 + 回调 */
+    fun startInfinitePlay(onResult: (started: Boolean, moodSlotName: String?) -> Unit = { _, _ -> }) {
+        scope.launch {
+            val started = randomQueueFacade.startInfinitePlay()
+            val moodSlotName = randomQueueFacade.currentMoodSlot()?.slotName
+            onResult(started, moodSlotName)
+        }
     }
 
     fun stopInfinitePlay() {
@@ -819,38 +849,38 @@ internal class PlayerRuntime(
      * @param playLastSong    到点后是否播完当前歌曲再暂停
      */
     fun startSleepTimer(durationMinutes: Int, playLastSong: Boolean) {
-        sleepTimerCoordinator.start(durationMinutes, playLastSong)
+        scope.launch { sleepTimerCoordinator.start(durationMinutes, playLastSong) }
     }
 
     /** 取消定时关闭 */
     fun cancelSleepTimer() {
-        sleepTimerCoordinator.cancel()
+        scope.launch { sleepTimerCoordinator.cancel() }
     }
 
     fun setGlobalUniformRandomEnabled(enabled: Boolean) {
-        playerSettingsRepository.setGlobalUniformRandomEnabledBlocking(enabled)
+        scope.launch { playerSettingsRepository.setGlobalUniformRandomEnabled(enabled) }
         _uiState.update { it.copy(globalUniformRandomEnabled = enabled) }
     }
 
     fun setDailyListeningGoalMinutes(minutes: Int) {
-        playerSettingsRepository.setDailyListeningGoalMinutesBlocking(minutes)
+        scope.launch { playerSettingsRepository.setDailyListeningGoalMinutes(minutes) }
         _uiState.update { it.copy(dailyListeningGoalMinutes = minutes) }
     }
 
     fun initializeBluetoothPlayback() {
-        playerSettingsRepository.setBluetoothPlaybackMonitoringEnabledBlocking(true)
+        scope.launch { playerSettingsRepository.setBluetoothPlaybackMonitoringEnabled(true) }
         _uiState.update { it.copy(bluetoothPlaybackMonitoringEnabled = true) }
         bluetoothGraph.initialize()
     }
 
     fun releaseBluetoothPlayback() {
-        playerSettingsRepository.setBluetoothPlaybackMonitoringEnabledBlocking(false)
+        scope.launch { playerSettingsRepository.setBluetoothPlaybackMonitoringEnabled(false) }
         _uiState.update { it.copy(bluetoothPlaybackMonitoringEnabled = false) }
         bluetoothGraph.release()
     }
 
     fun setPlaybackNotificationEnabled(enabled: Boolean) {
-        playerSettingsRepository.setPlaybackNotificationEnabledBlocking(enabled)
+        scope.launch { playerSettingsRepository.setPlaybackNotificationEnabled(enabled) }
         _uiState.update { it.copy(playbackNotificationEnabled = enabled) }
     }
 

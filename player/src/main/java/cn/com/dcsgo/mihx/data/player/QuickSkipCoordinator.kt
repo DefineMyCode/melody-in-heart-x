@@ -6,23 +6,27 @@ import cn.com.dcsgo.mihx.domain.repository.PlaylistRepository
 import cn.com.dcsgo.mihx.domain.repository.QuickSkipRepository
 import cn.com.dcsgo.mihx.domain.repository.SongRepository
 
+/**
+ * 秒切歌曲协调器。
+ * M-5（评审 2026-10-15）：QuickSkipActions/QuickSkipRepository 已 suspend 化，方法透传挂起调用。
+ */
 class QuickSkipCoordinator(
     private val songRepository: SongRepository,
     private val playlistRepository: PlaylistRepository,
     private val quickSkipRepository: QuickSkipRepository,
 ) : QuickSkipActions {
-    override fun getSongs(): List<Song> {
+    override suspend fun getSongs(): List<Song> {
         val songIds = quickSkipRepository.getSongIds()
         return songRepository.observeSongsSnapshot().filter { it.id in songIds }
     }
 
-    override fun add(songId: Int): Boolean = quickSkipRepository.add(songId)
+    override suspend fun add(songId: Int): Boolean = quickSkipRepository.add(songId)
 
-    override fun remove(songId: Int): Boolean = quickSkipRepository.remove(songId)
+    override suspend fun remove(songId: Int): Boolean = quickSkipRepository.remove(songId)
 
-    override fun contains(songId: Int): Boolean = quickSkipRepository.contains(songId)
+    override suspend fun contains(songId: Int): Boolean = quickSkipRepository.contains(songId)
 
-    override fun syncToPlaylist() {
+    override suspend fun syncToPlaylist() {
         val quickSkipPlaylist = playlistRepository.getPlaylists()
             .find { it.name == PLAYLIST_NAME }
             ?: playlistRepository.createPlaylist(PLAYLIST_NAME)

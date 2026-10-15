@@ -4,6 +4,7 @@ import cn.com.dcsgo.mihx.core.model.PlayMode
 import cn.com.dcsgo.mihx.core.model.PlayQueue
 import cn.com.dcsgo.mihx.core.model.Song
 import cn.com.dcsgo.mihx.domain.playback.RandomQueuePlanner
+import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -51,7 +52,7 @@ class PlayerRandomQueueFacadeTest {
             infinitePlayedSongIds = setOf(9),
         )
 
-        facade.playRandomQueue()
+        runBlocking { facade.playRandomQueue() }
 
         assertEquals(listOf(1, 2), setQueueSongs?.map { it.id })
         assertEquals(PlayMode.SEQUENTIAL, setQueueMode)
@@ -66,7 +67,7 @@ class PlayerRandomQueueFacadeTest {
             globalUniformRandomEnabled = true,
         )
 
-        facade.playRandomQueue()
+        runBlocking { facade.playRandomQueue() }
 
         assertEquals(listOf(2, 3), setQueueSongs?.map { it.id })
     }
@@ -75,7 +76,7 @@ class PlayerRandomQueueFacadeTest {
     fun playRandomQueueReturnsFalseWhenNoSongs() {
         state = state.copy(songs = emptyList())
 
-        val started = facade.playRandomQueue()
+        val started = runBlocking { facade.playRandomQueue() }
 
         assertFalse(started)
         assertEquals(null, setQueueSongs)
@@ -88,7 +89,7 @@ class PlayerRandomQueueFacadeTest {
             songs = listOf(Song(id = 1, title = "Unplayable", artist = "Artist", sampleRate = 0)),
         )
 
-        val started = facade.playRandomQueue()
+        val started = runBlocking { facade.playRandomQueue() }
 
         assertFalse(started)
         assertEquals(null, setQueueSongs)
@@ -101,7 +102,7 @@ class PlayerRandomQueueFacadeTest {
             playQueue = PlayQueue().setQueue(songs(2, 3), startIndex = 1),
         )
 
-        facade.startInfinitePlay()
+        runBlocking { facade.startInfinitePlay() }
 
         assertEquals(listOf(2, 3), state.playQueue.songs.map { it.id })
         assertEquals(null, setQueueSongs)
@@ -113,7 +114,7 @@ class PlayerRandomQueueFacadeTest {
     fun startInfinitePlayCanStartWithEmptyQueueAndWaitForRefill() {
         state = state.copy(songs = songs(1, 2, 3))
 
-        facade.startInfinitePlay()
+        runBlocking { facade.startInfinitePlay() }
 
         assertEquals(emptyList<Int>(), state.playQueue.songs.map { it.id })
         assertEquals(null, setQueueSongs)
@@ -131,7 +132,7 @@ class PlayerRandomQueueFacadeTest {
         )
         remainingItems = 0
 
-        facade.startInfinitePlay()
+        runBlocking { facade.startInfinitePlay() }
 
         assertTrue(state.isInfinitePlay)
         // 队列追加了 5、6，当前歌曲仍是 A(4)
@@ -148,7 +149,7 @@ class PlayerRandomQueueFacadeTest {
         )
         remainingItems = 10
 
-        facade.startInfinitePlay()
+        runBlocking { facade.startInfinitePlay() }
 
         assertTrue(state.isInfinitePlay)
         assertEquals(listOf(1, 2, 3, 4), state.playQueue.songs.map { it.id })
@@ -159,7 +160,7 @@ class PlayerRandomQueueFacadeTest {
     fun startInfinitePlayReturnsFalseWhenNoSongs() {
         state = state.copy(songs = emptyList())
 
-        val started = facade.startInfinitePlay()
+        val started = runBlocking { facade.startInfinitePlay() }
 
         assertFalse(started)
         assertFalse(state.isInfinitePlay)
@@ -184,7 +185,7 @@ class PlayerRandomQueueFacadeTest {
             infinitePlayedSongIds = setOf(1, 2),
         )
 
-        facade.refillInfinitePlayQueue()
+        runBlocking { facade.refillInfinitePlayQueue() }
 
         assertEquals(listOf(1, 2, 3, 4), state.playQueue.songs.map { it.id })
         assertEquals(setOf(1, 2, 3, 4), state.infinitePlayedSongIds)
@@ -200,7 +201,7 @@ class PlayerRandomQueueFacadeTest {
             infinitePlayedSongIds = setOf(1, 2),
         )
 
-        facade.refillInfinitePlayQueue(startedSongId = 2)
+        runBlocking { facade.refillInfinitePlayQueue(startedSongId = 2) }
 
         assertEquals(listOf(1, 2, 3, 4), state.playQueue.songs.map { it.id })
         assertEquals(1, state.playQueue.currentIndex)
@@ -215,7 +216,7 @@ class PlayerRandomQueueFacadeTest {
             isInfinitePlay = false,
         )
 
-        facade.refillInfinitePlayQueue()
+        runBlocking { facade.refillInfinitePlayQueue() }
 
         assertEquals(listOf(1), state.playQueue.songs.map { it.id })
         assertEquals(null, syncedQueue)
@@ -231,7 +232,7 @@ class PlayerRandomQueueFacadeTest {
             infinitePlayedSongIds = setOf(1, 2, 3, 4),
         )
 
-        facade.refillInfinitePlayQueue(startedSongId = 4, advanceAfterWrap = true)
+        runBlocking { facade.refillInfinitePlayQueue(startedSongId = 4, advanceAfterWrap = true) }
 
         // 追加 5、6，当前歌曲跳到索引 4（歌曲 5）
         assertEquals(listOf(1, 2, 3, 4, 5, 6), state.playQueue.songs.map { it.id })
@@ -252,7 +253,7 @@ class PlayerRandomQueueFacadeTest {
             infinitePlayedSongIds = setOf(1, 2, 3, 4),
         )
 
-        facade.refillInfinitePlayQueue(startedSongId = 4, advanceAfterWrap = true)
+        runBlocking { facade.refillInfinitePlayQueue(startedSongId = 4, advanceAfterWrap = true) }
 
         assertEquals(listOf(1, 2, 3, 4), state.playQueue.songs.map { it.id })
         assertEquals(3, state.playQueue.currentIndex)
@@ -311,7 +312,7 @@ class PlayerRandomQueueFacadeTest {
         )
         state = state.copy(songs = songs(1, 2, 3, 4))
 
-        mood.playRandomQueue()
+        runBlocking { mood.playRandomQueue() }
 
         // 批量 2 首全部来自过滤后的池 {1,3}
         assertTrue(setQueueSongs!!.all { it.id == 1 || it.id == 3 })
@@ -330,7 +331,7 @@ class PlayerRandomQueueFacadeTest {
         val mood = moodFacade(configs = configs, enabled = true, tagsBySong = emptyMap())
         state = state.copy(songs = songs(1, 2, 3))
 
-        val started = mood.playRandomQueue()
+        val started = runBlocking { mood.playRandomQueue() }
 
         assertTrue(started)
         assertEquals(listOf(1, 2), setQueueSongs?.map { it.id })
@@ -355,7 +356,7 @@ class PlayerRandomQueueFacadeTest {
         )
         state = state.copy(songs = songs(1, 2, 3))
 
-        mood.playRandomQueue()
+        runBlocking { mood.playRandomQueue() }
 
         assertEquals(listOf(1, 2), setQueueSongs?.map { it.id })
     }
@@ -373,7 +374,7 @@ class PlayerRandomQueueFacadeTest {
         val mood = moodFacade(configs = configs, enabled = false, tagsBySong = mapOf(1 to listOf("静谧")))
         state = state.copy(songs = songs(1, 2, 3))
 
-        mood.playRandomQueue()
+        runBlocking { mood.playRandomQueue() }
 
         assertEquals(listOf(1, 2), setQueueSongs?.map { it.id })
     }
@@ -414,7 +415,7 @@ class PlayerRandomQueueFacadeTest {
         )
         state = state.copy(songs = songs(1, 2, 3, 4), globalUniformRandomEnabled = true)
 
-        mood.playRandomQueue()
+        runBlocking { mood.playRandomQueue() }
 
         // 候选池只有 {3,4}，批量 2 全取；顺序上 0 次播放的歌 4 优先于 10 次的歌 3
         assertEquals(listOf(4, 3), setQueueSongs?.map { it.id })

@@ -5,7 +5,7 @@ import cn.com.dcsgo.mihx.data.local.dao.MelodyDao
 import cn.com.dcsgo.mihx.data.local.entity.QuickSkipSongEntity
 import cn.com.dcsgo.mihx.data.local.entity.QuickSkipShortPlayEntity
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 
 private const val TAG = "QuickSkipSongsRepo"
 
@@ -18,18 +18,20 @@ private const val TAG = "QuickSkipSongsRepo"
  *
  * 唯一数据源为 Room，旧版 SharedPreferences 数据由
  * SharedPreferencesLegacyJsonMigration 一次性只读迁移。
+ *
+ * M-5（评审 2026-10-15）：接口改 suspend，直接挂起查询，不再 runBlocking 桥接。
  */
 class QuickSkipSongsRepository(
     private val melodyDao: MelodyDao,
 ) : cn.com.dcsgo.mihx.domain.repository.QuickSkipRepository {
 
-    override fun contains(songId: Int): Boolean = runBlocking(Dispatchers.IO) {
+    override suspend fun contains(songId: Int): Boolean = withContext(Dispatchers.IO) {
         melodyDao.quickSkipSong(songId) != null
     }
 
-    override fun add(songId: Int): Boolean {
+    override suspend fun add(songId: Int): Boolean {
         if (contains(songId)) return false
-        runBlocking(Dispatchers.IO) {
+        withContext(Dispatchers.IO) {
             melodyDao.upsertQuickSkipSong(
                 QuickSkipSongEntity(
                     songId = songId,
@@ -41,30 +43,30 @@ class QuickSkipSongsRepository(
         return true
     }
 
-    override fun remove(songId: Int): Boolean {
+    override suspend fun remove(songId: Int): Boolean {
         if (!contains(songId)) return false
-        runBlocking(Dispatchers.IO) {
+        withContext(Dispatchers.IO) {
             melodyDao.deleteQuickSkipSong(songId)
         }
         AppLog.debug(TAG, "remove: songId=$songId removed from Room")
         return true
     }
 
-    override fun getSongIds(): Set<Int> = runBlocking(Dispatchers.IO) {
+    override suspend fun getSongIds(): Set<Int> = withContext(Dispatchers.IO) {
         melodyDao.quickSkipSongs().map { it.songId }.toSet()
     }
 
-    fun isEmpty(): Boolean = getSongIds().isEmpty()
+    suspend fun isEmpty(): Boolean = getSongIds().isEmpty()
 
-    fun size(): Int = getSongIds().size
+    suspend fun size(): Int = getSongIds().size
 
-    fun getShortPlayCount(songId: Int): Int = runBlocking(Dispatchers.IO) {
+    suspend fun getShortPlayCount(songId: Int): Int = withContext(Dispatchers.IO) {
         melodyDao.quickSkipShortPlay(songId)
     }?.count ?: 0
 
-    override fun incrementShortPlayCount(songId: Int): Int {
+    override suspend fun incrementShortPlayCount(songId: Int): Int {
         val newCount = getShortPlayCount(songId) + 1
-        runBlocking(Dispatchers.IO) {
+        withContext(Dispatchers.IO) {
             melodyDao.upsertQuickSkipShortPlay(
                 QuickSkipShortPlayEntity(
                     songId = songId,
@@ -77,8 +79,8 @@ class QuickSkipSongsRepository(
         return newCount
     }
 
-    override fun resetShortPlayCount(songId: Int) {
-        runBlocking(Dispatchers.IO) {
+    override suspend fun resetShortPlayCount(songId: Int) {
+        withContext(Dispatchers.IO) {
             melodyDao.deleteQuickSkipShortPlay(songId)
         }
         AppLog.debug(TAG, "resetShortPlayCount: songId=$songId in Room")

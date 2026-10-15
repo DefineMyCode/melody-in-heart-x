@@ -28,7 +28,7 @@ import org.junit.Test
 class QuickSkipSongsRepositoryRoomTest {
 
     @Test
-    fun loadsInitialRoomSongIdsAndAnswersMembership() {
+    fun loadsInitialRoomSongIdsAndAnswersMembership() = runBlocking {
         val dao = FakeMelodyDao().apply {
             quickSkipSongs += listOf(
                 QuickSkipSongEntity(songId = 4, addedAt = 1L),
@@ -43,7 +43,7 @@ class QuickSkipSongsRepositoryRoomTest {
     }
 
     @Test
-    fun addAndRemovePersistToRoomAndRejectDuplicates() {
+    fun addAndRemovePersistToRoomAndRejectDuplicates() = runBlocking {
         val dao = FakeMelodyDao()
         val repository = QuickSkipSongsRepository(melodyDao = dao)
 
@@ -59,7 +59,7 @@ class QuickSkipSongsRepositoryRoomTest {
     }
 
     @Test
-    fun shortPlayCountsPersistToRoomAndReset() {
+    fun shortPlayCountsPersistToRoomAndReset() = runBlocking {
         val dao = FakeMelodyDao().apply {
             quickSkipShortPlayCounts += QuickSkipShortPlayEntity(songId = 3, count = 2, updatedAt = 1L)
         }

@@ -12,12 +12,21 @@ import cn.com.dcsgo.mihx.domain.model.SongSortMode
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emitAll
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 
+/**
+ * 播放器设置仓库（DataStore 唯一数据源 + legacy SharedPreferences 只读迁移兜底）。
+ *
+ * M-5（评审 2026-10-15）：移除全部 current*() 同步快照与 setXxxBlocking ——
+ * 旧实现 17 处 runBlocking(IO) 桥，启动路径（PlayerRuntime.start 的 StartupSettings、
+ * 定时关闭恢复）与 UI 点击线程都被迫阻塞。现在只有 Flow 观察 + suspend 写入，
+ * 读取方在挂起上下文 `first()` 或直接 collect；写入方经协程作用域调度。
+ *
+ * m-12（评审 2026-10-15）：legacy SharedPreferences 兜底值在 IO 线程读取后并入 DataStore 流，
+ * 不在 DataStore 的 map（读线程）里同步读 SharedPreferences 磁盘。
+ */
 class PlayerSettingsRepository(
     private val settingsStore: DataStore<Preferences>,
     private val legacyPrefs: SharedPreferences,
@@ -31,8 +40,20 @@ class PlayerSettingsRepository(
         ),
     )
 
-    // m-12（评审 2026-10-15）：legacy SharedPreferences 兜底值统一改在 IO 线程读取后并入 DataStore 流，
-    // 不再在 settingsStore.data 的 map（DataStore 读线程）里同步读 SharedPreferences 磁盘。
+    /** 在 IO 线程读一次 legacy 值：key 存在返回其布尔值，不存在返回 null */
+    private suspend fun readLegacyBoolean(key: String): Boolean? = withContext(Dispatchers.IO) {
+        if (legacyPrefs.contains(key)) legacyPrefs.getBoolean(key, false) else null
+    }
+
+    /** DataStore 优先 + legacy SharedPreferences 兜底的布尔设置流（m-12） */
+    private fun legacyBackedFlow(key: Preferences.Key<Boolean>, legacyKey: String, legacyDefault: Boolean): Flow<Boolean> = flow {
+        val legacy = readLegacyBoolean(legacyKey) ?: legacyDefault
+        emitAll(
+            settingsStore.data.map { preferences ->
+                preferences[key] ?: legacy
+            },
+        )
+    }
 
     override val themeMode: Flow<ThemeMode> = flow {
         val legacyDarkTheme = readLegacyBoolean(PlayerSettingsKeys.LEGACY_DARK_THEME)
@@ -91,92 +112,33 @@ class PlayerSettingsRepository(
         preferences[PlayerSettingsKeys.EMOTION_SCAN_PAUSED] == true
     }
 
-    /** 在 IO 线程读一次 legacy 值：key 存在返回其布尔值，不存在返回 null */
-    private suspend fun readLegacyBoolean(key: String): Boolean? = withContext(Dispatchers.IO) {
-        if (legacyPrefs.contains(key)) legacyPrefs.getBoolean(key, false) else null
-    }
-
-    /** DataStore 优先 + legacy SharedPreferences 兜底的布尔设置流（legacy 值在 IO 线程读取，m-12） */
-    private fun legacyBackedFlow(key: Preferences.Key<Boolean>, legacyKey: String, legacyDefault: Boolean): Flow<Boolean> = flow {
-        val legacy = readLegacyBoolean(legacyKey) ?: legacyDefault
-        emitAll(
-            settingsStore.data.map { preferences ->
-                preferences[key] ?: legacy
-            },
-        )
-    }
-
-    override fun currentEmotionScanPaused(): Boolean = runBlocking(Dispatchers.IO) {
-        emotionScanPaused.first()
-    }
-
-    override suspend fun setEmotionScanPaused(paused: Boolean) {
-        settingsStore.edit { preferences ->
-            preferences[PlayerSettingsKeys.EMOTION_SCAN_PAUSED] = paused
-        }
-    }
-
     override val moodTimeSlotEnabled: Flow<Boolean> = settingsStore.data.map { preferences ->
         preferences[PlayerSettingsKeys.MOOD_TIME_SLOT_ENABLED] == true
     }
 
-    override fun currentMoodTimeSlotEnabled(): Boolean = runBlocking(Dispatchers.IO) {
-        moodTimeSlotEnabled.first()
+    // ── 定时关闭 ──
+
+    override val sleepTimerEndAtMs: Flow<Long> = settingsStore.data.map { preferences ->
+        preferences[PlayerSettingsKeys.SLEEP_TIMER_END_AT_MS] ?: 0L
     }
 
-    override suspend fun setMoodTimeSlotEnabled(enabled: Boolean) {
+    override val sleepTimerPlayLastSong: Flow<Boolean> = settingsStore.data.map { preferences ->
+        preferences[PlayerSettingsKeys.SLEEP_TIMER_PLAY_LAST_SONG] ?: false
+    }
+
+    override suspend fun setSleepTimerEndAtMs(endAtMs: Long) {
         settingsStore.edit { preferences ->
-            preferences[PlayerSettingsKeys.MOOD_TIME_SLOT_ENABLED] = enabled
+            preferences[PlayerSettingsKeys.SLEEP_TIMER_END_AT_MS] = endAtMs
         }
     }
 
-    override fun currentGlobalUniformRandomEnabled(): Boolean {
-        return runBlocking(Dispatchers.IO) {
-            globalUniformRandomEnabled.first()
+    override suspend fun setSleepTimerPlayLastSong(enabled: Boolean) {
+        settingsStore.edit { preferences ->
+            preferences[PlayerSettingsKeys.SLEEP_TIMER_PLAY_LAST_SONG] = enabled
         }
     }
 
-    override fun currentScreenOrientationMode(): ScreenOrientationMode {
-        return runBlocking(Dispatchers.IO) {
-            screenOrientationMode.first()
-        }
-    }
-
-    override fun currentBluetoothPlaybackMonitoringEnabled(): Boolean {
-        return runBlocking(Dispatchers.IO) {
-            bluetoothPlaybackMonitoringEnabled.first()
-        }
-    }
-
-    override fun currentPlaybackNotificationEnabled(): Boolean {
-        return runBlocking(Dispatchers.IO) {
-            playbackNotificationEnabled.first()
-        }
-    }
-
-    override fun currentDailyListeningGoalMinutes(): Int {
-        return runBlocking(Dispatchers.IO) {
-            dailyListeningGoalMinutes.first()
-        }
-    }
-
-    override fun setGlobalUniformRandomEnabledBlocking(enabled: Boolean) {
-        runBlocking(Dispatchers.IO) {
-            setGlobalUniformRandomEnabled(enabled)
-        }
-    }
-
-    override fun setBluetoothPlaybackMonitoringEnabledBlocking(enabled: Boolean) {
-        runBlocking(Dispatchers.IO) {
-            setBluetoothPlaybackMonitoringEnabled(enabled)
-        }
-    }
-
-    override fun setPlaybackNotificationEnabledBlocking(enabled: Boolean) {
-        runBlocking(Dispatchers.IO) {
-            setPlaybackNotificationEnabled(enabled)
-        }
-    }
+    // ── 写入 ──
 
     override suspend fun setThemeMode(mode: ThemeMode) {
         settingsStore.edit { preferences ->
@@ -238,41 +200,15 @@ class PlayerSettingsRepository(
         }
     }
 
-    override fun setDailyListeningGoalMinutesBlocking(minutes: Int) {
-        runBlocking(Dispatchers.IO) {
-            setDailyListeningGoalMinutes(minutes)
+    override suspend fun setEmotionScanPaused(paused: Boolean) {
+        settingsStore.edit { preferences ->
+            preferences[PlayerSettingsKeys.EMOTION_SCAN_PAUSED] = paused
         }
     }
 
-    override fun currentSleepTimerEndAtMs(): Long {
-        return runBlocking(Dispatchers.IO) {
-            settingsStore.data.map { preferences ->
-                preferences[PlayerSettingsKeys.SLEEP_TIMER_END_AT_MS] ?: 0L
-            }.first()
-        }
-    }
-
-    override fun currentSleepTimerPlayLastSong(): Boolean {
-        return runBlocking(Dispatchers.IO) {
-            settingsStore.data.map { preferences ->
-                preferences[PlayerSettingsKeys.SLEEP_TIMER_PLAY_LAST_SONG] ?: false
-            }.first()
-        }
-    }
-
-    override fun setSleepTimerEndAtMsBlocking(endAtMs: Long) {
-        runBlocking(Dispatchers.IO) {
-            settingsStore.edit { preferences ->
-                preferences[PlayerSettingsKeys.SLEEP_TIMER_END_AT_MS] = endAtMs
-            }
-        }
-    }
-
-    override fun setSleepTimerPlayLastSongBlocking(enabled: Boolean) {
-        runBlocking(Dispatchers.IO) {
-            settingsStore.edit { preferences ->
-                preferences[PlayerSettingsKeys.SLEEP_TIMER_PLAY_LAST_SONG] = enabled
-            }
+    override suspend fun setMoodTimeSlotEnabled(enabled: Boolean) {
+        settingsStore.edit { preferences ->
+            preferences[PlayerSettingsKeys.MOOD_TIME_SLOT_ENABLED] = enabled
         }
     }
 
@@ -283,10 +219,6 @@ class PlayerSettingsRepository(
         SongSortMode.entries.firstOrNull { it.name == stored } ?: SongSortMode.IMPORT_ORDER
     }
 
-    override fun currentSongSortMode(): SongSortMode = runBlocking(Dispatchers.IO) {
-        songSortMode.first()
-    }
-
     override suspend fun setSongSortMode(mode: SongSortMode) {
         settingsStore.edit { preferences ->
             preferences[PlayerSettingsKeys.SONG_SORT_MODE] = mode.name
@@ -295,10 +227,6 @@ class PlayerSettingsRepository(
 
     override val songSortAscending: Flow<Boolean> = settingsStore.data.map { preferences ->
         preferences[PlayerSettingsKeys.SONG_SORT_ASCENDING] ?: true
-    }
-
-    override fun currentSongSortAscending(): Boolean = runBlocking(Dispatchers.IO) {
-        songSortAscending.first()
     }
 
     override suspend fun setSongSortAscending(ascending: Boolean) {

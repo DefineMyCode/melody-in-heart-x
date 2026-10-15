@@ -2,24 +2,27 @@ package cn.com.dcsgo.mihx.feature.player
 
 import cn.com.dcsgo.mihx.core.model.Song
 import cn.com.dcsgo.mihx.domain.quickskip.QuickSkipActions
+import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
+/**
+ * M-5（评审 2026-10-15）：门面随 QuickSkipActions 一起 suspend 化，
+ * 调度责任移交给 PlayerRuntime（scope.launch），门面不再自带 launcher。
+ */
 class PlayerQuickSkipFacadeTest {
 
     private val actions = FakeQuickSkipActions()
     private var refreshed = false
-    private val launchedTasks = mutableListOf<() -> Unit>()
     private val facade = PlayerQuickSkipFacade(
         quickSkipActions = actions,
         refreshPlaylists = { refreshed = true },
-        launch = { task -> launchedTasks += task },
     )
 
     @Test
-    fun delegatesBasicQuickSkipOperations() {
+    fun delegatesBasicQuickSkipOperations() = runBlocking {
         actions.storedSongs = songs(1, 2)
 
         assertEquals(listOf(1, 2), facade.getQuickSkipSongs().map { it.id })
@@ -32,11 +35,8 @@ class PlayerQuickSkipFacadeTest {
     }
 
     @Test
-    fun syncToPlaylistRunsInLauncherAndRefreshesPlaylists() {
+    fun syncToPlaylistRefreshesPlaylists() = runBlocking {
         facade.syncQuickSkipSongsToPlaylist()
-
-        assertEquals(1, launchedTasks.size)
-        launchedTasks.single().invoke()
 
         assertTrue(actions.synced)
         assertTrue(refreshed)
@@ -47,15 +47,15 @@ class PlayerQuickSkipFacadeTest {
         val songIds = mutableSetOf<Int>()
         var synced = false
 
-        override fun getSongs(): List<Song> = storedSongs
+        override suspend fun getSongs(): List<Song> = storedSongs
 
-        override fun add(songId: Int): Boolean = songIds.add(songId)
+        override suspend fun add(songId: Int): Boolean = songIds.add(songId)
 
-        override fun remove(songId: Int): Boolean = songIds.remove(songId)
+        override suspend fun remove(songId: Int): Boolean = songIds.remove(songId)
 
-        override fun contains(songId: Int): Boolean = songId in songIds
+        override suspend fun contains(songId: Int): Boolean = songId in songIds
 
-        override fun syncToPlaylist() {
+        override suspend fun syncToPlaylist() {
             synced = true
         }
     }

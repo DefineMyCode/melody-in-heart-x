@@ -20,6 +20,18 @@ android {
     kotlinOptions {
         jvmTarget = "11"
     }
+    sourceSets {
+        // m-4：把导出的 Room schema JSON 暴露为单测 assets，MigrationTestHelper 由此读取
+        getByName("test") {
+            assets.srcDir("$projectDir/schemas")
+        }
+    }
+    testOptions {
+        unitTests {
+            // m-4：迁移回归用 Robolectric 跑（MigrationTestHelper 需要资源/上下文）
+            isIncludeAndroidResources = true
+        }
+    }
 }
 
 dependencies {
@@ -36,6 +48,10 @@ dependencies {
     ksp(libs.hilt.compiler)
     testImplementation(libs.junit)
     testImplementation(libs.org.json)
+    // m-4（评审 2026-10-15）：MigrationTestHelper 迁移回归（Robolectric JVM 环境）
+    testImplementation(libs.androidx.room.testing)
+    testImplementation(libs.androidx.test.core)
+    testImplementation(libs.robolectric)
 }
 
 ksp {

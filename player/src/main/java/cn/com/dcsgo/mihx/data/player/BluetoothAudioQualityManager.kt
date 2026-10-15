@@ -18,21 +18,16 @@ import kotlinx.coroutines.flow.asStateFlow
  *
  * 功能：
  * 1. 监控音频设备路由变化
- * 2. 检测蓝牙音频中断并平滑恢复
- * 3. 提供连接状态变化的平滑过渡
+ * 2. 提供连接状态变化的平滑过渡
  *
  * 使用方式：
  * 1. 在 PlayerViewModel 初始化时创建实例
- * 2. 在 onPause/onResume 时调用相应方法
- * 3. 在 onDestroy 时调用 [release]
+ * 2. 在 onDestroy 时调用 [release]
  */
 class BluetoothAudioQualityManager(private val context: Context) {
 
     companion object {
         private const val TAG = "BtAudioQualityManager"
-
-        // 错误恢复等待时间
-        private const val RECOVERY_WAIT_MS = 500L
     }
 
     /** 音频路由类型 */
@@ -59,17 +54,8 @@ class BluetoothAudioQualityManager(private val context: Context) {
     private val _routeState = MutableStateFlow(RouteState())
     val routeState: StateFlow<RouteState> = _routeState.asStateFlow()
 
-    private val _audioInterrupted = MutableStateFlow(false)
-    val audioInterrupted: StateFlow<Boolean> = _audioInterrupted.asStateFlow()
-
     /** 音频路由变化回调 */
     var onAudioRouteChanged: ((AudioRoute) -> Unit)? = null
-
-    /** 音频中断开始回调（用于暂停播放） */
-    var onAudioInterrupted: (() -> Unit)? = null
-
-    /** 音频中断结束回调（用于恢复播放） */
-    var onAudioResumed: (() -> Unit)? = null
 
     private val handler = Handler(Looper.getMainLooper())
     private var isMonitoring = false
@@ -189,56 +175,10 @@ class BluetoothAudioQualityManager(private val context: Context) {
     }
 
     /**
-     * 处理音频中断
-     *
-     * 当检测到音频系统中断（如蓝牙断开又重连）时调用。
-     * 提供平滑的恢复机制。
-     *
-     * @param shouldPause 是否应该暂停播放
-     */
-    fun handleAudioInterruption(shouldPause: Boolean) {
-        if (shouldPause) {
-            _audioInterrupted.value = true
-            AppLog.info(TAG, "Audio interruption detected, pausing")
-            onAudioInterrupted?.invoke()
-
-            // 延迟后自动清除中断状态，等待系统恢复
-            handler.postDelayed({
-                _audioInterrupted.value = false
-                AppLog.debug(TAG, "Audio interruption cleared")
-                onAudioResumed?.invoke()
-            }, RECOVERY_WAIT_MS)
-        } else {
-            // 中断结束，恢复播放
-            if (_audioInterrupted.value) {
-                _audioInterrupted.value = false
-                AppLog.debug(TAG, "Audio resumed after interruption")
-                onAudioResumed?.invoke()
-            }
-        }
-    }
-
-    /**
-     * 主动请求恢复音频
-     *
-     * 在音频焦点恢复后调用，确保音频路由正常。
-     */
-    fun requestAudioFocus() {
-        updateCurrentRoute()
-
-        if (_audioInterrupted.value) {
-            _audioInterrupted.value = false
-            onAudioResumed?.invoke()
-        }
-    }
-
-    /**
      * 释放资源
      */
     fun release() {
         stopMonitoring()
         onAudioRouteChanged = null
-        onAudioInterrupted = null
-        onAudioResumed = null
     }
 }

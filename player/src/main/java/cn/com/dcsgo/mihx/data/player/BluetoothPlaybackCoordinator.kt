@@ -38,16 +38,10 @@ class BluetoothPlaybackCoordinator(
             AppLog.debug(TAG, "Audio route changed: $route")
         }
 
-        audioQualityManager.onAudioInterrupted = {
-            if (isPlaying()) {
-                pausePlayback()
-                AppLog.info(TAG, "Audio interrupted, pausing")
-            }
-        }
-
-        audioQualityManager.onAudioResumed = {
-            AppLog.debug(TAG, "Audio resumed")
-        }
+        // m-5（评审 2026-10-15）：原在此挂接的 onAudioInterrupted/onAudioResumed 回调
+        // 属于音频中断恢复机制（handleAudioInterruption/requestAudioFocus），但该机制
+        // 从未被任何代码触发，属死接线，已与 manager 侧一起移除。
+        // 蓝牙断连自动暂停由上方 isA2dpConnected 轮询路径负责（活代码）。
 
         bluetoothStateManager.initialize()
         audioQualityManager.startMonitoring()

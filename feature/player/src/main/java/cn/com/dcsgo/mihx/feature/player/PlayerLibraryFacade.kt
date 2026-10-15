@@ -22,6 +22,8 @@ class PlayerLibraryFacade(
     private val snapshot: () -> PlaylistSnapshot,
     private val setSongsChangedListener: (() -> Unit) -> Unit,
     private val loadPlayStatsForSort: suspend () -> Pair<Map<Int, Int>, Map<Int, Long>>,
+    /** 曲库快照刷新（导入/删除/文件校验）后的附加回调；M-5 供秒切列表 StateFlow 刷新 */
+    private val onSongsChanged: () -> Unit = {},
     private val catalogScope: CoroutineScope,
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
     private val albumArtRefreshDelayMs: Long = ALBUM_ART_REFRESH_DELAY_MS,
@@ -60,6 +62,7 @@ class PlayerLibraryFacade(
     }
 
     private fun refreshSnapshot(isLoading: Boolean? = null) {
+        onSongsChanged()
         val currentSnapshot = snapshot()
         updateState { state ->
             state.copy(

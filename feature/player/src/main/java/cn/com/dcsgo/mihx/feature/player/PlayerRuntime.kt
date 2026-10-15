@@ -263,6 +263,9 @@ internal class PlayerRuntime(
         },
         snapshot = playlistManager::snapshot,
         setSongsChangedListener = songRepository::setSongsChangedListener,
+        // M-5：曲库变更（导入/删除/校验清理）时同步刷新秒切列表 StateFlow，
+        // 避免被删歌曲在秒切页残留（旧实现在组合期重查库，天然是新的）
+        onSongsChanged = { scope.launch { refreshQuickSkipSongs() } },
         loadPlayStatsForSort = {
             playStatsRepository.getPlayCountsForSort() to playStatsRepository.getLastPlayedAtForSort()
         },

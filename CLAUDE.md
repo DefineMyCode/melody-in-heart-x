@@ -9,12 +9,15 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 | Kotlin | 2.0.21 | Compose compiler is built-in — apply `kotlin-compose` plugin, NOT `kotlinCompilerExtensionVersion` |
 | AGP | 8.13.2 | |
 | KSP | 2.0.21-1.0.28 | Must match Kotlin version exactly |
-| Compose BOM | 2024.09.00 | |
+| Compose BOM | 2025.09.01 | |
 | Media3 | 1.9.0 | + Jellyfin FFmpeg decoder extension |
-| Room | 2.6.1 | Schema export in `data/schemas/` |
+| Room | 2.6.1 | Schema export in `data/schemas/` (当前 v10) |
 | Hilt | 2.52 | |
+| Lifecycle | 2.8.7 | |
+| LiteRT | 1.4.1 | 情绪分析模型运行时 |
+| WorkManager | 2.9.1 | |
 | minSdk / targetSdk | 33 / 36 | Java 11 bytecode |
-| versionName | 3.5.1 (versionCode 29) | |
+| versionName | 3.10.2 (versionCode 44) | |
 
 ## Build / Test / Lint Commands
 
@@ -85,7 +88,7 @@ The `check` lifecycle task aggregates `spotlessCheck` + `verifyProductArchitectu
 ### Build Config Notes
 
 - Kotlin compilation runs **in-process** (`kotlin.compiler.execution.strategy=in-process`) for deterministic Windows builds.
-- JVM heap is set to 3072 MB (`org.gradle.jvmargs` in `gradle.properties`).
+- Gradle JVM heap is 2048 MB, Kotlin daemon 1536 MB (`gradle.properties`).
 - `android.nonTransitiveRClass=true` — do not reference resources across module boundaries by R class.
 - Compose compiler is the Kotlin 2.0+ **compose compiler plugin** (`org.jetbrains.kotlin.plugin.compose`). Do NOT add the old `composeOptions { kotlinCompilerExtensionVersion }` block — it won't work.
 - Release builds are **arm64-v8a only** (`minSdk 33` 全是 64 位设备) with `resConfigs("zh", "en")`; debug/benchmark 保留全 ABI 以兼容模拟器。
@@ -103,7 +106,8 @@ Feature modules ──> :core:* , :domain   (NOT :data or :player, NOT each othe
 :player ──> :core:* , :domain
 :data   ──> :core:* , :domain
 :domain ──> :core:model , :core:common
-:core:ui ──> :core:model
+:core:ui ──> :core:model , :core:common
+:core:skin ──> :core:model   (皮肤模型/解析；:feature:user 使用)
 :core:common ──> (standalone)
 :core:model ──> (zero dependencies, pure data types)
 ```
@@ -119,7 +123,7 @@ These boundaries are enforced by `verifyProductArchitecture`. Features must not 
 | **Domain** | `:domain` | Repository **interfaces**, playback policy (planners, synchronizers, coordinators), pure business logic. No Android dependencies. |
 | **Data** | `:data` | Room database/DAO/entities/migrations, repository implementations, narrow adapters binding domain interfaces, metadata extractors, DataStore wrappers |
 | **Player** | `:player` | `AppMediaSessionService` (ExoPlayer + MediaSession), `PlaybackController`, windowed queue planners, Bluetooth coordinator |
-| **Core** | `:core:model`, `:core:common`, `:core:ui` | Data classes (`Song`, `Playlist`, `PlayQueue`, etc.), logging (`AppLog`/`AppLogger`), `PerformanceTrace`, `CoroutineDispatchers`, theme (`MusicplayerTheme`), shared Compose components |
+| **Core** | `:core:model`, `:core:common`, `:core:ui`, `:core:skin` | Data classes (`Song`, `Playlist`, `PlayQueue`, etc.), logging (`AppLog`/`AppLogger`), `PerformanceTrace`, `CoroutineDispatchers`, theme (`MusicplayerTheme`), shared Compose components, skin model/parser (`Skin`, `SkinParser`) |
 
 ### DI (Hilt)
 
@@ -128,7 +132,7 @@ These boundaries are enforced by `verifyProductArchitecture`. Features must not 
 - `AppMediaSessionService` (in `:player`) → `@AndroidEntryPoint`
 - `PlayerViewModel` (in `:feature:player`) → `@HiltViewModel`
 
-Singleton Hilt modules are in `app/src/main/java/.../app/di/` (CoroutineModule, LoggerModule, PlayerModule) and `data/src/main/java/.../data/di/` (DatabaseModule, RepositoryModule, DataStoreModule). Repository implementations are bound through narrow adapter classes, not directly by `MusicRepository`.
+Singleton Hilt modules are in `app/src/main/java/.../app/di/` (CoroutineModule, LoggerModule, PlayerModule) and `data/src/main/java/.../data/di/` (DatabaseModule, RepositoryModule, DataStoreModule), plus `AppCoroutineScopeModule` (`@ApplicationScope`) in `:player`. The `:player` module's classes live under the package `cn.com.dcsgo.mihx.data.player` / `cn.com.dcsgo.mihx.player.window`. Repository implementations are bound through narrow adapter classes, not directly by `MusicRepository`.
 
 ### The PlayerViewModel / Facade Architecture
 
@@ -142,6 +146,8 @@ Singleton Hilt modules are in `app/src/main/java/.../app/di/` (CoroutineModule, 
 - **Other**: `PlayerVersionFacade`, `PlayerQuickSkipFacade`, `PlayerSongDeletionFacade`, `PlayerSessionFacade`, `PlayerStartupFacade`, `PlayerLifecycleFacade`, `PlayerErrorFacade`
 
 Facades are assembled by graph objects (`PlayerQueueGraph`, `PlayerMediaControllerGraph`, `PlayerPersistenceGraph`, `PlayerBluetoothGraph`, `PlayerPlaybackSessionGraph`). Do not re-introduce the old `PlayerViewModelComponents` monolith — it was deliberately dismantled and is enforced by `verifyProductArchitecture`.
+
+Feature modules: `home`, `playlist`, `user`, `lyrics`, `player`, `settings`. Extra design docs live in `docs/architecture/` (emotion analysis, mood time-slot playback, skin/plugin system) and `docs/ui-design/DESIGN_SYSTEM.md`; past reviews in `docs/refactor/`.
 
 ### Feature Route/Screen Pattern
 
@@ -167,7 +173,7 @@ Canonical states: `idle → preparing → ready → playing ↔ paused/buffering
 
 ### Data Persistence
 
-- **Room** (`MelodyDatabase`, v10): songs, playlists, playlist-song refs, play stats, quick-skip songs, short-play counts, song group overrides, migration state, artists, albums. Schema exports in `data/schemas/`.
+- **Room** (`MelodyDatabase`, v10): songs, playlists, playlist-song refs, play stats, quick-skip songs, short-play counts, song group overrides, migration state, artists, albums, song-artist refs, song emotions. Schema exports in `data/schemas/`.
 - **DataStore Preferences**: player settings (theme, random mode, Bluetooth, notifications) and playback state snapshots.
 - **Legacy migration**: `SharedPreferencesLegacyJsonMigration` handles v1 JSON → Room migration on first launch. Legacy SharedPreferences readers remain only for that path.
 

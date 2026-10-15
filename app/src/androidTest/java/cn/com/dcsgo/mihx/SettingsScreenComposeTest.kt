@@ -6,6 +6,7 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import cn.com.dcsgo.mihx.core.model.ScreenOrientationMode
 import cn.com.dcsgo.mihx.core.model.ThemeMode
 import cn.com.dcsgo.mihx.core.model.ThemeVariant
 import cn.com.dcsgo.mihx.feature.settings.SettingsScreen
@@ -22,6 +23,7 @@ class SettingsScreenComposeTest {
     fun settingsScreenShowsThemeAndRandomToggles() {
         val themeModeChanges = mutableListOf<ThemeMode>()
         val themeVariantChanges = mutableListOf<ThemeVariant>()
+        val orientationChanges = mutableListOf<ScreenOrientationMode>()
         val uniformRandomChanges = mutableListOf<Boolean>()
         val dailyGoalChanges = mutableListOf<Int>()
         var bluetoothPermissionRequests = 0
@@ -36,6 +38,8 @@ class SettingsScreenComposeTest {
                     onThemeModeChange = { themeModeChanges += it },
                     themeVariant = ThemeVariant.MONO,
                     onThemeVariantChange = { themeVariantChanges += it },
+                    screenOrientationMode = ScreenOrientationMode.SENSOR_AUTO,
+                    onScreenOrientationModeChange = { orientationChanges += it },
                     globalUniformRandomEnabled = true,
                     onGlobalUniformRandomEnabledChange = { uniformRandomChanges += it },
                     dailyListeningGoalMinutes = 0,
@@ -54,6 +58,11 @@ class SettingsScreenComposeTest {
         composeRule.onNodeWithText("主题色").assertIsDisplayed()
         composeRule.onNodeWithText("墨色").assertIsDisplayed()
         composeRule.onNodeWithText("朱砂 · 心有乐章").assertIsDisplayed()
+        composeRule.onNodeWithText("屏幕方向").assertIsDisplayed()
+        composeRule.onNodeWithText("自动旋转开 = 跟随系统；也可手动固定为横屏或竖屏").assertIsDisplayed()
+        composeRule.onNodeWithText("自动旋转").assertIsDisplayed()
+        composeRule.onNodeWithText("横屏").assertIsDisplayed()
+        composeRule.onNodeWithText("竖屏").assertIsDisplayed()
         composeRule.onNodeWithText("全局均匀随机").assertIsDisplayed()
         composeRule.onNodeWithText("随机时优先选择原始播放次数较少的歌曲").assertIsDisplayed()
         composeRule.onNodeWithText("每日听歌时长目标").assertIsDisplayed()
@@ -69,6 +78,7 @@ class SettingsScreenComposeTest {
 
         composeRule.onNodeWithText("浅色").performClick()
         composeRule.onNodeWithText("朱砂 · 心有乐章").performClick()
+        composeRule.onNodeWithText("横屏").performClick()
         composeRule.onNodeWithContentDescription("全局均匀随机开关")
             .assertIsOn()
             .performClick()
@@ -79,6 +89,7 @@ class SettingsScreenComposeTest {
 
         assertEquals(listOf(ThemeMode.LIGHT), themeModeChanges)
         assertEquals(listOf(ThemeVariant.VERMILION), themeVariantChanges)
+        assertEquals(listOf(ScreenOrientationMode.LANDSCAPE), orientationChanges)
         assertEquals(listOf(false), uniformRandomChanges)
         assertEquals(listOf(60), dailyGoalChanges)
         assertEquals(1, bluetoothPermissionRequests)

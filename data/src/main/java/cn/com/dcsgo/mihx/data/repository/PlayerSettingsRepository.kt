@@ -11,9 +11,12 @@ import cn.com.dcsgo.mihx.core.model.ScreenOrientationMode
 import cn.com.dcsgo.mihx.domain.model.SongSortMode
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 
 class PlayerSettingsRepository(
     private val settingsStore: DataStore<Preferences>,
@@ -28,17 +31,24 @@ class PlayerSettingsRepository(
         ),
     )
 
-    override val themeMode: Flow<ThemeMode> = settingsStore.data.map { preferences ->
-        val stored = preferences[PlayerSettingsKeys.THEME_MODE]
-        if (stored != null) {
-            ThemeMode.entries.firstOrNull { it.name == stored } ?: ThemeMode.SYSTEM
-        } else if (preferences[PlayerSettingsKeys.DARK_THEME] != null) {
-            if (preferences[PlayerSettingsKeys.DARK_THEME] == true) ThemeMode.DARK else ThemeMode.LIGHT
-        } else if (legacyPrefs.contains(PlayerSettingsKeys.LEGACY_DARK_THEME)) {
-            if (legacyPrefs.getBoolean(PlayerSettingsKeys.LEGACY_DARK_THEME, false)) ThemeMode.DARK else ThemeMode.LIGHT
-        } else {
-            ThemeMode.SYSTEM
-        }
+    // m-12（评审 2026-10-15）：legacy SharedPreferences 兜底值统一改在 IO 线程读取后并入 DataStore 流，
+    // 不再在 settingsStore.data 的 map（DataStore 读线程）里同步读 SharedPreferences 磁盘。
+
+    override val themeMode: Flow<ThemeMode> = flow {
+        val legacyDarkTheme = readLegacyBoolean(PlayerSettingsKeys.LEGACY_DARK_THEME)
+        emitAll(
+            settingsStore.data.map { preferences ->
+                val stored = preferences[PlayerSettingsKeys.THEME_MODE]
+                when {
+                    stored != null -> ThemeMode.entries.firstOrNull { it.name == stored } ?: ThemeMode.SYSTEM
+                    preferences[PlayerSettingsKeys.DARK_THEME] != null ->
+                        if (preferences[PlayerSettingsKeys.DARK_THEME] == true) ThemeMode.DARK else ThemeMode.LIGHT
+                    legacyDarkTheme != null ->
+                        if (legacyDarkTheme) ThemeMode.DARK else ThemeMode.LIGHT
+                    else -> ThemeMode.SYSTEM
+                }
+            },
+        )
     }
 
     override val themeVariant: Flow<ThemeVariant> = settingsStore.data.map { preferences ->
@@ -51,20 +61,23 @@ class PlayerSettingsRepository(
         ScreenOrientationMode.entries.firstOrNull { it.name == stored } ?: ScreenOrientationMode.SENSOR_AUTO
     }
 
-    override val globalUniformRandomEnabled: Flow<Boolean> = settingsStore.data.map { preferences ->
-        preferences[PlayerSettingsKeys.GLOBAL_UNIFORM_RANDOM_ENABLED]
-            ?: legacyPrefs.getBoolean(PlayerSettingsKeys.LEGACY_GLOBAL_UNIFORM_RANDOM_ENABLED, true)
-    }
+    override val globalUniformRandomEnabled: Flow<Boolean> = legacyBackedFlow(
+        key = PlayerSettingsKeys.GLOBAL_UNIFORM_RANDOM_ENABLED,
+        legacyKey = PlayerSettingsKeys.LEGACY_GLOBAL_UNIFORM_RANDOM_ENABLED,
+        legacyDefault = true,
+    )
 
-    override val bluetoothPlaybackMonitoringEnabled: Flow<Boolean> = settingsStore.data.map { preferences ->
-        preferences[PlayerSettingsKeys.BLUETOOTH_PLAYBACK_MONITORING_ENABLED]
-            ?: legacyPrefs.getBoolean(PlayerSettingsKeys.LEGACY_BLUETOOTH_PLAYBACK_MONITORING_ENABLED, false)
-    }
+    override val bluetoothPlaybackMonitoringEnabled: Flow<Boolean> = legacyBackedFlow(
+        key = PlayerSettingsKeys.BLUETOOTH_PLAYBACK_MONITORING_ENABLED,
+        legacyKey = PlayerSettingsKeys.LEGACY_BLUETOOTH_PLAYBACK_MONITORING_ENABLED,
+        legacyDefault = false,
+    )
 
-    override val playbackNotificationEnabled: Flow<Boolean> = settingsStore.data.map { preferences ->
-        preferences[PlayerSettingsKeys.PLAYBACK_NOTIFICATION_ENABLED]
-            ?: legacyPrefs.getBoolean(PlayerSettingsKeys.LEGACY_PLAYBACK_NOTIFICATION_ENABLED, false)
-    }
+    override val playbackNotificationEnabled: Flow<Boolean> = legacyBackedFlow(
+        key = PlayerSettingsKeys.PLAYBACK_NOTIFICATION_ENABLED,
+        legacyKey = PlayerSettingsKeys.LEGACY_PLAYBACK_NOTIFICATION_ENABLED,
+        legacyDefault = false,
+    )
 
     override val lyricFontScale: Flow<Float> = settingsStore.data.map { preferences ->
         preferences[PlayerSettingsKeys.LYRIC_FONT_SCALE] ?: 1f
@@ -76,6 +89,21 @@ class PlayerSettingsRepository(
 
     override val emotionScanPaused: Flow<Boolean> = settingsStore.data.map { preferences ->
         preferences[PlayerSettingsKeys.EMOTION_SCAN_PAUSED] == true
+    }
+
+    /** 在 IO 线程读一次 legacy 值：key 存在返回其布尔值，不存在返回 null */
+    private suspend fun readLegacyBoolean(key: String): Boolean? = withContext(Dispatchers.IO) {
+        if (legacyPrefs.contains(key)) legacyPrefs.getBoolean(key, false) else null
+    }
+
+    /** DataStore 优先 + legacy SharedPreferences 兜底的布尔设置流（legacy 值在 IO 线程读取，m-12） */
+    private fun legacyBackedFlow(key: Preferences.Key<Boolean>, legacyKey: String, legacyDefault: Boolean): Flow<Boolean> = flow {
+        val legacy = readLegacyBoolean(legacyKey) ?: legacyDefault
+        emitAll(
+            settingsStore.data.map { preferences ->
+                preferences[key] ?: legacy
+            },
+        )
     }
 
     override fun currentEmotionScanPaused(): Boolean = runBlocking(Dispatchers.IO) {

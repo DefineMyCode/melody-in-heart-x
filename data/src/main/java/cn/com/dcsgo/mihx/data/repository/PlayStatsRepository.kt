@@ -160,10 +160,15 @@ class PlayStatsRepository(
                 val day = weekStart.plusDays(offset.toLong())
                 DayDuration(day, daily[day.toString()] ?: 0L)
             }
+            // M-4（评审 2026-10-15）：先过滤孤儿行（songId 不在曲库，如旧版本删歌残留）再 take(N)，
+            // 否则孤儿行挤占 Top 名额，真实歌曲被顶出榜单。
+            val knownSongIds = melodyDao.songs().mapTo(mutableSetOf()) { it.id }
             val weeklyTop = melodyDao.playCountsBetween(startOfDay(weekStart), nowMs)
+                .filter { it.songId in knownSongIds }
                 .take(PlaybackStatsSnapshot.WEEKLY_TOP_SIZE)
                 .map { it.songId to it.playCount }
             val monthlyTop = melodyDao.playCountsBetween(startOfDay(monthStart), nowMs)
+                .filter { it.songId in knownSongIds }
                 .take(PlaybackStatsSnapshot.MONTHLY_TOP_SIZE)
                 .map { it.songId to it.playCount }
 

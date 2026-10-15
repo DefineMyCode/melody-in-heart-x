@@ -28,6 +28,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -378,27 +382,31 @@ internal class PlayerRuntime(
         )
     }
     // ── 情境化随心播放（一期）数据源 ──
-    // 时段配置量级小，启动时快照 + 配置页变更后主动刷新（refreshMoodSlotCache）；
-    // 情绪词条映射同样快照（getAll 全量，随歌曲导入/校准低频变化）。
+    // M-2（评审 2026-10-15）修复：改为持续订阅仓库流（启动即拉取当前值，之后保存/删除配置、
+    // 新分析/用户校准情绪都会即时重发），不再依赖启动时一次性快照 + 手动刷新。
+    // 时段配置来自 DataStore 流；情绪词条来自 Room 表失效流（映射在 Default 线程计算）。
     @Volatile
     private var moodSlotConfigsCache: List<cn.com.dcsgo.mihx.core.model.TimeSlotConfig> = emptyList()
     @Volatile
     private var moodEmotionTagsCache: Map<Int, List<String>> = emptyMap()
 
-    private fun refreshMoodSlotCache() {
+    private fun observeMoodSlotCaches() {
         scope.launch {
-            runCatching {
-                moodSlotConfigsCache = timeSlotConfigRepository.currentConfigs()
-                moodEmotionTagsCache = songEmotionRepository.getAll().mapValues { (_, emotion) ->
-                    cn.com.dcsgo.mihx.core.model.emotionTagsOf(emotion)
-                }
-            }.onFailure { AppLog.warning(TAG, "refreshMoodSlotCache failed: ${it.message}") }
+            timeSlotConfigRepository.observeConfigs()
+                .catch { AppLog.warning(TAG, "observe mood slot configs failed: ${it.message}") }
+                .collect { moodSlotConfigsCache = it }
         }
-    }
-
-    /** 供配置页保存/删除后立即刷新缓存（否则判定仍用旧配置直到下次冷启动） */
-    fun refreshMoodSlots() {
-        refreshMoodSlotCache()
+        scope.launch {
+            songEmotionRepository.observeAll()
+                .map { emotions ->
+                    emotions.mapValues { (_, emotion) ->
+                        cn.com.dcsgo.mihx.core.model.emotionTagsOf(emotion)
+                    }
+                }
+                .flowOn(dispatchers.default)
+                .catch { AppLog.warning(TAG, "observe mood emotion tags failed: ${it.message}") }
+                .collect { moodEmotionTagsCache = it }
+        }
     }
 
     private val randomQueueFacade = PlayerRandomQueueFacade(
@@ -482,8 +490,8 @@ internal class PlayerRuntime(
                 sleepTimerCoordinator.restore()
             }
             startupFacade.start()
-            // 情境化随心播放：启动后异步拉取时段配置与情绪词条快照（低频，不阻塞启动）
-            refreshMoodSlotCache()
+            // 情境化随心播放：持续订阅时段配置与情绪词条流（M-2，低频、不阻塞启动）
+            observeMoodSlotCaches()
             if (startupSettings.bluetoothPlaybackMonitoringEnabled) {
                 bluetoothGraph.initialize()
             }

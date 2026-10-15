@@ -7,10 +7,12 @@ import cn.com.dcsgo.mihx.domain.repository.QuickSkipRepository
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicLong
 
 private const val TAG = "PlayDurationTracker"
@@ -34,7 +36,9 @@ private const val LONG_PLAY_THRESHOLD_MS = 5 * 60 * 1000L // 长歌兜底阈值�
  */
 class PlayDurationTracker(
     private val playStatsRepository: PlayStatsRepository,
-    private val quickSkipRepository: QuickSkipRepository
+    private val quickSkipRepository: QuickSkipRepository,
+    // 测试可注入的 tick 间隔（生产恒为 UPDATE_INTERVAL_MS，1s 粒度足够）
+    private val updateIntervalMs: Long = UPDATE_INTERVAL_MS,
 ) : PlaybackDurationMonitor {
 
     // 协程作用域，用于在后台线程中计时。
@@ -62,6 +66,17 @@ class PlayDurationTracker(
 
     // 是否正在运行计时任务
     private val isTracking = AtomicBoolean(false)
+
+    // M-1（评审 2026-10-15）修复：持有当前计时循环的 Job，停止/切歌时显式 cancel。
+    // 旧实现只翻 isTracking 标志位：旧循环还在 delay() 中休眠时 startPlayback 先 stop
+    // （标志位=false）再 start（compareAndSet(false,true) 放行新循环、标志位=true），
+    // 旧循环醒来看到 true 继续运行 → 每次切歌泄漏一个永不退出的计时循环，
+    // 并对 lastUpdateTimeMs 做非原子读改写、重复累加播放时长。
+    private var trackingJob: Job? = null
+
+    // 诊断/测试探针：当前存活（未退出）的计时循环数量。正常恒为 0（停止）或 1（播放中）；
+    // 大于 1 即存在计时循环泄漏。见 PlayDurationTrackerTest。
+    internal val activeTrackingLoops = AtomicInteger(0)
 
     /**
      * 开始播放新歌曲
@@ -121,6 +136,11 @@ class PlayDurationTracker(
     override fun stopPlayback() {
         isPlaying.set(false)
         isTracking.set(false)
+
+        // M-1：取消计时循环本身。只翻标志位不够——旧循环可能正在 delay() 中，
+        // 若随后 startPlayback 又把标志位拉回 true，旧循环将永不退出（协程泄漏）。
+        trackingJob?.cancel()
+        trackingJob = null
 
         // 捕获待结算数据并同步重置状态，结算整体搬到 IO 协程，避免在主线程阻塞 Room 事务。
         val songId = currentSongId
@@ -209,19 +229,24 @@ class PlayDurationTracker(
      */
     private fun startTracking() {
         if (isTracking.compareAndSet(false, true)) {
-            launchTracked("trackingLoop") {
-                while (isTracking.get()) {
-                    if (isPlaying.get() && !isSeeking.get()) {
-                        val currentTime = System.currentTimeMillis()
-                        val elapsedTime = currentTime - lastUpdateTimeMs.get()
+            trackingJob = launchTracked("trackingLoop") {
+                activeTrackingLoops.incrementAndGet()
+                try {
+                    while (isTracking.get()) {
+                        if (isPlaying.get() && !isSeeking.get()) {
+                            val currentTime = System.currentTimeMillis()
+                            val elapsedTime = currentTime - lastUpdateTimeMs.get()
 
-                        if (elapsedTime > 0) {
-                            currentPlayDurationMs.addAndGet(elapsedTime)
-                            lastUpdateTimeMs.set(currentTime)
+                            if (elapsedTime > 0) {
+                                currentPlayDurationMs.addAndGet(elapsedTime)
+                                lastUpdateTimeMs.set(currentTime)
+                            }
                         }
-                    }
 
-                    delay(UPDATE_INTERVAL_MS)
+                        delay(updateIntervalMs)
+                    }
+                } finally {
+                    activeTrackingLoops.decrementAndGet()
                 }
             }
         }
@@ -230,16 +255,15 @@ class PlayDurationTracker(
     /**
      * M-5（评审 2026-09-03）：统一的后台执行入口 —— SupervisorJob 防止单次异常取消整个 scope，
      * try/catch 保证 Room/IO 异常有日志、不再静默吞掉（取消异常必须原样上抛）。
+     * 返回 Job（M-1：计时循环用它做显式取消）。
      */
-    private fun launchTracked(what: String, block: suspend () -> Unit) {
-        scope.launch {
-            try {
-                block()
-            } catch (ce: CancellationException) {
-                throw ce
-            } catch (t: Throwable) {
-                AppLog.error(TAG, "$what failed: ${t.message}", t)
-            }
+    private fun launchTracked(what: String, block: suspend () -> Unit): Job = scope.launch {
+        try {
+            block()
+        } catch (ce: CancellationException) {
+            throw ce
+        } catch (t: Throwable) {
+            AppLog.error(TAG, "$what failed: ${t.message}", t)
         }
     }
 

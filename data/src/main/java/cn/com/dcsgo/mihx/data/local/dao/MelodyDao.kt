@@ -7,6 +7,7 @@ import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Upsert
 import cn.com.dcsgo.mihx.core.model.Song
+import kotlinx.coroutines.flow.Flow
 import cn.com.dcsgo.mihx.data.local.entity.AlbumEntity
 import cn.com.dcsgo.mihx.data.local.entity.ArtistEntity
 import cn.com.dcsgo.mihx.data.local.entity.MigrationStateEntity
@@ -389,6 +390,27 @@ interface MelodyDao {
 
     @Query("SELECT * FROM song_emotions")
     suspend fun allSongEmotions(): List<SongEmotionEntity>
+
+    /** song_emotions 可观察流（Room 表失效自动重发）：PlayerRuntime 情绪词条缓存的数据源（M-2，评审 2026-10-15） */
+    @Query("SELECT * FROM song_emotions")
+    fun observeAllSongEmotions(): Flow<List<SongEmotionEntity>>
+
+    /**
+     * 全库已知最大 songId（含统计/播放事件/秒切/情绪等关联表的残留引用）。
+     * M-4（评审 2026-10-15）：restoreFromRoom 以此为高水位分配 nextId，
+     * 防止被删歌曲（尤其旧版本删除不清理关联数据时）的 id 在重启后被新导入歌曲复用、继承其统计。
+     */
+    @Query(
+        "SELECT MAX(id) FROM (" +
+            "SELECT MAX(id) AS id FROM songs " +
+            "UNION ALL SELECT MAX(songId) AS id FROM play_stats " +
+            "UNION ALL SELECT MAX(songId) AS id FROM playback_events " +
+            "UNION ALL SELECT MAX(songId) AS id FROM quick_skip_songs " +
+            "UNION ALL SELECT MAX(songId) AS id FROM quick_skip_short_play_counts " +
+            "UNION ALL SELECT MAX(songId) AS id FROM song_emotions" +
+            ")",
+    )
+    suspend fun maxKnownSongId(): Int?
 
     @Query("SELECT songId, modelVersion FROM song_emotions")
     suspend fun songEmotionVersions(): List<SongEmotionVersion>

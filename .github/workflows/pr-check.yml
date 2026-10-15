@@ -1,0 +1,46 @@
+name: PR Check
+
+# M-6（评审 2026-10-15）：PR / push 到 main 必须先过完整校验（单测 + spotless + 架构校验），
+# 与 CLAUDE.md「提交前跑 ./gradlew check」的约定保持一致；发版流水线（release.yml）也依赖同一校验。
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pr-check-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3 # v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Gradle cache
+        uses: gradle/actions/setup-gradle@ed408507eac070d1f99cc633dbcf757c94c7933a # v4
+
+      - name: Run check (test + spotlessCheck + verifyProductArchitecture + androidTest compile)
+        # assembleDebugAndroidTest：仅编译仪器测试源集（无需设备），防止 UI 签名漂移漏检（2026-10-15）
+        run: ./gradlew check :app:assembleDebugAndroidTest --no-daemon --stacktrace
+
+      - name: Upload test & lint reports on failure
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: check-reports
+          path: |
+            **/build/reports/tests/**
+            **/build/reports/lint-results*.html
+          retention-days: 7

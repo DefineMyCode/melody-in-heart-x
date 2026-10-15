@@ -1,6 +1,7 @@
 package cn.com.dcsgo.mihx.domain.repository
 
 import cn.com.dcsgo.mihx.core.model.SongEmotion
+import kotlinx.coroutines.flow.Flow
 
 /**
  * 歌曲情绪仓库接口（域层）.
@@ -10,6 +11,13 @@ interface SongEmotionRepository {
     fun get(songId: Int): SongEmotion?
 
     fun getAll(): Map<Int, SongEmotion>
+
+    /**
+     * 全量情绪可观察流（写入即重发）：M-2（评审 2026-10-15）
+     * PlayerRuntime 情绪词条缓存由此持续订阅，新分析/用户校准即时反哺随心播放判定，
+     * 不再依赖启动时一次性快照。
+     */
+    fun observeAll(): Flow<Map<Int, SongEmotion>>
 
     /** 逐首完成时间(ms, 升序) — 详情页平均/上一首耗时统计 */
     fun analyzedTimeline(): List<Long>

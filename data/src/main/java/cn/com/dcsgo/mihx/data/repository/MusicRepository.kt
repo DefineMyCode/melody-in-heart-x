@@ -172,11 +172,18 @@ class MusicRepository(
             songs.addAll(restoredLibrary.songs)
             playlists.clear()
             playlists.addAll(restoredLibrary.playlists)
-            nextId = (songs.maxOfOrNull { it.id } ?: 0) + 1
+            // M-4（评审 2026-10-15）：nextId 以「全库已知最大 songId」（含统计/播放事件/秒切/情绪等
+            // 关联表的残留引用）为高水位，防止被删歌曲的 id 在重启后被新导入歌曲复用、继承其统计。
+            // SongEntity.id 非自增，maxKnownSongId() 为 null（空库）时回退曲库内最大 id。
+            val maxKnownId = dao.maxKnownSongId() ?: (songs.maxOfOrNull { it.id } ?: 0)
+            nextId = maxOf(maxKnownId, songs.maxOfOrNull { it.id } ?: 0) + 1
             nextPlaylistId = (playlists.maxOfOrNull { it.id } ?: 0) + 1
         }
         AppLog.info(TAG, "restoreFromRoom: restored ${restoredLibrary.songs.size} songs, ${restoredLibrary.playlists.size} playlists")
     }
+
+    /** 测试探针：下一个将分配的歌曲 id（验证 M-4 修复后不复用被删歌曲的 id） */
+    internal fun peekNextSongId(): Int = lock.read { nextId }
 
     /**
      * 异步校验所有歌曲的封面缓存，缓存文件不存在的重新提取。
@@ -479,7 +486,10 @@ class MusicRepository(
 
                     lock.write {
                         songs.add(song)
-                        addSongToPlaylistInternal(playlist.id, song.id)
+                        // m-1（评审 2026-10-15）：导入循环内不逐首整表落盘歌单（每次都会
+                        // 「删光全部歌单引用再整表重插」，1000 首歌 = 1000 次全量重写），
+                        // 统一由循环结束后的 persistPlaylists() 落盘一次
+                        addSongToPlaylistInternal(playlist.id, song.id, persist = false)
                         processedCount.incrementAndGet()
                         addedCount.incrementAndGet()
                     }
@@ -672,7 +682,7 @@ class MusicRepository(
     }
 
     /** 内部版本：不加锁，由调用方负责持有写锁 */
-    private fun addSongToPlaylistInternal(playlistId: Int, songId: Int): Boolean {
+    private fun addSongToPlaylistInternal(playlistId: Int, songId: Int, persist: Boolean = true): Boolean {
         val index = playlists.indexOfFirst { it.id == playlistId }
         if (index < 0) return false
         val playlist = playlists[index]
@@ -680,7 +690,7 @@ class MusicRepository(
         // songIds 为不可变 List，增改用 copy 生成新实例
         playlists[index] = playlist.copy(songIds = playlist.songIds + songId)
         updatePlaylistSongCount(playlistId)
-        persistPlaylists()
+        if (persist) persistPlaylists()
         return true
     }
 
@@ -705,6 +715,17 @@ class MusicRepository(
         playlists[index] = playlists[index].copy(songIds = orderedSongIds)
         persistPlaylists()
         AppLog.info(TAG, "reorderPlaylist: id=$playlistId, count=${orderedSongIds.size}")
+        true
+    }
+
+    /** 一次性整体替换歌单内容（单次写锁 + 单次落盘；m-9，评审 2026-10-15） */
+    fun replacePlaylistSongs(playlistId: Int, songIds: List<Int>): Boolean = lock.write {
+        val index = playlists.indexOfFirst { it.id == playlistId }
+        if (index < 0) return@write false
+        playlists[index] = playlists[index].copy(songIds = songIds)
+        updatePlaylistSongCount(playlistId)
+        persistPlaylists()
+        AppLog.info(TAG, "replacePlaylistSongs: id=$playlistId, count=${songIds.size}")
         true
     }
 
@@ -792,10 +813,6 @@ class MusicRepository(
 
             persistSongs { notifySongsChanged() }
             persistPlaylists()
-            // 情绪行(含 ~4KB embedding)一并清理, 防删除歌曲在 song_emotions 留孤儿
-            melodyDao?.let { dao ->
-                persistScope.launch { dao.deleteSongEmotionsFor(listOf(songId)) }
-            }
             AppLog.info(TAG, "deleteSong: deleted song id=$songId")
             DeleteSongResult.Success(
                 song = song,
@@ -806,6 +823,9 @@ class MusicRepository(
                 }
             )
         }
+        // M-4（评审 2026-10-15）：全量清理被删歌曲的关联数据（播放统计/播放事件/秒切/短播计数/情绪行），
+        // 复用与文件校验一致的清理路径；旧实现只清情绪行，遗留孤儿统计会被重启后复用同 id 的新歌继承。
+        cleanupMissingSongAssociations(setOf(songId))
         // 通知 UI 刷新（歌曲、歌单、曲库歌手/专辑目录）
         notifySongsChanged()
         result
@@ -1114,8 +1134,10 @@ class MusicRepository(
     }
 
     private fun deleteBackingFile(song: Song): BackingFileDeleteResult {
-        val uri = song.uri ?: return BackingFileDeleteResult.Failure("该歌曲没有可删除的本地文件")
-        val ctx = context ?: return BackingFileDeleteResult.Failure("无法访问应用上下文，未删除文件")
+        // M-4：无本地文件/无上下文（纯内存测试）视为「文件已缺失」——仅从列表移除并清理关联数据，
+        // 不再阻断删除流程（fileExists 对无上下文同样按乐观处理）。
+        val uri = song.uri ?: return BackingFileDeleteResult.AlreadyMissing
+        val ctx = context ?: return BackingFileDeleteResult.AlreadyMissing
 
         return try {
             val docFile = DocumentFile.fromSingleUri(ctx, uri)

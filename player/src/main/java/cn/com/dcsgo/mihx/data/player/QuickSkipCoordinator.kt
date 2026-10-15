@@ -28,13 +28,9 @@ class QuickSkipCoordinator(
             ?: playlistRepository.createPlaylist(PLAYLIST_NAME)
             ?: return
 
-        quickSkipPlaylist.songIds.toList().forEach { songId ->
-            playlistRepository.removeSongFromPlaylist(quickSkipPlaylist.id, songId)
-        }
-
-        quickSkipRepository.getSongIds().forEach { songId ->
-            playlistRepository.addSongToPlaylist(quickSkipPlaylist.id, songId)
-        }
+        // m-9（评审 2026-10-15）：整体替换，单次落盘；不再逐首删+逐首加
+        // （旧实现每首歌一次整表落盘，期间歌单短暂为空，1000 首 = 2000 次全量重写）
+        playlistRepository.replacePlaylistSongs(quickSkipPlaylist.id, quickSkipRepository.getSongIds().sorted())
     }
 
     companion object {

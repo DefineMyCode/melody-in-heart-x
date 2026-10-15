@@ -17,6 +17,9 @@ import cn.com.dcsgo.mihx.data.local.entity.QuickSkipShortPlayEntity
 import cn.com.dcsgo.mihx.data.local.entity.SongArtistCrossRef
 import cn.com.dcsgo.mihx.data.local.entity.SongEntity
 import cn.com.dcsgo.mihx.data.local.entity.SongGroupOverrideEntity
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -278,6 +281,17 @@ class QuickSkipSongsRepositoryRoomTest {
             songEmotions.firstOrNull { it.songId == songId }
 
         override suspend fun allSongEmotions(): List<SongEmotionEntity> = songEmotions
+
+        override fun observeAllSongEmotions(): Flow<List<SongEmotionEntity>> =
+            flow { emit(songEmotions.toList()) }
+
+        override suspend fun maxKnownSongId(): Int? = listOf(
+            songs.maxOfOrNull { it.id },
+            playStats.maxOfOrNull { it.songId },
+            quickSkipSongs.maxOfOrNull { it.songId },
+            quickSkipShortPlayCounts.maxOfOrNull { it.songId },
+            songEmotions.maxOfOrNull { it.songId },
+        ).filterNotNull().maxOrNull()
 
         override suspend fun songEmotionVersions(): List<SongEmotionVersion> =
             songEmotions.map { SongEmotionVersion(it.songId, it.modelVersion) }

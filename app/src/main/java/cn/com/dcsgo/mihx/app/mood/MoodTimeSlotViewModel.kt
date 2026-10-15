@@ -27,7 +27,8 @@ data class MoodTagCount(val tag: String, val songCount: Int)
  *
  * 数据流（设计文档 §4.6）：配置列表直接观察 TimeSlotConfigRepository；
  * 词条歌曲数在进入配置页时一次性快照计算（IO 线程），不阻塞组合期（评审 M-7 模式）。
- * 保存/删除后列表自动更新（DataStore 流），并触发 :feature:player 侧缓存刷新（[onConfigsChanged]）。
+ * M-2（评审 2026-10-15）：:feature:player 侧（PlayerRuntime）同样持续订阅仓库流，
+ * 保存/删除后双方即时生效，无需手动回调刷新。
  */
 @HiltViewModel
 class MoodTimeSlotViewModel @Inject constructor(
@@ -81,7 +82,6 @@ class MoodTimeSlotViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 timeSlotConfigRepository.save(config)
-                onConfigsChanged?.invoke()
                 onSaved(true, null)
             } catch (e: IllegalArgumentException) {
                 // 校验失败（重叠/零长度等）：消息即用户可读文案
@@ -95,7 +95,6 @@ class MoodTimeSlotViewModel @Inject constructor(
     fun delete(id: Long) {
         viewModelScope.launch {
             timeSlotConfigRepository.delete(id)
-            onConfigsChanged?.invoke()
         }
     }
 
@@ -104,7 +103,4 @@ class MoodTimeSlotViewModel @Inject constructor(
             playerSettingsRepository.setMoodTimeSlotEnabled(enabled)
         }
     }
-
-    /** 配置变更回调（由 App 装配层注入，用于刷新 player 侧判定缓存） */
-    var onConfigsChanged: (() -> Unit)? = null
 }

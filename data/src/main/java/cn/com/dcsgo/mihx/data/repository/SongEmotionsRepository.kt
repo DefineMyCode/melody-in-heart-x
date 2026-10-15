@@ -5,6 +5,8 @@ import cn.com.dcsgo.mihx.data.local.dao.MelodyDao
 import cn.com.dcsgo.mihx.data.local.entity.SongEmotionEntity
 import cn.com.dcsgo.mihx.domain.repository.SongEmotionRepository
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.runBlocking
 import org.json.JSONArray
 
@@ -23,6 +25,11 @@ class SongEmotionsRepository(
     override fun getAll(): Map<Int, SongEmotion> = runBlocking(Dispatchers.IO) {
         melodyDao.allSongEmotions().associate { it.songId to it.toDomain() }
     }
+
+    override fun observeAll(): Flow<Map<Int, SongEmotion>> =
+        melodyDao.observeAllSongEmotions().map { rows ->
+            rows.associate { it.songId to it.toDomain() }
+        }
 
     override fun analyzedVersions(): Map<Int, String> = runBlocking(Dispatchers.IO) {
         melodyDao.songEmotionVersions().associate { it.songId to it.modelVersion }

@@ -71,6 +71,13 @@ object MelodyMigrations {
     val MIGRATION_5_6 = object : Migration(5, 6) {
         override fun migrate(db: SupportSQLiteDatabase) {
             // 播放会话事件表：按日/周/月聚合时长与歌曲热度榜
+            //
+            // m-4 迁移测试暴露的历史不一致（CI Linux 必现）：v6 的导出 schema
+            // （v6.json，indices=[]）里 playback_events **没有**单列 startedAtMs 索引——
+            // v6 时代 entity 未声明 @Index，新装库走 entity 建表无索引，而旧迁移库走
+            // 下面的 CREATE INDEX 有索引，直到 7→8 才统一为复合索引。
+            // 因此这里不再创建单列索引（与 v6 schema 一致）；7→8 直接建复合索引，
+            // 其 DROP IF EXISTS 保留，兼容真实走过旧 5→6 迁移的老设备。
             db.execSQL(
                 "CREATE TABLE IF NOT EXISTS `playback_events` (" +
                     "`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
@@ -78,10 +85,6 @@ object MelodyMigrations {
                     "`startedAtMs` INTEGER NOT NULL, " +
                     "`durationMs` INTEGER NOT NULL, " +
                     "`isEffectivePlay` INTEGER NOT NULL)"
-            )
-            db.execSQL(
-                "CREATE INDEX IF NOT EXISTS `index_playback_events_startedAtMs` " +
-                    "ON `playback_events` (`startedAtMs`)"
             )
         }
     }

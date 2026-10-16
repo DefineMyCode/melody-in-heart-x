@@ -17,7 +17,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 | LiteRT | 1.4.1 | 情绪分析模型运行时 |
 | WorkManager | 2.9.1 | |
 | minSdk / targetSdk | 33 / 36 | Java 11 bytecode |
-| versionName | 3.10.2 (versionCode 44) | |
+| versionName | 3.10.3 (versionCode 45) | |
 
 ## Build / Test / Lint Commands
 

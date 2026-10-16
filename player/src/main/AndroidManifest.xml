@@ -3,7 +3,7 @@
 
     <application>
         <service
-            android:name="cn.com.dcsgo.mihx.data.player.AppMediaSessionService"
+            android:name="cn.com.dcsgo.mihx.player.AppMediaSessionService"
             android:exported="false"
             android:foregroundServiceType="mediaPlayback">
             <intent-filter>

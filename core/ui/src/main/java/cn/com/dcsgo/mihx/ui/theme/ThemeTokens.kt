@@ -1,6 +1,7 @@
 package cn.com.dcsgo.mihx.ui.theme
 
 import androidx.compose.runtime.Immutable
+import androidx.compose.ui.graphics.Color
 import cn.com.dcsgo.mihx.core.model.ThemeVariant
 
 /**
@@ -332,4 +333,21 @@ data class ThemeTokens(
             ThemeVariant.SUNRISE -> if (dark) SunriseNight else SunriseDay
         }
     }
+}
+
+/**
+ * m-11（评审 2026-10-15）：设置页主题色卡 —— 由内置 tokens 派生，
+ * 取（夜间 accent, 日间 accent, 日间 bg0）三色作预览。
+ *
+ * 此前 feature:settings 用 24 处硬编码 Color(0x...) 重复定义同一批色值，
+ * 主题令牌调整时色卡会静默漂移；现收敛为单一事实来源。
+ */
+fun themeSwatchColors(variant: ThemeVariant): List<Color> {
+    val night = ThemeTokens.builtin(variant, dark = true)
+    val day = ThemeTokens.builtin(variant, dark = false)
+    return listOf(
+        Color(night.accent),
+        Color(day.accent),
+        Color(day.bg0),
+    )
 }

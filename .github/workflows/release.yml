@@ -42,7 +42,8 @@ jobs:
 
       - name: Run check (test + spotlessCheck + verifyProductArchitecture + androidTest compile)
         # assembleDebugAndroidTest：仅编译仪器测试源集（无需设备），防止 UI 签名漂移漏检（2026-10-15）
-        run: ./gradlew check :app:assembleDebugAndroidTest --no-daemon --stacktrace
+        # :buildSrc:test：verifyProductArchitecture 规则本体的单测（m-10）
+        run: ./gradlew check :app:assembleDebugAndroidTest :buildSrc:test --no-daemon --stacktrace
 
   build-release:
     needs: check

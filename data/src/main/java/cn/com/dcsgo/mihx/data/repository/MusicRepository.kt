@@ -47,7 +47,7 @@ import kotlin.concurrent.write
 
 private const val TAG = "MusicRepository"
 
-private sealed class BackingFileDeleteResult {
+internal sealed class BackingFileDeleteResult {
     data object Deleted : BackingFileDeleteResult()
     data object AlreadyMissing : BackingFileDeleteResult()
     data class Failure(val reason: String) : BackingFileDeleteResult()
@@ -383,11 +383,11 @@ class MusicRepository(
         val audioFiles = mutableListOf<ScannedAudioFile>()
         val lrcFilesByKey = mutableMapOf<String, Uri>()
         val scanStartedAt = PerformanceTrace.nowMs()
-        val fastScanUsed = tryFastFileScan(ctx, treeUri, audioFiles, lrcFilesByKey)
+        val fastScanUsed = LibraryImportScanner.tryFastFileScan(ctx, treeUri, audioFiles, lrcFilesByKey)
         if (!fastScanUsed || audioFiles.isEmpty()) {
             audioFiles.clear()
             lrcFilesByKey.clear()
-            collectLibraryFiles(rootDoc, audioFiles, lrcFilesByKey, depth = 0, relativeDir = "")
+            LibraryImportScanner.collectLibraryFiles(rootDoc, audioFiles, lrcFilesByKey, depth = 0, relativeDir = "")
         }
         PerformanceTrace.log(
             operation = "music_import_scan",
@@ -531,131 +531,6 @@ class MusicRepository(
         onProgress: (processed: Int, total: Int) -> Unit,
     ): Int = addFolder(treeUri, onProgress)
 
-    /** 递归收集 DocumentFile 树中的音频和 LRC 文件，最多 3 层深度 */
-    private fun collectLibraryFiles(
-        dir: DocumentFile,
-        audioFiles: MutableList<ScannedAudioFile>,
-        lrcFilesByKey: MutableMap<String, Uri>,
-        depth: Int,
-        relativeDir: String,
-    ) {
-        if (depth > 3) return
-        dir.listFiles().forEach { file ->
-            val fileName = file.name
-            when {
-                file.isDirectory -> {
-                    val childDir = listOf(relativeDir, fileName.orEmpty())
-                        .filter { it.isNotBlank() }
-                        .joinToString("/")
-                    collectLibraryFiles(file, audioFiles, lrcFilesByKey, depth + 1, childDir)
-                }
-                file.isFile && AudioFileUtils.isAudioFile(file.type, fileName) -> {
-                    audioFiles += ScannedAudioFile(file.uri, file.name ?: "未知", lrcMatchKey(relativeDir, fileName))
-                }
-                file.isFile && fileName?.endsWith(".lrc", ignoreCase = true) == true -> {
-                    lrcFilesByKey.putIfAbsent(lrcMatchKey(relativeDir, fileName), file.uri)
-                }
-            }
-        }
-    }
-
-    /**
-     * 尝试用真实路径 + java.io.File 直接递归枚举（替代 SAF 逐目录 DocumentsProvider 查询）。
-     * 仅当：已授权 READ_MEDIA_AUDIO、目录位于主外部存储且可被 File API 访问。
-     * @return true 表示已走 File 快扫（结果可能为空，调用方需在为空时回退 SAF）
-     */
-    private fun tryFastFileScan(
-        ctx: Context,
-        treeUri: Uri,
-        audioFiles: MutableList<ScannedAudioFile>,
-        lrcFilesByKey: MutableMap<String, Uri>,
-    ): Boolean {
-        if (ctx.checkSelfPermission(Manifest.permission.READ_MEDIA_AUDIO) != PackageManager.PERMISSION_GRANTED) {
-            AppLog.info(TAG, "tryFastFileScan: skip, READ_MEDIA_AUDIO not granted")
-            return false
-        }
-        val rootReal = SongPathResolver.resolveRealPath(ctx, treeUri)
-        if (rootReal == null) {
-            AppLog.info(TAG, "tryFastFileScan: skip, cannot resolve real path for $treeUri")
-            return false
-        }
-        val rootFile = File(rootReal)
-        if (!rootFile.isDirectory) {
-            AppLog.info(TAG, "tryFastFileScan: skip, not a directory: $rootReal")
-            return false
-        }
-        val docId = try {
-            // tree URI 的 docId 要用 getTreeDocumentId（getDocumentId 只接受 document URI）
-            DocumentsContract.getTreeDocumentId(treeUri)
-        } catch (e: Exception) {
-            AppLog.info(TAG, "tryFastFileScan: skip, cannot get tree docId: ${e.message}")
-            return false
-        }
-        val storageRel = docId.substringAfter("primary:", "").trimEnd('/')
-        if (storageRel.isEmpty()) {
-            AppLog.info(TAG, "tryFastFileScan: skip, not primary storage: docId=$docId")
-            return false
-        }
-        AppLog.info(TAG, "addFolder: fast File scan enabled at $rootReal")
-        collectLibraryFilesFromRealPath(
-            dir = rootFile,
-            treeUri = treeUri,
-            audioFiles = audioFiles,
-            lrcFilesByKey = lrcFilesByKey,
-            depth = 0,
-            relativeDir = "",
-            relFromStorage = storageRel,
-        )
-        return true
-    }
-
-    /**
-     * 用 java.io.File 递归收集真实路径下的音频与 LRC，最多 3 层。
-     * 每个文件仍用 tree URI + docId 构造 document URI（与 SAF 路径产出的 URI 完全一致，
-     * 去重/路径归一/播放均无需改动）；lrc 读取走 ContentResolver，依赖 tree 持久化权限而非媒体权限。
-     */
-    private fun collectLibraryFilesFromRealPath(
-        dir: File,
-        treeUri: Uri,
-        audioFiles: MutableList<ScannedAudioFile>,
-        lrcFilesByKey: MutableMap<String, Uri>,
-        depth: Int,
-        relativeDir: String,
-        relFromStorage: String,
-    ) {
-        if (depth > 3) return
-        dir.listFiles()?.forEach { file ->
-            val fileName = file.name ?: return@forEach
-            when {
-                file.isDirectory -> {
-                    val childDir = listOf(relativeDir, fileName).filter { it.isNotBlank() }.joinToString("/")
-                    val childRel = listOf(relFromStorage, fileName).filter { it.isNotBlank() }.joinToString("/")
-                    collectLibraryFilesFromRealPath(file, treeUri, audioFiles, lrcFilesByKey, depth + 1, childDir, childRel)
-                }
-                file.isFile && AudioFileUtils.isAudioFile(null, fileName) -> {
-                    val docUri = treeDocumentUri(treeUri, relFromStorage, fileName)
-                    audioFiles += ScannedAudioFile(docUri, fileName, lrcMatchKey(relativeDir, fileName))
-                }
-                file.isFile && fileName.endsWith(".lrc", ignoreCase = true) -> {
-                    lrcFilesByKey.putIfAbsent(
-                        lrcMatchKey(relativeDir, fileName),
-                        treeDocumentUri(treeUri, relFromStorage, fileName),
-                    )
-                }
-            }
-        }
-    }
-
-    /** 用 tree URI + 相对存储路径构造 document URI（纯字符串拼接，不触发 provider 查询） */
-    private fun treeDocumentUri(treeUri: Uri, relFromStorage: String, fileName: String): Uri {
-        val rel = if (relFromStorage.isBlank()) fileName else "$relFromStorage/$fileName"
-        return DocumentsContract.buildDocumentUriUsingTree(treeUri, "primary:$rel")
-    }
-
-    private fun lrcMatchKey(relativeDir: String, fileName: String?): String {
-        val baseName = fileName.orEmpty().substringBeforeLast(".").lowercase()
-        return "$relativeDir/$baseName"
-    }
 
     // ─────────────────────────────────────────────────────────────
     // 歌单管理
@@ -792,7 +667,7 @@ class MusicRepository(
             songs.firstOrNull { it.id == songId }
         } ?: return@withContext DeleteSongResult.Failure("歌曲不存在或已被删除")
 
-        val fileDeleteResult = deleteBackingFile(song)
+        val fileDeleteResult = SongFileOps.deleteBackingFile(context, song)
         if (fileDeleteResult is BackingFileDeleteResult.Failure) {
             return@withContext DeleteSongResult.Failure(fileDeleteResult.reason)
         }
@@ -868,7 +743,7 @@ class MusicRepository(
         }
 
         val missingIds = snapshot
-            .filter { it.uri != null && !fileExists(it.uri!!) }
+            .filter { it.uri != null && !SongFileOps.fileExists(context, it.uri!!) }
             .mapTo(mutableSetOf()) { it.id }
 
         var removedPlaylistRefs = 0
@@ -895,7 +770,7 @@ class MusicRepository(
         val aliveSongs = snapshot.filter { it.uri != null && it.id !in missingIds }
         val candidates: List<Song> = when (mode) {
             FileCheckMode.DEEP -> aliveSongs
-            FileCheckMode.QUICK -> aliveSongs.filter { hasFileFingerprintChanged(it) }
+            FileCheckMode.QUICK -> aliveSongs.filter { SongFileOps.hasFileFingerprintChanged(context, it) }
         }
         val updatedCount = if (candidates.isEmpty()) {
             0
@@ -998,35 +873,6 @@ class MusicRepository(
             toRemove.toList()
         }
 
-    /** 快速校验指纹：文件大小 + 最后修改时间。任一变化即视为可能变化。 */
-    private fun hasFileFingerprintChanged(song: Song): Boolean {
-        val uri = song.uri ?: return false
-        val ctx = context ?: return false
-        return try {
-            ctx.contentResolver.openFileDescriptor(uri, "r")?.use { pfd ->
-                val size = pfd.statSize
-                val mtime = try {
-                    ctx.contentResolver.query(
-                        uri,
-                        arrayOf(android.provider.DocumentsContract.Document.COLUMN_LAST_MODIFIED),
-                        null, null, null,
-                    )?.use { c ->
-                        if (c.moveToFirst()) c.getLong(0) else 0L
-                    } ?: 0L
-                } catch (_: Exception) {
-                    0L
-                }
-                // 指纹存 Room SongEntity 的 size + lastModified 列; 两者都为 null(旧数据未记录)视为未变化,
-                // 避免 Quick 首跑就对全库重提取
-                val stored = song.fileFingerprint
-                stored == null || stored != "$size:$mtime"
-            } ?: true
-        } catch (e: Exception) {
-            AppLog.debug(TAG, "fingerprint: ${song.id} -> ${e.javaClass.simpleName}: ${e.message}")
-            true
-        }
-    }
-
     /**
      * 重新提取并就地更新元数据。并行度 8（与 addFolder 一致），仅写有实际变化的行。
      * 封面缓存按 songId 命名：元数据变了但封面通常不变（同一首歌），故只在提取出的
@@ -1121,43 +967,6 @@ class MusicRepository(
         dao.deleteOrphanAlbums()
     }
 
-    /** 判断 SAF / file URI 对应的文件是否可打开（文件存在） */
-    private fun fileExists(uri: Uri): Boolean {
-        val ctx = context ?: return true
-        return try {
-            ctx.contentResolver.openFileDescriptor(uri, "r")?.use { true } ?: false
-        } catch (e: Exception) {
-            AppLog.debug(TAG, "fileExists: ${uri} -> ${e.javaClass.simpleName}: ${e.message}")
-            false
-        }
-    }
-
-    private fun deleteBackingFile(song: Song): BackingFileDeleteResult {
-        // M-4：无本地文件/无上下文（纯内存测试）视为「文件已缺失」——仅从列表移除并清理关联数据，
-        // 不再阻断删除流程（fileExists 对无上下文同样按乐观处理）。
-        val uri = song.uri ?: return BackingFileDeleteResult.AlreadyMissing
-        val ctx = context ?: return BackingFileDeleteResult.AlreadyMissing
-
-        return try {
-            val docFile = DocumentFile.fromSingleUri(ctx, uri)
-                ?: return BackingFileDeleteResult.Failure("无法定位歌曲文件，未删除")
-            if (!docFile.exists()) return BackingFileDeleteResult.AlreadyMissing
-            if (!docFile.canWrite()) return BackingFileDeleteResult.Failure("没有权限删除该歌曲文件")
-
-            if (docFile.delete()) {
-                AppLog.info(TAG, "deleteBackingFile: deleted backing file")
-                BackingFileDeleteResult.Deleted
-            } else {
-                BackingFileDeleteResult.Failure("系统拒绝删除该歌曲文件")
-            }
-        } catch (e: SecurityException) {
-            AppLog.error(TAG, "deleteBackingFile: missing permission: ${e.message}", e)
-            BackingFileDeleteResult.Failure("没有权限删除该歌曲文件")
-        } catch (e: Exception) {
-            AppLog.error(TAG, "deleteBackingFile: failed: ${e.message}", e)
-            BackingFileDeleteResult.Failure("删除歌曲文件失败：${e.message ?: "未知错误"}")
-        }
-    }
 
     fun getFavoriteSongs(): List<Song> = lock.read {
         playlists.firstOrNull { it.name == "我的最爱" }
@@ -1191,10 +1000,4 @@ class MusicRepository(
         AppLog.info(TAG, "updateSongTitleOverride: song=$songId")
         true
     }
-
-    private data class ScannedAudioFile(
-        val uri: Uri,
-        val displayName: String,
-        val matchKey: String,
-    )
 }

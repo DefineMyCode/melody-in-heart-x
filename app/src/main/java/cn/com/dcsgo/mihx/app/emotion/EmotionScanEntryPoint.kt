@@ -1,6 +1,6 @@
 package cn.com.dcsgo.mihx.app.emotion
 
-import cn.com.dcsgo.mihx.data.player.EmotionAnalyzer
+import cn.com.dcsgo.mihx.player.EmotionAnalyzer
 import cn.com.dcsgo.mihx.domain.repository.SongEmotionRepository
 import cn.com.dcsgo.mihx.domain.repository.SongRepository
 import dagger.hilt.EntryPoint

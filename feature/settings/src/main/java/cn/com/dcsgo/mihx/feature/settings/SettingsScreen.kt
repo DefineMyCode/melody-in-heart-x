@@ -42,7 +42,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
@@ -51,6 +50,7 @@ import androidx.compose.ui.unit.dp
 import cn.com.dcsgo.mihx.core.model.ThemeMode
 import cn.com.dcsgo.mihx.core.model.ThemeVariant
 import cn.com.dcsgo.mihx.core.model.ScreenOrientationMode
+import cn.com.dcsgo.mihx.ui.theme.themeSwatchColors
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -253,48 +253,9 @@ private fun ThemeVariantCard(
     modifier: Modifier = Modifier,
     onClick: () -> Unit,
 ) {
-    val swatchColors = when (variant) {
-        ThemeVariant.MONO -> listOf(
-            Color(0xFFE6E6E6),
-            Color(0xFF161616),
-            Color(0xFFF4F4F4),
-        )
-        ThemeVariant.VERMILION -> listOf(
-            Color(0xFFC04F42),
-            Color(0xFFA32E25),
-            Color(0xFFFAF5F2),
-        )
-        ThemeVariant.INDIGO -> listOf(
-            Color(0xFFA6B4F0),
-            Color(0xFF4A5FC0),
-            Color(0xFFEDF0FB),
-        )
-        ThemeVariant.SAGE -> listOf(
-            Color(0xFFA9CBA3),
-            Color(0xFF3F6E52),
-            Color(0xFFEFF5EF),
-        )
-        ThemeVariant.AMBER -> listOf(
-            Color(0xFFEFC583),
-            Color(0xFF9A5B12),
-            Color(0xFFFBF6EE),
-        )
-        ThemeVariant.SKY -> listOf(
-            Color(0xFF7DB8EE),
-            Color(0xFF2F6DB5),
-            Color(0xFFEFF5FC),
-        )
-        ThemeVariant.FRESH -> listOf(
-            Color(0xFFB2DF8F),
-            Color(0xFF327A3B),
-            Color(0xFFF1F8EE),
-        )
-        ThemeVariant.SUNRISE -> listOf(
-            Color(0xFFF2A6A0),
-            Color(0xFFA8473F),
-            Color(0xFFFBF4F1),
-        )
-    }
+    // m-11（评审 2026-10-15）：色卡由 core:ui 主题令牌派生（单一事实来源），
+    // 移除 24 处硬编码 Color(0x...)，主题调整时色卡自动跟随
+    val swatchColors = themeSwatchColors(variant)
     // 对齐设计系统 §5.8 颜色选择卡：bg1 底 + 选中态 accent 描边 + 对勾
     Column(
         modifier = modifier

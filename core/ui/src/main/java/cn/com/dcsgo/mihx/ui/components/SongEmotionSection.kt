@@ -123,9 +123,11 @@ fun SongEmotionSection(
         return
     }
     val scheme = MaterialTheme.colorScheme
-    val vColor = Color(0xFF42A5F5)
-    val aColor = Color(0xFFFFB74D)
-    val peakColor = Color(0xFFE57373)
+    // m-11（评审 2026-10-15）：曲线配色改由主题派生（V=primary, A=tertiary, 峰值=error），
+    // 不再硬编码绕开主题——换肤/换主题色时曲线保持一致的可辨识度
+    val vColor = scheme.primary
+    val aColor = scheme.tertiary
+    val peakColor = scheme.error
     // 保存走 suspend 控制器(仓库桥在 Default 线程执行), 用组合作用域拉起
     val scope = rememberCoroutineScope()
     var showCalibrate by remember { mutableStateOf(false) }

@@ -8,7 +8,7 @@ import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
 import cn.com.dcsgo.mihx.core.common.AppLog
-import cn.com.dcsgo.mihx.data.player.EmotionAnalyzer
+import cn.com.dcsgo.mihx.player.EmotionAnalyzer
 import cn.com.dcsgo.mihx.domain.repository.SongEmotionRepository
 import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.android.qualifiers.ApplicationContext

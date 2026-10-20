@@ -12,6 +12,8 @@ data class StoredPlaybackSnapshot(
     val isInfinitePlay: Boolean,
     val currentSongId: Int?,
     val infinitePlayedIdsJson: String?,
+    /** 探索播放会话（2026-10-20）：DataStore 布尔键，无 legacy 回退 */
+    val isExplorePlay: Boolean = false,
 )
 
 class PlaybackStateSnapshotSerializer {

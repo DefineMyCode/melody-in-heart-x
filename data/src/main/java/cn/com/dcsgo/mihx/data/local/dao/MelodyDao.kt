@@ -21,6 +21,7 @@ import cn.com.dcsgo.mihx.data.local.entity.SongArtistCrossRef
 import cn.com.dcsgo.mihx.data.local.entity.SongEmotionEntity
 import cn.com.dcsgo.mihx.data.local.entity.SongEntity
 import cn.com.dcsgo.mihx.data.local.entity.SongGroupOverrideEntity
+import cn.com.dcsgo.mihx.data.local.entity.WordPreferenceEntity
 
 /** 歌手目录聚合行 */
 data class ArtistCatalogRow(
@@ -451,6 +452,22 @@ interface MelodyDao {
             "WHERE songId = :songId"
     )
     suspend fun clearSongEmotionCorrection(songId: Int)
+
+    // ─────────── word_preferences（2026-10-20 探索播放：情绪词条收听偏好计票） ───────────
+
+    /** word_preferences 可观察流（Room 表失效自动重发）：PlayerRuntime 探索播放缓存的数据源 */
+    @Query("SELECT * FROM word_preferences")
+    fun observeAllWordPreferences(): Flow<List<WordPreferenceEntity>>
+
+    @Query("SELECT * FROM word_preferences")
+    suspend fun allWordPreferences(): List<WordPreferenceEntity>
+
+    /** 批量 upsert：读当前值 → 票数 +1 → 写回，由仓储层完成（DAO 只做整行替换） */
+    @Upsert
+    suspend fun upsertWordPreferences(items: List<WordPreferenceEntity>)
+
+    @Query("DELETE FROM word_preferences")
+    suspend fun clearWordPreferences()
 }
 
 /** analyzedVersions() 的轻量投影. */

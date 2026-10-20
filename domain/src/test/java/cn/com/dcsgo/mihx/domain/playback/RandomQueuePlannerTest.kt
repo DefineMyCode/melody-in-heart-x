@@ -123,4 +123,56 @@ class RandomQueuePlannerTest {
             sampleRate = if (playable) 44_100 else 0,
         )
     }
+
+    // ── 探索播放（2026-10-20）：补充计划 ──
+
+    @Test
+    fun exploreRefillAddsExactlyCountSongsExcludingExistingQueue() {
+        val queue = PlayQueue().setQueue(songs(1, 2), startIndex = 0)
+
+        val plan = planner.planExploreRefill(
+            allSongs = songs(1, 2, 3, 4, 5, 6, 7),
+            queue = queue,
+            count = 5,
+        )
+
+        assertEquals(listOf(3, 4, 5, 6, 7), plan?.addedSongs?.map { it.id })
+        assertEquals(listOf(1, 2, 3, 4, 5, 6, 7), plan?.queue?.songs?.map { it.id })
+    }
+
+    @Test
+    fun exploreRefillReturnsNullWhenNoPlayableSongs() {
+        val plan = planner.planExploreRefill(
+            allSongs = listOf(song(1, playable = false)),
+            queue = PlayQueue(),
+            count = 5,
+        )
+
+        assertTrue(plan == null)
+    }
+
+    @Test
+    fun exploreRefillReturnsEmptyAddedWhenPoolAllInQueue() {
+        val queue = PlayQueue().setQueue(songs(1, 2), startIndex = 0)
+
+        val plan = planner.planExploreRefill(
+            allSongs = songs(1, 2),
+            queue = queue,
+            count = 5,
+        )
+
+        assertEquals(0, plan?.addedSongs?.size)
+        assertEquals(listOf(1, 2), plan?.queue?.songs?.map { it.id })
+    }
+
+    @Test
+    fun planRandomQueueHonorsExplicitBatchSize() {
+        val plan = planner.planRandomQueue(
+            songs = songs(1, 2, 3, 4, 5),
+            recentSongIds = emptySet(),
+            batchSize = 10,
+        )
+
+        assertEquals(5, plan?.songs?.size)
+    }
 }

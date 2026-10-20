@@ -2,6 +2,10 @@ package cn.com.dcsgo.mihx.feature.home
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import cn.com.dcsgo.mihx.core.model.PlayMode
@@ -15,6 +19,8 @@ data class HomeRouteState(
     val durationMs: Long,
     val playMode: PlayMode,
     val isInfinitePlay: Boolean,
+    val isExploreModeActive: Boolean = false,
+    val isExplorePlay: Boolean = false,
     val sameNameSongs: List<Song>,
     val isSleepTimerActive: Boolean = false,
     val sleepTimerRemainingMs: Long = 0L,
@@ -55,6 +61,25 @@ fun HomeRoute(
     /** 透传给 HomeScreen 的顶部 padding。SHEET 抽屉形态传 31.dp 让「状态栏→封面」对齐默认三页（默认 16dp）。 */
     topContentPaddingDp: androidx.compose.ui.unit.Dp = 16.dp,
 ) {
+    // 探索播放（2026-10-20）：探索模式下「无限随机播放」按钮禁用，点击弹对话框引导去设置页切换模式
+    var showExploreHintDialog by androidx.compose.runtime.remember { mutableStateOf(false) }
+    if (showExploreHintDialog) {
+        androidx.compose.material3.AlertDialog(
+            onDismissRequest = { showExploreHintDialog = false },
+            title = { androidx.compose.material3.Text("探索播放中") },
+            text = {
+                androidx.compose.material3.Text(
+                    "若想恢复无限随机播放，请到「我的 → 随心播放增强」中关闭探索模式或切换其它模式。",
+                )
+            },
+            confirmButton = {
+                androidx.compose.material3.TextButton(onClick = { showExploreHintDialog = false }) {
+                    androidx.compose.material3.Text("知道了")
+                }
+            },
+        )
+    }
+
     HomeScreen(
         topContentPaddingDp = topContentPaddingDp,
         currentSong = state.currentSong,
@@ -63,6 +88,7 @@ fun HomeRoute(
         durationMs = state.durationMs,
         playMode = state.playMode,
         isInfinitePlay = state.isInfinitePlay,
+        isExploreModeActive = state.isExploreModeActive,
         sameNameSongs = state.sameNameSongs,
         isSleepTimerActive = state.isSleepTimerActive,
         sleepTimerRemainingMs = state.sleepTimerRemainingMs,
@@ -94,7 +120,10 @@ fun HomeRoute(
         onAlbumClick = actions.onAlbumClick,
         onLuckyPlayClick = actions.onLuckyPlayClick,
         onInfinitePlayClick = {
-            if (state.isInfinitePlay) {
+            if (state.isExploreModeActive) {
+                // 探索播放（2026-10-20）：无限随机播放按钮失效，仅弹提示对话框
+                showExploreHintDialog = true
+            } else if (state.isInfinitePlay) {
                 actions.onStopInfinitePlay()
                 showToast("已退出无限随机播放模式")
             } else {

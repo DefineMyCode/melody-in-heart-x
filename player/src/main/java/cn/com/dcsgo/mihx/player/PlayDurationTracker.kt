@@ -274,6 +274,8 @@ class PlayDurationTracker(
         return currentPlayDurationMs.get()
     }
 
+    override fun currentPlayedMs(): Long = currentPlayDurationMs.get()
+
     /**
      * 标记开始拖动进度条
      */

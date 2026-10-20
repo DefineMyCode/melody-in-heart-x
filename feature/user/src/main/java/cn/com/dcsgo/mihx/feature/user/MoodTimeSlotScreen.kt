@@ -31,7 +31,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -43,11 +42,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import cn.com.dcsgo.mihx.core.model.RandomEnhanceMode
 import cn.com.dcsgo.mihx.core.model.TimeSlotConfig
+import cn.com.dcsgo.mihx.core.model.WordPreference
+import cn.com.dcsgo.mihx.core.model.WordPreferenceKind
 
 /** 词条 chip：名称 + 歌曲数角标（选中 = 已加入该时段） */
 @Composable
@@ -303,6 +306,8 @@ internal fun MoodTimeSlotScreen(
     actions: MoodTimeSlotRouteActions,
     showToast: (String) -> Unit,
 ) {
+    // 探索播放「重新探索」确认弹窗
+    var showClearConfirm by remember { mutableStateOf(false) }
     Scaffold(
         topBar = {
             TopAppBar(
@@ -310,7 +315,7 @@ internal fun MoodTimeSlotScreen(
                     Column {
                         Text("随心播放增强", fontWeight = FontWeight.Bold)
                         Text(
-                            "MOOD TIME SLOT",
+                            "RANDOM ENHANCE",
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.outline,
                             letterSpacing = 1.sp,
@@ -328,8 +333,8 @@ internal fun MoodTimeSlotScreen(
             )
         },
         floatingActionButton = {
-            // 弹层打开时隐藏 FAB：否则悬浮在弹层上遮挡底部操作按钮（2026-09-04 布局修复）
-            if (!state.dialogVisible) {
+            // 弹层打开或非时段模式时隐藏 FAB（探索/关闭模式不提供时段编辑入口）
+            if (!state.dialogVisible && state.mode == RandomEnhanceMode.TIME_SLOT) {
                 androidx.compose.material3.ExtendedFloatingActionButton(
                     onClick = actions.onAddSlot,
                     containerColor = MaterialTheme.colorScheme.primary,
@@ -342,37 +347,6 @@ internal fun MoodTimeSlotScreen(
             }
         },
     ) { padding ->
-        if (state.configs.isEmpty()) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(padding),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                Icon(
-                    Icons.Default.MusicNote,
-                    contentDescription = null,
-                    modifier = Modifier.size(46.dp),
-                    tint = MaterialTheme.colorScheme.outlineVariant,
-                )
-                Spacer(Modifier.height(12.dp))
-                Text(
-                    "还没有时段配置",
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                Spacer(Modifier.height(6.dp))
-                Text(
-                    "添加一个时段并选择情绪词条，\n让随心播放跟着一天的心情走~",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.outline,
-                    textAlign = TextAlign.Center,
-                )
-            }
-            return@Scaffold
-        }
-
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             contentPadding = androidx.compose.foundation.layout.PaddingValues(
@@ -380,69 +354,365 @@ internal fun MoodTimeSlotScreen(
             ),
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
-            // 全局开关卡
-            item(key = "global_switch", contentType = "switch") {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(MaterialTheme.colorScheme.surfaceContainerLow, RoundedCornerShape(20.dp))
-                        .padding(15.dp),
-                ) {
-                    // 标题紧贴开关：中间留 10dp 间距、不加 weight 撑满（2026-09-04 截图反馈）
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.End,
-                        modifier = Modifier.fillMaxWidth(),
-                    ) {
-                        Text(
-                            "启用增强",
-                            style = MaterialTheme.typography.titleSmall,
-                            fontWeight = FontWeight.Bold,
-                        )
-                        Spacer(Modifier.width(10.dp))
-                        Switch(
-                            checked = state.enabled,
-                            onCheckedChange = actions.onToggleEnabled,
+            // 运行模式选择卡（时段 / 探索 互斥，始终可见）
+            item(key = "mode_selector", contentType = "mode") {
+                ModeSelectorCard(
+                    mode = state.mode,
+                    onSelectMode = actions.onSelectMode,
+                )
+            }
+
+            if (state.mode == RandomEnhanceMode.EXPLORE) {
+                // 探索模式说明卡
+                item(key = "explore_info", contentType = "explore") {
+                    ExploreInfoCard()
+                }
+                // 探索播放：当前喜欢/中立/不喜欢词条 + 重新探索
+                item(key = "explore_word_prefs", contentType = "wordprefs") {
+                    ExploreWordPreferenceCard(
+                        preferences = state.wordPreferences,
+                        onClear = { showClearConfirm = true },
+                    )
+                }
+            } else if (state.mode == RandomEnhanceMode.TIME_SLOT) {
+                if (state.configs.isEmpty()) {
+                    // 时段列表空态（模式选择卡已在上方展示）
+                    item(key = "empty_state", contentType = "empty") {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 48.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                        ) {
+                            Icon(
+                                Icons.Default.MusicNote,
+                                contentDescription = null,
+                                modifier = Modifier.size(46.dp),
+                                tint = MaterialTheme.colorScheme.outlineVariant,
+                            )
+                            Spacer(Modifier.height(12.dp))
+                            Text(
+                                "还没有时段配置",
+                                style = MaterialTheme.typography.titleMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                            Spacer(Modifier.height(6.dp))
+                            Text(
+                                "添加一个时段并选择情绪词条，\n让随心播放跟着一天的心情走~",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.outline,
+                                textAlign = TextAlign.Center,
+                            )
+                        }
+                    }
+                } else {
+                    // 全局开关提示卡（时段模式生效说明）
+                    item(key = "global_hint", contentType = "hint") {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(MaterialTheme.colorScheme.surfaceContainerLow, RoundedCornerShape(20.dp))
+                                .padding(15.dp),
+                        ) {
+                            Text(
+                                "时段模式生效中",
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.Bold,
+                            )
+                            Spacer(Modifier.height(4.dp))
+                            Text(
+                                "随心播放与无限随机将优先从当前时段配置的情绪歌曲中随机；未命中任何时段时保持原有随机",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                    }
+
+                    // 24h 时间轴
+                    item(key = "day_timeline", contentType = "timeline") {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(MaterialTheme.colorScheme.surfaceContainerLow, RoundedCornerShape(20.dp))
+                                .padding(15.dp),
+                        ) {
+                            DayTimeline(configs = state.configs, nowMinuteOfDay = state.nowMinuteOfDay)
+                            Spacer(Modifier.height(8.dp))
+                            Text(
+                                "色块 = 时段覆盖区间（跨午夜拆两段渲染）；实色为当前命中。同一时刻至多命中一个时段。",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.outline,
+                            )
+                        }
+                    }
+
+                    // 时段卡
+                    items(configs2Items(state), key = { it.config.id }) { item ->
+                        SlotCard(
+                            config = item.config,
+                            isActive = item.config.covers(state.nowMinuteOfDay),
+                            totalSongs = item.totalSongs,
+                            tagCounts = state.tagCounts,
+                            warnSmallPool = item.totalSongs < MOOD_POOL_WARN_THRESHOLD,
+                            onEdit = { actions.onEditSlot(item.config) },
+                            onDelete = { actions.onDeleteSlot(item.config.id) },
                         )
                     }
-                    Spacer(Modifier.height(4.dp))
-                    Text(
-                        "开启后，随心播放与无限随机将优先从当前时段配置的情绪歌曲中随机；未命中任何时段时保持原有随机",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
                 }
             }
+        }
 
-            // 24h 时间轴
-            item(key = "day_timeline", contentType = "timeline") {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(MaterialTheme.colorScheme.surfaceContainerLow, RoundedCornerShape(20.dp))
-                        .padding(15.dp),
-                ) {
-                    DayTimeline(configs = state.configs, nowMinuteOfDay = state.nowMinuteOfDay)
-                    Spacer(Modifier.height(8.dp))
+        // 探索播放「重新探索」确认弹窗
+        if (showClearConfirm) {
+            androidx.compose.material3.AlertDialog(
+                onDismissRequest = { showClearConfirm = false },
+                title = { Text("重新探索？") },
+                text = {
                     Text(
-                        "色块 = 时段覆盖区间（跨午夜拆两段渲染）；实色为当前命中。同一时刻至多命中一个时段。",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.outline,
+                        "将清空所有喜欢 / 不喜欢词条的学习统计，之后探索播放会重新开始学习。",
                     )
-                }
-            }
+                },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            showClearConfirm = false
+                            actions.onClearWordPreferences()
+                        },
+                    ) {
+                        Text("清空并重新开始")
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showClearConfirm = false }) {
+                        Text("取消")
+                    }
+                },
+            )
+        }
+    }
+}
 
-            // 时段卡
-            items(configs2Items(state), key = { it.config.id }) { item ->
-                SlotCard(
-                    config = item.config,
-                    isActive = item.config.covers(state.nowMinuteOfDay),
-                    totalSongs = item.totalSongs,
-                    tagCounts = state.tagCounts,
-                    warnSmallPool = item.totalSongs < MOOD_POOL_WARN_THRESHOLD,
-                    onEdit = { actions.onEditSlot(item.config) },
-                    onDelete = { actions.onDeleteSlot(item.config.id) },
-                )
+/** 运行模式选择卡：关闭 / 时段模式 / 探索模式，互斥单选 */
+@Composable
+private fun ModeSelectorCard(
+    mode: RandomEnhanceMode,
+    onSelectMode: (RandomEnhanceMode) -> Unit,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.surfaceContainerLow, RoundedCornerShape(20.dp))
+            .padding(15.dp),
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Text(
+                "运行模式",
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold,
+            )
+            Spacer(Modifier.weight(1f))
+            Text(
+                if (mode == RandomEnhanceMode.OFF) "未启用" else "已启用",
+                style = MaterialTheme.typography.labelSmall,
+                color = if (mode == RandomEnhanceMode.OFF) {
+                    MaterialTheme.colorScheme.outline
+                } else {
+                    MaterialTheme.colorScheme.primary
+                },
+            )
+        }
+        Spacer(Modifier.height(10.dp))
+        FlowRow(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            ModeOptionChip(
+                label = "关闭",
+                selected = mode == RandomEnhanceMode.OFF,
+                onClick = { onSelectMode(RandomEnhanceMode.OFF) },
+            )
+            ModeOptionChip(
+                label = "时段模式",
+                selected = mode == RandomEnhanceMode.TIME_SLOT,
+                onClick = { onSelectMode(RandomEnhanceMode.TIME_SLOT) },
+            )
+            ModeOptionChip(
+                label = "探索模式",
+                selected = mode == RandomEnhanceMode.EXPLORE,
+                onClick = { onSelectMode(RandomEnhanceMode.EXPLORE) },
+            )
+        }
+        Spacer(Modifier.height(6.dp))
+        Text(
+            "时段模式与探索模式互斥（只能启用一个）。时段模式按时刻 × 情绪词条随机；" +
+                "探索模式自动随机 10 首并按收听习惯学习喜欢/不喜欢词条。",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
+@Composable
+private fun ModeOptionChip(
+    label: String,
+    selected: Boolean,
+    onClick: () -> Unit,
+) {
+    androidx.compose.material3.FilterChip(
+        selected = selected,
+        onClick = onClick,
+        label = {
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelMedium,
+                fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
+            )
+        },
+        colors = androidx.compose.material3.FilterChipDefaults.filterChipColors(
+            selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+            selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer,
+        ),
+    )
+}
+
+/** 探索模式说明卡 */
+@Composable
+private fun ExploreInfoCard() {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.surfaceContainerLow, RoundedCornerShape(20.dp))
+            .padding(15.dp),
+    ) {
+        Text(
+            "探索模式",
+            style = MaterialTheme.typography.titleSmall,
+            fontWeight = FontWeight.Bold,
+        )
+        Spacer(Modifier.height(6.dp))
+        Text(
+            "· 点击「随心播放」随机生成 10 首开始探索\n" +
+                "· 无限随机播放被禁用（按钮显示「探索播放中」）\n" +
+                "· 一首歌没听满 30 秒或 1/4 时长 → 情绪词条记入「不喜欢」；反之记入「喜欢」（计票制）\n" +
+                "· 队列剩 1 首时自动补 5 首，优先含喜欢词条、尽量避开不喜欢词条的歌曲",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
+/** 探索播放：当前喜欢/中立/不喜欢词条 + 重新探索按钮 */
+@Composable
+private fun ExploreWordPreferenceCard(
+    preferences: List<WordPreference>,
+    onClear: () -> Unit,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.surfaceContainerLow, RoundedCornerShape(20.dp))
+            .padding(15.dp),
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Text(
+                "已学习的词条",
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold,
+            )
+            Spacer(Modifier.weight(1f))
+            TextButton(onClick = onClear) {
+                Text("重新探索", color = MaterialTheme.colorScheme.error)
+            }
+        }
+
+        val liked = preferences.filter { it.kind == WordPreferenceKind.LIKE }
+        val neutral = preferences.filter { it.kind == WordPreferenceKind.NEUTRAL }
+        val disliked = preferences.filter { it.kind == WordPreferenceKind.DISLIKE }
+
+        if (liked.isEmpty() && neutral.isEmpty() && disliked.isEmpty()) {
+            Spacer(Modifier.height(6.dp))
+            Text(
+                "还没有学习到词条：完整听一首歌 → 词条进「喜欢」；快速跳过 → 词条进「不喜欢」。",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        } else {
+            PreferenceRow(
+                label = "喜欢",
+                items = liked,
+                container = MaterialTheme.colorScheme.primaryContainer,
+                content = MaterialTheme.colorScheme.onPrimaryContainer,
+            )
+            Spacer(Modifier.height(10.dp))
+            PreferenceRow(
+                label = "中立",
+                items = neutral,
+                container = MaterialTheme.colorScheme.surfaceVariant,
+                content = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Spacer(Modifier.height(10.dp))
+            PreferenceRow(
+                label = "不喜欢",
+                items = disliked,
+                container = MaterialTheme.colorScheme.errorContainer,
+                content = MaterialTheme.colorScheme.onErrorContainer,
+            )
+        }
+    }
+}
+
+/** 一组词条：标签 + 词条 chip（含「喜欢票:不喜欢票」角标） */
+@Composable
+private fun PreferenceRow(
+    label: String,
+    items: List<WordPreference>,
+    container: Color,
+    content: Color,
+) {
+    Column {
+        Text(
+            text = "$label（${items.size}）",
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Spacer(Modifier.height(6.dp))
+        if (items.isEmpty()) {
+            Text(
+                "暂无",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.outline,
+            )
+        } else {
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                verticalArrangement = Arrangement.spacedBy(6.dp),
+            ) {
+                items.forEach { pref ->
+                    Row(
+                        modifier = Modifier
+                            .background(container, RoundedCornerShape(999.dp))
+                            .padding(horizontal = 10.dp, vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    ) {
+                        Text(
+                            text = pref.word,
+                            style = MaterialTheme.typography.labelMedium,
+                            color = content,
+                        )
+                        Text(
+                            text = "${pref.likeVotes}:${pref.dislikeVotes}",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = content.copy(alpha = 0.7f),
+                        )
+                    }
+                }
             }
         }
     }

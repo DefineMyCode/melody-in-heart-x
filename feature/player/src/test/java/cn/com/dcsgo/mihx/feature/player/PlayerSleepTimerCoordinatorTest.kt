@@ -60,10 +60,12 @@ class PlayerSleepTimerCoordinatorTest {
         override val dailyListeningGoalMinutes: Flow<Int> = emptyFlow()
         override val emotionScanPaused: Flow<Boolean> = emptyFlow()
         override val moodTimeSlotEnabled: Flow<Boolean> = emptyFlow()
+        override val randomEnhanceMode: Flow<cn.com.dcsgo.mihx.core.model.RandomEnhanceMode> = emptyFlow()
         override val songSortMode: Flow<SongSortMode> = emptyFlow()
         override val songSortAscending: Flow<Boolean> = emptyFlow()
         override suspend fun setEmotionScanPaused(paused: Boolean) = Unit
         override suspend fun setMoodTimeSlotEnabled(enabled: Boolean) = Unit
+        override suspend fun setRandomEnhanceMode(mode: cn.com.dcsgo.mihx.core.model.RandomEnhanceMode) = Unit
         override suspend fun setSongSortMode(mode: SongSortMode) = Unit
         override suspend fun setSongSortAscending(ascending: Boolean) = Unit
         override suspend fun setThemeMode(mode: cn.com.dcsgo.mihx.core.model.ThemeMode) = Unit

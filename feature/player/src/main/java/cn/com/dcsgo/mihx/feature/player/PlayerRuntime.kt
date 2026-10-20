@@ -6,9 +6,13 @@ import cn.com.dcsgo.mihx.core.common.CoroutineDispatchers
 import cn.com.dcsgo.mihx.core.model.PlayMode
 import cn.com.dcsgo.mihx.core.model.PlayQueue
 import cn.com.dcsgo.mihx.core.model.Playlist
+import cn.com.dcsgo.mihx.core.model.RandomEnhanceMode
 import cn.com.dcsgo.mihx.core.model.Song
+import cn.com.dcsgo.mihx.core.model.WordPreference
+import cn.com.dcsgo.mihx.core.model.WordPreferenceKind
 import cn.com.dcsgo.mihx.domain.playback.BluetoothPlaybackMonitorFactory
 import cn.com.dcsgo.mihx.domain.playback.ControllerPlaybackStateSynchronizer
+import cn.com.dcsgo.mihx.domain.playback.ExplorePlaybackPolicy
 import cn.com.dcsgo.mihx.domain.playback.PlaybackDurationMonitorFactory
 import cn.com.dcsgo.mihx.domain.model.DeleteSongResult
 import cn.com.dcsgo.mihx.domain.model.DuplicateSongGroup
@@ -54,6 +58,7 @@ class PlayerRuntimeFactory @Inject constructor(
     private val dispatchers: CoroutineDispatchers,
     private val timeSlotConfigRepository: cn.com.dcsgo.mihx.domain.repository.TimeSlotConfigRepository,
     private val songEmotionRepository: cn.com.dcsgo.mihx.domain.repository.SongEmotionRepository,
+    private val wordPreferenceRepository: cn.com.dcsgo.mihx.domain.repository.WordPreferenceRepository,
 ) {
     internal fun create(scope: CoroutineScope): PlayerRuntime {
         return PlayerRuntime(
@@ -71,6 +76,7 @@ class PlayerRuntimeFactory @Inject constructor(
             dispatchers = dispatchers,
             timeSlotConfigRepository = timeSlotConfigRepository,
             songEmotionRepository = songEmotionRepository,
+            wordPreferenceRepository = wordPreferenceRepository,
         )
     }
 }
@@ -90,6 +96,7 @@ internal class PlayerRuntime(
     private val dispatchers: CoroutineDispatchers,
     private val timeSlotConfigRepository: cn.com.dcsgo.mihx.domain.repository.TimeSlotConfigRepository,
     private val songEmotionRepository: cn.com.dcsgo.mihx.domain.repository.SongEmotionRepository,
+    private val wordPreferenceRepository: cn.com.dcsgo.mihx.domain.repository.WordPreferenceRepository,
 ) {
     private val mediaControllerGraph: PlayerMediaControllerGraph by lazy {
         PlayerMediaControllerGraph(
@@ -364,10 +371,16 @@ internal class PlayerRuntime(
         updateState = ::updateUiState,
         stopPlaybackTracking = playDurationTracker::stopPlayback,
         clearTrackedSong = { trackedSongId = null },
+        trackedSongId = { trackedSongId },
+        currentPlayedMs = playDurationTracker::currentPlayedMs,
         remainingMediaItems = { playbackBridgeFacade.remainingMediaItems() },
         refillInfinitePlayQueue = { startedSongId, advanceAfterWrap ->
             playbackBridgeFacade.refillInfinitePlayQueue(startedSongId, advanceAfterWrap)
         },
+        refillExplorePlayQueue = { startedSongId ->
+            scope.launch { randomQueueFacade.refillExplorePlayQueue(startedSongId) }
+        },
+        onExploreSongSettled = ::handleExploreSongSettled,
         syncPlayerQueue = { queue -> playbackBridgeFacade.syncPlayerQueue(queue) },
         log = { message -> AppLog.debug(TAG, message) },
         playOrderBuilder = playOrderBuilder,
@@ -403,6 +416,8 @@ internal class PlayerRuntime(
     private var moodSlotConfigsCache: List<cn.com.dcsgo.mihx.core.model.TimeSlotConfig> = emptyList()
     @Volatile
     private var moodEmotionTagsCache: Map<Int, List<String>> = emptyMap()
+    @Volatile
+    private var wordPreferenceCache: Map<String, WordPreference> = emptyMap()
 
     private fun observeMoodSlotCaches() {
         scope.launch {
@@ -421,6 +436,32 @@ internal class PlayerRuntime(
                 .catch { AppLog.warning(TAG, "observe mood emotion tags failed: ${it.message}") }
                 .collect { moodEmotionTagsCache = it }
         }
+        // 探索播放（2026-10-20）：情绪词条收听偏好（计票制）持续订阅
+        scope.launch {
+            wordPreferenceRepository.observeAll()
+                .catch { AppLog.warning(TAG, "observe word preferences failed: ${it.message}") }
+                .collect { wordPreferenceCache = it }
+        }
+        // 探索播放（2026-10-20）：增强模式观察——置 isExploreModeActive，模式切离探索时退出探索会话
+        scope.launch {
+            playerSettingsRepository.randomEnhanceMode
+                .catch { AppLog.warning(TAG, "observe random enhance mode failed: ${it.message}") }
+                .collect { mode ->
+                    val explore = mode == RandomEnhanceMode.EXPLORE
+                    val changed = _uiState.value.isExploreModeActive != explore
+                    _uiState.update { current ->
+                        if (current.isExploreModeActive == explore) current
+                        else current.copy(isExploreModeActive = explore)
+                    }
+                    if (changed) {
+                        AppLog.info(TAG, "randomEnhanceMode=$mode: isExploreModeActive=$explore")
+                    }
+                    if (!explore && _uiState.value.isExplorePlay) {
+                        randomQueueFacade.stopExplorePlay()
+                        AppLog.info(TAG, "randomEnhanceMode=$mode: exited explore session")
+                    }
+                }
+        }
     }
 
     private val randomQueueFacade = PlayerRandomQueueFacade(
@@ -433,8 +474,12 @@ internal class PlayerRuntime(
         rawPlayCounts = playStatsRepository::getRawPlayCounts,
         log = { message -> AppLog.debug(TAG, message) },
         moodSlotConfigs = { moodSlotConfigsCache },
-        moodSlotEnabled = { playerSettingsRepository.moodTimeSlotEnabled.first() },
+        moodSlotEnabled = { playerSettingsRepository.randomEnhanceMode.first() == RandomEnhanceMode.TIME_SLOT },
         moodEmotionTagsOf = { song -> moodEmotionTagsCache[song.id].orEmpty() },
+        exploreModeEnabled = { playerSettingsRepository.randomEnhanceMode.first() == RandomEnhanceMode.EXPLORE },
+        wordPreferenceOf = { word ->
+            wordPreferenceCache[word] ?: WordPreference(word = word, likeVotes = 0, dislikeVotes = 0)
+        },
     )
     private val lifecycleFacade = PlayerLifecycleFacade(
         startMediaSessionService = { mediaControllerGraph.startService() },
@@ -843,6 +888,46 @@ internal class PlayerRuntime(
 
     fun stopInfinitePlay() {
         randomQueueFacade.stopInfinitePlay()
+    }
+
+    /**
+     * 探索播放收听结果学习（2026-10-20）：一首歌结束/切歌时结算其收听时长，
+     * 按「<30s 或 <1/4 总时长 → 快速跳过 → 全部情绪词条投不喜欢票，否则投喜欢票」，
+     * 计票制入库（[WordPreferenceRepository.recordSongOutcome]）。
+     */
+    private fun handleExploreSongSettled(songId: Int, playedMs: Long) {
+        val song = _uiState.value.songs.firstOrNull { it.id == songId }
+        val words = moodEmotionTagsCache[songId].orEmpty()
+        val skipped = ExplorePlaybackPolicy.isSkipped(playedMs, song?.durationMs ?: 0L)
+        if (words.isEmpty()) {
+            AppLog.debug(
+                TAG,
+                "explore settle: song=$songId played=${playedMs}ms skipped=$skipped, no emotion words to learn"
+            )
+            return
+        }
+        scope.launch {
+            try {
+                wordPreferenceRepository.recordSongOutcome(words, liked = !skipped)
+                // 展示当前全局喜欢/不喜欢/中立词条（写后重读快照，验证计票制累计与翻转）
+                val prefs = wordPreferenceRepository.getAll()
+                val likeWords = prefs.filterValues { it.kind == WordPreferenceKind.LIKE }.keys.sorted()
+                val dislikeWords = prefs.filterValues { it.kind == WordPreferenceKind.DISLIKE }.keys.sorted()
+                val neutralWords = prefs.filterValues { it.kind == WordPreferenceKind.NEUTRAL }.keys.sorted()
+                AppLog.info(
+                    TAG,
+                    "explore learn: song=$songId played=${playedMs}ms skipped=$skipped " +
+                        "words=${words.joinToString(",")}"
+                )
+                AppLog.info(
+                    TAG,
+                    "explore preference snapshot: like=[${likeWords.joinToString(",")}] " +
+                        "dislike=[${dislikeWords.joinToString(",")}] neutral=[${neutralWords.joinToString(",")}]"
+                )
+            } catch (e: Exception) {
+                AppLog.error(TAG, "explore learn failed: ${e.message}", e)
+            }
+        }
     }
 
     /**

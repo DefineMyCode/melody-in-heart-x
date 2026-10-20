@@ -236,6 +236,88 @@ class PlayerSettingsRepositoryTest {
         }
     }
 
+    // ── 随心播放增强运行模式（2026-10-20 探索播放）──
+
+    @Test
+    fun randomEnhanceModeFallsBackToLegacyMoodTimeSlotEnabled() = runBlocking {
+        val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+        val file = tempDataStoreFile()
+        val store = PreferenceDataStoreFactory.create(
+            scope = scope,
+            produceFile = { file },
+        )
+        // 老用户：无新 key，但旧开关 mood_time_slot_enabled=true → 回退为时段模式
+        val repository = PlayerSettingsRepository(store, FakeSharedPreferences())
+
+        try {
+            repository.setMoodTimeSlotEnabled(true)
+
+            assertEquals(
+                cn.com.dcsgo.mihx.core.model.RandomEnhanceMode.TIME_SLOT,
+                repository.randomEnhanceMode.first(),
+            )
+            assertTrue(repository.moodTimeSlotEnabled.first())
+        } finally {
+            scope.cancel()
+            file.delete()
+        }
+    }
+
+    @Test
+    fun randomEnhanceModeDefaultsToOffWhenNothingStored() = runBlocking {
+        val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+        val file = tempDataStoreFile()
+        val store = PreferenceDataStoreFactory.create(
+            scope = scope,
+            produceFile = { file },
+        )
+        val repository = PlayerSettingsRepository(store, FakeSharedPreferences())
+
+        try {
+            assertEquals(
+                cn.com.dcsgo.mihx.core.model.RandomEnhanceMode.OFF,
+                repository.randomEnhanceMode.first(),
+            )
+        } finally {
+            scope.cancel()
+            file.delete()
+        }
+    }
+
+    @Test
+    fun setRandomEnhanceModeWritesNewKeyAndSyncsLegacySwitch() = runBlocking {
+        val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+        val file = tempDataStoreFile()
+        val store = PreferenceDataStoreFactory.create(
+            scope = scope,
+            produceFile = { file },
+        )
+        val repository = PlayerSettingsRepository(store, FakeSharedPreferences())
+
+        try {
+            repository.setRandomEnhanceMode(cn.com.dcsgo.mihx.core.model.RandomEnhanceMode.EXPLORE)
+
+            assertEquals(
+                cn.com.dcsgo.mihx.core.model.RandomEnhanceMode.EXPLORE,
+                repository.randomEnhanceMode.first(),
+            )
+            // 探索模式不是时段模式 → 旧开关写回 false，两条读取路径一致
+            assertFalse(repository.moodTimeSlotEnabled.first())
+            assertEquals(
+                "EXPLORE",
+                store.data.first()[PlayerSettingsKeys.RANDOM_ENHANCE_MODE],
+            )
+
+            repository.setRandomEnhanceMode(cn.com.dcsgo.mihx.core.model.RandomEnhanceMode.TIME_SLOT)
+
+            assertTrue(repository.moodTimeSlotEnabled.first())
+            assertEquals("TIME_SLOT", store.data.first()[PlayerSettingsKeys.RANDOM_ENHANCE_MODE])
+        } finally {
+            scope.cancel()
+            file.delete()
+        }
+    }
+
     private fun tempDataStoreFile(): File {
         return File.createTempFile("player-settings-", ".preferences_pb").apply {
             delete()

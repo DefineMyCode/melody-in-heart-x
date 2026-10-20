@@ -2,19 +2,24 @@ package cn.com.dcsgo.mihx.feature.user
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
+import cn.com.dcsgo.mihx.core.model.RandomEnhanceMode
 import cn.com.dcsgo.mihx.core.model.TimeSlotConfig
+import cn.com.dcsgo.mihx.core.model.WordPreference
 
 /** 情境化随心播放配置列表页公共状态 */
 @Stable
 data class MoodTimeSlotRouteState(
     val configs: List<TimeSlotConfig>,
-    val enabled: Boolean,
+    /** 随心播放增强运行模式（时段/探索互斥，2026-10-20） */
+    val mode: RandomEnhanceMode,
     /** 词条 → 关联歌曲数（缺失词条视为 0） */
     val tagCounts: Map<String, Int>,
     /** 曲库歌曲总数（合计条分母） */
     val librarySize: Int,
     /** 当前时刻分钟数（0–1439，用于“生效中”徽标；由调用方定时刷新） */
     val nowMinuteOfDay: Int,
+    /** 探索播放：当前喜欢/中立/不喜欢词条（按词条名排序） */
+    val wordPreferences: List<WordPreference> = emptyList(),
     /** 编辑/添加弹层是否打开：打开时隐藏列表页 FAB，避免悬浮在弹层上（2026-09-04 布局修复） */
     val dialogVisible: Boolean = false,
 )
@@ -23,10 +28,12 @@ data class MoodTimeSlotRouteState(
 @Stable
 data class MoodTimeSlotRouteActions(
     val onBack: () -> Unit,
-    val onToggleEnabled: (Boolean) -> Unit,
+    val onSelectMode: (RandomEnhanceMode) -> Unit,
     val onEditSlot: (TimeSlotConfig) -> Unit,
     val onDeleteSlot: (Long) -> Unit,
     val onAddSlot: () -> Unit,
+    /** 探索播放：清空喜欢/不喜欢词条学习统计（重新探索） */
+    val onClearWordPreferences: () -> Unit = {},
 )
 
 @Composable

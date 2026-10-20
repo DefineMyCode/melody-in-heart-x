@@ -319,6 +319,16 @@ class MusicRepositoryDeleteSongTest {
             )
         }
 
+        // ── word_preferences（2026-10-20 探索播放；本测试不使用）──
+        override fun observeAllWordPreferences():
+            kotlinx.coroutines.flow.Flow<List<cn.com.dcsgo.mihx.data.local.entity.WordPreferenceEntity>> =
+            kotlinx.coroutines.flow.emptyFlow()
+        override suspend fun allWordPreferences(): List<cn.com.dcsgo.mihx.data.local.entity.WordPreferenceEntity> =
+            emptyList()
+        override suspend fun upsertWordPreferences(items: List<cn.com.dcsgo.mihx.data.local.entity.WordPreferenceEntity>) =
+            Unit
+        override suspend fun clearWordPreferences() = Unit
+
         private fun <T, K> upsertAll(target: MutableList<T>, values: List<T>, key: (T) -> K) {
             values.forEach { value ->
                 val index = target.indexOfFirst { key(it) == key(value) }

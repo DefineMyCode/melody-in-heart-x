@@ -81,6 +81,40 @@ class PlaybackStateStoreTest {
     }
 
     @Test
+    fun saveAndRestoreKeepsExplorePlayState() = runStoreTest { store, _ ->
+        val queue = PlayQueue().setQueue(songs(1, 2), startIndex = 0)
+
+        store.save(
+            queue = queue,
+            positionMs = 100L,
+            isInfinitePlay = false,
+            infinitePlayedSongIds = emptySet(),
+            isExplorePlay = true,
+        )
+
+        val restored = store.restore(songs(1, 2, 3))
+
+        assertEquals(true, restored?.isExplorePlay)
+        assertEquals(false, restored?.isInfinitePlay)
+    }
+
+    @Test
+    fun clearRemovesExplorePlayState() = runStoreTest { store, _ ->
+        val queue = PlayQueue().setQueue(songs(1, 2), startIndex = 0)
+
+        store.save(
+            queue = queue,
+            positionMs = 100L,
+            isInfinitePlay = false,
+            infinitePlayedSongIds = emptySet(),
+            isExplorePlay = true,
+        )
+        store.clear()
+
+        assertNull(store.restore(songs(1, 2)))
+    }
+
+    @Test
     fun saveAndRestoreKeepsInfinitePlayWhenQueueIsEmpty() = runStoreTest { store, _ ->
         store.save(
             queue = PlayQueue(),

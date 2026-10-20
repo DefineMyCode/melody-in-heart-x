@@ -3,6 +3,7 @@ package cn.com.dcsgo.mihx.domain.repository
 import cn.com.dcsgo.mihx.core.model.ThemeMode
 import cn.com.dcsgo.mihx.core.model.ThemeVariant
 import cn.com.dcsgo.mihx.core.model.ScreenOrientationMode
+import cn.com.dcsgo.mihx.core.model.RandomEnhanceMode
 import cn.com.dcsgo.mihx.domain.model.SongSortMode
 import kotlinx.coroutines.flow.Flow
 
@@ -48,9 +49,17 @@ interface PlayerSettingsRepository {
     /**
      * 情境化随心播放增强总开关（默认关闭）。
      * 开启后随心播放/无限随机在命中时段内只从时段配置的情绪词条歌曲中随机。
+     * 兼容旧开关：等价于 [randomEnhanceMode] == TIME_SLOT。
      */
     val moodTimeSlotEnabled: Flow<Boolean>
     suspend fun setMoodTimeSlotEnabled(enabled: Boolean)
+
+    /**
+     * 随心播放增强运行模式（2026-10-20 探索播放新增）。
+     * 时段模式与探索模式互斥（二者只能启用一个）。
+     */
+    val randomEnhanceMode: Flow<RandomEnhanceMode>
+    suspend fun setRandomEnhanceMode(mode: RandomEnhanceMode)
 
     /** 本地音乐列表排序方式（默认 IMPORT_ORDER = 导入顺序） */
     val songSortMode: Flow<SongSortMode>

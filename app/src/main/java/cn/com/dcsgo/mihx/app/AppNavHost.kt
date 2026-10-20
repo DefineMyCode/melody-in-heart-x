@@ -438,7 +438,7 @@ fun AppNavHost(
                     }
             }
             val moodConfigs by moodTimeSlotViewModel.configs.collectAsStateWithLifecycle()
-            val moodEnabled by moodTimeSlotViewModel.moodTimeSlotEnabled.collectAsStateWithLifecycle()
+            val enhanceMode by moodTimeSlotViewModel.randomEnhanceMode.collectAsStateWithLifecycle()
             // 入口卡"生效中"态的当前时刻：分钟级刷新即可（不必每秒）
             var moodNowMinute by remember { mutableStateOf(currentMinuteOfDay()) }
             LaunchedEffect(Unit) {
@@ -454,7 +454,7 @@ fun AppNavHost(
                     isValidating = isValidating,
                     emotionStatus = emotionStatus,
                     moodSlotConfigs = moodConfigs,
-                    moodSlotEnabled = moodEnabled,
+                    randomEnhanceMode = enhanceMode,
                     nowMinuteOfDay = moodNowMinute,
                     // P4 L2 分区化：我的页分区顺序来自骨架描述（可裁剪/重排）。
                     // 已由 SkinShellResolver 解析成零件名列表并归一化；
@@ -493,7 +493,8 @@ fun AppNavHost(
 
         composable(AppRoutes.MOOD_TIME_SLOT) {
             val moodConfigs by moodTimeSlotViewModel.configs.collectAsStateWithLifecycle()
-            val moodEnabled by moodTimeSlotViewModel.moodTimeSlotEnabled.collectAsStateWithLifecycle()
+            val enhanceMode by moodTimeSlotViewModel.randomEnhanceMode.collectAsStateWithLifecycle()
+            val moodWordPrefs by moodTimeSlotViewModel.wordPreferences.collectAsStateWithLifecycle()
             val moodTagCounts by moodTimeSlotViewModel.tagCounts.collectAsStateWithLifecycle()
             val moodLibrarySize by moodTimeSlotViewModel.librarySize.collectAsStateWithLifecycle()
             LaunchedEffect(Unit) { moodTimeSlotViewModel.loadStats() }
@@ -509,21 +510,35 @@ fun AppNavHost(
             MoodTimeSlotRoute(
                 state = MoodTimeSlotRouteState(
                     configs = moodConfigs,
-                    enabled = moodEnabled,
+                    mode = enhanceMode,
                     tagCounts = moodTagCounts.associate { it.tag to it.songCount },
                     librarySize = moodLibrarySize,
                     nowMinuteOfDay = moodNowMinute,
+                    wordPreferences = moodWordPrefs,
                     dialogVisible = editingSlot != null || showAddDialog,
                 ),
                 actions = MoodTimeSlotRouteActions(
                     onBack = navController::navigateUp,
-                    onToggleEnabled = { moodTimeSlotViewModel.setEnabled(it) },
+                    onSelectMode = { mode ->
+                        moodTimeSlotViewModel.setMode(mode)
+                        showToast(
+                            when (mode) {
+                                cn.com.dcsgo.mihx.core.model.RandomEnhanceMode.TIME_SLOT -> "已切换为时段模式"
+                                cn.com.dcsgo.mihx.core.model.RandomEnhanceMode.EXPLORE -> "已切换为探索模式"
+                                cn.com.dcsgo.mihx.core.model.RandomEnhanceMode.OFF -> "已关闭随心播放增强"
+                            }
+                        )
+                    },
                     onEditSlot = { editingSlot = it },
                     onDeleteSlot = { id ->
                         moodTimeSlotViewModel.delete(id)
                         showToast("已删除时段配置")
                     },
                     onAddSlot = { showAddDialog = true },
+                    onClearWordPreferences = {
+                        moodTimeSlotViewModel.clearWordPreferences()
+                        showToast("已清空词条统计，重新探索开始~")
+                    },
                 ),
                 showToast = showToast,
             )

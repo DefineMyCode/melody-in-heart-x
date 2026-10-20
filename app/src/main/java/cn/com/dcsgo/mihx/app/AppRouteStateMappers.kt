@@ -90,7 +90,8 @@ internal fun userRouteState(
         cn.com.dcsgo.mihx.app.emotion.EmotionScanUiStatus(),
     /** 情境化随心播放：入口卡状态 */
     moodSlotConfigs: List<cn.com.dcsgo.mihx.core.model.TimeSlotConfig> = emptyList(),
-    moodSlotEnabled: Boolean = false,
+    randomEnhanceMode: cn.com.dcsgo.mihx.core.model.RandomEnhanceMode =
+        cn.com.dcsgo.mihx.core.model.RandomEnhanceMode.OFF,
     nowMinuteOfDay: Int = 0,
     /**
      * 我的页分区顺序（L2 分区化，P4）。
@@ -108,7 +109,7 @@ internal fun userRouteState(
     emotionScanning = emotionStatus.scanning,
     emotionPaused = emotionStatus.paused,
     moodSlotConfigs = moodSlotConfigs,
-    moodSlotEnabled = moodSlotEnabled,
+    randomEnhanceMode = randomEnhanceMode,
     nowMinuteOfDay = nowMinuteOfDay,
     sectionOrder = sectionOrder,
 )

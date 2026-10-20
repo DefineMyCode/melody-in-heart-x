@@ -63,6 +63,7 @@ class PlaybackStateStore(
         positionMs: Long,
         isInfinitePlay: Boolean,
         infinitePlayedSongIds: Set<Int>,
+        isExplorePlay: Boolean,
         currentSongId: Int?,
     ) {
         try {
@@ -138,6 +139,7 @@ class PlaybackStateStore(
                     preferences[PlaybackStateKeys.PLAY_POSITION_MS] = positionMs.coerceAtLeast(0L)
                     preferences[PlaybackStateKeys.IS_INFINITE_PLAY] = isInfinitePlay
                     preferences[PlaybackStateKeys.INFINITE_PLAYED_IDS] = serializer.encodeIds(infinitePlayedSongIds)
+                    preferences[PlaybackStateKeys.IS_EXPLORE_PLAY] = isExplorePlay
                     if (playbackSongId != null) {
                         preferences[PlaybackStateKeys.CURRENT_SONG_ID] = playbackSongId
                     } else {
@@ -200,6 +202,7 @@ class PlaybackStateStore(
                     preferences.remove(PlaybackStateKeys.PLAY_POSITION_MS)
                     preferences.remove(PlaybackStateKeys.IS_INFINITE_PLAY)
                     preferences.remove(PlaybackStateKeys.INFINITE_PLAYED_IDS)
+                    preferences.remove(PlaybackStateKeys.IS_EXPLORE_PLAY)
                     preferences.remove(PlaybackStateKeys.CURRENT_SONG_ID)
                 }
                 clearLegacyPrefs()
@@ -238,12 +241,14 @@ class PlaybackStateStore(
                     ?: -1).takeIf { it >= 0 }
                 val infinitePlayedIds = preferences[PlaybackStateKeys.INFINITE_PLAYED_IDS]
                     ?: legacy?.getString(KEY_INFINITE_PLAYED_IDS, null)
+                val isExplorePlay = preferences[PlaybackStateKeys.IS_EXPLORE_PLAY] ?: false
                 StoredPlaybackSnapshot(
                     queueJson = json,
                     positionMs = positionMs,
                     isInfinitePlay = isInfinitePlay,
                     currentSongId = currentSongId,
                     infinitePlayedIdsJson = infinitePlayedIds,
+                    isExplorePlay = isExplorePlay,
                 )
             } ?: return null
             val availableSongIds = allSongs.map { it.id }.toSet()
@@ -265,7 +270,13 @@ class PlaybackStateStore(
                         "currentSongId=${restored.currentSongId}, json=${restored.queueJson}"
                 )
             }
-            RestoredPlaybackState(queue, restored.positionMs, restored.isInfinitePlay, infinitePlayedSongIds)
+            RestoredPlaybackState(
+                queue,
+                restored.positionMs,
+                restored.isInfinitePlay,
+                infinitePlayedSongIds,
+                restored.isExplorePlay,
+            )
         } catch (e: Exception) {
             logger.error(TAG, "restore playback state failed", e)
             null
@@ -302,6 +313,7 @@ class PlaybackStateStore(
         val PLAY_POSITION_MS = longPreferencesKey(KEY_PLAY_POSITION_MS)
         val IS_INFINITE_PLAY = booleanPreferencesKey(KEY_IS_INFINITE_PLAY)
         val INFINITE_PLAYED_IDS = stringPreferencesKey(KEY_INFINITE_PLAYED_IDS)
+        val IS_EXPLORE_PLAY = booleanPreferencesKey(KEY_IS_EXPLORE_PLAY)
         val CURRENT_SONG_ID = intPreferencesKey(KEY_CURRENT_SONG_ID)
     }
 
@@ -311,6 +323,7 @@ class PlaybackStateStore(
         private const val KEY_PLAY_POSITION_MS = "play_position_ms"
         private const val KEY_IS_INFINITE_PLAY = "is_infinite_play"
         private const val KEY_INFINITE_PLAYED_IDS = "infinite_played_ids"
+        private const val KEY_IS_EXPLORE_PLAY = "is_explore_play"
         private const val KEY_CURRENT_SONG_ID = "current_song_id"
     }
 }

@@ -72,6 +72,13 @@ data class PlayerUiState(
     /** 无限播放模式中已播放过的歌曲ID集合（用于避免重复选择） */
     val infinitePlayedSongIds: Set<Int> = emptySet(),
 
+    // ── 探索播放（2026-10-20）──
+
+    /** 是否处于探索播放模式（设置里选了「探索模式」；无限随机播放被禁用） */
+    val isExploreModeActive: Boolean = false,
+    /** 当前是否正在播放探索队列（探索模式下点击「随心播放」生成的 10 首队列） */
+    val isExplorePlay: Boolean = false,
+
     // ── 添加到下一首：播放模式临时切换 ──
 
     /**

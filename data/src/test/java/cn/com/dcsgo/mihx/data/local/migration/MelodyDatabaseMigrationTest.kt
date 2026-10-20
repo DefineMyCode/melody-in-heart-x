@@ -161,4 +161,22 @@ class MelodyDatabaseMigrationTest {
         }
         db.close()
     }
+
+    @Test
+    fun migration10To11CreatesWordPreferencesTable() {
+        val name = dbName("10-11")
+        helper.createDatabase(name, 10).close()
+
+        val db = helper.runMigrationsAndValidate(name, 11, true, MelodyMigrations.MIGRATION_10_11)
+
+        db.execSQL(
+            "INSERT INTO word_preferences (word, likeVotes, dislikeVotes, updatedAt) VALUES ('静谧', 3, 1, 42)"
+        )
+        db.query("SELECT likeVotes, dislikeVotes FROM word_preferences WHERE word = '静谧'").use { cursor ->
+            assertTrue(cursor.moveToFirst())
+            assertEquals(3, cursor.getInt(0))
+            assertEquals(1, cursor.getInt(1))
+        }
+        db.close()
+    }
 }

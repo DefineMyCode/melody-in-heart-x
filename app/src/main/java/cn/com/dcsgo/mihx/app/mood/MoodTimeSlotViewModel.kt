@@ -2,18 +2,22 @@ package cn.com.dcsgo.mihx.app.mood
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import cn.com.dcsgo.mihx.core.model.RandomEnhanceMode
 import cn.com.dcsgo.mihx.core.model.TimeSlotConfig
+import cn.com.dcsgo.mihx.core.model.WordPreference
 import cn.com.dcsgo.mihx.core.model.emotionTagsOf
 import cn.com.dcsgo.mihx.domain.repository.PlayerSettingsRepository
 import cn.com.dcsgo.mihx.domain.repository.SongEmotionRepository
 import cn.com.dcsgo.mihx.domain.repository.SongRepository
 import cn.com.dcsgo.mihx.domain.repository.TimeSlotConfigRepository
+import cn.com.dcsgo.mihx.domain.repository.WordPreferenceRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.Dispatchers
@@ -36,13 +40,23 @@ class MoodTimeSlotViewModel @Inject constructor(
     private val playerSettingsRepository: PlayerSettingsRepository,
     private val songEmotionRepository: SongEmotionRepository,
     private val songRepository: SongRepository,
+    private val wordPreferenceRepository: WordPreferenceRepository,
 ) : ViewModel() {
 
     val configs: StateFlow<List<TimeSlotConfig>> = timeSlotConfigRepository.observeConfigs()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
+    /** 随心播放增强运行模式（时段/探索互斥，2026-10-20） */
+    val randomEnhanceMode: StateFlow<RandomEnhanceMode> = playerSettingsRepository.randomEnhanceMode
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), RandomEnhanceMode.OFF)
+
     val moodTimeSlotEnabled: StateFlow<Boolean> = playerSettingsRepository.moodTimeSlotEnabled
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), false)
+
+    /** 探索播放：当前喜欢/中立/不喜欢词条（按词条名排序，探索模式展示用） */
+    val wordPreferences: StateFlow<List<WordPreference>> = wordPreferenceRepository.observeAll()
+        .map { prefs -> prefs.values.sortedBy { it.word } }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
     private val _tagCounts = MutableStateFlow<List<MoodTagCount>>(emptyList())
     val tagCounts: StateFlow<List<MoodTagCount>> = _tagCounts.asStateFlow()
@@ -101,6 +115,21 @@ class MoodTimeSlotViewModel @Inject constructor(
     fun setEnabled(enabled: Boolean) {
         viewModelScope.launch {
             playerSettingsRepository.setMoodTimeSlotEnabled(enabled)
+        }
+    }
+
+    /** 切换随心播放增强模式（时段/探索互斥：选一个自动关闭另一个） */
+    fun setMode(mode: RandomEnhanceMode) {
+        viewModelScope.launch {
+            playerSettingsRepository.setRandomEnhanceMode(mode)
+        }
+    }
+
+    /** 清空喜欢/不喜欢词条学习统计（「重新探索」），清空后词条流自动重发为空 */
+    fun clearWordPreferences(onDone: () -> Unit = {}) {
+        viewModelScope.launch {
+            wordPreferenceRepository.clearAll()
+            onDone()
         }
     }
 }

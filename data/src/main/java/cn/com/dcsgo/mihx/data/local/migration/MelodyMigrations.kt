@@ -138,9 +138,23 @@ object MelodyMigrations {
         }
     }
 
+    val MIGRATION_10_11 = object : Migration(10, 11) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            // 探索播放（2026-10-20）：情绪词条收听偏好计票表
+            db.execSQL(
+                "CREATE TABLE IF NOT EXISTS `word_preferences` (" +
+                    "`word` TEXT NOT NULL, " +
+                    "`likeVotes` INTEGER NOT NULL, " +
+                    "`dislikeVotes` INTEGER NOT NULL, " +
+                    "`updatedAt` INTEGER NOT NULL, " +
+                    "PRIMARY KEY(`word`))"
+            )
+        }
+    }
+
     /** 声明于末尾：object 属性按声明顺序初始化，需引用上方全部迁移 */
     val ALL: Array<Migration> = arrayOf(
         MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6,
-        MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10,
+        MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11,
     )
 }

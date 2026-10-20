@@ -45,6 +45,10 @@ object PlayerSettingsKeys {
     // 情境化随心播放增强总开关（默认关闭）
     val MOOD_TIME_SLOT_ENABLED = booleanPreferencesKey("mood_time_slot_enabled")
 
+    // 随心播放增强运行模式（2026-10-20 探索播放）：存 RandomEnhanceMode.name；
+    // 未写入（老用户）时回退到 MOOD_TIME_SLOT_ENABLED（true → TIME_SLOT，否则 OFF）
+    val RANDOM_ENHANCE_MODE = stringPreferencesKey("random_enhance_mode")
+
     // 本地音乐列表排序（mode 存枚举名，方向默认升序）
     val SONG_SORT_MODE = stringPreferencesKey("song_sort_mode")
     val SONG_SORT_ASCENDING = booleanPreferencesKey("song_sort_ascending")

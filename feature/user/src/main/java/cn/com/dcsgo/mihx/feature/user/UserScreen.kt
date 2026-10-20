@@ -33,6 +33,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import cn.com.dcsgo.mihx.core.model.RandomEnhanceMode
 import cn.com.dcsgo.mihx.core.model.TimeSlotConfig
 import cn.com.dcsgo.mihx.domain.model.LocalFileValidationResult
 
@@ -52,7 +53,7 @@ fun UserScreen(
     onEmotionScanNow: () -> Unit = {},
     onOpenEmotionAnalysis: () -> Unit = {},
     moodSlotConfigs: List<TimeSlotConfig> = emptyList(),
-    moodSlotEnabled: Boolean = false,
+    randomEnhanceMode: RandomEnhanceMode = RandomEnhanceMode.OFF,
     nowMinuteOfDay: Int = 0,
     onOpenMoodTimeSlot: () -> Unit = {},
     /**
@@ -96,7 +97,7 @@ fun UserScreen(
                     UserSections.MOOD_TIME_SLOT -> item(key = "mood_time_slot", contentType = "header") {
                         MoodTimeSlotSection(
                             configs = moodSlotConfigs,
-                            enabled = moodSlotEnabled,
+                            mode = randomEnhanceMode,
                             nowMinuteOfDay = nowMinuteOfDay,
                             onClick = onOpenMoodTimeSlot,
                         )
@@ -211,7 +212,7 @@ fun SkinSwitcherSection(
 @Composable
 internal fun MoodTimeSlotSection(
     configs: List<TimeSlotConfig>,
-    enabled: Boolean,
+    mode: RandomEnhanceMode,
     nowMinuteOfDay: Int,
     onClick: () -> Unit,
 ) {
@@ -255,20 +256,23 @@ internal fun MoodTimeSlotSection(
                 )
                 Spacer(Modifier.height(3.dp))
                 Text(
-                    text = when {
-                        // 总开关关闭时功能整体未启用——即使恰好在某时段内也不算"生效中"
-                        // （生效 = 开关开 + 时刻命中时段；与设计文档 §3.3 一致，2026-09-04 修正）
-                        !enabled -> when {
+                    text = when (mode) {
+                        // 关闭时功能整体未启用（2026-09-04 修正：即使恰好在某时段内也不算"生效中"）
+                        RandomEnhanceMode.OFF -> when {
                             configs.isEmpty() -> "未配置，点击添加"
                             else -> "功能未启用 · ${configs.size} 个时段已配置"
                         }
-                        active != null -> "「${active.name}」生效中 · ${active.timeRangeText}"
-                        else -> "${configs.size} 个时段已配置 · 未在时段内"
+                        // 探索播放（2026-10-20）：探索模式不依赖时段
+                        RandomEnhanceMode.EXPLORE -> "探索模式生效中 · 按收听习惯学习喜欢/不喜欢词条"
+                        RandomEnhanceMode.TIME_SLOT -> when {
+                            active != null -> "「${active.name}」生效中 · ${active.timeRangeText}"
+                            else -> "${configs.size} 个时段已配置 · 未在时段内"
+                        }
                     },
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
-                if (enabled && active != null) {
+                if (mode == RandomEnhanceMode.TIME_SLOT && active != null) {
                     Spacer(Modifier.height(6.dp))
                     Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                         active.tags.take(4).forEach { tag ->

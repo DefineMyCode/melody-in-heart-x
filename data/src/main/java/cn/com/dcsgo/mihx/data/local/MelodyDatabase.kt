@@ -16,6 +16,7 @@ import cn.com.dcsgo.mihx.data.local.entity.SongArtistCrossRef
 import cn.com.dcsgo.mihx.data.local.entity.SongEmotionEntity
 import cn.com.dcsgo.mihx.data.local.entity.SongEntity
 import cn.com.dcsgo.mihx.data.local.entity.SongGroupOverrideEntity
+import cn.com.dcsgo.mihx.data.local.entity.WordPreferenceEntity
 
 @Database(
     entities = [
@@ -32,8 +33,9 @@ import cn.com.dcsgo.mihx.data.local.entity.SongGroupOverrideEntity
         AlbumEntity::class,
         SongArtistCrossRef::class,
         SongEmotionEntity::class,
+        WordPreferenceEntity::class,
     ],
-    version = 10,
+    version = 11,
     exportSchema = true,
 )
 abstract class MelodyDatabase : RoomDatabase() {

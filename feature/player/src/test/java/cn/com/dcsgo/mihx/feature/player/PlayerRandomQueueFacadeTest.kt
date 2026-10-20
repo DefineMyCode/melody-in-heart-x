@@ -429,4 +429,188 @@ class PlayerRandomQueueFacadeTest {
             sampleRate = 44_100,
         )
     }
+
+    // ── 探索播放（2026-10-20） ──
+
+    private fun exploreFacade(
+        tagsBySong: Map<Int, List<String>> = emptyMap(),
+        prefs: Map<String, cn.com.dcsgo.mihx.core.model.WordPreference> = emptyMap(),
+    ): PlayerRandomQueueFacade = PlayerRandomQueueFacade(
+        state = { state },
+        updateState = { transform -> state = transform(state) },
+        setPlayQueue = { songs, startIndex, mode ->
+            state = state.copy(playQueue = PlayQueue().setQueue(songs, startIndex, mode))
+            setQueueSongs = songs
+            setQueueMode = mode
+        },
+        syncPlayerQueue = { syncedQueue = it },
+        remainingMediaItems = { remainingItems },
+        playFromQueue = { _, _ -> },
+        rawPlayCounts = { emptyMap() },
+        log = { logs += it },
+        planner = RandomQueuePlanner(
+            batchSize = 20,
+            shuffle = { it },
+            isPlayable = { it.sampleRate > 0 },
+        ),
+        exploreModeEnabled = { true },
+        moodEmotionTagsOf = { song -> tagsBySong[song.id].orEmpty() },
+        wordPreferenceOf = { word -> prefs[word] ?: cn.com.dcsgo.mihx.core.model.WordPreference(word, 0, 0) },
+    )
+
+    @Test
+    fun explorePlayRandomQueueGenerates10SongsAndSetsExplorePlay() {
+        state = state.copy(
+            songs = songs(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12),
+            globalUniformRandomEnabled = false,
+            isInfinitePlay = true,
+            infinitePlayedSongIds = setOf(9),
+        )
+
+        runBlocking { exploreFacade().playRandomQueue() }
+
+        assertEquals(10, setQueueSongs?.size)
+        assertTrue(state.isExplorePlay)
+        assertFalse(state.isInfinitePlay)
+        assertEquals(emptySet<Int>(), state.infinitePlayedSongIds)
+        assertTrue(logs.any { it.contains("explore=true") })
+    }
+
+    @Test
+    fun exploreModeBlocksInfinitePlay() {
+        state = state.copy(
+            songs = songs(1, 2, 3),
+            isExploreModeActive = true,
+        )
+
+        val started = runBlocking { exploreFacade().startInfinitePlay() }
+
+        assertFalse(started)
+        assertFalse(state.isInfinitePlay)
+        assertTrue(logs.any { it.contains("blocked by explore mode") })
+    }
+
+    @Test
+    fun exploreRefillPrefersLikedAndNoDislikedWords() {
+        // 喜欢词「静谧」、不喜欢词「伤感」；
+        // 歌1 静谧、歌2 伤感、歌3 静谧+伤感、歌4 静谧、歌5 静谧、歌6 无词
+        // → 补充候选应为 {1, 4, 5}（含喜欢词且不含不喜欢词）
+        state = state.copy(
+            songs = songs(1, 2, 3, 4, 5, 6),
+            playQueue = PlayQueue().setQueue(songs(7, 8), startIndex = 0), // 队列中已有 7、8
+            isExplorePlay = true,
+        )
+        val explore = exploreFacade(
+            tagsBySong = mapOf(
+                1 to listOf("静谧"),
+                2 to listOf("伤感"),
+                3 to listOf("静谧", "伤感"),
+                4 to listOf("静谧"),
+                5 to listOf("静谧"),
+                6 to emptyList(),
+            ),
+            prefs = mapOf(
+                "静谧" to cn.com.dcsgo.mihx.core.model.WordPreference("静谧", 3, 1),   // LIKE
+                "伤感" to cn.com.dcsgo.mihx.core.model.WordPreference("伤感", 0, 2),   // DISLIKE
+            ),
+        )
+
+        runBlocking { explore.refillExplorePlayQueue() }
+
+        // 只补 5 首上限内的候选（池大小 3 → 3 首），且全部来自 {1,4,5}
+        val added = state.playQueue.songs.map { it.id }.filterNot { it in setOf(7, 8) }
+        assertTrue(added.all { it in setOf(1, 4, 5) })
+        assertEquals(3, added.size)
+        assertTrue(logs.any { it.contains("explore refill") })
+    }
+
+    @Test
+    fun exploreRefillFallsBackToNoDislikePoolWhenNoLikedSongs() {
+        // 无「喜欢词」歌曲 → 回退到「仅不含不喜欢词」的池
+        state = state.copy(
+            songs = songs(1, 2, 3, 4, 5, 6, 7),
+            playQueue = PlayQueue().setQueue(songs(8, 9), startIndex = 0),
+            isExplorePlay = true,
+        )
+        val explore = exploreFacade(
+            tagsBySong = mapOf(
+                1 to listOf("伤感"),
+                2 to listOf("伤感"),
+                3 to listOf("快乐"),
+                4 to listOf("快乐"),
+                5 to listOf("快乐"),
+                6 to listOf("快乐"),
+                7 to listOf("快乐"),
+            ),
+            prefs = mapOf(
+                "快乐" to cn.com.dcsgo.mihx.core.model.WordPreference("快乐", 1, 1), // NEUTRAL（平票）
+                "伤感" to cn.com.dcsgo.mihx.core.model.WordPreference("伤感", 0, 5), // DISLIKE
+            ),
+        )
+
+        runBlocking { explore.refillExplorePlayQueue() }
+
+        // 池 = 仅排除不喜欢词（伤感）→ {3,4,5,6,7} 中补 5 首
+        val added = state.playQueue.songs.map { it.id }.filterNot { it in setOf(8, 9) }
+        assertEquals(5, added.size)
+        assertTrue(added.all { it in setOf(3, 4, 5, 6, 7) })
+        assertTrue(logs.any { it.contains("no liked match") })
+    }
+
+    @Test
+    fun exploreRefillFallsBackToFullLibraryWhenAllDisliked() {
+        // 全部歌曲都含不喜欢词 → 回退全库
+        state = state.copy(
+            songs = songs(1, 2, 3),
+            playQueue = PlayQueue().setQueue(songs(9, 10), startIndex = 0),
+            isExplorePlay = true,
+        )
+        val explore = exploreFacade(
+            tagsBySong = mapOf(1 to listOf("伤感"), 2 to listOf("伤感"), 3 to listOf("伤感")),
+            prefs = mapOf("伤感" to cn.com.dcsgo.mihx.core.model.WordPreference("伤感", 0, 3)),
+        )
+
+        runBlocking { explore.refillExplorePlayQueue() }
+
+        assertEquals(3, state.playQueue.songs.size - 2)
+        assertTrue(logs.any { it.contains("fall back to full library") })
+    }
+
+    @Test
+    fun exploreRefillDoesNothingWhenNotInExploreSession() {
+        state = state.copy(
+            songs = songs(1, 2, 3),
+            playQueue = PlayQueue().setQueue(songs(1), startIndex = 0),
+            isExplorePlay = false,
+        )
+
+        runBlocking { exploreFacade().refillExplorePlayQueue() }
+
+        assertEquals(listOf(1), state.playQueue.songs.map { it.id })
+    }
+
+    @Test
+    fun exploreRefillKeepsStartedSongCurrentAfterStaleIndexSync() {
+        // 回归（2026-10-20）：切歌后业务队列 currentIndex 仍是「刚结束的歌」，补队列必须用
+        // startedSongId 校正，否则 sync 会回拉到旧歌重新播放。
+        // 队列 [1..10] currentIndex=7（刚结束的歌 8）→ 新当前歌 9（index 8），补 5 首后应保持歌 9。
+        state = state.copy(
+            songs = songs(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15),
+            playQueue = PlayQueue().setQueue(songs(1, 2, 3, 4, 5, 6, 7, 8, 9, 10), startIndex = 7),
+            isExplorePlay = true,
+        )
+        val explore = exploreFacade(
+            tagsBySong = (1..15).associateWith { listOf("静谧") },
+            prefs = mapOf("静谧" to cn.com.dcsgo.mihx.core.model.WordPreference("静谧", 5, 1)),
+        )
+
+        runBlocking { explore.refillExplorePlayQueue(startedSongId = 9) }
+
+        // 新当前歌（9）的索引被校正为 8，且队尾追加 5 首 → 不会回拉到歌 8 重播
+        assertEquals(8, state.playQueue.currentIndex)
+        assertEquals(9, state.playQueue.currentSong?.id)
+        assertEquals(15, state.playQueue.songs.size)
+        assertEquals(8, syncedQueue?.currentIndex)
+        assertTrue(logs.any { it.contains("added=5") })
+    }
 }

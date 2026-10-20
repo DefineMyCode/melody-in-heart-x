@@ -198,6 +198,7 @@ class PlayerPersistenceFacadeTest {
             positionMs: Long,
             isInfinitePlay: Boolean,
             infinitePlayedSongIds: Set<Int>,
+            isExplorePlay: Boolean,
             currentSongId: Int?,
         ) {
             val playbackSongId = currentSongId ?: queue.currentSong?.id
@@ -218,6 +219,7 @@ class PlayerPersistenceFacadeTest {
                             positionMs = positionMs.coerceAtLeast(0L),
                             isInfinitePlay = false,
                             infinitePlayedSongIds = emptySet(),
+                            isExplorePlay = false,
                             currentSongId = playbackSongId,
                         )
                     }
@@ -230,6 +232,7 @@ class PlayerPersistenceFacadeTest {
                 positionMs = positionMs.coerceAtLeast(0L),
                 isInfinitePlay = isInfinitePlay,
                 infinitePlayedSongIds = infinitePlayedSongIds,
+                isExplorePlay = isExplorePlay,
                 currentSongId = playbackSongId,
             )
         }
@@ -240,6 +243,7 @@ class PlayerPersistenceFacadeTest {
                 positionMs = positionMs.coerceAtLeast(0L),
                 isInfinitePlay = saved?.isInfinitePlay ?: false,
                 infinitePlayedSongIds = saved?.infinitePlayedSongIds ?: emptySet(),
+                isExplorePlay = saved?.isExplorePlay ?: false,
                 currentSongId = songId,
             )
         }
@@ -268,6 +272,7 @@ class PlayerPersistenceFacadeTest {
                 positionMs = snapshot.positionMs,
                 isInfinitePlay = snapshot.isInfinitePlay,
                 infinitePlayedSongIds = snapshot.infinitePlayedSongIds.filter { it in availableSongs }.toSet(),
+                isExplorePlay = snapshot.isExplorePlay,
             )
         }
 
@@ -284,6 +289,7 @@ class PlayerPersistenceFacadeTest {
             val positionMs: Long,
             val isInfinitePlay: Boolean,
             val infinitePlayedSongIds: Set<Int>,
+            val isExplorePlay: Boolean = false,
             val currentSongId: Int?,
         )
     }

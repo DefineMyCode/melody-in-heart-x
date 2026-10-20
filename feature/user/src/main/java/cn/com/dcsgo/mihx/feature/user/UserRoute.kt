@@ -2,6 +2,7 @@ package cn.com.dcsgo.mihx.feature.user
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
+import cn.com.dcsgo.mihx.core.model.RandomEnhanceMode
 import cn.com.dcsgo.mihx.core.model.TimeSlotConfig
 import cn.com.dcsgo.mihx.domain.model.LocalFileValidationResult
 
@@ -21,9 +22,9 @@ data class UserRouteState(
     val emotionScanning: Boolean = false,
     /** 用户手动暂停批扫 */
     val emotionPaused: Boolean = false,
-    /** 情境化随心播放：时段配置 + 开关（入口卡状态） */
+    /** 情境化随心播放：时段配置 + 运行模式（入口卡状态，2026-10-20 探索播放） */
     val moodSlotConfigs: List<TimeSlotConfig> = emptyList(),
-    val moodSlotEnabled: Boolean = false,
+    val randomEnhanceMode: RandomEnhanceMode = RandomEnhanceMode.OFF,
     /** 当前时刻分钟数（0–1439），判定入口卡"生效中"态 */
     val nowMinuteOfDay: Int = 0,
     /**
@@ -66,7 +67,7 @@ fun UserRoute(
         onEmotionScanNow = actions.onEmotionScanNow,
         onOpenEmotionAnalysis = actions.onOpenEmotionAnalysis,
         moodSlotConfigs = state.moodSlotConfigs,
-        moodSlotEnabled = state.moodSlotEnabled,
+        randomEnhanceMode = state.randomEnhanceMode,
         nowMinuteOfDay = state.nowMinuteOfDay,
         onOpenMoodTimeSlot = actions.onOpenMoodTimeSlot,
         sectionOrder = state.sectionOrder,

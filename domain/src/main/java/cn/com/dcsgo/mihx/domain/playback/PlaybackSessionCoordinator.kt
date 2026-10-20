@@ -34,6 +34,9 @@ interface PlaybackDurationMonitor : PlaybackDurationTracker {
     fun updateDuration(songId: Int, durationMs: Long)
     fun stopPlayback()
     fun release()
+
+    /** 当前歌曲累计实际播放时长（毫秒，不含暂停/拖动进度时段）——探索播放收听结果结算用 */
+    fun currentPlayedMs(): Long
 }
 
 fun interface PlaybackDurationMonitorFactory {

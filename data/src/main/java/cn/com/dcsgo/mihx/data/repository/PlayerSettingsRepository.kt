@@ -8,6 +8,7 @@ import androidx.datastore.preferences.core.Preferences
 import cn.com.dcsgo.mihx.core.model.ThemeMode
 import cn.com.dcsgo.mihx.core.model.ThemeVariant
 import cn.com.dcsgo.mihx.core.model.ScreenOrientationMode
+import cn.com.dcsgo.mihx.core.model.RandomEnhanceMode
 import cn.com.dcsgo.mihx.domain.model.SongSortMode
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -112,9 +113,20 @@ class PlayerSettingsRepository(
         preferences[PlayerSettingsKeys.EMOTION_SCAN_PAUSED] == true
     }
 
-    override val moodTimeSlotEnabled: Flow<Boolean> = settingsStore.data.map { preferences ->
-        preferences[PlayerSettingsKeys.MOOD_TIME_SLOT_ENABLED] == true
+    /**
+     * 随心播放增强运行模式：优先读新 key；老用户（新 key 未写入）回退到
+     * mood_time_slot_enabled 开关（true → 时段模式，false → 关闭），保持既有行为不变。
+     */
+    override val randomEnhanceMode: Flow<RandomEnhanceMode> = settingsStore.data.map { preferences ->
+        val stored = preferences[PlayerSettingsKeys.RANDOM_ENHANCE_MODE]
+        when {
+            stored != null -> RandomEnhanceMode.entries.firstOrNull { it.name == stored } ?: RandomEnhanceMode.OFF
+            preferences[PlayerSettingsKeys.MOOD_TIME_SLOT_ENABLED] == true -> RandomEnhanceMode.TIME_SLOT
+            else -> RandomEnhanceMode.OFF
+        }
     }
+
+    override val moodTimeSlotEnabled: Flow<Boolean> = randomEnhanceMode.map { it == RandomEnhanceMode.TIME_SLOT }
 
     // ── 定时关闭 ──
 
@@ -207,8 +219,14 @@ class PlayerSettingsRepository(
     }
 
     override suspend fun setMoodTimeSlotEnabled(enabled: Boolean) {
+        setRandomEnhanceMode(if (enabled) RandomEnhanceMode.TIME_SLOT else RandomEnhanceMode.OFF)
+    }
+
+    override suspend fun setRandomEnhanceMode(mode: RandomEnhanceMode) {
         settingsStore.edit { preferences ->
-            preferences[PlayerSettingsKeys.MOOD_TIME_SLOT_ENABLED] = enabled
+            preferences[PlayerSettingsKeys.RANDOM_ENHANCE_MODE] = mode.name
+            // 同步写回旧开关：时段模式 → true，其余 → false，保证两条读取路径一致
+            preferences[PlayerSettingsKeys.MOOD_TIME_SLOT_ENABLED] = mode == RandomEnhanceMode.TIME_SLOT
         }
     }
 

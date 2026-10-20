@@ -32,14 +32,15 @@ class PlayerPersistenceFacade(
         // 诊断：确认 5s autosaver 与事件保存确实在写盘、写入的是否是预期数据。
         log(
             "save playback state: queue=${snapshot.playQueue.songs.size}, index=${snapshot.playQueue.currentIndex}, " +
-                "infinite=${snapshot.isInfinitePlay}, position=${positionMs}ms, " +
-                "currentSongId=${snapshot.currentSong?.id}"
+                "infinite=${snapshot.isInfinitePlay}, explore=${snapshot.isExplorePlay}, " +
+                "position=${positionMs}ms, currentSongId=${snapshot.currentSong?.id}"
         )
         playbackStateStore.save(
             queue = snapshot.playQueue,
             positionMs = positionMs,
             isInfinitePlay = snapshot.isInfinitePlay,
             infinitePlayedSongIds = snapshot.infinitePlayedSongIds,
+            isExplorePlay = snapshot.isExplorePlay,
             currentSongId = snapshot.currentSong?.id,
         )
     }
@@ -59,8 +60,8 @@ class PlayerPersistenceFacade(
                 "restore read: no snapshot to restore (librarySongs=${librarySongs.size})"
             } else {
                 "restore read: ${result.queue.songs.size} songs, index=${result.queue.currentIndex}, " +
-                    "infinite=${result.isInfinitePlay}, playable=${result.playableSession != null} " +
-                    "(librarySongs=${librarySongs.size})"
+                    "infinite=${result.isInfinitePlay}, explore=${result.isExplorePlay}, " +
+                    "playable=${result.playableSession != null} (librarySongs=${librarySongs.size})"
             }
         )
         return result
@@ -90,6 +91,7 @@ class PlayerPersistenceFacade(
                 playQueue = result.queue,
                 isInfinitePlay = result.isInfinitePlay,
                 infinitePlayedSongIds = result.infinitePlayedSongIds,
+                isExplorePlay = result.isExplorePlay,
             )
         }
 

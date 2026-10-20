@@ -26,11 +26,42 @@ class RandomQueuePlanner(
         val resetHistory: Boolean,
     )
 
+    data class ExploreRefillPlan(
+        val queue: PlayQueue,
+        val addedSongs: List<Song>,
+    )
+
+    /**
+     * 探索播放的队列补充计划（2026-10-20）：从候选池随机取 [count] 首追加到队尾，
+     * 排除已在队列中的歌曲；候选池由调用方按喜欢/不喜欢词条预过滤。
+     * @return null 表示无可播放歌曲；[addedSongs] 为空表示候选池已全部在队列中。
+     */
+    fun planExploreRefill(
+        allSongs: List<Song>,
+        queue: PlayQueue,
+        count: Int,
+    ): ExploreRefillPlan? {
+        val playableSongs = allSongs.playable()
+        if (playableSongs.isEmpty()) return null
+
+        val existingQueueIds = queue.songs.map { it.id }.toSet()
+        val available = playableSongs.filter { it.id !in existingQueueIds }
+        val selected = shuffle(available).take(count)
+        if (selected.isEmpty()) {
+            return ExploreRefillPlan(queue = queue, addedSongs = emptyList())
+        }
+        return ExploreRefillPlan(
+            queue = queue.withSongs(queue.songs + selected),
+            addedSongs = selected,
+        )
+    }
+
     fun planRandomQueue(
         songs: List<Song>,
         recentSongIds: Set<Int>,
         uniformRandomEnabled: Boolean = false,
         playCounts: Map<Int, Int> = emptyMap(),
+        batchSize: Int = this.batchSize,
     ): RandomQueuePlan? {
         val playableSongs = songs.playable()
         if (playableSongs.isEmpty()) return null

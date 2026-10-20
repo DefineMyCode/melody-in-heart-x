@@ -8,12 +8,16 @@ data class RestoredPlaybackState(
     val positionMs: Long,
     val isInfinitePlay: Boolean = false,
     val infinitePlayedSongIds: Set<Int> = emptySet(),
+    /** 探索播放会话（2026-10-20）：重启后恢复，保证探索队列自动补充继续生效 */
+    val isExplorePlay: Boolean = false,
 )
 
 data class PlaybackRestoreResult(
     val queue: PlayQueue,
     val isInfinitePlay: Boolean = false,
     val infinitePlayedSongIds: Set<Int> = emptySet(),
+    /** 探索播放会话：重启后恢复（与 [isInfinitePlay] 同路径） */
+    val isExplorePlay: Boolean = false,
     val playableSession: RestoredPlayableSession? = null,
 )
 
@@ -29,6 +33,7 @@ interface PlaybackStateStorage {
         positionMs: Long,
         isInfinitePlay: Boolean = false,
         infinitePlayedSongIds: Set<Int> = emptySet(),
+        isExplorePlay: Boolean = false,
         currentSongId: Int? = null,
     )
 
@@ -67,6 +72,7 @@ class PlaybackRestoreCoordinator(
             queue = queue,
             isInfinitePlay = restored.isInfinitePlay,
             infinitePlayedSongIds = restored.infinitePlayedSongIds,
+            isExplorePlay = restored.isExplorePlay,
             playableSession = playableSession,
         )
     }

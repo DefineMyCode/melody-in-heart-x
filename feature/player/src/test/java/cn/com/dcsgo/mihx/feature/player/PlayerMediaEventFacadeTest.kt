@@ -1,4 +1,4 @@
-package cn.com.dcsgo.mihx.feature.player
+﻿package cn.com.dcsgo.mihx.feature.player
 
 import cn.com.dcsgo.mihx.core.model.PlayMode
 import cn.com.dcsgo.mihx.core.model.PlayQueue
@@ -103,6 +103,120 @@ class PlayerMediaEventFacadeTest {
 
         assertFalse(state.isPlaying)
         assertEquals(0L, state.currentPositionMs)
+    }
+
+    // 鈹€鈹€ 鎺㈢储鎾斁锛?026-10-20锛夛細鏀跺惉缁撶畻 + 闃熷垪琛ュ厖 鈹€鈹€
+
+    @Test
+    fun explorePlaySettlesEndedSongAndRefillsWhenEndedSongWasSecondToLast() {
+        var settledSongId: Int? = null
+        var settledPlayedMs = -1L
+        var exploreRefilled = false
+        val exploreFacade = PlayerMediaEventFacade(
+            state = { state },
+            updateState = { transform -> state = transform(state) },
+            stopPlaybackTracking = { stoppedTracking = true },
+            clearTrackedSong = { clearedTrackedSong = true },
+            trackedSongId = { 3 },
+            currentPlayedMs = { 12_000L },
+            remainingMediaItems = { remainingItems },
+            refillInfinitePlayQueue = { _, _ -> },
+            refillExplorePlayQueue = { exploreRefilled = true },
+            onExploreSongSettled = { songId, playedMs ->
+                settledSongId = songId
+                settledPlayedMs = playedMs
+            },
+            syncPlayerQueue = { syncedQueue = it },
+            log = { logs += it },
+        )
+        state = state.copy(isExplorePlay = true, isExploreModeActive = true)
+        remainingItems = 0 // 鍒氱粨鏉熺殑鏄€掓暟绗簩棣栵細鏂板綋鍓嶆洸鐩箣鍚庡墿浣?0 棣?
+
+        exploreFacade.handleMediaItemEnded(startedSongId = 4)
+
+        assertEquals(3, settledSongId)
+        assertEquals(12_000L, settledPlayedMs)
+        assertTrue(exploreRefilled)
+        assertTrue(logs.any { it.contains("explore play refill: remaining=0") })
+    }
+
+    @Test
+    fun explorePlayDoesNotRefillWhenEndedSongWasThirdToLast() {
+        // 鍥炲綊锛?026-10-20锛夛細鍊掓暟绗笁棣栧垏涓嬩竴棣栨椂锛屾柊褰撳墠鏇茬洰涔嬪悗鍓╀綑 1 棣?鈫?涓嶈ˉ闃熷垪锛岄伩鍏嶅洖鎷夐噸鎾?
+        var exploreRefilled = false
+        val exploreFacade = PlayerMediaEventFacade(
+            state = { state },
+            updateState = { transform -> state = transform(state) },
+            stopPlaybackTracking = { stoppedTracking = true },
+            clearTrackedSong = { clearedTrackedSong = true },
+            trackedSongId = { 3 },
+            currentPlayedMs = { 12_000L },
+            remainingMediaItems = { remainingItems },
+            refillInfinitePlayQueue = { _, _ -> },
+            refillExplorePlayQueue = { exploreRefilled = true },
+            onExploreSongSettled = { _, _ -> },
+            syncPlayerQueue = { syncedQueue = it },
+            log = { logs += it },
+        )
+        state = state.copy(isExplorePlay = true, isExploreModeActive = true)
+        remainingItems = 1
+
+        exploreFacade.handleMediaItemEnded(startedSongId = 4)
+
+        assertFalse(exploreRefilled)
+        assertTrue(logs.none { it.contains("explore play refill") })
+    }
+
+    @Test
+    fun explorePlayDoesNotRefillWhenQueueHasEnoughSongs() {
+        var exploreRefilled = false
+        val exploreFacade = PlayerMediaEventFacade(
+            state = { state },
+            updateState = { transform -> state = transform(state) },
+            stopPlaybackTracking = { stoppedTracking = true },
+            clearTrackedSong = { clearedTrackedSong = true },
+            trackedSongId = { 3 },
+            currentPlayedMs = { 12_000L },
+            remainingMediaItems = { remainingItems },
+            refillInfinitePlayQueue = { _, _ -> },
+            refillExplorePlayQueue = { exploreRefilled = true },
+            onExploreSongSettled = { _, _ -> },
+            syncPlayerQueue = { syncedQueue = it },
+            log = { logs += it },
+        )
+        state = state.copy(isExplorePlay = true, isExploreModeActive = true)
+        remainingItems = 4
+
+        exploreFacade.handleMediaItemEnded()
+
+        assertFalse(exploreRefilled)
+    }
+
+    @Test
+    fun explorePlaySettleIsSkippedWhenTrackedSongIsNull() {
+        var settled = false
+        var exploreRefilled = false
+        val exploreFacade = PlayerMediaEventFacade(
+            state = { state },
+            updateState = { transform -> state = transform(state) },
+            stopPlaybackTracking = { stoppedTracking = true },
+            clearTrackedSong = { clearedTrackedSong = true },
+            trackedSongId = { null },
+            currentPlayedMs = { 12_000L },
+            remainingMediaItems = { remainingItems },
+            refillInfinitePlayQueue = { _, _ -> },
+            refillExplorePlayQueue = { exploreRefilled = true },
+            onExploreSongSettled = { _, _ -> settled = true },
+            syncPlayerQueue = { syncedQueue = it },
+            log = { logs += it },
+        )
+        state = state.copy(isExplorePlay = true, isExploreModeActive = true)
+        remainingItems = 0
+
+        exploreFacade.handleMediaItemEnded()
+
+        assertFalse(settled)
+        assertTrue(exploreRefilled)
     }
 
     private fun songs(vararg ids: Int): List<Song> = ids.map { song(it) }

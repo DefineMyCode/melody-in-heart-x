@@ -68,6 +68,13 @@ object RepositoryModule {
 
     @Provides
     @Singleton
+    fun provideWordPreferenceRepository(
+        melodyDao: MelodyDao,
+    ): cn.com.dcsgo.mihx.domain.repository.WordPreferenceRepository =
+        cn.com.dcsgo.mihx.data.repository.WordPreferencesRepository(melodyDao)
+
+    @Provides
+    @Singleton
     fun providePlayerSettingsRepository(
         @PlayerSettingsStore settingsStore: DataStore<Preferences>,
         @LegacyMusicPlayerPreferences legacyPrefs: android.content.SharedPreferences,

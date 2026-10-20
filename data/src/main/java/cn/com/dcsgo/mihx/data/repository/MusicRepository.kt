@@ -166,6 +166,14 @@ class MusicRepository(
     private suspend fun restoreFromRoom(dao: MelodyDao) {
         val restoredLibrary = RoomMusicLibraryDataSource(dao).restore()
 
+        // 高水位 nextId 是纯 DB 查询（maxKnownSongId 为 suspend），必须在写锁外执行（2026-10-20）：
+        // kotlin.concurrent.write 是 inline 扩展，锁内挂起点会被内联进 suspend 函数体。JVM
+        // ReentrantReadWriteLock 的锁归属绑定线程——协程在锁内挂起后若在线程池换线程恢复，finally 里的
+        // unlock() 由「非持锁线程」执行会抛 IllegalMonitorStateException（对应日志
+        // "loadPersistedSongs: failed: null"），且写锁被原线程永久持有不释放，后续所有 lock.read /
+        // lock.write 永久阻塞——启动卡死在「启动中...」页。此处先锁外查高水位，锁内只做纯内存变更。
+        val maxKnownSongId = dao.maxKnownSongId()
+
         lock.write {
             songs.clear()
             songs.addAll(restoredLibrary.songs)
@@ -174,8 +182,8 @@ class MusicRepository(
             // M-4（评审 2026-10-15）：nextId 以「全库已知最大 songId」（含统计/播放事件/秒切/情绪等
             // 关联表的残留引用）为高水位，防止被删歌曲的 id 在重启后被新导入歌曲复用、继承其统计。
             // SongEntity.id 非自增，maxKnownSongId() 为 null（空库）时回退曲库内最大 id。
-            val maxKnownId = dao.maxKnownSongId() ?: (songs.maxOfOrNull { it.id } ?: 0)
-            nextId = maxOf(maxKnownId, songs.maxOfOrNull { it.id } ?: 0) + 1
+            val maxInLibrary = songs.maxOfOrNull { it.id } ?: 0
+            nextId = maxOf(maxKnownSongId ?: maxInLibrary, maxInLibrary) + 1
             nextPlaylistId = (playlists.maxOfOrNull { it.id } ?: 0) + 1
         }
         AppLog.info(TAG, "restoreFromRoom: restored ${restoredLibrary.songs.size} songs, ${restoredLibrary.playlists.size} playlists")

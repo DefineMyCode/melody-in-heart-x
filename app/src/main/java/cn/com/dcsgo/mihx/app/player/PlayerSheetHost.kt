@@ -1,14 +1,19 @@
 package cn.com.dcsgo.mihx.app.player
 
 
+import android.content.res.Configuration
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.unit.Dp
 import cn.com.dcsgo.mihx.core.model.Lyrics
 import cn.com.dcsgo.mihx.core.model.Song
 import cn.com.dcsgo.mihx.feature.lyrics.LyricsRoute
@@ -79,6 +84,10 @@ fun PlayerSheetHost(
     // 使用默认 confirmValueChange（允许 Hidden），下滑/点遮罩/返回键都能正常关闭。
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
+    // 横屏/大屏（窗口宽度 ≥600dp）：M3 默认 sheetMaxWidth=640dp 会把抽屉渲染成居中窄列——
+    // 看起来"没全屏"。横屏时放开宽度上限（全宽）并让内容撑满高度（2026-10-21）。
+    val isLandscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
+
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         dragHandle = null,
@@ -86,11 +95,15 @@ fun PlayerSheetHost(
         sheetState = sheetState,
         containerColor = MaterialTheme.colorScheme.surface,
         modifier = modifier,
+        sheetMaxWidth = if (isLandscape) Dp.Unspecified else BottomSheetDefaults.SheetMaxWidth,
     ) {
         // 抽屉内容：歌词或播放页。
-        // sheet 内挂 ToastHost(焦点协调只让聚焦窗口画,避免双 toast)——
-        // 抽屉全屏展开时若只靠主窗口画,toast 会被完全遮住看不见(2026-10-01 用户反馈)。
-        Box(modifier = Modifier.fillMaxWidth()) {
+        // sheet 内挂 ToastHost(焦点协调只让聚焦窗口画,避免双 toast)——见 ToastHost 文档。
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .then(if (isLandscape) Modifier.fillMaxHeight() else Modifier),
+        ) {
             if (showLyrics) {
                 LyricsRoute(
                     state = lyricsState,

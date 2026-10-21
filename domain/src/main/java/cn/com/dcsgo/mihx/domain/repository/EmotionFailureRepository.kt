@@ -21,6 +21,12 @@ enum class EmotionFailureReason(val userMessage: String) {
     /** 超长熔断（>20 分钟，防解码烧内存） */
     TOO_LONG("歌曲超过 20 分钟"),
 
+    /**
+     * 解码内存超预算（2026-10-21）：歌曲未超 20 分钟，但采样率过高（如 192kHz）或文件过大，
+     * 按源采样率解码 PCM 的内存开销超过端侧预算，继续解码会 OOM。
+     */
+    TOO_LARGE_FOR_DEVICE("采样率过高或文件过大，超出设备分析内存限制（可转码降采样后重新导入）"),
+
     /** 单曲解码看门狗 60s 超时 */
     DECODE_TIMEOUT("解码超时"),
 

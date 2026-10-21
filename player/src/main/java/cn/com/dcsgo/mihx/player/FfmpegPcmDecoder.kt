@@ -37,6 +37,9 @@ import javax.inject.Singleton
 @Singleton
 class FfmpegPcmDecoder @Inject constructor() {
 
+    /** 解码内存预算（自适应设备堆上限，2026-10-21）：与 EmotionAnalyzer 同源 */
+    private val memoryBudgetBytes: Long = EmotionAnalyzer.memoryBudgetForHeap(Runtime.getRuntime().maxMemory())
+
     /** 解码产物: 已下混 mono 的 s16 样本 + 解码器实际输出采样率. */
     internal class Pcm16Mono(val pcm: ShortAccum, val sampleRate: Int)
 
@@ -89,8 +92,9 @@ class FfmpegPcmDecoder @Inject constructor() {
                 return null
             }
 
-        // 按实际源采样率换算熔断上限（静态 192k 常量在 44.1k 下形同虚设，2026-09-04）
-        val pcm = ShortAccum(maxCapacity = EmotionAnalyzer.maxSamplesForSrc(srcSr).toInt())
+        // 按实际源采样率换算熔断上限（静态 192k 常量在 44.1k 下形同虚设，2026-09-04；
+        // 预算自适应设备堆上限，2026-10-21）
+        val pcm = ShortAccum(maxCapacity = EmotionAnalyzer.maxSamplesForSrc(srcSr, memoryBudgetBytes).toInt())
         var eosIn = false
         var outCh = srcCh // 首帧输出后以解码器实际声道数为准
         var outChResolved = false
@@ -144,10 +148,12 @@ class FfmpegPcmDecoder @Inject constructor() {
                     val data = outBuf.data
                     if (!outBuf.shouldBeSkipped && data != null && data.limit() > 0) {
                         consumeOutput(data, outCh, pcm)
-                        if (pcm.size > EmotionAnalyzer.maxSamplesForSrc(srcSr)) {
+                        // 2026-10-21：ShortAccum 触顶截断 → 区分「超长」与「内存超限」（高采样率/大文件）
+                        if (pcm.truncated) {
+                            val reason = EmotionAnalyzer.truncationReason(srcSr, memoryBudgetBytes)
                             AppLog.warning(
                                 TAG,
-                                "ffmpeg song too long (>${EmotionAnalyzer.MAX_SECONDS / 60}min @${srcSr}Hz), skip",
+                                "ffmpeg decode truncated @${srcSr}Hz -> ${reason.name}",
                                 null,
                             )
                             return null

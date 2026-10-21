@@ -38,6 +38,9 @@ class EmotionAnalyzer @Inject constructor(
 ) {
     private val lock = Any()
 
+    /** 解码内存预算（自适应设备堆上限，2026-10-21）：读取一次即可，堆上限运行期不变 */
+    private val memoryBudgetBytes: Long = memoryBudgetForHeap(Runtime.getRuntime().maxMemory())
+
     private var yam: Interpreter
     private var head: Interpreter
     private val embIdx: Int
@@ -148,9 +151,10 @@ class EmotionAnalyzer @Inject constructor(
         } catch (oom: OutOfMemoryError) {
             // OOM 是 Error 不走 Exception 分支（2026-09-04 真机日志: 超长合集解码
             // ShortAccum 扩容 245MB 失败, 曾被 Worker 兜底误标为 INFERENCE_ERROR）。
-            // 解码前已按时长熔断, 走到这里通常是时长未知(durationUs<=0)的极端文件。
+            // 解码前已按时长/内存预算熔断, 走到这里通常是时长未知(durationUs<=0)的极端文件。
+            // 2026-10-21: 高采样率(192kHz)/大文件解码内存耗尽也是 OOM, 归为「内存超限」而非「超20分钟」。
             AppLog.warning(TAG, "analyze OOM songId=$songId: ${oom.message}", oom)
-            EmotionAnalysisResult.Failure(EmotionFailureReason.TOO_LONG)
+            EmotionAnalysisResult.Failure(EmotionFailureReason.TOO_LARGE_FOR_DEVICE)
         } catch (e: Exception) {
             AppLog.warning(TAG, "analyze failed songId=$songId: ${e.message}", e)
             EmotionAnalysisResult.Failure(EmotionFailureReason.INFERENCE_ERROR)
@@ -197,24 +201,30 @@ class EmotionAnalyzer @Inject constructor(
         val srcCh = format.getInteger(MediaFormat.KEY_CHANNEL_COUNT)
         val deadline = System.currentTimeMillis() + MAX_DECODE_MS
 
-        // 超长熔断前置（2026-09-04）: 解码前就能拿到轨道时长。此前依赖 MAX_SAMPLES 事后
-        // 熔断, 但内存消耗只与实际样本数线性相关——44.1kHz 立体声下 36 分钟合集解码出
-        // ~9500 万样本, 远低于按 192kHz 最坏情况设的熔断线(2.3 亿), 熔断永远没机会触发
-        // 就先 OOM(ShortAccum 扩容 245MB 失败), OOM 是 Error 穿透 catch(Exception) 被
-        // Worker 兜底误标为 INFERENCE_ERROR。durationUs <= 0(未知)时不拦, 交给事后熔断。
+        // 超长/内存预算熔断前置（2026-09-04 超长；2026-10-21 高采样率/大文件）：解码前就能拿到
+        // 轨道时长。按「时长×源采样率」折算预计样本数，先命中 20 分钟上限 → 超长；仅命中内存
+        // 预算 → 采样率过高/文件过大（192kHz 下 20 分钟上限形同虚设，内存预算先到）。
+        // durationUs <= 0(未知)时不拦，交给解码中截断 + OOM 兜底。
         val durationUs = try {
             format.getLong(MediaFormat.KEY_DURATION) // key = "durationUs"
         } catch (e: Exception) {
             0L
         }
-        if (durationUs > MAX_DURATION_US) {
-            AppLog.warning(
-                TAG,
-                "song too long (${durationUs / 60000000}min > ${MAX_SECONDS / 60}min), skip before decode",
-                null,
-            )
-            extractor.release()
-            return null to EmotionFailureReason.TOO_LONG
+        if (durationUs > 0L) {
+            val cutoffReason = samplesCutoffReason(srcSr, durationUs * srcSr / 1_000_000L, memoryBudgetBytes)
+            if (cutoffReason != null) {
+                val (byDuration, byMemory) = samplesLimits(srcSr, memoryBudgetBytes)
+                AppLog.warning(
+                    TAG,
+                    "song rejected before decode: duration=${durationUs / 1_000_000}s @${srcSr}Hz, " +
+                        "estSamples=${durationUs * srcSr / 1_000_000L}, " +
+                        "durationLimit=${byDuration}, memoryLimit=${byMemory}, " +
+                        "budget=${memoryBudgetBytes / (1024 * 1024)}MB -> ${cutoffReason.name}",
+                    null,
+                )
+                extractor.release()
+                return null to cutoffReason
+            }
         }
 
         // FFmpeg 优先(与播放链路同款解码器): 厂商软解组件在部分 ROM 上 native 崩溃/死循环,
@@ -261,7 +271,7 @@ class EmotionAnalyzer @Inject constructor(
         return try {
             codec.configure(format, null, null, 0)
             codec.start()
-            val pcm = ShortAccum(maxCapacity = maxSamplesForSrc(srcSr).toInt())
+            val pcm = ShortAccum(maxCapacity = maxSamplesForSrc(srcSr, memoryBudgetBytes).toInt())
             val info = MediaCodec.BufferInfo()
             var eosIn = false
             var eosOut = false
@@ -303,15 +313,16 @@ class EmotionAnalyzer @Inject constructor(
                             for (c in 0 until srcCh) sum += bb.short
                             pcm.add((sum / srcCh).toShort())
                         }
-                        // 事后熔断上限按实际源采样率算（srcSr 已知）：
-                        // MAX_SAMPLES 静态常量按 192kHz 最坏情况设定，44.1kHz 下形同虚设
-                        if (pcm.size > maxSamplesForSrc(srcSr)) {
+                        // 解码中截断熔断：ShortAccum 触顶即静默丢弃，据 truncated 判定是
+                        // 「超长」还是「内存超限」（高采样率/大文件）——2026-10-21 区分原因
+                        if (pcm.truncated) {
+                            val reason = truncationReason(srcSr, memoryBudgetBytes)
                             AppLog.warning(
                                 TAG,
-                                "song too long (>${MAX_SECONDS / 60}min @${srcSr}Hz), skip mid-decode",
+                                "decode truncated @${srcSr}Hz (${pcm.size} samples) -> ${reason.name}",
                                 null,
                             )
-                            return null to EmotionFailureReason.TOO_LONG
+                            return null to reason
                         }
                     }
                     codec.releaseOutputBuffer(outIdx, false)
@@ -336,7 +347,7 @@ class EmotionAnalyzer @Inject constructor(
         deadline: Long,
     ): Pair<FloatArray?, EmotionFailureReason?> {
         return try {
-            val pcm = ShortAccum(maxCapacity = maxSamplesForSrc(srcSr).toInt())
+            val pcm = ShortAccum(maxCapacity = maxSamplesForSrc(srcSr, memoryBudgetBytes).toInt())
             val buf = ByteBuffer.allocate(1 shl 16).order(ByteOrder.LITTLE_ENDIAN)
             while (true) {
                 if (System.currentTimeMillis() > deadline) {
@@ -356,9 +367,10 @@ class EmotionAnalyzer @Inject constructor(
                         for (c in 0 until srcCh) sum += buf.short
                         pcm.add((sum / srcCh).toShort())
                     }
-                    if (pcm.size > maxSamplesForSrc(srcSr)) {
-                        AppLog.warning(TAG, "raw song too long (>${MAX_SECONDS / 60}min @${srcSr}Hz), skip", null)
-                        return null to EmotionFailureReason.TOO_LONG
+                    if (pcm.truncated) {
+                        val reason = truncationReason(srcSr, memoryBudgetBytes)
+                        AppLog.warning(TAG, "raw decode truncated @${srcSr}Hz -> ${reason.name}", null)
+                        return null to reason
                     }
                 }
                 buf.rewind()
@@ -428,18 +440,75 @@ class EmotionAnalyzer @Inject constructor(
          * 采样率先 clamp 到合法编解码范围（8k–192k），避免畸形头报告的极端采样率
          * 让数值溢出 Int（ShortAccum.maxCapacity 是 Int）。
          */
-        fun maxSamplesForSrc(srcSampleRate: Int): Long {
-            val rate = srcSampleRate.coerceIn(MIN_SRC_SAMPLE_RATE, MAX_SRC_SAMPLE_RATE)
-            val byDuration = MAX_SECONDS.toLong() * rate
-            val byMemory = MEMORY_BUDGET_BYTES * rate / (2L * rate + BYTES_PER_RESAMPLED_SAMPLE * SR)
+        fun maxSamplesForSrc(srcSampleRate: Int, memoryBudgetBytes: Long): Long {
+            val (byDuration, byMemory) = samplesLimits(srcSampleRate, memoryBudgetBytes)
             return minOf(byDuration, byMemory).coerceAtMost(Int.MAX_VALUE.toLong())
         }
 
         /**
-         * 解码内存预算（字节）：解码缓冲 + 重采样输出合计的软上限。
-         * 256MB 堆减去推理模型/应用基线预留约 64MB。
+         * 解码样本数双限（2026-10-21）：(时长上限, 内存上限)。
+         * - 时长上限：20 分钟 × 源采样率（真正的「超长」）；
+         * - 内存上限：解码缓冲 + 重采样输出的内存预算换算的样本数（高采样率/大文件先命中）。
          */
-        private const val MEMORY_BUDGET_BYTES = 192L * 1024 * 1024
+        fun samplesLimits(srcSampleRate: Int, memoryBudgetBytes: Long): Pair<Long, Long> {
+            val rate = srcSampleRate.coerceIn(MIN_SRC_SAMPLE_RATE, MAX_SRC_SAMPLE_RATE)
+            val byDuration = MAX_SECONDS.toLong() * rate
+            val byMemory = memoryBudgetBytes * rate / (2L * rate + BYTES_PER_RESAMPLED_SAMPLE * SR)
+            return byDuration.coerceAtMost(Int.MAX_VALUE.toLong()) to
+                byMemory.coerceAtMost(Int.MAX_VALUE.toLong())
+        }
+
+        /**
+         * 由「预计解码样本数」判定熔断原因（2026-10-21）：
+         * - 先超时长上限 → [EmotionFailureReason.TOO_LONG]（>20 分钟）；
+         * - 仅超内存上限 → [EmotionFailureReason.TOO_LARGE_FOR_DEVICE]（采样率过高/文件过大，
+         *   时长未超 20 分钟）。未超限返回 null。
+         */
+        fun samplesCutoffReason(
+            srcSampleRate: Int,
+            estimatedSamples: Long,
+            memoryBudgetBytes: Long,
+        ): EmotionFailureReason? {
+            val (byDuration, byMemory) = samplesLimits(srcSampleRate, memoryBudgetBytes)
+            return when {
+                estimatedSamples > byDuration -> EmotionFailureReason.TOO_LONG
+                estimatedSamples > byMemory -> EmotionFailureReason.TOO_LARGE_FOR_DEVICE
+                else -> null
+            }
+        }
+
+        /**
+         * ShortAccum 解码中触顶截断后的原因判定（2026-10-21）：
+         * 容量 = min(时长, 内存) 上限，触顶时 size 即该较小值——哪个上限更小就是哪个先命中。
+         */
+        fun truncationReason(srcSampleRate: Int, memoryBudgetBytes: Long): EmotionFailureReason {
+            val (byDuration, byMemory) = samplesLimits(srcSampleRate, memoryBudgetBytes)
+            return if (byDuration <= byMemory) {
+                EmotionFailureReason.TOO_LONG
+            } else {
+                EmotionFailureReason.TOO_LARGE_FOR_DEVICE
+            }
+        }
+
+        /**
+         * 解码内存预算（字节，自适应，2026-10-21）：解码缓冲 + 重采样输出合计的软上限。
+         * = 设备实际堆上限 - 基线预留（推理模型 + 应用基线，不随堆大小缩放）。
+         * - 256MB 堆 → 192MB（与旧固定值一致，低端机行为不变）；
+         * - 384MB 堆 → 320MB；512MB 堆 → 448MB——更大堆自动放宽，容纳更长的 192k 文件。
+         * 上下限防极端堆值。
+         */
+        fun memoryBudgetForHeap(maxHeapBytes: Long): Long {
+            return (maxHeapBytes - RESERVED_BYTES).coerceIn(MIN_BUDGET_BYTES, MAX_BUDGET_BYTES)
+        }
+
+        /** 基线预留（推理模型 + 应用基线，不随堆大小缩放） */
+        private const val RESERVED_BYTES = 64L * 1024 * 1024
+
+        /** 解码内存预算下限（过小的堆仍保留最小分析能力） */
+        private const val MIN_BUDGET_BYTES = 96L * 1024 * 1024
+
+        /** 解码内存预算上限（防极端堆值把预算抬到危险高度） */
+        private const val MAX_BUDGET_BYTES = 512L * 1024 * 1024
 
         /** 重采样后每样本字节数（16k mono Float = 4B） */
         private const val BYTES_PER_RESAMPLED_SAMPLE = 4L

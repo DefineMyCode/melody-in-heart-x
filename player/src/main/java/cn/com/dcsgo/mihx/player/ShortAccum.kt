@@ -18,12 +18,18 @@ internal class ShortAccum(
         private set
     var size = 0
         private set
+    /** 是否触顶被截断（到达熔断上限静默丢弃后续样本）：调用方据此弃曲并区分「超长」与「内存超限」 */
+    var truncated = false
+        private set
 
     fun add(v: Short) {
         if (size == data.size) {
             val newCap = minOf(data.size * 2, maxCapacity)
             // 顶到熔断上限: 静默丢弃后续样本(调用方据 size 超限弃曲), 防越界
-            if (newCap <= size) return
+            if (newCap <= size) {
+                truncated = true
+                return
+            }
             data = data.copyOf(newCap)
         }
         data[size++] = v

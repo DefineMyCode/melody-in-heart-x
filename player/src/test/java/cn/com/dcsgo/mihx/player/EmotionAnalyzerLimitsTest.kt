@@ -89,5 +89,21 @@ class EmotionAnalyzerLimitsTest {
         )
     }
 
+    @Test
+    fun highSampleRateMemoryLimitAccountsForDoublingTransient() {
+        // 回归（2026-10-21）：192kHz 内存上限须受「ShortAccum 倍增瞬时峰值」约束——
+        // 旧公式只按稳态给 86.3M 样本，最后一次 copyOf 的瞬时峰值 258MB 超 256MB 堆 OOM。
+        val memoryLimit = EmotionAnalyzer.samplesLimits(192_000, budget256).second
+        assertTrue("transient limit should bind high sample rate", memoryLimit < 80_000_000L)
+        assertTrue("transient limit should stay within reason", memoryLimit > 50_000_000L)
+    }
+
+    @Test
+    fun lowSampleRateMemoryLimitUnchangedByTransient() {
+        // 44.1k/48k（<=64kHz）：瞬时限不参与，内存上限仍由稳态（高于 20 分钟时长上限）决定
+        assertEquals(EmotionAnalyzer.MAX_SECONDS * 44100L, EmotionAnalyzer.maxSamplesForSrc(44100, budget256))
+        assertEquals(EmotionAnalyzer.MAX_SECONDS * 48000L, EmotionAnalyzer.maxSamplesForSrc(48000, budget256))
+    }
+
     private fun mb(v: Long) = v * 1024 * 1024
 }

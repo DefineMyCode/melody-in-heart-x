@@ -449,11 +449,24 @@ class EmotionAnalyzer @Inject constructor(
          * 解码样本数双限（2026-10-21）：(时长上限, 内存上限)。
          * - 时长上限：20 分钟 × 源采样率（真正的「超长」）；
          * - 内存上限：解码缓冲 + 重采样输出的内存预算换算的样本数（高采样率/大文件先命中）。
+         *
+         * 内存上限再分两段（2026-10-21 OOM 回归）：
+         * - 稳态峰值：ShortAccum(2B/样本) + 16k 重采样输出(4B/16k样本) = 样本数 × (2 + 64000/rate) 字节；
+         * - 倍增瞬时峰值：ShortAccum 最后一次 copyOf 倍增时旧数组(样本数×1 字节) 与新数组
+         *   (样本数×2 字节) 同时存活 = 样本数 × 3 字节。仅在 rate > 64kHz 时大于稳态（此时
+         *   3 > 2 + 64000/rate），是 192kHz 歌曲解码中 OOM 的根因（真机 copyOf 分配 172MB OOM）。
+         * 高采样率取两者较小者，并给瞬时限留安全余量（×2/7 ≈ /3.5，覆盖基线预留偏差）。
          */
         fun samplesLimits(srcSampleRate: Int, memoryBudgetBytes: Long): Pair<Long, Long> {
             val rate = srcSampleRate.coerceIn(MIN_SRC_SAMPLE_RATE, MAX_SRC_SAMPLE_RATE)
             val byDuration = MAX_SECONDS.toLong() * rate
-            val byMemory = memoryBudgetBytes * rate / (2L * rate + BYTES_PER_RESAMPLED_SAMPLE * SR)
+            val steadyLimit = memoryBudgetBytes * rate / (2L * rate + BYTES_PER_RESAMPLED_SAMPLE * SR)
+            val transientLimit = memoryBudgetBytes * 2 / 7 // ≈ budget/3.5，含基线预留偏差的安全余量
+            val byMemory = if (rate > TRANSIENT_DOMINANT_RATE) {
+                minOf(steadyLimit, transientLimit)
+            } else {
+                steadyLimit
+            }
             return byDuration.coerceAtMost(Int.MAX_VALUE.toLong()) to
                 byMemory.coerceAtMost(Int.MAX_VALUE.toLong())
         }
@@ -516,5 +529,11 @@ class EmotionAnalyzer @Inject constructor(
         /* 合法源采样率范围（clamp 用） */
         private const val MIN_SRC_SAMPLE_RATE = 8_000
         private const val MAX_SRC_SAMPLE_RATE = 192_000
+
+        /**
+         * 采样率超过该值时，ShortAccum 倍增瞬时峰值（3 字节/样本）超过稳态峰值
+         * （2 + 64000/rate 字节/样本），内存上限需同时约束瞬时限（2026-10-21 OOM 回归）。
+         */
+        private const val TRANSIENT_DOMINANT_RATE = 64_000
     }
 }

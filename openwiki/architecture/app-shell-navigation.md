@@ -1,7 +1,7 @@
 ---
 type: architecture
 title: App Shell, Navigation, and Cross-Module Wiring
-description: How the :app shell wires AppRoot/AppNavHost Route+State+Actions pages, the AppRoutes table, the runtime AppShell derived from skin descriptions (replacing the removed compile-time AppDestinations enum), the skin switcher, Activity-scoped ViewModel assembly, permission coordination, theming, ToastHost attribution, and the CompositionLocal emotion-correction controller across feature modules.
+description: How the :app shell wires AppRoot/AppNavHost Route+State+Actions pages, the AppRoutes table, the runtime AppShell derived from skin descriptions (replacing the removed compile-time AppDestinations enum), the skin switcher, Activity-scoped ViewModel assembly, permission coordination, theming, ToastHost attribution, and the CompositionLocal emotion-correction controller across feature modules — including the v3.11.0 RandomEnhanceMode (OFF/TIME_SLOT/EXPLORE) that drives 随心播放增强 and explore play via the LuckyPlayEntryBar/HomeRoute entries.
 tags: [android, jetpack-compose, navigation, app-shell, hilt, permissions, theming, skins]
 sources:
   - id: openwiki-source-96607d29d5086ea5d14045e9
@@ -40,8 +40,10 @@ sources:
     resource: repo://app/src/test/java/cn/com/dcsgo/mihx/app/permissions/RuntimePermissionPolicyTest.kt
   - id: openwiki-source-9fec4be977076779f99d3b5d
     resource: repo://app/src/test/java/cn/com/dcsgo/mihx/ResolveResumeSongTest.kt
-  - id: openwiki-source-2a9daaac1604f238ef4c63fb
-    resource: repo://build.gradle.kts
+  - id: openwiki-source-7d322a65ddca1cf4588fa5e3
+    resource: repo://buildSrc/src/main/kotlin/cn/com/dcsgo/mihx/verify/ProductArchitectureVerification.kt
+  - id: openwiki-source-b8ad601bbc2ce9deae0cf5a6
+    resource: repo://core/model/src/main/java/cn/com/dcsgo/mihx/core/model/RandomEnhanceMode.kt
   - id: openwiki-source-bb4fef5118a77b0a725e46f1
     resource: repo://core/model/src/main/java/cn/com/dcsgo/mihx/core/model/ThemeVariant.kt
   - id: openwiki-source-9beda722f532888c0035eea0
@@ -60,6 +62,8 @@ sources:
     resource: repo://docs/architecture/MOOD_TIME_SLOT_PLAYBACK.md
   - id: openwiki-source-b739ed61dc75317f55b9fa02
     resource: repo://docs/ui-design/DESIGN_SYSTEM.md
+  - id: openwiki-source-9bf703f956169c01467c7d72
+    resource: repo://feature/home/src/main/java/cn/com/dcsgo/mihx/feature/home/HomeRoute.kt
   - id: openwiki-source-8e3d8a1f18f53d37da8744f1
     resource: repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRandomQueueFacade.kt
   - id: openwiki-source-ff40146bae9715f1a3860309
@@ -74,10 +78,12 @@ sources:
     resource: repo://feature/settings/src/main/java/cn/com/dcsgo/mihx/feature/settings/SettingsRoute.kt
   - id: openwiki-source-6c62ee9f2720b7d2a8615c18
     resource: repo://feature/settings/src/main/java/cn/com/dcsgo/mihx/feature/settings/SettingsScreen.kt
+  - id: openwiki-source-cbcd65bf05e82170bf55f02c
+    resource: repo://feature/user/src/main/java/cn/com/dcsgo/mihx/feature/user/MoodTimeSlotRoute.kt
 verified:
   - by: openwiki/0.5.0
-    at: 2026-10-10T12:13:02.139Z
-generated: { by: "openwiki/0.5.0", at: "2026-10-10T12:13:02.139Z" }
+    at: 2026-10-21T03:20:08.093Z
+generated: { by: "openwiki/0.5.0", at: "2026-10-21T03:20:08.093Z" }
 ---
 
 # App Shell, Navigation, and Cross-Module Wiring
@@ -184,8 +190,24 @@ The shell owns a single `rememberToastHost()` and renders `ToastHost` (top-cente
 
 Attribution toasts are the shell's user-facing explanation layer:
 
-- Mood-slot attribution (design doc §4.5): when lucky play or infinite play starts under an active mood time slot, `playerViewModel.currentMoodSlotName()` is shown as `已按「{slotName}」为你随机播放` / `已按「{slotName}」开启无限随机播放`, answering "why was this song chosen"; both also settle the playlist source via `playlistResumeViewModel.switchSource(null, …)`.
+- Mood-slot / explore attribution (design doc §4.5): the mood slot name arrives from the `playRandomQueue`/`startInfinitePlay` **callback** (`moodSlotName`, no longer a `currentMoodSlotName()` poll), not from a separate ViewModel getter. The LuckyPlayEntryBar path (AppRoot `onLuckyPlayClick`) shows `已按「{slotName}」为你随机播放` when a slot is hit; the Home/now-playing surface's lucky play instead shows the generic `已生成随机队列，开始播放~` (only its infinite play shows `已按「{slotName}」开启无限随机播放`). Both handlers also settle the playlist source via `playlistResumeViewModel.switchSource(null, …)`.
 - SAF import results (`✓ 已添加 N 首歌曲` / `未在该文件夹中找到音乐文件`), deletion results, queue mutations ("已从播放队列移除"), theme switches, emotion actions, and Settings toggles all flow through the same host.
+
+## RandomEnhanceMode: 随心播放增强 entry points (v3.11.0)
+
+Since 2026-10-20 the "随心播放增强" feature is driven by a single persisted enum, `RandomEnhanceMode` (`core/model/RandomEnhanceMode.kt`): **`OFF`** (plain random), **`TIME_SLOT`** (the original mood-slot × emotion-tag pool filtering), and **`EXPLORE`** (explore play). Time-slot and explore modes are mutually exclusive — selecting one closes the other, and turning off returns to plain random. The mode is a persisted `PlayerSettingsRepository.randomEnhanceMode` DataStore setting surfaced two ways:
+
+- `MoodTimeSlotViewModel.randomEnhanceMode` (a `stateIn` over the repo flow) feeds the config page so `onSelectMode` writes the mode and emits the toast (`已切换为时段模式` / `已切换为探索模式` / `已关闭随心播放增强`).
+- `PlayerRuntime` observes the same repo flow (`observeMoodSlotCaches`' fourth stream). It derives `isExploreModeActive` into `PlayerUiState`, and when the mode leaves explore while an explore session is running it calls `randomQueueFacade.stopExplorePlay()` to exit the session immediately.
+
+**Explore play (`RandomEnhanceMode.EXPLORE`)** changes the random-queue semantics carried by `PlayerRandomQueueFacade`:
+- `playRandomQueue()` generates a fixed **10-song** batch from the full library (ignoring mood-slot filtering) and sets `isExplorePlay` in `PlayerUiState`, which is surfaced as `HomeRouteState.isExplorePlay`.
+- Infinite random play is **disabled** while explore is active; tapping it in the HomeRoute instead opens the "探索播放中" dialog (`HomeRoute.kt`) telling the user to switch modes in 我的 → 随心播放增强 or click a song to exit explore.
+- While listening, liked/disliked word preferences accumulate (vote-based, timed by short-skip detection); when the queue drops to 1 song it auto-refills **5** songs that favor liked words and avoid disliked ones, from `WordPreferenceRepository` data collected into `wordPreferenceCache`.
+
+**`isExplorePlay` session state** lives on `PlayerUiState` (`PlayerUiState.kt`) and is distinct from the continuously-subscribed `isExploreModeActive` mode flag: exploring is the running session, while the mode flag says the user has picked explore in settings.
+
+**Entry surfaces.** The feature is reachable from two places wired through the shell: (1) the `LuckyPlayEntryBar` in `AppScaffold` — shown only for a sheet-style (`playerEntry == SHEET`) skeleton, when there is no current song and the active route is not the player route (`shouldShowLuckyPlayEntry`); tapping it calls the same `onLuckyPlayClick` that the play-page FAB uses; and (2) the Home route / now-playing surface, whose "随心播放" FAB and "无限随机播放" button carry the explore-aware behavior above. Both funnel into `PlayerViewModel.playRandomQueue`/`startInfinitePlay`, whose callback reports whether a queue started and which mood slot (if any) was hit for attribution.
 
 ### Suspend delete chain (M-3)
 
@@ -288,9 +310,9 @@ All "click a song" actions go through `PlayerViewModel.playWith(song, SongPlayba
 
 ### Representative page wiring
 
-- **HOME / now-playing** — the `AppRoutes.HOME` destination renders the shared `NowPlayingSurface` (same one used in the SHEET drawer). Lucky play/infinite play add mood attribution toasts and settle the playlist source.
+- **HOME / now-playing** — the `AppRoutes.HOME` destination renders the shared `NowPlayingSurface` (same one used in the SHEET drawer). It surfaces `HomeRouteState.isExplorePlay` from `PlayerUiState`, and its infinite-play button is explore-aware: during an explore session it shows the "探索播放中" dialog instead of starting infinite play. `NowPlayingSurface`'s lucky play shows the generic `已生成随机队列，开始播放~`, while infinite play adds the mood-slot attribution `已按「{slotName}」开启无限随机播放`; both settle the playlist source.
 - **USER** — refreshes emotion status on entry (`emotionViewModel.observe()`, `refresh()`), loads `PlaybackStatsSnapshot` via `produceState` with `runCatching` fallback to `EMPTY` (C-2: the Room runBlocking bridge can throw), feeds the mood entry card `nowMinuteOfDay` from a 30-second refresh loop, and applies `sectionOrder = shell.myPageSectionOrder` for the P4 L2 sectioned "我的" page. `onOpenSkinSwitcher` navigates to `SKIN_SWITCHER`.
-- **MOOD_TIME_SLOT** — collects `configs`/`moodTimeSlotEnabled`/`tagCounts`/`librarySize` from the Activity-scoped `MoodTimeSlotViewModel`; `loadStats()` snapshots tag counts + library size once per page entry (on failure the chip badges degrade to zero instead of blocking config). Edit/add dialog state is local (`editingSlot`/`showAddDialog`); saving goes through `save(config) { success, message -> }` so overlap/zero-length validation errors surface as toasts. The `MoodSlotEditDialog` receives tag counts and the manual-only tag list (`鬼畜`, `沙雕`, `戏谑`, `荒诞`).
+- **MOOD_TIME_SLOT** — the "随心播放增强" config page collects `configs` plus `randomEnhanceMode` (the `RandomEnhanceMode` StateFlow: `OFF`/`TIME_SLOT`/`EXPLORE`), `wordPreferences` (explore-play liked/neutral/disliked words, sorted by word), `tagCounts`/`librarySize` from the Activity-scoped `MoodTimeSlotViewModel`. `mode` flows into the route state so the page exposes the exclusive mode switch (selecting one mode closes the other) and an explore "重新探索" action that clears the word-preference counts (`clearWordPreferences()` → toast "已清空词条统计，重新探索开始~"). `loadStats()` snapshots tag counts + library size once per page entry (on failure the chip badges degrade to zero instead of blocking config). Edit/add dialog state is local (`editingSlot`/`showAddDialog`); saving goes through `save(config) { success, message -> }` so overlap/zero-length validation errors surface as toasts. The `MoodSlotEditDialog` receives tag counts and the manual-only tag list (`鬼畜`, `沙雕`, `戏谑`, `荒诞`).
 - **SKIN_SWITCHER** — lists `knownSkins`, exposes the two panel knobs + grid switch, all threaded from `AppRoot` through `AppNavHost` params; `onBack` = `navigateUp`.
 - **SETTINGS** — `SettingsRouteState` is assembled from theme flows + `uiState` (uniform random, daily goal); actions call the persisted settings writers and the permission coordinator as described above.
 - **FILE_CHECK / DUPLICATE_DETAIL** — validation state + duplicate-group scan from `PlayerViewModel`; `onOpenDetail` navigates to `DUPLICATE_DETAIL`.
@@ -311,7 +333,7 @@ The emotion-analysis page uses the same controller with an extra subtlety: `onCa
 - **Permission flows**: SAF audio access silently requests `READ_MEDIA_AUDIO` then always launches the folder picker; runtime pre-checks skip the dialog; in-flight requests hold exactly one pending continuation; denial shows the policy's message; SDK-inapplicable requests succeed silently.
 - **Navigation**: state save/restore on tab switches; per-tab-ordinal transitions; `navigateUp` for all back actions; parameterized routes always via helpers with URI encoding. The start destination is fixed for the window lifetime (`rememberSaveable`), so a skin switch that changes `startRoute` does **not** clear the back stack.
 - **Data-bridge failures**: every direct repository call reached from composition (`loadSongInfo`, stats snapshots, tag counts, calibrated tags) is wrapped in `runCatching` with a safe default, because the Room `runBlocking` bridge throws rather than returning null.
-- **Mood playback**: the player resolves the active slot from volatile `moodSlotConfigsCache`/`moodEmotionTagsCache` snapshots (`refreshMoodSlotCache()` at startup) and falls back to full-library random when the tag-filtered pool is empty. `MoodTimeSlotViewModel.onConfigsChanged` and `PlayerRuntime.refreshMoodSlots()` exist as a wiring seam but no caller currently assigns/invokes them — after changing configs, the player snapshot refreshes only at next startup.
+- **Mood playback**: the player resolves the active slot from volatile `moodSlotConfigsCache`/`moodEmotionTagsCache`/`wordPreferenceCache` snapshots and falls back to full-library random when the tag-filtered pool is empty. Since M-2 (review 2026-10-15) the caches are no longer startup-only snapshots: `PlayerRuntime.observeMoodSlotCaches()` continuously subscribes to `TimeSlotConfigRepository.observeConfigs()`, `SongEmotionRepository.observeAll()` (mapped to tags on `Dispatchers.Default`), and `WordPreferenceRepository.observeAll()`, so config saves/deletes and newly analyzed/calibrated emotions take effect immediately — the old `onConfigsChanged`/`refreshMoodSlots()` manual-refresh seam no longer exists. The mode gate is live too: `PlayerRandomQueueFacade` reads `moodSlotEnabled` as `randomEnhanceMode == TIME_SLOT` and `exploreModeEnabled` as `== EXPLORE` (via `first()`), so switching the mode in settings takes effect without a restart.
 
 ## Delete chain, import flow, and the real-path scan (M-3 / M-5)
 
@@ -326,5 +348,6 @@ Adding a page means, in order: (1) add the `AppRoutes` constant (and helper for 
 - `app/src/test/.../permissions/RuntimePermissionPolicyTest.kt` — SDK cutoffs and denied messages for notification/Bluetooth specs.
 - `app/src/test/.../ResolveResumeSongTest.kt` — `resolveResumeSong` semantics: playable song in playlist resolves; not-in-playlist, unplayable (`uri == null`), and null-record cases return null.
 - `DefaultShellTest` / `DefaultShellConsistencyTest` (in `:app`) — assert the constant-built default shell equals `resolve(DefaultSkin.skin())`, and that `playerRoute` falls back to the literal `"home"` matching `AppRoutes.HOME`.
+- `LuckyPlayEntryPolicyTest` (in `:app`) — pins `shouldShowLuckyPlayEntry` (2026-10-01): it holds only for the sheet skeleton with no current song and a non-player route; it is false on a tab skeleton and on the player route; the first case fails if the `!hasCurrentSong` condition is removed.
 - `UserSectionsMatchDescriptionTest` (in `feature/user`) — binds the `UserSections` key list to the `DefaultSkin` `myOverview` sections so description and code cannot drift (P4 regression guard).
 - The state mappers are documented as pure functions so route-state derivation can be unit-tested without a NavHost.

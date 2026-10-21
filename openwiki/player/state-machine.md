@@ -8,6 +8,8 @@ sources:
     resource: repo://docs/architecture/PLAYBACK_STATE_MACHINE.md
   - id: openwiki-source-daad64f3ba82b5b0ff4a8d94
     resource: repo://domain/src/main/java/cn/com/dcsgo/mihx/domain/playback/ControllerPlaybackStateSynchronizer.kt
+  - id: openwiki-source-39979cc6e8c7e5b52ecabd5f
+    resource: repo://domain/src/main/java/cn/com/dcsgo/mihx/domain/playback/ExplorePlaybackPolicy.kt
   - id: openwiki-source-31721788a95f08f3d7c7f198
     resource: repo://domain/src/main/java/cn/com/dcsgo/mihx/domain/playback/PlaybackRestoreCoordinator.kt
   - id: openwiki-source-50f3478915fd13f67a013fee
@@ -34,22 +36,24 @@ sources:
     resource: repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerStartupFacade.kt
   - id: openwiki-source-fe80d1b3a38b98c97840e74d
     resource: repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerViewModel.kt
-  - id: openwiki-source-7657c9f7c862e7d55acc0b62
-    resource: repo://player/src/main/java/cn/com/dcsgo/mihx/data/player/AppMediaSessionService.kt
-  - id: openwiki-source-04a93731443f6ff3e9f66921
-    resource: repo://player/src/main/java/cn/com/dcsgo/mihx/data/player/PlaybackController.kt
-  - id: openwiki-source-46149dc8af0e8d00101b41d7
-    resource: repo://player/src/main/java/cn/com/dcsgo/mihx/data/player/PlaybackStateSnapshotSerializer.kt
-  - id: openwiki-source-35e0261203b78a5159d1723b
-    resource: repo://player/src/main/java/cn/com/dcsgo/mihx/data/player/PlaybackStateStore.kt
-  - id: openwiki-source-7cad1cd30dac214b0af6715e
-    resource: repo://player/src/main/java/cn/com/dcsgo/mihx/data/player/PlayDurationTracker.kt
-  - id: openwiki-source-a489ea0751bef8ba68043f26
-    resource: repo://player/src/main/java/cn/com/dcsgo/mihx/data/player/SongMediaItemMapper.kt
-generated: { by: "openwiki/0.5.0", at: "2026-10-10T11:15:45.800Z" }
+  - id: openwiki-source-4712a58a73a521c17f95b5f0
+    resource: repo://feature/player/src/test/java/cn/com/dcsgo/mihx/feature/player/PlayerMediaEventFacadeTest.kt
+  - id: openwiki-source-c804d077edb941261a21dbf9
+    resource: repo://player/src/main/java/cn/com/dcsgo/mihx/player/AppMediaSessionService.kt
+  - id: openwiki-source-d4431e382635a7a27ca87c72
+    resource: repo://player/src/main/java/cn/com/dcsgo/mihx/player/PlaybackController.kt
+  - id: openwiki-source-de24a99de3caa35a84b73162
+    resource: repo://player/src/main/java/cn/com/dcsgo/mihx/player/PlaybackStateSnapshotSerializer.kt
+  - id: openwiki-source-b5fe68676096345c29cfbdba
+    resource: repo://player/src/main/java/cn/com/dcsgo/mihx/player/PlaybackStateStore.kt
+  - id: openwiki-source-dd8b887ef130e0e14d315e70
+    resource: repo://player/src/main/java/cn/com/dcsgo/mihx/player/PlayDurationTracker.kt
+  - id: openwiki-source-a4b3e7d9ceb362621d621d7e
+    resource: repo://player/src/main/java/cn/com/dcsgo/mihx/player/SongMediaItemMapper.kt
+generated: { by: "openwiki/0.5.0", at: "2026-10-21T03:20:08.093Z" }
 verified:
   - by: openwiki/0.5.0
-    at: 2026-10-10T11:15:45.800Z
+    at: 2026-10-21T03:20:08.093Z
 ---
 
 # 播放状态机与状态恢复
@@ -72,6 +76,14 @@ verified:
 
 - **mediaId 契约**：`SongMediaItemMapper` 把 `Song.id` 的十进制字符串写入 `MediaItem.mediaId`；`ControllerPlaybackStateSynchronizer.resolveControllerSong` 用 `toIntOrNull()` 解析，**非数字 id 直接忽略**（保留现有 `currentSong`），从而把系统侧注入的异常媒体项挡在业务状态之外。
 - **单点映射**：`ControllerPlaybackStateSynchronizer` 是唯一把 controller 快照映射回 `PlayerUiState` 的地方。其他任何代码路径（服务日志监听器、蓝牙监听等）都不得绕过它改写播放状态字段。
+
+### 三层状态观
+
+播放状态同时存在于三个层次，恢复与持久化契约必须分清各自归属：
+
+- **Media3 控制器状态**（`:player` `PlaybackController` 的事实来源）：`mediaItemCount`、当前 mediaId、`isPlaying`、位置与缓冲。这是 live-session 判据（`mediaItemCount > 0`）与恢复时 controller 操作（`prepareQueue`/`playQueue`）的唯一依据。
+- **运行时 UI 状态**（`PlayerUiState`，feature 层）：除 Media3 状态外，还携带探索播放的**双标志**——`isExplorePlay`（当前是否在播探索队列这一会话性事实）与 `isExploreModeActive`（设置里是否开启「探索模式」这一配置事实）；恢复/切换时序下可能短暂出现 `isExplorePlay=true` 但模式已关闭，`PlayerMediaEventFacade` 以此双保险决定是否学习收听结果与补队列。
+- **持久化快照**（DataStore `playback_state`）：序列化的队列、位置、无限播放状态与 **`isExplorePlay` 会话标志**（v3.11.0 新增、无 legacy 回退），供重启/crash/UI 重建后按 controller 队列判据恢复，保证探索队列的自动补充在重启后继续生效。
 
 ## 规范状态机与主要转移
 
@@ -169,7 +181,7 @@ live session 场景（息屏/后台回来、配置变更、ViewModel 重建）�
 
 ## ended 与 error 的转移效果
 
-- `onMediaItemTransition`（`AUTO`/`SEEK`/`REPEAT`）与 `REPEAT_MODE_ALL` 下的窗口尾部回绕（`isMediaItemWrap` 按索引判定，而非 reason——`REPEAT` 只表示单曲重复）都翻译成 `onMediaItemEnded(startedSongId, wrapped)`，进入 `PlayerMediaEventFacade.handleMediaItemEnded`：停止跟踪、清 `trackedSongId`；无限播放模式且剩余 ≤ `DEFAULT_REFILL_THRESHOLD`(5) 或发生回绕时补队列；按需恢复 add-next 播放模式；最后触发定时关闭"播完最后一曲"钩子。单项队列回绕（索引 0→0，无 `onMediaItemTransition`）由 `onPositionDiscontinuity` 的 AUTO 间断 + 位置回跳识别（`isSingleItemLoopRewind`）兜底。
+- `onMediaItemTransition`（`AUTO`/`SEEK`/`REPEAT`）与 `REPEAT_MODE_ALL` 下的窗口尾部回绕（`isMediaItemWrap` 按索引判定，而非 reason——`REPEAT` 只表示单曲重复）都翻译成 `onMediaItemEnded(startedSongId, wrapped)`，进入 `PlayerMediaEventFacade.handleMediaItemEnded`：先取「刚结束」歌曲的实际收听时长与 `trackedSongId`，停止跟踪、清 `trackedSongId`；探索播放下（`isExplorePlay && isExploreModeActive` 双保险）先回调 `onExploreSongSettled(songId, playedMs)` 学习收听结果（<30s 或 <1/4 总时长投不喜欢票，见 `ExplorePlaybackPolicy.isSkipped`），再当剩余 ≤ `ExplorePlaybackPolicy.REFILL_THRESHOLD`(0)——即刚结束的是倒数第二首、切歌后新当前曲目之后剩余 0 首——时补 `ExplorePlaybackPolicy.REFILL_COUNT`(5) 首（剩余 1 首即倒数第三首不补，避免因业务队列 `currentIndex` 未同步而回拉重播，2026-10-20 修复）；无限播放模式且剩余 ≤ `DEFAULT_REFILL_THRESHOLD`(5) 或发生回绕时补队列；按需恢复 add-next 播放模式；最后触发定时关闭"播完最后一曲"钩子。单项队列回绕（索引 0→0，无 `onMediaItemTransition`）由 `onPositionDiscontinuity` 的 AUTO 间断 + 位置回跳识别（`isSingleItemLoopRewind`）兜底。
 - `STATE_ENDED` → `handlePlaybackEnded` 只做 `isPlaying=false`、位置 `0` 的状态收尾。
 - `onPlayerError` → `PlayerRuntime.handlePlayerSourceError` 把当前歌曲查出来，向 UI 写可读的 `errorMessage`（"本地文件不存在或无法播放"）；`PlayerErrorFacade.playFromQueue` 对不可播放歌曲给出同类提示。恢复（`ended`/`error` 后重新开播）永远经由一次新的控制器命令，待执行动作在连接失败时被 `abortPendingActions` 丢弃并通过 `onControllerUnavailable` 上报（未连接期间命令按 FIFO 缓存，上限 64 条，超限丢弃最早的并提示用户）。
 
@@ -180,7 +192,7 @@ live session 场景（息屏/后台回来、配置变更、ViewModel 重建）�
 ### PlaybackStateStore 与快照序列化
 
 - `PlaybackStateStore`（`:player`，实现 `:domain` 的 `PlaybackStateStorage` 与 `PlaybackStateRepository`）把五个键写入 DataStore `playback_state`：`play_queue_json`（队列 JSON）、`play_position_ms`、`is_infinite_play`、`infinite_played_ids`、`current_song_id`；旧版 SharedPreferences（`music_player_prefs`）作为读取回退，成功保存后即清除（迁移）。写失败只经 `AppLogger` 留痕，**绝不打断播放控制**。
-- **空会话保护**：只要队列空且非无限播放，保存就不覆写队列 JSON，并按下述三支分派：有既有队列且有当前歌 → 保留队列、仅更新 `currentSongId` 与位置；无既有队列但有当前歌 → 写空队列 + `currentSongId`/位置（restore 按 `currentSongId` 兜底单曲队列）；全空且无既有快照 → 不写任何键并保留 legacy 回退（仅真正写入 DataStore 后才清 legacy）。这同时挡住了两类回归：UI 重建窗口的瞬时"全空"，以及 live-session 重连时首帧快照同步置 `currentSong` 后 autosaver 先落一盘"空队列+有 currentSong"（会把 5 秒前落盘的有效队列覆盖成空数组，之后每次杀进程都拿到空队列）——否则队列与进度恒丢失。显式清空（用户清队列/结束播放）走 `clearPlaybackState()`。
+- **空会话保护**：只要队列空且非无限播放，保存就不覆写队列 JSON，并按下述三支分派：有既有队列且有当前歌 → 保留队列、仅更新 `currentSongId` 与位置；无既有队列但有当前歌 → 写空队列 + `currentSongId`/位置（restore 按 `currentSongId` 兜底单曲队列）；全空且无既有快照 → 不写任何键并保留 legacy 回退（仅真正写入 DataStore 后才清 legacy）。这同时挡住了两类回归：UI 重建窗口的瞬时"全空"，以及 live-session 重连时首帧快照同步置 `currentSong` 后 autosaver 先落一盘"空队列+有 currentSong"（会把 5 秒前落盘的有效队列覆盖成空数组，之后每次杀进程都拿到空队列）——否则队列与进度恒丢失。显式清空（用户清队列/结束播放）走 `clearPlaybackState()`（同时移除 `is_explore_play` 键）。
 - `PlaybackStateSnapshotSerializer` 把 `songIds`/`currentIndex`/`playMode`/`playOrderIds` 按出现次数编码为 JSON 数组（重复入队语义得以保留）；解码按当前曲库过滤失效歌曲、`currentIndex` 缺失或 JSON 损坏返回 null、`allowEmpty` 仅在无限播放或有 currentSongId 时放行空队列、无限播放已播 id 过滤到仍存在的歌曲。
 - `saveCurrentPlaybackSnapshot`/挂起版 `persistCurrentPlaybackSnapshot` 只覆写 `CURRENT_SONG_ID` 与 `PLAY_POSITION_MS` 并**保留队列 JSON**：用于把最后在播歌曲与进度覆盖到既有队列上（队列索引陈旧时恢复端按 `currentSongId` 校正，歌曲不在已存队列时以单曲队列兜底）。
 
@@ -236,6 +248,8 @@ flowchart TD
 
 - **`ControllerPlaybackStateSynchronizerTest`**：快照映射（歌曲解析、队列索引对齐、时长）、未知 mediaId 保留当前歌曲、已跟踪歌曲不重复 `playbackStart`、buffering 暂停被忽略/真实暂停与恢复的转移判定。
 - **`PlayerControllerStateFacadeTest`**：同步更新 UI 与跟踪、快照位置**不**覆盖 `uiState.currentPositionMs`、false→true 与 true→false 跃变恰好通知 ticker 一次、稳态重复同步 0 次通知、真实暂停才暂停跟踪并落盘、buffering 暂停两者皆不。
-- **`PlaybackStateStoreTest`**：队列/位置/模式/播放顺序往返、失效歌曲过滤、重复队列项保留、无限播放状态（含空队列）、currentSongId 快照校正索引与单曲队列兜底、空会话保存保留既有快照、legacy SharedPreferences 回退与迁移。
+- **`PlaybackStateStoreTest`**：队列/位置/模式/播放顺序往返、失效歌曲过滤、重复队列项保留、无限播放状态（含空队列）、`is_explore_play` 读写往返（v3.11.0）、currentSongId 快照校正索引与单曲队列兜底、空会话保存保留既有快照、legacy SharedPreferences 回退与迁移。
+- **`PlayerMediaEventFacadeTest`**：探索播放切歌时回调 `onExploreSongSettled`（含实际收听毫秒）、仅当刚结束的是倒数第二首（剩余 0）才补队列、倒数第三首（剩余 1）不补、队列充足不补、`trackedSongId` 为 null 时不学习收听结果仍补队列。
 - **`PlaybackStateSnapshotSerializerTest`**：重复项/索引/模式/顺序往返、损坏 JSON 与缺失 `currentIndex` 返回 null、可选字段默认值、无限播放 id 的畸形与失效条目过滤。
 - **`PlayerPersistenceFacadeTest`**：异步保存先捕获位置、恢复应用队列与可播放会话、**live session 下仅恢复 UI 队列而 controller 完全不被触动**（位置与 isPlaying 不被覆盖）、无限播放状态恢复、队列索引陈旧时仍按 currentSong 落盘。
+�复应用队列与可播放会话、**live session 下仅恢复 UI 队列而 controller 完全不被触动**（位置与 isPlaying 不被覆盖）、无限播放状态恢复、队列索引陈旧时仍按 currentSong 落盘。

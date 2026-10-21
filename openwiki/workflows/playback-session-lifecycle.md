@@ -1,16 +1,13 @@
 ---
 type: Workflow
 title: "Playback Session Lifecycle"
-description: "End-to-end walk through one complete playback session: cold-start assembly and main-thread discipline, MediaController connect with the snapshot-restore live-session decision, queue setup and playback start, Media3 song-change translation with PlayDurationTracker settlement, infinite refill, in-session bypaths (sleep timer, Bluetooth disconnect, single-item loop rewind), and the recovery loop after process death."
+description: "End-to-end walk through one complete playback session: cold-start assembly and main-thread discipline, MediaController connect with the snapshot-restore live-session decision, queue setup and playback start, Media3 song-change translation with PlayDurationTracker settlement, infinite and explore refill, in-session bypaths (sleep timer, Bluetooth disconnect, single-item loop rewind), and the recovery loop after process death."
 tags: [player, playback-session, cold-start, state-restore, media-controller, duration-settlement, sleep-timer, bluetooth, quick-skip, process-death-recovery]
-verified:
-  - by: openwiki/0.5.0
-    at: 2026-10-10T11:15:45.800Z
 sources:
   - id: openwiki-source-daad64f3ba82b5b0ff4a8d94
     resource: repo://domain/src/main/java/cn/com/dcsgo/mihx/domain/playback/ControllerPlaybackStateSynchronizer.kt
-  - id: openwiki-source-eb6f23ed46ad20362e4d05f1
-    resource: repo://domain/src/main/java/cn/com/dcsgo/mihx/domain/playback/PlaybackQueueActionPlanner.kt
+  - id: openwiki-source-39979cc6e8c7e5b52ecabd5f
+    resource: repo://domain/src/main/java/cn/com/dcsgo/mihx/domain/playback/ExplorePlaybackPolicy.kt
   - id: openwiki-source-31721788a95f08f3d7c7f198
     resource: repo://domain/src/main/java/cn/com/dcsgo/mihx/domain/playback/PlaybackRestoreCoordinator.kt
   - id: openwiki-source-36d7230cd801a03f59027967
@@ -25,8 +22,6 @@ sources:
     resource: repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerErrorFacade.kt
   - id: openwiki-source-4790680f6639fb5e9a5ea641
     resource: repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerLifecycleFacade.kt
-  - id: openwiki-source-05628432a0c9eb5223697d07
-    resource: repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerMediaControllerGraph.kt
   - id: openwiki-source-0a840abe5bf9183316c47b4e
     resource: repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerMediaEventFacade.kt
   - id: openwiki-source-77273795d3d3691caff7ecb8
@@ -39,6 +34,8 @@ sources:
     resource: repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerPlaybackStateAutosaver.kt
   - id: openwiki-source-b86e2b97e4f71e5af8b2924c
     resource: repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerQueueFacade.kt
+  - id: openwiki-source-8e3d8a1f18f53d37da8744f1
+    resource: repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRandomQueueFacade.kt
   - id: openwiki-source-ff40146bae9715f1a3860309
     resource: repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRuntime.kt
   - id: openwiki-source-54ba4f7acb643769b197e402
@@ -47,25 +44,30 @@ sources:
     resource: repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerStartupFacade.kt
   - id: openwiki-source-fe80d1b3a38b98c97840e74d
     resource: repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerViewModel.kt
+  - id: openwiki-source-4712a58a73a521c17f95b5f0
+    resource: repo://feature/player/src/test/java/cn/com/dcsgo/mihx/feature/player/PlayerMediaEventFacadeTest.kt
   - id: openwiki-source-ca2d7e504c1ad19cbaff9046
     resource: repo://feature/player/src/test/java/cn/com/dcsgo/mihx/feature/player/PlayerPersistenceFacadeTest.kt
   - id: openwiki-source-6cbc32290e81c1e4b344fe2b
     resource: repo://feature/player/src/test/java/cn/com/dcsgo/mihx/feature/player/PlayerPersistenceGraphTest.kt
   - id: openwiki-source-e0c3384d9aa25ad5cfc535e4
     resource: repo://feature/player/src/test/java/cn/com/dcsgo/mihx/feature/player/PlayerStartupFacadeTest.kt
-  - id: openwiki-source-7657c9f7c862e7d55acc0b62
-    resource: repo://player/src/main/java/cn/com/dcsgo/mihx/data/player/AppMediaSessionService.kt
-  - id: openwiki-source-da7b859f3e94dd4a2c91f3d4
-    resource: repo://player/src/main/java/cn/com/dcsgo/mihx/data/player/BluetoothPlaybackCoordinator.kt
-  - id: openwiki-source-04a93731443f6ff3e9f66921
-    resource: repo://player/src/main/java/cn/com/dcsgo/mihx/data/player/PlaybackController.kt
-  - id: openwiki-source-35e0261203b78a5159d1723b
-    resource: repo://player/src/main/java/cn/com/dcsgo/mihx/data/player/PlaybackStateStore.kt
-  - id: openwiki-source-7cad1cd30dac214b0af6715e
-    resource: repo://player/src/main/java/cn/com/dcsgo/mihx/data/player/PlayDurationTracker.kt
-  - id: openwiki-source-f0e058e6091ef385898fb85e
-    resource: repo://player/src/test/java/cn/com/dcsgo/mihx/data/player/MediaItemWrapDetectionTest.kt
-generated: { by: "openwiki/0.5.0", at: "2026-10-10T11:15:45.800Z" }
+  - id: openwiki-source-c804d077edb941261a21dbf9
+    resource: repo://player/src/main/java/cn/com/dcsgo/mihx/player/AppMediaSessionService.kt
+  - id: openwiki-source-663989b9b193649d046baeaa
+    resource: repo://player/src/main/java/cn/com/dcsgo/mihx/player/BluetoothPlaybackCoordinator.kt
+  - id: openwiki-source-d4431e382635a7a27ca87c72
+    resource: repo://player/src/main/java/cn/com/dcsgo/mihx/player/PlaybackController.kt
+  - id: openwiki-source-b5fe68676096345c29cfbdba
+    resource: repo://player/src/main/java/cn/com/dcsgo/mihx/player/PlaybackStateStore.kt
+  - id: openwiki-source-dd8b887ef130e0e14d315e70
+    resource: repo://player/src/main/java/cn/com/dcsgo/mihx/player/PlayDurationTracker.kt
+  - id: openwiki-source-1335b79015e69d8ed73b7fd8
+    resource: repo://player/src/test/java/cn/com/dcsgo/mihx/player/MediaItemWrapDetectionTest.kt
+generated: { by: "openwiki/0.5.0", at: "2026-10-21T03:20:08.093Z" }
+verified:
+  - by: openwiki/0.5.0
+    at: 2026-10-21T03:20:08.093Z
 ---
 
 # Workflow: Playback Session Lifecycle
@@ -115,7 +117,7 @@ sequenceDiagram
 - **Process entry**: `MelodyApplication` (`@HiltAndroidApp`) installs in `onCreate` `AppLog` (level controlled by `BuildConfig.DEBUG`), a global uncaught-exception fallback (first logs a redacted message, then hands off to the system handler), and schedules the emotion batch scan `EmotionScanScheduler.schedule`. The image stack (Coil `ImageLoaderFactory`) is deferred to first load to shorten the cold-start path.
 - **UI assembly**: `MainActivity` (`@AndroidEntryPoint`) only does `setContent { AppRoot() }`; `AppRoot` creates `PlayerViewModel` and other Hilt ViewModels through `viewModel()` in the Activity scope.
 - **Runtime assembly**: `PlayerViewModel` is a **pure delegation facade** — its only constructor parameter is `PlayerRuntimeFactory`, the constructor builds `PlayerRuntime` (the feature composition root) with `runtimeFactory.create(viewModelScope)`, and `init { runtime.start() }` ignites it; every public method is a one-line forward.
-- **Main-thread discipline**: `PlayerRuntime.start()` moves all blocking sources on the startup path off the main frame — the 4 DataStore-backed settings (global uniform random, Bluetooth monitoring, playback notification, daily listening goal) and the sleep-timer restore (2 reads + possibly 1 write) all finish on `dispatchers.io` before `startupFacade.start()` runs on the main thread; afterwards `refreshMoodSlotCache()` asynchronously pulls the time-slot config and emotion-tag snapshot (`@Volatile` caches, refreshed tactically by `refreshMoodSlots()` after settings-page saves), and the Bluetooth monitor is initialized **only when** the persisted `bluetoothPlaybackMonitoringEnabled` is true via `bluetoothGraph.initialize()`.
+- **Main-thread discipline**: `PlayerRuntime.start()` moves all blocking sources on the startup path off the main frame — the 4 DataStore-backed settings (global uniform random, Bluetooth monitoring, playback notification, daily listening goal) and the sleep-timer restore (2 reads + possibly 1 write) all finish on `dispatchers.io` before `startupFacade.start()` runs on the main thread; afterwards the mood-slot/emotion/word caches are maintained by `observeMoodSlotCaches()` **continuously subscribing** to the DataStore time-slot config flow and the Room emotion/word-preference flows (M-2: no longer a one-time startup snapshot; every config save / analysis / user calibration / vote re-emits the cache and `randomQueueFacade`/explore poll it live), each writing a `@Volatile` cache, and the Bluetooth monitor is initialized **only when** the persisted `bluetoothPlaybackMonitoringEnabled` is true via `bluetoothGraph.initialize()`.
 
 `PlayerStartupFacade` fixes the boot steps into a **fixed order**: `startService` → `connectMediaController` → `loadInitialData` (passing `restorePlaybackState` as the `afterInitialSnapshot` callback; the restore read is deliberately placed after the library's first snapshot because snapshot decoding uses the just-loaded library to filter out obsolete songs) → `listenForSongChanges`. This order is locked down by `PlayerStartupFacadeTest`.
 
@@ -143,13 +145,13 @@ Two invariants (detailed in `/openwiki/player/state-machine.md` "constraint thre
 - **The UI queue shadow must be restored in both branches**: controller snapshot sync only adjusts `currentIndex`, never fills `songs`; skipping the UI side would leave the playback queue permanently empty after a rebuild and lose the infinite-play state.
 - **Rebuilding the queue has two guards**: the decision layer only calls `prepareControllerQueue` when no live session exists; `PlaybackController.prepareQueue` carries a second guard internally (`mediaItemCount > 0` early-returns). It is the only one of the three queue commands (`playQueue`/`prepareQueue`/`syncQueue`) allowed to carry a live-session guard; `playQueue` is explicitly forbidden from adding one (otherwise a user tap-to-play request would be silently swallowed).
 
-The full-restore branch's playable session is produced by `PlaybackRestoreCoordinator`'s upgrade step: when the restored queue's current song is playable it builds `RestoredPlayableSession(song, positionMs, sameNameSongs)`, same-name versions sorted by sample rate descending, sharing the same data as the full restore path.
+The full-restore branch's playable session is produced by `PlaybackRestoreCoordinator`'s upgrade step: when the restored queue's current song is playable it builds `RestoredPlayableSession(song, positionMs, sameNameSongs)`, same-name versions sorted by sample rate descending, sharing the same data as the full restore path. **Explore-play sessions persist across restart**: `PlayerPersistenceFacade.savePlaybackState` stores `isExplorePlay` alongside the queue, and `PlaybackRestoreCoordinator`/`applyRestoreResult` rehydrate `isExplorePlay` before the next song boundary so explore auto-refill and settlement keep working after a kill (see Phase 7).
 
 ## Phase 3: setup queue and start playback
 
 The queue-replacement chain (user song tap / "contextual play" / playlist playback):
 
-1. UI → `PlayerRuntime.setPlayQueue` → `PlayerQueueFacade.setPlayQueue`: `PlaybackQueueActionPlanner.replaceQueue` generates a new `PlayQueue` (built by `QueueManager.createQueue` producing `playOrderIds`) + a `PlayQueueIndex(startIndex)` action + the `exitInfinitePlay` flag.
+1. UI → `PlayerRuntime.setPlayQueue` → `PlayerQueueFacade.setPlayQueue`: `PlaybackQueueActionPlanner.replaceQueue` generates a new `PlayQueue` (built by `QueueManager.createQueue` producing `playOrderIds`) + a `PlayQueueIndex(startIndex)` action + the `exitInfinitePlay` flag. **Any manual queue replacement also exits an explore session**: when `exitInfinitePlay` is set the plan clears `isInfinitePlay`/`infinitePlayedSongIds` **and `isExplorePlay`** — tapping a play list / TOP chart / artist / album leaves explore auto-refill and settlement off, and pressing 「随心播放」again re-enters explore per the settings mode.
 2. `applyPlan` writes the plan into `PlayerUiState` (including exiting infinite play and `nextPlayState`), then executes the playback action `playFromQueue(queue, index)`.
 3. `playFromQueue` first passes `PlayerErrorFacade`'s **playability guard**: a target song without a uri does not start, writing `the local file for "«title»" cannot be played`; only playable songs reach `playbackSessionGraph.startQueuePlayback`.
 4. `PlaybackSessionCoordinator.startQueuePlayback` plans the windowed controller queue via `controllerQueuePlanner::plan` (business queue → playback window, see the queue-architecture page), and `PlaybackController.playQueue` starts it with `REPEAT_MODE_ALL` + `setMediaItems` + `prepare()` + `play()`; simultaneously `durationTracker.startPlayback(song.id, duration)` starts the timer and returns `trackedSongId`/`sameNameSong`.
@@ -179,16 +181,20 @@ flowchart TD
     ME3 --> H
     ME4 --> H
     ST --> PE["handlePlaybackEnded only sets isPlaying=false position zeroed"]
-    H --> STOP["stopPlayback settles old track and clears trackedSongId"]
-    STOP --> RE{"infinite play and wrapped or remaining <= 5"}
-    RE -->|"yes"| REFILL["refillInfinitePlayQueue"]
-    RE -->|"no"| MODE
+    H --> STOP["capture endedSongId and playedMs then stop tracking and clear trackedSongId"]
+    STOP --> EX{"isExplorePlay and isExploreModeActive"}
+    EX -->|"yes"| EXSETTLE["onExploreSongSettled endedSongId playedMs"]
+    EXSETTLE --> EXREF{"remaining items less or equal than explore refill threshold zero"}
+    EXREF -->|"yes"| EXFILL["refillExplorePlayQueue"]
+    STOP --> INF{"infinite play and wrapped or remaining less-or-equal 5"}
+    INF -->|"yes"| REFILL["refillInfinitePlayQueue"]
     REFILL --> MODE["restorePlayModeAfterNextSong"]
+    EXFILL --> MODE
     MODE --> SLEEP["onSongEnded wrap up after final song"]
-    STOP --> NEXT["next snapshot emits PlaybackStart raw count +1 and new session timer"]
+    STOP --> NEXT["next snapshot emits PlaybackStart raw count plus 1 and new session timer"]
 ```
 
-*Song change and settlement: all four Media3 signal classes flow into `handleMediaItemEnded` (or the terminal wrap-up); that entry runs the fixed sequence "settle old track → infinite refill → restore add-next mode → sleep-timer hook", then the next snapshot resumes tracking as a new session.*
+*Song change and settlement: all four Media3 signal classes flow into `handleMediaItemEnded` (or the terminal wrap-up); that entry runs the fixed sequence "settle old track → explore settle/refill (double-flag) → infinite refill → restore add-next mode → sleep-timer hook", then the next snapshot resumes tracking as a new session.*
 
 Translation-rule highlights:
 
@@ -200,10 +206,13 @@ Translation-rule highlights:
 
 `PlayerMediaEventFacade.handleMediaItemEnded(startedSongId, wrapped)` in order:
 
-1. **Stop old-track tracking**: `stopPlaybackTracking()` (triggers `PlayDurationTracker.stopPlayback` → settlement, see next section) + `clearTrackedSong()`. Clearing `trackedSongId` is the other half of "track once per song": only the next song's snapshot can emit another `PlaybackStart`.
-2. **Infinite refill**: while in infinite play and (`wrapped` or `remainingMediaItems() <= DEFAULT_REFILL_THRESHOLD = 5`) call `refillInfinitePlayQueue(startedSongId, advanceAfterWrap = wrapped)`. `advanceAfterWrap` jumps the current item to the first newly-refilled song and starts it from 0, avoiding a replay of the old window after a wrap; a normal expansion calls `syncPlayerQueue` to sync the window. Details in `/openwiki/player/random-and-infinite.md`.
-3. **Restore the add-next play mode**: `QueueManager.restorePlayModeAfterNextSong` only when "current song == `nextPlaySongId`" restores the queue mode to `playModeBeforeNext`, corrects the business queue's current item with `startedSongId`, clears the temp flags, and `syncPlayerQueue` re-orders the window.
-4. **Sleep-timer hook**: `onSleepTimerSongEnded()` handles the "pause after the final song" deadline (see Phase 6).
+1. **Stop old-track tracking**: first captures the just-ended song's actual listen time (`trackedSongId()` and `currentPlayedMs()` **before** the timer is cleared), then `stopPlaybackTracking()` (triggers `PlayDurationTracker.stopPlayback` → settlement, see next section) + `clearTrackedSong()`. Clearing `trackedSongId` is the other half of "track once per song": only the next song's snapshot can emit another `PlaybackStart`.
+2. **Explore-session settlement & refill**: while **both** `isExplorePlay` (active session) and `isExploreModeActive` (settings still in explore) hold, first call `onExploreSongSettled(endedSongId, playedMs)` to learn the listening result (this is the only place the settle callback fires; a `trackedSongId == null` skip is ignored), then when `remainingMediaItems() <= ExplorePlaybackPolicy.REFILL_THRESHOLD` (= 0, i.e. the just-ended song was **second-to-last**) refill with `refillExplorePlayQueue(startedSongId)` appending `REFILL_COUNT = 5`. The dual-flag check is the double-safety guard against a mid-restore timing where the explore session flag is true but the user has left explore mode. Third-to-last is deliberately not refilled — that early refill pulled the business-queue `currentIndex` back and replayed the old song (2026-10-20 fix, locked by `PlayerMediaEventFacadeTest`).
+3. **Infinite refill**: while in infinite play and (`wrapped` or `remainingMediaItems() <= DEFAULT_REFILL_THRESHOLD = 5`) call `refillInfinitePlayQueue(startedSongId, advanceAfterWrap = wrapped)`. `advanceAfterWrap` jumps the current item to the first newly-refilled song and starts it from 0, avoiding a replay of the old window after a wrap; a normal expansion calls `syncPlayerQueue` to sync the window. Details in `/openwiki/player/random-and-infinite.md`.
+4. **Restore the add-next play mode**: `QueueManager.restorePlayModeAfterNextSong` only when "current song == `nextPlaySongId`" restores the queue mode to `playModeBeforeNext`, corrects the business queue's current item with `startedSongId`, clears the temp flags, and `syncPlayerQueue` re-orders the window.
+5. **Sleep-timer hook**: `onSleepTimerSongEnded()` handles the "pause after the final song" deadline (see Phase 6).
+
+The explore settlement semantics: `PlayerRuntime.handleExploreSongSettled(songId, playedMs)` reads the song's emotion tags from `moodEmotionTagsCache`, decides `ExplorePlaybackPolicy.isSkipped(playedMs, durationMs)` — skipped when heard **< 30 s or < ¼ of the total duration** (unknown duration falls back to the 30-second rule) — and casts a **dislike** vote on every word when skipped, otherwise a **like** vote, tallying into the `wordPreferenceRepository`; the re-read snapshot feeds `wordPreferenceCache`, which powers the explore refill pool (`PlayerRandomQueueFacade.buildExploreRefillPool`: liked-with-no-dislike → no-dislike → full library). The pure decision lives in `:domain`'s `ExplorePlaybackPolicy` (JVM-testable) with constants `INITIAL_BATCH_SIZE = 10`, `REFILL_COUNT = 5`, `REFILL_THRESHOLD = 0`, `MIN_LISTEN_MS = 30_000`, `MIN_LISTEN_RATIO = 0.25f`.
 
 ### Window refill for non-infinite queues
 
@@ -266,6 +275,7 @@ The post-restart loop returns to Phase 2's two branches:
 - **Service still alive** (screen-off/background return, ViewModel rebuild): non-empty live session → only the UI queue shadow is backfilled; the real position and playing state come back via the first-frame snapshot sync, and the ticker is started by `syncControllerPlaybackState`'s isPlaying transition notification.
 - **Stats do not break**: after restore the first `PlaybackStart` passes the snapshot position as `initialPlayedMs` into `PlayDurationTracker`, so pre-kill listening time counts toward settlement.
 - **Timer does not break**: an unexpired sleep timer is restored by `restore()` countdown.
+- **Explore session does not break**: `isExplorePlay` is serialized into the snapshot (`PlaybackStateStore` writes `IS_EXPLORE_PLAY`) and rehydrated on restore, so after a kill the explore queue auto-refill and word-vote settlement resume at the next song boundary instead of silently stopping.
 
 ## Test anchors
 
@@ -274,7 +284,9 @@ Before changing any part this page covers, run the matching narrow verification 
 - **`PlayerStartupFacadeTest`** — locks the exact boot-step order, including "restore read runs after the library's first snapshot".
 - **`PlayerPersistenceFacadeTest`** — locks "async save captures the snapshot/position before moving to IO", full-restore application of queue and playable session, **the live-session UI-queue-only restore with the controller completely untouched** (position and isPlaying not overwritten), infinite-play state restore, and falling back to currentSong when the queue index is stale.
 - **`PlayerPersistenceGraphTest`** — locks the restore handshake in both orders (restore-read-first vs controller-ready-first), live-session UI-only restore, connection-failure fallback releasing the decision, and no-snapshot applying nothing; this logic is the cluster for four past regressions.
-- **`PlayerMediaEventFacadeTest`** — locks `handleMediaItemEnded`'s side-effect sequence: stop tracking/clear trackedSongId, tail and wrap triggering refill (including wrap-with-sufficient-remaining), non-infinite no refill, add-next mode restore with queue sync.
+- **`PlayerMediaEventFacadeTest`** — locks `handleMediaItemEnded`'s side-effect sequence: stop tracking/clear trackedSongId, tail and wrap triggering infinite refill (including wrap-with-sufficient-remaining), non-infinite no refill, add-next mode restore with queue sync, **and the explore group** (the second, newer regression family from v3.11.0): settle fires with the captured playedMs, refill only when the ended song was second-to-last (`remaining=0`), no refill for third-to-last, no refill when enough songs remain, and no settle when `trackedSongId == null`.
+- **`PlayerRandomQueueFacadeTest`** — locks the explore start/refill chain: `playRandomQueue` builds an `INITIAL_BATCH_SIZE = 10` batch and sets `isExplorePlay`, user manual queue replacement exits the explore session, `startInfinitePlay` is blocked while an explore session is live, and `refillExplorePlayQueue` appends `REFILL_COUNT = 5`.
+- **`ExplorePlaybackPolicyTest`** (`:domain`) — locks the pure skip-vs-complete judgment `isSkipped` boundaries (a 4-min song played 20 s, an 8-min song played 60 s; a full listen under 30 s is still a skip).
 - **`PlayerPlaybackStateAutosaverTest`** — locks save throttling: first immediate, then throttled by interval, `reset` allowing the next.
 - **`PlayerPlaybackSessionGraphTest`** — locks startQueuePlayback/prepareQueue/single playback session behavior.
 - **`PlayerSleepTimerCoordinatorTest`** — locks the narrow-flow interaction regression: cancel zeroing must go through the explicit reset entry, start writes discrete state and persists endAt, play-last-song only sets pending instead of cancelling immediately, `onSongEnded` then pauses.

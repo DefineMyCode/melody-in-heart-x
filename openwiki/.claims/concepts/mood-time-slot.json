@@ -1,0 +1,272 @@
+{
+  "schemaVersion": 1,
+  "pageVersion": "sha256:1724d54055141d818cca91e4041a181f7fcab1322f47dc8d2eb91c77ac50f782",
+  "claims": [
+    {
+      "id": "claim_9b279a6b7c1843adb24a3cd91eaa4fca",
+      "statement": "TimeSlotConfig models a slot as flat fields (id, name, startMinutes, endMinutes, tags) with half-open [start, end) minutes-of-day semantics: endMinutes <= startMinutes means a cross-midnight slot covering [start, 24:00) ∪ [0, end), start == end is zero-length and illegal, and covers() normalizes minuteOfDay modulo 1440 before testing.",
+      "evidence": [
+        {
+          "resource": "repo://core/model/src/main/java/cn/com/dcsgo/mihx/core/model/TimeSlotConfig.kt#L16-L48",
+          "version": "repo-lines-v1:sha256:51464222fb53191f9964e51edcd9ca7bda5d952b9b3dd12d099639130146751a:eyJzZWxlY3RlZExpbmVDb3VudCI6MzMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQwZmRmYTJiZTYzN2M0YTUxZWY4YTAwZDk4NDJjMDNhNzcxM2E5ZjhiNzJlMjJlZGFlMzJlNTJlYzJjMTM5NTkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjU3ZTE4YzdhYWIxZTcyODdkZmNiZTZhZTY1ZDIyMjVjY2RjMTc3NGRlNGYyZThlOWM0MDQ2MGU4MzlmZjYxODgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_b165b36ef4dd41e48d708afe2844389d",
+      "statement": "MoodSlotResolver.hitSlot selects the covering slot with covers() and minByOrNull(startMinutes), so valid (pairwise non-overlapping) configs hit at most one slot per minute and invalid multi-hit data resolves deterministically to the earliest-start slot; activeTags returns null when the switch is off, configs are empty, or no slot covers the minute, otherwise the hit slot's tag set.",
+      "evidence": [
+        {
+          "resource": "repo://domain/src/main/java/cn/com/dcsgo/mihx/domain/playback/MoodSlotResolver.kt#L30-L49",
+          "version": "repo-lines-v1:sha256:0615917a3a12e1836621d1c8fd89633a7156e286ca4341af90c4e6bad89724d8:eyJzZWxlY3RlZExpbmVDb3VudCI6MjAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjJiOWJlMDA4YTNlZWM5Y2I4MTIyM2RjMjcwZjI2NTZhZDI4MDlmYjgxOTRhNzc3Y2FlNzZkZTI0ZDk3ZjI2MTYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAzZGExNWE0NzhkOTg2ZTY1OTlmOGI3MWEyOGE1NTdmMDI2YTQ1NDg4M2Y3MzkxNTBlNjQ1NmQyOTNkZjc4MWIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjJhMDFiNjE2N2M3NDdlZTA1MGQ1YzZmMmZlNDBhMDgzOTkyNTM5YjgyNjllMzQxZGE1ZmM3NGYxNDg4NjRlNmUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjYzYjQzMmJmY2M5YmVmNWI5OWRmNDkzZTAwYzg5MDA1ZjQ2YzY5YjdhOWNlNjU4OTM3OGYxNjNiMTAyMTdkZTkifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_0ced0e1ff06e4e97a6ab7651f9229f97",
+      "statement": "MoodSlotResolver.validate rejects blank names, names over NAME_MAX_LENGTH (20), empty tags, and zero-length ranges as SlotValidation.Invalid, and returns Conflict naming the overlapping existing config while excluding the candidate's own id (same-id edits are not self-conflicts); overlap uses ring-timeline segment splitting where touching half-open endpoints do not overlap. Both TimeSlotConfigStore.save and MoodSlotEditDialog call this same validate, so overlap rules have a single implementation across persistence and UI.",
+      "evidence": [
+        {
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/repository/TimeSlotConfigStore.kt#L50-L65",
+          "version": "repo-lines-v1:sha256:4fba89507a0a20ea556eb499cdcfa105714a9780bd9641c6e8872c944ebdb70e:eyJzZWxlY3RlZExpbmVDb3VudCI6MTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImNmZGZhNGE1NjhkMmZhMmU0MzlhOTY3NDA4NjVhMTg0ZGFmMDgxODIxZTk1MmExMTJiZjE3OTk1ZjcwNjNiYzQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjcyNTY1MjEwZjU5ODE0YjFiMWJhZGNkNmM0NjMyOWNlZmI1YTMyM2ViNTZiYjUyMmM2MWJmYjRjN2ZkMzg1MDMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUyNmJiOWQzZWU0YTAzN2Q3NTRiNmQ0ODE0MWMxYzNmNzk4ZDU2MTJmOTlhYjQzNjc3YWFkYjYxZDI5ZjczYjkifQ"
+        },
+        {
+          "resource": "repo://domain/src/main/java/cn/com/dcsgo/mihx/domain/playback/MoodSlotResolver.kt#L51-L116",
+          "version": "repo-lines-v1:sha256:8e86c7c50ef52503d965513a53f38cf0eb395ae531bb13c68c4ed99bc5099166:eyJzZWxlY3RlZExpbmVDb3VudCI6NjYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YWY0MTIxMTBhMTM1ZjczMjU2YjZiNDI3ZGY4NTYyNzc5NjA2MTcyOGQ0Mzc2NjZkY2Y5NzkyNjUyZWM2ZTIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImEzYzMzYTQ3ZTVhOGJiMjc3N2U3ZWExYjNhYWI3MDhjN2YxYmExYTI0OWUwYmMzOWZiZWEzYWRkNWYzNjU3MjgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://feature/user/src/main/java/cn/com/dcsgo/mihx/feature/user/MoodSlotEditDialog.kt#L249-L270",
+          "version": "repo-lines-v1:sha256:609b753a3f5efba22f3ec83c01f3ab734138c91ec2ef5d8543b900606fd8253c:eyJzZWxlY3RlZExpbmVDb3VudCI6MjIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjYxYzZjZTk5NzVmODYzMDczZmI5NGNiMDc5YzcxODQ1ZjI1N2Y0ZmFiYmU1YTBkNzY2MmExOTg5ZjMxOTk4NDEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU3YjE5OWRiYWE0NGU0ZWRjZmQ1NzUwNzg2MjI5MjVhMmE5Y2JjNTFmN2U3YzBiNmI0NGMzMzYzZjAzMGRjODYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjdhNmU4NmQ2YmQ4ZTFiZDk2ZGJmZjAxOGExNTIyMjQ5MDk3ZWZiY2YwMjM4MmMwMjZlYmQ0Y2ZkNmQyOWZjMmYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImZjZThkMTM3ZmE0NGFjNjY0OGIzYTRhNmY1NmY1MGJhYmE2NzczNDE0NWQwNDc0YTRlNTU1Njk3ZmQyNmJlYzgifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_c3a35df534d14c92a6bfe2d9b7f7eed7",
+      "statement": "MoodSlotPolicy centralizes the tunable thresholds: POOL_WARN_THRESHOLD = 10 (small-pool warning), NAME_MAX_LENGTH = 20 (name validation), and MAX_SLOTS = 10, which is a soft per-user limit not enforced by any code path.",
+      "evidence": [
+        {
+          "resource": "repo://domain/src/main/java/cn/com/dcsgo/mihx/domain/playback/MoodSlotResolver.kt#L10-L19",
+          "version": "repo-lines-v1:sha256:cf7187c7ae923c8807869561fa7b7ab368e3f0c844088c57483866bbc9779899:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImViMWFkNzk4YTJlZWQwNDYzOWRhZjdkY2Q1MThhZGY3ZDNkMDJlN2Y2Y2IxNzAyOWNhYmRjNGI5YmM0MWRkZGMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjliODI5ZTc5NDVjOWQwMmQyYzFhOTMwN2JhMGM4ZWQyMjhmN2FkMWFhNzM3MTRjYTRmM2M4ZTk1NTgwN2ZkOTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQ5OTI4OGQ4MzQ2MmFkNGEwNDA5MDM0NmY4M2U0ZTRiMTIwYzkyNmE1NjUxMzZlMzM2ZjBhYmE3OWQ5MmIxOTkifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_a9dfa60bf5014cf591bb038c8087c4d5",
+      "statement": "TimeSlotConfigStore stores all slot configs as a single JSONArray under the key time_slot_configs in the mood_time_slot Preferences DataStore (no Room schema change); save validates via MoodSlotResolver first, merges by id, rewrites the whole key sorted by startMinutes, and throws IllegalArgumentException carrying the conflicting slot's name; delete rewrites the key without the matching entry.",
+      "evidence": [
+        {
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/repository/TimeSlotConfigStore.kt#L20-L72",
+          "version": "repo-lines-v1:sha256:6e7f1c9fd008cecdb0979c133e98628ae6590cb73fc9e6c361ca446e3a05a4cf:eyJzZWxlY3RlZExpbmVDb3VudCI6NTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjFkMTZhOTNjMTVhMTMxYTJmZWJlNzVlYjg2OTM5MDI3YzRiZGU2ZTQ4MmUxMjViYjAyOWFmMTJjMTMzYTlkNjEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImM5YmI2MzllMzE4OWNhMDI2NWYzYTM3YWIyMTRiZDUwODZhM2M5NmNmNmE2MTMwNzczY2RmMGQwYjk1NTNhZTEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjIxMTgyMDE0ZTczMDVmZjM4NTk0OGJkMDQ3ZDE1MGE5N2NhNjM5NDExYzZkMTJiZTlhMjkyZGFhNDZjZTA5ZTYifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_e47cd6e0cf6447f5b00a2f2a38438bdd",
+      "statement": "TimeSlotConfigStore parsing is two-layer tolerant: an outer runCatching returns an empty list when the whole key is unreadable, and an inner per-item runCatching skips a single corrupted entry with a \"skip corrupted time slot config\" warning, preserving the rest of the list.",
+      "evidence": [
+        {
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/repository/TimeSlotConfigStore.kt#L93-L121",
+          "version": "repo-lines-v1:sha256:660385c660882880054c1ddaded16c5999aa1e2f607d20af168b72cf0c03b1f0:eyJzZWxlY3RlZExpbmVDb3VudCI6MjksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImEzNjc1YTJmN2RmZjRiYmUyZjA3NmExMjc4YWRlZTNiYjEyMjY4MzhmMWMwYjFlNzVkMGNkZTI5ZTMxNWViNjIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImM3ZTM2NzE4ZGYwYmFmZmNiYTU5MjEzMjJjMmE2ZjU5NzVjNDFhY2MxZWQ4NmY5ZDYyMzZmNmY2NGUwYmI0ZGMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImI2OTU4MzllNDI1ZGE5MTc2NDhhOGJmNzBjNDBkNDA1MDAxMDU4ZDFjYmY3MWE5MTA5MDMzYjM5ZjY5YjUwNWMifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_73656bcb98074509b64a9eca9bb9f4c5",
+      "statement": "Hilt wiring: DataStoreModule provides the mood_time_slot DataStore as a @TimeSlotConfigStore-qualified singleton, and RepositoryModule binds TimeSlotConfigStore both as a singleton and as the domain TimeSlotConfigRepository interface.",
+      "evidence": [
+        {
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/di/DataStoreModule.kt#L22-L45",
+          "version": "repo-lines-v1:sha256:af8cea57ec1e828dea7df7a39b488013f4023500d63798d9f36bc6b7ac7b01d5:eyJzZWxlY3RlZExpbmVDb3VudCI6MjQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijc5MzZiYzgyY2FkYTc5ZmFlM2QyZmZlYzI0MTg5NzIzOTMyNzc2ZTg0MzlkYmE4NmU1YWZjY2UwYWJhM2YyZjUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZhZTdiMjAzNjFjZWM3MDA2NTQ4ZWY4MjZkZmFjYmJkZDRhYWM5OWFjNDkxZDVhOTdhMzMzNGE2NDM3ZTI4YjMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImE4NjE4NTk2Mzg2NjYzNDhmYmZjMmRmYTdmYjRhY2ZiNWE2MzFmNTY0MmM5ZTM3ODJmMzk0ODUwYmRhY2E4N2QiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImJjMmVhZmQyNTUxMjIxZDE5YzkxYTRmYjQ0MGM0OGYzZTVmZjczZmQwNzkwNzIwOGY1Mjk1YjdjZDdlOGM4MTQifQ"
+        },
+        {
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/di/RepositoryModule.kt#L124-L133",
+          "version": "repo-lines-v1:sha256:3bc03fd804f259f301677644803d524539c28ed4be6724112a637fc66f162a55:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImEwMDNjZDk4OWM2YjgzOTZiZGFhMTNjNTMxNDA3NDFiZjQ3NDcxMmRjZDI4ZThlM2IxNmI4ODQyNmRjMDk4MTkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM4YzQ1NGFjMjExNGE1MjgyMDMxY2Y1OGQ4YjQ0NDk2MjVkOTAyY2M5ZDk1ZWVjN2RiOWU4MGU2YjdmZGE4NGQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjMwOTdjMWU4YTQxYWM1ZDkyZmMyNmQxOTc5NGU2YzdmNGViN2FkZDRhNGRlM2E2MDE4MDg3Njk1MTVjYmI1Y2EiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_1c7fa7a2e0de45ea9fa82bd2503cf1cf",
+      "statement": "The anything-play enhancement is unified under the single RandomEnhanceMode enum (OFF / TIME_SLOT / EXPLORE, three mutually-exclusive states): PlayerSettingsRepository.randomEnhanceMode prefers the random_enhance_mode DataStore string key and falls back (legacy users) to the mood_time_slot_enabled boolean (true → TIME_SLOT, else OFF); moodTimeSlotEnabled is derived as randomEnhanceMode.map { it == TIME_SLOT }, setRandomEnhanceMode writes both keys in one edit, and PlayerRuntime wires the facade's moodSlotEnabled lambda to randomEnhanceMode.first() == TIME_SLOT, so every random draw reads the freshest mode.",
+      "evidence": [
+        {
+          "resource": "repo://core/model/src/main/java/cn/com/dcsgo/mihx/core/model/RandomEnhanceMode.kt#L12-L15",
+          "version": "repo-lines-v1:sha256:a09e3dc6a5f974c0112a5961b30226c6256af4c4ccf78dac45cf881edd317391:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNzJmNjg0NjViNjc5MDRhMmVjODQ2MzMwZTNkZTcwMjhjNzZjYmY1MjZiMjAzOTlmYmExMjYwY2U3M2YxYmRmYyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiOGMyM2E5MjllZmU4MjIwMGZmODQ5NzZmODUwNWU4Y2MyMTQ4OGJmYzQ5YmE0MWYyYmZkMGRiODFhYTM0ZmNlYSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiOWUzYWY2ZWMwNDg0MjcwOWVmODRkYmJmZTdiYzQ3ZGFjMmNlY2Y2ZmYzMmI4ZDUzYzkyOGYwM2M5YTFiNDU2NiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjEsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNDEyY2EzNDVjY2Y3NWJmOWMwODA2YmNlNjk1YmU4ZGU4MDhiNzk5ODQyNTFhN2E1NGQyMDJjZjYxMDFkZDQ1MSJ9"
+        },
+        {
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/repository/PlayerSettingsRepository.kt#L116-L129",
+          "version": "repo-lines-v1:sha256:32613669fd07a95a8cd1ff62df7324917e87f92662d7b3813e198ee81a8b4e6a:eyJzZWxlY3RlZExpbmVDb3VudCI6MTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM5Y2JiYzY1NDY5ZGIxY2EyODQyZWZkOTdkZjdlZTJjZTZjYzE1NzE0ODJkMDFhMThiNzkwYTEwYzdjNTEwZjMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImRmNjllODcxMzhmNzFkYTJlMjgwMDFhNjBiYjBhNGMwZDNmY2FmOGZjZWUyYzhiZjk3MGQyNWNmMTBmZmQxZDAiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjJiZjkzYzk3YTY4NDZkZjg0YTVjYjU0Y2MzNTE4NWQzOTBlMjUyODE5MWRiNTRiN2NhZjEwZjIxZGY0OTEzZjgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImNkZGI0NmRlNjVmYmRjNTg2YmEzMGYwYjkzMTM2MWE4OTBhZWM0NGJmMzUyNTdmYjA1MjRkY2QyNGI1ZjY2MzcifQ"
+        },
+        {
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/repository/PlayerSettingsRepository.kt#L221-L231",
+          "version": "repo-lines-v1:sha256:b69813b64853186afa40375d94000841e7cd3167dad000801cea602c3be18365:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU4ZTQ0OTUyZTkxNDE1MmUyOWUwZWRlYmYwMTk5OTlmYzJiZmQ0MDc3MWE1NzkzNWRiOGVhMTUxZGU2MjA2YTkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk5OWJkZWZlZWFjYTYzNDBlMDI5MGRjODZlODg5Yzg5ZDVlMTg5YWE1YmE0NGI1ODViM2I3MDczNGY0YTYyZDgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijk2ODFiYTBjNjA1MGE0MmY5MzZiMmMwYzRjNGVkNzJiNTc4MzllZDE3YjhhOTU3MGQ1MWE2ZDI4ZjUxYzkxOGUifQ"
+        },
+        {
+          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRuntime.kt#L477-L479",
+          "version": "repo-lines-v1:sha256:c31e5c1b256d5e8635d9cf2ab1465225028327e0c25489b9c1506496e00ecb10:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNTgwYWU1NzM4OTNhYWM1ZjFiY2I2ZDBmYzQxOTcxYTI3ODcxN2FiYmIyMWNhMTFjYzkwOTAyYWE1ODYzODdjMyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiOGFkNWMwODM3NzBiYjRkNTdiODBjMGUxOWQyNDlhNDc3NjRkOTJjYjdhNjg1YWJjZTVlZTZmZmM0NTYyNmYxZiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNWY3YmNkOTk1Y2VjMWNlMmQ0YjVhMWM5NGI3NjkwZWJkOTI5ZTQ2Y2U4MGI4ODk3ZDE2MzVkYTQ3MDQ2YTlhNyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYzM3MDM2Yzk4NDc1Y2JmNzk4MGYzOTRiYzgwZGE4ZTdkNzgzNzYyZmE0N2NhYWYzY2U2Zjk5ZTE3MTRkODQzOSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_f70c497685544fd293c0611bdae3805c",
+      "statement": "PlayerRuntime.observeMoodSlotCaches (started from start(), after the startup sequence, deliberately low-frequency and non-blocking) continuously collects timeSlotConfigRepository.observeConfigs() and songEmotionRepository.observeAll() — a Room invalidation stream mapped per song through emotionTagsOf with flowOn(Default) — into @Volatile caches that PlayerRandomQueueFacade reads on each draw; it also collects wordPreferenceRepository.observeAll() into wordPreferenceCache and observes randomEnhanceMode to drive isExploreModeActive (leaving EXPLORE stops any explore session). Config saves/deletes and emotion analysis/calibration therefore take effect on the next random draw with no manual refresh (M-2).",
+      "evidence": [
+        {
+          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRuntime.kt#L415-L465",
+          "version": "repo-lines-v1:sha256:4da64fff3d68191ac3293eaae0d15fee623d25b7c7f951249c25f6a03b325a6d:eyJzZWxlY3RlZExpbmVDb3VudCI6NTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQwMDVlZDJiMWEwYjAxMjEyYzY2NmFhMzFlZmM2NmZjODMwYTA5YzFhZTk3ZTE3NmVkMmQ3NjVlZDVmMmNhYTAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjNkZWI1ZTVjNjkwNzZjMjNjYjdlYmJlODgwZWU5ZGFlNjNmZjAzOTEwNmM1YzE0ZDAxMjNiOTc5MDZkZWE0YTgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjBiOGEzMzM5ZDA4MWUzM2Y4ZmQyZDViZGI5ZGQyNmUwNGY5YjE5YTM1NDE0NjBlZTEyNmYzOWQzNzBiZTFjYmMifQ"
+        },
+        {
+          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRuntime.kt#L554-L555",
+          "version": "repo-lines-v1:sha256:35d508ea41a1e2fa2143bb191bb16e9b2ae9a64a8c86e6890ffe76cfab900e86:eyJzZWxlY3RlZExpbmVDb3VudCI6MiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMjJkNTQ2ZWY3ODc3ZGQ2MGVmMTEwOTk1Zjk3YWYxYzlmZjQyM2Q5NmVlNWE3YmE4OWU4YTU3YWM1NDQzYjM3YyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZjQzYmZkMTc2M2U4ZGZiOWU4MTQ5ZDg5N2RiYzNlZGMwMjY1N2NmOTliMTNmZGY0NTI4NjFhYjc0YWU3NThmMSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNTFjNDdlNWUwMjBiOWY1OGRkOTQ5ODBkYzQ4M2YyZDFkODZkOWQ1ZjVmN2VlOWRhN2VlNjY2OGQ5M2RmY2E0ZCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMWIyM2MxZTc4ZjdkODMyOGQ0ZGViZTg3ZmM5OWY5NWQ2ZDliNTIwZmMzZWY1YzZhZGIzN2I3YTVhMmUxZmJkZSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_d903d0913ed94c56927d859042a6b7fc",
+      "statement": "MoodTimeSlotViewModel exposes configs, randomEnhanceMode, moodTimeSlotEnabled, and wordPreferences as stateIn(viewModelScope, WhileSubscribed(5_000)) StateFlows over the same repository flows the runtime observes (initial values cover only the first frame), so the config page and PlayerRuntime converge on any save, delete, or mode switch within one DataStore emission.",
+      "evidence": [
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/mood/MoodTimeSlotViewModel.kt#L46-L59",
+          "version": "repo-lines-v1:sha256:61f52b1f289cc42db4bad6f1717b88421404168637a3ca7fc7bbfff038502af1:eyJzZWxlY3RlZExpbmVDb3VudCI6MTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZmYzQ4ZTgyMzkxMjQ5YmJlMmM4MzQwMDI3MzQ2YjdlZmU0MTdhMTgyY2E4OTRmNWMwMDM2ZDU0OTczNGJlNzkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNmNDkzNDliYmVhNDY1MWIyMGZhNDgyNmM5ZmNkNzk0NWQ4Nzc1Y2JlYmI3Y2E3YmNhNTQzNmM4NWFlYWRkOGEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImJlNzQxNjAxYmU5MDJmZjA5MzVlYTNhYTVmYmRkNGMwYWZjMjZlYmE3MjQ3NTM1MTRmNjE2MjQxMGUzYjRlNDQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjhjOGY0MmIyMDVjMTQwZDllMjllMDFhYjAwMWIwYTliMjNkYzA2ZmZkNDRjMDgwMTIwNDU4NDg2OTk2ZGMyYTcifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_24cf8fb657e34975bad1a818529da8e1",
+      "statement": "MoodTimeSlotViewModel.tagCounts and librarySize are deliberately non-streamed: loadStats() is a one-shot snapshot computed on Dispatchers.IO (songEmotionRepository.getAll() counted via emotionTagsOf plus songRepository.countSongs()), invoked per config-route entry by LaunchedEffect; on failure tag counts degrade to an empty list (badges show 0) without blocking configuration features.",
+      "evidence": [
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/mood/MoodTimeSlotViewModel.kt#L53-L78",
+          "version": "repo-lines-v1:sha256:b23b180ce335816aff3f0850988f954335d533b220a7779fa2c6c879e8e0656f:eyJzZWxlY3RlZExpbmVDb3VudCI6MjYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImEzZDhmOGRiOTY3OTk4OGNmNjRiMDRhZTA0MGQ5ZGY5ZmI1OTg2NDZiNThiNDgwYzhhODBmY2EwN2Y3Yzg0YjEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImJjZjdlNzI1OTQ3ODJmYmQ0NGFmYzA4ZDQ5Mjc2Y2U1MzJkMDk0ZTY4ZDllYzUyMTE0NTMzM2JkNWRhOWE2Y2EiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImY2YTJhMmUyZjdjZWE3NDE2OGQ1NTY1NTdhMmQ0NmQzZDVjYjc0MzRhODQzNmViNWU3YzlmZjcyZGE3Y2YzMmEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_d513d553edc94aca8060354124b4e146",
+      "statement": "PlayerRandomQueueFacade.filterByMoodTags filters at the planner entry — it keeps songs whose injected moodEmotionTagsOf result intersects the active slot's tags; an empty result returns null and the caller falls back to full-library random (logged \"fall back to full library\") instead of failing to start, while a pool below POOL_WARN_THRESHOLD logs a \"will loop\" warning with the filter still applying.",
+      "evidence": [
+        {
+          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRandomQueueFacade.kt#L72-L87",
+          "version": "repo-lines-v1:sha256:641a2af88cd0dabfe6f23a976224cb7e7571ed9db8db892de51dae36fe672f58:eyJzZWxlY3RlZExpbmVDb3VudCI6MTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImI5ODAyNzQxN2Q3OTU5YzRmZWNjYWY2MWZhN2IyMGMxMzZlZmVmZjNhYmM5MjMyY2UzNzliYzQ2OGNhYTkwOWUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImJjYjkxZDkxN2IzMmMyYmMzM2IzNjcyNjk0ZDIwOTViYmQzYTRhN2IzOThmYTM5ZTc1ZjZlZGIwYWQ0MzNhNTkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjEyZTIwNzQ1ODAwMGE1NTIxZGUyYWJlYjg4Yzg3ODIwZjQxODlmZmFlNTUyNjM3NjE2ZTQ4YjlkZGI2NTlhODUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_989f18142a0547628fa87a5a41f9b914",
+      "statement": "playRandomQueue computes val explore = exploreModeEnabled() and val mood = if (explore) null else activeMoodSlot(), so explore mode skips the mood filter entirely and plans with ExplorePlaybackPolicy.INITIAL_BATCH_SIZE (10 songs); refillInfinitePlayQueue applies the same activeMoodSlot() + filterByMoodTags narrowing to planInfiniteRefill's allSongs each draw; startInfinitePlay does not mood-filter (keeps the current queue, flips infinite flags) and is blocked entirely while an explore session is active (current.isExplorePlay), the mood filter taking effect from the first refill onward.",
+      "evidence": [
+        {
+          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRandomQueueFacade.kt#L143-L154",
+          "version": "repo-lines-v1:sha256:ca5af78a18f4aaf4077d7049bf496113ad84ed81351233173751284a3989382b:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM0MzEzZDk0MGUzZDVjN2ZmY2JkYmQyOGE0YWY4NzEwMjE1NjE3YjJhYWFjZWE4MGVlYzcxOTZjYmZhNGVmNmMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQ4YzgwZTNlNzczNzU4MTFiNmFjNDg1ODE4ZDg4Mjc3NGYzM2M0NTM4NDA5Y2NkMDk4MjQ5MjYxNWMxOTg1ZTYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjRhN2ZlNDE2MzYwNmJiM2RlMDQ2NDM3NjczNGE2YzE2OTU0ZTE3ZWFjYTgwMGQ0MDQ3YzUyZTRhMGE4MTNhNGEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjEwNDczNGZjNzFlZTJmYTNiYzM1YTQwNTg4ODI0ZTYxYjg1MzNjMGNlZDhiZDhlODZlOGQ1ODc3ZTAwMTBmNmMifQ"
+        },
+        {
+          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRandomQueueFacade.kt#L187-L200",
+          "version": "repo-lines-v1:sha256:9abafcd71168937e43fa3eb49e4b600a1c14ef6e7d15a5460322f6dddf97d219:eyJzZWxlY3RlZExpbmVDb3VudCI6MTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM4ZmE5NjlkYWYyZTEyMGZiYmY5OGI1NjNiMWRkZGMyNzk5ZDc5NDdlNGE0ODEzYjM2ZjVjYzI3ZTllZjViMWIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjlhNzYyMTVlZGQ2YTY0MWI3OTMyMWQ0MmQ0NDNkOGNjZTc3NjBlY2FhN2RiNjhiMDg0MTI4MDljODZmMWMzMzYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjhlYTdlMThiYTBlMzM4ZjJiODJkNzExYzRmNjZkZjE2N2JhMjg2MmQ0ZTNmMzIzMDFmOTdkM2NlOGQ4OTgzYjkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjEyZWI3NzQ2Y2QyNTViZjkzZWQ3ZjcxZWM0NGFiMjMzY2M3NjY5NjVhYTVmMzRiYTViZjQwMzc1YTMwNWE5NWIifQ"
+        },
+        {
+          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRandomQueueFacade.kt#L95-L116",
+          "version": "repo-lines-v1:sha256:2358eaa6b939da45f1b9915386ef07085c71cf93f78cf87df016c3b1920e9e9d:eyJzZWxlY3RlZExpbmVDb3VudCI6MjIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQ3NDM4YzMxNjUyOTFlOTc2ODk4YTczYTU2MDdmMzZhYjg0NTU1ZjUxNWMxZjE1ZTMwZTRlZTFlZjE1OTNjZjAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImE4ZGU3NTQwODVlNzYzZjYwZGMxOGVkZDJiYjhlOGU4ODFlMmU0NjVkODRmOTlhYWI4MzZhZTUwMTUzY2E1M2QiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQwN2Y0MjViMzgxOGVkZmQ5NmRhMjUxZmI4MTI2ZjJkODljMWJjZDkwYjRjZTg5MWRjMTRjNzA3YWU5ODk1MTAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxOGUzNzY4YzdmMDY5OTZjYWUzMmE4NDYxYjBjMjRhM2E5NGZmNzM1MjMxNzQ0NjM2YWRiZTUxODg4YTJjZGIifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_79c051646d134220b5557029a2252f97",
+      "statement": "Attribution: PlayerRuntime.playRandomQueue/onResult and startInfinitePlay/onResult run the suspend facade call, then re-evaluate randomQueueFacade.currentMoodSlot()?.slotName — the same activeMoodSlot() evaluation the filtering used — and invoke (started, moodSlotName) on the main thread; AppRoot's lucky-play entry bar toasts 已按「$slotName」为你随机播放 and NowPlayingSurface's infinite-start toasts 已按「$slotName」开启无限随机播放, both falling back to the import hint when nothing started, while the lucky-play wiring in HomeRouteActions keeps a generic toast without attribution.",
+      "evidence": [
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/AppRoot.kt#L254-L267",
+          "version": "repo-lines-v1:sha256:36927d943c3e97eaca1e4c4d35c28494da13bffaf49a4db2267c3633b6a31b77:eyJzZWxlY3RlZExpbmVDb3VudCI6MTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijg1ZmE1OGU2ZTY4Njk2Mjg0YzM5MTg4MWJkNTNjMWY2MmNlZTZlNGM4YzA2NGY1NmQ1OWVjMGUyODcwNTdhNTUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjkxY2E3YWJiNzg3Mzc2NTY1ODQxNzRlNjcyMGIwYjk1MGU3NmU0ZDlkNjJlMjdhODJiYWNkY2I4NGViNTZkYTQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjFiYzFhNGVkZmQzMTRhYzIyYjA1ZGZhOTlhNTM2YjEzNDM1YTAwYzRhN2E1OTcyNGE3MTRhOTViY2ZkNzU1MTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjA2NzBiNmZkZDlkYzBhN2JhYTU4MGVjYTg4YmMwNzNjNjUzYzZiMTA0NTNmNzQ1ZDM3MmRjMmZiNzhhNzMyMmMifQ"
+        },
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/player/NowPlayingSurface.kt#L114-L125",
+          "version": "repo-lines-v1:sha256:c3212f13bdd591d77c9a0bbe1a822b0f8436cdf4d3c3fe442dc9d43dbff36319:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjczOTNjYjFiYzM3NDFkMzE0ZjI2OGZhN2IzM2YxM2QwODRkMGYyOWRmZDY2NGVhZGM3NTE2ZTYwOGMyZTQ5NTgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQwOTNkY2UwMmZhM2U1YzBiOGMxYzg2YWM2N2U4NzYzZTNhMjQ5YWFhZDAxZjlhOGVkZTJkNjcyNzE1MGJkNzgiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImVlNGIwYmRlMTQ0MTUwMWU0YTM2MDQ0NzQzYTdkOWViNjA3ZTEwYTdlYzhkMjQ3YTQyNjhkNzUyOGY4NDlhZTciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjA5Nzc2OGE1ZjhkMDgyMjg3NTFlMTRhYzRkNDA3MzY2YzdlNmQ1OWU3ZWE3MTE0ZjI2MGQ0MjM2MGQ4N2Q0MjYifQ"
+        },
+        {
+          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRandomQueueFacade.kt#L46-L54",
+          "version": "repo-lines-v1:sha256:ac2b86baa3bd918c0c3487093e6ab64cbd135d715bde2642f2dc1caa842b9d63:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiOGFiNjgzMjhmZjFlNzIxOTdjODc1YjY1Njk2ZjQyODM5YTIyYzBiZDY5MDhhNTMyYjRiOTk5YTU3NmZmNWUzZCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDg5M2Y0MGUzNzgxZWI4OTZjODJkMDQ2YTA4MDY3YTExZTM1Y2RmMmYxZGZhZjI2ZmVhOTBiOGRiNjY3NjQxMyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYjc4MjEyN2Y3MGEzOGY5NjEyOWMzNDc5MWQ5ZDlmMjdlYmQ2MDQ4MDAxZmU2ZjNhMGIxYmQxNTg2MDE5OGEwYiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYjE2MTRlMGU1YzJhODIyMjE4ZDBmYzQ3NDc5ZThjOTg2NjY5NWZjZjNkYWYxZmMxYjQ3MjliNDJjNmNhNWQ3YiJ9"
+        },
+        {
+          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRuntime.kt#L821-L842",
+          "version": "repo-lines-v1:sha256:7cc51f87a65e107ace13f6ec76f3d2b985ba9c830a014138ecba082468b20241:eyJzZWxlY3RlZExpbmVDb3VudCI6MjIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM5Y2JiYzY1NDY5ZGIxY2EyODQyZWZkOTdkZjdlZTJjZTZjYzE1NzE0ODJkMDFhMThiNzkwYTEwYzdjNTEwZjMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjUzMTkyNjExODQyMmYyNWY1YzlmNTRmMTgxZWUxODBkYjg4OTEyYzNhYmMyMGExOGFlNGZhNDRkODExNDM1NGIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjI5MDk3MTViYmU3NDIwN2I3ZDhiZjY5MTdmYTM5NDRiMmI4NGVjY2Y3MTYyMDEwMmM4NjBhYzJiMTNmN2FhYTYifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_539aef8f1f094dedb065750e04ad9a47",
+      "statement": "Config UI data flow: AppNavHost's config route collects the MoodTimeSlotViewModel StateFlows, calls loadStats() once per entry, and refreshes nowMinuteOfDay on a 30-second loop, with a mode-selector card whose onSelectMode calls moodTimeSlotViewModel.setMode and toasts the resulting mode; the UserScreen entry card branches on RandomEnhanceMode — TIME_SLOT shows 生效中 only when a slot covers the current minute (mirroring activeTags semantics), EXPLORE shows 探索模式生效中, OFF shows disabled states — with save success/failure and delete toasts routed through the ViewModel.",
+      "evidence": [
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/AppNavHost.kt#L440-L473",
+          "version": "repo-lines-v1:sha256:5086eeff7f3c1bd52995ed2c3a46155562a7207c066de69fd9847200bc0524fb:eyJzZWxlY3RlZExpbmVDb3VudCI6MzQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVhZTlhMDE5NmZjYWZkYzY3ZGNiNWJhNGJkYjBkYWRhZmFhNDM3ZTBiYzE3M2MzNzJjYTVlMWUwNTI2ODc3MWYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU1MDMyZTk2NGQwOTMyMzUxZTVkMTg1MjY5MjgxYjE3MWEzYTA5YjA4YjI4NmU2NjFlYTQ3MDMyM2M4MmViNGQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImIzODIyNzFlYmYwZGEyZTY1MWIyODZiZGI1ODE1YTZjMTJhNWE1Yzg3MTc4YzUxYzQ3NjA0YTNkZmU0M2RhMmYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImU2MTgxMjkxYmU2NmZlMWRhODA4N2QzMWZkZGZiMTA5ODViMWQ5ODA3NDkwNTBlM2Y5MmM1OGI0MDJjZGIzZjYifQ"
+        },
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/AppNavHost.kt#L494-L544",
+          "version": "repo-lines-v1:sha256:fae457811edce92646249bbce52b2772967ab063e0f5309802aad6c2d3ccc252:eyJzZWxlY3RlZExpbmVDb3VudCI6NTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImE1NmZkYTg1NWJjODg5OTA1OGQ5YTg1ZDkyMmM4NzI3ZTgwNmZhMGEyYzRkMWJkMGM0ZTRlNmI2YTI2YzBkNmIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU1MDMyZTk2NGQwOTMyMzUxZTVkMTg1MjY5MjgxYjE3MWEzYTA5YjA4YjI4NmU2NjFlYTQ3MDMyM2M4MmViNGQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjZiY2IyOGEwNGY2MDA1YTBjNDMyNzA1Mzg4ZjRlYjJkYjkwOTY3MzQ3YTI2NWY4YmY5YTA4ZDA4OTg5MTQ2ODEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjlkZWI3ZjY5NzU2NmU5MjQ1M2EwYWQ4NzllNzk3NjdjMmEwNTMxY2IzNzVlZTkyMGUwYWFhMjIzOTU4NDIzMjUifQ"
+        },
+        {
+          "resource": "repo://feature/user/src/main/java/cn/com/dcsgo/mihx/feature/user/UserScreen.kt#L258-L270",
+          "version": "repo-lines-v1:sha256:078e134f08deca384f1b1c35eabb039fe6aff7580581607e5f03223fb168ad7a:eyJzZWxlY3RlZExpbmVDb3VudCI6MTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImM1MWQ5YzdiZTM3OTY3ZWZiYmZkYmRkYWJiNjc3MTBlNWIyZDg5MzFkMmQ5ZDZlYTc5OTA4YWM4Njc3YjY1YzUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU3YTVmZmEzZTA5NWRmMDViNmIzMzMzODcxYWJhMWMxYjNlMjVhYjNkYmYxZDQ5MmYxNTRjMmNjMmIxMjJmNTciLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImYwYWFmODhiOGJmNWNmNzhjYTIxN2YwNGY4MmNhYmM5Y2NjZmI0YmVkZTg5YWM3NDM3NzIzNGMxYjQyYjc5YmYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjAwZGQ0MGQ2MDc5MzdjZjBlMWMyMzZiZDg4ZDhhYTZlY2U3YTk5MjdiMDZhMTFmZjc3ODNjMGIxMjBjMmRlMjIifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_f11d25446c0e48808e66f0b64ec405af",
+      "statement": "MoodSlotEditDialog validates locally while typing (blank name, no tags, start == end) and runs the same MoodSlotResolver.validate on save, mapping each SlotError and Conflict to user-facing copy; times use the system TimePicker forced to 24-hour with storage as minutes-of-day; manual-only tags (the auto=false group: 鬼畜/沙雕/戏谑/荒诞) are listed separately with a warn explainer.",
+      "evidence": [
+        {
+          "resource": "repo://feature/user/src/main/java/cn/com/dcsgo/mihx/feature/user/MoodSlotEditDialog.kt#L168-L196",
+          "version": "repo-lines-v1:sha256:5397b34b213a768b4820f19bd3658f8da9311e1ba812442dd93d8b749a266860:eyJzZWxlY3RlZExpbmVDb3VudCI6MjksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjVmYzgyNDRlM2I1NzkxNGU2Nzg5MzA1Y2JlNWY1ZDJmYmYwZGZhMWRlMGZjYjc0OGYzYzBkYTUyNzk4ZDBmZTIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU1MjJjNDJjZDE5YzZkMDNkODA4YzQ1MjcyMDU1MjgyNWI3ZWExYzViNDkxYjIxODUxMWNhYzc0MTVjZjlkOWIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijc2MzIxODllYjBhOWI2ZmU2MzkzMGRkNDJlNDYzZDQ2NDY4OTgyMjc3N2EzOWVhZWZiYzk0NjE1MGQ1NjcxNmEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImJlZjQyODViNjAwYmNlZTUzNGExODdkZDY2Mzc0Yzg5NzgwNjBhNjkzZjI1ZDJhMzAxMzMzMmU2ZmNhNDQxYjAifQ"
+        },
+        {
+          "resource": "repo://feature/user/src/main/java/cn/com/dcsgo/mihx/feature/user/MoodSlotEditDialog.kt#L249-L270",
+          "version": "repo-lines-v1:sha256:609b753a3f5efba22f3ec83c01f3ab734138c91ec2ef5d8543b900606fd8253c:eyJzZWxlY3RlZExpbmVDb3VudCI6MjIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjYxYzZjZTk5NzVmODYzMDczZmI5NGNiMDc5YzcxODQ1ZjI1N2Y0ZmFiYmU1YTBkNzY2MmExOTg5ZjMxOTk4NDEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU3YjE5OWRiYWE0NGU0ZWRjZmQ1NzUwNzg2MjI5MjVhMmE5Y2JjNTFmN2U3YzBiNmI0NGMzMzYzZjAzMGRjODYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjdhNmU4NmQ2YmQ4ZTFiZDk2ZGJmZjAxOGExNTIyMjQ5MDk3ZWZiY2YwMjM4MmMwMjZlYmQ0Y2ZkNmQyOWZjMmYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImZjZThkMTM3ZmE0NGFjNjY0OGIzYTRhNmY1NmY1MGJhYmE2NzczNDE0NWQwNDc0YTRlNTU1Njk3ZmQyNmJlYzgifQ"
+        },
+        {
+          "resource": "repo://feature/user/src/main/java/cn/com/dcsgo/mihx/feature/user/MoodSlotEditDialog.kt#L276-L303",
+          "version": "repo-lines-v1:sha256:2b3fcc3d4395824b9a338510d94a3ec3898beaa69564ac9f8f6417a389ab3062:eyJzZWxlY3RlZExpbmVDb3VudCI6MjgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImIxNDZhYmU4MjdjMDE3ZDQwYTYxMDVlOGE2NTY2M2Q4MjRjNzgyMjY3MjNlYzY2ZDY3Mzk0NmY4MDk3YzI1ZGYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk5OWJkZWZlZWFjYTYzNDBlMDI5MGRjODZlODg5Yzg5ZDVlMTg5YWE1YmE0NGI1ODViM2I3MDczNGY0YTYyZDgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjBiZTg1ODRkMTMyYThmOGQ2M2FlMDk4OGIyM2VlOGFkMTk4NWY4MjZiYjkzMWJjOTY4YTJlODMzZTFkYTI2ZjEifQ"
+        },
+        {
+          "resource": "repo://feature/user/src/main/java/cn/com/dcsgo/mihx/feature/user/MoodSlotEditDialog.kt#L79-L92",
+          "version": "repo-lines-v1:sha256:4e4e96c6f9c3f52258f8d67868cfa3d83415fb80d0553f27188fcd6b9af74bc0:eyJzZWxlY3RlZExpbmVDb3VudCI6MTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjVlZWEyMTc3MzhiYWEwNTU5YTk2NjU1YWM5YzViYzE4ZGVkMWQ0MjM3MTBjMTkzNzg0YWExODFhNzUwZDIxNmQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjU0ZTcwMGIyNTY5NGI0NDIxZGU4ODZhMDZlZDYyOWQ0OWY3NGM5NGY2ZjM0YjcxMTNlODEyNzUxMDIyMzg5ZTciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjU4YjY3Y2IyZWIxYjU5YjcyZTczMWJjZGY4ZDcyMGM0MTIyNmM1OTQ4MDlkNmY0N2U0MGMzZGE1Y2U4ZjA1M2EifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_2fe37128830c4748a05579bdc5ed2632",
+      "statement": "The config UI mirrors the runtime small-pool warning: a slot card shows 歌曲较少，将循环播放 when its estimated pool is below the UI-local MOOD_POOL_WARN_THRESHOLD = 10 (same value as MoodSlotPolicy.POOL_WARN_THRESHOLD); configs2Items returns a slot's direct tag count for a single tag and sums per-tag counts for multiple tags, double-counting songs carrying several chosen tags as an accepted preview estimate.",
+      "evidence": [
+        {
+          "resource": "repo://feature/user/src/main/java/cn/com/dcsgo/mihx/feature/user/MoodTimeSlotScreen.kt#L456-L456",
+          "version": "repo-lines-v1:sha256:15c45008ac05180a5d47592f760f7538546ddadd58475dc2086fdb04706b51eb:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMTVjNDUwMDhhYzA1MTgwYTVkNDc1OTJmNzYwZjc1Mzg1NDZkZGFkZDU4NDc1ZGMyMDg2ZmRiMDQ3MDZiNTFlYiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMTVjNDUwMDhhYzA1MTgwYTVkNDc1OTJmNzYwZjc1Mzg1NDZkZGFkZDU4NDc1ZGMyMDg2ZmRiMDQ3MDZiNTFlYiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiODVhNTQ1YTEyNDRjNGNlZWRlNWJhMGU1ZWE4ZWY3Y2EwZTAxYjAwNmQyNGU0NGJkMWYzNzZlNDRiYjAxMDk5OCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMTc4ZjQ5MmVjOTNkNTc4YTI0MTA1NWEzYmM5M2QzM2VlMDEwYzE2MjYxODM4MGVlNjg3YjMyOGViZDk1MDFjYiJ9"
+        },
+        {
+          "resource": "repo://feature/user/src/main/java/cn/com/dcsgo/mihx/feature/user/MoodTimeSlotScreen.kt#L721-L734",
+          "version": "repo-lines-v1:sha256:b3c73aaa06a91ae3987044a088d503d93862eab4b22112f122bf7a3d2ebba9d7:eyJzZWxlY3RlZExpbmVDb3VudCI6MTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY2NGExN2YxMjMzMjAwOWE5NThjNmJhOWU5YmU4MjE2OWE4N2MxZDI0YjJiMzViYTE5ZjY2Y2QzODVjZmYwNGYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY2MDFjYjg1ZWE5MmY3NDk5NGQxZDdjYzkwNDU2Y2QyYjFmMTllOWFhYjhkYzQ2MDVjMjkxNGUyYjZmZjAxNTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjE5ZTc2MzU1Y2YxMTk5NDgwYzNmOTk4MzZiMTQ4NmM4NDFkODkxZmFhZDkwNGM2MDhlMDkzMDIyZDM3NTdhZWUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_4d8872f679f544e193064825ae2bfc54",
+      "statement": "MoodSlotResolverTest locks the resolver contract: half-open boundary hits/misses, the full overnight window (22:00/23:41/00:00/05:59 hit; 06:00/21:59/noon miss), a per-minute sweep proving at most one hit for valid configs, deterministic earliest-start resolution on invalid multi-hit data, disabled-switch and empty-config inactivity, and every validation branch including touching endpoints, same-id edits without self-conflict, and ring overlaps symmetry.",
+      "evidence": [
+        {
+          "resource": "repo://domain/src/test/java/cn/com/dcsgo/mihx/domain/playback/MoodSlotResolverTest.kt#L31-L189",
+          "version": "repo-lines-v1:sha256:8162be6d5fce3fcb9a40b44859b226f049d41bba6f5522f8765be39ec7fa0fb2:eyJzZWxlY3RlZExpbmVDb3VudCI6MTU5LCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiJlZmNjMGE2NTc4ZTU5NDYyZmY4MzM1ZDNmNTU5OWNiZDkxZGZmZjE2YTA3N2U1OWNlYzVlMzU4MzlkNWFlODBiIiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI0ODkzZjQwZTM3ODFlYjg5NmM4MmQwNDZhMDgwNjdhMTFlMzVjZGYyZjFkZmFmMjZmZWE5MGI4ZGI2Njc2NDEzIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiJkNjlmMTRiNThmMTk2YmQ5YTZiZjQ4NmJkNzA1NDY4ZWMzOWRjMDBmNWNiNDk5ZTRjYzU4MmRmNmY1YzIzNWZjIiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MSwiZm9sbG93aW5nQ29udGV4dEhhc2giOiI0MTJjYTM0NWNjZjc1YmY5YzA4MDZiY2U2OTViZThkZTgwOGI3OTk4NDI1MWE3YTU0ZDIwMmNmNjEwMWRkNDUxIn0"
+        }
+      ]
+    },
+    {
+      "id": "claim_fb29cdf09b7145b2ae25d187e43f368a",
+      "statement": "PlayerRandomQueueFacadeTest locks the consumption floor: mood filtering narrows the pool to tagged songs, an empty tag pool falls back to the full library (log contains \"fall back to full library\"), the filter is inactive outside the slot and when the switch is off (legacy-identical behavior), and uniform-random tiering composes with the mood filter (a 0-play song precedes a 10-play song inside the filtered pool).",
+      "evidence": [
+        {
+          "resource": "repo://feature/player/src/test/java/cn/com/dcsgo/mihx/feature/player/PlayerRandomQueueFacadeTest.kt#L298-L422",
+          "version": "repo-lines-v1:sha256:ee07c28cbad821e2cfece9bf7a3b934f2f8cf3e519336fdbf3a7e79a37ccf1d6:eyJzZWxlY3RlZExpbmVDb3VudCI6MTI1LCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiI0Y2YwOWViMGM1NzQ0ZmI5NzMzMWI5OGZmM2ZiZjA1YTYwMmJhM2Y3ZjY3ZTVkYTViZTkwOTUwMzNmNjI1ODI1IiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI0ODkzZjQwZTM3ODFlYjg5NmM4MmQwNDZhMDgwNjdhMTFlMzVjZGYyZjFkZmFmMjZmZWE5MGI4ZGI2Njc2NDEzIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiJhODM5YzI5MTc5YzNiMDk5ZDE2NDdmNTM2MzU2OWU1ZWI3YWUzYjdmZThiZTA0MWFhYzNlODg5ZWYwOWQxMDJhIiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiI4ZmE5OWQ4NDcwYmU1MWM4ZjIxNjhlNzNkNDhiMzU5ZjEwNjE2YjQ2ZjcxYWNkNDRkMjRhOWI2NDEzZDIzOWE1In0"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "by": "openwiki/0.5.0",
+    "at": "2026-10-21T03:20:08.093Z"
+  }
+}

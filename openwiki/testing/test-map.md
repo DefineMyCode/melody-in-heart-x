@@ -1,11 +1,8 @@
 ---
 type: Testing
 title: "Test Map: Behavior Locks and Verification Paths"
-description: Maps the repository's tests onto the behaviors they lock — planner/mood-slot/queue-window/state-machine-persistence/data-layer/permission-common/unit tests plus the v3.10.2 skin-description, app-shell, and playlist template suites — and the JVM / instrumented / benchmark three-layer verification split, with narrow commands to run before changing each subsystem.
-tags: [testing, unit-tests, regression, verification, gradle, player, data, skin, shell, template]
-verified:
-  - by: openwiki/0.5.0
-    at: 2026-10-10T11:15:45.800Z
+description: Maps the repository's tests onto the behaviors they lock — planner/mood-slot/explore-play/word-preference-voting/queue-window/state-machine-persistence/data-layer(/migration v10→v11)/permission-common tests plus the v3.10.2 skin-description, app-shell, and playlist template suites — and the JVM / instrumented / benchmark three-layer verification split, with narrow commands to run before changing each subsystem.
+tags: [testing, unit-tests, regression, verification, gradle, player, data, explore, migration, skin, shell, template]
 sources:
   - id: openwiki-source-8037e2358a2c4f9b2c722a11
     resource: repo://AGENTS.md
@@ -35,12 +32,16 @@ sources:
     resource: repo://benchmark/src/main/java/cn/com/dcsgo/mihx/benchmark/StartupBenchmark.kt
   - id: openwiki-source-2a9daaac1604f238ef4c63fb
     resource: repo://build.gradle.kts
+  - id: openwiki-source-7d322a65ddca1cf4588fa5e3
+    resource: repo://buildSrc/src/main/kotlin/cn/com/dcsgo/mihx/verify/ProductArchitectureVerification.kt
   - id: openwiki-source-a2371d6362e5db4bc834ad03
     resource: repo://CLAUDE.md
   - id: openwiki-source-7324a01dfc39c0e1f1a18882
     resource: repo://core/common/src/test/java/cn/com/dcsgo/mihx/core/common/AppLoggerTest.kt
   - id: openwiki-source-9beb42baf70537bff2b8c477
     resource: repo://core/common/src/test/java/cn/com/dcsgo/mihx/core/common/PerformanceTraceTest.kt
+  - id: openwiki-source-c45f629879f8babdcb1f3397
+    resource: repo://core/model/src/main/java/cn/com/dcsgo/mihx/core/model/WordPreference.kt
   - id: openwiki-source-131bcb2cdaccf1fede890a49
     resource: repo://core/model/src/test/java/cn/com/dcsgo/mihx/core/model/LyricsHighlightLeadTest.kt
   - id: openwiki-source-3320f8290c308322a2fc8b78
@@ -55,8 +56,14 @@ sources:
     resource: repo://core/ui/src/test/java/cn/com/dcsgo/mihx/ui/components/SongEmotionSectionTest.kt
   - id: openwiki-source-0f1ea52b4adfffa8391b0e81
     resource: repo://data/build.gradle.kts
+  - id: openwiki-source-12a1d6d0e5553c5cb1517529
+    resource: repo://data/src/main/java/cn/com/dcsgo/mihx/data/local/entity/WordPreferenceEntity.kt
+  - id: openwiki-source-17d3dc7f59fe7e3d0b195222
+    resource: repo://data/src/main/java/cn/com/dcsgo/mihx/data/repository/WordPreferencesRepository.kt
   - id: openwiki-source-efd5a146b89d9b58600e9264
     resource: repo://data/src/test/java/cn/com/dcsgo/mihx/data/local/migration/LegacyJsonSnapshotParserTest.kt
+  - id: openwiki-source-3a86bbe47450daa347044117
+    resource: repo://data/src/test/java/cn/com/dcsgo/mihx/data/local/migration/MelodyDatabaseMigrationTest.kt
   - id: openwiki-source-f7013cd630cb7c02c18915a3
     resource: repo://data/src/test/java/cn/com/dcsgo/mihx/data/local/migration/SharedPreferencesLegacyJsonMigrationTest.kt
   - id: openwiki-source-d6a5dd7057c478d41355d6b9
@@ -67,18 +74,24 @@ sources:
     resource: repo://data/src/test/java/cn/com/dcsgo/mihx/data/repository/PlaylistResumeDataStoreTest.kt
   - id: openwiki-source-0400beb19fd463f37b3357bd
     resource: repo://data/src/test/java/cn/com/dcsgo/mihx/data/repository/PlayStatsRepositoryRoomTest.kt
+  - id: openwiki-source-f373a5122289300027e96a77
+    resource: repo://data/src/test/java/cn/com/dcsgo/mihx/data/repository/WordPreferencesRepositoryTest.kt
   - id: openwiki-source-29a9a46f0a09ec4b0f103e27
     resource: repo://data/src/test/java/cn/com/dcsgo/mihx/data/util/LrcParserOffsetTest.kt
   - id: openwiki-source-be4ba2c439dc1645bd326cb9
     resource: repo://docs/architecture/MOOD_TIME_SLOT_PLAYBACK.md
   - id: openwiki-source-517665524969e49ec1ee1552
     resource: repo://docs/refactor/PRODUCT_REFACTOR_AUDIT.md
+  - id: openwiki-source-39979cc6e8c7e5b52ecabd5f
+    resource: repo://domain/src/main/java/cn/com/dcsgo/mihx/domain/playback/ExplorePlaybackPolicy.kt
   - id: openwiki-source-ee8d5713acafafdce234f04d
     resource: repo://domain/src/main/java/cn/com/dcsgo/mihx/domain/playback/MoodSlotResolver.kt
   - id: openwiki-source-6ba6772083c7d0700d91cf6d
     resource: repo://domain/src/test/java/cn/com/dcsgo/mihx/domain/playback/ControllerPlaybackStateSynchronizerTest.kt
   - id: openwiki-source-b4bc1edf76b445fe973cfb36
     resource: repo://domain/src/test/java/cn/com/dcsgo/mihx/domain/playback/ControllerQueuePlannerTest.kt
+  - id: openwiki-source-e7d94c70dbc924e5dc00e7fe
+    resource: repo://domain/src/test/java/cn/com/dcsgo/mihx/domain/playback/ExplorePlaybackPolicyTest.kt
   - id: openwiki-source-f4cb724793cbd4ea152ee5a8
     resource: repo://domain/src/test/java/cn/com/dcsgo/mihx/domain/playback/MoodSlotResolverTest.kt
   - id: openwiki-source-ae79105f57f81d276c7f020d
@@ -111,27 +124,30 @@ sources:
     resource: repo://feature/playlist/src/test/java/cn/com/dcsgo/mihx/feature/playlist/SongSelectionControllerTest.kt
   - id: openwiki-source-edd43d204b6c984f231decbf
     resource: repo://feature/user/src/test/java/cn/com/dcsgo/mihx/feature/user/UserSectionsTest.kt
-  - id: openwiki-source-04a93731443f6ff3e9f66921
-    resource: repo://player/src/main/java/cn/com/dcsgo/mihx/data/player/PlaybackController.kt
+  - id: openwiki-source-d4431e382635a7a27ca87c72
+    resource: repo://player/src/main/java/cn/com/dcsgo/mihx/player/PlaybackController.kt
   - id: openwiki-source-0b8d1ad8689331e8a8a22ee1
     resource: repo://player/src/main/java/cn/com/dcsgo/mihx/player/window/PlaybackWindowPlanner.kt
-  - id: openwiki-source-b48b8db053d942e165f0c7b6
-    resource: repo://player/src/test/java/cn/com/dcsgo/mihx/data/player/ControllerQueuePlannerTest.kt
-  - id: openwiki-source-f0e058e6091ef385898fb85e
-    resource: repo://player/src/test/java/cn/com/dcsgo/mihx/data/player/MediaItemWrapDetectionTest.kt
-  - id: openwiki-source-628955b76b7d7f0436c4d85f
-    resource: repo://player/src/test/java/cn/com/dcsgo/mihx/data/player/PlaybackStateSnapshotSerializerTest.kt
-  - id: openwiki-source-bb5d79f6221db58b46df6291
-    resource: repo://player/src/test/java/cn/com/dcsgo/mihx/data/player/PlaybackStateStoreTest.kt
-  - id: openwiki-source-a32dd81da53d4e7eb5757324
-    resource: repo://player/src/test/java/cn/com/dcsgo/mihx/data/player/SingleItemLoopRewindDetectionTest.kt
+  - id: openwiki-source-76e85af0436f0961550204ec
+    resource: repo://player/src/test/java/cn/com/dcsgo/mihx/player/ControllerQueuePlannerTest.kt
+  - id: openwiki-source-1335b79015e69d8ed73b7fd8
+    resource: repo://player/src/test/java/cn/com/dcsgo/mihx/player/MediaItemWrapDetectionTest.kt
+  - id: openwiki-source-186a6bc804c7677b8913c8ce
+    resource: repo://player/src/test/java/cn/com/dcsgo/mihx/player/PlaybackStateSnapshotSerializerTest.kt
+  - id: openwiki-source-ba9ccc172d5e5f490a763733
+    resource: repo://player/src/test/java/cn/com/dcsgo/mihx/player/PlaybackStateStoreTest.kt
+  - id: openwiki-source-27adc205f45612b85a8b7022
+    resource: repo://player/src/test/java/cn/com/dcsgo/mihx/player/SingleItemLoopRewindDetectionTest.kt
   - id: openwiki-source-83429aa1bcb1d70e11b69723
     resource: repo://player/src/test/java/cn/com/dcsgo/mihx/player/window/ControllerWindowSynchronizerTest.kt
   - id: openwiki-source-8a4ae96c838986d7eae43292
     resource: repo://player/src/test/java/cn/com/dcsgo/mihx/player/window/PlaybackWindowPerformanceShapeTest.kt
   - id: openwiki-source-9d7c39bdfe272c3574ef83bb
     resource: repo://player/src/test/java/cn/com/dcsgo/mihx/player/window/PlaybackWindowPlannerTest.kt
-generated: { by: "openwiki/0.5.0", at: "2026-10-10T11:15:45.800Z" }
+generated: { by: "openwiki/0.5.0", at: "2026-10-21T03:20:08.093Z" }
+verified:
+  - by: openwiki/0.5.0
+    at: 2026-10-21T03:20:08.093Z
 ---
 
 # Test Map: Behavior Locks and Verification Paths
@@ -170,13 +186,15 @@ flowchart TD
 
 `check` aggregates the root-level `spotlessCheck`, the root-level `verifyProductArchitecture`, and every subproject's own `check` (each of which runs that subproject's unit tests) at the end of root `build.gradle.kts`; a failure can therefore be formatting, an architecture assertion, or a unit test — read the `GradleException` message first.
 
-## 2. Regression baseline: random and mood-slot planner tests
+## 2. Regression baseline: random, mood-slot, and explore-play tests
 
 The contextual shuffle (slot × mood words) design's §7 checklist item 7 is an explicit regression floor: **with the switch off, shuffle behavior must be bit-identical to the pre-enhancement build, and all existing `RandomQueuePlanner` tests must stay untouched and green**. This means:
 
 - Every assertion in `RandomQueuePlannerTest` and `UniformRandomPlannerTest` defines "current behavior", not refactorable implementation detail; the enhancement may only occur at the candidate-pool entry (`PlayerRandomQueueFacade`-side filtering), never change the planner's filtering/layering/elimination semantics.
 - The non-mood-prefixed cases of `PlayerRandomQueueFacadeTest` (e.g. `playRandomQueueStartsSequentialQueueAndLeavesInfiniteMode`) carry the same "switch off = current behavior" regression duty; `moodFilterDisabledKeepsOriginalBehavior` and `moodFilterInactiveOutsideSlotTime` directly assert "switch off / slot time missed ⇒ behavior identical to current".
 - A PR that edits these three test files (or turns them red) is by default a behavior change and must declare it explicitly in the PR description.
+
+The v3.11.0 explore-play work (2026-10-20) adds a second, newer regression family beside mood slots inside the same facade: random-pool filtering now also consults **word-listening preferences**, so `PlayerRandomQueueFacadeTest`'s explore group and the `PlayerMediaEventFacadeTest` explore group are equally baseline-locking (they exercise the exploration start/refill/settle chain). Explore decisions are split into a pure `:domain` policy (`ExplorePlaybackPolicy`) and facade-side pool selection, keeping them JVM-testable without a device.
 
 ## 3. Test anchors grouped by subsystem
 
@@ -197,6 +215,22 @@ Uniform-random compatibility is a design requirement: the emotion-filtered candi
 | `feature/player/.../PlayerRandomQueueFacadeTest` (mood group) | Facade-side filtering and degradation: when a slot hits, the random pool narrows to word-tagged songs; a 0-song word combination **falls back to full-library random** and logs "fall back to full library" (never fails to start on an empty pool); when the slot is missed or the switch is off the behavior is identical to current; stacked with uniform random, filtering still goes through layered preemption (a 0-count song ranks before a 10-count one) |
 
 Slot decisions and validation are pure `:domain` functions (`MoodSlotResolver` + `MoodSlotPolicy` constants); the config-edit UI and persistence share the same `validate`/`overlaps` — the tests are the contract, and the UI must not write a second overlap implementation.
+
+### 3.2b Explore playback and word-listening preferences (v3.11.0, 2026-10-20)
+
+The explore-play feature replaces plain lucky-random with a **10-song initial batch** filtered by mood emotion tags and per-word listening votes, an automatic **5-song refill** once the just-ended song is second-to-last, and a **settle step** that votes each word of a finished song up or down based on `ExplorePlaybackPolicy`. Local singling out to factory-pure pieces keeps all of it JVM-testable.
+
+| Test class | Locked behavior |
+| --- | --- |
+| `domain/.../ExplorePlaybackPolicyTest` + `domain/.../ExplorePlaybackPolicy` | Pure skip-vs-complete judgment `isSkipped(playedMs, durationMs)`: skipped when played **< 30s OR < 1/4 of duration** — a 4-min song played 20s is skipped, an 8-min song played 60s (>30s but <1/4=120s) is skipped, a 4-min song played 70s (>30s and >1/4=60s) is a full listen; a short song fully played under 30s is still counted skipped (`MIN_LISTEN_MS=30_000`); duration `<=0` (unknown) falls back to the 30s rule only. Exposes the explore constants `INITIAL_BATCH_SIZE=10` and `REFILL_COUNT=5` |
+| `feature/player/.../PlayerRandomQueueFacadeTest` (explore group) | Facade-side explore start and refill: `playRandomQueue` under explore mode produces **exactly 10 songs**, sets `isExplorePlay`, exits infinite mode (`isInfinitePlay=false`, cleared `infinitePlayedSongIds`), and logs `explore=true`; an active explore session **blocks `startInfinitePlay`** (logs "blocked by explore session") while a session that ended (user manually replaced the queue, `isExplorePlay=false` but mode still on) allows infinite play again. `refillExplorePlayQueue` prefers songs carrying **liked words and no disliked words**; if none exist it falls back to the "no disliked words only" pool (logs "no liked match"), and if every song carries a disliked word it falls back to the full library (logs "fall back to full library"); refill does nothing when not in an explore session; the regenerate regression (2026-10-20) uses `startedSongId` to correct the business-queue `currentIndex` so a stale index never syncs back to replay the just-ended song |
+| `feature/player/.../PlayerRandomQueueFacadeTest` (word-filter precedence) | Detailed vote-driven candidate narrowing: a song tagged with a disliked word is excluded, a song with **no liked word** is excluded from the top "liked" pool but can enter the no-dislike fallback pool, `NEUTRAL` (tie) words act as neither liked nor disliked, and the filtered pool is bounded by the refill cap (5) |
+| `feature/player/.../PlayerMediaEventFacadeTest` (explore group) | Explore tail-handling on `handleMediaItemEnded`: when the just-ended song was **second-to-last** (new `remainingItems == 0` after the ended song becomes current) it settles the ended song (calls `onExploreSongSettled(songId, playedMs)` with the tracked song and its played position) **and** triggers `refillExplorePlayQueue`; when the ended song was third-to-last (`remainingItems == 1`) or the queue still has enough songs, no refill happens (avoids re-pulling to replay); a `null` tracked song skips the settle (but still refills the queue) |
+| `data/.../WordPreferencesRepositoryTest` + `data/.../WordPreferencesRepository` | Vote counting over the Room `word_preferences` table: `recordSongOutcome(words, liked=true)` increments each word's `likeVotes` and `recordSongOutcome(false)` its `dislikeVotes`; votes accumulate across sessions without flipping a word's ownership on a single skip (`3` like vs `2` dislike stays `LIKE`, a new word reaching `0` like vs `1` dislike is `DISLIKE`); a tie (`1`/`1`) is `NEUTRAL`; empty word lists are ignored; `clearAll` empties the table and the in-memory map |
+| `:feature:player` `PlayerQueueFacadeTest` (explore session lifecycle) | `setPlayQueue` (a user manual queue replacement — playlist/top-hits tap) **exits** the explore session (`isExplorePlay=false`, `isInfinitePlay=false`); merely calling `addToPlayQueue` (append) keeps the explore session alive |
+| `:feature:player` `PlayerPersistenceFacadeTest` + `PlayerPersistenceGraphTest` + `PlaybackStateStoreTest` (explore persistence) | The `isExplorePlay` flag and explore mode traverse save/restore so a killed process resumes into the same explore state: persistence models carry `isExplorePlay` through snapshot save/restore in the same-named facade/graph tests, and the snapshot store's live-session and empty-session guards apply equally to an explore queue (an empty save with only `currentSongId` must not wipe a restored explore queue) |
+
+The `WordPreferenceKind` ownership rule (`like > dislike → LIKE`, `dislike > like → DISLIKE`, tie → `NEUTRAL`) lives in `core/model` `WordPreference.kind`; the `WordPreferencesRepository` is deliberately vote-only and never computes `kind` itself, so single-skip outcomes cannot accidentally flip a thoroughly-liked word (the A/B-in-like, C/D-in-dislike conflict case documented on the model).
 
 ### 3.3 Queue and window (the domain and player planners, synchronizer, performance shape, wrap detection)
 
@@ -222,16 +256,18 @@ Slot decisions and validation are pure `:domain` functions (`MoodSlotResolver` +
 | `feature/player/.../PlayerPersistenceFacadeTest` + `PlayerPersistenceGraphTest` | Persistence handshake regression: the `controllerReady` and `pendingRestore` flags converge in either order; a live session only refills the UI queue while an empty session fully restores; a connection failure fallback releases; no snapshot means no restore. This logic is the site of four past regressions (4fdb2ae/0cce0de/53af2cc/2026-10-06); the graph test uses `Dispatchers.Unconfined` so its internal `launch(io)/withContext(main)` runs synchronously without a coroutines-test dependency |
 | `feature/player/.../NarrowFlowSyncTest` + `PlayerSleepTimerCoordinatorTest` | Narrow-flow regression baselines (2026-09-03 progress-bar rewind fix): discrete `uiState` updates must not write stale position/reset countdown back into the narrow flow (the comparison baseline must be the pre-update `uiState` old value); real position changes (seek), the restore path, and timer start must propagate to the narrow flow; a cancel reset must go through the explicit reset entry `resetSleepTimerNarrowFlow` / `resetRemainingMs` rather than relying on a `uiState` value diff |
 
-### 3.5 Data layer (Room repositories, settings repository, legacy migration, lyrics parsing)
+### 3.5 Data layer (Room repositories, settings repository, DB migration, legacy migration, lyrics parsing)
 
-The data-layer unit tests **do not start Android**: Room-repository tests run against a hand-written in-memory `FakeMelodyDao` per test file, and settings/snapshot tests run a real DataStore via `PreferenceDataStoreFactory` + a temp file; `:data` explicitly pulls in the real `org.json` test dependency (`testImplementation(libs.org.json)`) because the Android SDK's org.json is a stub that throws on the JVM.
+The data-layer unit tests **do not start Android**: Room-repository tests run against a hand-written in-memory `FakeMelodyDao` per test file, and settings/snapshot tests run a real DataStore via `PreferenceDataStoreFactory` + a temp file; `:data` explicitly pulls in the real `org.json` test dependency (`testImplementation(libs.org.json)`) because the Android SDK's org.json is a stub that throws on the JVM. The **schema migration** tests, by contrast, are Robolectric-instrumented (they need Room's `MigrationTestHelper` + the exported `data/schemas/` JSON) and run under `sdk = [34]`.
 
 | Test class | Locked behavior |
 | --- | --- |
+| `data/local/migration/MelodyDatabaseMigrationTest` | **Hand-written migration regression (m-4, 2026-10-15)** for v1→v10, now extended to v10→v11. `MigrationTestHelper.runMigrationsAndValidate` walks every migration step and validates the post-migration schema against the target-version exported schema JSON (columns/indexes/PRIMARY KEY all aligned), so any hand-written SQL drifting from the `@Entity` definitions fails. Data-integrity assertions insert old-shape rows before a step and check survival/new-column defaults after: v1→10 keeps inserted songs and fills per-version defaults (`album NOT NULL DEFAULT ''` from 3→4, `durationMs NOT NULL DEFAULT 0` from 6→7, nullable `lrcUri` stays NULL from 2→3); 1→2 creates `quick_skip_short_play_counts`; 4→5 creates the `artists`/`albums`/`song_artist_cross_ref` catalog; 5→6 creates `playback_events`; 8→9 creates `song_emotions` and 9→10 adds the four personalization columns (`embeddingB64`, `userValence`, `userArousal`, `userTags`) with all-NULL "not calibrated" defaults; **10→11 creates the `word_preferences` table (word `PRIMARY KEY`, `likeVotes`, `dislikeVotes`, `updatedAt`)** and an inserted row round-trips |
+| `data/repository/WordPreferencesRepositoryTest` | Vote accumulation and neutrality over a `FakeMelodyDao` in-memory `word_preferences` table (`observeAllWordPreferences`/`allWordPreferences`/`upsertWordPreferences`/`clearWordPreferences`): see §3.2b — skip adds a dislike vote without flipping an already-liked word, full listen adds a like vote, ties are `NEUTRAL`, empty word lists are ignored, and `clearAll` empties both the map and DAO |
 | `data/repository/MusicRepositoryRoomTest` | Library repository: startup rebuilds playlist cross-references from Room (by `sortOrder`) and filters orphan references; adding a song to a playlist persists the cross-reference and rejects duplicates; local file verification is fully preserved without a context; `titleOverride` group-override write/clear round-trips and drives `groupKey` on restore |
 | `data/repository/PlayStatsRepositoryRoomTest` | Play stats: `increment` / `incrementRawPlayCount` / `updatePlayDuration` persist incrementally and stamp `lastPlayedAt`; batch reads default missing songs to 0; `getRankedCounts` sorts deterministically (tie-break by id ascending) and `useRawCounts` switches the metric |
 | `data/repository/QuickSkipSongsRepositoryRoomTest` + `PlaylistResumeDataStoreTest` | Quick-skip member decisions/dedup/short-play-count reset; playlist-resume DataStore record/overwrite/single-song single-clear semantics |
-| `data/repository/PlayerSettingsRepositoryTest` | Settings persistence: defaults when nothing is stored (theme `SYSTEM`, variant `MONO`, lyric font scale 1, global uniform random on, Bluetooth monitoring off, playback notification off, daily listening goal 120 minutes); per-key legacy SharedPreferences fallback happens exactly once — after the first DataStore write the legacy key is deleted (with separate assertions for the dark-theme, global-uniform-random, Bluetooth-monitoring, and notification paths); non-legacy keys like `lyricFontScale` and `dailyListeningGoalMinutes` persist directly to DataStore. (The `themeVariant` and `screenOrientationMode` settings exist on `PlayerSettingsRepository`, but only `themeVariant` is exercised here; orientation is not covered by this file's current cases.) |
+| `data/repository/PlayerSettingsRepositoryTest` | Settings persistence: defaults when nothing is stored (theme `SYSTEM`, variant `MONO`, lyric font scale 1, global uniform random on, Bluetooth monitoring off, playback notification off, daily listening goal 120 minutes); per-key legacy SharedPreferences fallback happens exactly once — after the first DataStore write the legacy key is deleted (separate assertions for the dark-theme, global-uniform-random, Bluetooth-monitoring, and notification paths); non-legacy keys like `lyricFontScale` and `dailyListeningGoalMinutes` persist directly to DataStore. **v3.11.0 explore-mode settings** lock the `RandomEnhanceMode` tri-state (`OFF`/`TIME_SLOT`/`EXPLORE`): nothing stored defaults to `OFF`; a legacy `mood_time_slot_enabled=true` without a new key falls back to `TIME_SLOT`; `setRandomEnhanceMode(EXPLORE)` writes `RANDOM_ENHANCE_MODE=EXPLORE` and **syncs the legacy switch to false** (explore is not a time-slot mode), while `TIME_SLOT` syncs the legacy switch to true — both read paths agree. (The `themeVariant` and `screenOrientationMode` settings exist on `PlayerSettingsRepository`, but only `themeVariant` is exercised here; orientation is not covered by this file's current cases.) |
 | `data/local/migration/LegacyJsonSnapshotParserTest` | v1 JSON snapshot parsing: song/playlist/group-override/play-stat prefix keys (`play_count_*`, `raw_play_count_*`, `play_duration_*`)/quick-skip songs and short-play counts; optional-field absence takes Chinese defaults; corrupt JSON recovers per-segment instead of failing wholesale; duplicate URIs dedup while URI-less songs are kept; playlist references point only at migrated songs and `sortOrder` is re-ordered |
 | `data/local/migration/SharedPreferencesLegacyJsonMigrationTest` | One-shot migration orchestration: all data writes to `FakeMelodyDao` and writes the `MigrationStateEntity` completion marker; corrupt JSON still migrates stats and still writes the marker (no retry); **an existing completion marker means a full skip** (zero writes) |
 | `data/util/LrcParserOffsetTest` | LRC `[offset:]` tag regression (2026-09-03 lyrics-live optimization, previously the offset was dropped): a positive value advances everything (`timeMs += offset`), a negative delays it, a missing/invalid value keeps the original timestamp, it applies to every timestamp of a multi-timestamp line, and blank content returns `null` |
@@ -289,9 +325,15 @@ Principle (AGENTS.md): **prefer the narrowest quiet verification** — change on
 # ① changing a planner / slot decision (the random-and-mood-slot regression floor)
 .\gradlew.bat :domain:test --tests "cn.com.dcsgo.mihx.domain.playback.RandomQueuePlannerTest" --tests "cn.com.dcsgo.mihx.domain.playback.UniformRandomPlannerTest" --tests "cn.com.dcsgo.mihx.domain.playback.MoodSlotResolverTest"
 
-# ② changing facade orchestration (incl. mood filter/degrade, infinite-play refill)
+# ② changing facade orchestration (incl. mood filter/degrade, explore start/refill, infinite-play refill)
 .\gradlew.bat :feature:player:test --tests "cn.com.dcsgo.mihx.feature.player.PlayerRandomQueueFacadeTest"
+.\gradlew.bat :feature:player:test --tests "cn.com.dcsgo.mihx.feature.player.PlayerMediaEventFacadeTest" --tests "cn.com.dcsgo.mihx.feature.player.PlayerQueueFacadeTest"
 .\gradlew.bat :feature:player:test --tests "cn.com.dcsgo.mihx.feature.player.PlayerPersistenceGraphTest" --tests "cn.com.dcsgo.mihx.feature.player.PlayerSleepTimerCoordinatorTest"
+
+# ②b changing explore-skip policy / word-listening votes / explore-mode settings
+.\gradlew.bat :domain:test --tests "cn.com.dcsgo.mihx.domain.playback.ExplorePlaybackPolicyTest"
+.\gradlew.bat :data:test --tests "cn.com.dcsgo.mihx.data.repository.WordPreferencesRepositoryTest"
+.\gradlew.bat :data:test --tests "cn.com.dcsgo.mihx.data.repository.PlayerSettingsRepositoryTest"
 
 # ③ changing the controller window / sync
 .\gradlew.bat :player:test --tests "cn.com.dcsgo.mihx.player.window.*"
@@ -303,6 +345,8 @@ Principle (AGENTS.md): **prefer the narrowest quiet verification** — change on
 
 # ⑤ changing the data layer / migration
 .\gradlew.bat :data:test
+# DB schema migration (Robolectric + MigrationTestHelper; needs the data/schemas export)
+.\gradlew.bat :data:test --tests "cn.com.dcsgo.mihx.data.local.migration.MelodyDatabaseMigrationTest"
 
 # ⑥ changing logging / tracing / permissions
 .\gradlew.bat :core:common:test

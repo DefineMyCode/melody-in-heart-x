@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "pageVersion": "sha256:7bd7cff86bcb4e077159ebcb7cf5acec7a72d0e91713d5a10d0905163088ce4e",
+  "pageVersion": "sha256:af26a94461c993605f8bd28ac9eafef752c6b780c6e1e36d45b826bca435448b",
   "claims": [
     {
       "id": "claim_d5c1de371efb4ac08e6bbd0206c8ce75",
@@ -111,12 +111,12 @@
       "statement": "Settings wires permission grants to player features (Bluetooth → initializeBluetoothPlayback, notification → setPlaybackNotificationEnabled(true), each with a success toast), and both permission requests must be user-triggered from Settings rather than at startup — a rule enforced by verifyProductArchitecture checking that the player startup facade contains no Bluetooth initialization and SettingsScreen keeps the 蓝牙播放监听/申请蓝牙权限 controls.",
       "evidence": [
         {
-          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/AppNavHost.kt#L950-L961",
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/AppNavHost.kt#L947-L958",
           "version": "repo-lines-v1:sha256:bc36fc48cf1cd257ae38cf9224bdbd37c0b456a3f1d84c9b8a0d5bc70d98892f:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjEwYTA3MGNhYjEyMTM5MWQ5NWIwNGNlM2NmNTdiNmY2MjRmMjNkYmNiMmUwYTMyOWFkNGQ0Yzg5NDA0MTM2ZWEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZlNGNlZmUxOGM2MDRlY2ZjNjNlYzE5NjkxNTU2ZGVkZTNiYTFkY2NiNzhhYmNhYmQyMDI4MjM0YjI3MjE0MTAiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjliN2M5NmEzNTU0Y2IxOTkyMTMwNTc1YjAxNmJhNWQ2OGJkMjBkODBjMTY5NzI2MGE0YWI4ZWQxYTIyOGQ2OGEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImY4ZjkxMDkyNDFjMTZmODUwZGY0YTRlYTExNjI4MmEzOWNjNDQ1YjE0ZDFhNDkwYzc4N2RlOWM0ZDEyNTNkNDkifQ"
         },
         {
-          "resource": "repo://build.gradle.kts#L334-L340",
-          "version": "repo-lines-v1:sha256:bc27044e1bf7d55bd52e296c28bf6ccf8028f0c8bd66b74507ab4145c0785f70:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNDA0NWY2YzQ1ZGZjYmQxYTU1OGZiNzE2ODg4YmNiOGVlNGE0Zjc4NDNiZjJkZTEzYjIyYzA5ODk5ZDlkZmZkZSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNzBmZWNiZWUzZjFkYTk3Y2MyYzc5MzRlZmI2N2VkODNkODQwM2VmYzAzZDI2YTRmYmE2OGJmOTVkNTBjYWI1OCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZWQyNzc0MmQxMGJkOTMzYjBlNDNiODQ4OWEzODVkOGUyZTIwNzY4ZTY3YjNmNTE4MjU4NGFiMjE4ZWZjOGE1MSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZjdkZDA5ZjU3ZGQxYjdlOWVlNWIyNWJmMTlkNGJiODA3MGRjYTFmOGRjY2ZhN2E5MGY0MGZmY2Q2MGQwMTkzOSJ9"
+          "resource": "repo://buildSrc/src/main/kotlin/cn/com/dcsgo/mihx/verify/ProductArchitectureVerification.kt#L340-L346",
+          "version": "repo-lines-v1:sha256:3e85634a5baa38d0d207bfd776ca82b154e9b59c6fec3bf5d9ac4ac8d59d96b2:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNDA0NWY2YzQ1ZGZjYmQxYTU1OGZiNzE2ODg4YmNiOGVlNGE0Zjc4NDNiZjJkZTEzYjIyYzA5ODk5ZDlkZmZkZSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNzBmZWNiZWUzZjFkYTk3Y2MyYzc5MzRlZmI2N2VkODNkODQwM2VmYzAzZDI2YTRmYmE2OGJmOTVkNTBjYWI1OCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZWQyNzc0MmQxMGJkOTMzYjBlNDNiODQ4OWEzODVkOGUyZTIwNzY4ZTY3YjNmNTE4MjU4NGFiMjE4ZWZjOGE1MSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNTQ1ODE2MTQyZmM1NTJhYjQ4YzY3YzdhODk0MmE4YzA5YWQ0ODJmYzVlMWJkZDU4NjlkNmQzNWIwMTc3NzdkYyJ9"
         }
       ]
     },
@@ -140,37 +140,37 @@
     },
     {
       "id": "claim_9c6b3a612b4042bdbd1e2116ed14c146",
-      "statement": "Lucky-play and infinite-play starts attribute mood-slot selection through toasts built from playerViewModel.currentMoodSlotName() (已按「{slotName}」为你随机播放 / 已按「{slotName}」开启无限随机播放), implementing the design doc's §4.5 anti-attribution-difficulty rule, and both actions settle the playlist source via playlistResumeViewModel.switchSource(null, …).",
+      "statement": "Lucky-play and infinite-play starts attribute mood-slot selection through the (started, moodSlotName) callback of PlayerViewModel.playRandomQueue / startInfinitePlay, not a currentMoodSlotName() poll: the AppRoot LuckyPlayEntryBar handler shows 已按「{slotName}」为你随机播放 and the now-playing surface's infinite play shows 已按「{slotName}」开启无限随机播放 (设计 doc §4.5 anti-attribution-difficulty); both settle the playlist source via playlistResumeViewModel.switchSource(null, …), and the now-playing lucky play shows the generic 已生成随机队列，开始播放~.",
       "evidence": [
         {
-          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/AppRoot.kt#L261-L271",
-          "version": "repo-lines-v1:sha256:162d40d5201dde0dfbc07c1432252bdce571743fbf3478c2cbbc7d4969e36a37:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjE5Y2E1Y2M5ODc2OTA1N2ZjNzNlMThkYWIwYTBjMTQ4NTQ3ZWFiMjc0NDVjZDg0ZWY4ZjlhZmYxNzMwMWMyNTUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImM0ODUwZGM4ZmJmMjFjNzU0N2UyNmRhN2I2ODAyMjA3YTFiNmYzMjU5NzZmOTFiYzlmNjQ5MDA4MTQ2ZDY2ZmMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjY0OTNkNzkyYTlmOWYxNzQ2ZGFmZDk1MDY0ZDhjZjcwMTAwNjZiMjZjYjMwYzhkNTYzODNkNDVlNGM2NjUzZDkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImU4NmEwZWJlMjg5MzRiMzQxZjc5M2QyMDQ4ZGRlM2FkMGZmOGY3ZDdiYzNiMTMyOTJhZjFlZjRmNjdiOTFlYWMifQ"
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/AppRoot.kt#L255-L267",
+          "version": "repo-lines-v1:sha256:c11e9ea3521d804a58577a3d2365e67de2b5e385c30ab83e77194c8a3726245d:eyJzZWxlY3RlZExpbmVDb3VudCI6MTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjE5Y2E1Y2M5ODc2OTA1N2ZjNzNlMThkYWIwYTBjMTQ4NTQ3ZWFiMjc0NDVjZDg0ZWY4ZjlhZmYxNzMwMWMyNTUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjkxY2E3YWJiNzg3Mzc2NTY1ODQxNzRlNjcyMGIwYjk1MGU3NmU0ZDlkNjJlMjdhODJiYWNkY2I4NGViNTZkYTQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjY0OTNkNzkyYTlmOWYxNzQ2ZGFmZDk1MDY0ZDhjZjcwMTAwNjZiMjZjYjMwYzhkNTYzODNkNDVlNGM2NjUzZDkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjA2NzBiNmZkZDlkYzBhN2JhYTU4MGVjYTg4YmMwNzNjNjUzYzZiMTA0NTNmNzQ1ZDM3MmRjMmZiNzhhNzMyMmMifQ"
         },
         {
-          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/player/NowPlayingSurface.kt#L122-L122",
-          "version": "repo-lines-v1:sha256:c48d1c8da36b96580dfc381347c7d22884c9c36656a08ac332ee8d7fb5893d53:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYzQ4ZDFjOGRhMzZiOTY1ODBkZmMzODEzNDdjN2QyMjg4NGM5YzM2NjU2YTA4YWMzMzJlZThkN2ZiNTg5M2Q1MyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYzQ4ZDFjOGRhMzZiOTY1ODBkZmMzODEzNDdjN2QyMjg4NGM5YzM2NjU2YTA4YWMzMzJlZThkN2ZiNTg5M2Q1MyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMTdjYzkwYzc0ZjE1ZDVhNWMwZWIwMTFmZTg5OTQzYzJlM2I2NDk0MDk0NTcyOGJlZDUzNmJjYWJhYTdlYWY0ZSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZWEzNGMwZDM5ZDFjZDIxNWYyNGNhMjJhM2NkOTVkNmEwZjVhNDFkZmRlNzc3NzZhNDdhZGQwMmFhMWY2OTkwMiJ9"
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/player/NowPlayingSurface.kt#L106-L126",
+          "version": "repo-lines-v1:sha256:b98b25f8d835df575c38abc9481e5132515da84efa7e73d30e8ca7fac06a6828:eyJzZWxlY3RlZExpbmVDb3VudCI6MjEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk5ZmY1ZTQzMmI0OGYwNWQ0ZGE0Y2UxMjQwMjBlNmM0ZGRlNmI1MWVlOWU4OGZjYmVmNzlhNjRlMGMzNjJmZjQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQwOTNkY2UwMmZhM2U1YzBiOGMxYzg2YWM2N2U4NzYzZTNhMjQ5YWFhZDAxZjlhOGVkZTJkNjcyNzE1MGJkNzgiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjUxYmQxMTZjMmNmODljYWZjNTViMDlmMzA2MjgwMTkwYjVmYzcwN2MzM2M4M2YyNGZkOTdiODc5NzhiODNmMTMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjA5Nzc2OGE1ZjhkMDgyMjg3NTFlMTRhYzRkNDA3MzY2YzdlNmQ1OWU3ZWE3MTE0ZjI2MGQ0MjM2MGQ4N2Q0MjYifQ"
         },
         {
           "resource": "repo://docs/architecture/MOOD_TIME_SLOT_PLAYBACK.md#L239-L247",
           "version": "repo-lines-v1:sha256:bf64487e710b84c2fb37948687d4867d917a70ca706b9908432887fba7f7338b:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNGQ0NWNlYTEwNzY3NzQwZTAyNTEwMDgyMTNiNGJkNWFhZGI0M2QxZWQxNzk3MzM1Yzg5NzZiZTQ2MWMxMTI0ZSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMmU2MDVlMDM0NDQ2ZTMxYmNkOTdmY2RkY2VhNGU3MTUzNzQ4NTRhZjdlOTA5NDAzYzlmZGZiMDg3NDViZWQ5MSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYTc2MTIzMjk5MTA0MTI4MGNjZjFhYTk0ZjJlNjY5MTAzOTE0MzFlOTYzOTBlODE1NTMzMzc4MTg2NmYwMjk4MCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTkwNGI2YTNlYzU3N2E4MTc4OTE0MTlkZmE3N2MwZjcyMzJkNTY4YjBlMDcwNjA5MDcyYmY0ZjIwZDg1NDM4NiJ9"
         },
         {
-          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerViewModel.kt#L347-L347",
-          "version": "repo-lines-v1:sha256:9bd1c630825a942c21acf6d04fbbdc3050929bfcb87627befdf63dd74ae5a319:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiOWJkMWM2MzA4MjVhOTQyYzIxYWNmNmQwNGZiYmRjMzA1MDkyOWJmY2I4NzYyN2JlZmRmNjNkZDc0YWU1YTMxOSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiOWJkMWM2MzA4MjVhOTQyYzIxYWNmNmQwNGZiYmRjMzA1MDkyOWJmY2I4NzYyN2JlZmRmNjNkZDc0YWU1YTMxOSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYjdmNTQxN2VmZDJhMTU0MzE5OGUxNjI0NDY2ZWY0YjYzZmUxMDYxZTJkOWIzNDQ1NjhlYWZiM2EzNzM5M2EwYSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMTAxOTZhNDQzYmIxZGM3ODIzMmYxYTQ1ZjY5NDI5NjllNDYzNjg0NWY2NjA3ZjNkYmZjYjY4NmRlNWYxOGI0ZSJ9"
+          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerViewModel.kt#L348-L370",
+          "version": "repo-lines-v1:sha256:7e9ddee0ff07093bc6d1a2a9c7121250706b73863527623df604a08ed7b278f5:eyJzZWxlY3RlZExpbmVDb3VudCI6MjMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjhjZmUwMjAxYWE5Y2Q1NjQ5NTcyYzZlMzViNjA0N2EwMzc1ZmM5YWIwMTFhNDAzODk1OTcyMzdjYTAyYTkwNWYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY1OTBiYTA1ZTA5NWE0ZDM4NzI3ZWFlNDA3MmZkNDUzOWJmNWUyNDEwNDViNzBmYWU4MmE3NmQxYWE1YzllNDAiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjY5NDU5NjllNjVlMjdjNjRhMjFhNzU1NmVjYmU3NGYyMGRiYjRlZTNiYTZlY2NjNzdjOWYyZDdlYTQ4YjM1MGUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImM5OWRhMTU4ZDA2MWVmZmZmYjVkYjM1YmFmMGFjMTFhNmUyODMzZTRiNTU2ZDc1ZTcwMjFkYjI4NDg0OTNkMzYifQ"
         }
       ]
     },
     {
       "id": "claim_c79ca25e7efe4d57ac45b94362cf35dd",
-      "statement": "deleteSongWithToast runs PlayerViewModel.deleteSong on a shell coroutine scope because the call is suspending end-to-end: PlayerSongDeletionFacade → SongDeletionCoordinator → MusicRepository.deleteSong runs entirely inside withContext(Dispatchers.IO) — it performs the SAF DocumentFile cross-process delete (deleteBackingFile) before removing the song from songs/playlists, persisting, and deleting its emotion rows — so the main thread is never blocked (no ANR); DeleteSongResult.Success/Failure map directly to toasts.",
+      "statement": "deleteSongWithToast runs PlayerViewModel.deleteSong on a shell coroutine scope because the call is suspending end-to-end: PlayerSongDeletionFacade → SongDeletionCoordinator → MusicRepository.deleteSong runs entirely inside withContext(Dispatchers.IO) — it performs the SAF DocumentFile cross-process delete (deleteBackingFile) before removing the song from songs/playlists, persisting, and (M-4) cleaning all missing-song associations (playback stats/events, quick-skip, short-play counts, emotion rows) — so the main thread is never blocked; DeleteSongResult.Success/Failure map directly to toasts.",
       "evidence": [
         {
-          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/AppRoot.kt#L179-L188",
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/AppRoot.kt#L173-L182",
           "version": "repo-lines-v1:sha256:a3a2a3a080c7b4d00c5d5ace0288282106bfc3095f1c34879ec785438f8fc8c4:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImI5ZTc5OThhZWViNjVmMjA2NmVjOTJlMmVlN2YxZWE1YjJkMzRkZjY3Nzc5MTVjMjc1MzE3YjJhNTFjNjk0YjQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImJlMTI4MDhiYmY5MDFmMWRhYzU3ZWNmNGZkMDVhN2FjZTAxMmIwODgzZTkzZmI4NGU5ODE1MWNmN2U1YTlkY2IiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImVkNTZjMzFmNTMzNjU1MDkxNjM0Yzk0NGFhZDIyMjc1YmQ2ZWJhYmNmZTdiY2E4OGY4NmVjYjAzZmM3YzFkYzQifQ"
         },
         {
-          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/repository/MusicRepository.kt#L770-L812",
-          "version": "repo-lines-v1:sha256:a0ef7cc353a4c1dd7cf1bbff0ff46a0d8be715c80e8915d374d207807f389989:eyJzZWxlY3RlZExpbmVDb3VudCI6NDMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk5ZTk4MzIyMGZjYzI1ZjBmY2Y5MjQ1OTA4M2Q3MjI1ODkxMTk3MmZkNDZjM2EwMTlkNTRkMGI2NmU4MDc2ZDEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjkzZDNmNDhlMmU0NzFhOThiZmU4YWU4YzczYzFiYmYwZDU5YTJhODQzMjJlN2U0MzhkODkzYTU5MWE3NWIyN2UiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjhmODc1NzlmNDJiOTQ2YmRjZGU4ZjVhMjBiMTNlZTE2N2Q3NjNjMmE3Y2M2NDFjNDk3NjRmMTE1ODljNmYyYzQifQ"
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/repository/MusicRepository.kt#L673-L714",
+          "version": "repo-lines-v1:sha256:4b12a1be48ba8bea8536a17439db1468b157da4f9de6342c4f19abc97f82d3db:eyJzZWxlY3RlZExpbmVDb3VudCI6NDIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk5ZTk4MzIyMGZjYzI1ZjBmY2Y5MjQ1OTA4M2Q3MjI1ODkxMTk3MmZkNDZjM2EwMTlkNTRkMGI2NmU4MDc2ZDEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjkzZDNmNDhlMmU0NzFhOThiZmU4YWU4YzczYzFiYmYwZDU5YTJhODQzMjJlN2U0MzhkODkzYTU5MWE3NWIyN2UiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjhmODc1NzlmNDJiOTQ2YmRjZGU4ZjVhMjBiMTNlZTE2N2Q3NjNjMmE3Y2M2NDFjNDk3NjRmMTE1ODljNmYyYzQifQ"
         },
         {
           "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerSongDeletionFacade.kt#L12-L23",
@@ -224,7 +224,7 @@
         },
         {
           "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/AppScaffold.kt#L86-L141",
-          "version": "repo-lines-v1:sha256:ee832d9976ef27c128fb39a89595f31616017024284c1399774295b9c7fabbcb:eyJzZWxlY3RlZExpbmVDb3VudCI6NTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZjZjIyNGI3ZWEzMGM3ZDI4YTgyMmNiNTUzNzRlZjlkODFhNTljMDFmMjFjZGVjNmI5YmI3ODQzYjFkMWVkODIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjA1M2NlZWM2ODZjNjg5MzFjYWE1ZTViYTNlNjJlYjYzM2IyYjJlYzM4YmFjYWI0NDVkZGEzODE0NDAxOTY2NmMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjM3OTI5ZTkxZTBmOTljM2U4MjVkZTY5YjQzNWZiNjQ4NGQxYjBhMWRmMmY0NjU2MWFiZjFhMjlmMDQxODhiODgifQ"
+          "version": "repo-lines-v1:sha256:abcac77da37bf0708c5d9c6156b90572f4705d129556e5d0430f5450d4d91fe3:eyJzZWxlY3RlZExpbmVDb3VudCI6NTksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZjZjIyNGI3ZWEzMGM3ZDI4YTgyMmNiNTUzNzRlZjlkODFhNTljMDFmMjFjZGVjNmI5YmI3ODQzYjFkMWVkODIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjA1M2NlZWM2ODZjNjg5MzFjYWE1ZTViYTNlNjJlYjYzM2IyYjJlYzM4YmFjYWI0NDVkZGEzODE0NDAxOTY2NmMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjM3OTI5ZTkxZTBmOTljM2U4MjVkZTY5YjQzNWZiNjQ4NGQxYjBhMWRmMmY0NjU2MWFiZjFhMjlmMDQxODhiODgifQ"
         },
         {
           "resource": "repo://docs/ui-design/DESIGN_SYSTEM.md#L474-L479",
@@ -248,15 +248,15 @@
     },
     {
       "id": "claim_fb56d9c8a0c74d2fa73dcc8983b162d2",
-      "statement": "Each :feature:* module exposes only XxxRoute (a public composable taking XxxRouteState + XxxRouteActions + callbacks) plus an internal XxxScreen; AppNavHost is the sole place routes are wired and cross-feature jumps happen — verifyProductArchitecture forbids feature-to-feature Gradle deps, requires Route/Screen pairs per feature, and fails the build if overlay-routing files (AppOverlay.kt / AppOverlayHost.kt / OverlayRoute.kt) are reintroduced.",
+      "statement": "Each :feature:* module exposes only XxxRoute (a public composable taking XxxRouteState + XxxRouteActions + callbacks) plus an internal XxxScreen; AppNavHost is the sole place routes are wired and cross-feature jumps happen — verifyProductArchitecture (m-10, rules in buildSrc ProductArchitectureVerification) forbids feature-to-feature and :data/:player Gradle deps, demands the :feature:home / :feature:lyrics / :feature:settings / :feature:user pages each own a Route/Screen pair, and fails the build if the overlay-routing files (AppOverlay.kt / AppOverlayHost.kt / OverlayRoute.kt) are reintroduced.",
       "evidence": [
         {
           "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/AppNavHost.kt#L200-L220",
           "version": "repo-lines-v1:sha256:6d368e9ce4ca050c37ca0d1b0440b7d5d146524710220ba968082ab20b31b660:eyJzZWxlY3RlZExpbmVDb3VudCI6MjEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4NGRkMTA1NzBhODhkZmMzYzY4MzBlY2EzYmFjMTY2Mjk5NDQ5ZDQ4ZDYxNmNiODA5YzljNTE2YzU0ZjJjZjgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjlhZTAxMWY1NjgzMTllOWJlYWUxN2I4NWIyMDY1N2ZmM2I5NTJjMmI2ZTIzMWUyOWY2Y2ZiZTc4NTM0MDVhYzMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImY3MDRlNzUwYjIzMjRkY2Y5YWU5ODM4NGU2NjY3MDE4M2Q0ZGZmNWZmNGVjMzcyZmE3OTRlZWRjMDM1OTJlY2UifQ"
         },
         {
-          "resource": "repo://build.gradle.kts#L281-L325",
-          "version": "repo-lines-v1:sha256:b86b9b5071b74bbad004843483fb245341c7023b8a4eb0455e3816c19b1720be:eyJzZWxlY3RlZExpbmVDb3VudCI6NDUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjVlMDFiNDY2YmFjYTA1Y2QyZjYzNzEwMGU0MWRmOGU5NGZhNGI2YjViYTRmYmU1YjZjZGNhZDI1ODk4MjBjOTYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU4MTljNzc5Y2NiODUyYjY1YzAyNDRmNTcwMjJhZTJiMzJkMTJlMzBkYWUwOTQwNzEzMzIxNTQ0MmI3MGUxZDgiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjIzMmM0OWM0N2JkMjg3OTI4Mzc3NzY2ZTM0YmI1NDcxYTkyYmFmN2FlMTZjOTgyYWM4MGY1OTRlNDA2MTk2ZWIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjJiYTY1MWM1ZDNjYTdiMmE4ZTNiNDYyMDU1Y2Q0M2Y3YzhkNTFjMTJjYWNkZjllMzE0NjhkZGM4ZDlhNzA5ZTIifQ"
+          "resource": "repo://buildSrc/src/main/kotlin/cn/com/dcsgo/mihx/verify/ProductArchitectureVerification.kt#L276-L330",
+          "version": "repo-lines-v1:sha256:3cc54d978ec15c9b5ddd526b5bed1c120e48325664ef5bf74d94c4b6655b2338:eyJzZWxlY3RlZExpbmVDb3VudCI6NTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjA3MjA3ODJkM2IxZDM4MTFhNjgwY2I4NGJiOTUzYzA1NTIxOTVkMGUxMWUzM2VhYTg4ZWMyNGRhYWFhOWJiYmYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU4MTljNzc5Y2NiODUyYjY1YzAyNDRmNTcwMjJhZTJiMzJkMTJlMzBkYWUwOTQwNzEzMzIxNTQ0MmI3MGUxZDgiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImEzNzI3YWMxY2I0ZDBjZjgyYzQ4MTc0OGFkYmZlNTdkODZkODAzMjRkNzcyYjhmMGQyMGViYjgxODZhMzgyNDEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjJiYTY1MWM1ZDNjYTdiMmE4ZTNiNDYyMDU1Y2Q0M2Y3YzhkNTFjMTJjYWNkZjllMzE0NjhkZGM4ZDlhNzA5ZTIifQ"
         },
         {
           "resource": "repo://feature/settings/src/main/java/cn/com/dcsgo/mihx/feature/settings/SettingsRoute.kt#L26-L44",
@@ -392,37 +392,19 @@
     },
     {
       "id": "claim_a688a32919c14399950c19d6195614f3",
-      "statement": "MoodTimeSlotViewModel observes TimeSlotConfigRepository configs and the persisted moodTimeSlotEnabled switch; loadStats() computes tag→song counts and library size once per config-page entry on Dispatchers.IO (degrading badges to zero on failure), save() reports overlap/zero-length validation errors through a (Boolean, String?) callback surfaced as toasts, and MoodSlotEditDialog receives the tag counts plus the manual-only tag list (鬼畜/沙雕/戏谑/荒诞).",
+      "statement": "MoodTimeSlotViewModel observes TimeSlotConfigRepository configs plus the persisted RandomEnhanceMode (randomEnhanceMode StateFlow, OFF/TIME_SLOT/EXPLORE) and word-preferences list; loadStats() computes tag→song counts and library size once per config-page entry on Dispatchers.IO (degrading badges to zero on failure), save() reports overlap/zero-length validation errors through a (Boolean, String?) callback surfaced as toasts, setMode switches the exclusive enhance mode with a SelectMode toast, and clearWordPreferences resets explore word counts — MoodTimeSlotRouteState carries mode + wordPreferences for the page UI.",
       "evidence": [
         {
-          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/AppNavHost.kt#L549-L611",
-          "version": "repo-lines-v1:sha256:d2140fbdb3c76bc392dd53354a38113c5d52c4b714d3c438a6141c9734447592:eyJzZWxlY3RlZExpbmVDb3VudCI6NjMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImE1NmZkYTg1NWJjODg5OTA1OGQ5YTg1ZDkyMmM4NzI3ZTgwNmZhMGEyYzRkMWJkMGM0ZTRlNmI2YTI2YzBkNmIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjZiY2IyOGEwNGY2MDA1YTBjNDMyNzA1Mzg4ZjRlYjJkYjkwOTY3MzQ3YTI2NWY4YmY5YTA4ZDA4OTg5MTQ2ODEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijg2MWVhMDdhNWY4YzA1ZWNhZGEwOThlNDA5MjgzOTAyMDEwZGI3YjViNGM5YTM3ZmI4Mzg4ZmZjNmM0ZTA0N2MifQ"
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/AppNavHost.kt#L494-L544",
+          "version": "repo-lines-v1:sha256:fae457811edce92646249bbce52b2772967ab063e0f5309802aad6c2d3ccc252:eyJzZWxlY3RlZExpbmVDb3VudCI6NTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImE1NmZkYTg1NWJjODg5OTA1OGQ5YTg1ZDkyMmM4NzI3ZTgwNmZhMGEyYzRkMWJkMGM0ZTRlNmI2YTI2YzBkNmIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU1MDMyZTk2NGQwOTMyMzUxZTVkMTg1MjY5MjgxYjE3MWEzYTA5YjA4YjI4NmU2NjFlYTQ3MDMyM2M4MmViNGQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjZiY2IyOGEwNGY2MDA1YTBjNDMyNzA1Mzg4ZjRlYjJkYjkwOTY3MzQ3YTI2NWY4YmY5YTA4ZDA4OTg5MTQ2ODEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjlkZWI3ZjY5NzU2NmU5MjQ1M2EwYWQ4NzllNzk3NjdjMmEwNTMxY2IzNzVlZTkyMGUwYWFhMjIzOTU4NDIzMjUifQ"
         },
         {
-          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/mood/MoodTimeSlotViewModel.kt#L40-L100",
-          "version": "repo-lines-v1:sha256:a38dc3a8bb10ac2b42bfd782582282483cdb8f3119e470498e41077c240b1f6d:eyJzZWxlY3RlZExpbmVDb3VudCI6NjEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZmYzQ4ZTgyMzkxMjQ5YmJlMmM4MzQwMDI3MzQ2YjdlZmU0MTdhMTgyY2E4OTRmNWMwMDM2ZDU0OTczNGJlNzkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImY5ZmFlODJhZTJlYThkYzhjYWFlMzA5ODA2YzIwMjAxNjcxMGZmMzcyMmZmMmI3ZjA2ZWI5N2RmMGZmNjk2M2EiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijc4M2Y4MWRiN2IzNzViZjlkYzMxYjYxZjdhZjIyNGE1YmVjZDMzN2M0M2Q3Y2MwYzkwMWYyZjE2ZGY4ZmU5MTcifQ"
-        }
-      ]
-    },
-    {
-      "id": "claim_dce2e22373584581afd80278938dc962",
-      "statement": "The player resolves the active mood slot from volatile moodSlotConfigsCache/moodEmotionTagsCache snapshots refreshed at startup (refreshMoodSlotCache) and falls back to full-library random when the tag-filtered pool is empty; the wiring seam MoodTimeSlotViewModel.onConfigsChanged and PlayerRuntime.refreshMoodSlots() exists for post-save cache refresh but currently has no caller, so config-page changes reach the player's random logic only at the next cold start.",
-      "evidence": [
-        {
-          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/mood/MoodTimeSlotViewModel.kt#L108-L109",
-          "version": "repo-lines-v1:sha256:4e2e336d96aeb473ec8cc1e68098208316ed7acc9270746d1380bf32adec560a:eyJzZWxlY3RlZExpbmVDb3VudCI6MiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYzM5N2U2MjhlMTNkOTA5ZjhiYTYxMjNkYjAzYWMwY2I1ZjJkMmFjMDUzNjIwM2EyOWQ3NDRmMGQzMWFkZDg0YSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDRhNjdkMTkyNTE2MzVmZThjMDgzODk2YzdkY2U1ZThhNTEzZmIzMjUyM2ZmYTI4NmU3MTU5NjFiNDhlM2E5ZSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiOTk5YmRlZmVlYWNhNjM0MGUwMjkwZGM4NmU4ODljODlkNWUxODlhYTViYTQ0YjU4NWIzYjcwNzM0ZjRhNjJkOCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjEsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNDEyY2EzNDVjY2Y3NWJmOWMwODA2YmNlNjk1YmU4ZGU4MDhiNzk5ODQyNTFhN2E1NGQyMDJjZjYxMDFkZDQ1MSJ9"
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/mood/MoodTimeSlotViewModel.kt#L46-L135",
+          "version": "repo-lines-v1:sha256:31396ab68ec73287865b3c9c0f60f0a4dbf70010697e16870cd0a2ce03567f54:eyJzZWxlY3RlZExpbmVDb3VudCI6OTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZmYzQ4ZTgyMzkxMjQ5YmJlMmM4MzQwMDI3MzQ2YjdlZmU0MTdhMTgyY2E4OTRmNWMwMDM2ZDU0OTczNGJlNzkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImJlNzQxNjAxYmU5MDJmZjA5MzVlYTNhYTVmYmRkNGMwYWZjMjZlYmE3MjQ3NTM1MTRmNjE2MjQxMGUzYjRlNDQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
         },
         {
-          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRandomQueueFacade.kt#L61-L76",
-          "version": "repo-lines-v1:sha256:641a2af88cd0dabfe6f23a976224cb7e7571ed9db8db892de51dae36fe672f58:eyJzZWxlY3RlZExpbmVDb3VudCI6MTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImI5ODAyNzQxN2Q3OTU5YzRmZWNjYWY2MWZhN2IyMGMxMzZlZmVmZjNhYmM5MjMyY2UzNzliYzQ2OGNhYTkwOWUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImJjYjkxZDkxN2IzMmMyYmMzM2IzNjcyNjk0ZDIwOTViYmQzYTRhN2IzOThmYTM5ZTc1ZjZlZGIwYWQ0MzNhNTkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjA3YzAwOTI1YTdhMjc0MzA0MGExNTE2MWQ1MTA3NTM2MDdjYzFmYzE0ODFmZDEzYWZkZWNkMDUzMDA2NzQ5ZTYifQ"
-        },
-        {
-          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRuntime.kt#L379-L401",
-          "version": "repo-lines-v1:sha256:02faa2323e3a820b1a41e505258f2aa8d1015f226f4779da82af6b49b78948b3:eyJzZWxlY3RlZExpbmVDb3VudCI6MjMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZjZWM1NmM4NmU3MGYyMzJjMmY0MzIxNDI2YThkMDE2NWU0OTc4ODg2YmQ1YmE4ZWU1OGRhZTIyNTUwMzBkYjMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjNlNWU3YWRkN2U4MDJkN2NlNTcwNGE2MTA4MTQ3MzQzMTcxMDUwNDg2ODU3MTQxYjk2YTZhMTFiN2QxODgwOTMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjBiOGEzMzM5ZDA4MWUzM2Y4ZmQyZDViZGI5ZGQyNmUwNGY5YjE5YTM1NDE0NjBlZTEyNmYzOWQzNzBiZTFjYmMifQ"
-        },
-        {
-          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRuntime.kt#L483-L485",
-          "version": "repo-lines-v1:sha256:74d1a176074acac990667d458495142a099695d7c3289d8705299c24db472413:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYzQ3ZjJjNGJhNzliNjA3MWRjMzQwMTQxY2MxMzgzNmQ1ZjA0YjhjNGVmODc2ZTczZjIyODY1Mjg2OTIyM2Q4MCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiODcxYmJlYmZlZDFhOTM2NzUzNjQ5ZjFiMDk5YjY1OWUyYTc1N2Y2ODBiMjAyZGY4ZjQ3ZmE4MWViNWZlMTM0OCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiODY2ZGMzZDI0YWEwY2UzZjViN2FlMWM4YzA1OTdkZjM5ZTEwMDY0NjUxZTA4MTcwM2E3MzU5MjljYjQ3NmIyOCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMTdkMGU4NTlhYjgwNGZmZTYyOGU1OGY3ZDBiYTRmZmYyMDg1NzU4OWIyNjQxZDUzOGFmNTJkNmMwNTExZjAzOSJ9"
+          "resource": "repo://feature/user/src/main/java/cn/com/dcsgo/mihx/feature/user/MoodTimeSlotRoute.kt#L11-L37",
+          "version": "repo-lines-v1:sha256:9845fb3d36901129efbb745b897e37ced873deae5f7a740a360a980b5ca33838:eyJzZWxlY3RlZExpbmVDb3VudCI6MjcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk3MjJmNjFlOTUyZDU0YmU5YzAwMDQyOTVmOWJlOGU5Zjg3NmU5NGNmMDdmNzgyZDE0NTQ2NTQxMDZjNTUwNjYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZhZmJhMDUyN2MzOTUzYzRiNmUwZTViNTczOWJhODM2MTJmODA1M2JjZGM5NDY2NzMwMTkzY2QxZDU5MGI0MDgiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImZiOGMzYTFlNDcyMDMyMTM4NjA3OTAxYTI4YjhiZDg0ZjAyMmY0Y2E2YjUzMzg5OTlhMTM0OGI2OGNiMGJiNTAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjAyYzljYTM4NjQyNDc1NDdkZjJkMmViOGRkYjM3ZmQ2NjBhYzdhYTI3YTc1YjllNjdlOWY0NTZmMDQ3NmVmNDEifQ"
         }
       ]
     },
@@ -457,10 +439,64 @@
           "version": "repo-lines-v1:sha256:c5de98942b6967d47c95d0975d1214328eb41393fab55c5b45ce0ab7d4082c6d:eyJzZWxlY3RlZExpbmVDb3VudCI6MjMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImUwM2E0ZWIxOTA1ZDIyOWUwN2Q1MzhiYWRkNWZiMzE5ZjJmZmQwMjUxZjMzZTY2ZjBkNzkwNzUxYTNmZjhkNjAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjhlZDVlYjJmZTQ2OTFhNTYyZGU2YTg5YTg3MmJjMjI2OWNhMWIzN2U2OTczNzQ2NGU5YmNlYWQ0N2ZjMjE2Y2IiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjQwYWYyODI1MjRiNTg2ODQ5MTU5MDkxZTQ4ZDgxZGE0M2VkMTEyMTQyZTllZWI5M2UwZGYwYzUyMWI3ODk4ZjMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImNhODU0MjRmNjkzNjdmYTY3OTM5N2IyOGIxNDMyNmI2NGI5MzUwMGRiMjQwYjJjNGEzYzExNjhjMmY2NDdkYWUifQ"
         }
       ]
+    },
+    {
+      "id": "claim_d5f0b55be7e64431aaef3c0ca2c5b1ff",
+      "statement": "Since 2026-10-20 the 随心播放增强 feature is driven by the persisted RandomEnhanceMode enum (OFF/TIME_SLOT/EXPLORE) surfaced by MoodTimeSlotViewModel.randomEnhanceMode for the config page; PlayerRuntime observes the same repository flow to set PlayerUiState.isExploreModeActive and, when the mode leaves EXPLORE during a running session, calls randomQueueFacade.stopExplorePlay() to exit it immediately.",
+      "evidence": [
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/mood/MoodTimeSlotViewModel.kt#L49-L51",
+          "version": "repo-lines-v1:sha256:f2c6ad559beff38ef1e1094686f7cbe0a6b7b739edcc6411771bcacae02d624b:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYTU3ZGRiNTlmMzI3OGZmM2U4OGFiYjkxYWUzOGE0ZDJiNDU0ZDZiNzQ3NzM5NGI4ZmYzN2VlMTVjNjEzMjM1ZCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYzgzZGY0M2VmZTZjNDcyYWZlNmNiMTk1ZDc3NjM2YjM5MzZkMDNkOGJmM2FlYTZiMmZkN2ZlZmRmMTZiZTk4ZiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNWQ0NDQ0MTI3YmJkNmQyNDk0NTAzZGRmYWJlOTU1NmNmYTVhNTkxYTk3ZTgyMWQ4NWI4OTVmMzg5MjYzMjBiMSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYTg1MWRkOTM2NTdlOWRiZmYwODQ1MGIwOWI1ZDMwMWNhZTgwNzQyOTY0MGQ1YTBkZTczNzVjZmYxNDMyYTIxZSJ9"
+        },
+        {
+          "resource": "repo://core/model/src/main/java/cn/com/dcsgo/mihx/core/model/RandomEnhanceMode.kt#L9-L16",
+          "version": "repo-lines-v1:sha256:6414f87c78c4f8624cf06bb399684f4e8505dbef80bb7a405eecca3b494e4be1:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZjNhMzE2MGQzMTFmZTI3NGMyZjkxMzEzOWVlOTg3ZTkzNmUwOWQ1MGJjZTg1NjgwMGRiYzBjODlhMmMxYzM0YSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDEyY2EzNDVjY2Y3NWJmOWMwODA2YmNlNjk1YmU4ZGU4MDhiNzk5ODQyNTFhN2E1NGQyMDJjZjYxMDFkZDQ1MSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNTQzMjI0OGQzNmI5Zjg2Yzc5NDllODYwZjE1MzdjODEwOWE1NDk3N2Y1MTZiZTRkYWIyMDExZjAzMGNlNzEzMCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjAsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSJ9"
+        },
+        {
+          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRuntime.kt#L445-L464",
+          "version": "repo-lines-v1:sha256:43f4cb5a7bfb8dd34b47332709f3d7e0164c66c3977c6c2473d9a763d6b68655:eyJzZWxlY3RlZExpbmVDb3VudCI6MjAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImNlNDEwMGJmNzM0ZGYwN2EzYWRlMzNhY2E0MTlhY2NiYmM3Y2E2Y2M1OTZhMDllNDIxNWM3ZTQ1NzRlODE3M2YiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjI3MWY0YmI5OGIzYmYyMWRmMmE2NDBlZmEzYjQ3ZGY3MGVlZjA0Mjc3NTk0MDM0MjRiMmI5ZmE3M2E1NDQ1ODEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImRmNDZkY2E1MzU3OWFiMmI3YTBmNGQ0ZTFkNjdhMjI4ODY2MzEwYmQ4YmE4MmZmMzI4YmZkODExZGZhMTQ5N2EifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_940ad582ad9840e58d90605929051e98",
+      "statement": "Explore play (RandomEnhanceMode.EXPLORE) is carried by PlayerRandomQueueFacade: playRandomQueue generates a fixed 10-song batch and sets isExplorePlay on PlayerUiState (surfaced as HomeRouteState.isExplorePlay); infinite random play is disabled while an explore session runs — the HomeRoute onInfinitePlayClick instead opens the 探索播放中 dialog — and the queue auto-refills 5 songs favoring liked / avoiding disliked words when it drops to 1; explore listen feedback accumulates WordPreference votes into wordPreferenceCache via short-skip detection.",
+      "evidence": [
+        {
+          "resource": "repo://feature/home/src/main/java/cn/com/dcsgo/mihx/feature/home/HomeRoute.kt#L120-L132",
+          "version": "repo-lines-v1:sha256:9f2ce68867e2326a64bff7b3170921eb5c8c52f85a16a26bacdc552276b28f8e:eyJzZWxlY3RlZExpbmVDb3VudCI6MTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ2NjdiYTAyYzEzM2NhM2QyZDMxYTYxNDdjOWIyMTUyODNhNTBmYmIwNGYxYWUzN2Y4OWY3NmFlNGRmNWE1ZTkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjFlNjczYWJkNDU3YTk3ZWVhMTdhNjAwNjJlYjBmYWVhNmJkZjA5NDg2OGNjNmI4ZjhjMGViZGEyZjYxZWQ0MmYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImI4YzU4MWU0NjhiNGZhOGVlYTQ0MmFlNzhhM2NiYTMwYjQ0YTZhZTM4MjNlMmQ2MzMzZTIxMDRkMjM2YjNmMTkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImQ4MjMxOWZmYjVmOWQxMzI0MWM4YjU5MGI3M2U3YTk1N2UyOGU3NWIwYTlhYWY1ZmI0NDVkOTNjY2ExZTkyY2EifQ"
+        },
+        {
+          "resource": "repo://feature/home/src/main/java/cn/com/dcsgo/mihx/feature/home/HomeRoute.kt#L63-L81",
+          "version": "repo-lines-v1:sha256:1f622417a03840cef9deb638b9bbe4058e2d830b05ee5980e46b48d7bbce92f1:eyJzZWxlY3RlZExpbmVDb3VudCI6MTksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImE2ZjM4MzcyZGUwMjA4ZjNjMzYxNmUxNjgwZWNmMTRmYjM2Mjg2ODdmYzEzZjU1ZDNlYmU4OTI3ZDA2ZmZmYzAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjMzODA2OGJkNGQzMWMwYTIzODY2ODNiYzU1YjRmNTQ4ZWM2Y2YzMDk0YzgwMmUxMzk2MzczZTgwNmJlOGQ4OWEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImQ5ZDM5YjExYmJlY2E2MDBhMmUxZjFlNDZkOGQzYjNmYmM5OGUwMGI2OTJhMWI4MDYyZjgzYjExNzBiYjhiYzIifQ"
+        },
+        {
+          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRandomQueueFacade.kt#L95-L101",
+          "version": "repo-lines-v1:sha256:cd601c2678397babba1ce3fa132d13d650037b4eed2adc1d1cb424921bcb4674:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZDc0MzhjMzE2NTI5MWU5NzY4OThhNzNhNTYwN2YzNmFiODQ1NTVmNTE1YzFmMTVlMzBlNGVlMWVmMTU5M2NmMCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDNkMjJlYTEzZmE0OTMzZDNkNjEyYTExNGNiMzk0MzAyYjBjZDMyMDMzNzIxYjc4YWE2ODc2YjdiMTNhM2IwZSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZDA3ZjQyNWIzODE4ZWRmZDk2ZGEyNTFmYjgxMjZmMmQ4OWMxYmNkOTBiNGNlODkxZGMxNGM3MDdhZTk4OTUxMCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiODcwNGU2NGVkYWI3NDZiZGMyNTBhNjAzNWIwNDA2ZmIyNWVkY2E3Mzc0NDQyYjQ2ZTljNTA5OGVhZDVhNWU2NSJ9"
+        },
+        {
+          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRuntime.kt#L415-L444",
+          "version": "repo-lines-v1:sha256:282fcfbce3be18112cff4356169fc96b165e75f350df8ed9fb44e77a05d4b126:eyJzZWxlY3RlZExpbmVDb3VudCI6MzAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQwMDVlZDJiMWEwYjAxMjEyYzY2NmFhMzFlZmM2NmZjODMwYTA5YzFhZTk3ZTE3NmVkMmQ3NjVlZDVmMmNhYTAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjNkZWI1ZTVjNjkwNzZjMjNjYjdlYmJlODgwZWU5ZGFlNjNmZjAzOTEwNmM1YzE0ZDAxMjNiOTc5MDZkZWE0YTgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImZkNTI1ZmE3M2NjNzhlMDFjZjRhN2Y3YzVmMTY2MzQyOWI4MjQ3ODI4NWIyMGI1YmRhMWM1MDFhMmNiNGU4YzcifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_e298462293c94a9caa023b5b97762dae",
+      "statement": "The player's mood-slot/enhance data is no longer a startup-only snapshot (M-2, review 2026-10-15): PlayerRuntime.observeMoodSlotCaches continuously subscribes to TimeSlotConfigRepository.observeConfigs(), SongEmotionRepository.observeAll() (mapped to tags on Dispatchers.Default), WordPreferenceRepository.observeAll(), and randomEnhanceMode, so config saves/deletes, new emotion analyses/calibrations, and mode switches take effect without a restart; the PlayerRandomQueueFacade is wired with moodSlotEnabled == TIME_SLOT and exploreModeEnabled == EXPLORE (via first()), and the old manual onConfigsChanged/refreshMoodSlots refresh seam no longer exists.",
+      "evidence": [
+        {
+          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRuntime.kt#L422-L444",
+          "version": "repo-lines-v1:sha256:e031d5a4ea341daae0e41087aba6f80f96c7d552952f1b419abe60931c1772c3:eyJzZWxlY3RlZExpbmVDb3VudCI6MjMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImJkMmE1ODkyOTFhMjJjZjc4NWIwZjI5MmYxZWZhYTU2Y2EzNmNhY2E0MmJiOTc4OTU4NzYwNTU0Njg2YTRlZDYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImIxNjY4OWE0ODMwMTE3M2M3NWQ3MjRiNzQ4NmVhZDI4YzM1ZWVkZTIwOTcxNWM5MDFjMjRiYTY2MjhjZDJjNjMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImZkNTI1ZmE3M2NjNzhlMDFjZjRhN2Y3YzVmMTY2MzQyOWI4MjQ3ODI4NWIyMGI1YmRhMWM1MDFhMmNiNGU4YzcifQ"
+        },
+        {
+          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRuntime.kt#L467-L483",
+          "version": "repo-lines-v1:sha256:29d03cb97e21a1dde1c188b118eb25ff0273f85a14b1f725ed5bd214aa6deb27:eyJzZWxlY3RlZExpbmVDb3VudCI6MTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjliNmMxOGZmMDhmZjcxMGMzYTUzYmVkMzQ1MTNjYzIwMDJkODM3MzAzOGJhZGE3MTJjYmNmN2ZlZTRmNzNiYjIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjMwYzFmMTg4ZjE0MmVkN2E4MjQ2ODBiMjA3MTcyYzU1MTliYzYxNGE0OGZkYTdjZjE2N2VkYjhkZGY3OTk1NmMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk5OWJkZWZlZWFjYTYzNDBlMDI5MGRjODZlODg5Yzg5ZDVlMTg5YWE1YmE0NGI1ODViM2I3MDczNGY0YTYyZDgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjgwMjgyZjU2ODQ1YjdjMTk5NGZiMjU2NzM3NDRlZThhYzU2NGJjOWM3NzQ2ZTJjMDlmNTUxNmZkNzUzNWMyZWIifQ"
+        }
+      ]
     }
   ],
   "verification": {
     "by": "openwiki/0.5.0",
-    "at": "2026-10-10T12:13:02.139Z"
+    "at": "2026-10-21T03:20:08.093Z"
   }
 }

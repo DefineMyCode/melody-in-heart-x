@@ -1,14 +1,14 @@
 {
   "schemaVersion": 1,
-  "pageVersion": "sha256:e13ef34d527b33b187164b4ac518b521c043778d37cb6e1ee414379950bc2f13",
+  "pageVersion": "sha256:d6394bb0af01d0ec741f3fbea14a635bf32f5a065dbbbee8e44a44a20d3b200e",
   "claims": [
     {
       "id": "claim_466622531e04474fbe41f37e24ac9842",
-      "statement": "The project registers exactly 15 modules in settings.gradle.kts (:app, :core:model, :core:common, :core:ui, :core:skin, :domain, :data, :player, six :feature:* modules, :benchmark), which is the same list verifyProductArchitecture requires; each module must keep a .gitignore with /build/, /.cxx/, /.externalNativeBuild/, /captures/.",
+      "statement": "The project registers exactly 15 modules in settings.gradle.kts (:app, :core:model, :core:common, :core:ui, :core:skin, :domain, :data, :player, six :feature:* modules, :benchmark), which is the same list ProductArchitectureVerification requires; each module must keep a .gitignore with /build/, /.cxx/, /.externalNativeBuild/, /captures/.",
       "evidence": [
         {
-          "resource": "repo://build.gradle.kts#L76-L92",
-          "version": "repo-lines-v1:sha256:d4b652714e00f492d36fda68b4b684f6704fa9371008e33e494e6834bfbf1676:eyJzZWxlY3RlZExpbmVDb3VudCI6MTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU3MzRiZDA4YTk1ZmVmNzI0MjRlYjUwNmM4NGMzYWI1NGI1MGE3OGI3MTEyODgxODcyY2E3YzRhY2JmOWZkMWEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU5MDlhNTNhNjE4ZDAyOGUxZDMwMDBjMGE3YWJjZWVjYmU1ZmIzN2Y0ZTUxMWVmZTQ2NjQzZmFkNmU2Njg3MmYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImM4OTczYjE2ODgzZTU3NWU0YWFlNDg4YjE0OWNmMTQ0YWUzZjk2MTRkNzg4NjdlMTExMzk2ZWVkZDk5YWYwYzkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImM5MzQ5ZWE5MWQ2ZjZmMTZmZWY3OTE2OWJhMDU1YTJmN2E3ZWQ1MjI2MGVjMDliMzFjOWFkNzk1NGY4MDdlZmQifQ"
+          "resource": "repo://buildSrc/src/main/kotlin/cn/com/dcsgo/mihx/verify/ProductArchitectureVerification.kt#L74-L110",
+          "version": "repo-lines-v1:sha256:46f58efa98e9147e7b0ae871d8c206850c6974bdd12776bfd314ec0b6ef5bca7:eyJzZWxlY3RlZExpbmVDb3VudCI6MzcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU3MzRiZDA4YTk1ZmVmNzI0MjRlYjUwNmM4NGMzYWI1NGI1MGE3OGI3MTEyODgxODcyY2E3YzRhY2JmOWZkMWEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU1MjJjNDJjZDE5YzZkMDNkODA4YzQ1MjcyMDU1MjgyNWI3ZWExYzViNDkxYjIxODUxMWNhYzc0MTVjZjlkOWIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImM4OTczYjE2ODgzZTU3NWU0YWFlNDg4YjE0OWNmMTQ0YWUzZjk2MTRkNzg4NjdlMTExMzk2ZWVkZDk5YWYwYzkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjY2ZTBmMGEwOTU4ZWFmN2QzMGY2NjVhMjNkNzM3OTc3ZjNjMTg4ZjczZTcxMzMzZDU5M2U1YzZkNzdmMWQ5N2UifQ"
         },
         {
           "resource": "repo://settings.gradle.kts#L22-L39",
@@ -18,10 +18,10 @@
     },
     {
       "id": "claim_7513def36a2b4a7b831c32cb74a816c1",
-      "statement": "Feature modules may depend only on :core:model, :core:common, :core:ui and :domain; no feature build file declares project(\":data\"), project(\":player\") or another project(\":feature:...\"), and verifyProductArchitecture fails any build file that adds them, so cross-feature navigation must be routed through :app.",
+      "statement": "Feature modules may depend only on :core:model, :core:common, :core:ui and :domain; no feature build file declares project(\":data\"), project(\":player\") or another project(\":feature:...\"), and ProductArchitectureVerification fails any build file that adds them, so cross-feature navigation must be routed through :app.",
       "evidence": [
         {
-          "resource": "repo://build.gradle.kts#L270-L290",
+          "resource": "repo://buildSrc/src/main/kotlin/cn/com/dcsgo/mihx/verify/ProductArchitectureVerification.kt#L276-L296",
           "version": "repo-lines-v1:sha256:43c03a4d0712539b16794e3422fd2813cfb6d3008f30f90e208215a8d9ce4a10:eyJzZWxlY3RlZExpbmVDb3VudCI6MjEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjA3MjA3ODJkM2IxZDM4MTFhNjgwY2I4NGJiOTUzYzA1NTIxOTVkMGUxMWUzM2VhYTg4ZWMyNGRhYWFhOWJiYmYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImEzNzI3YWMxY2I0ZDBjZjgyYzQ4MTc0OGFkYmZlNTdkODZkODAzMjRkNzcyYjhmMGQyMGViYjgxODZhMzgyNDEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUyZTgxNDNjN2FlZDE2YjcyN2Y4NGVhYTg0MDMxNzNhOTU0MzU0MmNlMGJiMTVkMjdhYTVkMzc3MTljYTlhMjEifQ"
         },
         {
@@ -35,12 +35,12 @@
       "statement": ":player and :data are symmetric middle layers that each depend only on :core:model, :core:common and :domain (plus platform libraries such as Media3, Room, DataStore and Hilt); neither depends on the other or on any feature module.",
       "evidence": [
         {
-          "resource": "repo://data/build.gradle.kts#L25-L39",
-          "version": "repo-lines-v1:sha256:b8a37deb6c08b2b159b53d1631d078da696aa05daee31f0e43a6d200f1e39175:eyJzZWxlY3RlZExpbmVDb3VudCI6MTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImNiYTMxNDVhZWUwZGEwNTkyNGQzYWQwYjFlZWI0YWRlNzc2MWI2NjdkOGE5NjE0NmRlZWYzOWFiZDFjZTQ4Y2IiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjE5ZTc2MzU1Y2YxMTk5NDgwYzNmOTk4MzZiMTQ4NmM4NDFkODkxZmFhZDkwNGM2MDhlMDkzMDIyZDM3NTdhZWUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImM2MzY3MDRjZGZhYWZiNmMwZWY4Njk3ODA4NjUzMmI1ZTk4ZjUxYmZhNjA5ZDdiMjc5NDBhNjFmNWQyMWE0MDEifQ"
+          "resource": "repo://data/build.gradle.kts#L37-L40",
+          "version": "repo-lines-v1:sha256:ea8f9ebb95e6b6f85098881e867c1ddbc024965f26e6606287124853fb424de1:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiY2JhMzE0NWFlZTBkYTA1OTI0ZDNhZDBiMWVlYjRhZGU3NzYxYjY2N2Q4YTk2MTQ2ZGVlZjM5YWJkMWNlNDhjYiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDVhNGFmNzBlYjI5MTYwNmQxNDgxNWRlN2E1ZjE4MzQxYWVhYTRmY2E4Mzg3ODQ4YmMwMWNkZjM0YTE2YTlkOSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMTllNzYzNTVjZjExOTk0ODBjM2Y5OTgzNmIxNDg2Yzg0MWQ4OTFmYWFkOTA0YzYwOGUwOTMwMjJkMzc1N2FlZSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMTcwZjFmNThkOTg0NGMyNDNlNGZkMzNhMjhlZDBmMmZmMjBlYWQyNWNhZTY4YTJjYzhiYzEyZGU3N2U4NjgyMyJ9"
         },
         {
-          "resource": "repo://player/build.gradle.kts#L25-L39",
-          "version": "repo-lines-v1:sha256:4ce6749b984eeace2d09dc24bc43b3d4bdb9dc5f0486bf426724d3c6f8244467:eyJzZWxlY3RlZExpbmVDb3VudCI6MTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImNiYTMxNDVhZWUwZGEwNTkyNGQzYWQwYjFlZWI0YWRlNzc2MWI2NjdkOGE5NjE0NmRlZWYzOWFiZDFjZTQ4Y2IiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjJlNzNlYTUzMGIxZDYyMTU0MWI0ZGJhNWRhMjJmMGFlYjdkOGZkZTA4OTk3MDExYWRlMTMyMTBiYjYyNjdmYjIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjE5ZTc2MzU1Y2YxMTk5NDgwYzNmOTk4MzZiMTQ4NmM4NDFkODkxZmFhZDkwNGM2MDhlMDkzMDIyZDM3NTdhZWUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+          "resource": "repo://player/build.gradle.kts#L25-L40",
+          "version": "repo-lines-v1:sha256:10e70269a9126724c63621e1db175b4b2ec481503cb69818e629147972e8bffa:eyJzZWxlY3RlZExpbmVDb3VudCI6MTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImNiYTMxNDVhZWUwZGEwNTkyNGQzYWQwYjFlZWI0YWRlNzc2MWI2NjdkOGE5NjE0NmRlZWYzOWFiZDFjZTQ4Y2IiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjE5ZTc2MzU1Y2YxMTk5NDgwYzNmOTk4MzZiMTQ4NmM4NDFkODkxZmFhZDkwNGM2MDhlMDkzMDIyZDM3NTdhZWUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
         }
       ]
     },
@@ -88,7 +88,7 @@
     },
     {
       "id": "claim_8b5a820b7a8d42c89201ee5e8bf4b38d",
-      "statement": "Hilt product assembly is anchored at four verified entry points: MelodyApplication (@HiltAndroidApp), MainActivity (@AndroidEntryPoint), AppMediaSessionService in :player (@AndroidEntryPoint), and PlayerViewModel in :feature:player (@HiltViewModel).",
+      "statement": "Hilt product assembly is anchored at four verified entry points: MelodyApplication (@HiltAndroidApp), MainActivity (@AndroidEntryPoint), AppMediaSessionService in :player (@AndroidEntryPoint), and PlayerViewModel in :feature:player (@HiltViewModel); the gate checks each file keeps its annotation.",
       "evidence": [
         {
           "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/MainActivity.kt#L10-L18",
@@ -99,26 +99,30 @@
           "version": "repo-lines-v1:sha256:fdb98a871f47a9936e9fb35ebdfa76a7bbab1d468661d7ddb5a84417c417ac1e:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMGU2ODY5YTlhZGY1Njk5MDA3YjIzMTdhYWE2MjM2ZTY2MjRlZTBiMjlmNDRhOTNkNDk4NDI4ZGI5NTdlMWE0YiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDg5M2Y0MGUzNzgxZWI4OTZjODJkMDQ2YTA4MDY3YTExZTM1Y2RmMmYxZGZhZjI2ZmVhOTBiOGRiNjY3NjQxMyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiOTk0ODgyYWEwNjUzYjE0N2RhMmU0ZGMwZDYxY2U3NTU5MDQ0N2IxODlhYWEwOTU3MDg3OGY5Y2I2MmJiODExNCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiOTU0MmNlMWIxNWJlYjRhNWYwNTNjNTQ1MTM3Y2JjYmMyZmM4ODM4ODhjNjYwZTIwYTIzMmIzZDliZjdjMTA4ZSJ9"
         },
         {
-          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerViewModel.kt#L32-L35",
-          "version": "repo-lines-v1:sha256:3bde638720e59fd2db9e628563ac54b1ae090273b50a5e3672838fb401d382a0:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiOWJmYzNjMTlhNTU4OWI5ZTJmMTA2MTFlMWRmNzA0OWUxZDA2MGZiZWY4OGQ2ZDk0NDllZjNjNWM0OGIxNWFmMyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZDlhMDllZTM3ODQzYzQ1NTdiZDgxYTkwNWFmNWNhZmY1ZDhhMDJmOWJiNDhmMDcwNDYyZjA5MGI3ZjMxMTMwZiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNGRiYTg3YzQ0YzRlN2U5MjIyNGEwNzg2M2IwYjU3Nzc0NTExMDFhNmM4ZmRkZjE2ZDczNzc4NmI4YTk5NWVkZSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNWNmMDZjZjA0Y2U5MTJlMDI5MzYyM2Y3MTVkODVlODRjMzNiNTNiMTAxZTI5NDU5NjhjOTFkMjZlYmEyNDYxYiJ9"
+          "resource": "repo://buildSrc/src/main/kotlin/cn/com/dcsgo/mihx/verify/ProductArchitectureVerification.kt#L112-L123",
+          "version": "repo-lines-v1:sha256:4830c9ee1d200a9551f5c4e167f41ac2ef6b037a5216d4a19533d643f331ac7f:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImI2OTk0NGE0NjVlMTZjM2M4ZGZjMmU0OTYyMWZkNDUxY2I2ZTA4MmY4OWIzYjhjY2Q3YTNhMGMwNjRiMjRmYzYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjE3NjFiZjRiZTFiMWZjOTM5NDEyZDdiNjhhY2VkZmUyNjNjMWNiYzIyMjMxMjEyZGYzOTA5YzcyMjljZDE2ZWMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjJjYzhlOWQ2OTA2MWIxNDVlNjNlN2U0OGUyOTdjZGE3ZWNlOWVjOTk4YjkxZDkyZTFiYTc0NzE5OTJiZWQyNDkifQ"
         },
         {
-          "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/data/player/AppMediaSessionService.kt#L25-L48",
-          "version": "repo-lines-v1:sha256:f557f876d75bcf20d3c7426bc90abe875ab1d1a71a47956c552c2b293d741a49:eyJzZWxlY3RlZExpbmVDb3VudCI6MjQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM2NzdiYTcyYWQxMjNjNjBiNTY4ZDdhZmRmYjVlMDk3OTJhYjAzMTE4MWZiZThiNTlmYTEzOWVlMjE2MmQ3MzQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQzYmNkYzcxNTJjOTRlOWYzMTVlNjJkODFjMTA0NTc4ZjYzMGNhM2UzNDM1ZDRjNzc4YWFkOTQ3ZjY3MmM4YjgiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImNjMjYwZmY4ZGY2NWJjODc0ZGEwOGM3YTkzZmYxOWQ5MDZlMzVkMjI2NTE5Yzc2NTNlYmQzNmVhMmIzODkzOWMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjMyMTAwMjViODcyY2RhNTUyNWMxN2M1MGZjMDU4NGI4Y2RhZmJlOThkZDBiMDk3NmI5YjNmMmNkZWE0ODI4OGQifQ"
+          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerViewModel.kt#L32-L35",
+          "version": "repo-lines-v1:sha256:b15b63b5bebc6d17eeb444cb82cae04ff37e057c7531294e1d2cc63061b972ac:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiOTcyYTQyOTM4MmIyZTE0NzE4ZTBlMzdiMDU3MGE4YTE3MDI5OTFmY2Q4NDk4Y2Q4NDA2MGE4YmY0ZjA1MDE3YiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiOGZjYTlmZmI5YjZkMWUxYmFlOTRiMTQyZTFjMDU0NzM2Mjc4Y2NlMDRiNzk4YmRkODVhN2Y5OTI3MWRiZDQyMCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMjBkOTFmMTllNWVhNTgwNzJjNmM3ZTkzMDE1NjdjNmEyYTg5NjdmMjJiYmJlM2U5YzlhNGRhZTA0NjY5YmQ0ZiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYmYxNzE0ZjhiMzIyNGJkZTlhMGMxNWEwYjY5ZWU0N2Q5Y2VjNmMxOGE3YzRmOTRhY2UwYjgwMWY1ZGU0OWU0OCJ9"
+        },
+        {
+          "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/player/AppMediaSessionService.kt",
+          "version": "repo-file-v1:sha256:4f6ac3d1873687ef903e7b708979abad161af36ec1d715b3ef04b12957b0559f"
         }
       ]
     },
     {
       "id": "claim_b63792425481439fa1d2b6b1413eee5f",
-      "statement": "Seven SingletonComponent Hilt modules exist and are enforced: app/di CoroutineModule, LoggerModule, PlayerModule; data/di DatabaseModule, DataStoreModule, RepositoryModule; plus player's AppCoroutineScopeModule, which provides the @ApplicationScope process-level CoroutineScope so playback-snapshot persistence survives service destruction.",
+      "statement": "Six SingletonComponent Hilt modules are enforced by the gate (app/di CoroutineModule, LoggerModule, PlayerModule; data/di DatabaseModule, DataStoreModule, RepositoryModule), plus player's AppCoroutineScopeModule, which provides the @ApplicationScope process-level CoroutineScope so playback-snapshot persistence survives service destruction.",
       "evidence": [
         {
-          "resource": "repo://build.gradle.kts#L125-L142",
-          "version": "repo-lines-v1:sha256:6939d64782c6ed466fcf8448d54d94f80d714c00b94b919c48de7c170f125435:eyJzZWxlY3RlZExpbmVDb3VudCI6MTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFjNjIxODYzMDkzODc3NmY4MjAwZDQ1ZWU3ZmU4YzA1OTYyN2MyNjBhMTJhNTNmYTVhNDc2NTY2MTU0NDk5NzMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImRhOWY4NmQyOGU3ODRmOWZkMzFmYjcyZDE1ZjYwY2JjZWFhZmRkNjY5Y2JkNWI2ZGE3ODg4YTAyMzMyMWViYjkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjZkNTJkMDYxYjk0OTkxYWI4NWQ3ZDQxN2ZkOTczNDY1YzZhNWYyOGQ4NDM4ZGM5Y2IyODZlMmRhMGM1NWQzY2IifQ"
+          "resource": "repo://buildSrc/src/main/kotlin/cn/com/dcsgo/mihx/verify/ProductArchitectureVerification.kt#L125-L143",
+          "version": "repo-lines-v1:sha256:07ccf033ce626652ef7e16bc1437e5b54519a2c4677ebed38cf4d6c824edc751:eyJzZWxlY3RlZExpbmVDb3VudCI6MTksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFjNjIxODYzMDkzODc3NmY4MjAwZDQ1ZWU3ZmU4YzA1OTYyN2MyNjBhMTJhNTNmYTVhNDc2NTY2MTU0NDk5NzMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImRhOWY4NmQyOGU3ODRmOWZkMzFmYjcyZDE1ZjYwY2JjZWFhZmRkNjY5Y2JkNWI2ZGE3ODg4YTAyMzMyMWViYjkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjZkNTJkMDYxYjk0OTkxYWI4NWQ3ZDQxN2ZkOTczNDY1YzZhNWYyOGQ4NDM4ZGM5Y2IyODZlMmRhMGM1NWQzY2IifQ"
         },
         {
-          "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/data/player/AppMediaSessionService.kt#L45-L48",
-          "version": "repo-lines-v1:sha256:e301d13574de8c0d8d8ddebbdebe6ac5a6bc62f8adc227d5deb6af39accd8c7e:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNGY5ZjMzNjFiMTRjNmVkZGZiY2I2ODBiZmFjNzg1MjI2MDdjYmQzMTk4Yzc5ZTllMTI1N2I2ODRhNTg5NWE5MyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZDNiY2RjNzE1MmM5NGU5ZjMxNWU2MmQ4MWMxMDQ1NzhmNjMwY2EzZTM0MzVkNGM3NzhhYWQ5NDdmNjcyYzhiOCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiY2RhNGE3ZjMwOTNkOTc4M2RlOGExYTQxOTlmZGMwMTY1YmE5Y2NiMDkzZDA2YmQ5OWVjNzEzOTM3MjIyNjZlOCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMzIxMDAyNWI4NzJjZGE1NTI1YzE3YzUwZmMwNTg0YjhjZGFmYmU5OGRkMGIwOTc2YjliM2YyY2RlYTQ4Mjg4ZCJ9"
+          "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/player/di/AppCoroutineScopeModule.kt",
+          "version": "repo-file-v1:sha256:ae64f6e4c87e37d028fef12d4c59b08b770592d347da9bd62639d5a259369ce8"
         }
       ]
     },
@@ -138,11 +142,11 @@
     },
     {
       "id": "claim_f8046afb2550447dbdc2724905dc6068",
-      "statement": "verifyProductArchitecture enforces the adapter pattern in both directions: imports of cn.com.dcsgo.mihx.data.repository.* or cn.com.dcsgo.mihx.data.local.* are banned in feature/, domain/ and player/ sources, MusicRepository must not declare SongRepository/PlaylistRepository/MusicImportRepository/AlbumArtRepository as supertypes, and the four *RepositoryAdapter.kt files must exist and implement their named domain interface.",
+      "statement": "ProductArchitectureVerification enforces the adapter pattern in both directions: imports of cn.com.dcsgo.mihx.data.repository.* or cn.com.dcsgo.mihx.data.local.* are banned in feature/, domain/ and player/ sources, MusicRepository must not declare SongRepository/PlaylistRepository/MusicImportRepository/AlbumArtRepository as supertypes, and the four *RepositoryAdapter.kt files must exist and implement their named domain interface.",
       "evidence": [
         {
-          "resource": "repo://build.gradle.kts#L405-L437",
-          "version": "repo-lines-v1:sha256:ddec59ead5f72c37a94f8aa031875025e034bc3272355e2113c6b3ed43545e01:eyJzZWxlY3RlZExpbmVDb3VudCI6MzMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQ5YzBiMjZlNjJkODFkN2Y2MmZhMjRiNzk4N2I3NjNjNWFmM2U2YTc2MDIyMGI5ODU3ZTNkZjQ2NGQwMmQyYzMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjYwZGQ0ODk2ZTEwZjUwNDZiMjYwNDJmNzgyNGU4ZTg1NzVhZGMzM2Y2MjVkYzY1NDI5MDI2ZDZjYjRjZjViNzMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImIxNWE0OTQ2NTEyYzg3MWYyY2RkZjA3NjMzN2VlOTMxYzkzMWFmMGZjMzFmMGRlOWViNzY1MjAxYjY2MzMwZTgifQ"
+          "resource": "repo://buildSrc/src/main/kotlin/cn/com/dcsgo/mihx/verify/ProductArchitectureVerification.kt#L431-L463",
+          "version": "repo-lines-v1:sha256:10e9eb2c5b4914742ab5b8e7fb135a976694bd6bddcb6e428d1bde0b7d7eb8ae:eyJzZWxlY3RlZExpbmVDb3VudCI6MzMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQ5YzBiMjZlNjJkODFkN2Y2MmZhMjRiNzk4N2I3NjNjNWFmM2U2YTc2MDIyMGI5ODU3ZTNkZjQ2NGQwMmQyYzMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjYwZGQ0ODk2ZTEwZjUwNDZiMjYwNDJmNzgyNGU4ZTg1NzVhZGMzM2Y2MjVkYzY1NDI5MDI2ZDZjYjRjZjViNzMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjU2MGUyYTMwYWI4YjgzZmU4NzgyNGIyZjM2NTc3ZmVhMmNkZjczMWM3ODUwN2M0YjcyNWUxNGE5NThhMTQ0YWQifQ"
         }
       ]
     },
@@ -166,15 +170,15 @@
     },
     {
       "id": "claim_e374c9fe312c4a6ca908d0fb36bd4e7a",
-      "statement": ":feature:player consumes the ports through PlayerRuntimeFactory, whose constructor injects ControllerQueuePlannerPort, PlaybackControllerPortFactory, PlaybackStateStorageFactory, BluetoothPlaybackMonitorFactory, PlaybackDurationMonitorFactory and PlayerQueueServicesFactory and passes them into PlayerRuntime; e.g. PlayerControllerQueueFacade builds windowed sync plans solely via the ControllerQueuePlannerPort abstraction.",
+      "statement": ":feature:player consumes the ports through PlayerRuntimeFactory, whose constructor injects ControllerQueuePlannerPort, PlaybackControllerPortFactory, PlaybackStateStorageFactory, BluetoothPlaybackMonitorFactory, PlaybackDurationMonitorFactory and PlayerQueueServicesFactory (plus the TimeSlotConfigRepository, SongEmotionRepository and WordPreferenceRepository contracts) and passes them into PlayerRuntime; e.g. PlayerControllerQueueFacade builds windowed sync plans solely via the ControllerQueuePlannerPort abstraction.",
       "evidence": [
         {
           "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerControllerQueueFacade.kt#L12-L50",
           "version": "repo-lines-v1:sha256:ff22f58e5fb5c67487f95d0fee2579b3e877ab958c88d3ff0f746a1a8a00a56a:eyJzZWxlY3RlZExpbmVDb3VudCI6MzksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZlNTJlMTQ5N2ZiZDRlNWYzZDE5NTAxYTEzN2JmZjYwZDZmNzVmYTg2ZTBiNjYzOWY4YTU1YTNlOWY4YTM5NWQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImIzMWJmMzQzNjRmNmI0ZjUxNmEzZjYzN2U5Y2MzMGJiNzY4MWUxYjMxNTFkN2RlOGZhOTc0NzRmNWIzOGQ5NGUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijg4ZGE2ZWUxNmM2MGRjNWI1NjQzZDBjNWIzYTEwNjU0MjY4NDc4MzAyZjY1YTMzNWI2YjFjMDYyZjY3YTRjZGIifQ"
         },
         {
-          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRuntime.kt#L37-L70",
-          "version": "repo-lines-v1:sha256:3652a2ea4071c7ffa7f4c54cc32a134b063492358ad7cc44164b5f655787dfaa:eyJzZWxlY3RlZExpbmVDb3VudCI6MzQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY3MjI2YmY3MWNhMTM5NTRhZmRkOTA0ZGFhYzVlMzg0MGJjY2MzMjUyMmY3ODQ2MGU4YThkYmQ0M2FjZTMwOGIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImRlZDcxZjU4YTE1MTNjYjliNmQxMDk3NjdiZWNlMDY1NWM5ZTQ5YzI1NjY5YTE1NTRlY2M3ZDI5YjA4MWZlYmEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImZiOGM2ODg2MTY2NzJiZDQ5NmY4YWY0YWY3MTMzMzUyMTAzNGEzMDUyNGE3NGY5MzIzMTMwMmUwZTU5OWVhN2QifQ"
+          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRuntime.kt#L47-L100",
+          "version": "repo-lines-v1:sha256:0bb45e2e5876c7d8887623e3462aaa4c3d78220f369dc1cedb8e504e1327b4f5:eyJzZWxlY3RlZExpbmVDb3VudCI6NTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY3MjI2YmY3MWNhMTM5NTRhZmRkOTA0ZGFhYzVlMzg0MGJjY2MzMjUyMmY3ODQ2MGU4YThkYmQ0M2FjZTMwOGIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNmMTYzZjc3ODZjNDJjYTg4OTI3MGY3NTNhNzgwNjI2NDI2YzAzZjk3M2EwNWFkZWFlZGQ0ZmE0ZDI3MGYwZDUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImRlZDcxZjU4YTE1MTNjYjliNmQxMDk3NjdiZWNlMDY1NWM5ZTQ5YzI1NjY5YTE1NTRlY2M3ZDI5YjA4MWZlYmEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjMzZDlkMDQyZGUxZTgzODllYTI2NzVjNjU0MGY1MDIzZGNlYzlkNmM5M2Y0NjExZmJjYThhMzkzNTFlZGM2MzkifQ"
         }
       ]
     },
@@ -197,7 +201,7 @@
           "version": "repo-lines-v1:sha256:9705148cbbabdb77048d83c12fdfe79fe4312d0a756baa2af2e38db52aef511f:eyJzZWxlY3RlZExpbmVDb3VudCI6MTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImEwMDNjZDk4OWM2YjgzOTZiZGFhMTNjNTMxNDA3NDFiZjQ3NDcxMmRjZDI4ZThlM2IxNmI4ODQyNmRjMDk4MTkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImYwNjkxN2ZjMDU4MTBlNzQzZTEzY2I4Y2JiNjcwYjhlZjJhOWY1OWY2MjFkZmQyNDQ1OTFhODU4YzVjMTc3YzkiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk5OWJkZWZlZWFjYTYzNDBlMDI5MGRjODZlODg5Yzg5ZDVlMTg5YWE1YmE0NGI1ODViM2I3MDczNGY0YTYyZDgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjA3NTlmNWJmMmFiMGEwMDljNGNmODM1ZWNmOTM3YTBiYTgyZWY2MGVlYjMxNDhiNWVhMDA3NzU5M2QwOGNjOWIifQ"
         },
         {
-          "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/data/player/PlaybackStateStore.kt#L26-L46",
+          "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/player/PlaybackStateStore.kt#L26-L46",
           "version": "repo-lines-v1:sha256:18750d4f314e2e6a4d389f365b2b845d2abd4ce06010822d0ef5b11e9bea2595:eyJzZWxlY3RlZExpbmVDb3VudCI6MjEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImJiZDc2Yjg1ZTcyNjMyZDliNzU0YjU5Njg4NmNkZjJjODE3NDFmNDEyZTIyMzM3NWQwNTM5NDYwZTgyM2JkNWUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjMwYzFmMTg4ZjE0MmVkN2E4MjQ2ODBiMjA3MTcyYzU1MTliYzYxNGE0OGZkYTdjZjE2N2VkYjhkZGY3OTk1NmMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImIyMDM3NTEzYTE3YzFmYTI4ZGQwNzA5OTNiNzc4OWU0MmQ0NDhlMzBjMmJiMTZlYmRkYWQ3ZmI0YTFlMTI1MzQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjM3NDhlYzVmZDFiZTM4YzJhNGZjMDk1N2ZmMjU2ZDE0NDE3NjE2MDQ1N2U3NmVhYWM5OTI2OThhYTE4YzA2ZWQifQ"
         }
       ]
@@ -211,64 +215,76 @@
           "version": "repo-lines-v1:sha256:38d3b63bf76984f044b451e07042ed65639445a90daf56aa360e9014beb2bed1:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImEwMDNjZDk4OWM2YjgzOTZiZGFhMTNjNTMxNDA3NDFiZjQ3NDcxMmRjZDI4ZThlM2IxNmI4ODQyNmRjMDk4MTkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk5OWJkZWZlZWFjYTYzNDBlMDI5MGRjODZlODg5Yzg5ZDVlMTg5YWE1YmE0NGI1ODViM2I3MDczNGY0YTYyZDgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjNkYzg2NTAyOTdhMzMxZGVkODViMjdlMDZmOTVhODY1N2VhMjQyZTA3ZGQzYzNlNTFiNGExN2YyNjcyMTdjMWEifQ"
         },
         {
-          "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/data/player/PlaybackController.kt#L42-L46",
+          "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/player/PlaybackController.kt#L42-L46",
           "version": "repo-lines-v1:sha256:9713d4adca7a39e10386acd96d499fbcc3c58fb088f837377c5e604d71727c84:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNjQ2OWZiM2FhOWFiNGM5MTQ5ZTY0MzQ0ZDFkN2U3NDBiYmQyOGY2ZTliYmI4OGFiZjYzMmIzMGNiNDYyNGIwMyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMDdjNGRkNzJlZjQxYzY1YTJmNzI3ZDcyYzg0MjA3NmNiMjhhYjNlMzcxOWMxNjdhNjJmMjRlZTczZGM0ODQ2MiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNGMzNzEyYmM2YWNkMzg4NTM4ZWFiZjAxYjI4NTA0OWJmOGIwMDRiNWJjNjJjOWMwOTE4YzNmMDYwZGRhMDQ5NiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTk2NjlmNzYwNjk4ZjNjYjMxOGYzZWE3M2EzMzkwZGI0OTY1OTE5NDhkYmNkY2Y1YTQ5MTEzYTYxMWYyZTNjYiJ9"
         }
       ]
     },
     {
       "id": "claim_a3f8ea722a1b4362a5f270f0f33345a8",
-      "statement": "verifyProductArchitecture is a custom root Gradle task (group verification) whose ~530-line doLast block walks all kt/kts/java/xml/toml files (excluding build/.gradle/.git/.idea dirs) and throws GradleException on the first violated rule; the root check task depends on spotlessCheck, verifyProductArchitecture and every subproject's check, making it the standard pre-commit gate.",
+      "statement": "The rule engine behind verifyProductArchitecture was extracted (2026-10-15) into ProductArchitectureVerification.verify(rootDir) in buildSrc, a unit-testable pure function that walks all kt/kts/java/xml/toml files (excluding build/.gradle/.git/.idea/buildSrc dirs) and returns the collected list of violations; the root verifyProductArchitecture task (group verification) throws GradleException only when the list is non-empty, and root check depends on spotlessCheck, verifyProductArchitecture and every subproject's check.",
       "evidence": [
         {
-          "resource": "repo://build.gradle.kts#L49-L54",
-          "version": "repo-lines-v1:sha256:326cfb85882c9157d6282c1441992b35c3a992dfbccf603aadcb4c10b603277c:eyJzZWxlY3RlZExpbmVDb3VudCI6NiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiOTIzMWE3NjE5MzNhYjRkMWM3NzljYmIyNmY4YjQzZThjZjc2NTZkNWEyMTZhMmU5N2VkOTkzMjY3MzhlZjUyOSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMTg3NDY3ZjNhN2Q2Yjk1YjUyMzE2YWJiNmVhN2RiMTI2YTQ5OGI1MjA3ZWY0ZDUyYmI3Mzc1ZWU5NjY2OTliYSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMTllNzYzNTVjZjExOTk0ODBjM2Y5OTgzNmIxNDg2Yzg0MWQ4OTFmYWFkOTA0YzYwOGUwOTMwMjJkMzc1N2FlZSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNWRlMmE3ZTgzNzVmZjJhMGRhYTA3MmIxMjkxNDhlNmU3MTdmNjM3Yzk4MWI2YmNmZWVlNTlkMmJkMjgxOWMwYiJ9"
+          "resource": "repo://build.gradle.kts#L52-L77",
+          "version": "repo-lines-v1:sha256:73cf9f589e56fb5135d6eb37ad266bd3be7ac891894f1c2722cf78ebeb04feff:eyJzZWxlY3RlZExpbmVDb3VudCI6MjYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjkyMzFhNzYxOTMzYWI0ZDFjNzc5Y2JiMjZmOGI0M2U4Y2Y3NjU2ZDVhMjE2YTJlOTdlZDk5MzI2NzM4ZWY1MjkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjE5ZTc2MzU1Y2YxMTk5NDgwYzNmOTk4MzZiMTQ4NmM4NDFkODkxZmFhZDkwNGM2MDhlMDkzMDIyZDM3NTdhZWUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
         },
         {
-          "resource": "repo://build.gradle.kts#L580-L588",
-          "version": "repo-lines-v1:sha256:2894d8e4dc174385dac4f8403a231b2ba1bc7250e8246cb001e94705c090a98d:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMWY1OGI5ODU2NTI2MDNiYTQwMGNkMzBhMmU1ODA0OGJhMGMzNWEyNjU3YTE0NjBkNDVkNDE3OTBlNGFiZTFmZiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDEyY2EzNDVjY2Y3NWJmOWMwODA2YmNlNjk1YmU4ZGU4MDhiNzk5ODQyNTFhN2E1NGQyMDJjZjYxMDFkZDQ1MSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMTllNzYzNTVjZjExOTk0ODBjM2Y5OTgzNmIxNDg2Yzg0MWQ4OTFmYWFkOTA0YzYwOGUwOTMwMjJkMzc1N2FlZSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjAsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSJ9"
+          "resource": "repo://buildSrc/src/main/kotlin/cn/com/dcsgo/mihx/verify/ProductArchitectureVerification.kt#L13-L27",
+          "version": "repo-lines-v1:sha256:1876a84cc58cbd4657b790fc6ebb147c7de628e35bfa8934d55f078928b42f93:eyJzZWxlY3RlZExpbmVDb3VudCI6MTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjhlOTM2NGFmMGNlN2UxYTJkNjk2NDY0ZmQzNzY0ZmU5MzM4ZWY0MDgwOWI2NzVjNWEwOWFmZTQyM2MyN2U1ZjgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijg3ZTgyM2I5YjEzM2IzNjBlMzE1OTAzYTZjMzVmN2VlMmUwZDA3NTJhNTYxZGM0YTRhYjRjNjU1MWY5YzU2MTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjkyNTFmYmZhNWQzMDQyMDNlOGI1Y2JiYWIyMzM4Y2ViZGFlZjkzMjQ1ZmNhOTM0NDkxNWFjZDg3NzkzYTA3M2EifQ"
         }
       ]
     },
     {
       "id": "claim_7934d022eaea4ff0a451a0f6cb768f80",
-      "statement": "The release-build rule extracts the :app release block with a first-closing-brace regex, so nested braces inside that block break the check; app/build.gradle.kts documents this and keeps signingConfig = releaseSigningConfig (resolved outside the block) as its only inner assignment.",
+      "statement": "The release-build rule extracts the :app release block with a brace-pairing parser (extractBracedBlock) that survives nested braces/lambdas inside the block, replacing the old first-closing-brace regex; the rule still asserts isMinifyEnabled = true and isShrinkResources = true in that block.",
       "evidence": [
         {
           "resource": "repo://app/build.gradle.kts#L54-L56",
           "version": "repo-lines-v1:sha256:108a5cb3cd656d6a6b446be91450eec5dcc6ac91372ffe5f08ffebfedadef053:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZTgyYTI3ZTU0Mzk0MTQ3ZTg0MjMxMjVlNTBjYjU4MzZjMDQ4NDkxNDI1MjFkNzdmZTQ1NmM1OTA0NjIyMGEyMSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYmZhYmE2N2M2YzhhNzQ1YmYzNTc2ZTExZDdlZmU0NzRkYjM3MWIzODAxZWNjY2E0YzZkNDZmNGYwMmY5M2U4ZCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiOTk5YmRlZmVlYWNhNjM0MGUwMjkwZGM4NmU4ODljODlkNWUxODlhYTViYTQ0YjU4NWIzYjcwNzM0ZjRhNjJkOCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZGMyZjhhZWI5YWRkZWJjOGVjZTMwZWFhNGFkMDcxOGZjNDRmYWEyNmM4MGIwYzQ4NDAzZWNlZWEyN2QxMzJmYiJ9"
         },
         {
-          "resource": "repo://build.gradle.kts#L504-L522",
-          "version": "repo-lines-v1:sha256:f1e737581843c12ef1dd25fdb204afef947480146a14a92aea4caf913a612a68:eyJzZWxlY3RlZExpbmVDb3VudCI6MTksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBmMDFhZGEyYjRlMzM3NjNkY2U5MGQzMTM1MGNiYzM1NWYyMjg2YThjMDBlNDcyNDY1MzdmNGYyYmYzNWVjZTEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjQ4ZjU4ZWQwZTE0N2ExYjYyMjI0NzZlNzI1NmQ0YmQ5YjQ3OWJiNDA5OGJlOTRjMzIxYjA5OTVlZWUwYWQ4NjgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjY1YTY2MDRmODJhYmY1NDQ3NWI3ZTQzNTRlNWVlN2Y0MThiZTY1YjQ0NTA4YzBjZTY2NDUzN2JkOTFlYjAwNWIifQ"
+          "resource": "repo://buildSrc/src/main/kotlin/cn/com/dcsgo/mihx/verify/ProductArchitectureVerification.kt#L531-L546",
+          "version": "repo-lines-v1:sha256:b8feceedfd119a5a2657cd4266bd07c3e399a5f0cd71598bf6520f02bd0ecd4c:eyJzZWxlY3RlZExpbmVDb3VudCI6MTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImI4ZjAzNDA2ZjIyMDBjMjM2OGQzNzM4NDViZTNiZWNiMTVjNGRlYzFlMzAwYWIxMDVhYzMzMWI3NWQ0ZjgyZWIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjQ4ZjU4ZWQwZTE0N2ExYjYyMjI0NzZlNzI1NmQ0YmQ5YjQ3OWJiNDA5OGJlOTRjMzIxYjA5OTVlZWUwYWQ4NjgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjY1YTY2MDRmODJhYmY1NDQ3NWI3ZTQzNTRlNWVlN2Y0MThiZTY1YjQ0NTA4YzBjZTY2NDUzN2JkOTFlYjAwNWIifQ"
+        },
+        {
+          "resource": "repo://buildSrc/src/main/kotlin/cn/com/dcsgo/mihx/verify/ProductArchitectureVerification.kt#L613-L634",
+          "version": "repo-lines-v1:sha256:8d3a71be2d0601bd3c60dac348c78ca1a822569f172b6091f57c768fae0a0011:eyJzZWxlY3RlZExpbmVDb3VudCI6MjIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM5Y2JiYzY1NDY5ZGIxY2EyODQyZWZkOTdkZjdlZTJjZTZjYzE1NzE0ODJkMDFhMThiNzkwYTEwYzdjNTEwZjMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk5OWJkZWZlZWFjYTYzNDBlMDI5MGRjODZlODg5Yzg5ZDVlMTg5YWE1YmE0NGI1ODViM2I3MDczNGY0YTYyZDgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
         }
       ]
     },
     {
       "id": "claim_15e5752b052c40a3a30dafc0db3e80fc",
-      "statement": "Room schema history is immutability-checked: 1.json must not contain quick_skip_short_play_counts, 2.json must contain it but not lrcUri, 3.json must contain lrcUri, and DatabaseModule must keep Migration(1,2), Migration(2,3) and addMigrations(MIGRATION_1_2, MIGRATION_2_3) registered.",
+      "statement": "Room schema history is immutability-checked: 1.json must not contain quick_skip_short_play_counts, 2.json must contain it but not lrcUri, 3.json must contain lrcUri; MelodyMigrations must keep Migration(1,2) and Migration(2,3), and DatabaseModule must register them via addMigrations(*MelodyMigrations.ALL).",
       "evidence": [
         {
-          "resource": "repo://build.gradle.kts#L548-L576",
-          "version": "repo-lines-v1:sha256:259629c2c74b6bd0ed4d9dfc1851c7a7adc6131aa4c4cbef8c52e60dc328722b:eyJzZWxlY3RlZExpbmVDb3VudCI6MjksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImUyNTA5OTQ3ZmY2ZmZlNTg4ZDVhZmU5ZmU4ZmYyOTVkODkzMzIwYTY5MWZkNGJhYzFlOTQyZjUyOTE2NzlhM2UiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImRhOWY4NmQyOGU3ODRmOWZkMzFmYjcyZDE1ZjYwY2JjZWFhZmRkNjY5Y2JkNWI2ZGE3ODg4YTAyMzMyMWViYjkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjE5ZTc2MzU1Y2YxMTk5NDgwYzNmOTk4MzZiMTQ4NmM4NDFkODkxZmFhZDkwNGM2MDhlMDkzMDIyZDM3NTdhZWUifQ"
+          "resource": "repo://buildSrc/src/main/kotlin/cn/com/dcsgo/mihx/verify/ProductArchitectureVerification.kt#L577-L610",
+          "version": "repo-lines-v1:sha256:fdb134dba308457ba8398d7fc1387734cb06a9fa65da7c329d26855217a8dc94:eyJzZWxlY3RlZExpbmVDb3VudCI6MzQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImUyNTA5OTQ3ZmY2ZmZlNTg4ZDVhZmU5ZmU4ZmYyOTVkODkzMzIwYTY5MWZkNGJhYzFlOTQyZjUyOTE2NzlhM2UiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImRhOWY4NmQyOGU3ODRmOWZkMzFmYjcyZDE1ZjYwY2JjZWFhZmRkNjY5Y2JkNWI2ZGE3ODg4YTAyMzMyMWViYjkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjVlMmI5ZTIxZmRjODZmYzJjMmVlNDQ3MjE4NWQ2NzY0NjdiZGQxY2JmMmUyNGI0ZGM2NDRhYjFhYmIzMzI1NDcifQ"
         },
         {
-          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/di/DatabaseModule.kt#L49-L68",
-          "version": "repo-lines-v1:sha256:ca951fbdbc9ffd3f138bc0de0e7a2e902271f304d36222f7d715bc85faa91825:eyJzZWxlY3RlZExpbmVDb3VudCI6MjAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjE3YWQ2MTY0NDJhNzVjZjM4MzcwNGJiYzE1NWFlOTMzOGE2MmU4ZWY0OWI3ZWVjM2Y2MDc1ODNiYjA4OTFhMzQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjhjNGNmMmY5N2Q2MWI5ZWQyM2NiNjUzOTYyNDE4ODdjZTJjMjU2NDc1NmVkNTQ4NWJkYTU2YzU5MDgxYWM1NDAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImM5YWM0N2U4ZDNmZGJkYzU2NmE4YzJjMjI4OTM4MzYxZDYwYWU5MmU0MjcxNTcxZDViYjA3NTk2YzMyM2UyZDYifQ"
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/di/DatabaseModule.kt#L20-L32",
+          "version": "repo-lines-v1:sha256:c6fe5f055a37e9019ec46eaecca3f2b3fe9e2daacf8ce64a8186253fec5f7c1e:eyJzZWxlY3RlZExpbmVDb3VudCI6MTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImEwMDNjZDk4OWM2YjgzOTZiZGFhMTNjNTMxNDA3NDFiZjQ3NDcxMmRjZDI4ZThlM2IxNmI4ODQyNmRjMDk4MTkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImU4NjMyYjViMGMyNGVmZWEwNzdiYWY2NWQ5ZjY2ZTkxMTE5NmQ0MDk5YmUwODQwNjBjMWZjNTRlMmJiNjQ3YzgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjZkMDUyMDIwNGRkOWU3M2QzNTM4OTE5YmZjYmI0YzhlZTQ2Y2Q3MTUwYzhiOGJiYWRiYzRiNjFlYzU1ZjcwODYifQ"
+        },
+        {
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/local/migration/MelodyMigrations.kt",
+          "version": "repo-file-v1:sha256:1074dd822ba30aa3874f8f867f574ecfad70e5f7b9080261dae74b1135e02d04"
         }
       ]
     },
     {
       "id": "claim_309caff45e6846c6b5b7b685ee785e30",
-      "statement": "The exported schema history has grown to 10.json: MelodyDatabase declares version = 10 with 13 entities and DatabaseModule registers all migrations MIGRATION_1_2 through MIGRATION_9_10; the standing rule is to add new snapshots/migrations, never edit existing schema JSON files.",
+      "statement": "The exported schema history has grown to 11.json: MelodyDatabase declares version = 11 with 14 entities (adding WordPreferenceEntity in the 10->11 migration that creates the word_preferences table), and migrations are registered through the MelodyMigrations.ALL array; the standing rule is to add new snapshots/migrations, never edit existing schema JSON files.",
       "evidence": [
         {
-          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/di/DatabaseModule.kt#L31-L35",
-          "version": "repo-lines-v1:sha256:610a461f65c8e356fe37eecaf2c1a9c3a61981f8e8064de988bc0d3865a491f4:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMjZiOGJlODY1ZmQzMDI0ZGFkYjBmNWJmMjJmMzgwZjEyYWI1NjlmNzFmZDQ0MTVkYjkxNWVlOTMwZmY2MTRiMiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNTUwMzJlOTY0ZDA5MzIzNTFlNWQxODUyNjkyODFiMTcxYTNhMDliMDhiMjg2ZTY2MWVhNDcwMzIzYzgyZWI0ZCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYTllOTJiNGRkZGJmYTc4ZDUxNjJhNGM1NzI2OTgwZmJlMGFiYTk1Yjk2MjY1ZjJmODVmNjc2MzMyZjNlM2Q1OCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMDU4NDE1NTkwYmM0ZTgyYWY0ODQwNTM2YjE5YzBjMDRmY2I4N2U4MDBkNzk4NTI3NDIwZTY3YTA0ZjYyN2JmNiJ9"
+          "resource": "repo://data/schemas/cn.com.dcsgo.mihx.data.local.MelodyDatabase/11.json",
+          "version": "repo-file-v1:sha256:287d47540285d12af2c034f108087b869e98884714b762dd73f937b866efd50d"
         },
         {
-          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/local/MelodyDatabase.kt#L20-L40",
-          "version": "repo-lines-v1:sha256:cf55df3770f67ed1d8df5f29c18ba119a33cb5f10bd4b53c1312414710f99655:eyJzZWxlY3RlZExpbmVDb3VudCI6MjEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQwNmYxZGI1MWFhM2I3OWY5OWM4ZjlhMTc5ZjQxYTcxNmY3YzU4Y2Y4M2ZlYjY1MjcwOGIwOWYxMzZmNGU2M2MiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI5YjZmYTgzNzU2YTUxMWY1ZDgxMTA2MThhMzNkODI2NzMzMDQxM2Q2ZmYzODJlODMwM2E5OWVjMjgyYzM2YmMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjZlZjk1MmNiMTdlMjcwZDU1M2ZhNDJiZDFjNTc3NzVmNTE4YTZjNGY4NTNjYTM3MDQ0ODI1MmVlNGY1ZTBhOTEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/local/MelodyDatabase.kt#L21-L40",
+          "version": "repo-lines-v1:sha256:0953c6f50cf0094890372b54ced6ada4ae1e78fe461008d3a0266be6daec1b56:eyJzZWxlY3RlZExpbmVDb3VudCI6MjAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQwNmYxZGI1MWFhM2I3OWY5OWM4ZjlhMTc5ZjQxYTcxNmY3YzU4Y2Y4M2ZlYjY1MjcwOGIwOWYxMzZmNGU2M2MiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZhZmJhMDUyN2MzOTUzYzRiNmUwZTViNTczOWJhODM2MTJmODA1M2JjZGM5NDY2NzMwMTkzY2QxZDU5MGI0MDgiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjEyNWI1ODI2MzQ1ZmM4NzgyZjg0YjIzNjFkZjMyNmQwMmMxZmYwNTE1MGRlMTYwZjg0NjRhY2ViZTNiYjg3MzUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImU0YmYwODllNWQ1OWUwMGZlZGNjZjEyMmJiOTU0YWIyMDVmN2Q2N2RlM2ZmNTYwYmY5YzVhMDMxYmY5YWUzYTAifQ"
+        },
+        {
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/local/migration/MelodyMigrations.kt#L130-L160",
+          "version": "repo-lines-v1:sha256:17ce94ebdd95b5a6dcf5e7b7515e89af1cfb692ce3adfd7272b962772179ee48:eyJzZWxlY3RlZExpbmVDb3VudCI6MzEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjAyMjc5NjRkNmQ4OGIwNWViMGZiZDZjMzY3MTYzYTdmNzY5MjljNmVlN2E5Y2UxZDRkZjRmN2Y0MWIzNGUxNGUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
         }
       ]
     },
@@ -277,8 +293,8 @@
       "statement": "Both app/src/main/res/xml/backup_rules.xml and data_extraction_rules.xml must exclude the privacy-sensitive stores (legacy prefs music_player_prefs/play_stats_prefs/quick_skip_songs_prefs, melody.db plus -journal/-shm/-wal, datastore/player_settings.preferences_pb, datastore/playback_state.preferences_pb, cache/album_art/); missing entries fail the build.",
       "evidence": [
         {
-          "resource": "repo://build.gradle.kts#L524-L546",
-          "version": "repo-lines-v1:sha256:1389e532acc35378d19d46c8d89b267096047a7fd0006383543f5a25a40e7a2f:eyJzZWxlY3RlZExpbmVDb3VudCI6MjMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU0NTMzNjY4OWFiM2EzODNmMTVjMjY3YTlkYjQ1YTA4YzE2MzU4NTAyNmNhOGU0MzU2MDc2NzFkYzMxNWI3ZjkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImU3YzI3MzRmYTQwNTU0MzU3NWQ3OGE3ZmQ4NTA0NDIzN2Q1ZTAzNmFjNDRlZWY2MTEyYjM3NGYwYmU5ZTk2NmIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjBmMWM1NGVkMDUyNmY0OGVhN2RlY2EwYjdmYTljODljMTljZTNhYzk4ODZiNTlmMmM4ODExZmUxMDVhY2Y3ZDcifQ"
+          "resource": "repo://buildSrc/src/main/kotlin/cn/com/dcsgo/mihx/verify/ProductArchitectureVerification.kt#L548-L575",
+          "version": "repo-lines-v1:sha256:f3d410e773741f3f406fa5abe7026279f6cfe9f4b17744cacffdd2554ec52222:eyJzZWxlY3RlZExpbmVDb3VudCI6MjgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU0NTMzNjY4OWFiM2EzODNmMTVjMjY3YTlkYjQ1YTA4YzE2MzU4NTAyNmNhOGU0MzU2MDc2NzFkYzMxNWI3ZjkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImU3YzI3MzRmYTQwNTU0MzU3NWQ3OGE3ZmQ4NTA0NDIzN2Q1ZTAzNmFjNDRlZWY2MTEyYjM3NGYwYmU5ZTk2NmIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjBmMWM1NGVkMDUyNmY0OGVhN2RlY2EwYjdmYTljODljMTljZTNhYzk4ODZiNTlmMmM4ODExZmUxMDVhY2Y3ZDcifQ"
         }
       ]
     },
@@ -291,12 +307,8 @@
           "version": "repo-lines-v1:sha256:9128a2b2b690d27d443453baedf366adf519ceea15fb8581f2b2cec7cb94efee:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZDIxZWNjMTZjNjliZGEzN2EzNDU2M2I5Y2MwNzhmZWM1NWExNWFiZThmMTZiNDQ1ZTA2YzQxNjdhMGU4YmE5MiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDkyMDRmNjc2ZDFlMzkyMDA2ZThmYTdiODc4NGI2ZTU1OWUwNDFhMTMxOGNhZGM3YWVjMmRkY2JjMTdkN2Y2ZSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiOWU2MDBjYTgxMjQ1OTQ1YWI1NzMxNDlhZmQ4YTVlZjhjNzkxNjI1NTFhNDA0MWJhMDFiMDljNWExNzNjZGVmNCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYzhkMTAyNjRmNDYzZjE1ZDE1MDVlMmQwNmI0OTkxMTMzMjA5NTM5YTZjMjAyMDc1NDMzNDNhMGU5NWJhMzY2NCJ9"
         },
         {
-          "resource": "repo://build.gradle.kts#L484-L496",
-          "version": "repo-lines-v1:sha256:f170d76d26699badb610a3b4653d7a78625bf6bf8ae55df3905bd6fb7d6221f8:eyJzZWxlY3RlZExpbmVDb3VudCI6MTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImMxYzJiNDE2YjhiM2ExZDk3MWRkYWYzYWU4YzIxZTNjYzEwNjQxM2E4NGQxODVmMmU1MTg2YTU4OTYxNTJmODIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjAzODVlYWY1NDRhZGUzZTY3M2M0NmMwZmNkMjlhZjFjOTBjNGYxNjc4MjEwYWMxYTViZWEwNjg1NGJjMTkzZjkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImQxZDMwZjU0NWFkZjgwMzUzZmRjZWJkZThmNTQ3MjVlZGM2NTYxMGI1MzAzMGIzMzQ3YWExNWFiMDRhOTBiODgifQ"
-        },
-        {
-          "resource": "repo://build.gradle.kts#L512-L524",
-          "version": "repo-lines-v1:sha256:3b5da5415a185cfece3425aa052607df6e05e520a25c125a641041ddc3a5dbf9:eyJzZWxlY3RlZExpbmVDb3VudCI6MTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImYzMWVjNjVlNGY1M2QzYzdiYWE1MGNiMzhiNDMzNWMzMzY0OWNmNmE0NTA0YWUwN2U0ZThhMDFiOGUwYWZhN2EiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjI5NzBhYTc1NWRkNTI0NWI1MzJlNmEyNmU3ZjJiMGY5Y2NjYWI2ZjA3OGZlYTdhYTY4NDU3MGY5ZTY3NWNmZWQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjY1YTY2MDRmODJhYmY1NDQ3NWI3ZTQzNTRlNWVlN2Y0MThiZTY1YjQ0NTA4YzBjZTY2NDUzN2JkOTFlYjAwNWIifQ"
+          "resource": "repo://buildSrc/src/main/kotlin/cn/com/dcsgo/mihx/verify/ProductArchitectureVerification.kt#L509-L546",
+          "version": "repo-lines-v1:sha256:6e18d702a2bf051430f91cca6cdecb1397108fcc7e0b40523c59965ebbadcf78:eyJzZWxlY3RlZExpbmVDb3VudCI6MzgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM2YTE2ZGQ4NzI2NjFiZTE3NTJjNDQ1NDEzYzU2ZWY3MDM5OWIxODE4YzRmN2ZiMDdiMTEyNWNlMzQ0ZDYyMTEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjAzODVlYWY1NDRhZGUzZTY3M2M0NmMwZmNkMjlhZjFjOTBjNGYxNjc4MjEwYWMxYTViZWEwNjg1NGJjMTkzZjkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjY1YTY2MDRmODJhYmY1NDQ3NWI3ZTQzNTRlNWVlN2Y0MThiZTY1YjQ0NTA4YzBjZTY2NDUzN2JkOTFlYjAwNWIifQ"
         }
       ]
     },
@@ -305,22 +317,22 @@
       "statement": "Code-quality gates include: every LazyColumn item/items/itemsIndexed call in app, core and feature sources must pass a stable key, and direct android.util.Log calls are banned everywhere except AppLogger.kt in favor of AppLog/AppLogger (which redact URIs/paths in release).",
       "evidence": [
         {
-          "resource": "repo://build.gradle.kts#L395-L403",
-          "version": "repo-lines-v1:sha256:f011b1daf7115bc77a9808f3dfe91db9d0dcc9db82b213c039bad29bf6549e80:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYjY5MDkzYjBmODgwNjM0MzU1NDM4NmQ1NjMzNTkyZjhjOTRhZjA0NzMxOWM1Mjc1MTM0ZWI2OWI2ODA0ZjhiNyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZTZiMDQ0OTE0Njk3MjJlODM2M2E5NGU0MDQ0NTM4ZTAxM2EyYTIxN2UzNmIxZTU2OGJhNjBhY2I3YjRjOGYyZSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiOGU1YmZkYWM2M2NkODBiZTAxMDY5YzkzMWFjMWYwYzY4OTc3MDY2ODJhZTg2ZTk2NThmNGM5MmUxNjFjNDYxYiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiN2Y4NWIwNWQ5MGE0MDU4YzE5NjczMzAxODhhMWRmN2M5YzdkZjJhODFlNWYxOTk0MjY1N2ZhYTRjZjBkYjM3YSJ9"
+          "resource": "repo://buildSrc/src/main/kotlin/cn/com/dcsgo/mihx/verify/ProductArchitectureVerification.kt#L416-L429",
+          "version": "repo-lines-v1:sha256:67c0de51bcc3474e89421c446d014ec9f02f0b17965cb4f728415140e09d589d:eyJzZWxlY3RlZExpbmVDb3VudCI6MTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNhN2I2ODkzOTBjZGVmYmM4YWMwMDhmMmEyNDFhOGMxZGRhZDhjNTY5NTI3ZmFkODFhYWM2ZDdiOTZlNDM2MjUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImE0NjlkMzQ4MjE2OWRjNzljNGY4ZjRkNjgwMWY3OGExODliOWEyMDA3ZTg1MzI1NWE4NWFhMWI0ZDVhODQ2N2YiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjdmODViMDVkOTBhNDA1OGMxOTY3MzMwMTg4YTFkZjdjOWM3ZGYyYTgxZTVmMTk5NDI2NTdmYWE0Y2YwZGIzN2EifQ"
         },
         {
-          "resource": "repo://build.gradle.kts#L473-L481",
-          "version": "repo-lines-v1:sha256:343e6aa1dfd0720fbf8d465160b9d62048091e2b33bb0d5afaeab7bd393c22d9:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMjFjNjcwZTk0ODZiZjA1YWFkY2Q3MmQ0ZDIxY2M4MmYxYzcxMmQ3YmMyY2JhNWU1N2YyNzdkYjU1NTdlZTNhMyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZTZiMDQ0OTE0Njk3MjJlODM2M2E5NGU0MDQ0NTM4ZTAxM2EyYTIxN2UzNmIxZTU2OGJhNjBhY2I3YjRjOGYyZSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNDIxMGQ5MmRhMGJkOTcyODg4MjkyNjFkMGY4YmQzMmUwY2UxMDNkYThkZDAyZDE1NmM0MDhjZTVlYjliMmRhMiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNzBlNGYyNjY2ZjU0ODU3MGVjNmNmMGE3ZDMyNWM2MDEwNjFiYmQxYzBlMzI1ZjM4ZTM2N2E4YzIxMGJiNzNiZCJ9"
+          "resource": "repo://buildSrc/src/main/kotlin/cn/com/dcsgo/mihx/verify/ProductArchitectureVerification.kt#L499-L507",
+          "version": "repo-lines-v1:sha256:343e6aa1dfd0720fbf8d465160b9d62048091e2b33bb0d5afaeab7bd393c22d9:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMjFjNjcwZTk0ODZiZjA1YWFkY2Q3MmQ0ZDIxY2M4MmYxYzcxMmQ3YmMyY2JhNWU1N2YyNzdkYjU1NTdlZTNhMyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZTZiMDQ0OTE0Njk3MjJlODM2M2E5NGU0MDQ0NTM4ZTAxM2EyYTIxN2UzNmIxZTU2OGJhNjBhY2I3YjRjOGYyZSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNDIxMGQ5MmRhMGJkOTcyODg4MjkyNjFkMGY4YmQzMmUwY2UxMDNkYThkZDAyZDE1NmM0MDhjZTVlYjliMmRhMiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMGYzNzQ4N2NjYTY3MGFkNzhjOGVhMjgwNzYyOGRhZTUzNDE0NGQwYTJmODFiMzgyOWJiNTJiZWUzZDg5Mzc4ZiJ9"
         }
       ]
     },
     {
       "id": "claim_327b6066d4c64c2186874988c9009c45",
-      "statement": "Privacy-sensitive startup rules are enforced: Bluetooth playback monitoring must be user-triggered from Settings (PlayerStartupFacade must not mention Bluetooth; SettingsScreen must expose the 蓝牙播放监听/申请蓝牙权限 controls; the setting must flow through PlayerSettingsRepository/DataStore into PlayerUiState), and startup-path files (MainActivity, AppRoot, PlayerRuntime, PlayerStartupFacade) must not request notification or Bluetooth permissions.",
+      "statement": "Privacy-sensitive startup rules are enforced: Bluetooth playback monitoring must be user-triggered from Settings (PlayerStartupFacade must not mention Bluetooth; SettingsScreen must expose the 蓝牙播放监听/申请蓝牙权限 controls; the setting must flow through PlayerSettingsRepository/DataStore into PlayerUiState, not app-shell remember state), and startup-path files (MainActivity, AppRoot, PlayerRuntime, PlayerStartupFacade) must not request notification or Bluetooth permissions.",
       "evidence": [
         {
-          "resource": "repo://build.gradle.kts#L334-L388",
-          "version": "repo-lines-v1:sha256:b55e2b7d59069ffb7cea801cf268dffc4f471b9f0ddd24fd027db3d7e3fad74e:eyJzZWxlY3RlZExpbmVDb3VudCI6NTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQwNDVmNmM0NWRmY2JkMWE1NThmYjcxNjg4OGJjYjhlZTRhNGY3ODQzYmYyZGUxM2IyMmMwOTg5OWQ5ZGZmZGUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImVkMjc3NDJkMTBiZDkzM2IwZTQzYjg0ODlhMzg1ZDhlMmUyMDc2OGU2N2IzZjUxODI1ODRhYjIxOGVmYzhhNTEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjM2YWIyZmU2NGI5NjMwMDgyMDViNTY3MDIwM2ExNWI5YzY3NGU3OTNlZTM0ZGE4ZTI2ZTVjNzlkZTZkY2NkNzYifQ"
+          "resource": "repo://buildSrc/src/main/kotlin/cn/com/dcsgo/mihx/verify/ProductArchitectureVerification.kt#L340-L414",
+          "version": "repo-lines-v1:sha256:ff76b52af8f843861dc1db6adf148d63b9efecf3438e3de9ac700ba2b67608b8:eyJzZWxlY3RlZExpbmVDb3VudCI6NzUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQwNDVmNmM0NWRmY2JkMWE1NThmYjcxNjg4OGJjYjhlZTRhNGY3ODQzYmYyZGUxM2IyMmMwOTg5OWQ5ZGZmZGUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImVkMjc3NDJkMTBiZDkzM2IwZTQzYjg0ODlhMzg1ZDhlMmUyMDc2OGU2N2IzZjUxODI1ODRhYjIxOGVmYzhhNTEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjM2YWIyZmU2NGI5NjMwMDgyMDViNTY3MDIwM2ExNWI5YzY3NGU3OTNlZTM0ZGE4ZTI2ZTVjNzlkZTZkY2NkNzYifQ"
         }
       ]
     },
@@ -329,22 +341,22 @@
       "statement": "Observability anchors are enforced: MusicRepository must keep the music_import_scan and music_import_folder PerformanceTrace operations and PlaybackController the controller_play_queue/controller_prepare_queue/controller_sync_queue/play_next_command operations; PlaybackWindowPerformanceShapeTest must keep covering 100/500/1_000/71-song window sizing; :benchmark must remain a Macrobenchmark module targeting :app with a StartupBenchmark using MacrobenchmarkRule, StartupTimingMetric and StartupMode.COLD.",
       "evidence": [
         {
-          "resource": "repo://build.gradle.kts#L186-L209",
-          "version": "repo-lines-v1:sha256:8c57aa32692359f939dfcfe46f0408ee004b1ce3d34b744c5eeb837ff3b09c34:eyJzZWxlY3RlZExpbmVDb3VudCI6MjQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjkzZjhlZDNkOWU3ZGQzOTU2NmViYzA0ZmU3MDEzNjQwMmE1NmMwYzJiYzU5NzQxNzlhMjFkZDRkYTJiZDM4NzUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQwYjI4MTZhNDMzNTlkYzBiM2NjNjNjNTM5M2JkMzM3YzM5MmVjOWYxZDkwY2Y3OTFmNWE4N2U3ZDNlZjg0MTQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImJiYWI4NDZkY2NiMjYxMGI0NzdhYmZiZTQ2MGZhNGE2ODRmM2JhOWE2ODY3MmEwYzI1MWIyZjNlMmVjYWU1M2QifQ"
+          "resource": "repo://buildSrc/src/main/kotlin/cn/com/dcsgo/mihx/verify/ProductArchitectureVerification.kt#L189-L213",
+          "version": "repo-lines-v1:sha256:6178954110f22bf1459cdad80e9de92b174ea17cac7f28dd6b05395fe5974872:eyJzZWxlY3RlZExpbmVDb3VudCI6MjUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjkzZjhlZDNkOWU3ZGQzOTU2NmViYzA0ZmU3MDEzNjQwMmE1NmMwYzJiYzU5NzQxNzlhMjFkZDRkYTJiZDM4NzUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImZjZThkMTM3ZmE0NGFjNjY0OGIzYTRhNmY1NmY1MGJhYmE2NzczNDE0NWQwNDc0YTRlNTU1Njk3ZmQyNmJlYzgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImJiYWI4NDZkY2NiMjYxMGI0NzdhYmZiZTQ2MGZhNGE2ODRmM2JhOWE2ODY3MmEwYzI1MWIyZjNlMmVjYWU1M2QifQ"
         },
         {
-          "resource": "repo://build.gradle.kts#L215-L248",
-          "version": "repo-lines-v1:sha256:c13cb0c8f7461edcd75c2f3784a482c66f24e59869e3b1bde9cd236db7059220:eyJzZWxlY3RlZExpbmVDb3VudCI6MzQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQ2NTE0M2EwZDU0YTg2ZjEwMjVmMmU2N2E0Mzc3N2ExODEzM2VlMWIxYmIyNzgzOWM1YzY4ZThlNmRjNmJmNzkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImJiMTk4OGJkNTY2Zjc3OWI2ZWY4ZWI1NDRkZmQzNTRmNjBmZmI5NjViMWMwZDk1MDE5NGQxMjE0YWZlM2FhZjkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImVmYzNkNDc3MDVlZjMxMzk0OTJkNWIyMTJmZDNkYjIwMzVmMzZhYzE5NGY0YmMyYjcwZGM0OGZhN2Q1NTM3ZTIifQ"
+          "resource": "repo://buildSrc/src/main/kotlin/cn/com/dcsgo/mihx/verify/ProductArchitectureVerification.kt#L215-L254",
+          "version": "repo-lines-v1:sha256:ea11e54c92a0dcbad6721b8d6fb2e3cc7412a2b86d8d6a1149c4d663efc55267:eyJzZWxlY3RlZExpbmVDb3VudCI6NDAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU5OTUxYWNiODRkOGZkYmE1YjdhMmI4ZTA2ZTNmZTMyYWNkYzc3MDVjZTM5MzcyZWRiNTI4NzI4MDk1ZTgwODYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImRhOWY4NmQyOGU3ODRmOWZkMzFmYjcyZDE1ZjYwY2JjZWFhZmRkNjY5Y2JkNWI2ZGE3ODg4YTAyMzMyMWViYjkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImVmYzNkNDc3MDVlZjMxMzk0OTJkNWIyMTJmZDNkYjIwMzVmMzZhYzE5NGY0YmMyYjcwZGM0OGZhN2Q1NTM3ZTIifQ"
         }
       ]
     },
     {
       "id": "claim_59dc9b2b2c054a668b8b75cc8dabdaf6",
-      "statement": "Every required module must keep a local .gitignore containing /build/, /.cxx/, /.externalNativeBuild/ and /captures/; the gate fails naming the first module whose ignore file is missing or incomplete.",
+      "statement": "Every required module must keep a local .gitignore containing /build/, /.cxx/, /.externalNativeBuild/ and /captures/; the gate reports every module whose ignore file is missing or incomplete.",
       "evidence": [
         {
-          "resource": "repo://build.gradle.kts#L97-L110",
-          "version": "repo-lines-v1:sha256:47986625dead90b9f0505d02d88df665220bb841a38687372ffa767223ea3af0:eyJzZWxlY3RlZExpbmVDb3VudCI6MTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFlNDRkMGUzZjExNzI2ZTk0NThlMmU2M2I0OTNlYzg1YTVkNDM2YmQ5MDE2OTMwMWQzNmI0YzkzZjA1OTZjZTgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU1MjJjNDJjZDE5YzZkMDNkODA4YzQ1MjcyMDU1MjgyNWI3ZWExYzViNDkxYjIxODUxMWNhYzc0MTVjZjlkOWIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImY5OGJkZGM3OWFlNjVmMTIzMzU0YjlhZWIxOWM5ZWNlMDk4Nzc1ZmYwMTgwYmJjODQ4YTkzMzc3OWE5NjdlZjkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjY2ZTBmMGEwOTU4ZWFmN2QzMGY2NjVhMjNkNzM3OTc3ZjNjMTg4ZjczZTcxMzMzZDU5M2U1YzZkNzdmMWQ5N2UifQ"
+          "resource": "repo://buildSrc/src/main/kotlin/cn/com/dcsgo/mihx/verify/ProductArchitectureVerification.kt#L96-L110",
+          "version": "repo-lines-v1:sha256:291041929d6ba96c9503f120e4e910cbc93b0d52420d2dda5b4e537d5cb576cf:eyJzZWxlY3RlZExpbmVDb3VudCI6MTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFlNDRkMGUzZjExNzI2ZTk0NThlMmU2M2I0OTNlYzg1YTVkNDM2YmQ5MDE2OTMwMWQzNmI0YzkzZjA1OTZjZTgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU1MjJjNDJjZDE5YzZkMDNkODA4YzQ1MjcyMDU1MjgyNWI3ZWExYzViNDkxYjIxODUxMWNhYzc0MTVjZjlkOWIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImY5OGJkZGM3OWFlNjVmMTIzMzU0YjlhZWIxOWM5ZWNlMDk4Nzc1ZmYwMTgwYmJjODQ4YTkzMzc3OWE5NjdlZjkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjY2ZTBmMGEwOTU4ZWFmN2QzMGY2NjVhMjNkNzM3OTc3ZjNjMTg4ZjczZTcxMzMzZDU5M2U1YzZkNzdmMWQ5N2UifQ"
         },
         {
           "resource": "repo://feature/home/.gitignore#L1-L5",
@@ -445,10 +457,76 @@
           "version": "repo-lines-v1:sha256:885b825ebdc45b7089bbf935c654430d64b0512689b422a05d9c4af4f0ddf2e3:eyJzZWxlY3RlZExpbmVDb3VudCI6NiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiY2JhMzE0NWFlZTBkYTA1OTI0ZDNhZDBiMWVlYjRhZGU3NzYxYjY2N2Q4YTk2MTQ2ZGVlZjM5YWJkMWNlNDhjYiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDVhNGFmNzBlYjI5MTYwNmQxNDgxNWRlN2E1ZjE4MzQxYWVhYTRmY2E4Mzg3ODQ4YmMwMWNkZjM0YTE2YTlkOSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNmM4NTdiZGUyMmI4YjEwNDFjOTBiMzMzNGZkOGMwZTI0ZmU1OTA4NjBhODY0ZTc2OTU5NWRmMGRlZDc1OTk1NyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMjZhMTViZDA1YmI4ZWQzMGEwYmQ0N2Y4M2VmOWExODM4ODEyYWNhOWNjZTcyMjgyOTNhYzc4OGJjNGYyODI3MyJ9"
         }
       ]
+    },
+    {
+      "id": "claim_ef208e249d85406c90e51afadf8c51c1",
+      "statement": "Explore playback (v3.11.0) is a domain-policy feature split across the boundaries: :domain owns ExplorePlaybackPolicy (INITIAL_BATCH_SIZE = 10, REFILL_COUNT = 5, REFILL_THRESHOLD = 0, and MIN_LISTEN_MS=30_000L / MIN_LISTEN_RATIO=0.25f defining a quick skip) plus RandomQueuePlanner.planExploreRefill; :feature:player owns PlayerRandomQueueFacade.refillExplorePlayQueue/buildExploreRefillPool with a layered candidate pool (liked & no-dislike, then no-dislike, then full library); :data persists votes through WordPreferencesRepository reading the Room word_preferences table, and WordPreferenceRepository.recordSongOutcome adds a like vote to every emotion word on a full listen and a dislike vote on a quick skip.",
+      "evidence": [
+        {
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/repository/WordPreferencesRepository.kt",
+          "version": "repo-file-v1:sha256:ea6871212458d76411a332239c70c42f474db460570b3be9360fb798fbc861ac"
+        },
+        {
+          "resource": "repo://domain/src/main/java/cn/com/dcsgo/mihx/domain/playback/ExplorePlaybackPolicy.kt#L7-L33",
+          "version": "repo-lines-v1:sha256:b5b70b81c4876b7eaa8f74bd86501efd7bc5a1ae27eb4d0c4adee0a3f7acebaf:eyJzZWxlY3RlZExpbmVDb3VudCI6MjcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQzMjE0MTkzY2ZkZjhjMmMzMDU0ZTM2Njk3ZmI3MzRlNTM0M2ZiZDY5YmIwNGJmYWFkOWFlOTBlNGRjOTc1MDEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQ4ZjI4ODUzNGI2YmZjMTFmYmU4OGJiODMxM2EzY2EyNDFlNmJjOTEyZjc2OTJlMjM3MTUzNjkyMzk3NzZmODEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        },
+        {
+          "resource": "repo://domain/src/main/java/cn/com/dcsgo/mihx/domain/playback/RandomQueuePlanner.kt#L34-L57",
+          "version": "repo-lines-v1:sha256:67019e924c668bd05959902f45357413cc6f83d2ead1f6df3cca1b0704832158:eyJzZWxlY3RlZExpbmVDb3VudCI6MjQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM5Y2JiYzY1NDY5ZGIxY2EyODQyZWZkOTdkZjdlZTJjZTZjYzE1NzE0ODJkMDFhMThiNzkwYTEwYzdjNTEwZjMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjE3ZGYzOGI4YzZlMjQzNmMyYzFiYjFkNWE4OWJhMDBmZmUxMDBjMWNjNmZmN2FhZWZkYzhlYjM5MTk3NDUxYzUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjJjYmU0MTNmNjE4M2ZiYjg1NDAyZTQ1MTNkNjkxNjkwM2RhNjgyNGNjNGNiZDZjOTE2MWIyNTViNDBiOTdhNWUifQ"
+        },
+        {
+          "resource": "repo://domain/src/main/java/cn/com/dcsgo/mihx/domain/repository/WordPreferenceRepository.kt#L10-L25",
+          "version": "repo-lines-v1:sha256:c363801fec432d214a011f0677b60470779a68c40810d468d12731b96ceb50ba:eyJzZWxlY3RlZExpbmVDb3VudCI6MTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU2NjVhOWQ3NDVkODBkYmFiNjVkN2NiMWI5ZTJjMDMwYzQ4YTMxYzgyZjJlMGZhMTBkOTA5OGU3OGEwMDA0NzYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk2MmVmYzNhOTI1MzM1OTBhN2ZjNzY2MDcxMWYzNjZlNTliODJkODc1YjdhYWMxY2Y1NzEyOTIxY2U3MzY5MGQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjBkYzMxYWI3ZGQ3YTJmNmQyYjJkNTRiOGQ5MGExNmE0MDFhMDkyMWI1OTZhOGUzN2VmNDhhYmY4ZGQzZTkwODEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        },
+        {
+          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRandomQueueFacade.kt#L238-L310",
+          "version": "repo-lines-v1:sha256:878266d97ebdfe0a9beaee60ff5b07eb747a97dc47b0f27397f40c89092cf8c9:eyJzZWxlY3RlZExpbmVDb3VudCI6NzMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImJjNDgzNmFlNmE3ZmU5NGRiZjAxMjdlMmIwZTFmZTVmZDMzNjcyOGZjNTU3MmYxOGM5MTMwYzRlYWQxOWEyYzQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4M2Q4YmYzYTNkNGY4ZWY5ZGYzNTkxNjk4ODQ5MmVlMzNlNmMzOGY2OGRkNmMzNDAxNDYxYzdjZmZhNTZiMGUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImE5YTk2ZDVmZjg2N2JiY2UyMzU2MTNlMTc4OTkzMDhlZjUyY2ZjMjMyNzA2NDc0MjgzNDIyNDM4ODgyYTk3MWYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjMwZGYyYTZhMGRkMjZlYzFlMjBlOTk0NjJkY2NhYmU5NzA4NjdjMjk3ODE4MTE0YzVhMjhmZjA0MWY5MGYzMWUifQ"
+        },
+        {
+          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRandomQueueFacade.kt#L89-L137",
+          "version": "repo-lines-v1:sha256:53a1a934f217db91784653c03f20ad1defd4f5513173167017530d90a1b3d6af:eyJzZWxlY3RlZExpbmVDb3VudCI6NDksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM5Y2JiYzY1NDY5ZGIxY2EyODQyZWZkOTdkZjdlZTJjZTZjYzE1NzE0ODJkMDFhMThiNzkwYTEwYzdjNTEwZjMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImU5MWY0NDMxMWEyMmUyMWRmMzQzOTJhN2MzOGQ3MGFkZTZkNzM0ZDlkOTY4ZjVlZTc5ZjEyZWEyZGM0M2Q5OTAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjNhZDUxZTE0OGNmZGJmMDU2NTA2NGZhODNlMDU1NjQwMzA2NGZlOWZmZjQyZDFjNWU2MzNjYWMyMzcwNzM3ZTIifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_4e7505ccfffb40b380c454157304415e",
+      "statement": "Emotion analysis memory is budgeted adaptively to the device heap: both EmotionAnalyzer and FfmpegPcmDecoder read memoryBudgetBytes = EmotionAnalyzer.memoryBudgetForHeap(Runtime.getRuntime().maxMemory()), which returns (maxHeap - 64MB baseline reservation) clamped into [96MB, 512MB]; a 256MB heap yields 192MB (unchanged behavior on low-end devices), while larger heaps (384MB -> 320MB, 512MB -> 448MB) automatically allow longer 192 kHz files. ShortAccum trims truncation during decode and truncationReason distinguishes 'too long' from 'memory exceeded'.",
+      "evidence": [
+        {
+          "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/player/EmotionAnalyzer.kt#L40-L42",
+          "version": "repo-lines-v1:sha256:1ccd4b7f53f5d6ca7e43d7f78f6b282e40f75c4746c8924c241e193ce33a6e65:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMDFiYTQ3MTljODBiNmZlOTExYjA5MWE3YzA1MTI0YjY0ZWVlY2U5NjRlMDljMDU4ZWY4Zjk4MDVkYWNhNTQ2YiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNjRkZTkwMGQ3ZjUxNGM3NzEzNTdlMzU4ZjYwOWY2ZjgzNzk1MGMzZDYzNjExNTZhMGZiYmY5NzVkZTRlMGM5OCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYjliNGI4YzQwN2NiMmUxMmEyMzg5OTRhOGUxOWI5YzMzZGMwOWZhYTUyMWQ3ZmUzMWVmOWU4NmE0ZTBmODc5MSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiODI3ODhkNzZmZmMwYTlkOTZlMzFhNTliZDVlMGY3ZTYzOTNkZTQ5ZDdhOGM3ZDMxMGFhNjE2ZjUwMTdjNDU1YSJ9"
+        },
+        {
+          "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/player/EmotionAnalyzer.kt#L506-L537",
+          "version": "repo-lines-v1:sha256:49de7bf695167b814feb8776f51fe2fd0c914efeadaa3293bf5e1baac25bcfb5:eyJzZWxlY3RlZExpbmVDb3VudCI6MzIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAwNjhlNjlkNmVmODY4ZGRmZGY5ZmY4N2E5NTY2YzdiMTVjMmE0ODhiYzQxNDM2NmE4ZjYwMTJjY2EyNDQ2ZGUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImM0ZjdkY2MxMTBmODZjNGFmNTZkNTQ3ZThhNTNlYWI5MDZhMTY3NzJmMjBiMTBiMDYxMzhmNjBhYjlkMGI0MjIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImRhOWY4NmQyOGU3ODRmOWZkMzFmYjcyZDE1ZjYwY2JjZWFhZmRkNjY5Y2JkNWI2ZGE3ODg4YTAyMzMyMWViYjkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoyLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjM3OTRkMDJhODEyMTk0NGQxNzZkMjY1ZTliYjljYzU5ZjZhYjg5MGJjYWRmOGFlZmRlYmRiYmI0ZjJlYTg0NDQifQ"
+        },
+        {
+          "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/player/FfmpegPcmDecoder.kt#L41-L41",
+          "version": "repo-lines-v1:sha256:343bfa5c2511367ac625687cf9113d2b6bccd68ea3f71e490d3f1f64f0afcd07:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMzQzYmZhNWMyNTExMzY3YWM2MjU2ODdjZjkxMTNkMmI2YmNjZDY4ZWEzZjcxZTQ5MGQzZjFmNjRmMGFmY2QwNyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMzQzYmZhNWMyNTExMzY3YWM2MjU2ODdjZjkxMTNkMmI2YmNjZDY4ZWEzZjcxZTQ5MGQzZjFmNjRmMGFmY2QwNyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiN2QwNzE4ZmE0NzBhMjE4YzcxZGEwYWMwMTJjNjhhOTQ4MjJjZDQzZTRmMTI4MGU2ZDVlODk1OGFlYzkzNDc2OCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNzMwZDBlYThjMGFiNDAyYTI5YTZlMTA5MmJjMDNlMTcwMmVmY2ZhMzJlYzBmZmUzNGU3MDY3OGQ0NGJhZThlMyJ9"
+        },
+        {
+          "resource": "repo://player/src/test/java/cn/com/dcsgo/mihx/player/EmotionAnalyzerLimitsTest.kt#L60-L88",
+          "version": "repo-lines-v1:sha256:03b051ce710fb5764e1c99524028aff70a9b557ffe8d5637c5e86688b8f042bb:eyJzZWxlY3RlZExpbmVDb3VudCI6MjksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjVhMTBiMTE5NWYyNjYzZWQyZjQyN2U3MTBkNjA5MjExMzBiM2MzYmM0NTc4NTIxZDU2NTgyYTczMTZiOGRkNjUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY1YjRjYzQwMTM0NjlkNGE2NGQ0OGNhNmEzYWI5YTQ3MjMzZDY4NzkyODM2YTc0YTE1OTg1ZTE0MTJiZTBlZDYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjhlZmI4YTdhYTc5MzE3M2IwOThjNGMwMzFhMzRiMzBkNjM3OThkNTJhMWY1MWI4YzQ1MmMzMjNkYTkxMDNiYmYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImZmMGQ3NTk1MGRmMGZmOWEzZWU5NjYzOWRjYzhmZjVlYWVkYjQwZDY4MmJlYTkyNjIyYjUyMGRkODg3ZDkzZTkifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_a186038349f0465b8b6c07e04553b01b",
+      "statement": ":player classes live under cn.com.dcsgo.mihx.player (migrated from the old cn.com.dcsgo.mihx.data.player package so the package matches the module namespace); the architecture gate rejects any remaining cn.com.dcsgo.mihx.data.player reference in :player sources to prevent regression.",
+      "evidence": [
+        {
+          "resource": "repo://buildSrc/src/main/kotlin/cn/com/dcsgo/mihx/verify/ProductArchitectureVerification.kt#L465-L475",
+          "version": "repo-lines-v1:sha256:baac59a15ae2f9991110775aae4971fe3269c1d88e8811c1be3ee3a997cb8e30:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQ2MjczYTkxMzdjMWQ2YzQxZGE3MTA4MTc3MWRlMzlhZmY3ZjRmNjVjYzliNDk5ZDVhMTU1MDQyMzZiYzlkM2IiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImRhOWY4NmQyOGU3ODRmOWZkMzFmYjcyZDE1ZjYwY2JjZWFhZmRkNjY5Y2JkNWI2ZGE3ODg4YTAyMzMyMWViYjkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImQ0NGExNGJmYWMzZTU2NmRiNmIzNDA5YThmMTZlMmZkODRhODY5NjUyYTU3NTdhZDYzYjM0MjJhMThjMTIwM2YifQ"
+        },
+        {
+          "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/player/AppMediaSessionService.kt",
+          "version": "repo-file-v1:sha256:4f6ac3d1873687ef903e7b708979abad161af36ec1d715b3ef04b12957b0559f"
+        }
+      ]
     }
   ],
   "verification": {
     "by": "openwiki/0.5.0",
-    "at": "2026-10-10T11:15:45.800Z"
+    "at": "2026-10-21T03:20:08.093Z"
   }
 }

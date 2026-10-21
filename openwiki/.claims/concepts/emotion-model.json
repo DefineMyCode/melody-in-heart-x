@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "pageVersion": "sha256:d1ad613692190bdb2ba62830b5fc07a4439dea78bfdc9b7031798b826ce97f84",
+  "pageVersion": "sha256:4f282a06ebe5fe66008d47f3b2c82adf03253f0f9978ccea45dd44e42a558b93",
   "claims": [
     {
       "id": "claim_7e4a17a19aeb4d9fac20b89858af9b29",
@@ -82,27 +82,27 @@
     },
     {
       "id": "claim_731ae469653f427db8d1d8ebdd041c59",
-      "statement": "emotionTagsOf(emotion) 是展示词条的唯一出口：userTags 非空时原样返回（用户词最高优先，可覆盖模型结论），否则按逐窗曲线投票取各组 headline；曲库情绪 Tab（EmotionViewModel.buildRows→EmotionSongUiRow）、歌曲详情 SongEmotionSection、随手播缓存（PlayerRuntime）与时段词条统计（MoodTimeSlotViewModel.tagCounts）全部经该函数取词条。",
+      "statement": "emotionTagsOf(emotion) 是展示词条的唯一出口：userTags 非空时原样返回（用户词最高优先，可覆盖模型结论），否则按逐窗曲线投票取各组 headline；曲库情绪 Tab（EmotionViewModel.buildRows→EmotionSongRow/EmotionSongUiRow）、歌曲详情 SongEmotionSection、随手播缓存（PlayerRuntime.moodEmotionTagsCache 在 observeMoodSlotCaches 中持续订阅映射）与时段词条统计（MoodTimeSlotViewModel.loadStats 用同一函数）全部经该函数取词条。",
       "evidence": [
         {
-          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/emotion/EmotionViewModel.kt#L190-L202",
-          "version": "repo-lines-v1:sha256:0ed30074758da8afaabd791f3f7dff9ca50a50b7661825eb5f3519e36d439a1a:eyJzZWxlY3RlZExpbmVDb3VudCI6MTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjYzNWJiN2UzODI1ZDlhMWE2MDIyZGMxMTgwMThmNDJhY2Y4MTY4YWQ5ZTkzYTE2MDYzYmQ3YTljNDU3Mzg5Y2UiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjhlYzFlODAxY2M2Njc0ZjcxNTcyZGFkNmY5NTA2Zjc5Yjg1NDFhOWM0ZjNkMzZkZDE3Njg5ZGExYjZlZTY2YTciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImI2M2FlMGY2MDk5NTM4MzJkZDYwZDIxN2Q4MDdkMTU0NWExYjMxNTQ5YjQzNjcyYjc4ZTdjNjdhNzYzNTgyNmMifQ"
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/emotion/EmotionViewModel.kt#L207-L218",
+          "version": "repo-lines-v1:sha256:b0472da8f56fd8be2685a053a547a087ba2770ea0c11e51d8edd6ab6f8041939:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU5ZTA4YmFlZWZmNmYzMDdmZjA3NTJmMDhmODhkYzI0OGJiNmE3MWM1OGNiYmU1YmEwNzcyMTQ4NzRjZTA5NzEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjE5Zjc1ZTExNWE2ZjZhNTc2NDlmZjk4NWIxOGI0MmI4NDA0MmZjNjU5YzY0NmU0YTcyNWIwYjMxODEyMmM5MjUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImI2M2FlMGY2MDk5NTM4MzJkZDYwZDIxN2Q4MDdkMTU0NWExYjMxNTQ5YjQzNjcyYjc4ZTdjNjdhNzYzNTgyNmMifQ"
         },
         {
-          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/mood/MoodTimeSlotViewModel.kt#L52-L77",
-          "version": "repo-lines-v1:sha256:b23b180ce335816aff3f0850988f954335d533b220a7779fa2c6c879e8e0656f:eyJzZWxlY3RlZExpbmVDb3VudCI6MjYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImEzZDhmOGRiOTY3OTk4OGNmNjRiMDRhZTA0MGQ5ZGY5ZmI1OTg2NDZiNThiNDgwYzhhODBmY2EwN2Y3Yzg0YjEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImJjZjdlNzI1OTQ3ODJmYmQ0NGFmYzA4ZDQ5Mjc2Y2U1MzJkMDk0ZTY4ZDllYzUyMTE0NTMzM2JkNWRhOWE2Y2EiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImY2YTJhMmUyZjdjZWE3NDE2OGQ1NTY1NTdhMmQ0NmQzZDVjYjc0MzRhODQzNmViNWU3YzlmZjcyZGE3Y2YzMmEifQ"
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/mood/MoodTimeSlotViewModel.kt#L71-L77",
+          "version": "repo-lines-v1:sha256:a01de4c6f10ae406ddf5dfa23a540867875f83b14a7db1b865e38bc89e9516ba:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNTkxN2FlOWE3MDYzZTAxMzIzMTQ4ZTUwOTM4YWMwOGVlZTJjY2VjNWQ1NDljMjRiNTVjYjEyMmVjNjQ1NzM5ZCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNTdhNWZmYTNlMDk1ZGYwNWI2YjMzMzM4NzFhYmExYzFiM2UyNWFiM2RiZjFkNDkyZjE1NGMyY2MyYjEyMmY1NyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMWM0MGU2MWY5MmE1MzMyODkyM2Q1NjIyZGY0ZGZjYjRhNTFlZTFkNmJjN2MyZjg1YTQwN2YyYzdmODM5OTUyYyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTFkZDc5MjE5NzdhMTRkOTIzN2IyMzJlMWU2ZDE2YTZiNjk2YmE3MjljOTM5ZWZmMGY2YTg0MGY1ZDBlMjVjOSJ9"
         },
         {
-          "resource": "repo://core/model/src/main/java/cn/com/dcsgo/mihx/core/model/EmotionTags.kt#L1-L13",
-          "version": "repo-lines-v1:sha256:29d731baa9a132b73c6c8d0674aef07b2223f5dd5f3ca58dc51570d69e028f33:eyJzZWxlY3RlZExpbmVDb3VudCI6MTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQxYjBhZjczZDMwN2RiNDYwYTk0YTZhZjk1Y2VlN2JhMzEwNTIxNzhlY2IwNzgwNTFjZGE1ZDY1ZDJjMzA4YWUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjgzN2FmMThhMWNhZTYzMWU4YTUyNWZjYjEyNGJkMWVhZGM5NzU1MTNiYzEwZjQyOTMzZGU2MThiNTY4YjkxZTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+          "resource": "repo://core/model/src/main/java/cn/com/dcsgo/mihx/core/model/EmotionTags.kt#L11-L13",
+          "version": "repo-lines-v1:sha256:d860b682b0d022ed58ac02f8bee8dfc4894788508bc575631dc09e26531d17e4:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiN2Y1ZjkyZjlkYjk1ODRlNGQ0MjFlZGNkZDY4NjM0OTk3MzkzY2MwMzFjOWE5OWVkOWZiYjViMmZkZGEzZTYzMCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiODM3YWYxOGExY2FlNjMxZThhNTI1ZmNiMTI0YmQxZWFkYzk3NTUxM2JjMTBmNDI5MzNkZTYxOGI1NjhiOTFlMyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMGQ0NGEwODZkOTk0MGI0NDc0NDFhZTAzMGQ2NGE4ZWViYzZiYTY0MDE0ZWU4OGRlNWRjNjEwMzJmNmQ1NjI4MiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjEsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNDEyY2EzNDVjY2Y3NWJmOWMwODA2YmNlNjk1YmU4ZGU4MDhiNzk5ODQyNTFhN2E1NGQyMDJjZjYxMDFkZDQ1MSJ9"
         },
         {
-          "resource": "repo://core/ui/src/main/java/cn/com/dcsgo/mihx/ui/components/SongEmotionSection.kt#L136-L161",
-          "version": "repo-lines-v1:sha256:8bf581431b3b7c06f6064a97fc0ad9001995d85fd3239a6ac24e4c1108ab3daa:eyJzZWxlY3RlZExpbmVDb3VudCI6MjYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjA0OTNlNTExNDg0ZjYyMjA2MDQ3YmU1MTdhMGI1YmVhZGVjN2VjOTBlNGFlMTJiZTdmZWY2M2M0ZDBlMDZlMTYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBjNjQ3OWNjMjMwNDQwZmQ0MWU4MjI0MjE4Njc5Njk4NTU5ZDI4OTNiZDY3YjQzODBhZmFiODExYjM4YTU1YWEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjcwODFmMjEyNWJiZDIyZWE5OTE1NzM0Mjk4NGY4Njk2OWQ4ZDA4NzhkZDE3ZDI5OTdiNzgyZTgzMGY0YWU5YTgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjI5ZDg5NWNiZDM0YzY1NjkyNWFmMjNlYzFhOWFjYzE2MDU3N2FlMDU0ZGU4MTY2MGM2NzEyMzdjY2M4YWYwNTMifQ"
+          "resource": "repo://core/ui/src/main/java/cn/com/dcsgo/mihx/ui/components/SongEmotionSection.kt#L136-L163",
+          "version": "repo-lines-v1:sha256:a133dd9d431f93b1ea618dcb9c89b96079a4a1cc21b6a3b423ca0c7375b07944:eyJzZWxlY3RlZExpbmVDb3VudCI6MjgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjYyNmM2MzlmZGJkNjg3MjQ0MjdkNzcyZmRhYTZhY2VmYjg3MjViMjRmNzhhNjM1ZDVkMDc5MDg4ZTgzNjdhNjYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBjNjQ3OWNjMjMwNDQwZmQ0MWU4MjI0MjE4Njc5Njk4NTU5ZDI4OTNiZDY3YjQzODBhZmFiODExYjM4YTU1YWEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijg3OGQ5MTg1ZGMzNmIzZTljZWYyNGFkYzc2YmZjMDNjMGIyYzYwOTZhZWRiNzVmZmRjYTY0NzAwODQ1NjNkNmEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjI5ZDg5NWNiZDM0YzY1NjkyNWFmMjNlYzFhOWFjYzE2MDU3N2FlMDU0ZGU4MTY2MGM2NzEyMzdjY2M4YWYwNTMifQ"
         },
         {
-          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRuntime.kt#L387-L395",
-          "version": "repo-lines-v1:sha256:58acbce7c2abd83fdaa9538b73155103968baf603152bb2a98a9b9f2fe6415f1:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMzllZjBlMWRjNmMyN2EwYzJiNGQzYmVhMjBkYzAwZjZhYzU0ZmVjZjRhZDcwM2U0MzVhNTEwODA3OGE0MTUzNiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZTZiMDQ0OTE0Njk3MjJlODM2M2E5NGU0MDQ0NTM4ZTAxM2EyYTIxN2UzNmIxZTU2OGJhNjBhY2I3YjRjOGYyZSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNmM4MzkyNzU2OTY3YjliMzkyZTI1ZjVlNDI2YmE2MjY4Y2Q1MjA3ZmNmMWY2YTU0ZTM5M2UxNTU2YjBhODYxYSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMmQ0NzEwMzk5MzI0MDllNjc3ZTQ3MGQyMDg2NDc3MjhmMmI4MmY3YjJhMjhlYzllNzhiMjVkNGFmYTA2NmEwMSJ9"
+          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRuntime.kt#L428-L437",
+          "version": "repo-lines-v1:sha256:df5b58c71a3823721ec14134fc6d2ffb50338fc7506ce602bc88b7e52df51c22:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjdhMWE5NWJiZjNlNmFlNTRkNTI2OWM5NmIxYzkyYzljY2EyNWU3Njg4NDc1NzA1MmJjN2RkZmEwMjVhMzM4ZmYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY1YjdhOWVmNTYyODc4Mzc4YzIwZjMzN2JiMTE2YWViYzAyMWY1YThjZjE2YjNjODY5MDdlNWJhZDFkMjFjYWQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQzY2FiNTVmMTkzNTk5NzYwOGQ5NjNmOTJhZDQ1MTMxNjk3ZjI1MTY2Y2UwNDg4YjI2MTcyZGVmZjgzMWY0YzMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImNhZDE0ZDIzNjExNmM1NWY4NDE0ZWVhYWZlMzdiYWEwYjc2OTZmMTllNmVmMmYwNzY0ZGJiMGFlZDU5ODJjZjQifQ"
         }
       ]
     },
@@ -121,16 +121,12 @@
       "statement": "SongEmotion 域模型承载：全曲 V/A 逐窗均值、原始未平滑逐窗曲线（5s 窗/2.5s hop，平滑归渲染端）、A 轴正向峰值秒数 peakSec、windowsAnalyzed/durationSec、modelVersion/analyzedAt、可空的整曲平均 embedding 与用户校准三字段（userValence/userArousal/userTags）。",
       "evidence": [
         {
-          "resource": "repo://core/model/src/main/java/cn/com/dcsgo/mihx/core/model/SongEmotion.kt#L10-L26",
-          "version": "repo-lines-v1:sha256:5e544da1d85a1e6c417b39eb859c0b20789837b0139d3daeb0aa0a54e3acd323:eyJzZWxlY3RlZExpbmVDb3VudCI6MTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijg0ZGRjMWU2ZjMzNjQwODAyYWI5OTI5MDY1ZjNjN2QxMTQ4ZDVlNThmODBkMGRhOWU4OTExY2JiN2VmNDIwM2EiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjczZTlhZGQ4MTFhODBlZGU4NDcxZmI0M2ZkNmZiMTM1NGQ2NTJiZTgxNDAwMGY4NDFkMDRlY2VmNjc1NzNhNWMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjRmZjQwODBiN2I4ZDNkY2IwMmQxOWVjMjI0Yjc4ZTBlNWNiZmMxMDdhMTczNjQ2OWE2YzQ4NWFlMjc4MTUxOTMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjhmNDg3OTQ0MzM0OTJhZTY5MDA0MmYzN2YwNTc0MjRlYzBmOWZjYmFhMDBiODcxMTA5ZmMyZmIyMjAwMjQ4ZjQifQ"
+          "resource": "repo://core/model/src/main/java/cn/com/dcsgo/mihx/core/model/SongEmotion.kt#L10-L42",
+          "version": "repo-lines-v1:sha256:a48c1b4552297f9dc180cb4a4b14313904ff55d2daa69e8e4c77ffbc318f2489:eyJzZWxlY3RlZExpbmVDb3VudCI6MzMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijg0ZGRjMWU2ZjMzNjQwODAyYWI5OTI5MDY1ZjNjN2QxMTQ4ZDVlNThmODBkMGRhOWU4OTExY2JiN2VmNDIwM2EiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjRmZjQwODBiN2I4ZDNkY2IwMmQxOWVjMjI0Yjc4ZTBlNWNiZmMxMDdhMTczNjQ2OWE2YzQ4NWFlMjc4MTUxOTMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
         },
         {
-          "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/data/player/EmotionAnalyzer.kt#L120-L137",
-          "version": "repo-lines-v1:sha256:1555d1154c4cdbdaf1ff87c9f30d9108f05d11ef743d8075e9bd6653b35eb53a:eyJzZWxlY3RlZExpbmVDb3VudCI6MTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBiNDJkN2UxYTMxYTIwMDZhNWJlNmU3ZDQ4MDc1MTAwNzc1NjhiZGIwNmNiZDhiZWJkOTVkMzdmOTlhYTczZjciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU1MDMyZTk2NGQwOTMyMzUxZTVkMTg1MjY5MjgxYjE3MWEzYTA5YjA4YjI4NmU2NjFlYTQ3MDMyM2M4MmViNGQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjJhMmVhNmQwYTRlYjZlNWI4YzAyZTBmMDJlMjM0YmIzNTAzY2IxZDk0YzQyOGRiNDNiZjQ1NmJkY2RhZDFkODQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjllMDA0NjNiMTYwN2E1NzNlMTI1MjQ2ZjQ2YmFmZmJmMTliODEwNDIxMjFlM2RmY2IyODE4OTZiZjEyNzlhNTMifQ"
-        },
-        {
-          "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/data/player/EmotionAnalyzer.kt#L385-L395",
-          "version": "repo-lines-v1:sha256:5331aef37749b4bd748f89ef6ebba0c82821208ec110ff758fa4ae08c128e620:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImJmMzMwMjdiYzIwYjViY2M0YjEzOTBiNjM2YjJhY2E4YjA4NTNiZjUwMjA0YjAyMDlhMTdiOGY0ODQwN2M3OGIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQyN2MyN2YxMDhiZDliNTNiOGNhZWYxYmEyZDE1ZTgxNTUwYWZlZWFkZDNkZDhjMDZmY2JlNTBlNjRhMjBjYjYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjFlNGRlNzYwZDU0ZThhODEzMDRlMjExZTQ5MWFlNzMzOTZlYTBhOThhOWZmNmZiYzhhM2Y0Y2JkNTdjNGFlZWQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijk2YjhhNjdjMDdlYTNlNjZjZDc1NjI0Mjg5YzBhYzc3NTVjMWZjMDE1M2EzZTUyMGI5YzQyMjEzMGFhZGU2ODIifQ"
+          "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/player/EmotionAnalyzer.kt#L115-L150",
+          "version": "repo-lines-v1:sha256:551925c2a3829d9f4fee09a60652766a7928026aa9670e3a370abec892d331c3:eyJzZWxlY3RlZExpbmVDb3VudCI6MzYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImI5MWMxNDU3YzY1YzcxYjdlY2M5ZDAzOWZmZjgyYzM1ZjQ0OGU1NDUyMjA3YjlhODU3ZDU4YmRlMjBmNjI3ZGYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU1MDMyZTk2NGQwOTMyMzUxZTVkMTg1MjY5MjgxYjE3MWEzYTA5YjA4YjI4NmU2NjFlYTQ3MDMyM2M4MmViNGQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjBmMjAzMzM4YjIxZGU3MGZlYjhkZjZlMmY0YmM3YWYwNDQzNWM3YWYzOTZjZmE0NTJhZjhkYjA1M2Q2NWYwOTgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjllMDA0NjNiMTYwN2E1NzNlMTI1MjQ2ZjQ2YmFmZmJmMTliODEwNDIxMjFlM2RmY2IyODE4OTZiZjEyNzlhNTMifQ"
         }
       ]
     },
@@ -139,16 +135,16 @@
       "statement": "SongEmotionEntity（Room song_emotions 表，主键 songId、无外键）与 SongEmotion 由 SongEmotionsRepository 私有扩展互转：curveJson 为扁平 [v,a,v,a,...] JSONArray（解析失败降级空曲线）、embeddingB64 为 base64(float32 小端)、userTags 逗号拼接（读侧过滤空段）；迁移轨迹为 v8→v9 建表、v9→v10 增列 embeddingB64 与 user 三字段。",
       "evidence": [
         {
-          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/di/DatabaseModule.kt#L143-L170",
-          "version": "repo-lines-v1:sha256:454d926c73dfa41ec455b622c85ad86aa698bbfd4d2d43d2b3c24eacc3474fc2:eyJzZWxlY3RlZExpbmVDb3VudCI6MjgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjkzMzNhMDNiYjNjMmEzNzFmYWUxNWJiNzA1N2I2MDQzMWNmZTVkZjM1NjdlYzZhMGY2YTAxNWViOWQyMmNhYzIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk5OWJkZWZlZWFjYTYzNDBlMDI5MGRjODZlODg5Yzg5ZDVlMTg5YWE1YmE0NGI1ODViM2I3MDczNGY0YTYyZDgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/local/entity/SongEmotionEntity.kt#L12-L29",
+          "version": "repo-lines-v1:sha256:ebc64db63b69d907457778120263dc69fc5cf707250d7e10b349dac78c00fc16:eyJzZWxlY3RlZExpbmVDb3VudCI6MTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijc4OTQwYTg4MzI0MDA3NmNhNmYyOWFkMDU1NmExODZhZjE3OWE4ZDBjM2ViNGMwMTk3YWJiYjYwODA3N2RkNzIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijc0YmExY2VkMjBlYTBjMDZhM2ZkZjU4MTNjMzNhYTZhMWI5MTQzN2Q4YzA0NGY0ZDhmYzQ3OWE4M2JmODc3YmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjM4MjJlZjAyY2U1OTBiYTNiN2IxODc2MDE0Y2MwNzAyNTg5NDNlNGNhYzU4MmZlMTU0YjdjZmYyNzVhMTk2MDUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImZhZmJhMDUyN2MzOTUzYzRiNmUwZTViNTczOWJhODM2MTJmODA1M2JjZGM5NDY2NzMwMTkzY2QxZDU5MGI0MDgifQ"
         },
         {
-          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/local/entity/SongEmotionEntity.kt#L6-L30",
-          "version": "repo-lines-v1:sha256:f2581ce1f56bcfeeb2f757b7157c88529fb331a716deedf23a0c53682d881f00:eyJzZWxlY3RlZExpbmVDb3VudCI6MjUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVhZjIyY2YwNzMyNTkyYzI0NzE0MWNiZTYxZWZhMTEwMTI2MTJmNWEzMTIyYjlhZjliYmFmNTJmNTcyNGQxOTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZhZmJhMDUyN2MzOTUzYzRiNmUwZTViNTczOWJhODM2MTJmODA1M2JjZGM5NDY2NzMwMTkzY2QxZDU5MGI0MDgiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijg2ZmY0NjA1ZGQ0MzljZDgwNWI0ZGZiYWU1ZDg0NTEzOGZhYTE5OTY0MmM3MDk5NzVjODA1OThhOTMwNjM4M2IiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/local/migration/MelodyMigrations.kt#L112-L139",
+          "version": "repo-lines-v1:sha256:4560176e350b536e5300691b2ebfa7cbdc538efd3221e0db81a76d2863919b0c:eyJzZWxlY3RlZExpbmVDb3VudCI6MjgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImI2NGU5M2U2ZWNiZjYwZjIxOGI0NWQyZTQyN2FmNzYzOWY4YzE0ZmEzMDUxNGY1ZDZkMTAxMWQ2MzE5NzA3ZTAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk5OWJkZWZlZWFjYTYzNDBlMDI5MGRjODZlODg5Yzg5ZDVlMTg5YWE1YmE0NGI1ODViM2I3MDczNGY0YTYyZDgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjhmYmE5Y2VhNWVjYzAwNTE5YmI0ZGMyNzg5MzhkYzJkOGQxOGQ4OWUwYjBkZTVlNTE5MGVjOGVjNDcyMTkxODgifQ"
         },
         {
-          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/repository/SongEmotionsRepository.kt#L112-L176",
-          "version": "repo-lines-v1:sha256:3e8541e0fd1df82f17ed68aa9704ace197d22e09829190d86bfa8122a9d81d0b:eyJzZWxlY3RlZExpbmVDb3VudCI6NjUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFiMDQzMWZkOTQ5MjM5MDRmYTQ2ZGE1MGYwYzhkNDQxMGQwOWFjNGJhMjczOWQ1MzJhNmRhNjc4MGE5MTk2NDMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjE5ZTc2MzU1Y2YxMTk5NDgwYzNmOTk4MzZiMTQ4NmM4NDFkODkxZmFhZDkwNGM2MDhlMDkzMDIyZDM3NTdhZWUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/repository/SongEmotionsRepository.kt#L130-L177",
+          "version": "repo-lines-v1:sha256:f38119da2458d064d3208b930a6efaf9f9980e927e3efb10706414b7843e11da:eyJzZWxlY3RlZExpbmVDb3VudCI6NDgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjkwZWU2ZTAxZWE2MDJkNzUwYTY3NDY0OGQ5MzBkNzNiNmFmNzY4MDI2YTRlYmU4ZGM3Y2FhNjAwZjMyMWE3MDkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjkyYjVlOGExZjRmMmE0YzQ4ODNiZjJmMWQwNWVlYzI3YWI5NjU3MjY4NmMwY2Q1MzBhNTg0NGQ1MWI3OTA4YzQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
         }
       ]
     },
@@ -157,16 +153,16 @@
       "statement": "SongEmotionsRepository 是 song_emotions 表的唯一数据源（:data 单例绑定 MelodyDao，对外仅暴露 :domain 的 SongEmotionRepository；:player 分析器为主要写入方）；其 upsert 在重扫（模型升级）且新记录无校准数据时继承旧行 userValence/userArousal/userTags 再写入——重扫不吞用户校准。",
       "evidence": [
         {
-          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/di/RepositoryModule.kt#L64-L67",
-          "version": "repo-lines-v1:sha256:ec4bf7002c93d59f8a4943181c04db3eadc7e492a1a70a181db746483686b3f4:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNGFhNTg3MGUwYTgwYzk1MGJmZTQxY2IxNjVhZjJiMDRkNjU0NDBjNGE5MjEyZDM5MTU3ZjlmOTBjM2I5NDExMiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNTM2ZWYxNWFmYjc0OTEyNmVmYmE4ODViODM1ZTAwMjJkOWFkMTZjYTRlMzM5YjM2NGFiMzUzNjhmNzc1NWVmZCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYmMyZWFmZDI1NTEyMjFkMTljOTFhNGZiNDQwYzQ4ZjNlNWZmNzNmZDA3OTA3MjA4ZjUyOTViN2NkN2U4YzgxNCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYmMyZWFmZDI1NTEyMjFkMTljOTFhNGZiNDQwYzQ4ZjNlNWZmNzNmZDA3OTA3MjA4ZjUyOTViN2NkN2U4YzgxNCJ9"
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/di/RepositoryModule.kt#L62-L67",
+          "version": "repo-lines-v1:sha256:d9cc55230c4ee1f5beff1856d05abadc0d99546cc1cec9214387c4bc29ecd29b:eyJzZWxlY3RlZExpbmVDb3VudCI6NiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYTAwM2NkOTg5YzZiODM5NmJkYWExM2M1MzE0MDc0MWJmNDc0NzEyZGNkMjhlOGUzYjE2Yjg4NDI2ZGMwOTgxOSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNTM2ZWYxNWFmYjc0OTEyNmVmYmE4ODViODM1ZTAwMjJkOWFkMTZjYTRlMzM5YjM2NGFiMzUzNjhmNzc1NWVmZCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMmI3YzE5MTYzZTM5ZjgyZGI0NGM1ZmRkYjllMmVhZWUxZjM4ZWQ4OGU1ZDlmODU0YWE4OWViOGExNTc0YjBlYyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYmMyZWFmZDI1NTEyMjFkMTljOTFhNGZiNDQwYzQ4ZjNlNWZmNzNmZDA3OTA3MjA4ZjUyOTViN2NkN2U4YzgxNCJ9"
         },
         {
-          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/repository/SongEmotionsRepository.kt#L11-L57",
-          "version": "repo-lines-v1:sha256:36107e33283e4ba13a27b26b4998b22aa19f92a87ab03e625efc46e0936c0180:eyJzZWxlY3RlZExpbmVDb3VudCI6NDcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVhZjIyY2YwNzMyNTkyYzI0NzE0MWNiZTYxZWZhMTEwMTI2MTJmNWEzMTIyYjlhZjliYmFmNTJmNTcyNGQxOTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjU0MTk4MmU0Yjc0MzkzN2U3MmUzYWEyZDZjNGIyOGQ1ZTVjN2E4YjdjYTg3NjQ1ZTZhMDljNTA0OWM0NGZlZjQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijg1Mzg1MjFiNWEzYWMzYjY0MTZlMzJmMWFhYWJiNjc5MjRkZDQ3YzMxOTYxOTY5NzQxNDYxNTcyOTAyN2M5NzkifQ"
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/repository/SongEmotionsRepository.kt#L48-L64",
+          "version": "repo-lines-v1:sha256:7271e80c6c3bc64a5a877d5686c684e680bd47fbade1e5f28a7ae751544eb98c:eyJzZWxlY3RlZExpbmVDb3VudCI6MTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk4MmYwYTRiODkyNjFlMmQwNWJiYWYyMjk1MzJhOTA3YTJmOWNkN2MzOWY5ZjYyYjJlNmUxMzg3NmQ5NmNmOTUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjZkYTVlYmQwODk4YzZhZmQxYjU1NDVhYjI0NDgwYjIxZTViZmI5MmQ4YjcxOTM5OWMyYTE5ZDcyNWE1YTlhY2YiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijg1Mzg1MjFiNWEzYWMzYjY0MTZlMzJmMWFhYWJiNjc5MjRkZDQ3YzMxOTYxOTY5NzQxNDYxNTcyOTAyN2M5NzkifQ"
         },
         {
-          "resource": "repo://domain/src/main/java/cn/com/dcsgo/mihx/domain/repository/SongEmotionRepository.kt#L5-L8",
-          "version": "repo-lines-v1:sha256:c9fd57a763b31d6e882a47a0f3bf5efbb4bbf89bdebc48d8cce789f6e3a0b383:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZWFmMjJjZjA3MzI1OTJjMjQ3MTQxY2JlNjFlZmExMTAxMjYxMmY1YTMxMjJiOWFmOWJiYWY1MmY1NzI0ZDE5NCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiOTcyYTQyOTM4MmIyZTE0NzE4ZTBlMzdiMDU3MGE4YTE3MDI5OTFmY2Q4NDk4Y2Q4NDA2MGE4YmY0ZjA1MDE3YiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYTFhNzdkNmQ5MWQ5ZDgyNzA4NTY5ZGMzMzhjZTc3YTg2YzA4MDY3MDc2OGE5ZjY1ZTAzMWVmODNhM2UwNDI2NyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiOTdkNTYzN2E5OGRhZjU3Zjc2MGM0ZjIyYjc5OGI4OWI3OWY4NzUzY2ZmYTY3ODI2NzcxZmU5ZDcxMzJmN2FhYyJ9"
+          "resource": "repo://domain/src/main/java/cn/com/dcsgo/mihx/domain/repository/SongEmotionRepository.kt#L13-L23",
+          "version": "repo-lines-v1:sha256:1393bf40457065b6e60c8d5c0a9a3ed698b44c4de15e2211cc0ac49bdc0e5978:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBkNTdmNmNhN2JiNGJiNTEzYTRjOTk4NTUzNDg3MTgzMGU0YmNmZWE2ZjdlYzZmMjEyMTIzOGE0ZjMzYjczZmMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImMxNTE3NmU1MTc0NDM0ODczNmZkYWE0NmY2Yjk1MDJlNDcxOGM0YWMxNTdmNGRhNTJiMzE0NzAyZGM5MzI5YjciLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjZiZGNlNDNmMWZjNmRiMjgzNDhhMTY0OTQxMjVmODZhYmRkN2E4MTI5N2RiNmNhZjI5ZmEzYmU5ZTZmMGYxNDciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImU0Y2RjZjIwMmEyYjI0Yzc2Y2I2NjRlYjE3Y2JjYzcxYzg3OWMzM2Q0ODU3MzFiYzQ0NjI1YjI5ZTIxMTY5ZGUifQ"
         }
       ]
     },
@@ -175,12 +171,12 @@
       "statement": "saveCorrection 支持无分析行时建 user-only 行：已有分析行仅 UPDATE user 三字段（updateSongEmotionCorrection，不动模型数据）；无行时 INSERT 仅含 user 字段的行（curveJson=\"[]\"、windowsAnalyzed=0、durationSec=0、embeddingB64=null、modelVersion=\"user-only\"、analyzedAt=当前时间），因此分析失败歌曲也可手动标记，读侧以 userTags 优先。",
       "evidence": [
         {
-          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/local/dao/MelodyDao.kt#L379-L392",
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/local/dao/MelodyDao.kt#L432-L445",
           "version": "repo-lines-v1:sha256:46ae5413a6949b5fec750979b39066c1110e146d027b9f0938297268f802641f:eyJzZWxlY3RlZExpbmVDb3VudCI6MTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY5ODRkYjcyNDcwZjU1MmIzYWM0OTcwNTA0N2E0ZDAxNjk5ZTZiMTBhOWJjYzNhOGIyODk0YTEyYmY2MmEzZWMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ2ZDBkYjc0MDVhNmIwMDYxNDJiODkxNGE0ZTMwNTQyYTg0Mjc5YmUxNGRkZGU3YWRlNjUxNWRiYjk5OTk0MmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQ4NjU0ODIzZDlmZDQzNTVlYTQ0YzRiZmFmMzA5NzZmZjBlZDcxMjIwZmYxNTM1ZTYyM2Q0ZDgxYzZkMjM1YmQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjIyZTI0MDAxMmFhZWI3NTAyMjYxNDVkNTM4MzA3ODI0YjJlM2Y2MjExMGY1MDBkZWMyYjU5MWZkYzNhNDc3ZDcifQ"
         },
         {
-          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/repository/SongEmotionsRepository.kt#L59-L91",
-          "version": "repo-lines-v1:sha256:10d5b7ab7771606dab9079c75677e1c2140057121c630033431d76d80224f6c7:eyJzZWxlY3RlZExpbmVDb3VudCI6MzMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAwNjhlNjlkNmVmODY4ZGRmZGY5ZmY4N2E5NTY2YzdiMTVjMmE0ODhiYzQxNDM2NmE4ZjYwMTJjY2EyNDQ2ZGUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk5OWJkZWZlZWFjYTYzNDBlMDI5MGRjODZlODg5Yzg5ZDVlMTg5YWE1YmE0NGI1ODViM2I3MDczNGY0YTYyZDgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImQ5ZTA4NDgxOTdmNTNjNDIyNzZkMjc5NjhkMmQwYmJlMWVkNGZjNGMyNTg2ZWE0NmZkNzRiNjgwOWFkNjJlZjQifQ"
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/repository/SongEmotionsRepository.kt#L73-L96",
+          "version": "repo-lines-v1:sha256:89a75271715647f6b044ee8e4ed2ffaea00b9f1b0a9d871d85bf5de4a2d20fce:eyJzZWxlY3RlZExpbmVDb3VudCI6MjQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjE0MWZmNDNkYWFkYTFkNWNjNzIxMTE3MDMzM2E1YmIzYjI3NWExZWY2NjEwYzFmNmY3YzQ3NmQ3MjhlODRiMjQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjE0MDlhNTJjOGMwYzQxMDYxYjMwYjA5NjA0ZWZmMWEzYjUyMTNlMDI2OGRjMDBmN2UxNWZjNmJlNjgyOGJjMzciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjUxZDMyODUzYTRkMzY4NzJkZjQ4NWUxY2RkZDZjZTBmY2E1MzIxM2I5MzE1MzA0MDE0OWY4NGE4M2QxNjNlNmIifQ"
         }
       ]
     },
@@ -189,8 +185,8 @@
       "statement": "clearCorrection 将 user 三字段置 NULL，并在该行为全空 user-only 行（windowsAnalyzed==0 且 embeddingB64 为空）时直接删行——否则全空行会被列表构建（以情绪行非空判定\"已分析\"）误判。",
       "evidence": [
         {
-          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/repository/SongEmotionsRepository.kt#L93-L103",
-          "version": "repo-lines-v1:sha256:289c5ac2dd090244f12ce3efc5bbb85d75fb3705c99c40fb55904d113f6f5685:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjFjMzU2ZGQ2ZDkxOTE4ZDhjYTNmOWFiMDBjOGU3MzRhZWVkNTIzNDg2MTMwNzU2ODQ1MWM2M2MxOGVjNzE0MjgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk5OWJkZWZlZWFjYTYzNDBlMDI5MGRjODZlODg5Yzg5ZDVlMTg5YWE1YmE0NGI1ODViM2I3MDczNGY0YTYyZDgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjUwNTg1NDU3ZDc1NGUyNDUxZDQzNWRmNjdjMGJkZGY0ODU2YWE4NDZkMTIwZDhjOWYzMTVjMDhiNzQ0YjgxMjcifQ"
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/repository/SongEmotionsRepository.kt#L98-L106",
+          "version": "repo-lines-v1:sha256:b5f9e6d245c77e37d8bc66ecab7b09a65d61a598ace920a69bba43ceddb0da6e:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZTczYzZlNDEwNWE1OTQzNWZjMDMxZWRlOTg5NWY4M2M3MjZkNmExYjFjODgzNzRmNTJjYTdhMjk1ZDJiNTA4ZiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDg5M2Y0MGUzNzgxZWI4OTZjODJkMDQ2YTA4MDY3YTExZTM1Y2RmMmYxZGZhZjI2ZmVhOTBiOGRiNjY3NjQxMyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiOTk5YmRlZmVlYWNhNjM0MGUwMjkwZGM4NmU4ODljODlkNWUxODlhYTViYTQ0YjU4NWIzYjcwNzM0ZjRhNjJkOCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMDA5NmY2YmIzMjEyODE0ZTdkMjdhMjQ0NTk5NGJhMjU3YTBmOTJhZTQ5YjQ1Yzk3ODU2ZjExYjcwNzYzOTNmMSJ9"
         }
       ]
     },
@@ -199,30 +195,26 @@
       "statement": "重扫由 modelVersion 驱动：EmotionScanWorker 以 analyzedVersions()（songId→modelVersion 轻量投影）中 analyzed[songId] != EmotionAnalyzer.MODEL_VERSION（当前 \"yamnet-va-v3\"）判定待分析歌曲，换模型后旧数据自动重扫并经 upsert 继承校准。",
       "evidence": [
         {
-          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/emotion/EmotionScanWorker.kt#L40-L56",
-          "version": "repo-lines-v1:sha256:32ceacef0b3b5a00c938bc38d6ec4d7c7452941ea9bf7a72746a9d7f5a89a723:eyJzZWxlY3RlZExpbmVDb3VudCI6MTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVjNjYzMTRlYWU3NDc5YWNiZGI2ODNmZGM5MmFjODZhM2M4MDExM2I2NTI2MDdjODNjZTMxYTdhNzFlMzI4M2UiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImVkMzBhNGY2NjcxNmZhMTljOThlNjNmYjkwMWI5NThkMjdmNGViZTI1ZWFkOGRmMTM0YmY3ZmEyMDBjNjg5ZmIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImI3NTE4YTc2OWJjMDVhNWQxYWNhZDVkY2UxM2RjYTFhMGJkMWI2OTAyZTVmNTAwZTNkYmU4YzU0OWEwYzIxYTEifQ"
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/emotion/EmotionScanWorker.kt#L40-L52",
+          "version": "repo-lines-v1:sha256:7e8c5083c333fb433e537bdd19bff13514aa62798d10ed44ef2f390984f736ac:eyJzZWxlY3RlZExpbmVDb3VudCI6MTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImJiZjI2NjcyOGE3Zjk2NDYzZWE4MWRiOThmMWVjZTNkOWQ2MmUzMDNhY2I1YTkzYjI5MTY5MGE3MTk0MTk1NDciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQ5ZTNiNjA3OTRhNzEwODIxYjMyNjc0ZWU3NTEyODUyM2UxOTc0YWRkNTdiM2UyNDBhZmNjNGMwODI1MmIwNGUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImI1MmIzMTA4MjRkY2Q2NDU4ZGJmN2Q3YWI0MTE4YmFmYjBlMTE3NzYzNzAwMjdiZDUyZGYzMzU5OWVhODk0YmQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjZhNGM0M2NkZjA5ZDQ0NzFhMGMxYWM1OWU4NTg3ODAzYzMxNmU5MzhmNGNlNDc4NzgyZTQ1OTU1ZjkxMjVjMGUifQ"
         },
         {
-          "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/data/player/EmotionAnalyzer.kt#L385-L395",
-          "version": "repo-lines-v1:sha256:5331aef37749b4bd748f89ef6ebba0c82821208ec110ff758fa4ae08c128e620:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImJmMzMwMjdiYzIwYjViY2M0YjEzOTBiNjM2YjJhY2E4YjA4NTNiZjUwMjA0YjAyMDlhMTdiOGY0ODQwN2M3OGIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQyN2MyN2YxMDhiZDliNTNiOGNhZWYxYmEyZDE1ZTgxNTUwYWZlZWFkZDNkZDhjMDZmY2JlNTBlNjRhMjBjYjYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjFlNGRlNzYwZDU0ZThhODEzMDRlMjExZTQ5MWFlNzMzOTZlYTBhOThhOWZmNmZiYzhhM2Y0Y2JkNTdjNGFlZWQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijk2YjhhNjdjMDdlYTNlNjZjZDc1NjI0Mjg5YzBhYzc3NTVjMWZjMDE1M2EzZTUyMGI5YzQyMjEzMGFhZGU2ODIifQ"
+          "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/player/EmotionAnalyzer.kt#L411-L411",
+          "version": "repo-lines-v1:sha256:869d9dd5b3e18815f9c609750244ca1ea744fad2e09aa77d2d147a9a7885f143:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiODY5ZDlkZDViM2UxODgxNWY5YzYwOTc1MDI0NGNhMWVhNzQ0ZmFkMmUwOWFhNzdkMmQxNDdhOWE3ODg1ZjE0MyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiODY5ZDlkZDViM2UxODgxNWY5YzYwOTc1MDI0NGNhMWVhNzQ0ZmFkMmUwOWFhNzdkMmQxNDdhOWE3ODg1ZjE0MyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNjUyZDYwNmQxYTJlZjc4MTYyYWVlZmY5NmYxMmRkY2IzYzk4ZDc1Mzk3N2NkOWZjNDlhZTRkZWRhOGRhODBjOCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNDY3MjQ1Njg4NjY3NjhmMjU5NDM2ZjM2MmNjOGIyMDhkMWRhYzA0ZWRjNWQ1NzczMTcxZDgxYTE3YWJlZjhmZiJ9"
         }
       ]
     },
     {
       "id": "claim_ce8e5f444b8d4e2188517506999d4fd7",
-      "statement": "整曲平均 YAMNet embedding（1024 维，base64 存 embeddingB64）仍在每次分析时随结果入库（分析器逐窗累加后取均值），旧数据可空；它不是垃圾字段，而是未来用户标记攒够后离线监督重训 VA 头的原料，当前词条判定不读 embedding。",
+      "statement": "整曲平均 YAMNet embedding（1024 维，base64 存 embeddingB64）仍在每次分析时随结果入库，旧数据可空；它不是垃圾字段，而是未来用户标记攒够后离线监督重训 VA 头的原料，当前词条判定不读 embedding。",
       "evidence": [
         {
           "resource": "repo://docs/architecture/EMOTION_KNN_ANALYSIS.md#L47-L52",
           "version": "repo-lines-v1:sha256:46220c618390876eb730b6ca7bc1b64c333d998c78ce7560f7bc0e5772cd97fa:eyJzZWxlY3RlZExpbmVDb3VudCI6NiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZGJiZWM4MDJhY2U2Nzc1MThjNmQ2NzE3NTk2ZjJjNGM1MjgxNThmNzJlYzVkM2IzZmViNTNlMDE5NDUwNDM5OCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZDk2NWEyYjdiNWNmOTQ5YTgwMTU0NWJjMThhMTJlZDExYmY4NGUxZWRlYzQ1ZGM5YzNjOWZjOWNlOGExZTc5NiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZmY4MzMyMjJhMDUzNjE0MTVjOTA1YmM3ZDE4ODU0NTM1YmM3OWViYTFiYWFiYTdlZDNhNWI2OGNhNDUzMDgxMyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNmUyOWYwMDdmYWI2Y2RjZmZhNzNhMzQ3MTEyYzU4ZGEzM2MwYTM0NmNhYWY3ZjY0MDkwZjhhNWJhMGM3ZTVhOCJ9"
         },
         {
-          "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/data/player/EmotionAnalyzer.kt#L124-L137",
-          "version": "repo-lines-v1:sha256:8768309b83366c3f035bce0d5b21b08f004e625414cc15b85a493cb5549a9d32:eyJzZWxlY3RlZExpbmVDb3VudCI6MTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImJlNjk3ZDYyNTNkM2IwNjMyOTIzODlmOTZkNzZlODMwZjUyMDRjNWVjNWYxM2FlYjlkZTI5M2IxMjk5NWYyZDAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU1MDMyZTk2NGQwOTMyMzUxZTVkMTg1MjY5MjgxYjE3MWEzYTA5YjA4YjI4NmU2NjFlYTQ3MDMyM2M4MmViNGQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImYxMjI0NmMwOGRmNjFhZDk3ODRiYWZiZDZjOTgyYzNiZWM5MzkyYjRmZGMyMjUxZGFhYTU2OTU2ZDA4MTY0YzEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjllMDA0NjNiMTYwN2E1NzNlMTI1MjQ2ZjQ2YmFmZmJmMTliODEwNDIxMjFlM2RmY2IyODE4OTZiZjEyNzlhNTMifQ"
-        },
-        {
-          "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/data/player/EmotionAnalyzer.kt#L89-L117",
-          "version": "repo-lines-v1:sha256:3465661bf7a466f5c709d63fea4b1ff17b7c069a88998c718c9d636bc4ce7ea6:eyJzZWxlY3RlZExpbmVDb3VudCI6MjksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU4NTUyYWQwZTQ1Mjc2YTFiOWQ1NDU2ZDQ4MDA4Njg5MGQ3MjAwNjQwZjZlMDYzYWJlMjk2NGQ2ODc3YTM3NjYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBjNjQ3OWNjMjMwNDQwZmQ0MWU4MjI0MjE4Njc5Njk4NTU5ZDI4OTNiZDY3YjQzODBhZmFiODExYjM4YTU1YWEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImY0NjM4Y2RkZTlhODkzZjc2Nzk1Nzg4MGQ4Y2QyZDA3ZmY0NjExNDQ2MjQwZmUyYzA0Yjg3Yjg2MDBkNGZiYmMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijk0YjM4OTI1YTE2NDRhY2U2Y2I4ZDNjYTAxZTM4ODE3N2NiMDY0ZDFiN2RmNTc3ZmI3NDMyYzZlZDQ0YWUzZjkifQ"
+          "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/player/EmotionAnalyzer.kt#L115-L150",
+          "version": "repo-lines-v1:sha256:551925c2a3829d9f4fee09a60652766a7928026aa9670e3a370abec892d331c3:eyJzZWxlY3RlZExpbmVDb3VudCI6MzYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImI5MWMxNDU3YzY1YzcxYjdlY2M5ZDAzOWZmZjgyYzM1ZjQ0OGU1NDUyMjA3YjlhODU3ZDU4YmRlMjBmNjI3ZGYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU1MDMyZTk2NGQwOTMyMzUxZTVkMTg1MjY5MjgxYjE3MWEzYTA5YjA4YjI4NmU2NjFlYTQ3MDMyM2M4MmViNGQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjBmMjAzMzM4YjIxZGU3MGZlYjhkZjZlMmY0YmM3YWYwNDQzNWM3YWYzOTZjZmE0NTJhZjhkYjA1M2Q2NWYwOTgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjllMDA0NjNiMTYwN2E1NzNlMTI1MjQ2ZjQ2YmFmZmJmMTliODEwNDIxMjFlM2RmY2IyODE4OTZiZjEyNzlhNTMifQ"
         }
       ]
     },
@@ -307,16 +299,24 @@
       "statement": "情绪时段随心播放消费词条：PlayerRuntime 启动时把 getAll() 逐首过 emotionTagsOf 快照进 volatile moodEmotionTagsCache（用户校准自然反哺判定）；PlayerRandomQueueFacade 在随机队列与无限补队列入口用 filterByMoodTags 按命中时段词条过滤候选池，过滤后为空回退全库随机；MoodTimeSlotViewModel.tagCounts 用同一函数统计每词条歌曲数供配置页角标。",
       "evidence": [
         {
-          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/mood/MoodTimeSlotViewModel.kt#L22-L77",
-          "version": "repo-lines-v1:sha256:ee1ecb1fa8b6956395192d261f85df379c2a9813550925ae0b992db06dc0d5a2:eyJzZWxlY3RlZExpbmVDb3VudCI6NTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU3MGM3MDQyMDRjMTk0YjRkOTVlNzZlMTRlZTQ3MzkwZDJmZDRjNTdlYWYwOGExOTc3NDIyZDZiOWMxNDAzZDQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImY4NzJkNTQzODk2NTM3ZTBkNWUxNWQ2MGIzZjE2ZjU1NTM0YmM4NzY2ZGJhNDFmOTViYzMwNjgzMjE0ZjcyMWIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImY2YTJhMmUyZjdjZWE3NDE2OGQ1NTY1NTdhMmQ0NmQzZDVjYjc0MzRhODQzNmViNWU3YzlmZjcyZGE3Y2YzMmEifQ"
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/mood/MoodTimeSlotViewModel.kt#L56-L59",
+          "version": "repo-lines-v1:sha256:3d168b20a1a2cf3dcebf6be92f9a2835f1d63aa9ade27fe4c3c3d6486ee8611b:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiOTc1Nzc2N2Q0OTIyMjc5Y2QxNWE0NTVhNTQzODQ5NDRjNTBkMzI4MDA2MzJhMDc0OTk3MDRkMzQ3ZjZlZGMyOSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiM2Y0OTM0OWJiZWE0NjUxYjIwZmE0ODI2YzlmY2Q3OTQ1ZDg3NzVjYmViYjdjYTdiY2E1NDM2Yzg1YWVhZGQ4YSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMWE0OGNlYjdjZmI0MjY4YWFkZGNlZGI2OGIzYmU1NzIzYzQxYzcxYjc5NGQxMWFkYjc1ZTQzYjQ5OGUwZGVhNSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiOGM4ZjQyYjIwNWMxNDBkOWUyOWUwMWFiMDAxYjBhOWIyM2RjMDZmZmQ0NGMwODAxMjA0NTg0ODY5OTZkYzJhNyJ9"
         },
         {
-          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRandomQueueFacade.kt#L56-L84",
-          "version": "repo-lines-v1:sha256:92a41ce9ef6348871b1053b7218a2514d8fae8845e39f4d0c94aa687d270dafe:eyJzZWxlY3RlZExpbmVDb3VudCI6MjksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM5Y2JiYzY1NDY5ZGIxY2EyODQyZWZkOTdkZjdlZTJjZTZjYzE1NzE0ODJkMDFhMThiNzkwYTEwYzdjNTEwZjMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM0Mzg1MTNlN2M2Y2NjZWEwMjRmN2I0ZTczYTQ5Mzc3MzBjMmFiZDQwMmUzMjI3YjkwNDJkNzkyNzkwZjMyNjIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImRhYjZmOTE5YzBjNmU3MjMyNjY4Nzk1ODE5OWU4YjRjMzZmOThlYmY0ZTU2YzIzMGNmMDkzM2I2NDk0ODg4YzYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjcwOTBlZWFjNTRjNTgxYzkzNGJhNWUxYzhhYjBiZjAzOWQ2ZWJmMTAzNjJhNzM2NmUyM2EzNDcxZDc5ODI3YzkifQ"
+          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRandomQueueFacade.kt#L187-L201",
+          "version": "repo-lines-v1:sha256:a43ee20600b1b298bc49fafc999b8c8d81e25d626a73dba82668a8419175e0ef:eyJzZWxlY3RlZExpbmVDb3VudCI6MTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM4ZmE5NjlkYWYyZTEyMGZiYmY5OGI1NjNiMWRkZGMyNzk5ZDc5NDdlNGE0ODEzYjM2ZjVjYzI3ZTllZjViMWIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImEzYzc0YWJhNzNmYjIyZGExMThlN2NkNDJiOGU4Mjc5MWZhNmYzMmMxNDRiNGFiZTBjYzc3YzBkNWY3MmRmMGYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjhlYTdlMThiYTBlMzM4ZjJiODJkNzExYzRmNjZkZjE2N2JhMjg2MmQ0ZTNmMzIzMDFmOTdkM2NlOGQ4OTgzYjkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQ1NWFhMzkyMmY2ZmM2MTRlMGZmZWI3ZmFkMGUyM2Q0OTlhNTg5ZGZmMmE1NzUwNjIyMjI4ZjQ1NjRiODU0OTIifQ"
         },
         {
-          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRuntime.kt#L379-L415",
-          "version": "repo-lines-v1:sha256:9e14b65982ecd4216c70f58300b9b4ab50deef752693dfa8c50442cdef63832a:eyJzZWxlY3RlZExpbmVDb3VudCI6MzcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZjZWM1NmM4NmU3MGYyMzJjMmY0MzIxNDI2YThkMDE2NWU0OTc4ODg2YmQ1YmE4ZWU1OGRhZTIyNTUwMzBkYjMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjMwYzFmMTg4ZjE0MmVkN2E4MjQ2ODBiMjA3MTcyYzU1MTliYzYxNGE0OGZkYTdjZjE2N2VkYjhkZGY3OTk1NmMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjNlNWU3YWRkN2U4MDJkN2NlNTcwNGE2MTA4MTQ3MzQzMTcxMDUwNDg2ODU3MTQxYjk2YTZhMTFiN2QxODgwOTMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjgwMjgyZjU2ODQ1YjdjMTk5NGZiMjU2NzM3NDRlZThhYzU2NGJjOWM3NzQ2ZTJjMDlmNTUxNmZkNzUzNWMyZWIifQ"
+          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRandomQueueFacade.kt#L72-L87",
+          "version": "repo-lines-v1:sha256:641a2af88cd0dabfe6f23a976224cb7e7571ed9db8db892de51dae36fe672f58:eyJzZWxlY3RlZExpbmVDb3VudCI6MTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImI5ODAyNzQxN2Q3OTU5YzRmZWNjYWY2MWZhN2IyMGMxMzZlZmVmZjNhYmM5MjMyY2UzNzliYzQ2OGNhYTkwOWUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImJjYjkxZDkxN2IzMmMyYmMzM2IzNjcyNjk0ZDIwOTViYmQzYTRhN2IzOThmYTM5ZTc1ZjZlZGIwYWQ0MzNhNTkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjEyZTIwNzQ1ODAwMGE1NTIxZGUyYWJlYjg4Yzg3ODIwZjQxODlmZmFlNTUyNjM3NjE2ZTQ4YjlkZGI2NTlhODUifQ"
+        },
+        {
+          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRuntime.kt#L422-L465",
+          "version": "repo-lines-v1:sha256:18f5e86f1c90059404c2541f63875a7dc957c4fc003a892f8cddcbf8775a6125:eyJzZWxlY3RlZExpbmVDb3VudCI6NDQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImJkMmE1ODkyOTFhMjJjZjc4NWIwZjI5MmYxZWZhYTU2Y2EzNmNhY2E0MmJiOTc4OTU4NzYwNTU0Njg2YTRlZDYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImIxNjY4OWE0ODMwMTE3M2M3NWQ3MjRiNzQ4NmVhZDI4YzM1ZWVkZTIwOTcxNWM5MDFjMjRiYTY2MjhjZDJjNjMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjBiOGEzMzM5ZDA4MWUzM2Y4ZmQyZDViZGI5ZGQyNmUwNGY5YjE5YTM1NDE0NjBlZTEyNmYzOWQzNzBiZTFjYmMifQ"
+        },
+        {
+          "resource": "repo://feature/user/src/main/java/cn/com/dcsgo/mihx/feature/user/MoodTimeSlotScreen.kt#L607-L668",
+          "version": "repo-lines-v1:sha256:0808858f20c74f214f19ff8227fede2b977dafa1b82292f50f1c8b2f32efae89:eyJzZWxlY3RlZExpbmVDb3VudCI6NjIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBjZjZmMjE4NzFlNTRjOTJlZTgwZGE0NGJhNWQwMmY3NTA0MDAxZjJjMmJjYTIxMWI0ZWFmM2ExZDNjMDQzNmYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjE5ZTc2MzU1Y2YxMTk5NDgwYzNmOTk4MzZiMTQ4NmM4NDFkODkxZmFhZDkwNGM2MDhlMDkzMDIyZDM3NTdhZWUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImNiNjZmZGM3Y2JkMzNmZTJmMGRhMDcyYmNiYmYyN2Y3YTNhYWVhMWJjYmFiN2U5MzM4Mjk1ZjNjMThmN2RiYTcifQ"
         }
       ]
     },
@@ -329,10 +329,66 @@
           "version": "repo-lines-v1:sha256:7b5081ac2739cdb64d7f3c1c2589397d8ee36c713abc322ef96395dbce2f85a7:eyJzZWxlY3RlZExpbmVDb3VudCI6MTA0LCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiI0Y2YwOWViMGM1NzQ0ZmI5NzMzMWI5OGZmM2ZiZjA1YTYwMmJhM2Y3ZjY3ZTVkYTViZTkwOTUwMzNmNjI1ODI1IiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI0ODkzZjQwZTM3ODFlYjg5NmM4MmQwNDZhMDgwNjdhMTFlMzVjZGYyZjFkZmFmMjZmZWE5MGI4ZGI2Njc2NDEzIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiJkYTQ1YWVjN2EyNzM0MzQwY2RhMWIxY2M4OWQ1YThjMTRkOWUyNTYxZjE0ZTU2ZDA4NTI1YzFhNmViNTg1OGU3IiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MSwiZm9sbG93aW5nQ29udGV4dEhhc2giOiI0MTJjYTM0NWNjZjc1YmY5YzA4MDZiY2U2OTViZThkZTgwOGI3OTk4NDI1MWE3YTU0ZDIwMmNmNjEwMWRkNDUxIn0"
         }
       ]
+    },
+    {
+      "id": "claim_1e8ab30d4eef45feb229197b5ccd3aa6",
+      "statement": "v3.11.0（2026-10-20）新增情绪词条收听偏好计票模型 WordPreference/WordPreferenceKind（core/model/WordPreference.kt）：kind 在域层判定（likeVotes>dislikeVotes→LIKE、dislike>like→DISLIKE、平票→NEUTRAL），票多者胜；词条只出现在一侧，单次跳过只给不喜欢票 +1 且不立即翻转已喜欢的词条（需多次证据）。",
+      "evidence": [
+        {
+          "resource": "repo://core/model/src/main/java/cn/com/dcsgo/mihx/core/model/WordPreference.kt#L14-L31",
+          "version": "repo-lines-v1:sha256:426549d90b22d73d44f910799aaab72141bd54cf32cca98f10647236adcc9e8a:eyJzZWxlY3RlZExpbmVDb3VudCI6MTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjA0NjY4MTZkNGU4NTNjNzY5Nzk2NzUyMzJhZjNhZDM4MTg5OWFmNTZhNDE3NDNlYTZjOWU2YjE2MmY4N2ZiN2UiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjNkZDM5NTQwNDkzNzk4N2ZlM2Y1NTU1OGZkNmMwY2VkNzIwZDM5YWZlNjJhODdjYTdmZTk3OGUxNzQyZTkxYzEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_ac3c866d0a29441aaadc0acc4e9dd306",
+      "statement": "WordPreference 的投票写入由 PlayerRuntime.handleExploreSongSettled 驱动：切/播完时取该歌展示词条（moodEmotionTagsCache，即 emotionTagsOf 结果），用 ExplorePlaybackPolicy.isSkipped（<30s 或 <1/4 总时长判为快速跳过，时长未知只按 30s）结算，完整收听给全部词条喜欢票 +1、快速跳过给不喜欢票 +1，调 WordPreferenceRepository.recordSongOutcome 计票入库。",
+      "evidence": [
+        {
+          "resource": "repo://domain/src/main/java/cn/com/dcsgo/mihx/domain/playback/ExplorePlaybackPolicy.kt#L18-L33",
+          "version": "repo-lines-v1:sha256:ac8c8c76b9341776c2654885d59f82258f8df40446a7ec4fb2f399214def7738:eyJzZWxlY3RlZExpbmVDb3VudCI6MTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjdmYWQ0Mzg2YWM4ZWFmMGZhMDBhNzFhMTVkM2ZmOWYwN2RiNWVlOWM3NDRmMTVlNjM1NDFiMDlmNTZmMDI0YWYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImNiZDI0YjY4NmNjZTk1MGMyYTViYzAyMTBiNDM3MGM0YTY4OGE2NDAxMjA5MWYxMDdmYjkzZjExNzYwNDJiM2IiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        },
+        {
+          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRuntime.kt#L893-L931",
+          "version": "repo-lines-v1:sha256:de71de7bfcd7a882e055985cf7f1bcd17cee54d013aff8b4cccd6032ce8b5684:eyJzZWxlY3RlZExpbmVDb3VudCI6MzksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM5Y2JiYzY1NDY5ZGIxY2EyODQyZWZkOTdkZjdlZTJjZTZjYzE1NzE0ODJkMDFhMThiNzkwYTEwYzdjNTEwZjMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImVkYjQxZGQ4MmE0MmI5NWEyM2U2NmQyY2UyODNlNjcxYjIyMjkwNzJhNmU3ZjM2NjFhZTFiNDg4NGJmZjUxNzAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImRmZGZjMmIyZmVjYTcxODIzMDA5ZjViNjY4Nzc1N2ExMWZkZGIwZTI3OWVmZGRmNmMzZTdkMDA1YWE2MDY0ZGYifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_81b186c6d98f40529d526f711f5cbaaf",
+      "statement": "word_preferences 表由 MIGRATION_10_11 创建（主键 word、likeVotes/dislikeVotes/updatedAt），使 melody.db 升到 v11、14 实体，与 song_emotions 完全独立；WordPreferencesRepository 是唯一数据源（:data 单例绑定 MelodyDao，对外暴露 :domain WordPreferenceRepository），可观察流 observeAll 持续喂给 PlayerRuntime.wordPreferenceCache 与 MoodTimeSlotViewModel.wordPreferences，recordSongOutcome 只累计票数（distinct 词、空列表忽略、@Upsert 整行替换），clearAll 清空整表（重新探索）。",
+      "evidence": [
+        {
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/local/MelodyDatabase.kt#L35-L39",
+          "version": "repo-lines-v1:sha256:ec16bf278044a14275ece9b5fbf52fec4b6ddb95a451e4891f8859612008f7a0:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiY2FkMDQzNWIyNDk4M2JlMzZhNjM1NzA1MzhlZGQ5MjRiNjZkYmQzMWFlYjQwM2FjNGVkNzdmOGM3MjE1NGFhYiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZDcxZWFlMWFjN2NmNDYxZDNkNzA0ZDJkN2EwY2M2MzYyY2NkNWYzNThlOWJjZDUxNzViMmJlN2ZkNDNhZjhkNyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNzYyNTk3MzVhZmY2Mjg1M2UwNGQ2ODQzNDBmOGY1YWFhMTIwMWJjNzVhMTRmNDBjODE2NmU3MWRlOWEwNDg3YSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiN2E1ZjlmYWRlYTc1ODU1N2I3OTk2N2NhMmY0NTA1ZjE2ZDQ4NzFjNjk3M2RmZWNmYjE4NzM3ODgyMDVkMDFhYSJ9"
+        },
+        {
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/local/migration/MelodyMigrations.kt#L141-L153",
+          "version": "repo-lines-v1:sha256:3ec485f671d646817f62057d8b6fdb18b91094443de36c308ee1bd1bb838262b:eyJzZWxlY3RlZExpbmVDb3VudCI6MTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjJmM2QwNGI4NzhiMjlhNjA3Njc2ZjE4NzQ5MjFhNTdiMTVjZmEyMDlkZGY2YjFkNzEyNTE1OTAxYWY1YzBhZjciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk5OWJkZWZlZWFjYTYzNDBlMDI5MGRjODZlODg5Yzg5ZDVlMTg5YWE1YmE0NGI1ODViM2I3MDczNGY0YTYyZDgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijk5M2VmYTJiZTAxMmNhZDU3OWYyZWM1Y2RkZjliOTMxZWVlMmRjZDZlNzlkMjRkYzdmOWVjYTQ3N2YzZjc2NzUifQ"
+        },
+        {
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/repository/WordPreferencesRepository.kt#L23-L53",
+          "version": "repo-lines-v1:sha256:9a6282e1376da478a88a1b0e4e9e3a88aa9d60a589cfa36e33203c16f969c40f:eyJzZWxlY3RlZExpbmVDb3VudCI6MzEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVlYThjNmVmN2IyMDlhMGZjODdmNTNmZmM4YjFkN2Q5ZjkzYmU2ZDU0OTBiZmVkOGZhN2M5ZjE1MGQyNzk4ZjgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijg0YmU0YTAyMTFjYWJlOTJjNjllYTk5YzI2ODYyNzUxMzMxZDlmYTQ5ODNhYzE4OGZjNTlmMzgwNjBjNjliYzkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImM1MTYzOTRhMmRhODg4ZDk2ZWMxMzY1MjdjOGMzZTA3ODI4NzRlYzk0NWZiMWVjNTBmODk2NWI4YWZhZjZmMzIifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_ef304c0bb9c54e9796b9c00849bba2f5",
+      "statement": "探索播放（randomEnhanceMode==EXPLORE，与 TIME_SLOT 互斥）时 PlayerRandomQueueFacade 不走时段过滤，从全库随机 10 首（ExplorePlaybackPolicy.INITIAL_BATCH_SIZE）并置 isExplorePlay；补队列 refillExplorePlayQueue 用 buildExploreRefillPool 按词条偏好分层降级：①含 ≥1 喜欢词且无不喜欢词 → ②仅无不喜欢词 → ③回退全库，每次补 REFILL_COUNT=5 首；偏好归属经 wordPreferenceOf(word).kind 读取，未学到视为 0:0 中立。",
+      "evidence": [
+        {
+          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRandomQueueFacade.kt#L238-L311",
+          "version": "repo-lines-v1:sha256:580716b5a837b068a76cd832413e37c374bfc9c22a0e413da93e3665585ca0c3:eyJzZWxlY3RlZExpbmVDb3VudCI6NzQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImJjNDgzNmFlNmE3ZmU5NGRiZjAxMjdlMmIwZTFmZTVmZDMzNjcyOGZjNTU3MmYxOGM5MTMwYzRlYWQxOWEyYzQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImE5YTk2ZDVmZjg2N2JiY2UyMzU2MTNlMTc4OTkzMDhlZjUyY2ZjMjMyNzA2NDc0MjgzNDIyNDM4ODgyYTk3MWYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImI1ZGEyNDc2MTQ0ZjcyYTc2YjhlNjU4M2VhYjdiZmE5NjVmY2Q2YzI0MWY1MTNlYzgzYTg1YTQ2ZjM5ZDFjOWIifQ"
+        },
+        {
+          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRandomQueueFacade.kt#L95-L137",
+          "version": "repo-lines-v1:sha256:08ff0cbbb6aa62875b84394c7d5190c11fcf1ea6d3f100be40848f0fb374a80c:eyJzZWxlY3RlZExpbmVDb3VudCI6NDMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQ3NDM4YzMxNjUyOTFlOTc2ODk4YTczYTU2MDdmMzZhYjg0NTU1ZjUxNWMxZjE1ZTMwZTRlZTFlZjE1OTNjZjAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQwN2Y0MjViMzgxOGVkZmQ5NmRhMjUxZmI4MTI2ZjJkODljMWJjZDkwYjRjZTg5MWRjMTRjNzA3YWU5ODk1MTAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjNhZDUxZTE0OGNmZGJmMDU2NTA2NGZhODNlMDU1NjQwMzA2NGZlOWZmZjQyZDFjNWU2MzNjYWMyMzcwNzM3ZTIifQ"
+        }
+      ]
     }
   ],
   "verification": {
     "by": "openwiki/0.5.0",
-    "at": "2026-10-10T11:15:45.800Z"
+    "at": "2026-10-21T03:20:08.093Z"
   }
 }

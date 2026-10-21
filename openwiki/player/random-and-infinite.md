@@ -1,8 +1,8 @@
 ---
 type: "Concept"
 title: "Random Playback and Infinite Random"
-description: "The random selection chain: RandomQueuePlanner batch selection with recent-play eviction, UniformRandomPlanner play-count tiered preemption, infinite-play queue refill with wrap handling, and how the global uniform-random setting and mood-slot attribution are wired in."
-tags: [player, random, uniform-random, infinite-play, refill, mood-slot]
+description: "The 随心随机 random selection chain: RandomQueuePlanner batch selection with recent-play eviction, UniformRandomPlanner play-count tiered preemption, infinite-play queue refill with wrap handling, and the new 探索播放 (explore) mode with word-preference learning and word-based refill, plus how the global uniform-random switch and mood-slot attribution are wired in."
+tags: [player, random, uniform-random, infinite-play, refill, mood-slot, explore-play, word-preference]
 sources:
   - id: openwiki-source-4ca5f9c29b016f072d8ed57c
     resource: repo://app/src/main/java/cn/com/dcsgo/mihx/app/AppRoot.kt
@@ -12,10 +12,16 @@ sources:
     resource: repo://app/src/main/java/cn/com/dcsgo/mihx/app/player/NowPlayingSurface.kt
   - id: openwiki-source-9645009bf4cd7f02b15b26de
     resource: repo://core/model/src/main/java/cn/com/dcsgo/mihx/core/model/PlayQueue.kt
+  - id: openwiki-source-b8ad601bbc2ce9deae0cf5a6
+    resource: repo://core/model/src/main/java/cn/com/dcsgo/mihx/core/model/RandomEnhanceMode.kt
+  - id: openwiki-source-c45f629879f8babdcb1f3397
+    resource: repo://core/model/src/main/java/cn/com/dcsgo/mihx/core/model/WordPreference.kt
   - id: openwiki-source-29a14d2aa8324beadcd09368
     resource: repo://data/src/main/java/cn/com/dcsgo/mihx/data/repository/PlayerSettingsRepository.kt
   - id: openwiki-source-d8c173fb82dbd4c82e845d11
     resource: repo://data/src/main/java/cn/com/dcsgo/mihx/data/repository/PlayStatsRepository.kt
+  - id: openwiki-source-39979cc6e8c7e5b52ecabd5f
+    resource: repo://domain/src/main/java/cn/com/dcsgo/mihx/domain/playback/ExplorePlaybackPolicy.kt
   - id: openwiki-source-ee8d5713acafafdce234f04d
     resource: repo://domain/src/main/java/cn/com/dcsgo/mihx/domain/playback/MoodSlotResolver.kt
   - id: openwiki-source-270d775f23f53fc011f9d8d3
@@ -40,6 +46,8 @@ sources:
     resource: repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerPersistenceFacade.kt
   - id: openwiki-source-b1e77c238cf7370e278303d7
     resource: repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerPlaybackFacade.kt
+  - id: openwiki-source-b86e2b97e4f71e5af8b2924c
+    resource: repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerQueueFacade.kt
   - id: openwiki-source-8e3d8a1f18f53d37da8744f1
     resource: repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRandomQueueFacade.kt
   - id: openwiki-source-ff40146bae9715f1a3860309
@@ -52,21 +60,23 @@ sources:
     resource: repo://feature/player/src/test/java/cn/com/dcsgo/mihx/feature/player/PlayerMediaEventFacadeTest.kt
   - id: openwiki-source-2406bafab2e742d99aa82d73
     resource: repo://feature/player/src/test/java/cn/com/dcsgo/mihx/feature/player/PlayerRandomQueueFacadeTest.kt
-  - id: openwiki-source-04a93731443f6ff3e9f66921
-    resource: repo://player/src/main/java/cn/com/dcsgo/mihx/data/player/PlaybackController.kt
-  - id: openwiki-source-35e0261203b78a5159d1723b
-    resource: repo://player/src/main/java/cn/com/dcsgo/mihx/data/player/PlaybackStateStore.kt
-  - id: openwiki-source-f0e058e6091ef385898fb85e
-    resource: repo://player/src/test/java/cn/com/dcsgo/mihx/data/player/MediaItemWrapDetectionTest.kt
-generated: { by: "openwiki/0.5.0", at: "2026-10-10T11:15:45.800Z" }
+  - id: openwiki-source-d4431e382635a7a27ca87c72
+    resource: repo://player/src/main/java/cn/com/dcsgo/mihx/player/PlaybackController.kt
+  - id: openwiki-source-b5fe68676096345c29cfbdba
+    resource: repo://player/src/main/java/cn/com/dcsgo/mihx/player/PlaybackStateStore.kt
+  - id: openwiki-source-1335b79015e69d8ed73b7fd8
+    resource: repo://player/src/test/java/cn/com/dcsgo/mihx/player/MediaItemWrapDetectionTest.kt
+generated: { by: "openwiki/0.5.0", at: "2026-10-21T03:20:08.093Z" }
 verified:
   - by: openwiki/0.5.0
-    at: 2026-10-10T11:15:45.800Z
+    at: 2026-10-21T03:20:08.093Z
 ---
 
 # Random Playback and Infinite Random
 
-Lucky play (random queue) and infinite random are two planner-driven entry points over the same domain core. `RandomQueuePlanner` (in `domain/playback`) is a pure decision maker: it filters playables, batches, evicts recently played songs, and, when uniform random is on, delegates selection to `UniformRandomPlanner`. The feature layer (`PlayerRandomQueueFacade`) owns the stateful side — the in-memory recent-played set, infinite-play flags, and the calls that push a plan into `setPlayQueue` / `syncPlayerQueue` / `playFromQueue`. `PlayerMediaEventFacade` and `PlayerPlaybackFacade` are the trigger points that keep an infinite queue topped up as the window drains.
+Lucky play (random queue) and infinite random are two planner-driven entry points over the same domain core. `RandomQueuePlanner` (in `domain/playback`) is a pure decision maker: it filters playables, batches, evicts recently played songs, and, when uniform random is on, delegates selection to `UniformRandomPlanner`. The feature layer (`PlayerRandomQueueFacade`) owns the stateful side — the in-memory recent-played set, infinite-play flags, explore session state, and the calls that push a plan into `setPlayQueue` / `syncPlayerQueue` / `playFromQueue`. `PlayerMediaEventFacade` and `PlayerPlaybackFacade` are the trigger points that keep an infinite queue topped up as the window drains.
+
+Since **v3.11.0** the random chain is configurable through `RandomEnhanceMode` (`OFF`, `TIME_SLOT`, `EXPLORE`) — mood time-slot filtering and explore playback are mutually exclusive enhancements layered on the same planner core. **Explore playback** is the new headline: `playRandomQueue` generates a fixed 10-song batch and sets `isExplorePlay`; infinite random is disabled while an explore session is active; when the queue drains to its last song the facade learns the listener's word preferences from skip/full-hearing outcomes and refills it with a word-preference-filtered 5-song batch.
 
 The windowed-queue plumbing the plans feed into (controller windows, `REPEAT_MODE_ALL`, fingerprinted syncs) is described in `/openwiki/player/queue-architecture.md`; the facade wiring itself is catalogued in `/openwiki/player/runtime-facades.md`.
 
@@ -77,6 +87,12 @@ Three dependencies decide how random the chain actually is, and all of them are 
 - **`rawPlayCounts`** — a `(List<Int>) -> Map<Int, Int>` callable on `PlayerRandomQueueFacade` (default `{ emptyMap() }`). `PlayerRuntime` wires it to `playStatsRepository::getRawPlayCounts`, the Room-backed *raw* play count (distinct from the "effective" count used for sorting). Both `playRandomQueue` and `refillInfinitePlayQueue` query it per candidate pool at call time.
 - **`globalUniformRandomEnabled`** — carried on `PlayerUiState` (default `true`), persisted via `PlayerSettingsRepository` (DataStore, legacy-SharedPreferences fallback `true`), loaded at `PlayerRuntime.start()` into the UI state, and toggled from the Settings screen through `setGlobalUniformRandomEnabled`. The planners read the flag from the current state at each call, so **changing the setting never reshuffles the live queue or its `playOrderIds`** — it only influences later queue builds: the next lucky play, the next infinite refill batch, and any future rebuild.
 - **`QueueManager.PlayOrderBuilder`** — the seam for play-mode ordering. Production wiring in `app/di/PlayerModule` deliberately installs `QueueManager.defaultPlayOrderBuilder`, i.e. the `SHUFFLE` play mode stays *pure* shuffle and is independent of uniform random. `UniformRandomPlanner.buildPlayOrderIds`/`orderSongs` already implement the count-tiered ordering a settings-aware builder would apply; they are exercised by tests but not wired into queue operations today.
+
+The explore-mode enhancement adds **three** mode-deciding injections on `PlayerRandomQueueFacade` (all defaulted so the existing mood behavior is unchanged):
+
+- **`RandomEnhanceMode`** — the mode switch. `PlayerRuntime` reads `playerSettingsRepository.randomEnhanceMode` as a stream: `TIME_SLOT` drives `moodSlotEnabled` and `EXPLORE` drives both `exploreModeEnabled` and (via `isExploreModeActive` on `PlayerUiState`) gating. Mode is mutually exclusive — when the stream moves to `EXPLORE` out of `TIME_SLOT` (or vice-versa), or to `OFF`, mood filtering and explore refill disable together. See `/openwiki/concepts/mood-time-slot.md` for the config UI.
+- **`wordPreferenceOf: (String) -> WordPreference`** — per-word vote summary (`likeVotes` / `dislikeVotes`), resolved from the `wordPreferenceCache` derived from the Room-backed `WordPreferenceRepository` stream. `WordPreference.kind` (`LIKE` / `DISLIKE` / `NEUTRAL`) is the vote-majority winner that `buildExploreRefillPool` uses to tier its candidate pool.
+- **`exploreModeEnabled: suspend () -> Boolean`** — the mode gate that `playRandomQueue` checks to switch generation to a fixed `INITIAL_BATCH_SIZE = 10` batch; it is **not** consulted by `startInfinitePlay`, which only checks the *session* flag `isExplorePlay` (see below).
 
 ## RandomQueuePlanner: batch selection with recent-play eviction
 
@@ -128,6 +144,15 @@ On success the facade:
 1. Exits infinite mode (`isInfinitePlay = false`, `infinitePlayedSongIds = emptySet()`).
 2. Replaces its in-memory `recentPlayedSongIds` with the plan's set.
 3. Calls `setPlayQueue(plan.songs, 0, PlayMode.SEQUENTIAL)` — the random batch plays as a **sequential** queue from index 0 (further skips simply walk the batch; `REPEAT_MODE_ALL` on the controller loops it). `setPlayQueue`'s default `exitInfinitePlay = true` would also end infinite mode, but the facade clears it explicitly first.
+4. Sets `isExplorePlay = explore` — `true` in explore mode, `false` otherwise — so the batch becomes an *explore session* that enables word learning and refill (below).
+
+### Explore branching inside `playRandomQueue`
+
+When `exploreModeEnabled()` is true, exploration *replaces* mood filtering and fixes the batch:
+
+- `mood = if (explore) null else activeMoodSlot()` — in explore mode the mood-slot filter is **bypassed** entirely (the two enhancements are mutually exclusive); candidates are always the full library.
+- The plan is generated with `batchSize = ExplorePlaybackPolicy.INITIAL_BATCH_SIZE = 10` (instead of the default 20). Recent-skip eviction and the uniform-random flag still apply within that batch.
+- On success `isExplorePlay = true` is written to `PlayerUiState`; this flag (not the settings mode) is what disables infinite play and enables the refill + word-learning path. A `false` is written on every non-explore lucky play, cleanly ending any previous session.
 
 ## Infinite random: start, refill, and wrap handling
 
@@ -182,7 +207,7 @@ Without correction, a wrap would leave the cursor on the old window's first song
 
 ## Mood-slot filtering and attribution
 
-When the mood time-slot enhancement is active (`moodSlotEnabled` + a `TimeSlotConfig` covering the current minute), `activeMoodSlot()` resolves the slot (`MoodSlotResolver.hitSlot`) and `filterByMoodTags` narrows the candidate pool to songs whose emotion tags intersect the slot's tags. Key semantics:
+When the mood time-slot enhancement is active (`moodSlotEnabled` + a `TimeSlotConfig` covering the current minute), `activeMoodSlot()` resolves the slot (`MoodSlotResolver.hitSlot`) and `filterByMoodTags` narrows the candidate pool to songs whose emotion tags intersect the slot's tags. Mood-slot filtering is mutually exclusive with explore mode: `playRandomQueue` and `refillInfinitePlayQueue` both derive `mood` as `null` whenever the current enhance mode is `EXPLORE`, so explore playback always randomizes over the full library regardless of time-slot config. Key semantics:
 
 - Filtering happens **at the planner entry**, not inside the planners — tiered selection and recent eviction are reused unchanged on the smaller pool (and `neededSize = minOf(20, pool)` protects it). Uniform random composes: the filtered pool is still tiered by raw play count.
 - An empty filtered pool returns `null` → **fallback to full-library random** rather than a failed start (logged as "fall back to full library"). A pool below `MoodSlotPolicy.POOL_WARN_THRESHOLD = 10` logs a "will loop" warning.
@@ -198,9 +223,83 @@ The two entry points are wired in the app shell rather than the domain/feature l
 
 `currentMoodSlotName()` on `PlayerViewModel` delegates to `PlayerRuntime.currentMoodSlot()` → the facade's `currentMoodSlot()` — the **same** `activeMoodSlot()` evaluation the random decision used, so the toast attributing "why this song" can never disagree with the actual filter. The configuration UI side (slots, tags, counts) is covered in `/openwiki/concepts/mood-time-slot.md`.
 
+## Explore playback (`ExplorePlaybackPolicy`) — word-preference learning with word-based refill
+
+Explore play is the v3.11.0 enhancement built on the same planner core, gated by `RandomEnhanceMode.EXPLORE`. Its pure policy lives in `ExplorePlaybackPolicy` (JVM-testable, no Android deps) and constrains the whole flow:
+
+| Constant | Value | Meaning |
+|---|---|---|
+| `INITIAL_BATCH_SIZE` | `10` | size of the lucky-play batch that opens an explore session |
+| `REFILL_COUNT` | `5` | songs appended at each refill |
+| `REFILL_THRESHOLD` | `0` | remaining songs after a track change that triggers refill (ended song was second-to-last) |
+| `MIN_LISTEN_MS` | `30_000L` | minimum "really listened" duration |
+| `MIN_LISTEN_RATIO` | `0.25f` | minimum fraction of total duration for "really listened" |
+
+`ExplorePlaybackPolicy.isSkipped(playedMs, durationMs)` returns true (→ dislike vote) when the listener heard less than 30 s **or** less than ¼ of the total duration; with an unknown duration (`<= 0`) it applies only the 30-second rule.
+
+### Closing the loop: learning word preferences from outcomes
+
+The word preference store is a **vote-accumulating** model (`WordPreference`), not a boolean toggle. Each emotion word independently accumulates like/dislike votes; `kind` (`LIKE` / `DISLIKE` / `NEUTRAL`) is the vote-majority winner. Because the word can never be on both sides at once and a single skip never flips a previously-liked word immediately, the model naturally resolves "same song already liked A/B and disliked C/D" conflicts across the whole library.
+
+`handleMediaItemEnded` is the learning trigger. It reads the *just-ended* song's actual listen time (through `trackedSongId()` / `currentPlayedMs()` **before** `stopPlaybackTracking()` clears them), then — only when both `isExplorePlay` **and** `isExploreModeActive` are set (a double guard for restore/toggle timing where a session flag may linger a beat after the mode is turned off) — calls `onExploreSongSettled(songId, playedMs)`. In `PlayerRuntime.handleExploreSongSettled`, `isSkipped` decides the vote and `wordPreferenceRepository.recordSongOutcome(words, liked = !skipped)` casts one vote on each of the song's emotion words (skipped → dislike, fully heard → like). `PlayerRuntime` carries these words from `moodEmotionTagsCache[songId]`.
+
+### Refilling the explore queue from the learned pool
+
+The same `handleMediaItemEnded` computes `remainingSongs = remainingMediaItems()` after the track change and, when `remainingSongs <= REFILL_THRESHOLD (0)`, calls `refillExplorePlayQueue(startedSongId)`. The threshold is measured **after** the song change: 0 remaining means the ended song was second-to-last. 1 remaining (ended song was third-to-last) does **not** refill — refilling that early would, because the business queue's `currentIndex` is not yet synced to the controller (2026-10-20 regression fix), risk re-pulling to the old song. The refill threshold is injected separately (`exploreRefillThreshold`) from the infinite one.
+
+`refillExplorePlayQueue` is a no-op outside an explore session. It first corrects the business queue's current item to `startedSongId` (`withCurrentSongId`, the same correction infinite refill uses — otherwise the sync would yank playback back to the old song), then builds the candidate pool and plans.
+
+**`buildExploreRefillPool`** tiers the library by learned preference, in strict fallback order:
+
+```mermaid
+flowchart TD
+    A["collect distinct emotion words from library"] --> B{"any like OR dislike word?"}
+    B -- "no (nothing learned yet)" --> F["full library"]
+    B -- "yes" --> C{"songs with ≥1 liked word AND no disliked word?"}
+    C -- "yes" --> P1["liked & no-dislike pool"]
+    C -- "no" --> D{"songs with no disliked word?"}
+    D -- "yes" --> P2["no-dislike-only pool"]
+    D -- "no" --> F["full library"]
+```
+
+1. Collect the library's distinct emotion words and classify each via `wordPreferenceOf(word).kind`. If neither liked nor disliked words exist (nothing learned yet), the full library is used.
+2. **Liked & no-dislike** — songs carrying ≥1 liked word and no disliked word. If non-empty, that is the pool.
+3. **No-dislike only** — songs carrying no disliked word.
+4. **Full library** — last-resort fallback.
+
+`planner.planExploreRefill(pool, queue, count = REFILL_COUNT)` then takes `count` songs randomly from the pool, excluding anything already in the queue, and appends them via `queue.withSongs` (preserving the current index). An empty pool yields an empty `addedSongs` and the queue is left untouched; appended queues reach the controller through `syncPlayerQueue` (explore refill has no wrap-jump because explore batches are generated as one sequential window and refills happen only near the end, so the in-between element never wraps). Unlike `planInfiniteRefill`, `planExploreRefill` does **not** consult uniform random or play counts — it is a plain shuffle over the preference-tiered pool.
+
+### Explore-session lifecycle
+
+- **Entering**: `playRandomQueue` with the explore mode active sets `isExplorePlay = true` and starts a 10-song sequential batch. `startInfinitePlay` **refuses** to start while `isExplorePlay` is true ("blocked by explore session") — infinite random is *the* disabled feature during an explore session.
+- **Exiting by started-flag semantics**: `isExplorePlay` governs, not the settings mode. A user selecting a song replaces the queue through `PlayerQueueFacade.applyPlan`, which clears `isExplorePlay = false` for any queue-replacing plan with `exitInfinitePlay = true` (2026-10-21) — so manual playlist/top/artist/album selection exits the session, the player button reverts to "infinite random", and explore refill stops; a later `playRandomQueue` re-enters explore per the settings mode.
+- **Exiting on mode switch**: `PlayerRuntime` observes `randomEnhanceMode`; when the mode leaves `EXPLORE` while a session is running, it calls `randomQueueFacade.stopExplorePlay()` (which clears `isExplorePlay`). A `stopExplorePlay()` after the session has already been cleared is harmless.
+- **After exit, infinite play re-arms**: since `startInfinitePlay` keys on the *session* flag, once the user has manually left the explore session (`isExplorePlay = false`) `startInfinitePlay` succeeds **even if the settings mode is still `EXPLORE`** (asserted by `exploreSessionEndedAllowsInfinitePlay`).
+- **Restore/switch safety**: `handleMediaItemEnded` requires both `isExplorePlay` and `isExploreModeActive` so that a restore or toggle transient never casts a misleading vote or refills a queue the user has already left. `isExplorePlay` is persisted to `PlaybackStateStore` (`IS_EXPLORE_PLAY`) alongside the queue JSON, so a process restart mid-explore re-enters the session (and, with it, the word-learning + refill behaviour); the settings-derived `isExploreModeActive` re-arms from the `randomEnhanceMode` stream. The persisted infinite-model flags (`isInfinitePlay` / `infinitePlayedSongIds`) do not apply to an explore session.
+
+### Explore in the persistence and wiring layers
+
+```mermaid
+flowchart LR
+    MODE["PlayerSettingsRepository.randomEnhanceMode (DataStore)"] --> RB["PlayerRuntime mode observer"]
+    RB -->|"EXPLORE"| UI["isExploreModeActive"]
+    RB -->|"leaves EXPLORE"| STOP["randomQueueFacade.stopExplorePlay()"]
+    WPR["WordPreferenceRepository (Room) stream"] --> CACHE["wordPreferenceCache"]
+    CACHE --> FAC["randomQueueFacade.wordPreferenceOf()"]
+    FAC --> POOL["buildExploreRefillPool tiers"]
+    POOL --> PLAN["planExploreRefill"]
+    UI --> RQ["playRandomQueue: isExplorePlay=true, 10-song batch"]
+    MEDIA["handleMediaItemEnded"] --> LEARN["onExploreSongSettled → recordSongOutcome"]
+    MEDIA --> REFILL["remaining ≤ 0 → refillExplorePlayQueue"]
+```
+
+The mode switch is read as a stream so mode toggles are reflected live (both turning explore on and exiting the session when it turns off). Word preferences are a Room-backed stream cached volitilely on `PlayerRuntime` and consulted with a four-argument `wordPreferenceOf` default that returns a zero-vote (neutral) preference for unseen words.
+
 ## State, lifecycle, and persistence
 
 - `recentPlayedSongIds` lives **in memory** on the facade instance — lucky-play eviction history is not persisted; a process restart starts with a clean slate. `infinitePlayedSongIds` and `isInfinitePlay` **are persisted**: `PlayerPersistenceFacade` saves them through `PlaybackStateStore` (`IS_INFINITE_PLAY` / `INFINITE_PLAYED_IDS` alongside the queue JSON) and restore re-applies both, with saved played-ids filtered to songs still present in the library; an empty queue is allowed to restore while infinite mode is on (`allowEmpty = isInfinitePlay`). Infinite play therefore survives process death.
+- **Explore session state is persisted**: the active-session flag `isExplorePlay` is written to `PlaybackStateStore` under `IS_EXPLORE_PLAY` (alongside `IS_INFINITE_PLAY` / `INFINITE_PLAYED_IDS` and the queue JSON) on every `save` and restored with `allowEmpty` applicable, so a mid-explore process restart resumes the explore session rather than silently dropping it. `isExploreModeActive` (the settings-derived mode flag) is *not* stored; it re-arms from the `randomEnhanceMode` DataStore stream at startup.
+- **Word preferences are persisted**: `WordPreferenceRepository` is a Room-backed stream (`observeAll()`) that survives restarts, so the liked/disliked-word model built during exploration carries across sessions and keeps shaping `buildExploreRefillPool` on future runs.
 - **Save path**: `PlayerPersistenceFacade` captures the position and full state snapshot on the caller thread and only then moves the DataStore write to IO via `launchIo` (`savePlaybackStateAsync` → `savePlaybackState(snapshot, positionMs)`). The position is read up front by the default `currentPlaybackPositionMs()` argument and threaded into the snapshot, so an IO-thread save cannot read a stale position or a queue swapped mid-save. `PlaybackStateStore.save(...)` also skips writing an empty-session queue that would clobber an existing snapshot (keeps the queue, updates song+position only).
 - Exit paths: `stopInfinitePlay` clears the flags; any queue replacement via `setPlayQueue` (default `exitInfinitePlay = true`) exits too; `playRandomQueue` exits explicitly as above.
 - `playRelatedSongs` is the exception that keeps infinite mode alive: it replaces the queue with current + related songs (`exitInfinitePlay = false`) and re-seeds `infinitePlayedSongIds` with exactly those ids so the next refill reaches *outside* the new queue.
@@ -212,11 +311,14 @@ Changing anything in this chain requires these suites green; they encode the pla
 - `domain/src/test/.../RandomQueuePlannerTest.kt` — recent skip + selection recording, `resetHistory` on shortage, uniform selection after the recent filter, infinite start/refill exclusions, unplayable filtering, `null` when nothing is playable.
 - `domain/src/test/.../UniformRandomPlannerTest.kt` — injected shuffle when disabled, tier-0-only and fallback-to-tier-1 preemption, dynamic tiering beyond fixed thresholds, equal counts degenerating to uniform, skewed distributions, `orderSongs` grouping, SHUFFLE current-first ordering.
 - `feature/player/src/test/.../PlayerRandomQueueFacadeTest.kt` — sequential start + infinite exit, uniform toggle effect, no-playable `false`, start keeping the queue, tail refill on start, refill appends + sync, `startedSongId` correction, outside-infinite no-op, `advanceAfterWrap` jump and no-new-songs guard, and the mood-filter scenarios (pool narrowing, full-library fallback, slot inactive, enhancement disabled, uniform-compatible tiering).
-- `feature/player/src/test/.../PlayerMediaEventFacadeTest.kt` — refill near tail, refill on wrap even when not near tail, no refill outside infinite mode.
+- `feature/player/src/test/.../PlayerMediaEventFacadeTest.kt` — refill near tail, refill on wrap even when not near tail, no refill outside infinite mode. Also locks the explore settle/refill triggers: settled on ended song with actual played-ms, refill only when the ended song was second-to-last (remaining ≤ 0), no refill when remaining is 1 or more, and settle skipped when `trackedSongId()` is null.
+- `feature/player/src/test/.../PlayerRandomQueueFacadeTest.kt` (explore cases) — 10-song generation + session flag, session blocks infinite start, session-ended re-arms infinite, refill tiering from liked/no-dislike → no-dislike-only → full library, no-op outside a session, and `startedSongId` current-index correction before sync.
 - `player/src/test/.../MediaItemWrapDetectionTest.kt` — the index-based wrap rule and its edge cases.
 
 ## Related pages
 
-- `/openwiki/player/queue-architecture.md` — the windowed dual-queue pipeline these plans feed, `playOrderIds` semantics, and the `PlayOrderBuilder` injection point.
+- `/openwiki/player/queue-architecture.md` — the windowed dual-queue pipeline these plans feed, `playOrderIds` semantics, and the `PlayOrderBuilder` injection point. Also covers the `onExploreSongSettled` learning hook and `planExploreRefill`.
 - `/openwiki/player/runtime-facades.md` — `PlayerRuntime` composition root and facade responsibilities.
-- `/openwiki/concepts/mood-time-slot.md` — mood time-slot configuration, slot resolution, and the attribution design.
+- `/openwiki/concepts/mood-time-slot.md` — mood time-slot configuration, slot resolution, and the attribution design; the mood-slot enhancement that is mutually exclusive with explore mode.
+- `/openwiki/concepts/emotion-model.md` — emotion-word tagging across songs; the words `WordPreference` votes on.
+- `/openwiki/workflows/playback-session-lifecycle.md` — the session lifecycle surrounding explore/infinite states.

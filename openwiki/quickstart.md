@@ -1,11 +1,11 @@
 ---
 type: "Quickstart"
 title: "快速上手"
-description: "Onboarding entry: project identity, version, module layering, common build/test/verify commands, and a task-routing map into each wiki page."
-tags: [quickstart, onboarding, android, gradle, multi-module, offline-first, skin, architecture-gate]
+description: "Onboarding entry: project identity and current version (v3.11.0 / versionCode 46), module layering, build/test/verify commands, and a task-routing map into every wiki page."
+tags: [quickstart, onboarding, android, gradle, multi-module, offline-first, skin, architecture-gate, word-preference, explore-play]
 verified:
   - by: openwiki/0.5.0
-    at: 2026-10-10T11:15:45.800Z
+    at: 2026-10-21T03:20:08.093Z
 sources:
   - id: openwiki-source-3bfcb28142050978edf94754
     resource: repo://app/build.gradle.kts
@@ -35,10 +35,18 @@ sources:
     resource: repo://benchmark/src/main/java/cn/com/dcsgo/mihx/benchmark/StartupBenchmark.kt
   - id: openwiki-source-2a9daaac1604f238ef4c63fb
     resource: repo://build.gradle.kts
+  - id: openwiki-source-7d322a65ddca1cf4588fa5e3
+    resource: repo://buildSrc/src/main/kotlin/cn/com/dcsgo/mihx/verify/ProductArchitectureVerification.kt
+  - id: openwiki-source-cd02b468507d08514a40cb17
+    resource: repo://buildSrc/src/test/kotlin/cn/com/dcsgo/mihx/verify/ProductArchitectureVerificationTest.kt
   - id: openwiki-source-a2371d6362e5db4bc834ad03
     resource: repo://CLAUDE.md
   - id: openwiki-source-9645009bf4cd7f02b15b26de
     resource: repo://core/model/src/main/java/cn/com/dcsgo/mihx/core/model/PlayQueue.kt
+  - id: openwiki-source-b8ad601bbc2ce9deae0cf5a6
+    resource: repo://core/model/src/main/java/cn/com/dcsgo/mihx/core/model/RandomEnhanceMode.kt
+  - id: openwiki-source-c45f629879f8babdcb1f3397
+    resource: repo://core/model/src/main/java/cn/com/dcsgo/mihx/core/model/WordPreference.kt
   - id: openwiki-source-69570babfa5b1b1809a65b7b
     resource: repo://core/skin/build.gradle.kts
   - id: openwiki-source-452d07c1780ac74346af3f26
@@ -47,8 +55,12 @@ sources:
     resource: repo://data/src/main/java/cn/com/dcsgo/mihx/data/di/DatabaseModule.kt
   - id: openwiki-source-8afa2e64020072855e89b8ac
     resource: repo://data/src/main/java/cn/com/dcsgo/mihx/data/local/entity/SongEmotionEntity.kt
+  - id: openwiki-source-12a1d6d0e5553c5cb1517529
+    resource: repo://data/src/main/java/cn/com/dcsgo/mihx/data/local/entity/WordPreferenceEntity.kt
   - id: openwiki-source-577b7687e8ff177b6a586197
     resource: repo://data/src/main/java/cn/com/dcsgo/mihx/data/local/MelodyDatabase.kt
+  - id: openwiki-source-51949c79e3bf4e421e7ff171
+    resource: repo://data/src/main/java/cn/com/dcsgo/mihx/data/local/migration/MelodyMigrations.kt
   - id: openwiki-source-c75fdeafeee7cf621f200c0f
     resource: repo://data/src/main/java/cn/com/dcsgo/mihx/data/local/migration/SharedPreferencesLegacyJsonMigration.kt
   - id: openwiki-source-12d5b8af1aa446b9573e2462
@@ -61,43 +73,45 @@ sources:
     resource: repo://data/src/main/java/cn/com/dcsgo/mihx/data/repository/SongEmotionsRepository.kt
   - id: openwiki-source-f8d95aa838cf04a8eb5e5e43
     resource: repo://data/src/main/java/cn/com/dcsgo/mihx/data/repository/TimeSlotConfigStore.kt
-  - id: openwiki-source-f7013cd630cb7c02c18915a3
-    resource: repo://data/src/test/java/cn/com/dcsgo/mihx/data/local/migration/SharedPreferencesLegacyJsonMigrationTest.kt
+  - id: openwiki-source-39979cc6e8c7e5b52ecabd5f
+    resource: repo://domain/src/main/java/cn/com/dcsgo/mihx/domain/playback/ExplorePlaybackPolicy.kt
   - id: openwiki-source-ee8d5713acafafdce234f04d
     resource: repo://domain/src/main/java/cn/com/dcsgo/mihx/domain/playback/MoodSlotResolver.kt
+  - id: openwiki-source-15370df42a01365d6f089c6e
+    resource: repo://domain/src/main/java/cn/com/dcsgo/mihx/domain/repository/WordPreferenceRepository.kt
   - id: openwiki-source-8e3d8a1f18f53d37da8744f1
     resource: repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRandomQueueFacade.kt
   - id: openwiki-source-ff40146bae9715f1a3860309
     resource: repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRuntime.kt
   - id: openwiki-source-fe80d1b3a38b98c97840e74d
     resource: repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerViewModel.kt
-  - id: openwiki-source-1c4b0c0bdae61815184c1c0e
-    resource: repo://feature/player/src/test/java/cn/com/dcsgo/mihx/feature/player/PlayerPlaybackSessionGraphTest.kt
   - id: openwiki-source-b68c69ba290f0fee793ec69b
     resource: repo://gradle.properties
   - id: openwiki-source-81d5f1627e19148569f46f81
     resource: repo://gradle/libs.versions.toml
-  - id: openwiki-source-a387c3f7bac0eb0d8fb59638
-    resource: repo://player/src/main/java/cn/com/dcsgo/mihx/data/player/EmotionAnalyzer.kt
-  - id: openwiki-source-35e0261203b78a5159d1723b
-    resource: repo://player/src/main/java/cn/com/dcsgo/mihx/data/player/PlaybackStateStore.kt
-  - id: openwiki-source-a489ea0751bef8ba68043f26
-    resource: repo://player/src/main/java/cn/com/dcsgo/mihx/data/player/SongMediaItemMapper.kt
+  - id: openwiki-source-1703b70681186dcde3003cfc
+    resource: repo://player/src/main/java/cn/com/dcsgo/mihx/player/EmotionAnalyzer.kt
+  - id: openwiki-source-e0fe5f5dc62e806494659452
+    resource: repo://player/src/main/java/cn/com/dcsgo/mihx/player/FfmpegPcmDecoder.kt
+  - id: openwiki-source-b5fe68676096345c29cfbdba
+    resource: repo://player/src/main/java/cn/com/dcsgo/mihx/player/PlaybackStateStore.kt
+  - id: openwiki-source-a4b3e7d9ceb362621d621d7e
+    resource: repo://player/src/main/java/cn/com/dcsgo/mihx/player/SongMediaItemMapper.kt
   - id: openwiki-source-8a4ae96c838986d7eae43292
     resource: repo://player/src/test/java/cn/com/dcsgo/mihx/player/window/PlaybackWindowPerformanceShapeTest.kt
   - id: openwiki-source-e620d7484b72a53c7fa812cd
     resource: repo://settings.gradle.kts
-generated: { by: "openwiki/0.5.0", at: "2026-10-10T11:15:45.800Z" }
+generated: { by: "openwiki/0.5.0", at: "2026-10-21T03:20:08.093Z" }
 ---
 
 # Quick Start
 
-This repository is **melody-in-heart** (applicationId `cn.com.dcsgo.mihx`): a fully local, offline-first, ad-free, network-free Android music player. Current version is `3.10.2` (versionCode 44), `minSdk 33` / `targetSdk 36`, Java 11 bytecode. The stack is Kotlin 2.0.21 + Jetpack Compose (BOM 2025.09.01) + Media3 1.9.0 (with the Jellyfin FFmpeg decoder extension) + Hilt 2.52 + Room 2.6.1 (`MelodyDatabase` v10, 13 entity tables) + DataStore 1.1.1 + WorkManager 2.9.1 + LiteRT 1.4.1 (via the `org.tensorflow.lite.Interpreter` API for on-device emotion inference). The project is split into **15 Gradle modules** (`:app`, five `:core:*`, `:domain`, `:data`, `:player`, six `:feature:*`, `:benchmark`), and module boundaries are enforced by the custom `verifyProductArchitecture` task in the root `build.gradle.kts`. Before editing any code read the routing table on this page to find the matching topic page; run `./gradlew check` before committing.
+This repository is **melody-in-heart** (applicationId `cn.com.dcsgo.mihx`): a fully local, offline-first, ad-free, network-free Android music player. Current version is `3.11.0` (versionCode 46), `minSdk 33` / `targetSdk 36`, Java 11 bytecode. The stack is Kotlin 2.0.21 + Jetpack Compose (BOM 2025.09.01) + Media3 1.9.0 (with the Jellyfin FFmpeg decoder extension) + Hilt 2.52 + Room 2.6.1 (`MelodyDatabase` **v11**, **14 entity tables**) + DataStore 1.1.1 + WorkManager 2.9.1 + LiteRT 1.4.1 / TFLite (via the `org.tensorflow.lite.Interpreter` API for on-device emotion inference). The project is split into **15 Gradle modules** (`:app`, five `:core:*`, `:domain`, `:data`, `:player`, six `:feature:*`, `:benchmark`), and module boundaries are enforced by the custom `verifyProductArchitecture` gate. Before editing any code read the routing table on this page to find the matching topic page; run `./gradlew check` before committing.
 
 ## What to read, what to trust
 
 - **Source and tests are the only authority.** Every wiki conclusion carries `repo://` evidence, but implementation keeps evolving — when you act, trust the current code above any doc.
-- `CLAUDE.md` and `docs/` are high-value historical references (build conventions, queue/state-machine design docs), but **they may lag the code** and must be cross-checked. For example `CLAUDE.md` still writes Compose BOM `2024.09.00` and versionName `3.5.1` (versionCode 29), while the version catalog and `app/build.gradle.kts` actually use `2025.09.01` and `3.10.2`; it also still warns against the old `composeOptions { kotlinCompilerExtensionVersion }` block, which the current Kotlin 2.0.21 `org.jetbrains.kotlin.plugin.compose` build no longer uses.
+- `CLAUDE.md` and `docs/` are high-value historical references (build conventions, queue/state-machine design docs), but **they may lag the code** and must be cross-checked. `CLAUDE.md` mostly tracks current versions but still writes Room status comments like `Schema export data/schemas/ (当前 v10)` while the code is now v11 with 14 entities; its version table otherwise matches the catalog (Compose BOM `2025.09.01`, Kotlin `2.0.21` with the built-in `org.jetbrains.kotlin.plugin.compose` compiler — never the old `composeOptions { kotlinCompilerExtensionVersion }` block).
 - The repository root `AGENTS.md` convention: OpenWiki pages are refreshed by scheduled workflows; do not hand-edit pages under `openwiki/` unless explicitly asked.
 
 ## Module overview
@@ -118,20 +132,20 @@ flowchart TD
     DOMAIN --> CORE
 ```
 
-*Legal dependency direction: only `:app` may see every module; dependencies between features, or from a feature to `:data`/`:player`, are forbidden by `verifyProductArchitecture`.*
+*Legal dependency direction: only `:app` may see every module; dependencies between features, or from a feature to `:data`/`:player`, are forbidden by `verifyProductArchitecture`. As of v3.11.0, `:player` implementation classes were moved from the legacy `cn.com.dcsgo.mihx.data.player` package into `cn.com.dcsgo.mihx.player` (matching the module namespace); the gate now fails on any residual reference to the old package.*
 
 | Layer | Module | One-line responsibility |
 | --- | --- | --- |
 | App shell | `:app` | `MelodyApplication` / `MainActivity` / `AppRoot` / `AppNavHost`, route table `AppRoutes`, bottom-bar shell, permission coordinator, emotion-scan worker, skin-shell resolver, Hilt assembly |
 | Feature | `:feature:home/playlist/user/lyrics/player/settings` | Each feature exposes `XxxRoute` + `XxxScreen` (the Route/Screen pattern is enforced by the architecture task); `:feature:player` additionally hosts the `PlayerRuntime` facade composition root |
-| Domain | `:domain` | Repository interfaces + pure playback policy (planner/synchronizer/coordinator), no Android dependencies |
-| Data | `:data` | Room `MelodyDatabase` (v10, 13 entity tables) + migrations, DataStore wrappers, narrow adapters binding domain interfaces |
-| Player | `:player` | `AppMediaSessionService` (ExoPlayer + MediaSession), `PlaybackController` (MediaController client), windowed queue planning, Bluetooth coordination, `EmotionAnalyzer` inference support |
-| Core | `:core:model` / `:core:common` / `:core:ui` / `:core:skin` | Pure data types / `AppLog` + `PerformanceTrace` / theme and shared Compose components / skin description model, parser and fail-closed validation |
+| Domain | `:domain` | Repository interfaces + pure playback policy (planner/synchronizer/coordinator, incl. `MoodSlotResolver`, `ExplorePlaybackPolicy`), no Android dependencies |
+| Data | `:data` | Room `MelodyDatabase` (v11, 14 entity tables incl. new `word_preferences`) + migrations, DataStore wrappers, narrow adapters binding domain interfaces |
+| Player | `:player` | `AppMediaSessionService` (ExoPlayer + MediaSession), `PlaybackController` (MediaController client), windowed queue planning, Bluetooth coordination, `EmotionAnalyzer` + `FfmpegPcmDecoder` inference support |
+| Core | `:core:model` / `:core:common` / `:core:ui` / `:core:skin` | Pure data types (`WordPreference`, `RandomEnhanceMode`) / `AppLog` + `PerformanceTrace` / theme and shared Compose components / skin description model, parser and fail-closed validation |
 
 Layering detail and Hilt binding points: [/openwiki/architecture/module-graph.md](/openwiki/architecture/module-graph.md).
 
-**Offline and privacy invariants**: the app's own manifest declares only `POST_NOTIFICATIONS`, `FOREGROUND_SERVICE`, `FOREGROUND_SERVICE_MEDIA_PLAYBACK` and `BLUETOOTH_CONNECT` — there is **no `INTERNET` permission**. Since 2026-10-06 `READ_MEDIA_AUDIO` is accepted solely to accelerate the import scan (a fast direct `java.io.File` traversal when already granted), but SAF document-tree access remains the primary and fallback path and `READ_EXTERNAL_STORAGE` is still banned by the architecture task; a denied `READ_MEDIA_AUDIO` silently falls back to SAF. Backup/data-extraction rules must keep excluding playback state, Room files, DataStore files and the album-art cache. Notification and Bluetooth permissions may only be requested from user-triggered Settings paths, never on the startup path.
+**Offline and privacy invariants**: the app's own manifest declares `POST_NOTIFICATIONS`, `FOREGROUND_SERVICE`, `FOREGROUND_SERVICE_MEDIA_PLAYBACK` and `BLUETOOTH_CONNECT` — there is **no `INTERNET` permission**. `READ_MEDIA_AUDIO` is accepted solely to accelerate the import scan (a fast direct `java.io.File` traversal when already granted), but SAF document-tree access remains the primary and fallback path and `READ_EXTERNAL_STORAGE` is still banned by the architecture task; a denied `READ_MEDIA_AUDIO` silently falls back to SAF. Backup/data-extraction rules must keep excluding playback state, Room files, DataStore files and the album-art cache. Notification and Bluetooth permissions may only be requested from user-triggered Settings paths, never on the startup path (startup-path requests fail the gate).
 
 ## Common commands
 
@@ -160,17 +174,17 @@ All commands run from the repository root; use `.\gradlew.bat` on Windows and `.
 
 ### `verifyProductArchitecture` gate at a glance
 
-A custom validation task in the root `build.gradle.kts` that makes static assertions over the whole source tree on every `check`. Main rule families:
+A custom validation task wired into the root `check` lifecycle. Since m-10 (2026-10-15) the rule body lives in `buildSrc` (`ProductArchitectureVerification`) as pure, unit-tested logic over the file tree; the root task only collects files and raises, collecting **all** violations at once instead of failing on the first. Main rule families:
 
-- **Module boundaries**: features must not depend on `:data`/`:player`/other features; `player/window/` must not import `cn.com.dcsgo.mihx.data.player` implementations; implementation-layer imports (`cn.com.dcsgo.mihx.data.repository/local`) must not leak into feature/domain/player.
+- **Module boundaries**: features must not depend on `:data`/`:player`/other features; implementation-layer imports (`cn.com.dcsgo.mihx.data.repository/local`) must not leak into feature/domain/player; `MusicRepository` must stay an internal storage coordinator bound through narrow adapters (`SongRepositoryAdapter`, `PlaylistRepositoryAdapter`, `MusicImportRepositoryAdapter`, `AlbumArtRepositoryAdapter`).
 - **Module graph completeness**: all 15 product modules listed in `settings.gradle.kts` (`:app`, `:core:model/common/ui/skin`, `:domain`, `:data`, `:player`, the six `:feature:*`, `:benchmark`) must exist, each with a local `.gitignore` covering generated Android/Gradle output.
-- **Hilt wiring**: the entry points (`MelodyApplication` `@HiltAndroidApp`, `MainActivity`/`AppMediaSessionService` `@AndroidEntryPoint`, `PlayerViewModel` `@HiltViewModel`) and DI modules (app-side `CoroutineModule`/`LoggerModule`/`PlayerModule`, data-side `DatabaseModule`/`RepositoryModule`/`DataStoreModule`) must exist in `SingletonComponent`.
-- **Room schema immutability**: historical JSON under `data/schemas/` (1–10.json) must not be modified; v1/v2/v3 content assertions lock the migration semantics.
-- **UI and code conventions**: `LazyColumn` `items` must carry a stable `key`; direct `android.util.Log` calls are banned (must use `AppLog`).
-- **Release and privacy**: release must have `isMinifyEnabled` + `isShrinkResources`; the `:app` manifest must not declare `AppMediaSessionService`; backup rules must contain the agreed privacy exclusions; requests for notification/Bluetooth/`READ_MEDIA_AUDIO` permissions must not appear on the startup path (startup-path requests fail); `READ_EXTERNAL_STORAGE` must never be declared.
+- **Hilt wiring**: the entry points (`MelodyApplication` `@HiltAndroidApp`, `MainActivity`/`AppMediaSessionService` `@AndroidEntryPoint`, `PlayerViewModel` `@HiltViewModel`) and DI modules (app-side `CoroutineModule`/`LoggerModule`/`PlayerModule`, data-side `DatabaseModule`/`RepositoryModule`/`DataStoreModule`) must exist; the old `PlayerViewModelComponents`/`PlayerViewModelComponentFactory` assembly hub must not reappear.
+- **Room schema immutability**: historical JSON under `data/schemas/` (1–11.json now) must not be modified; v1/v2/v3 content assertions lock the migration semantics.
+- **UI and code conventions**: `LazyColumn` `items` must carry a stable `key`; direct `android.util.Log` calls are banned (must use `AppLog`); `:core:model` must stay a pure data model without Android resources or UI resource ids.
+- **Release and privacy**: release must have `isMinifyEnabled` + `isShrinkResources`; the `:app` manifest must not declare `AppMediaSessionService`; backup rules must contain the agreed privacy exclusions; requests for notification/Bluetooth/`READ_MEDIA_AUDIO` permissions must not appear on the startup path (startup-path requests fail); `READ_EXTERNAL_STORAGE` must never be declared; `com.google.android.things` dependencies/references must not exist.
 - **Performance anchors**: `MusicRepository` import/scan and `PlaybackController` hot paths must keep `PerformanceTrace` operation anchors; the `:benchmark` module shape and `StartupBenchmark` terminology are checked.
 
-On failure the `GradleException` message names the violated rule directly. Full rule list and release constraints: [/openwiki/operations/build-and-verification.md](/openwiki/operations/build-and-verification.md).
+On failure a `GradleException` report names each violated rule. Full rule list and release constraints: [/openwiki/operations/build-and-verification.md](/openwiki/operations/build-and-verification.md).
 
 ### Build variants
 
@@ -188,7 +202,9 @@ Change an entity → bump `MelodyDatabase.VERSION` → build to export the new s
 
 | What you are changing | Read first | Companion narrow verification |
 | --- | --- | --- |
-| Queue / random / infinite-random / play modes | [/openwiki/player/runtime-facades.md](/openwiki/player/runtime-facades.md) → [/openwiki/player/queue-architecture.md](/openwiki/player/queue-architecture.md), [/openwiki/player/random-and-infinite.md](/openwiki/player/random-and-infinite.md) | `./gradlew :player:test :feature:player:test` |
+| Explore play (探索播放) / word-preference voting / random & infinite modes | [/openwiki/player/random-and-infinite.md](/openwiki/player/random-and-infinite.md), [/openwiki/concepts/emotion-model.md](/openwiki/concepts/emotion-model.md) | `./gradlew :feature:player:test :domain:test --tests "cn.com.dcsgo.mihx.domain.playback.ExplorePlaybackPolicyTest"`, `./gradlew :data:test --tests "cn.com.dcsgo.mihx.data.repository.WordPreferencesRepositoryTest"` |
+| Queue / windowed sync / `PlayQueue` invariants | [/openwiki/player/queue-architecture.md](/openwiki/player/queue-architecture.md) | `./gradlew :player:test :feature:player:test` |
+| `PlayerRuntime` facade graph / learning feedback | [/openwiki/player/runtime-facades.md](/openwiki/player/runtime-facades.md), [/openwiki/player/state-machine.md](/openwiki/player/state-machine.md) | `./gradlew :feature:player:test` |
 | Playback state machine / process restore / service and Bluetooth | [/openwiki/player/state-machine.md](/openwiki/player/state-machine.md), [/openwiki/player/service-and-controller.md](/openwiki/player/service-and-controller.md) | `./gradlew :domain:test --tests "cn.com.dcsgo.mihx.domain.playback.ControllerPlaybackStateSynchronizerTest"` |
 | Emotion analysis or mood time-slot anything-play | [/openwiki/concepts/emotion-model.md](/openwiki/concepts/emotion-model.md), [/openwiki/workflows/emotion-analysis-pipeline.md](/openwiki/workflows/emotion-analysis-pipeline.md) | `./gradlew :domain:test --tests "cn.com.dcsgo.mihx.domain.playback.MoodSlotResolverTest"` plus `./gradlew :core:ui:test` |
 | Style switching / multi-theme-color update (skin shell, `ThemeVariant`, tab/menu layout) | [/openwiki/architecture/app-shell-navigation.md](/openwiki/architecture/app-shell-navigation.md), [/openwiki/architecture/module-graph.md](/openwiki/architecture/module-graph.md) | `./gradlew :core:skin:test :app:test --tests "cn.com.dcsgo.mihx.app.shell.*"` |
@@ -201,21 +217,22 @@ Change an entity → bump `MelodyDatabase.VERSION` → build to export the new s
 
 ### Three hard constraints per task area (know before editing)
 
-- **Player**: `PlayQueue.songs` is the business queue that may contain duplicates; `MediaController` only holds the current ± window (≤71 items after planning: 20 before + current + 50 after); `MediaItem.mediaId` must equal `Song.id.toString()`; `PlayerViewModel` is a thin facade — real logic lives in the `PlayerRuntime`-composed facade graph, so do not stuff logic into the ViewModel.
-- **Emotion feature**: batch scans are driven by a WorkManager periodic task scheduled from `MelodyApplication.onCreate` (while charging with sufficient battery, ~6h cycles of ≤40 songs; manual triggers process ≤300 per round and auto-requeue); `EmotionAnalyzer` uses the YAMNet + V/A head in `:player` assets to produce per-window V/A curves (model version `yamnet-va-v3`), results go to the Room `song_emotions` table, failures go to DataStore JSON; songs accumulating `MAX_ATTEMPTS` (=3) failures stop being auto-retried. Mood time-slot anything-play is decided by `MoodSlotResolver` over the half-open `[start, end)` interval (`end <= start` wraps midnight); tag filtering happens at the planner entry, and an empty pool falls back to full-library random.
-- **Data layer**: Room (`melody.db`, 13 tables, immutable schema snapshots) + five DataStore preference files (`player_settings`, `playback_state`, `playlist_resume`, `mood_time_slot`, `emotion_failures`); v1-era SharedPreferences JSON is migrated into Room on first launch via `SharedPreferencesLegacyMigration`. Sorting is persisted orthogonally as a `SongSortMode` (IMPORT_ORDER / TITLE / ARTIST / ALBUM / DURATION / SAMPLE_RATE / PLAY_COUNT / LAST_PLAYED) plus an ascending flag in `player_settings`. Dedup scans (real-path fingerprint) happen in `PlayerRuntime.scanDuplicateSongs`/`deduplicateAll`, which call `MusicRepository.deduplicateSongs` to remove duplicate song references from playlists and clean up orphaned associations without deleting physical files. Screen orientation (SENSOR_AUTO / LANDSCAPE / PORTRAIT) is applied to the Activity via `requestedOrientation` from `AppRoot`.
+- **Player**: `PlayQueue.songs` is the business queue that may contain duplicates; `MediaController` only holds the current ± window (≤71 items after planning: 20 before + current + 50 after); `MediaItem.mediaId` must equal `Song.id.toString()`; `PlayerViewModel` is a thin `@HiltViewModel` facade — real logic lives in the `PlayerRuntime`-composed facade/graph layer, so do not stuff logic into the ViewModel and never reintroduce the `PlayerViewModelComponents` hub.
+- **Emotion feature**: batch scans are driven by a WorkManager periodic task scheduled from `MelodyApplication.onCreate` (while charging with sufficient battery, ~6h cycles; manual triggers auto-requeue); `EmotionAnalyzer` decodes to 16 kHz mono PCM (`FfmpegPcmDecoder`, memory-budgeted against `maxMemory()`, matching the `largeHeap` app) and runs YAMNet + V/A head TFLite models in `:player` assets to produce per-window V/A curves (model version `yamnet-va-v3`, 5s window / 2.5s hop), results go to Room `song_emotions`; failures go to DataStore JSON and songs accumulating `MAX_ATTEMPTS` (=3) failures stop being auto-retried. Mood time-slot anything-play is decided by `MoodSlotResolver` over half-open `[start, end)` intervals (`end <= start` wraps midnight); tag filtering happens at the planner entry, and an empty pool falls back to full-library random.
+- **Explore play / word preference (v3.11.0)**: `RandomEnhanceMode` is `OFF` / `TIME_SLOT` / `EXPLORE` — `TIME_SLOT` and `EXPLORE` are mutually exclusive; `EXPLORE` generates a 10-song batch, disables infinite random, increments like/dislike votes per emotion word when a song settles (full listen ≥30s **and** ≥1/4 of duration → LIKE; quick skip → DISLIKE) via `WordPreferenceRepository.recordSongOutcome`, and auto-refills 5 songs when one remains (`ExplorePlaybackPolicy` constants `INITIAL_BATCH_SIZE=10`, `REFILL_COUNT=5`, `MIN_LISTEN_MS=30_000`, `MIN_LISTEN_RATIO=0.25`). `WordPreference.kind` (LIKE/DISLIKE/NEUTRAL) is majority-vote derived in the domain model; refill pools tier by liked-and-no-dislike → only-no-dislike → full library.
+- **Data layer**: Room (`melody.db`, 14 tables, immutable schema snapshots) + five DataStore preference files (`player_settings`, `playback_state`, `playlist_resume`, `mood_time_slot`, `emotion_failures`); v1-era SharedPreferences JSON is migrated into Room on first launch via `SharedPreferencesLegacyJsonMigration`. Sorting is persisted orthogonally as a `SongSortMode` (IMPORT_ORDER / TITLE / ARTIST / ALBUM / DURATION / SAMPLE_RATE / PLAY_COUNT / LAST_PLAYED) plus an ascending flag in `player_settings`. Screen orientation (SENSOR_AUTO / LANDSCAPE / PORTRAIT) is applied to the Activity via `requestedOrientation` from `AppRoot`.
 
-## New in v3.10.2 (versionCode 44)
+## New in v3.11.0 (versionCode 46)
 
-- **15th module: `:core:skin`.** A pure data-model module (Android library with `org.json` + `:core:model` only — deliberately no Compose, so descriptions can be parsed and validated device-side without UI and easily unit-tested). It defines `Skin` / `SkinTokens` / `SkinShell` / `SkinParser` (fail-closed, `SUPPORTED_SCHEMA_VERSION = 1`), the `SkinPartCatalog` part whitelist, and `DefaultSkin`.
-- **Style switcher now only flips between bundled skeletons**, not arbitrary JSON imports. The importer path (`onImportUserSkin` / `UserSkinStore` / `SkinIdDeriver`) was removed; `SkinSwitcherStore` persists the active id plus per-skinId playback-panel cover size/corner overrides and a global grid-layout switch in a single `skin_switcher` SharedPreferences file. The two bundled skeletons are the **default 3-tab** (`PLAYLIST`/`HOME`/`USER`, `playerEntry=tab`) and the **minimal 2-tab sheet** skeleton (`PLAYLIST`/`USER` with player as a global drawer, `playerEntry=sheet`). `SkinShellResolver.resolveById` maps the active id to an `AppShell`; an unknown id falls back to the default (fail-safe) so the app always starts. Resolution and route mapping live in `:app` (not `:core:skin`) because `AppRoutes`/drawables are app-layer knowledge.
-- **Multi-theme-color variants.** `ThemeVariant` in `:core:model` grew to 8 entries — `MONO`, `VERMILION`, `INDIGO`, `SAGE`, `AMBER`, `SKY`, `FRESH`, `SUNRISE` — each swatch rendered automatically by the settings 「theme-color」 card on top of light/dark mode.
-- **Sort, screen orientation, and dedup** capabilities summarized in the data-layer hard constraints above.
+- **Word-preference learning for explore play.** New `word_preferences` Room table (`WordPreferenceEntity`, DB now v11 / 14 entities) records per-emotion-word like/dislike votes from actual listening outcomes; `WordPreference.kind` majority-rule classification and `RandomEnhanceMode.EXPLORE` live in `:core:model`, the voting policy constants and `isSkipped` judgment in `:domain` `ExplorePlaybackPolicy`, and the threshold constants (`MIN_LISTEN_MS`, `MIN_LISTEN_RATIO`) match the completion rule in `WordPreferenceRepository.recordSongOutcome`.
+- **Explore playback mode.** `PlayerRandomQueueFacade.playRandomQueue/refillExplorePlayQueue` and `PlayerRuntime` (observing `wordPreferenceCache` + `isExploreModeActive`) drive 探索播放 — see [/openwiki/player/random-and-infinite.md](/openwiki/player/random-and-infinite.md) and [/openwiki/player/runtime-facades.md](/openwiki/player/runtime-facades.md).
+- **DB v10 → v11 migration.** `MIGRATION_10_11` creates `word_preferences`; registered via `MelodyMigrations.ALL` in `DatabaseModule` and exercised by `MelodyDatabaseMigrationTest`.
+- **High sample-rate analysis hardening + `largeHeap`.** The app `AndroidManifest.xml` sets `android:largeHeap="true"`; `FfmpegPcmDecoder` and `EmotionAnalyzer` share a memory budget derived from `maxMemory()`, with deterministic decode truncation (20-min / budget-based) so high-rate tracks no longer OOM. `:player` package relocated to `cn.com.dcsgo.mihx.player`.
 
 ## All wiki pages
 
 - Entry and operations: this page, [build / verify / release operations](/openwiki/operations/build-and-verification.md), [test map](/openwiki/testing/test-map.md)
 - Architecture: [module layering and dependency boundaries](/openwiki/architecture/module-graph.md), [app shell, navigation and cross-module wiring](/openwiki/architecture/app-shell-navigation.md), [data persistence: Room and DataStore](/openwiki/architecture/data-persistence.md)
-- Player: [PlayerRuntime and the facade list](/openwiki/player/runtime-facades.md), [queue and windowed sync](/openwiki/player/queue-architecture.md), [random & infinite play](/openwiki/player/random-and-infinite.md), [playback state machine and restore](/openwiki/player/state-machine.md), [playback service and MediaController](/openwiki/player/service-and-controller.md)
-- Domain concepts: [emotion domain model and vocabulary](/openwiki/concepts/emotion-model.md)
+- Player: [PlayerRuntime and the facade list](/openwiki/player/runtime-facades.md), [queue and windowed sync](/openwiki/player/queue-architecture.md), [random & infinite play (incl. explore play)](/openwiki/player/random-and-infinite.md), [playback state machine and restore](/openwiki/player/state-machine.md), [playback service and MediaController](/openwiki/player/service-and-controller.md)
+- Domain concepts: [emotion domain model, word vocabulary and word-preference votes](/openwiki/concepts/emotion-model.md), [mood time-slot and enhance modes](/openwiki/concepts/mood-time-slot.md)
 - End-to-end workflows: [emotion analysis pipeline](/openwiki/workflows/emotion-analysis-pipeline.md), [playback session lifecycle](/openwiki/workflows/playback-session-lifecycle.md)

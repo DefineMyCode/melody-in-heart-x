@@ -1,12 +1,11 @@
 ---
 type: "Architecture"
 title: "播放服务与 MediaController"
-description: ":player 层的 Android 集成面：AppMediaSessionService 的 ExoPlayer/MediaSession 生命周期与快照落盘、PlaybackController 的连接/pending actions/事件翻译/单曲回绕检测、SongMediaItemMapper 的 mediaId 契约，以及蓝牙断连自动暂停和情绪/统计组件为何落在 :player。"
+description: ":player 层的 Android 集成面：AppMediaSessionService 的 ExoPlayer/MediaSession 生命周期与快照落盘、PlaybackController 的连接/pending actions/事件翻译/单曲回绕检测、SongMediaItemMapper 的 mediaId 契约、堆自适应解码内存预算（v3.11.0，配合 app 级 largeHeap），以及蓝牙断连自动暂停和情绪/统计组件为何落在 :player。"
 tags: [player, media3, media-session, media-controller, exoplayer, bluetooth, playback-service, android]
-verified:
-  - by: openwiki/0.5.0
-    at: 2026-10-10T11:15:45.800Z
 sources:
+  - id: openwiki-source-186e96b8d6739f3745947903
+    resource: repo://app/src/main/AndroidManifest.xml
   - id: openwiki-source-5610fe170bf45c0b63fb5ac9
     resource: repo://app/src/main/java/cn/com/dcsgo/mihx/app/di/PlayerModule.kt
   - id: openwiki-source-81bdf5bdc16c1ff3afd5bcc8
@@ -25,37 +24,42 @@ sources:
     resource: repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRuntime.kt
   - id: openwiki-source-6d69bdf8c32deed5d6af5ba1
     resource: repo://player/src/main/AndroidManifest.xml
-  - id: openwiki-source-7657c9f7c862e7d55acc0b62
-    resource: repo://player/src/main/java/cn/com/dcsgo/mihx/data/player/AppMediaSessionService.kt
-  - id: openwiki-source-da7b859f3e94dd4a2c91f3d4
-    resource: repo://player/src/main/java/cn/com/dcsgo/mihx/data/player/BluetoothPlaybackCoordinator.kt
-  - id: openwiki-source-74f490bf685634b35ef5739a
-    resource: repo://player/src/main/java/cn/com/dcsgo/mihx/data/player/BluetoothStateManager.kt
-  - id: openwiki-source-ea3ae3908614e201451a16c1
-    resource: repo://player/src/main/java/cn/com/dcsgo/mihx/data/player/di/AppCoroutineScopeModule.kt
-  - id: openwiki-source-a387c3f7bac0eb0d8fb59638
-    resource: repo://player/src/main/java/cn/com/dcsgo/mihx/data/player/EmotionAnalyzer.kt
-  - id: openwiki-source-f786f682939fefc17baa41ff
-    resource: repo://player/src/main/java/cn/com/dcsgo/mihx/data/player/FfmpegPcmDecoder.kt
-  - id: openwiki-source-04a93731443f6ff3e9f66921
-    resource: repo://player/src/main/java/cn/com/dcsgo/mihx/data/player/PlaybackController.kt
-  - id: openwiki-source-35e0261203b78a5159d1723b
-    resource: repo://player/src/main/java/cn/com/dcsgo/mihx/data/player/PlaybackStateStore.kt
-  - id: openwiki-source-7cad1cd30dac214b0af6715e
-    resource: repo://player/src/main/java/cn/com/dcsgo/mihx/data/player/PlayDurationTracker.kt
-  - id: openwiki-source-d5e6d208845bb8ce3c388113
-    resource: repo://player/src/main/java/cn/com/dcsgo/mihx/data/player/PlayerFactory.kt
-  - id: openwiki-source-66f4fd99f50b63ed770f754b
-    resource: repo://player/src/main/java/cn/com/dcsgo/mihx/data/player/QuickSkipCoordinator.kt
-  - id: openwiki-source-a489ea0751bef8ba68043f26
-    resource: repo://player/src/main/java/cn/com/dcsgo/mihx/data/player/SongMediaItemMapper.kt
-  - id: openwiki-source-f0e058e6091ef385898fb85e
-    resource: repo://player/src/test/java/cn/com/dcsgo/mihx/data/player/MediaItemWrapDetectionTest.kt
-  - id: openwiki-source-bb5d79f6221db58b46df6291
-    resource: repo://player/src/test/java/cn/com/dcsgo/mihx/data/player/PlaybackStateStoreTest.kt
-  - id: openwiki-source-a32dd81da53d4e7eb5757324
-    resource: repo://player/src/test/java/cn/com/dcsgo/mihx/data/player/SingleItemLoopRewindDetectionTest.kt
-generated: { by: "openwiki/0.5.0", at: "2026-09-07T13:49:59.042Z" }
+  - id: openwiki-source-c804d077edb941261a21dbf9
+    resource: repo://player/src/main/java/cn/com/dcsgo/mihx/player/AppMediaSessionService.kt
+  - id: openwiki-source-663989b9b193649d046baeaa
+    resource: repo://player/src/main/java/cn/com/dcsgo/mihx/player/BluetoothPlaybackCoordinator.kt
+  - id: openwiki-source-6e334bff589e86c268136744
+    resource: repo://player/src/main/java/cn/com/dcsgo/mihx/player/BluetoothStateManager.kt
+  - id: openwiki-source-85a293b1a449f552bb990216
+    resource: repo://player/src/main/java/cn/com/dcsgo/mihx/player/di/AppCoroutineScopeModule.kt
+  - id: openwiki-source-1703b70681186dcde3003cfc
+    resource: repo://player/src/main/java/cn/com/dcsgo/mihx/player/EmotionAnalyzer.kt
+  - id: openwiki-source-e0fe5f5dc62e806494659452
+    resource: repo://player/src/main/java/cn/com/dcsgo/mihx/player/FfmpegPcmDecoder.kt
+  - id: openwiki-source-d4431e382635a7a27ca87c72
+    resource: repo://player/src/main/java/cn/com/dcsgo/mihx/player/PlaybackController.kt
+  - id: openwiki-source-b5fe68676096345c29cfbdba
+    resource: repo://player/src/main/java/cn/com/dcsgo/mihx/player/PlaybackStateStore.kt
+  - id: openwiki-source-dd8b887ef130e0e14d315e70
+    resource: repo://player/src/main/java/cn/com/dcsgo/mihx/player/PlayDurationTracker.kt
+  - id: openwiki-source-a8a84518b9f382db2eebb6cf
+    resource: repo://player/src/main/java/cn/com/dcsgo/mihx/player/PlayerFactory.kt
+  - id: openwiki-source-d442dcd8413308980ac95c3d
+    resource: repo://player/src/main/java/cn/com/dcsgo/mihx/player/QuickSkipCoordinator.kt
+  - id: openwiki-source-a4b3e7d9ceb362621d621d7e
+    resource: repo://player/src/main/java/cn/com/dcsgo/mihx/player/SongMediaItemMapper.kt
+  - id: openwiki-source-91daceadd8472310d223fb0d
+    resource: repo://player/src/test/java/cn/com/dcsgo/mihx/player/EmotionAnalyzerLimitsTest.kt
+  - id: openwiki-source-1335b79015e69d8ed73b7fd8
+    resource: repo://player/src/test/java/cn/com/dcsgo/mihx/player/MediaItemWrapDetectionTest.kt
+  - id: openwiki-source-ba9ccc172d5e5f490a763733
+    resource: repo://player/src/test/java/cn/com/dcsgo/mihx/player/PlaybackStateStoreTest.kt
+  - id: openwiki-source-27adc205f45612b85a8b7022
+    resource: repo://player/src/test/java/cn/com/dcsgo/mihx/player/SingleItemLoopRewindDetectionTest.kt
+generated: { by: "openwiki/0.5.0", at: "2026-10-21T03:20:08.093Z" }
+verified:
+  - by: openwiki/0.5.0
+    at: 2026-10-21T03:20:08.093Z
 ---
 
 # 播放服务与 MediaController
@@ -88,7 +92,7 @@ flowchart TD
 
 ## AppMediaSessionService：服务端生命周期与快照落盘
 
-`AppMediaSessionService` 继承 Media3 `MediaSessionService`，标注 `@AndroidEntryPoint`，注入四个依赖：`AppLogger`、`PlaybackStateStore`、`PlaylistResumeRepository` 和 `@ApplicationScope` 的进程级 `CoroutineScope`。它不实现任何自定义传输控制——注释明确"lets Media3 handle standard transport commands against the playlist provided by the UI controller"，通知栏/锁屏/耳机的播放暂停切歌全部由 MediaSession 默认生命周期处理，队列由客户端推过来。
+`AppMediaSessionService` 继承 Media3 `MediaSessionService`，标注 `@AndroidEntryPoint`，注入四个依赖：`AppLogger`、`PlaybackStateStore`、`PlaylistResumeRepository` 和 `@ApplicationScope` 的进程级 `CoroutineScope`。它不实现任何自定义传输控制——注释明确"lets Media3 handle standard transport commands against the playlist provided by the UI controller"，通知栏/锁屏/耳机的播放暂停切歌全部由 MediaSession 默认生命周期处理，队列由客户端推过来。服务侧只挂一个做 debug 日志的 `Player.Listener`（业务事件翻译全在客户端 `PlaybackController` 做，服务端保持哑终端）。
 
 ### ExoPlayer 与 MediaSession 的构建
 
@@ -216,10 +220,12 @@ flowchart TD
 - `FfmpegPcmDecoder`：直驱 APK 内已有的 media3 FFmpeg 扩展（`org.jellyfin.media3:media3-ffmpeg-decoder`，package-private 类走反射）。存在原因是真机 SIGSEGV：小米高通 ROM 的厂商软解组件（如 `c2.qti.alac.sw.decoder`）在 MediaCodec 同步循环里 native 崩溃且 catch 不住；播放链路不崩正是因为 ExoPlayer 的 `EXTENSION_RENDERER_MODE_PREFER` 让 ALAC 优先命中 FFmpeg 扩展。它不建 ExoPlayer 实例（避免与"边听边分析"互踩播放器线程和音频焦点），错误全部封在可 catch 的 `DecoderException` 里。
 - 消费方在 `:app`：`EmotionScanWorker`（WorkManager 批扫，经 `EmotionScanEntryPoint` 拿 `EmotionAnalyzer`）给曲库补 V/A 曲线。这条线需要 `media3.ffmpeg.decoder`、`exoplayer`、`litert` 等依赖——`:player` 的 build 脚本把它们与播放依赖放在一起，正是组件归属的证据。
 
+**堆自适应解码内存预算（v3.11.0）**缓存依赖 `Runtime.getRuntime().maxMemory()` 读到一次即缓存的 `memoryBudgetBytes`（堆上限运行期不变）。`EmotionAnalyzer.memoryBudgetForHeap(maxHeap)` 把实际堆上限扣除基线预留 `RESERVED_BYTES = 64MB`（推理模型 + 应用基线，不随堆缩放）后 `coerceIn(MIN_BUDGET_BYTES = 96MB, MAX_BUDGET_BYTES = 512MB)`：256MB 堆 → 192MB（与旧固定值一致，低端机行为不变），384MB 堆 → 320MB，512MB 堆 → 448MB——更大堆自动放宽，容纳更长的 192kHz 文件。该值依赖 app 级 `largeHeap="true"`（`app/src/main/AndroidManifest.xml`）：没有 largeHeap 的默认堆（通常 256MB）只能解约 10 分钟以内的 96k 文件，largeHeap 把堆抬到 384/512MB 后同一批 192k 歌曲可通过熔断。两条采样率换算的下限函数 `samplesLimits`/`maxSamplesForSrc` 由 `ShortAccum` 的 `maxCapacity`（FfmpegPcmDecoder、MediaCodec、raw 三条解码路径共用）与解码前置 `samplesCutoffReason` 引用：44.1k/48k 仍受 20 分钟时长上限支配（行为不变），96k → 7.5 分钟、192k → 3.3 分钟确定性熔断不再 OOM。高采样率（`rate > TRANSIENT_DOMINANT_RATE = 64kHz`）时内存上限还要同时受 `ShortAccum` 最后一次 `copyOf` 倍增瞬时峰值约束（`transientLimit = budget * 2/7`），避免 172MB 扩容瞬时 OOM 回归——见 `EmotionAnalyzerLimitsTest`。
+
 **统计协调器**：
 
-- `PlayDurationTracker` 实现 `PlaybackDurationMonitor`：独立 `SupervisorJob + Dispatchers.IO` 协程每秒（`UPDATE_INTERVAL_MS = 1000`）累计播放时长；新会话开始时 raw 播放计数 +1；有效播放判定为"累计达歌曲时长 90%（`COMPLETION_RATE_THRESHOLD = 0.9`）或超 5 分钟"；短播放（<5s）累计 2 次自动加入秒切列表，命中秒切的歌曲有效播放 +1 后自动移出。`startPlayback` 的 `initialPlayedMs` 参数把杀进程恢复点之前的已播时长计入统计，避免"被杀前已播 + 恢复后听完"却不满 90%。M-5 整改注明必须用 `SupervisorJob`——普通 Job 下一次 Room 异常会让整个计时 scope 静默死亡。
-- `QuickSkipCoordinator` 实现 `QuickSkipActions`：秒切列表的增删查与 `syncToPlaylist()`（同步到名为 `秒切歌曲` 的歌单）。
+- `PlayDurationTracker` 实现 `PlaybackDurationMonitor`：独立 `SupervisorJob + Dispatchers.IO` 协程每秒（`UPDATE_INTERVAL_MS = 1000`）累计播放时长；新会话开始时 raw 播放计数 +1；有效播放判定为"累计达歌曲时长 90%（`COMPLETION_RATE_THRESHOLD = 0.9`）或超 5 分钟"；短播放（<5s）累计 2 次自动加入秒切列表，命中秒切的歌曲有效播放 +1 后自动移出。`startPlayback` 的 `initialPlayedMs` 参数把杀进程恢复点之前的已播时长计入统计，避免"被杀前已播 + 恢复后听完"却不满 90%——`currentPlayDurationMs` 从 `initialPlayedMs.coerceIn(0, duration)` 起计。计时循环显式持有 `trackingJob`（M-1：旧实现只翻 `isTracking` 标志位导致每次切歌泄漏一个永不退出的循环并重复累计），`stopPlayback` 里 `cancel()` 并整体在 IO 协程结算。M-5 整改注明必须用 `SupervisorJob`——普通 Job 下一次 Room 异常会让整个计时 scope 静默死亡。
+- `QuickSkipCoordinator` 实现 `QuickSkipActions`：经 suspend 化的 `QuickSkipActions/QuickSkipRepository` 透传增删查，`syncToPlaylist()` 整体替换歌单 `秒切歌曲`（`replacePlaylistSongs` 单次落盘，不再逐首删+逐首加）。
 - 两者由 `PlayerModule` 的 `providePlaybackDurationMonitorFactory` / `providePlayerQueueServicesFactory` 装配，`PlayDurationTracker` 由 `PlayerControllerStateFacade` 在快照同步时驱动（playbackStart/durationUpdate），属于"围绕真实播放事件的计时器"，天然不属于存储层。
 
 ## 蓝牙协同：断连自动暂停
@@ -227,10 +233,9 @@ flowchart TD
 蓝牙侧由三个类组成，全部在 `:player`：
 
 - **`BluetoothStateManager`**：注册 `RECEIVER_NOT_EXPORTED` 广播接收器（adapter 开关、连接状态、ACL 连上/断开）并绑定 A2DP + Headset profile 代理，产出 `BtState`（`isBluetoothEnabled`、`isA2dpConnected`、`isHfpConnected`、设备名/类型、`audioQuality`、`signalStrength`）的 `StateFlow` 与 `onBluetoothStateChanged`/`onAudioQualityChanged` 回调。设备类型按 `BluetoothClass` 分 HEADPHONES/SPEAKER/CAR_KIT/WATCH；**没有 `BLUETOOTH_CONNECT` 权限时整个监控直接跳过**（initialize 与每个广播回调都先查权限），`detectAudioQuality` 目前简化为恒返 `NORMAL`（编解码器检测需厂商 API）。
-- **`BluetoothAudioQualityManager`**：经 `AudioManager.registerAudioDeviceCallback` 监控音频路由，把设备归类为 `AudioRoute`（BLUETOOTH_A2DP/HFP、有线、USB、扬声器），提供 `onAudioRouteChanged`/`onAudioInterrupted`/`onAudioResumed` 回调；`handleAudioInterruption(shouldPause=true)` 暂停并在 `RECOVERY_WAIT_MS = 500` 后清除中断状态。
-- **`BluetoothPlaybackCoordinator`**：实现 `:domain` 的 `BluetoothPlaybackMonitor`（`initialize`/`release` 两方法），把上面两个管理器的回调收敛成两条自动暂停规则：
-  1. **蓝牙断连自动暂停**：`onBluetoothStateChanged` 里，`wasPlayingThroughBluetooth && !state.isA2dpConnected && isPlaying()` 时调用 `pausePlayback()`——"之前在蓝牙上播、A2DP 刚断、当前还在播"才暂停，避免误伤从未经蓝牙的会话；
-  2. **音频中断暂停**：`onAudioInterrupted` 且 `isPlaying()` 时暂停。
+- **`BluetoothAudioQualityManager`**：经 `AudioManager.registerAudioDeviceCallback` 监控音频路由，把设备归类为 `AudioRoute`（BLUETOOTH_A2DP/HFP、有线、USB、扬声器），只保留 `onAudioRouteChanged` 回调（m-5 评审 2026-10-15：原音频中断恢复机制 `handleAudioInterruption`/`onAudioInterrupted` 从未被任何代码触发、属死接线，已连 manager 侧一起移除）。
+- **`BluetoothPlaybackCoordinator`**：实现 `:domain` 的 `BluetoothPlaybackMonitor`（`initialize`/`release` 两方法），把上面两个管理器的回调收敛成一条自动暂停规则：
+  1. **蓝牙断连自动暂停**：`onBluetoothStateChanged` 里，`wasPlayingThroughBluetooth && !state.isA2dpConnected && isPlaying()` 时调用 `pausePlayback()`——"之前在蓝牙上播、A2DP 刚断、当前还在播"才暂停，避免误伤从未经蓝牙的会话；随后 `wasPlayingThroughBluetooth = state.isA2dpConnected` 复位。`onAudioQualityChanged`/`onAudioRouteChanged` 只做 debug 日志。
 
   `isPlaying`/`pausePlayback` 都是构造注入的 lambda——`PlayerRuntime` 把它们接到 `_uiState.value.isPlaying` 与 `playbackBridgeFacade.pausePlayback()`，协调器因此完全不依赖运行时。
 
@@ -245,9 +250,11 @@ flowchart TD
 
 ## 测试与运维锚点
 
+- `EmotionAnalyzerLimitsTest`（`:player`）——堆自适应解码熔断的全部边界：44.1k/48k 由 20 分钟时长上限支配；96k/192k 内存预算先命中（`TOO_LARGE_FOR_DEVICE` 而非误报 `TOO_LONG`）；`memoryBudgetForHeap` 随堆上限缩放并 clamp（256MB→192MB、384MB→320MB、512MB→448MB、过小堆→96MB 下限、超大堆→512MB 封顶）；同样一首 192kHz 10 分钟歌在 256MB 堆被拒、512MB 堆通过；高采样率内存上限受 ShortAccum 倍增瞬时峰值约束。
 - `SingleItemLoopRewindDetectionTest`（`:player`）——单曲回绕判定的全部边界：自然回绕命中、短歌按 duration 精判、中途回跳不认、多歌曲队列不归此路径、索引变化/手动 SEEK/新位置非 0 一律排除、阈值边界仍命中。
 - `MediaItemWrapDetectionTest`（`:player`）——`isMediaItemWrap` 索引判据：尾→0 命中、顺序前进/单步后退/未知前索引/新索引非 0 排除、2 首小窗口视为回绕（补队列去重兜底）、空/单项窗口不可能回绕。
 - `PlaybackStateStoreTest`（`:player`）——快照存储语义：`saveCurrentPlaybackSnapshot` 校正恢复的 currentIndex/position、快照歌曲不在已存队列时的单曲兜底、空会话保存不清已有快照、legacy SharedPreferences 迁移。
+- `PlayDurationTrackerTest`（`:player`）——计时循环泄漏回归探针（`activeTrackingLoops` 恒为 0/1，>1 即 `trackingJob` 未显式 cancel 的循环泄漏）、`initialPlayedMs` 计入累计、短播放/有效播放/秒切列表维护边界。
 - `PlayerLifecycleFacadeTest`（`:feature:player`）——ViewModel 销毁序（含 `releaseBluetoothPlayback`）。
 
 运维上须保持的锚点：`PerformanceTrace` 操作 `controller_play_queue`/`controller_prepare_queue`/`controller_sync_queue`/`play_next_command`（架构门禁清单点名 `PlaybackController` 的 queue/prepare/sync/next）；服务端日志 TAG `AppMediaSessionService`、客户端 `PlaybackController`、蓝牙侧 `BluetoothStateManager`/`BtAudioQualityManager`/`BluetoothPlaybackCoordinator`。运行本模块测试：`.\gradlew.bat :player:test`（或 `--tests` 过滤单个类）。

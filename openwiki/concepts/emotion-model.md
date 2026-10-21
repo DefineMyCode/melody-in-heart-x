@@ -1,8 +1,8 @@
 ---
 type: "Domain Model"
-title: "情绪领域模型与词表（SongEmotion / EmotionGroup / emotionTagsOf）"
-description: "讲解情绪功能的分层双轨领域模型：SongEmotion 的 V/A 曲线与用户校准字段、EmotionGroup 10 组 V-A 锚定中文词表（含 auto=false 的 WITTY 组）、emotionTagsOf 展示词条判定，以及 Room song_emotions 表的存储形态与重扫/校准写语义。"
-tags: [emotion, valence-arousal, song-emotion, room, android]
+title: "情绪领域模型与词表（SongEmotion / EmotionGroup / WordPreference）"
+description: "讲解情绪功能的分层双轨领域模型：SongEmotion 的 V/A 曲线与用户校准字段、EmotionGroup 10 组 V-A 锚定中文词表（含 auto=false 的 WITTY 组）、emotionTagsOf 展示词条判定、Room song_emotions 与 word_preferences 表的存储形态（DB v11/14 实体）、重扫/校准写语义，以及 v3.11.0 新增的情绪词条收听偏好计票模型（WordPreferenceKind，票多者胜/平票中立）。"
+tags: [emotion, valence-arousal, song-emotion, room, android, word-preference, explore-play]
 sources:
   - id: openwiki-source-96607d29d5086ea5d14045e9
     resource: repo://app/src/main/java/cn/com/dcsgo/mihx/app/AppMediaMetadataViewModel.kt
@@ -24,24 +24,32 @@ sources:
     resource: repo://core/model/src/main/java/cn/com/dcsgo/mihx/core/model/EmotionTags.kt
   - id: openwiki-source-6179bd2443d20ca66b54bb24
     resource: repo://core/model/src/main/java/cn/com/dcsgo/mihx/core/model/SongEmotion.kt
+  - id: openwiki-source-c45f629879f8babdcb1f3397
+    resource: repo://core/model/src/main/java/cn/com/dcsgo/mihx/core/model/WordPreference.kt
   - id: openwiki-source-9beda722f532888c0035eea0
     resource: repo://core/ui/src/main/java/cn/com/dcsgo/mihx/ui/components/EmotionCorrection.kt
   - id: openwiki-source-6c1a934c65ef428191c8ca98
     resource: repo://core/ui/src/main/java/cn/com/dcsgo/mihx/ui/components/SongEmotionSection.kt
   - id: openwiki-source-c545006ce2a4ed14097a125f
     resource: repo://core/ui/src/test/java/cn/com/dcsgo/mihx/ui/components/SongEmotionSectionTest.kt
-  - id: openwiki-source-561e2128ae9736ccc7b9d185
-    resource: repo://data/src/main/java/cn/com/dcsgo/mihx/data/di/DatabaseModule.kt
   - id: openwiki-source-52f009b1dd56e23fe5a7de21
     resource: repo://data/src/main/java/cn/com/dcsgo/mihx/data/di/RepositoryModule.kt
   - id: openwiki-source-6aa5a20cd08decb4d3fe97d0
     resource: repo://data/src/main/java/cn/com/dcsgo/mihx/data/local/dao/MelodyDao.kt
   - id: openwiki-source-8afa2e64020072855e89b8ac
     resource: repo://data/src/main/java/cn/com/dcsgo/mihx/data/local/entity/SongEmotionEntity.kt
+  - id: openwiki-source-577b7687e8ff177b6a586197
+    resource: repo://data/src/main/java/cn/com/dcsgo/mihx/data/local/MelodyDatabase.kt
+  - id: openwiki-source-51949c79e3bf4e421e7ff171
+    resource: repo://data/src/main/java/cn/com/dcsgo/mihx/data/local/migration/MelodyMigrations.kt
   - id: openwiki-source-20d823efa2e1a5f403b02d3e
     resource: repo://data/src/main/java/cn/com/dcsgo/mihx/data/repository/SongEmotionsRepository.kt
+  - id: openwiki-source-17d3dc7f59fe7e3d0b195222
+    resource: repo://data/src/main/java/cn/com/dcsgo/mihx/data/repository/WordPreferencesRepository.kt
   - id: openwiki-source-0da9dbfdea2519b9934b2963
     resource: repo://docs/architecture/EMOTION_KNN_ANALYSIS.md
+  - id: openwiki-source-39979cc6e8c7e5b52ecabd5f
+    resource: repo://domain/src/main/java/cn/com/dcsgo/mihx/domain/playback/ExplorePlaybackPolicy.kt
   - id: openwiki-source-fd2e6fe9d9fc1653487ac814
     resource: repo://domain/src/main/java/cn/com/dcsgo/mihx/domain/repository/SongEmotionRepository.kt
   - id: openwiki-source-8e3d8a1f18f53d37da8744f1
@@ -52,19 +60,21 @@ sources:
     resource: repo://feature/playlist/src/main/java/cn/com/dcsgo/mihx/feature/playlist/EmotionLibraryView.kt
   - id: openwiki-source-57d303aca89d125243d47782
     resource: repo://feature/user/src/main/java/cn/com/dcsgo/mihx/feature/user/MoodSlotEditDialog.kt
-  - id: openwiki-source-a387c3f7bac0eb0d8fb59638
-    resource: repo://player/src/main/java/cn/com/dcsgo/mihx/data/player/EmotionAnalyzer.kt
-generated: { by: "openwiki/0.5.0", at: "2026-10-10T11:15:45.800Z" }
+  - id: openwiki-source-62184950840bb95296c4deb8
+    resource: repo://feature/user/src/main/java/cn/com/dcsgo/mihx/feature/user/MoodTimeSlotScreen.kt
+  - id: openwiki-source-1703b70681186dcde3003cfc
+    resource: repo://player/src/main/java/cn/com/dcsgo/mihx/player/EmotionAnalyzer.kt
+generated: { by: "openwiki/0.5.0", at: "2026-10-21T03:20:08.093Z" }
 verified:
   - by: openwiki/0.5.0
-    at: 2026-10-10T11:15:45.800Z
+    at: 2026-10-21T03:20:08.093Z
 ---
 
 # 情绪领域模型与词表
 
 情绪功能的核心是一个**分层双轨**的领域模型：底层是连续的 valence（愉悦度）/arousal（能量）坐标（均归一到 -1..1），可排序、可插值、可做逐窗曲线；表层是一个封闭的中文词表（10 组 V-A 锚定词），供运营展示与用户交互。两层通过固定函数互相换算：`EmotionGroup.categoriesFor` 把曲线换算成词条投票，`EmotionGroup.avgOfWords` 把用户勾选词换算回坐标。词表**只做"映射展示层"，绝不做分类训练目标**——这一点写在 `EmotionGroup` 的 KDoc 里，是整个设计的边界声明。
 
-模型文件集中在 `core/model`（`SongEmotion` / `EmotionGroup` / `EmotionTags` / `EmotionSongUiRow`），存储落在 Room `song_emotions` 表（`SongEmotionEntity`），唯一数据源是 `:data` 的 `SongEmotionsRepository`。
+模型文件集中在 `core/model`（`SongEmotion` / `EmotionGroup` / `EmotionTags` / `EmotionSongUiRow` / `WordPreference`）。存储落在 Room `melody.db`（**v11，14 实体**）的两张相关联但**语义分离**的表中：`song_emotions`（`SongEmotionEntity`，歌曲情绪数据，唯一数据源是 `:data` 的 `SongEmotionsRepository`）与 `word_preferences`（`WordPreferenceEntity`，v3.11.0 探索播放新增的**情绪词条收听偏好计票表**，唯一数据源是 `:data` 的 `WordPreferencesRepository`）。两条数据通道各自独立持久化；归属判定（`WordPreference.kind`）发生在**域层而非 UI**。
 
 ## 分层双轨设计：连续坐标打底，中文词表做展示
 
@@ -83,7 +93,7 @@ verified:
 | CHILL | 放松 慵懒 午后 微醺 | 0.4 | -0.3 | ✓ |
 | ABYSS | 窒息 孤独 深渊 | -0.7 | -0.2 | ✓（3 词） |
 
-双轨的意义：连续坐标层服务所有需要"量"的逻辑（逐窗投票、锚点距离、换算校准值），词表层服务所有需要"名"的逻辑（展示词条、随手播配置词条、UI 文案）。`companion object` 维护一张懒加载的 `wordIndex` 反查表，`groupOf(word)` 是词 → 组的唯一入口（词表封闭且无重复词，测试有验证）。
+双轨的意义：连续坐标层服务所有需要"量"的逻辑（逐窗投票、锚点距离、换算校准值），词表层服务所有需要"名"的逻辑（展示词条、随手播配置词条、探索播放偏好计票、UI 文案）。`companion object` 维护一张懒加载的 `wordIndex` 反查表，`groupOf(word)` 是词 → 组的唯一入口（词表封闭且无重复词，测试有验证）。
 
 ## SongEmotion：分析结果的域模型
 
@@ -99,7 +109,7 @@ verified:
 
 - `effectiveValence` / `effectiveArousal`：**用户校准优先的有效坐标**（`userValence ?: valence`）；
 - `userCorrected`：两个校准坐标都非空才算"已校准"；
-- `lowConfidence`：|有效 V| 或 |有效 A| < `LOW_CONF = 0.15`，即均值落在**未定带**——UI 不硬判象限，应显示"氛围：未定"（实际 UI 文案为"未定"，见下文 emotionTagsOf 一节）。
+- `lowConfidence`：|有效 V| 或 |有效 A| < `LOW_CONF = 0.15`，即均值落在**未定带**——UI 不硬判象限，应显示"氛围：未定"。
 
 ## EmotionGroup：逐窗投票与词↔坐标换算
 
@@ -131,7 +141,7 @@ WITTY 组是唯一的 `auto = false` 组，退出自动曲线投票、只保留�
 2. 否则 → `EmotionGroup.headlineTagsFor(curve)` 逐窗投票取各组 headline；
 3. 投票结果为空（近零曲线/低置信）→ 返回空列表，UI 显示**未定**：歌曲详情情绪区显示文字"未定"替代 chips，曲库情绪 Tab 行以"未定"文案与灰色样式呈现。
 
-它的 KDoc 同时记录了 kNN 传播的下线结论（见下节）。所有词条消费方——曲库情绪 Tab、歌曲详情、随手播缓存、时段词条统计——都走这一个函数，历史上"列表与详情两套词条"的分叉正是靠统一出口修掉的。
+它的 KDoc 同时记录了 kNN 传播的下线结论（见下节）。所有词条消费方——曲库情绪 Tab、歌曲详情、随手播缓存、时段词条统计、**探索播放偏好计票（取词喂给 `recordSongOutcome`）**——都走这一个函数，历史上"列表与详情两套词条"的分叉正是靠统一出口修掉的。
 
 ```mermaid
 flowchart TD
@@ -162,9 +172,82 @@ flowchart TD
 
 关键结论：**embedding 不是垃圾字段**。它是未来"用户标记攒够（≥50 首）后离线监督重训 VA 头"的原料，随分析入库的沉没成本为零；当前词条判定只走用户词与曲线投票两条路，不再读 embedding。
 
+## 探索播放词条偏好：WordPreference 计票模型（v3.11.0）
+
+从 v3.11.0（2026-10-20）起，情绪模型在"歌曲情绪词条映射/用户校准"之上新增了一条**独立并列**的通道：**情绪词条的收听偏好计票**，驱动"探索播放"按个人口味补队列。两条通道明确分工：
+
+- **歌曲情绪通道**（`song_emotions` + `emotionTagsOf`）：决定"一首歌被贴了哪些词条"，用户校准优先；
+- **词条偏好通道**（`word_preferences` + `WordPreference`）：决定"用户对这些词条整体喜欢还是不喜欢"，由收听行为累计计票。
+
+两条通道在 `:data` 层是两张独立的 Room 表、两个独立的 repository；偏好计票**只读**歌曲情绪通道的展示词条（经 `PlayerRuntime` 的 `moodEmotionTagsCache`），但**不写回** `song_emotions`，也不改变校准/映射语义——它们是并存而非替代。
+
+### 模型与判定
+
+`core/model/WordPreference.kt` 定义 `WordPreferenceKind`（`LIKE` / `DISLIKE` / `NEUTRAL`）与 `WordPreference(word, likeVotes, dislikeVotes)`：
+
+- `kind` 由 `likeVotes > dislikeVotes → LIKE`、`dislikeVotes > likeVotes → DISLIKE`、否则 `NEUTRAL`（平票中立）判定——**归属判定发生在域层属性，UI 只读取 `kind`**；
+- **词条只出现在一侧**：每个词条按票数多者归入 `LIKE` / `DISLIKE` / `NEUTRAL` 之一，不会同时出现在喜欢和不喜欢；
+- **单次跳过不会立即翻转已喜欢的词条**：跳过只给不喜欢票 +1，必须累计多次证据多过喜欢票才会翻成不喜欢——这是"同一首歌 A B 已在喜欢、C D 已在不喜欢"冲突场景的天然解法（两边票各记各的，票多者胜）。
+
+### 投票写入（ExplorePlaybackPolicy + recordSongOutcome）
+
+`PlayerRuntime.handleExploreSongSettled` 在一首歌结束/切歌时结算收听时长，取该歌展示词条（`moodEmotionTagsCache[songId]`，即 `emotionTagsOf` 的结果，用户校准已反哺进来），按 `ExplorePlaybackPolicy.isSkipped(playedMs, durationMs)` 判定：
+
+- 完整收听：`playedMs ≥ 30s` **且** `≥ durationMs/4` → 全部词条 `liked=true`，喜欢票 +1；
+- 快速跳过：`playedMs < 30s` **或** `< durationMs/4` → `liked=false`，不喜欢票 +1；
+- 时长未知（≤0）时只按 30s 规则判定。
+
+随后走 `WordPreferenceRepository.recordSongOutcome(words, liked)`（`WordPreferencesRepository` 实现）：空词列表直接忽略；否则读当前表、对 `words.distinct()` 逐词在对应侧票数 +1、`updatedAt=now`，批量 `@Upsert` 整行替换。
+
+### 持久化与读路径
+
+`word_preferences` 表由 `MIGRATION_10_11` 创建（DB v8→v9 建 `song_emotions`、v9→v10 增 `embeddingB64`/用户三字段、**v10→v11 增 `word_preferences`**，`MelodyDatabase` 升到 v11、14 实体）。每词条一行，主键为词条名（`EmotionGroup` 表内词）；DAO 提供 `observeAllWordPreferences()`（Room 失效自发的可观察流）、`allWordPreferences()`、`upsertWordPreferences()`、`clearWordPreferences()`。
+
+`WordPreferencesRepository` 是它的**唯一数据源**（`:data` 单例绑定 `MelodyDao`，对外暴露 `:domain` 的 `WordPreferenceRepository` 接口）。读路径：
+
+- `observeAll()` 把 DAO 流映射为 `Map<String, WordPreference>`，`PlayerRuntime.observeMoodSlotCaches()` 持续订阅到 volatile `wordPreferenceCache`（与情绪词条缓存同级，即时生效）；
+- `MoodTimeSlotViewModel.wordPreferences` 把同一流按词条名排序成 `StateFlow<List<WordPreference>>`，供配置页展示；
+- `getAll()` 是全表阻塞快照。
+
+`clearAll()`（配置页"重新探索"）清空整表，词条流自动重发为空。
+
+```mermaid
+flowchart TD
+    SETTLE["handleExploreSongSettled 切/播完结算"] --> CHK{"ExplorePlaybackPolicy.isSkipped"}
+    CHK -->|"完整收听 ≥30s 且 ≥1/4"| LIKE["全部词条喜欢票 +1"]
+    CHK -->|"快速跳过"| DISLIKE["全部词条不喜欢票 +1"]
+    LIKE --> REPO["WordPreferenceRepository.recordSongOutcome"]
+    DISLIKE --> REPO
+    REPO --> DB[(Room word_preferences)]
+    DB --> OBS["observeAll: 域层 kind 判定 LIKE/DISLIKE/NEUTRAL"]
+    OBS --> CACHE["PlayerRuntime.wordPreferenceCache volatile 持续订阅"]
+    CACHE --> POOL["buildExploreRefillPool 分层候选池"]
+    POOL --> L1["① 含 ≥1 喜欢词 且 无不喜欢词"]
+    POOL --> L2["② 仅无不喜欢词"]
+    POOL --> L3["③ 回退全库"]
+```
+
+*探索播放词条偏好：歌曲情绪展示词条 → 收听行为计票入库 → 域层 kind 判定 → 候选池分层降级。*
+
+### 探索播放候选池消费
+
+`PlayerRandomQueueFacade.playRandomQueue` 在探索模式下（`exploreModeEnabled()`，即设置里 `randomEnhanceMode == EXPLORE`）不套用时段过滤，从全库随机选 `ExplorePlaybackPolicy.INITIAL_BATCH_SIZE = 10` 首，置 `isExplorePlay`；无限随机被禁用。队列降到倒数第二首播完后，`refillExplorePlayQueue` 用 `buildExploreRefillPool` 分层选 `REFILL_COUNT = 5` 首：
+
+1. 含 ≥1 喜欢词 且 不含不喜欢词的歌；
+2. 池空回退"仅不含不喜欢词"的歌；
+3. 再空回退全库。
+
+词条归属按 `wordPreferenceOf(word).kind`（读 `wordPreferenceCache`，未学到则视为 0:0 中立）。时段（`TIME_SLOT`）与探索（`EXPLORE`）是**互斥**增强模式，配置页选择一个自动关闭另一个；`MoodTimeSlotViewModel.setMode` 在两模式间切换，`PlayerRuntime` 观测 `randomEnhanceMode` 在切离探索时退出探索会话。
+
+### 展示与测试
+
+配置页 `MoodTimeSlotScreen.ExploreWordPreferenceCard` 把 `wordPreferences` 按 `kind` 分成喜欢/中立/不喜欢三行（`PreferenceRow`），每词条 chip 带"喜欢票:不喜欢票"角标；"重新探索"走 `clearWordPreferences()` → `WordPreferenceRepository.clearAll()`，toast"已清空词条统计，重新探索开始~"。
+
+测试锁定计票语义：`WordPreferencesRepositoryTest` 覆盖"跳过只 +1 不喜欢票不翻转已喜欢词""完整收听 +1 喜欢票""跨会话累计且平票中立""空词忽略""clearAll 清空"；`MelodyDatabaseMigrationTest.migration10To11CreatesWordPreferencesTable` 锁迁移；`PlayerRandomQueueFacadeTest` 锁探索补队列的票数判定与分层选择。
+
 ## 存储形态：song_emotions 表与 SongEmotionsRepository
 
-`song_emotions` 是 Room `melody.db`（v10，13 实体）中的一张表，主键 `songId`、无外键。迁移轨迹：v8→v9 建表（V/A/curveJson/peakSec/windowsAnalyzed/durationSec/modelVersion/analyzedAt），v9→v10 增列 `embeddingB64` 与用户校准三字段。
+`song_emotions` 是 Room `melody.db`（v11，14 实体）中的一张表，主键 `songId`、无外键。迁移轨迹：v8→v9 建表（V/A/curveJson/peakSec/windowsAnalyzed/durationSec/modelVersion/analyzedAt），v9→v10 增列 `embeddingB64` 与用户校准三字段（与 v10→v11 的 `word_preferences` 表相互独立）。
 
 `SongEmotionEntity` ↔ `SongEmotion` 的映射由 `SongEmotionsRepository` 的私有扩展函数完成：
 
@@ -196,7 +279,7 @@ flowchart TD
     KEEP --> DB
 ```
 
-*song_emotions 的三条写路径：重扫不吞用户校准、校准只动 user 字段或建 user-only 行、清校准附带删全空行。*
+*song_emotions 的三条写路径：重扫不吞用户校准、校准只动 user 字段或建 user-only 行、清校准附带删全空行。（词条偏好表 word_preferences 独立于这张图，见上一节。）*
 
 **`SongEmotionsRepository` 是该表的唯一数据源**（`:data` 单例绑定 `MelodyDao`，对外只暴露 `:domain` 的 `SongEmotionRepository` 接口；`:player` 分析器是主要写入方）。三条写路径各有不变式：
 
@@ -204,7 +287,7 @@ flowchart TD
 - **saveCorrection（校准路径）**：已有分析行 → 仅 UPDATE user 三字段（`updateSongEmotionCorrection`，不动模型数据）；**无分析行**（分析失败/未分析的歌也允许手动标记）→ INSERT 一条仅含 user 字段的行：`curveJson = "[]"`、`windowsAnalyzed = 0`、`durationSec = 0`、`embeddingB64 = null`、`modelVersion = "user-only"`、`analyzedAt = 当前时间`。读侧 `emotionTagsOf` 以 userTags 优先，因此 user-only 行的词条完全来自用户；
 - **clearCorrection（恢复自动路径）**：user 三字段置 NULL；随后若该行是"全空 user-only 行"（`windowsAnalyzed == 0` 且无 embedding）则**直接删行**——否则全空行会被列表构建（以 emotion 非空判定"已分析"）误判。
 
-`analyzedVersions()`（`songId → modelVersion` 轻量投影）驱动重扫：`EmotionScanWorker` 以 `analyzed[songId] != EmotionAnalyzer.MODEL_VERSION`（当前 `"yamnet-va-v3"`）判定待分析歌曲，因此换模型后旧数据会被自动重扫（并按上述规则继承校准）。
+`analyzedVersions()`（`songId → modelVersion` 轻量投影）驱动重扫：`EmotionScanWorker` 以 `analyzed[songId] != EmotionAnalyzer.MODEL_VERSION`（当前 `"yamnet-va-v3"`，定义在 `player/EmotionAnalyzer.kt`）判定待分析歌曲，因此换模型后旧数据会被自动重扫（并按上述规则继承校准）。
 
 ## 用户校准链路
 
@@ -213,18 +296,20 @@ flowchart TD
 - **换算与落库**：`AppMediaMetadataViewModel.saveEmotionCorrection` 中，空词 → `clearCorrection`；非空词 → `EmotionGroup.avgOfWords` 换算为组锚点均值坐标后调 `saveCorrection(songId, v, a, words)`。仓库的 `runBlocking(IO)` 桥统一搬到 `Dispatchers.Default` 执行，避免主线程直调。
 - **user-only 行的呈现**：详情区对曲线不足 2 窗的行（user-only 行典型形态）不 early-return，而是显示词条列表并标注"已由你标记（自动分析失败，词条以你的标记为准）"；情绪分析详情页的失败歌曲也通过同一个 `EmotionCalibrateDialog` 标记（tags-only 模式：originals 传空、"恢复自动"不可见）。
 
-## 消费端：列表、详情与情境化随心播放
+## 消费端：列表、详情与情境化/探索随心播放
 
 - **曲库「情绪」Tab**：`EmotionViewModel.buildRows` 把 `getAll()` 与曲库拍平为 `EmotionSongRow`（`tags = emotionTagsOf(e)`、`corrected = e.userCorrected`），`AppNavHost` 再二次拍平为 core-model 的 `EmotionSongUiRow`（song/tags/corrected，KDoc 注明曲库情绪 Tab 与情绪分析详情页共用）。`EmotionLibraryView` 用行 tags 提供 chips 多选过滤（`tagOptions` 由全部行 tags 去重而来）、"手动标记优先 + 有词条优先"排序，以及"已校准"角标。
 - **歌曲详情**：`SongEmotionSection` 渲染平滑后的 V/A 双曲线（`smoothCurve` 窗口 5 滑动平均、边界缩窗、长度 <3 原样返回）与高潮红点——仅当 `hasSignificantPeak`（A 最大值 > A 均值 + `PEAK_MARGIN = 0.5`，20 首实测分布定标：平缓/全程高能歌 ≤0.49，真高潮歌 ≥0.52）时画，`peakSec` 按 2.5s hop 折算窗下标。
-- **情绪时段随心播放**：`PlayerRuntime` 启动时把 `songEmotionRepository.getAll()` 逐首过 `emotionTagsOf` 快照进 volatile `moodEmotionTagsCache`（用户校准因此自然反哺判定）；`PlayerRandomQueueFacade` 在随机队列与无限补队列入口用 `filterByMoodTags` 把候选池过滤为"带任一命中时段词条"的歌，过滤后为空则回退全库随机。`MoodTimeSlotViewModel.tagCounts`（配置页 chip 角标）用同一函数统计每个词条的歌曲数。
+- **情绪时段随心播放（TIME_SLOT）**：`PlayerRuntime.observeMoodSlotCaches()` 自启动起**持续订阅**三条仓库流（M-2，2026-10-15 修复，不再是一次性快照）：`TimeSlotConfigRepository.observeConfigs()`、`SongEmotionRepository.observeAll()`（在 `Dispatchers.Default` 上逐首映射 `emotionTagsOf` → volatile `moodEmotionTagsCache`）、`WordPreferenceRepository.observeAll()`（→ volatile `wordPreferenceCache`）。新分析/用户校准/偏好计票即时反哺判定。`PlayerRandomQueueFacade` 在随机队列与无限补队列入口用 `filterByMoodTags` 把候选池过滤为"带任一命中时段词条"的歌，过滤后为空则回退全库随机。`MoodTimeSlotViewModel.loadStats`（配置页 chip 角标）一次性用同一函数统计每个词条的歌曲数。
+- **探索播放（EXPLORE）**：见上节计票模型；与时段互斥，候选池按词条偏好分层而非按时段词条过滤。
 
 ## 行为契约测试
 
-`SongEmotionSectionTest` 以纯函数单测锁定模型契约：39 词封闭词表无重复且 `headline = words.first()`；`categoriesFor` 最近组投票、近零窗全弃权返回空；WITTY 不出现在自动投票结果但 `groupOf("鬼畜")` 可达（手动链路不受限）；`headlineTagsFor` 不超过 `MAX_TAGS`；`emotionTagsOf` 用户词覆盖模型结论、低置信返回空；`avgOfWords` 同组词取组锚点、跨组词取锚点均值、非法词返回 null；外加 `smoothCurve` 保长缩噪与 `lowConfidence`/`hasSignificantPeak` 的边界语义。
+`SongEmotionSectionTest` 以纯函数单测锁定模型契约：39 词封闭词表无重复且 `headline = words.first()`；`categoriesFor` 最近组投票、近零窗全弃权返回空；WITTY 不出现在自动投票结果但 `groupOf("鬼畜")` 可达（手动链路不受限）；`headlineTagsFor` 不超过 `MAX_TAGS`；`emotionTagsOf` 用户词覆盖模型结论、低置信返回空；`avgOfWords` 同组词取组锚点、跨组词取锚点均值、非法词返回 null；外加 `smoothCurve` 保长缩噪与 `lowConfidence`/`hasSignificantPeak` 的边界语义。词条偏好计票的契约由 `WordPreferencesRepositoryTest` / `PlayerRandomQueueFacadeTest` / `MelodyDatabaseMigrationTest` 锁定（见计票模型一节）。
 
 ## 相关页面
 
-- `/openwiki/architecture/data-persistence.md` — Room 库与迁移全景（song_emotions 建表与增列）
-- `/openwiki/concepts/mood-time-slot.md` — 情绪词条驱动时段随心播放的完整配置与判定模型
+- `/openwiki/architecture/data-persistence.md` — Room 库与迁移全景（song_emotions 与 word_preferences 建表/增列/注册）
+- `/openwiki/architecture/module-graph.md` — 模块依赖、RepositoryModule 契约绑定与探索播放偏好数据流
+- `/openwiki/concepts/mood-time-slot.md` — 情绪词条驱动时段随心播放与探索播放的配置及判定模型
 - `/openwiki/workflows/emotion-analysis-pipeline.md` — 批扫 Worker、分析器与失败处理的流程细节

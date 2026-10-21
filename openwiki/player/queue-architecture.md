@@ -1,11 +1,8 @@
 ---
 type: "Concept"
 title: "Playback Queue and Windowed Synchronization"
-description: "How PlayQueue's business queue and the Media3 MediaController's windowed queue cooperate: playOrderIds playback ordering, duplicate queue-item semantics, the three-layer window planning pipeline, and per-operation synchronization flows."
+description: "How PlayQueue's business queue and the Media3 MediaController's windowed queue cooperate: playOrderIds playback ordering, duplicate queue-item semantics, the three-layer window planning pipeline, per-operation synchronization flows, and the v3.11 additions of explore-play word refill and contextual time-slot filtering plus auto-refill as the queue nears its end."
 tags: [player, queue, media-controller, windowing, synchronization, duplicates]
-verified:
-  - by: openwiki/0.5.0
-    at: 2026-10-10T11:15:45.800Z
 sources:
   - id: openwiki-source-5610fe170bf45c0b63fb5ac9
     resource: repo://app/src/main/java/cn/com/dcsgo/mihx/app/di/PlayerModule.kt
@@ -19,14 +16,24 @@ sources:
     resource: repo://domain/src/main/java/cn/com/dcsgo/mihx/domain/playback/ControllerQueuePlan.kt
   - id: openwiki-source-fa083b5adfe085e1c3952826
     resource: repo://domain/src/main/java/cn/com/dcsgo/mihx/domain/playback/ControllerQueuePlanner.kt
+  - id: openwiki-source-39979cc6e8c7e5b52ecabd5f
+    resource: repo://domain/src/main/java/cn/com/dcsgo/mihx/domain/playback/ExplorePlaybackPolicy.kt
+  - id: openwiki-source-ee8d5713acafafdce234f04d
+    resource: repo://domain/src/main/java/cn/com/dcsgo/mihx/domain/playback/MoodSlotResolver.kt
   - id: openwiki-source-eb6f23ed46ad20362e4d05f1
     resource: repo://domain/src/main/java/cn/com/dcsgo/mihx/domain/playback/PlaybackQueueActionPlanner.kt
   - id: openwiki-source-36d7230cd801a03f59027967
     resource: repo://domain/src/main/java/cn/com/dcsgo/mihx/domain/playback/PlaybackSessionCoordinator.kt
   - id: openwiki-source-5a90dd2522a15d4f982b5d89
     resource: repo://domain/src/main/java/cn/com/dcsgo/mihx/domain/playback/QueueManager.kt
+  - id: openwiki-source-8998202b464399afeb1ee79b
+    resource: repo://domain/src/main/java/cn/com/dcsgo/mihx/domain/playback/RandomQueuePlanner.kt
   - id: openwiki-source-b4bc1edf76b445fe973cfb36
     resource: repo://domain/src/test/java/cn/com/dcsgo/mihx/domain/playback/ControllerQueuePlannerTest.kt
+  - id: openwiki-source-e7d94c70dbc924e5dc00e7fe
+    resource: repo://domain/src/test/java/cn/com/dcsgo/mihx/domain/playback/ExplorePlaybackPolicyTest.kt
+  - id: openwiki-source-f4cb724793cbd4ea152ee5a8
+    resource: repo://domain/src/test/java/cn/com/dcsgo/mihx/domain/playback/MoodSlotResolverTest.kt
   - id: openwiki-source-01e76e91b52fde6a22f63d41
     resource: repo://domain/src/test/java/cn/com/dcsgo/mihx/domain/playback/PlaybackQueueActionPlannerTest.kt
   - id: openwiki-source-fc4bd56948a4994429dd3d76
@@ -39,14 +46,22 @@ sources:
     resource: repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerMediaEventFacade.kt
   - id: openwiki-source-b86e2b97e4f71e5af8b2924c
     resource: repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerQueueFacade.kt
+  - id: openwiki-source-8e3d8a1f18f53d37da8744f1
+    resource: repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRandomQueueFacade.kt
   - id: openwiki-source-ff40146bae9715f1a3860309
     resource: repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRuntime.kt
-  - id: openwiki-source-04a93731443f6ff3e9f66921
-    resource: repo://player/src/main/java/cn/com/dcsgo/mihx/data/player/PlaybackController.kt
-  - id: openwiki-source-46149dc8af0e8d00101b41d7
-    resource: repo://player/src/main/java/cn/com/dcsgo/mihx/data/player/PlaybackStateSnapshotSerializer.kt
-  - id: openwiki-source-a489ea0751bef8ba68043f26
-    resource: repo://player/src/main/java/cn/com/dcsgo/mihx/data/player/SongMediaItemMapper.kt
+  - id: openwiki-source-4712a58a73a521c17f95b5f0
+    resource: repo://feature/player/src/test/java/cn/com/dcsgo/mihx/feature/player/PlayerMediaEventFacadeTest.kt
+  - id: openwiki-source-b5318c575454b025c4e1b854
+    resource: repo://feature/player/src/test/java/cn/com/dcsgo/mihx/feature/player/PlayerQueueFacadeTest.kt
+  - id: openwiki-source-2406bafab2e742d99aa82d73
+    resource: repo://feature/player/src/test/java/cn/com/dcsgo/mihx/feature/player/PlayerRandomQueueFacadeTest.kt
+  - id: openwiki-source-d4431e382635a7a27ca87c72
+    resource: repo://player/src/main/java/cn/com/dcsgo/mihx/player/PlaybackController.kt
+  - id: openwiki-source-de24a99de3caa35a84b73162
+    resource: repo://player/src/main/java/cn/com/dcsgo/mihx/player/PlaybackStateSnapshotSerializer.kt
+  - id: openwiki-source-a4b3e7d9ceb362621d621d7e
+    resource: repo://player/src/main/java/cn/com/dcsgo/mihx/player/SongMediaItemMapper.kt
   - id: openwiki-source-695efc4ca739b49b6052ac08
     resource: repo://player/src/main/java/cn/com/dcsgo/mihx/player/window/ControllerWindowSynchronizer.kt
   - id: openwiki-source-0b8d1ad8689331e8a8a22ee1
@@ -55,20 +70,23 @@ sources:
     resource: repo://player/src/main/java/cn/com/dcsgo/mihx/player/window/PlaybackWindowState.kt
   - id: openwiki-source-248e8fa8f8299b6663afb70f
     resource: repo://player/src/main/java/cn/com/dcsgo/mihx/player/window/WindowedControllerQueuePlanner.kt
-  - id: openwiki-source-f0e058e6091ef385898fb85e
-    resource: repo://player/src/test/java/cn/com/dcsgo/mihx/data/player/MediaItemWrapDetectionTest.kt
+  - id: openwiki-source-1335b79015e69d8ed73b7fd8
+    resource: repo://player/src/test/java/cn/com/dcsgo/mihx/player/MediaItemWrapDetectionTest.kt
   - id: openwiki-source-83429aa1bcb1d70e11b69723
     resource: repo://player/src/test/java/cn/com/dcsgo/mihx/player/window/ControllerWindowSynchronizerTest.kt
   - id: openwiki-source-8a4ae96c838986d7eae43292
     resource: repo://player/src/test/java/cn/com/dcsgo/mihx/player/window/PlaybackWindowPerformanceShapeTest.kt
   - id: openwiki-source-9d7c39bdfe272c3574ef83bb
     resource: repo://player/src/test/java/cn/com/dcsgo/mihx/player/window/PlaybackWindowPlannerTest.kt
-generated: { by: "openwiki/0.5.0", at: "2026-10-10T11:15:45.800Z" }
+generated: { by: "openwiki/0.5.0", at: "2026-10-21T03:20:08.093Z" }
+verified:
+  - by: openwiki/0.5.0
+    at: 2026-10-21T03:20:08.093Z
 ---
 
 # Playback Queue and Windowed Synchronization
 
-The player runs a **dual-queue model**. `PlayQueue` (in `core/model`) owns the complete business queue and UI state — what the user sees, highlights, and edits. The Media3 `MediaController`'s `MediaItem` list owns the *actual* playback order. A windowed planning layer in `player/window` converts the first into the second, so a 1000-song library can be played from a controller queue of ~70 lightweight items while the UI still shows the full queue.
+The player runs a **dual-queue model**. `PlayQueue` (in `core/model`) owns the complete business queue and UI state — what the user sees, highlights, and edits. The Media3 `MediaController`'s `MediaItem` list owns the *actual* playback order. A windowed planning layer in `player/window` converts the first into the second, so a 1000-song library can be played from a controller queue of ~70 lightweight items while the UI still shows the full queue. Windowed can be augmented in place: as the queue approaches its tail, explore play and infinite random auto-refill it with freshly picked candidates (explore play appends word-tokenized picks; infinite random appends unplayed library picks), keeping the controller window fed without dropping playback position.
 
 ## Two queues, one source of truth
 
@@ -173,6 +191,35 @@ System-side track changes (headset, lock screen, notification) mutate the contro
 
 Window-tail wrap detection is part of the same write-back path: under `REPEAT_MODE_ALL`, wrapping from the last window item to index 0 is detected **by index** (`isMediaItemWrap`), because Media3 reports wraps as `SEEK`/`AUTO` transitions — `MEDIA_ITEM_TRANSITION_REASON_REPEAT` only means single-item repeat. The wrap flag tells the infinite-play refill logic that the window is exhausted (see `/openwiki/player/random-and-infinite.md`).
 
+## V3.11 augmentation: refill and contextual selection
+
+None of what follows replaces the windowing invariant; every refill still flows through the same `QueueManager` → windowed planner → facade-fingerprinted `setMediaItems` pipeline, preserving position and playing state.
+
+### Auto-refill as the queue nears the end
+
+Rather than waiting for a window rebuild, both augmented modes observe `remainingMediaItems()` — `PlaybackBridgeFacade`/`PlayerControllerQueueFacade.remainingMediaItems()` derived from the controller's `mediaItemCount - currentMediaItemIndex - 1`. `PlayerMediaEventFacade.handleMediaItemEnded` triggers a refill on every user or system track change:
+
+- **Infinite random** refills when `remaining <= DEFAULT_REFILL_THRESHOLD` (5) **or** when the transition `wrapped` (window tail → head). `PlayerRandomQueueFacade.refillInfinitePlayQueue` appends unplayed, playable library songs via `RandomQueuePlanner.planInfiniteRefill`; on wrap it also jumps the current item to the first newly appended song and replays from 0 so the user keeps hearing new music instead of the recycled old window head. `startInfinitePlay` refills immediately when already at the tail.
+- **Explore play** refills when the just-ended song was the **second-to-last** (`remaining <= ExplorePlaybackPolicy.REFILL_THRESHOLD`, i.e. 0 after the transition), appending `REFILL_COUNT` (5) songs. Refilling a third-to-last song caused a `currentIndex`-sync pull-back that replayed the old song — fixed in v3.11.
+
+Both refills correct `PlayQueue.currentIndex` to the freshly started song (`withCurrentSongId(startedSongId)` / `queue.withCurrentIndex`) **before** appending and syncing, so the sync does not snap back to the stale previous current item.
+
+### Explore play: word-tokenized refill and learning
+
+Explore play is a `RandomEnhanceMode.EXPLORE` session (`PlayerUiState.isExplorePlay` + `isExploreModeActive`). "Casual play" (`PlayerRandomQueueFacade.playRandomQueue`) generates a fixed `INITIAL_BATCH_SIZE` (10) queue instead of the default 20. While a session is live, infinite random is blocked (`startInfinitePlay` returns false). Manually replacing the queue (`PlayerQueueFacade.setPlayQueue` with `exitInfinitePlay`) exits the session.
+
+Refill candidate pools are built from per-word like/dislike vote tallies (`WordPreferenceRepository`, `wordPreferenceOf`), layered with graceful degradation in `buildExploreRefillPool`:
+
+1. songs containing ≥1 liked word and no disliked word;
+2. songs with no disliked word;
+3. the full library.
+
+When a song finishes, its actual listen time is settled (`onExploreSongSettled`): a quick skip (<30 s or <¼ of duration, per `ExplorePlaybackPolicy.isSkipped`) casts a **dislike** vote on all its emotion tokens, otherwise a **like** vote. `planExploreRefill` excludes already-queued songs and randomly takes `REFILL_COUNT` from the pool.
+
+### Contextual time-slot filtering (mood slots)
+
+`MoodSlotResolver` (domain) filters the random candidate pool by the currently active time slot. A `TimeSlotConfig` is a half-open `[start, end)` daily interval (crossing midnight when `end <= start`) with a name and emotion-token tags; validation rejects blank/oversized names, missing tags, zero-length intervals, and overlapping slots (deterministic earliest-start choice on illegal overlap). When `randomEnhanceMode == TIME_SLOT` and a slot is hit, `PlayerRandomQueueFacade` filters candidates to songs whose emotion tags intersect the slot's tags (`filterByMoodTags`), falling back to the full library when zero songs match and warning when the pool drops below `POOL_WARN_THRESHOLD` (10). The same filter applies to both `playRandomQueue` and `refillInfinitePlayQueue`. Explore-mode selections skip mood slots and use word preferences instead. The slot name and tags are surfaced as `MoodSlotState` for attribution.
+
 ## Duplicates across persistence
 
 `PlaybackStateStore` + `PlaybackStateSnapshotSerializer` persist `songIds`, `currentIndex`, `playMode`, and `playOrderIds` as JSON arrays **by occurrence** — encoding calls `currentPlayOrderIds()`, and restoration filters the persisted order to ids still present and does *not* deduplicate it. Restore prefers the persisted `currentSongId` to fix `currentIndex`; if the current song is missing from the restored queue, it is kept only if the library still contains it. Save/restore of duplicate-heavy queues therefore round-trips without losing queue items.
@@ -183,7 +230,7 @@ Window-tail wrap detection is part of the same write-back path: under `REPEAT_MO
 - `Song.id` ↔ `MediaItem.mediaId` are one-to-one (`SongMediaItemMapper` sets `mediaId = Song.id.toString()` and requires `song.uri`).
 - `PlayQueue.songs` may contain duplicates: planning, persistence, UI keys, and removal must work per queue item/index, never assuming ids are unique.
 - Unplayable songs never enter the controller queue, but stay in the full business queue for UI display and error reporting (e.g. `PlayerErrorFacade` reports the missing file).
-- Any play-order change must reach `MediaController` through `WindowedControllerQueuePlanner` (or a same-layer planner) before playback reflects it; both facade and controller fingerprint plans (`songIds + startIndex`) to skip redundant `setMediaItems` rebuilds, and a real rebuild preserves position and playing state.
+- Any play-order change must reach `MediaController` through `WindowedControllerQueuePlanner` (or a same-layer planner) before playback reflects it; both facade and controller fingerprint plans (`songIds + startIndex`) to skip redundant `setMediaItems` rebuilds, and a real rebuild preserves position and playing state. This equally covers explore/infinite auto-refill: appended songs are synced through the same path, correcting `currentIndex` to the started song first.
 - Do not reintroduce `PlayQueue.nextIndex()`/`previousIndex()`, and do not move settings- or play-count-aware random ordering into `PlayQueue` — inject it via `QueueManager.PlayOrderBuilder` from the assembly layer.
 - Window boundaries, cache invalidation, and window→full-queue mapping stay in `player/window`.
 
@@ -198,8 +245,10 @@ Window semantics are locked by tests; changing the pipeline without updating the
 
 `ControllerQueuePlannerTest` (domain) additionally locks order expansion, stable shuffle, and unplayable-song skipping.
 
+The v3.11 augmented paths are locked by facade tests: `PlayerMediaEventFacadeTest` anchors the explore refill thresholds (second-to-last refills, third-to-last does not, enough-remaining does not) and the `startedSongId` correction; `PlayerRandomQueueFacadeTest` anchors the 10-song explore batch, explore blocking infinite play, the liked/no-dislike → no-dislike → full-library refill pool fallback, wrap advancement, and `setPlayQueue` exiting an explore session.
+
 ## Related pages
 
-- `/openwiki/player/random-and-infinite.md` — uniform random, infinite-play refill, and the `PlayOrderBuilder` injection point.
+- `/openwiki/player/random-and-infinite.md` — uniform random, infinite-play and explore-play refill, contextual time-slot filtering, and the `PlayOrderBuilder` injection point.
 - `/openwiki/player/service-and-controller.md` — `PlaybackController`, MediaSession service, and system-side control paths.
 - `/openwiki/player/state-machine.md` — playback state transitions driven by controller snapshots.

@@ -8,8 +8,14 @@ sources:
     resource: repo://app/src/main/java/cn/com/dcsgo/mihx/app/di/PlayerModule.kt
   - id: openwiki-source-2a9daaac1604f238ef4c63fb
     resource: repo://build.gradle.kts
+  - id: openwiki-source-7d322a65ddca1cf4588fa5e3
+    resource: repo://buildSrc/src/main/kotlin/cn/com/dcsgo/mihx/verify/ProductArchitectureVerification.kt
+  - id: openwiki-source-39979cc6e8c7e5b52ecabd5f
+    resource: repo://domain/src/main/java/cn/com/dcsgo/mihx/domain/playback/ExplorePlaybackPolicy.kt
   - id: openwiki-source-d2dec7047247a16d7d9623df
     resource: repo://domain/src/main/java/cn/com/dcsgo/mihx/domain/playback/PlayerQueueServices.kt
+  - id: openwiki-source-15370df42a01365d6f089c6e
+    resource: repo://domain/src/main/java/cn/com/dcsgo/mihx/domain/repository/WordPreferenceRepository.kt
   - id: openwiki-source-7947bd28b3f56e3e0375e61b
     resource: repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerBluetoothGraph.kt
   - id: openwiki-source-fc4bd56948a4994429dd3d76
@@ -58,6 +64,8 @@ sources:
     resource: repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerSongDeletionFacade.kt
   - id: openwiki-source-37ecb8ac896ee055dab0bc51
     resource: repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerStartupFacade.kt
+  - id: openwiki-source-9308f8f1825170f4904deac4
+    resource: repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerUiState.kt
   - id: openwiki-source-33ac0f60e5c886610fbdfb4b
     resource: repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerVersionFacade.kt
   - id: openwiki-source-fe80d1b3a38b98c97840e74d
@@ -72,10 +80,10 @@ sources:
     resource: repo://feature/player/src/test/java/cn/com/dcsgo/mihx/feature/player/PlayerRandomQueueFacadeTest.kt
   - id: openwiki-source-e0c3384d9aa25ad5cfc535e4
     resource: repo://feature/player/src/test/java/cn/com/dcsgo/mihx/feature/player/PlayerStartupFacadeTest.kt
-generated: { by: "openwiki/0.5.0", at: "2026-10-10T11:15:45.800Z" }
+generated: { by: "openwiki/0.5.0", at: "2026-10-21T03:20:08.093Z" }
 verified:
   - by: openwiki/0.5.0
-    at: 2026-10-10T11:15:45.800Z
+    at: 2026-10-21T03:20:08.093Z
 ---
 
 # PlayerRuntime and the Facade Catalog
@@ -123,7 +131,7 @@ Two consequences follow from the thinness:
 
 `PlayerRuntimeFactory` is `@Inject`-constructed by Hilt and passes everything into `PlayerRuntime.create()`-style construction. Its injected set is the exact boundary of what the feature may know about the world:
 
-- **Repositories** — `SongRepository`, `AlbumArtRepository`, `PlayStatsRepository`, `PlayerSettingsRepository`, `TimeSlotConfigRepository`, `SongEmotionRepository`.
+- **Repositories** — `SongRepository`, `AlbumArtRepository`, `PlayStatsRepository`, `PlayerSettingsRepository`, `TimeSlotConfigRepository`, `SongEmotionRepository`, `WordPreferenceRepository`.
 - **Playback Ports / factories** (interfaces and `fun interface`s in `domain/playback`) — `ControllerQueuePlannerPort`, `PlaybackControllerPortFactory`, `PlaybackDurationMonitorFactory`, `PlaybackStateStorageFactory`, `BluetoothPlaybackMonitorFactory`, `PlayerQueueServicesFactory`, plus `CoroutineDispatchers`.
 
 `app/di/PlayerModule` binds each Port to its `:player` implementation (`WindowedControllerQueuePlanner`, `PlaybackController` → `AppMediaSessionService`, `PlaybackStateStore`, `BluetoothPlaybackCoordinator`, `PlayDurationTracker`, and the `PlayerQueueServices` bundle of coordinators). The feature therefore compiles against `:domain` interfaces only — no `:data`/`:player` imports, enforced by the architecture gate (see `/openwiki/architecture/module-graph.md`).
@@ -152,7 +160,7 @@ Eighteen facades, grouped by concern. Each row is the facade's single reason to 
 
 - `PlayerQueueFacade` — routes every business-queue mutation (replace, add tail, add-next, remove, remove-at, clear, play-item, play-mode) through the injected `PlaybackQueueActionPlanner`; `applyPlan` copies the planned queue into state (plus `nextPlayState`, infinite-play exit, current-song/duration clearing), then executes the plan's playback action (`PlayQueueIndex` / `SyncQueue` / `ClearController` / `None`) and the persistence flags.
 - `PlayerControllerQueueFacade` — converts a business queue into a controller window via `ControllerQueuePlannerPort.plan`, skips redundant syncs using a fingerprint (`songIds + startIndex`), computes `remainingMediaItems` (controller count minus current index, falling back to the planned window's `remainingAfterStart` when the controller is empty), and clears the controller playlist (resetting the fingerprint).
-- `PlayerRandomQueueFacade` — the stateful side of random/infinite playback: keeps the in-memory `recentPlayedSongIds`, resolves the active mood time slot and filters the candidate pool at the planner entrance (falling back to the full library when the tag pool is empty), runs `playRandomQueue` / `startInfinitePlay` / `stopInfinitePlay`, and handles infinite refill including the `advanceAfterWrap` cursor correction.
+- `PlayerRandomQueueFacade` — the stateful side of random/infinite playback: keeps the in-memory `recentPlayedSongIds`, resolves the active mood time slot and filters the candidate pool at the planner entrance (falling back to the full library when the tag pool is empty), runs `playRandomQueue` / `startInfinitePlay` / `stopInfinitePlay`, and handles infinite refill including the `advanceAfterWrap` cursor correction. It also owns **explore-play**: `playRandomQueue` generates a fixed `ExplorePlaybackPolicy.INITIAL_BATCH_SIZE = 10` batch when the enhance mode is EXPLORE and sets `isExplorePlay` (`startInfinitePlay` is blocked while an explore session is live), and `refillExplorePlayQueue` appends `REFILL_COUNT = 5` songs built from a like/dislike-word tiered pool (liked & no-dislike → no-dislike → full library) using the cached `wordPreferenceOf` votes.
 
 **Playback**
 
@@ -162,11 +170,11 @@ Eighteen facades, grouped by concern. Each row is the facade's single reason to 
 **State sync**
 
 - `PlayerControllerStateFacade` — the single entry point that maps `ControllerPlaybackSnapshot`s into `PlayerUiState` through `ControllerPlaybackStateSynchronizer`: applies duration updates and playback starts to the duration tracker, updates the tracked song id, writes the synced state **while deliberately preserving the discrete `currentPositionMs`** (snapshot sync must not touch the position narrow flow — see state-machine page), notifies the progress ticker only when `isPlaying` actually flipped (the snapshot callback is high-frequency, so an unconditional notify would re-run in steady state), and re-syncs the queue when a non-infinite queue's remaining controller items drop to `DEFAULT_REFILL_THRESHOLD`. Also handles `handleControllerIsPlayingChanged` with its pause/resume-tracking and save-on-pause transitions.
-- `PlayerMediaEventFacade` — end-of-item side effects: stop tracking and clear the tracked song, refill the infinite queue when the window wrapped or remaining items are at/below `DEFAULT_REFILL_THRESHOLD = 5`, restore the add-next play mode (`nextPlaySongId`/`playModeBeforeNext`), and notify the sleep timer that a song ended (`播完最后一曲`).
+- `PlayerMediaEventFacade` — end-of-item side effects: stop tracking and clear the tracked song, refill the infinite queue when the window wrapped or remaining items are at/below `DEFAULT_REFILL_THRESHOLD = 5`, restore the add-next play mode (`nextPlaySongId`/`playModeBeforeNext`), notify the sleep timer that a song ended (`播完最后一曲`), and — when **both** `isExplorePlay` and `isExploreModeActive` are set — settle the just-ended song's listening result and auto-refill the explore queue once the ended song was the second-to-last (`ExplorePlaybackPolicy.REFILL_THRESHOLD`, adding `REFILL_COUNT = 5`). The dual-flag check is the double-safety guard against a mid-restore timing where the explore session flag is true but the user has left explore mode.
 
 **Persistence**
 
-- `PlayerPersistenceFacade` (+ `PlaybackStateStorage` port, `PlaybackRestoreCoordinator`) — saves queue/position/infinite state/current song to the storage port; the async path captures both the full `PlayerUiState` snapshot and the position on the calling thread, then moves the DataStore write to IO so the save can never read a stale queue or position that the UI changed while the IO save was queued. It clears the state, reads/decodes the restore result on IO (`restorePlaybackState`), and applies it: full restore (UI + `prepareControllerQueue` at the snapshot position, no autoplay) when there is no live session, UI-queue-shadow-only otherwise — restoring UI queue, current song, and same-name songs but leaving position/isPlaying to the live controller sync — because controller snapshot sync never fills `songs`.
+- `PlayerPersistenceFacade` (+ `PlaybackStateStorage` port, `PlaybackRestoreCoordinator`) — saves queue/position/infinite state/current song to the storage port; the async path captures both the full `PlayerUiState` snapshot and the position on the calling thread, then moves the DataStore write to IO so the save can never read a stale queue or position that the UI changed while the IO save was queued. The snapshot also serializes `isExplorePlay` (session flag), so a restarted runtime with an active explore queue comes back in explore mode. It clears the state, reads/decodes the restore result on IO (`restorePlaybackState`), and applies it: full restore (UI + `prepareControllerQueue` at the snapshot position, no autoplay) when there is no live session, UI-queue-shadow-only otherwise — restoring UI queue, current song, and same-name songs but leaving position/isPlaying to the live controller sync — because controller snapshot sync never fills `songs`.
 - Supporting cast assembled in `PlayerPersistenceGraph`: `PlayerPlaybackStateAutosaver` throttles periodic saves to one per `DEFAULT_INTERVAL_MS = 5_000` measured against `SystemClock.elapsedRealtime` (crash-recovery granularity; explicit saves on pause/switch/exit remain the backstop).
 
 **Library and import**
@@ -201,10 +209,12 @@ When the playback controller is unavailable (connection failure, or pending acti
 
 ### Runtime-level responsibilities beyond the facades
 
-Not every behavior is a facade: a couple of settings and the file-check domain are orchestrated directly on `PlayerRuntime`.
+Not every behavior is a facade: a couple of settings, the file-check domain, the mood/explore caches, and the explore-learning write-back are orchestrated directly on `PlayerRuntime`.
 
 - **Song sort mode** — `songSortMode` and `songSortAscending` are `Flow<SongSortMode>`/`Flow<Boolean>` re-exposed straight from `playerSettingsRepository` (with `currentSongSortMode()`/`currentSongSortAscending()` for on-demand reads), and `setSongSortMode`/`setSongSortAscending` persist through `scope.launch { playerSettingsRepository.setSongSortMode(mode) }`.
 - **File-check domain** — `validateLocalFiles(mode)` runs `songRepository.validateAndCleanupLocalFiles(mode)` on IO and parks the `LocalFileValidationResult` in the `validationResult` StateFlow until the user acknowledges it (`acknowledgeValidationResult`). The duplicate-file scan is orchestrated here too: `scanDuplicateSongs()` calls `songRepository.scanDuplicateSongGroups()` on IO and publishes into a `duplicateGroups` StateFlow (guarded by `isScanningDuplicates`, flagged by `hasScannedDuplicates`), and `deduplicateAll()` calls `songRepository.deduplicateSongs(groups)`, then clears the groups, the scan flag, and the validation badge.
+- **Mood and explore caches (continuous observation)** — `observeMoodSlotCaches()` keeps three `@Volatile` caches fresh from repository **flows** rather than one-shot snapshots: `moodSlotConfigsCache` from `timeSlotConfigRepository.observeConfigs()`, `moodEmotionTagsCache` (mapped from emotion entities, computed on the default dispatcher) from `songEmotionRepository.observeAll()`, and `wordPreferenceCache` from `wordPreferenceRepository.observeAll()`. The same coroutines observe `playerSettingsRepository.randomEnhanceMode`: when it leaves EXPLORE, `isExploreModeActive` is cleared and, if an explore session is live (`isExplorePlay`), `randomQueueFacade.stopExplorePlay()` exits it. There is no `refreshMoodSlots()` manual hook anymore — saves/deletes/new analyses push through the flows.
+- **Explore listening learning** — `handleExploreSongSettled(songId, playedMs)`, invoked by the media-event facade at every song boundary, reads the song's emotion tags from `moodEmotionTagsCache`, decides `ExplorePlaybackPolicy.isSkipped(playedMs, durationMs)` (skipped = `< 30s` or `< 1/4` total), and calls `wordPreferenceRepository.recordSongOutcome(words, liked = !skipped)` in a coroutine — a `likeVotes`/`dislikeVotes` tally per emotional word, re-read afterward for the visible like/dislike/neutral snapshot. The re-emitted `observeAll()` keeps `wordPreferenceCache` current for the refill pool.
 
 ## The narrow-flow design
 

@@ -2,30 +2,27 @@
 type: "Reference"
 title: "Data Persistence: Room and DataStore"
 openwiki_generated: true
-verified:
-  - by: openwiki/0.5.0
-    at: 2026-10-10T11:15:45.800Z
 sources:
-  - id: openwiki-source-96607d29d5086ea5d14045e9
-    resource: repo://app/src/main/java/cn/com/dcsgo/mihx/app/AppMediaMetadataViewModel.kt
+  - id: openwiki-source-186e96b8d6739f3745947903
+    resource: repo://app/src/main/AndroidManifest.xml
   - id: openwiki-source-5610fe170bf45c0b63fb5ac9
     resource: repo://app/src/main/java/cn/com/dcsgo/mihx/app/di/PlayerModule.kt
   - id: openwiki-source-bb00a8b0f0083ccce829d880
     resource: repo://app/src/main/java/cn/com/dcsgo/mihx/app/emotion/EmotionScanScheduler.kt
   - id: openwiki-source-81bdf5bdc16c1ff3afd5bcc8
     resource: repo://app/src/main/java/cn/com/dcsgo/mihx/app/emotion/EmotionScanWorker.kt
-  - id: openwiki-source-ea74e07321c7cd79b5bf1c80
-    resource: repo://app/src/main/java/cn/com/dcsgo/mihx/app/mood/MoodTimeSlotViewModel.kt
   - id: openwiki-source-254bbd50662077e2ffc872ad
     resource: repo://app/src/main/java/cn/com/dcsgo/mihx/MelodyApplication.kt
   - id: openwiki-source-89df878e34f12c0da5e5f9b3
     resource: repo://app/src/main/res/xml/backup_rules.xml
   - id: openwiki-source-fc3957012c09f3063a6016dc
     resource: repo://app/src/main/res/xml/data_extraction_rules.xml
-  - id: openwiki-source-2a9daaac1604f238ef4c63fb
-    resource: repo://build.gradle.kts
+  - id: openwiki-source-7d322a65ddca1cf4588fa5e3
+    resource: repo://buildSrc/src/main/kotlin/cn/com/dcsgo/mihx/verify/ProductArchitectureVerification.kt
   - id: openwiki-source-a2371d6362e5db4bc834ad03
     resource: repo://CLAUDE.md
+  - id: openwiki-source-c45f629879f8babdcb1f3397
+    resource: repo://core/model/src/main/java/cn/com/dcsgo/mihx/core/model/WordPreference.kt
   - id: openwiki-source-0f1ea52b4adfffa8391b0e81
     resource: repo://data/build.gradle.kts
   - id: openwiki-source-561e2128ae9736ccc7b9d185
@@ -42,16 +39,18 @@ sources:
     resource: repo://data/src/main/java/cn/com/dcsgo/mihx/data/local/entity/PlaylistSongCrossRef.kt
   - id: openwiki-source-2171009a4a060165d9540fcf
     resource: repo://data/src/main/java/cn/com/dcsgo/mihx/data/local/entity/SongArtistCrossRef.kt
-  - id: openwiki-source-8afa2e64020072855e89b8ac
-    resource: repo://data/src/main/java/cn/com/dcsgo/mihx/data/local/entity/SongEmotionEntity.kt
   - id: openwiki-source-e1ce80f5abb863f1723b9ef6
     resource: repo://data/src/main/java/cn/com/dcsgo/mihx/data/local/entity/SongEntity.kt
+  - id: openwiki-source-12a1d6d0e5553c5cb1517529
+    resource: repo://data/src/main/java/cn/com/dcsgo/mihx/data/local/entity/WordPreferenceEntity.kt
   - id: openwiki-source-577b7687e8ff177b6a586197
     resource: repo://data/src/main/java/cn/com/dcsgo/mihx/data/local/MelodyDatabase.kt
   - id: openwiki-source-cb2e09c13e73e297a477dc2f
     resource: repo://data/src/main/java/cn/com/dcsgo/mihx/data/local/migration/LegacyJsonSnapshotParser.kt
   - id: openwiki-source-499bb11b283879bef3061aca
     resource: repo://data/src/main/java/cn/com/dcsgo/mihx/data/local/migration/LegacyMigrationContract.kt
+  - id: openwiki-source-51949c79e3bf4e421e7ff171
+    resource: repo://data/src/main/java/cn/com/dcsgo/mihx/data/local/migration/MelodyMigrations.kt
   - id: openwiki-source-c75fdeafeee7cf621f200c0f
     resource: repo://data/src/main/java/cn/com/dcsgo/mihx/data/local/migration/SharedPreferencesLegacyJsonMigration.kt
   - id: openwiki-source-12d5b8af1aa446b9573e2462
@@ -76,6 +75,8 @@ sources:
     resource: repo://data/src/main/java/cn/com/dcsgo/mihx/data/repository/SongRepositoryAdapter.kt
   - id: openwiki-source-f8d95aa838cf04a8eb5e5e43
     resource: repo://data/src/main/java/cn/com/dcsgo/mihx/data/repository/TimeSlotConfigStore.kt
+  - id: openwiki-source-17d3dc7f59fe7e3d0b195222
+    resource: repo://data/src/main/java/cn/com/dcsgo/mihx/data/repository/WordPreferencesRepository.kt
   - id: openwiki-source-556939dd1364840e33c6f8e5
     resource: repo://data/src/main/java/cn/com/dcsgo/mihx/data/util/SongPathResolver.kt
   - id: openwiki-source-f7013cd630cb7c02c18915a3
@@ -104,30 +105,40 @@ sources:
     resource: repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRuntime.kt
   - id: openwiki-source-54ba4f7acb643769b197e402
     resource: repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerSleepTimerCoordinator.kt
-  - id: openwiki-source-7657c9f7c862e7d55acc0b62
-    resource: repo://player/src/main/java/cn/com/dcsgo/mihx/data/player/AppMediaSessionService.kt
-  - id: openwiki-source-46149dc8af0e8d00101b41d7
-    resource: repo://player/src/main/java/cn/com/dcsgo/mihx/data/player/PlaybackStateSnapshotSerializer.kt
-  - id: openwiki-source-35e0261203b78a5159d1723b
-    resource: repo://player/src/main/java/cn/com/dcsgo/mihx/data/player/PlaybackStateStore.kt
-  - id: openwiki-source-628955b76b7d7f0436c4d85f
-    resource: repo://player/src/test/java/cn/com/dcsgo/mihx/data/player/PlaybackStateSnapshotSerializerTest.kt
-  - id: openwiki-source-bb5d79f6221db58b46df6291
-    resource: repo://player/src/test/java/cn/com/dcsgo/mihx/data/player/PlaybackStateStoreTest.kt
-generated: { by: "openwiki/0.5.0", at: "2026-10-10T11:15:45.800Z" }
+  - id: openwiki-source-c804d077edb941261a21dbf9
+    resource: repo://player/src/main/java/cn/com/dcsgo/mihx/player/AppMediaSessionService.kt
+  - id: openwiki-source-1703b70681186dcde3003cfc
+    resource: repo://player/src/main/java/cn/com/dcsgo/mihx/player/EmotionAnalyzer.kt
+  - id: openwiki-source-e0fe5f5dc62e806494659452
+    resource: repo://player/src/main/java/cn/com/dcsgo/mihx/player/FfmpegPcmDecoder.kt
+  - id: openwiki-source-de24a99de3caa35a84b73162
+    resource: repo://player/src/main/java/cn/com/dcsgo/mihx/player/PlaybackStateSnapshotSerializer.kt
+  - id: openwiki-source-b5fe68676096345c29cfbdba
+    resource: repo://player/src/main/java/cn/com/dcsgo/mihx/player/PlaybackStateStore.kt
+  - id: openwiki-source-91daceadd8472310d223fb0d
+    resource: repo://player/src/test/java/cn/com/dcsgo/mihx/player/EmotionAnalyzerLimitsTest.kt
+  - id: openwiki-source-186a6bc804c7677b8913c8ce
+    resource: repo://player/src/test/java/cn/com/dcsgo/mihx/player/PlaybackStateSnapshotSerializerTest.kt
+  - id: openwiki-source-ba9ccc172d5e5f490a763733
+    resource: repo://player/src/test/java/cn/com/dcsgo/mihx/player/PlaybackStateStoreTest.kt
+generated: { by: "openwiki/0.5.0", at: "2026-10-21T03:20:08.093Z" }
+verified:
+  - by: openwiki/0.5.0
+    at: 2026-10-21T03:20:08.093Z
 ---
 
 
 # Data Persistence: Room and DataStore
 
-The app persists data through two complementary stacks: **Room** (`MelodyDatabase`, version 10, 13 entity tables) owns all structured data — library, playlists, stats, quick-skip, emotions; **DataStore Preferences** (5 independent files) owns small-scale settings and state snapshots (player settings, playback snapshot, playlist resume, mood time-slot config JSON, emotion failure records). There are also three **legacy read-only SharedPreferences channels**: the one-shot `SharedPreferencesLegacyJsonMigration` that moves v1 JSON into Room, and the legacy-value fallbacks inside `PlayerSettingsRepository`/`PlaybackStateStore` — every legacy key is deleted as soon as the new storage is written, so legacy SharedPreferences survive only to serve the migration path.
+The app persists data through two complementary stacks: **Room** (`MelodyDatabase`, version 11, 14 entity tables) owns all structured data — library, playlists, stats, quick-skip, emotions, and the emotion word-preference vote table (`word_preferences`); **DataStore Preferences** (5 independent files) owns small-scale settings and state snapshots (player settings, playback snapshot, playlist resume, mood time-slot config JSON, emotion failure records). There are also three **legacy read-only SharedPreferences channels**: the one-shot `SharedPreferencesLegacyJsonMigration` that moves v1 JSON into Room, and the legacy-value fallbacks inside `PlayerSettingsRepository`/`PlaybackStateStore` — every legacy key is deleted as soon as the new storage is written, so legacy SharedPreferences survive only to serve the migration path.
 
 ```mermaid
 flowchart LR
-    MUSIC["MusicRepository"] --> DB[("Room melody.db v10")]
+    MUSIC["MusicRepository"] --> DB[("Room melody.db v11")]
     STATS["PlayStatsRepository"] --> DB
     SKIP["QuickSkipSongsRepository"] --> DB
     EMO["SongEmotionsRepository"] --> DB
+    WORDS["WordPreferencesRepository"] --> DB
     SETTINGS["PlayerSettingsRepository"] --> DS1[("DataStore player_settings")]
     RESUME["PlaylistResumeDataStore"] --> DS2[("DataStore playlist_resume")]
     SLOT["TimeSlotConfigStore"] --> DS3[("DataStore mood_time_slot")]
@@ -138,13 +149,13 @@ flowchart LR
     LEGACY -.-> STATE
 ```
 
-*Persistence map: Room is the single source of truth for structured data; the five DataStore domains are independent files; legacy SharedPreferences keeps only three read-only dashed paths (one-shot migration, settings fallback, playback snapshot fallback).*
+*Persistence map: Room is the single source of truth for structured data; the five DataStore domains are independent files; legacy SharedPreferences keeps only three read-only dashed paths (one-shot migration, settings fallback, playback snapshot fallback). `WordPreferencesRepository` is the sole source of the `word_preferences` table.*
 
 Module ownership: Room and all DataStores except `playback_state` live in `:data` and are exposed narrowly through `:domain` repository interfaces; `PlaybackStateStore` lives in `:player` (it directly serves the Media3 session) and is wired through the `PlaybackStateStorage`/`PlaybackStateRepository` interfaces by `app/di/PlayerModule`. Dependency boundaries are covered in `/openwiki/architecture/module-graph.md`.
 
-## Room: MelodyDatabase v10 (13 entity tables)
+## Room: MelodyDatabase v11 (14 entity tables)
 
-`MelodyDatabase` declares `version = 10, exportSchema = true` with 13 entities and a single DAO, `MelodyDao`. The database file is `melody.db`, built by `DatabaseModule` via `Room.databaseBuilder` (singleton) with all migrations v1→v10 registered.
+`MelodyDatabase` declares `version = 11, exportSchema = true` with 14 entities and a single DAO, `MelodyDao`. The database file is `melody.db`, built by `DatabaseModule` via `Room.databaseBuilder` (singleton) with all migrations v1→v11 registered through `MelodyMigrations.ALL`.
 
 | Table | Entity | Purpose |
 | --- | --- | --- |
@@ -161,6 +172,7 @@ Module ownership: Room and all DataStores except `playback_state` live in `:data
 | `albums` | `AlbumEntity` | Albums (`name` unique) |
 | `song_artist_cross_ref` | `SongArtistCrossRef` | Song↔atomic-artist many-to-many |
 | `song_emotions` | `SongEmotionEntity` | Emotion analysis results: V/A, per-window `curveJson`, `embeddingB64`, three user-calibration fields |
+| `word_preferences` | `WordPreferenceEntity` | Emotion word listen-preference tallies (`word` primary key, `likeVotes`/`dislikeVotes`/`updatedAt`); per word-preference-vote row |
 
 Note that entities declare **no Room foreign-key constraints**; all relationships (playlist↔song, song↔artist/album, and the songId-keyed stat tables) are logical, maintained by repository code rather than enforced by the schema.
 
@@ -178,6 +190,7 @@ erDiagram
     songs ||--o| song_emotions : "songId"
     songs ||--o{ playback_events : "songId"
 ```
+*Plus `word_preferences` is a standalone word->votes table keyed by word (no song FK).*
 
 *Logical relationships among Room tables, joined on songId/albumId/artistId and maintained in code — not FK-enforced.*
 
@@ -194,7 +207,16 @@ Detecting and removing songs that point at the same physical file is a persisten
 - **Scan**: `scanDuplicateSongGroups()` snapshots the in-memory library and buckets each song by `SongPathResolver.resolveRealPath(context, uri)`, which normalizes a URI's real on-disk path (handling `file://`, MediaStore, and SAF document/tree URIs whose string prefixes differ even when they resolve to the same file). Unresolvable songs (null path) are excluded from any group so normalization failure never causes a false duplicate or deletion. Groups with `size > 1` return as `DuplicateSongGroup`s with songs sorted by ascending songId; `keep` is the earliest-imported (smallest id) entry.
 - **Cleanup**: `deduplicateSongs(groups)` collects every `duplicates.id`, then under the library write lock removes those ids from each playlist's `songIds` (updating song counts) and from `songs`, queuing full-table `persistSongs`/`persistPlaylists` snapshots. It then calls `cleanupMissingSongAssociations`, which purges the removed ids' orphan records from `play_stats`, `playback_events`, `quick_skip_songs`, `quick_skip_short_play_counts`, and `song_emotions`, and deletes now-orphaned artists/albums. **The underlying physical file is never deleted** — the kept entry still points at it, so deleting the file would destroy the survivor too.
 
-### The playback_events index design
+### Emotion word listen-preference tallies (word_preferences)
+
+`WordPreferencesRepository` is the **only data source** for the `word_preferences` table (added in v11, 2026-10-20 explore-play). Each emotion word has a single row keyed by `word` with `likeVotes`/`dislikeVotes`/`updatedAt`. Playback outcomes **accumulate votes only** — they never overwrite an affinity directly — so a word can simultaneously hold votes on both sides; the domain-level `WordPreference.kind` (`core/model/WordPreference.kt`) decisively labels it `LIKE`/`DISLIKE`/`NEUTRAL` by which count is higher (a tie is neutral), making a single skip unable to flip a liked word (multiple evidence is required to flip). It is the "same song A B already liked, C D already disliked" conflict resolver.
+
+- **Write path**: `recordSongOutcome(words, liked)` reads the current rows, computes `likeVotes`/`dislikeVotes` (+1 on the matching side), and bulk-`upsert`s via the DAO's `@Upsert` (the DAO only does whole-row replacement; vote accumulation lives in the repository). Empty input is a no-op, and words are deduplicated before tallying.
+- **Read path**: `observeAll()` maps `MelodyDao.observeAllWordPreferences()` (Room invalidation-driven Flow, cached by `PlayerRuntime` for explore-play) and `getAll()` is a full-table blocking snapshot.
+- **Consumer**: `PlayerRuntime.handleExploreSongSettled` decides per completed/skipped song (settlement is via `ExplorePlaybackPolicy.isSkipped` — <30s or <1/4 total duration is a skip) and calls `recordSongOutcome(words, liked = !skipped)`; `PlayerRandomQueueFacade` filters candidates by word preference kind, and the user screen renders the like/neutral/dislike buckets.
+- **Tests**: `WordPreferencesRepositoryTest` locks the vote-accumulation semantics (single skip does not flip, tie is neutral, empty input ignored) and `MelodyDatabaseMigrationTest.migration10To11CreatesWordPreferencesTable`.
+
+## The playback_events index design
 
 The composite index `(startedAtMs, isEffectivePlay, songId)` on `playback_events` covers every time-range aggregation query: `totalDurationBetween` (duration), `distinctSongsBetween` (distinct songs), `dailyDurationsBetween` (per-day), and `playCountsBetween` (song TOP chart, fully index-covered). The v7→v8 migration replaced the single-column `startedAtMs` index created in v5→v6 with this composite index (the old one was a redundant prefix) and repaired the historical inconsistency of "fresh installs missing the index".
 
@@ -203,15 +225,15 @@ The composite index `(startedAtMs, isEffectivePlay, songId)` on `playback_events
 Every entity/DAO change must follow this workflow (codified in `CLAUDE.md`, machine-enforced by `verifyProductArchitecture`):
 
 1. **Change the entity/DAO** under `data/src/main/java/cn/com/dcsgo/mihx/data/local/{entity,dao}`.
-2. **Bump the version**: `MelodyDatabase.VERSION` (currently 10 → next 11).
-3. **Export the new schema JSON**: `:data` configures KSP with `room.schemaLocation = $projectDir/schemas` (`data/build.gradle.kts`); building generates `data/schemas/cn.com.dcsgo.mihx.data.local.MelodyDatabase/11.json` automatically.
-4. **Register the migration**: add `Migration(N, N+1)` in `DatabaseModule` and include it in `addMigrations(...)`.
+2. **Bump the version**: `MelodyDatabase.VERSION` (currently 11 → next 12).
+3. **Export the new schema JSON**: `:data` configures KSP with `room.schemaLocation = $projectDir/schemas` (`data/build.gradle.kts`); building generates `data/schemas/cn.com.dcsgo.mihx.data.local.MelodyDatabase/12.json` automatically.
+4. **Register the migration**: add `Migration(N, N+1)` in `MelodyMigrations` (a dedicated object in `data/.../migration/MelodyMigrations.kt`, extracted from `DatabaseModule` so migration regression tests reference the same instances) and include it in `MelodyMigrations.ALL`; `DatabaseModule` registers the whole array via `addMigrations(*MelodyMigrations.ALL)`.
 5. **Add a unit test** for any migration involving complex data movement.
 6. **Never modify existing schema JSONs** — they are immutable historical snapshots.
 
-`verifyProductArchitecture` (root `build.gradle.kts`) hard-checks persistence invariants: schema v1 must not contain `quick_skip_short_play_counts`, v2 must contain it and must not contain `lrcUri`, v3 must contain `lrcUri` (version history is tamper-evident); `DatabaseModule` must register `Migration(1, 2)`/`Migration(2, 3)`; both backup rule files must contain the full privacy exclude list (below). The full rule inventory lives in `/openwiki/operations/build-and-verification.md`.
+`verifyProductArchitecture` (root `build.gradle.kts`, rule body moved to `buildSrc` `ProductArchitectureVerification` and unit-covered) hard-checks persistence invariants: schema v1 must not contain `quick_skip_short_play_counts`, v2 must contain it and must not contain `lrcUri`, v3 must contain `lrcUri` (version history is tamper-evident); `MelodyMigrations` must register `Migration(1, 2)`/`Migration(2, 3)` and `DatabaseModule` must call `addMigrations(*MelodyMigrations.ALL)`; both backup rule files must contain the full privacy exclude list (below). The full rule inventory lives in `/openwiki/operations/build-and-verification.md`.
 
-### Migration history v1 → v10
+### Migration history v1 → v11
 
 | Migration | Content |
 | --- | --- |
@@ -219,11 +241,14 @@ Every entity/DAO change must follow this workflow (codified in `CLAUDE.md`, mach
 | 2→3 | Add `lrcUri` to `songs` |
 | 3→4 | Add `album` column to `songs` |
 | 4→5 | Create `artists`/`albums`/`song_artist_cross_ref`; add `albumId` to `songs` |
-| 5→6 | Create `playback_events` + `startedAtMs` single-column index |
+| 5→6 | Create `playback_events` (no single-column `startedAtMs` index — the v6 entity declared no `@Index`, matching the exported schema; the `DROP` in 7→8 still keeps the historical old 5→6 index compatible) |
 | 6→7 | Add `durationMs` to `songs` |
-| 7→8 | Swap `playback_events` to the composite index (drop the single-column index) |
+| 7→8 | Swap `playback_events` to the composite index (drop any single-column index) |
 | 8→9 | Create `song_emotions` (V/A curve table) |
 | 9→10 | Add `embeddingB64`/`userValence`/`userArousal`/`userTags` to `song_emotions` (personalization loop) |
+| 10→11 | Create `word_preferences` (emotion word listen-preference tallies, explore play) |
+
+`MelodyDatabaseMigrationTest` (Robolectric `MigrationTestHelper`) validates each hand-written migration against the stored schema snapshots (`:data` exposes the schemas dir as test assets).
 
 ## Legacy JSON migration: v1 SharedPreferences → Room
 
@@ -243,13 +268,13 @@ Each domain is its own `preferencesDataStore` file (independent key spaces). The
 
 `PlayerSettingsRepository` reads and writes every key in `PlayerSettingsKeys`: `theme_mode`/`theme_variant` (`theme_variant` defaults to `MONO`), `screen_orientation_mode` (default `SENSOR_AUTO`), uniform-random toggle, Bluetooth playback monitoring, playback notification, lyric font scale, sleep timer (`sleep_timer_end_at_ms` + play-last-song), daily listening goal, emotion scan pause (`emotion_scan_paused`), the mood time-slot master switch (`mood_time_slot_enabled`), and local-music sorting (`song_sort_mode` — first enum matching or `IMPORT_ORDER` — plus `song_sort_ascending` defaulting to `true`). The sort dimension and direction persist orthogonally.
 
-**Accessor split**: settings are exposed as reactive `Flow`s on the domain interface (e.g. `themeMode`, `songSortMode`, `songSortAscending`), while a parallel family of `currentXxx()`/`setXxxBlocking()` synchronously reads/writes the same keys through `runBlocking(Dispatchers.IO)`. Reads carry a **legacy fallback**: when DataStore lacks a value, the legacy `dark_theme`-style keys are consulted; once the user explicitly writes (e.g. `setThemeMode`), the corresponding legacy key is deleted — old keys decay with use. The sleep timer's end time and play-last-song flag persist so that `PlayerSleepTimerCoordinator.restore()` resurrects unexpired countdowns after restart (expired ones reset to zero).
+**Accessor split**: settings are exposed as reactive `Flow`s on the domain interface (e.g. `themeMode`, `songSortMode`, `songSortAscending`) plus suspend setters (`setThemeMode`, `setSongSortAscending`, …); reads and writes are all suspend/coroutine-friendly since the M-5 refactor removed the `currentXxx()`/`setXxxBlocking()` runBlocking families. Reads carry a **legacy fallback**: every boolean setting is emitted through `legacyBackedFlow`, which reads the legacy key once on the IO thread and merges it as the default into the DataStore Flow (`m-12`) — so when DataStore lacks a value the legacy `dark_theme`-style key is consulted (theme additionally falls back through an in-DataStore `dark_theme` boolean — the pre-flip key — then the SharedPreferences key). Once the user explicitly writes (e.g. `setThemeMode`), `setThemeMode`/`setGlobalUniformRandomEnabled`/`setBluetooth...`/`setPlaybackNotificationEnabled` delete the corresponding legacy keys — old keys decay with use. **Random-enhance mode**: the newer `RANDOM_ENHANCE_MODE` key is preferred; old users without it fall back to the `mood_time_slot_enabled` switch (true → `TIME_SLOT`, else `OFF`) and `setRandomEnhanceMode` writes both keys back in one transaction so the two read paths stay consistent (`moodTimeSlotEnabled` derives from `randomEnhanceMode == TIME_SLOT`). The sleep timer's end time and play-last-song flag persist so that `PlayerSleepTimerCoordinator.restore()` resurrects unexpired countdowns after restart (expired ones reset to zero).
 
 ### 2. `playback_state` — PlaybackStateStore + PlaybackStateSnapshotSerializer
 
 The process-death recovery data, living in `:player`:
 
-- **Keys**: `play_queue_json` (queue JSON), `play_position_ms`, `is_infinite_play`, `infinite_played_ids`, `current_song_id`.
+- **Keys**: `play_queue_json` (queue JSON), `play_position_ms`, `is_infinite_play`, `infinite_played_ids`, `is_explore_play`, `current_song_id`.
 - **Save semantics**: an empty session (empty queue, no currentSongId, not infinite play) **never writes the queue JSON over an existing snapshot** and never deletes it — the UI-recreation window has a transient all-empty state, and the old clear behavior erased a valid snapshot written seconds earlier, leaving the queue permanently empty after restart (2026-09-03 regression). The empty-session guard is more nuanced: with an existing snapshot it keeps the queue and only updates `current_song_id` + position; with no existing snapshot but a present `currentSongId` it writes a single-song queue for restore-time correction; only a fully empty save with no prior snapshot writes nothing. Explicit clearing goes through `clearPlaybackState()`, and legacy keys are cleared on write only when DataStore actually changed. Save failures are logged and swallowed so playback control is never interrupted.
 - **Serialization**: `PlaybackStateSnapshotSerializer` encodes the queue as `{songIds, currentIndex, playMode, playOrderIds}` JSON; decoding filters unavailable songs against the current library, clamps `currentIndex`, and repairs the play order; corrupt JSON returns null. Infinite-play played ids are filtered against available songs on decode too.
 - **Restore decision**: `PlayerPersistenceGraph` lazily builds `PlaybackStateStore`, `PlaybackRestoreCoordinator`, `PlayerPersistenceFacade`, and `PlayerPlaybackStateAutosaver`. `restorePlaybackState()` reads and decodes the snapshot on an IO coroutine (in parallel with controller connection); `onControllerReady()` sets a `controllerReady` flag and both sides rendezvous in `maybeApplyRestore()`, which waits for `controllerReady` and a non-null `pendingRestore` before deciding via `hasLiveSession()` — if the service is still playing, only the UI queue shadow is backfilled (the live controller session is never overwritten, its snapshot sync sets `currentIndex` but not `songs`); on a cold start with no session, UI and controller queue are fully restored via `prepareControllerQueue` without autoplay. Restore also re-anchors the queue onto the stored `current_song_id` (`withCurrentSongId`), synthesizing a single-song queue if the song is absent from the saved queue. The full save/restore sequence is in `/openwiki/workflows/playback-session-lifecycle.md`.
@@ -290,17 +315,16 @@ Mood time-slot configs for contextual random playback: a single key `time_slot_c
 
 Emotion analysis failure records (same design as TimeSlotConfigStore): one key `emotion_failures` holds a JSONObject keyed by songId with `{reason, failedAt, attempts}`. `record` reads-modifies-writes in one transaction, accumulating `attempts` and overwriting `reason`/`failedAt` with the latest; parsing skips corrupted entries. The consumer is `EmotionScanWorker`: songs with `attempts >= MAX_ATTEMPTS(3)` stop being retried automatically (the detail page still allows manual retry via `clearForRetry`, which clears records and re-enqueues), otherwise every scan pass spins on the same broken files. A successful analysis clears the record via `clear(songId)`. The periodic scan is scheduled by `EmotionScanScheduler` in `MelodyApplication.onCreate` (charging + battery-not-low constraints, one pass every 6 hours, ≤40 songs per pass).
 
-## The runBlocking(IO) bridge and its thread contract
+## The suspend persistence contract and residual blocking bridges
 
-Several `:data` repositories bridge Room/DataStore with `runBlocking(Dispatchers.IO)` where the domain interface demands a synchronous signature: `SongEmotionsRepository` (get/getAll/upsert/saveCorrection…), `PlayStatsRepository` (getCounts/getRawPlayCounts/increment…), `QuickSkipSongsRepository`, the `currentXxx()/setXxxBlocking()` methods of `PlayerSettingsRepository`, and `PlaybackStateStore`'s save/restore/clear.
+Most `:data` repositories now expose **suspend/`Flow` APIs that `withContext(Dispatchers.IO)`** the Room query rather than blocking: `SongEmotionsRepository` (get/getAll/upsert/saveCorrection…), `PlayStatsRepository` (the room read/writes plus atomic SQL upserts such as `incrementPlayCount`), and `QuickSkipSongsRepository` were refactored (M-5, 2026-10-15) from `runBlocking(IO)` bridges to `already-suspend` functions — the old 17-call-site blocking families (`currentXxx()`/`setXxxBlocking()` on `PlayerSettingsRepository`) were removed in the same refactor in favor of `Flow` observation plus suspend writes. This removed main-thread blocking from `PlayerRuntime.start`'s startup settings and the sleep-timer restore path.
 
-**This is a contract callers must honor: these blocking bridges must not be called on the main thread** — callers switch threads themselves. Reference patterns:
+**`runBlocking(IO)` remains only where a coroutine-less or synchronous domain signature demands it**:
 
-- `AppMediaMetadataViewModel.saveEmotionCorrection` wraps `emotionRepository.saveCorrection/clearCorrection` in `withContext(Dispatchers.Default)` (the source comment states the repositories are runBlocking(IO) bridges moved off the main thread to avoid janking the UI);
-- `MoodTimeSlotViewModel.loadStats` computes tag counts in a one-shot `withContext(Dispatchers.IO)` snapshot (`songEmotionRepository.getAll` is a full-table blocking read);
-- `PlayerPersistenceGraph`, the caller of `PlaybackStateStore.restore`, puts the whole restore read on a `dispatchers.io` coroutine.
+- `PlaybackStateStore.save`/`restore`/`clear` (in `:player`) still `runBlocking(Dispatchers.IO)`, because `PlaybackStateStorage`/`PlaybackStateRepository` expose synchronous methods consumed by the Media3 session and service teardown; the suspend variant `persistCurrentPlaybackSnapshot` exists for non-blocking service-destroy paths.
+- `PlayerSettingsKeys` legacy SharedPreferences reads (`readLegacyBoolean`) run `withContext(Dispatchers.IO)` and are merged into the DataStore Flow on the IO thread (`m-12`), never read synchronously inside the DataStore map on the collector thread.
 
-For new repository methods prefer suspend/Flow APIs; add a blocking bridge only when the domain contract (or a coroutine-less path such as service teardown) requires it, and document the thread requirement in the KDoc.
+**Contract for callers**: blocking/suspend bridges must not be called on the main thread — suspend paths offload via `Dispatchers.IO` internally or the caller switches (e.g. `AppMediaMetadataViewModel.saveEmotionCorrection` wraps the emotion repository calls in `withContext(Dispatchers.Default)` so the DataStore/Room writes do not jank the UI). For new repository methods prefer suspend/`Flow` APIs and `withContext(Dispatchers.IO)`; add a `runBlocking` bridge only when the domain contract (or a coroutine-less path such as service teardown) requires it, and document the thread requirement in the KDoc.
 
 ## Backup and privacy exclusions (release checklist)
 
@@ -313,6 +337,14 @@ For new repository methods prefer suspend/Flow APIs; add a blocking bridge only 
 
 **This is a release checklist item**: `verifyProductArchitecture` walks a `requiredPrivacyExcludes` list (legacy prefs, the Room family, the player_settings/playback_state DataStores, and `cache/album_art/`) against both rule files and fails on any missing entry. The restore semantics justify it — library/playback state is device-bound (SAF URIs die off-device, snapshots cannot match another device's library), so backing it up only adds restore payload and privacy surface. When adding a new persisted file (e.g. a new DataStore domain), add it to both rule files (and to `requiredPrivacyExcludes` where appropriate) or the architecture gate will fail.
 
+## Emotion analysis memory budget (largeHeap + adaptive budget)
+
+Emotion analysis is memory-heavy, and the app runs with `android:largeHeap="true"` (`app/src/main/AndroidManifest.xml`) so the device heap is larger than the default. Two decode paths share a **single adaptive soft cap** sourced from `EmotionAnalyzer.memoryBudgetForHeap(Runtime.getRuntime().maxMemory())`, computed once at construction (the heap max does not change at runtime):
+
+- `EmotionAnalyzer` (the analysis entry) and `FfmpegPcmDecoder` (the FFmpeg soft-decode bridge) both read the budget as `memoryBudgetBytes = memoryBudgetForHeap(...)`.
+- `memoryBudgetForHeap(max)` = `(maxHeap - RESERVED_BYTES)` clamped into `[96MB, 512MB]`, with a 64MB baseline reservation for the inference models + app baseline (does not scale with heap). A 256MB heap → 192MB (identical to the old fixed value, so low-end behavior is unchanged); 384MB → 320MB; 512MB → 448MB — larger heaps automatically allow longer 192 kHz files.
+- The budget is a soft cap on the combined decode buffer + resample output (see `EmotionAnalyzerLimitsTest`). Because `ShortAccum` doubling can blow past the steady-state peak at sample rates above 64 kHz (`TRANSIENT_DOMINANT_RATE`), the cap constrains both the steady-state and transient peaks (2026-10-21 OOM regression). It also drives whether an oversized/high-rate song is reported as `TOO_LARGE_FOR_DEVICE` (memory budget hit first) versus `TOO_LONG` (20-minute cap hit first) — the two are distinguished so large files are not misreported.
+
 ## Key tests
 
 | Test | Locked behavior |
@@ -322,6 +354,9 @@ For new repository methods prefer suspend/Flow APIs; add a blocking bridge only 
 | `SharedPreferencesLegacyJsonMigrationTest` | Full migration + completion marker, stats still migrated on corrupt JSON, marker skips migration |
 | `PlaylistResumeDataStoreTest` | Resume record/overwrite/per-playlist clear, corrupt JSON returns null, source marker and transactional settle semantics |
 | `PlayerSettingsRepositoryTest` | Theme legacy fallback → DataStore write → legacy key cleared, defaults |
+| `WordPreferencesRepositoryTest` | Vote accumulation on skip/full-listen, tie → neutral, empty input ignored |
+| `MelodyDatabaseMigrationTest` | Each hand-written migration validated against stored schema snapshots (Robolectric), incl. 10→11 `word_preferences` |
+| `EmotionAnalyzerLimitsTest` | Memory budget scales with heap (256→192MB, 512→448MB) and clamps; budget-vs-duration cutoff reason |
 | `MusicRepositoryRoomTest` / `PlayStatsRepositoryRoomTest` / `QuickSkipSongsRepositoryRoomTest` | Room repository contracts against FakeDaos |
 
 When changing persistence behavior (especially playback snapshot save/restore and legacy migration), these tests are the regression floor; schema-migration changes additionally require the migration unit test from step 5 above.

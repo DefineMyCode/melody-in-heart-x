@@ -142,9 +142,10 @@ class PlayerRandomQueueFacade(
      */
     suspend fun startInfinitePlay(): Boolean {
         val current = state()
-        // 探索播放（2026-10-20）：探索模式下无限随机播放被禁用（UI 走提示对话框，这里兜底拦截）
-        if (current.isExploreModeActive) {
-            log("startInfinitePlay: blocked by explore mode")
+        // 探索播放（2026-10-20）：仅当「探索会话」进行中（播放探索队列）时无限随机被禁用；
+        // 用户手动点歌退出探索后（isExplorePlay=false），即使设置仍是探索模式也可开启无限随机。
+        if (current.isExplorePlay) {
+            log("startInfinitePlay: blocked by explore session")
             return false
         }
         val plan = planner.planInfiniteStart(

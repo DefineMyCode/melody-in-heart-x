@@ -80,7 +80,6 @@ fun NowPlayingSurface(
             durationMs = uiState.durationMs,
             playMode = uiState.playQueue.playMode,
             isInfinitePlay = uiState.isInfinitePlay,
-            isExploreModeActive = uiState.isExploreModeActive,
             isExplorePlay = uiState.isExplorePlay,
             sameNameSongs = uiState.sameNameSongs,
             isSleepTimerActive = uiState.isSleepTimerActive,

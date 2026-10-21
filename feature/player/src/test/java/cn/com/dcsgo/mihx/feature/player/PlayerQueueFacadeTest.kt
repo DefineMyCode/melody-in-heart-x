@@ -91,6 +91,34 @@ class PlayerQueueFacadeTest {
         assertEquals(listOf(1, 2, 3), syncedQueue?.songs?.map { it.id })
     }
 
+    @Test
+    fun setPlayQueueExitsExploreSession() {
+        // 用户手动替换队列（点歌单/TOP榜等）→ 探索会话结束（2026-10-21）
+        state = PlayerUiState(
+            playQueue = PlayQueue().setQueue(songs(1, 2), startIndex = 0),
+            isExplorePlay = true,
+            isExploreModeActive = true,
+        )
+
+        facade.setPlayQueue(songs(3, 4), startIndex = 0)
+
+        assertFalse(state.isExplorePlay)
+        assertFalse(state.isInfinitePlay)
+    }
+
+    @Test
+    fun addToQueueKeepsExploreSession() {
+        // 只是往队列追加歌曲不算手动替换，探索会话保留
+        state = PlayerUiState(
+            playQueue = PlayQueue().setQueue(songs(1, 2), startIndex = 0),
+            isExplorePlay = true,
+        )
+
+        facade.addToPlayQueue(song(3))
+
+        assertTrue(state.isExplorePlay)
+    }
+
     private fun songs(vararg ids: Int): List<Song> = ids.map { song(it) }
 
     private fun song(id: Int): Song {

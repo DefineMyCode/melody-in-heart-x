@@ -19,7 +19,6 @@ data class HomeRouteState(
     val durationMs: Long,
     val playMode: PlayMode,
     val isInfinitePlay: Boolean,
-    val isExploreModeActive: Boolean = false,
     val isExplorePlay: Boolean = false,
     val sameNameSongs: List<Song>,
     val isSleepTimerActive: Boolean = false,
@@ -61,7 +60,8 @@ fun HomeRoute(
     /** 透传给 HomeScreen 的顶部 padding。SHEET 抽屉形态传 31.dp 让「状态栏→封面」对齐默认三页（默认 16dp）。 */
     topContentPaddingDp: androidx.compose.ui.unit.Dp = 16.dp,
 ) {
-    // 探索播放（2026-10-20）：探索模式下「无限随机播放」按钮禁用，点击弹对话框引导去设置页切换模式
+    // 探索播放（2026-10-20）：探索会话进行中时「无限随机播放」按钮禁用，点击弹对话框
+    // 引导去设置页切换模式或点歌退出探索（2026-10-21 调整）
     var showExploreHintDialog by androidx.compose.runtime.remember { mutableStateOf(false) }
     if (showExploreHintDialog) {
         androidx.compose.material3.AlertDialog(
@@ -69,7 +69,7 @@ fun HomeRoute(
             title = { androidx.compose.material3.Text("探索播放中") },
             text = {
                 androidx.compose.material3.Text(
-                    "若想恢复无限随机播放，请到「我的 → 随心播放增强」中关闭探索模式或切换其它模式。",
+                    "若想恢复无限随机播放，请到「我的 → 随心播放增强」中切换其它模式或通过点击歌曲退出探索播放。",
                 )
             },
             confirmButton = {
@@ -88,7 +88,7 @@ fun HomeRoute(
         durationMs = state.durationMs,
         playMode = state.playMode,
         isInfinitePlay = state.isInfinitePlay,
-        isExploreModeActive = state.isExploreModeActive,
+        isExplorePlay = state.isExplorePlay,
         sameNameSongs = state.sameNameSongs,
         isSleepTimerActive = state.isSleepTimerActive,
         sleepTimerRemainingMs = state.sleepTimerRemainingMs,
@@ -120,8 +120,8 @@ fun HomeRoute(
         onAlbumClick = actions.onAlbumClick,
         onLuckyPlayClick = actions.onLuckyPlayClick,
         onInfinitePlayClick = {
-            if (state.isExploreModeActive) {
-                // 探索播放（2026-10-20）：无限随机播放按钮失效，仅弹提示对话框
+            if (state.isExplorePlay) {
+                // 探索播放（2026-10-20）：探索会话中无限随机播放按钮失效，仅弹提示对话框
                 showExploreHintDialog = true
             } else if (state.isInfinitePlay) {
                 actions.onStopInfinitePlay()

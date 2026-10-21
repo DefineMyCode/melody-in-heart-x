@@ -77,7 +77,7 @@ fun HomeScreen(
     durationMs: Long,
     playMode: PlayMode,
     isInfinitePlay: Boolean = false,
-    isExploreModeActive: Boolean = false,
+    isExplorePlay: Boolean = false,
     sameNameSongs: List<Song> = emptyList(),
     onPlayPauseClick: () -> Unit,
     onPreviousClick: () -> Unit,
@@ -145,7 +145,7 @@ fun HomeScreen(
                         durationMs = durationMs,
                         playMode = playMode,
                         isInfinitePlay = isInfinitePlay,
-                        isExploreModeActive = isExploreModeActive,
+                        isExplorePlay = isExplorePlay,
                         sameNameSongs = sameNameSongs,
                         onArtistClick = onArtistClick,
                         onAlbumClick = onAlbumClick,
@@ -358,7 +358,7 @@ private fun SongInfoSection(
     durationMs: Long,
     playMode: PlayMode,
     isInfinitePlay: Boolean,
-    isExploreModeActive: Boolean,
+    isExplorePlay: Boolean,
     sameNameSongs: List<Song>,
     onArtistClick: (String) -> Unit,
     onAlbumClick: (String) -> Unit,
@@ -580,14 +580,15 @@ private fun SongInfoSection(
             horizontalArrangement = Arrangement.Center
         ) {
             // 无限随机播放按钮：使用FilterChip样式
-            // 探索播放（2026-10-20）：探索模式下显示「探索播放中」，点击无效（只弹提示对话框）
+            // 探索播放（2026-10-20）：探索会话进行中显示「探索播放中」，点击无效（只弹提示对话框）；
+            // 用户手动点歌退出探索后恢复「无限随机播放」，可正常开启（2026-10-21 调整）。
             androidx.compose.material3.FilterChip(
-                selected = isInfinitePlay || isExploreModeActive,
+                selected = isInfinitePlay || isExplorePlay,
                 onClick = onInfinitePlayClick,
                 label = {
                     Text(
                         text = when {
-                            isExploreModeActive -> "探索播放中"
+                            isExplorePlay -> "探索播放中"
                             isInfinitePlay -> "无限随机播放中"
                             else -> "无限随机播放"
                         },

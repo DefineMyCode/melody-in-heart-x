@@ -477,17 +477,33 @@ class PlayerRandomQueueFacadeTest {
     }
 
     @Test
-    fun exploreModeBlocksInfinitePlay() {
+    fun exploreSessionBlocksInfinitePlay() {
         state = state.copy(
             songs = songs(1, 2, 3),
-            isExploreModeActive = true,
+            isExplorePlay = true,
         )
 
         val started = runBlocking { exploreFacade().startInfinitePlay() }
 
         assertFalse(started)
         assertFalse(state.isInfinitePlay)
-        assertTrue(logs.any { it.contains("blocked by explore mode") })
+        assertTrue(logs.any { it.contains("blocked by explore session") })
+    }
+
+    @Test
+    fun exploreSessionEndedAllowsInfinitePlay() {
+        // 用户手动点歌退出探索后（isExplorePlay=false，设置仍是探索模式）可开启无限随机
+        state = state.copy(
+            songs = songs(1, 2, 3),
+            isExplorePlay = false,
+            isExploreModeActive = true,
+        )
+
+        val started = runBlocking { exploreFacade().startInfinitePlay() }
+
+        assertTrue(started)
+        assertTrue(state.isInfinitePlay)
+        assertTrue(logs.none { it.contains("blocked") })
     }
 
     @Test

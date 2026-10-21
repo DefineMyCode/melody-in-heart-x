@@ -103,6 +103,10 @@ class PlayerQueueFacade(
                 updated = updated.copy(
                     isInfinitePlay = false,
                     infinitePlayedSongIds = emptySet(),
+                    // 探索播放（2026-10-21）：用户手动替换队列（点歌单/TOP榜/歌手/专辑等）
+                    // 即退出探索会话——播放页按钮回到「无限随机播放」、探索自动补充关闭；
+                    // 再点「随心播放」仍按设置模式重新进入探索。
+                    isExplorePlay = false,
                 )
             }
             plan.nextPlayState?.let { next ->

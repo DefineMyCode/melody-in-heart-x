@@ -333,6 +333,10 @@ internal class PlayerRuntime(
                 !_uiState.value.isInfinitePlay &&
                 playbackBridgeFacade.remainingMediaItems() <= PlayerMediaEventFacade.DEFAULT_REFILL_THRESHOLD
             ) {
+                AppLog.debug(
+                    TAG,
+                    "syncPlayerQueue: triggered by snapshot sync (queue tail, remaining=${playbackBridgeFacade.remainingMediaItems()})",
+                )
                 playbackBridgeFacade.syncPlayerQueue(synced.playQueue)
             }
         },

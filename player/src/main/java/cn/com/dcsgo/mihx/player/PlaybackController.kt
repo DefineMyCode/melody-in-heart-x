@@ -7,6 +7,7 @@ import androidx.core.content.ContextCompat
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
+import androidx.media3.common.Timeline
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
 import cn.com.dcsgo.mihx.core.common.AppLog
@@ -48,6 +49,14 @@ class PlaybackController(
     private var controller: MediaController? = null
     private var lastSyncedQueueFingerprint: ControllerQueueFingerprint? = null
     private var lastCurrentMediaItemIndex: Int = C.INDEX_UNSET
+
+    /**
+     * 队列结构镜像回执追踪：任何队列修改命令（setMediaItems/remove/add）发出后置 true，
+     * 收到服务端 onTimelineChanged 回执后清 false。为 true 期间本地 timeline 镜像可能过期，
+     * [syncQueue] 的增量路径必须等回执到达后才能决策，否则 remove/add 的索引会错位下发。
+     */
+    private var pendingQueueMutation = false
+
     private val pendingActions = ArrayDeque<(MediaController) -> Unit>()
     private val listener = object : Player.Listener {
         override fun onIsPlayingChanged(isPlaying: Boolean) {
@@ -68,6 +77,13 @@ class PlaybackController(
             newPosition: Player.PositionInfo,
             reason: Int,
         ) {
+            // 排查"开头卡顿重复"：客户端视角位置对（含 syncQueue 重建后的恢复点），
+            // 与服务端 AppMediaSessionService.position_discontinuity server 日志对照。
+            AppLog.info(
+                TAG,
+                "position_discontinuity client: oldIndex=${oldPosition.mediaItemIndex} oldMs=${oldPosition.positionMs}" +
+                    " newIndex=${newPosition.mediaItemIndex} newMs=${newPosition.positionMs} reason=$reason",
+            )
             // REPEAT_MODE_ALL 下单项队列（秒切/歌单/专辑/歌手只剩一首）自然播完回绕到同一项时，
             // 窗口索引不变（0→0），Media3 不触发 onMediaItemTransition，导致结算逻辑（有效播放+1、
             // 移出秒切列表）永远不执行，且计时器跨循环累计。该场景唯一可见信号是 AUTO discontinuity
@@ -116,6 +132,11 @@ class PlaybackController(
 
         override fun onEvents(player: Player, events: Player.Events) {
             callbacks.onPlaybackSnapshot(player.toPlaybackSnapshot())
+        }
+
+        override fun onTimelineChanged(timeline: Timeline, reason: Int) {
+            // 队列修改命令的服务端回执：镜像已刷新，允许下一次增量队列同步决策。
+            pendingQueueMutation = false
         }
 
         override fun onPlaybackStateChanged(playbackState: Int) {
@@ -231,6 +252,7 @@ class PlaybackController(
     override fun clearPlaylist() {
         runWhenConnected { controller ->
             lastSyncedQueueFingerprint = null
+            pendingQueueMutation = true
             controller.stop()
             controller.clearMediaItems()
         }
@@ -280,6 +302,7 @@ class PlaybackController(
         runWhenConnected { controller ->
             val startedAt = PerformanceTrace.nowMs()
             lastSyncedQueueFingerprint = plan.fingerprint()
+            pendingQueueMutation = true
             controller.repeatMode = Player.REPEAT_MODE_ALL
             controller.setMediaItems(plan.toMediaItems(), plan.startIndex, 0L)
             controller.prepare()
@@ -308,6 +331,7 @@ class PlaybackController(
             }
             val startedAt = PerformanceTrace.nowMs()
             lastSyncedQueueFingerprint = plan.fingerprint()
+            pendingQueueMutation = true
             controller.repeatMode = Player.REPEAT_MODE_ALL
             controller.setMediaItems(plan.toMediaItems(), plan.startIndex, positionMs.coerceAtLeast(0L))
             controller.prepare()
@@ -323,6 +347,7 @@ class PlaybackController(
         val mediaItem = SongMediaItemMapper.toMediaItem(song) ?: return false
         runWhenConnected { controller ->
             lastSyncedQueueFingerprint = null
+            pendingQueueMutation = true
             controller.repeatMode = Player.REPEAT_MODE_OFF
             controller.setMediaItem(mediaItem)
             controller.prepare()
@@ -336,9 +361,62 @@ class PlaybackController(
             val fingerprint = plan.fingerprint()
             if (fingerprint == lastSyncedQueueFingerprint) return@runWhenConnected
             val startedAt = PerformanceTrace.nowMs()
+            val controllerMediaIds = List(controller.mediaItemCount) { index ->
+                controller.getMediaItemAt(index).mediaId.toIntOrNull()
+            }
+            val planSongIds = plan.songs.map { it.id }
+            val incremental = if (pendingQueueMutation) {
+                null
+            } else {
+                planIncrementalQueueSync(
+                    controllerMediaIds = controllerMediaIds,
+                    controllerCurrentIndex = controller.currentMediaItemIndex,
+                    controllerPlaybackState = controller.playbackState,
+                    planSongIds = planSongIds,
+                    planStartIndex = plan.startIndex,
+                )
+            }
+            lastSyncedQueueFingerprint = fingerprint
+            if (incremental != null) {
+                // 增量同步：当前播放项不动（无 position 重置、无重缓冲、无 playWhenReady 变化），
+                // 仅按窗口滚动裁前部 / 队列尾部增减调整。触发源（refill 补队列、快照同步补窗口）
+                // 大多发生在切歌刚起播的瞬间，全量 setMediaItems 会把新歌拉回过期位置重播 1~2 秒。
+                if (incremental.trimCount > 0 ||
+                    incremental.commonCount < controllerMediaIds.size - incremental.trimCount ||
+                    incremental.commonCount < planSongIds.size
+                ) {
+                    pendingQueueMutation = true
+                }
+                controller.repeatMode = Player.REPEAT_MODE_ALL
+                if (incremental.trimCount > 0) {
+                    controller.removeMediaItems(0, incremental.trimCount)
+                }
+                val retainedCount = controllerMediaIds.size - incremental.trimCount
+                if (retainedCount > incremental.commonCount) {
+                    controller.removeMediaItems(incremental.commonCount, retainedCount)
+                }
+                if (incremental.commonCount < planSongIds.size) {
+                    val appended = plan.songs
+                        .subList(incremental.commonCount, plan.songs.size)
+                        .mapNotNull { SongMediaItemMapper.toMediaItem(it) }
+                    if (appended.isNotEmpty()) {
+                        controller.addMediaItems(incremental.commonCount, appended)
+                    }
+                }
+                PerformanceTrace.log(
+                    operation = "controller_sync_queue",
+                    elapsedMs = PerformanceTrace.nowMs() - startedAt,
+                    metadata = plan.performanceMetadata() + mapOf(
+                        "mode" to "incremental",
+                        "trimCount" to incremental.trimCount,
+                        "appendCount" to (planSongIds.size - incremental.commonCount),
+                    ),
+                )
+                return@runWhenConnected
+            }
             val positionMs = controller.currentPosition.coerceAtLeast(0L)
             val wasPlaying = controller.isPlaying
-            lastSyncedQueueFingerprint = fingerprint
+            pendingQueueMutation = true
             controller.repeatMode = Player.REPEAT_MODE_ALL
             controller.setMediaItems(plan.toMediaItems(), plan.startIndex, positionMs)
             controller.prepare()
@@ -348,7 +426,15 @@ class PlaybackController(
             PerformanceTrace.log(
                 operation = "controller_sync_queue",
                 elapsedMs = PerformanceTrace.nowMs() - startedAt,
-                metadata = plan.performanceMetadata() + ("wasPlaying" to wasPlaying),
+                metadata = plan.performanceMetadata() + mapOf(
+                    "mode" to "rebuild",
+                    "wasPlaying" to wasPlaying,
+                    // 排查"开头卡顿重复"：restoreMs = 传给 setMediaItems 的恢复位置（读取时刻的客户端缓存值），
+                    // 对照紧邻的服务端 position_discontinuity server 日志 newMs（实际生效恢复点），
+                    // 两者与听感已播进度的差值即回跳量。
+                    "restoreMs" to positionMs,
+                    "currentMediaId" to (controller.currentMediaItem?.mediaId ?: "null"),
+                ),
             )
         }
     }
@@ -475,4 +561,63 @@ internal fun isSingleItemLoopRewind(
         newIndex == 0 &&
         newPositionMs <= LOOP_REWIND_NEW_POSITION_MAX_MS &&
         nearEndOfTrack
+}
+/**
+ * 增量队列同步方案：controller 现有队列与新窗口存在公共对齐段、且当前播放项保持不变时，
+ * 用 removeMediaItems/addMediaItems 调整队列，替代 setMediaItems 全量重建。
+ *
+ * 全量重建会重置解码与输出（丢当前位置、重缓冲 ~200ms+），在切歌刚起播的瞬间执行时，
+ * 恢复位置还可能读到过期的小值，产生"开头重播 1~2 秒"；增量路径完全不动当前播放项，
+ * 从根上消除该回跳窗口。返回 null 表示无法增量（队列形状复杂变化），调用方应回退全量重建。
+ *
+ * @param controllerMediaIds   controller 本地镜像中各媒体项的 songId（mediaId 转换）
+ * @param controllerCurrentIndex 当前播放项在 controller 队列中的索引
+ * @param controllerPlaybackState 当前播放状态：仅 READY / BUFFERING 允许增量
+ *                               （IDLE 尚未准备、ENDED 需要 prepare 复位，均走全量）
+ * @param planSongIds          新窗口的歌曲 id 序列
+ * @param planStartIndex       当前播放项在新窗口中的索引
+ */
+internal data class IncrementalQueueSyncPlan(
+    /** 从 controller 队列头部移除的项数（窗口前部滚动，全部位于当前播放项之前） */
+    val trimCount: Int,
+    /** controller 队列与新窗口的公共项数：裁剪后比它多的尾部要移除，新窗口比它多的尾部要追加 */
+    val commonCount: Int,
+)
+
+internal fun planIncrementalQueueSync(
+    controllerMediaIds: List<Int?>,
+    controllerCurrentIndex: Int,
+    controllerPlaybackState: Int,
+    planSongIds: List<Int>,
+    planStartIndex: Int,
+): IncrementalQueueSyncPlan? {
+    if (controllerMediaIds.isEmpty() || planSongIds.isEmpty()) return null
+    if (controllerCurrentIndex !in controllerMediaIds.indices) return null
+    if (planStartIndex !in planSongIds.indices) return null
+    if (controllerPlaybackState != Player.STATE_READY &&
+        controllerPlaybackState != Player.STATE_BUFFERING
+    ) {
+        return null
+    }
+    val currentId = controllerMediaIds[controllerCurrentIndex]
+    if (currentId == null || currentId != planSongIds[planStartIndex]) return null
+
+    // 前部对齐：窗口中心推进后新窗口裁掉了 controller 的前 trim 项（同一业务队列的连续切片错位）。
+    // trim 不得超过当前项索引——移除范围绝不允许包含当前播放项。
+    for (trim in 0..controllerCurrentIndex) {
+        val common = minOf(controllerMediaIds.size - trim, planSongIds.size)
+        var aligned = true
+        for (i in 0 until common) {
+            if (controllerMediaIds[trim + i] != planSongIds[i]) {
+                aligned = false
+                break
+            }
+        }
+        // 当前项必须保留在公共段内：队列尾部收缩时当前项若位于将被移除的尾部（如删歌把当前歌
+        // 挤出窗口），移除命令会打断播放，必须回退全量路径处理。
+        if (aligned && controllerCurrentIndex - trim < common) {
+            return IncrementalQueueSyncPlan(trimCount = trim, commonCount = common)
+        }
+    }
+    return null
 }

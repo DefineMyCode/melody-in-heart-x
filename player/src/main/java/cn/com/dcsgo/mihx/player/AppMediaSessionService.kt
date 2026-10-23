@@ -115,6 +115,19 @@ class AppMediaSessionService : MediaSessionService() {
             override fun onPlaybackStateChanged(playbackState: Int) {
                 logger.debug(TAG, "onPlaybackStateChanged: $playbackState")
             }
+
+            override fun onPositionDiscontinuity(
+                oldPosition: Player.PositionInfo,
+                newPosition: Player.PositionInfo,
+                reason: Int,
+            ) {
+                // 排查"开头卡顿重复"：服务端真实位置对，同曲内 oldMs - newMs 即听感回跳量
+                logger.info(
+                    TAG,
+                    "position_discontinuity server: oldIndex=${oldPosition.mediaItemIndex} oldMs=${oldPosition.positionMs}" +
+                        " newIndex=${newPosition.mediaItemIndex} newMs=${newPosition.positionMs} reason=$reason",
+                )
+            }
         }
         exoPlayer?.addListener(playerListener!!)
     }

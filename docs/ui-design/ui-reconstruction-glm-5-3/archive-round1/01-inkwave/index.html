@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>墨频 Inkwave · 声音杂志</title>
+<style>
+:root{
+  --serif:Georgia,"Times New Roman","Noto Serif SC","Source Han Serif SC","SimSun",serif;
+  --sans:"PingFang SC","Microsoft YaHei","Noto Sans SC",sans-serif;
+  --mono:"JetBrains Mono","SF Mono",Consolas,"Courier New",monospace;
+}
+[data-theme="light"]{
+  --paper:#F6F1E7; --paper-2:#EFE9DC; --plate:#EAE3D3;
+  --ink:#211E19; --ink2:#5A544A; --ink3:#948B79;
+  --seal:#B23A26; --seal-soft:rgba(178,58,38,.08);
+  --gold:#8A6D3B;
+  --rule:#D9D2C2; --rule2:#B9B1A0;
+  --cover-tint:rgba(33,30,25,.04);
+}
+[data-theme="dark"]{
+  --paper:#161310; --paper-2:#1E1A16; --plate:#241F1A;
+  --ink:#E9E2D2; --ink2:#B5AC9A; --ink3:#7E7666;
+  --seal:#D96A50; --seal-soft:rgba(217,106,80,.10);
+  --gold:#C2A061;
+  --rule:#332F28; --rule2:#4A4438;
+  --cover-tint:rgba(0,0,0,.14);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:#2B2925;font-family:var(--sans);color:var(--ink);
+  transition:background .35s;}
+body[data-page-bg="light"]{background:#DDD8CB;}
+
+/* ============ 案头工具条 ============ */
+.deskbar{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:18px;
+  padding:12px 22px;background:rgba(30,28,24,.92);backdrop-filter:blur(8px);
+  color:#CFC8B6;font-size:12.5px;flex-wrap:wrap;}
+body[data-page-bg="light"] .deskbar{background:rgba(60,56,48,.9);color:#E9E2D2;}
+.deskbar a{color:#C2A061;text-decoration:none;letter-spacing:.1em;}
+.deskbar a:hover{text-decoration:underline;}
+.deskbar .brand{font-family:var(--serif);font-size:15px;letter-spacing:.25em;color:#E9E2D2;}
+.deskbar .brand span{font-size:11px;color:#8A8272;margin-left:8px;letter-spacing:.15em;}
+.deskbar .spacer{flex:1;}
+.deskbar .toggle{display:flex;border:1px solid #56503F;border-radius:2px;overflow:hidden;}
+.deskbar .toggle button{background:transparent;color:#ADA48E;border:0;padding:5px 16px;
+  font-size:12px;cursor:pointer;font-family:var(--serif);letter-spacing:.2em;}
+.deskbar .toggle button.on{background:#C2A061;color:#1E1A16;}
+.deskbar .pages{display:flex;gap:4px;flex-wrap:wrap;}
+.deskbar .pages button{background:transparent;border:1px solid transparent;color:#8A8272;
+  padding:5px 12px;font-size:12px;cursor:pointer;letter-spacing:.1em;}
+.deskbar .pages button.on{color:#E9E2D2;border-color:#56503F;}
+
+/* ============ 舞台 ============ */
+.stage{display:flex;justify-content:center;align-items:flex-start;gap:36px;
+  padding:44px 24px 90px;flex-wrap:wrap;}
+.phone{width:400px;height:860px;background:var(--paper);border-radius:26px;
+  overflow:hidden;position:relative;box-shadow:0 30px 60px rgba(0,0,0,.45),0 0 0 10px #211F1C,0 0 0 11px #4A4436;
+  display:flex;flex-direction:column;transition:background .35s;color:var(--ink);}
+.statusbar{height:34px;display:flex;justify-content:space-between;align-items:center;
+  padding:0 22px;font-family:var(--mono);font-size:11.5px;color:var(--ink2);flex:none;}
+.statusbar .icons{display:flex;gap:6px;align-items:center;}
+.statusbar .icons i{display:inline-block;width:14px;height:9px;border:1px solid var(--ink2);border-radius:2px;position:relative;}
+.statusbar .icons i::after{content:"";position:absolute;left:1px;top:1px;bottom:1px;width:70%;background:var(--ink2);border-radius:1px;}
+.screens{flex:1;position:relative;overflow:hidden;}
+.screen{position:absolute;inset:0;overflow-y:auto;opacity:0;pointer-events:none;
+  transition:opacity .3s;padding:4px 0 8px;scrollbar-width:none;}
+.screen::-webkit-scrollbar{display:none;}
+.screen.on{opacity:1;pointer-events:auto;}
+
+/* ============ 印刷元素 ============ */
+.dbl{border-top:1px solid var(--rule2);border-bottom:1px solid var(--rule2);height:4px;}
+.hairline{border-top:1px solid var(--rule);}
+.plate{background:var(--paper-2);}
+.runhead{display:flex;justify-content:space-between;align-items:baseline;
+  padding:6px 20px 4px;font-family:var(--serif);font-size:11px;color:var(--ink3);letter-spacing:.28em;}
+.masthead-title{font-family:var(--serif);font-weight:700;letter-spacing:.12em;}
+
+/* 封面图版（CSS 绘制） */
+.cover{position:relative;overflow:hidden;background:#6B5A48;}
+.cover::after{content:"";position:absolute;inset:0;background:var(--cover-tint);}
+.cover .grain{position:absolute;inset:0;opacity:.5;mix-blend-mode:overlay;
+  background-image:radial-gradient(rgba(255,255,255,.28) 1px,transparent 1px);
+  background-size:3px 3px;}
+.cover .title-mark{position:absolute;left:14px;bottom:12px;font-family:var(--serif);
+  color:rgba(245,240,228,.92);font-size:15px;letter-spacing:.14em;text-shadow:0 1px 3px rgba(0,0,0,.35);}
+
+/* EQ 播放指示 */
+.eq{display:inline-flex;gap:2.5px;align-items:flex-end;height:13px;}
+.eq i{width:2.5px;background:var(--seal);animation:eqb 1s ease-in-out infinite;}
+.eq i:nth-child(1){height:40%;animation-delay:0s;}
+.eq i:nth-child(2){height:90%;animation-delay:.22s;}
+.eq i:nth-child(3){height:60%;animation-delay:.44s;}
+.eq i:nth-child(4){height:100%;animation-delay:.1s;}
+@keyframes eqb{0%,100%{transform:scaleY(.35);}50%{transform:scaleY(1);}}
+
+/* 印章 */
+.seal-stamp{display:inline-block;padding:3px 7px;border:1.5px solid var(--seal);
+  color:var(--seal);font-family:var(--serif);font-size:11.5px;letter-spacing:.18em;
+  transform:rotate(-4deg);background:var(--seal-soft);}
+
+/* 铅字 chips */
+.type-chips{display:flex;gap:8px;flex-wrap:wrap;}
+.type-chip{border:1px solid var(--rule2);padding:4px 11px;font-size:11.5px;color:var(--ink2);
+  letter-spacing:.14em;background:transparent;}
+.type-chip.on{background:var(--ink);color:var(--paper);border-color:var(--ink);}
+.type-chip.seal{border-color:var(--seal);color:var(--seal);}
+
+/* 底部导航 */
+.navbar{flex:none;border-top:3px double var(--rule2);display:flex;background:var(--paper);}
+.navbar button{flex:1;background:transparent;border:0;padding:13px 0 15px;cursor:pointer;
+  font-family:var(--serif);font-size:13.5px;letter-spacing:.3em;color:var(--ink3);position:relative;}
+.navbar button.on{color:var(--ink);font-weight:700;}
+.navbar button.on::after{content:"";position:absolute;left:50%;transform:translateX(-50%);
+  bottom:6px;width:5px;height:5px;background:var(--seal);border-radius:50%;}
+.navbar button .sub{display:block;font-size:8.5px;letter-spacing:.2em;color:var(--ink3);
+  font-family:var(--sans);margin-top:2px;opacity:.7;}
+
+/* ============ A. 刊目 ============ */
+.masthead-block{padding:14px 20px 12px;display:flex;justify-content:space-between;align-items:stretch;}
+.masthead-block .left .vol{font-family:var(--serif);font-size:10.5px;color:var(--ink3);letter-spacing:.3em;margin-bottom:6px;}
+.masthead-block .left h1{font-family:var(--serif);font-size:44px;font-weight:700;letter-spacing:.1em;line-height:1;}
+.masthead-block .right{display:flex;flex-direction:column;justify-content:space-between;align-items:flex-end;}
+.masthead-block .right .date{font-family:var(--serif);font-size:11px;color:var(--ink2);letter-spacing:.12em;writing-mode:vertical-rl;padding-left:4px;}
+.nowplate{margin:0 20px 12px;display:flex;gap:12px;align-items:center;padding:10px 12px;
+  border:1px solid var(--rule);background:var(--paper-2);}
+.nowplate .cv{width:52px;height:52px;flex:none;}
+.nowplate .meta{flex:1;min-width:0;}
+.nowplate .t{font-family:var(--serif);font-size:14.5px;font-weight:600;letter-spacing:.04em;}
+.nowplate .a{font-size:11px;color:var(--ink3);margin-top:3px;letter-spacing:.06em;}
+.nowplate .right{display:flex;flex-direction:column;align-items:flex-end;gap:6px;}
+.searchrow{display:flex;gap:10px;padding:0 20px 12px;align-items:center;}
+.searchbox{flex:1;border:1px solid var(--rule2);padding:8px 12px;font-size:12px;color:var(--ink3);
+  letter-spacing:.08em;display:flex;justify-content:space-between;align-items:center;}
+.searchbox .glyph{font-family:var(--serif);color:var(--ink3);}
+.liblink{font-family:var(--serif);font-size:12.5px;color:var(--ink2);letter-spacing:.2em;
+  border-bottom:1px solid var(--rule2);padding-bottom:2px;}
+.toc{padding:0 20px;}
+.toc-head{display:flex;justify-content:space-between;align-items:baseline;padding:10px 2px 8px;}
+.toc-head .cap{font-family:var(--serif);font-size:12px;letter-spacing:.34em;color:var(--ink2);}
+.toc-head .cnt{font-family:var(--serif);font-size:10.5px;color:var(--ink3);letter-spacing:.14em;}
+.toc-row{display:flex;align-items:center;gap:14px;padding:13px 2px;border-top:1px solid var(--rule);}
+.toc-row:first-of-type{border-top:0;}
+.toc-row .no{font-family:var(--serif);font-size:19px;color:var(--gold);width:30px;flex:none;font-style:italic;}
+.toc-row .body{flex:1;min-width:0;}
+.toc-row .name{font-family:var(--serif);font-size:16px;font-weight:600;letter-spacing:.06em;}
+.toc-row .sub{font-size:11px;color:var(--ink3);margin-top:3px;letter-spacing:.1em;}
+.toc-row .go{width:26px;height:26px;flex:none;border:1px solid var(--rule2);display:grid;place-items:center;}
+.toc-row .go svg{width:9px;height:9px;fill:var(--ink2);}
+.newcol-fab{position:absolute;right:20px;bottom:20px;display:flex;align-items:center;gap:8px;
+  border:1.5px solid var(--ink);background:var(--paper);color:var(--ink);padding:9px 16px;
+  font-family:var(--serif);font-size:12.5px;letter-spacing:.22em;box-shadow:3px 3px 0 var(--rule2);}
+
+/* ============ B. 在听 ============ */
+.folio-run{padding:8px 20px 6px;}
+.plate-full{margin:6px 20px 0;position:relative;}
+.plate-full .cover{width:100%;height:296px;}
+.plate-full .hi-res{position:absolute;top:10px;left:10px;border:1px solid rgba(245,240,228,.75);
+  color:rgba(245,240,228,.95);font-family:var(--mono);font-size:9.5px;letter-spacing:.22em;
+  padding:3px 8px;z-index:2;background:rgba(20,16,12,.28);}
+.plate-full .mood-stamp{position:absolute;top:12px;right:12px;z-index:2;
+  background:rgba(20,16,12,.22);transform:rotate(5deg);}
+.caption{margin:14px 20px 0;}
+.caption h2{font-family:var(--serif);font-size:30px;font-weight:700;letter-spacing:.06em;line-height:1.3;}
+.caption .byline{margin-top:7px;font-size:13px;color:var(--ink2);letter-spacing:.1em;}
+.caption .byline b{color:var(--ink);font-weight:600;font-family:var(--serif);letter-spacing:.08em;}
+.caption .byline .dot{margin:0 8px;color:var(--rule2);}
+.caption .spec{margin-top:9px;font-family:var(--mono);font-size:10.5px;color:var(--ink3);letter-spacing:.06em;}
+.caption .spec .ver{color:var(--gold);border-bottom:1px dotted var(--gold);cursor:pointer;margin-left:10px;}
+.progress-block{margin:22px 20px 0;}
+.prog-track{height:2px;background:var(--rule);position:relative;}
+.prog-track .done{position:absolute;left:0;top:0;bottom:0;width:60%;background:var(--ink);}
+.prog-track .cursor{position:absolute;left:60%;top:50%;width:9px;height:9px;
+  transform:translate(-50%,-50%) rotate(45deg);background:var(--paper);border:1.5px solid var(--ink);}
+.prog-times{display:flex;justify-content:space-between;margin-top:9px;
+  font-family:var(--mono);font-size:11px;color:var(--ink3);}
+.controls{margin:24px 20px 0;display:flex;align-items:center;justify-content:space-between;}
+.ctrl{background:transparent;border:0;cursor:pointer;color:var(--ink);display:grid;place-items:center;}
+.ctrl svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.5;}
+.ctrl.play{width:58px;height:58px;background:var(--ink);color:var(--paper);border-radius:0;}
+.ctrl.play svg{width:24px;height:24px;fill:currentColor;stroke:none;}
+.ctrl.side{width:44px;height:44px;border:1px solid var(--rule2);}
+.ctrl.side svg{width:18px;height:18px;}
+.chips-block{margin:26px 20px 0;}
+.chips-label{font-family:var(--serif);font-size:10.5px;color:var(--ink3);letter-spacing:.34em;margin-bottom:10px;}
+.lucky-fab{position:absolute;right:20px;bottom:20px;display:flex;align-items:center;gap:8px;
+  border:1.5px solid var(--seal);color:var(--seal);background:var(--paper);padding:9px 15px;
+  font-family:var(--serif);font-size:12.5px;letter-spacing:.2em;transform:rotate(1.5deg);
+  box-shadow:3px 3px 0 var(--seal-soft);}
+.side-vertical{position:absolute;right:6px;top:220px;writing-mode:vertical-rl;
+  font-family:var(--serif);font-size:10.5px;color:var(--ink3);letter-spacing:.5em;opacity:.85;}
+
+/* ============ C. 诗页 ============ */
+.poem-top{display:flex;justify-content:space-between;align-items:center;padding:10px 20px;}
+.poem-top .back{font-family:var(--serif);font-size:13px;color:var(--ink2);letter-spacing:.2em;}
+.poem-top .fontsz{display:flex;gap:8px;font-family:var(--serif);font-size:12px;color:var(--ink3);}
+.poem-top .fontsz span{border:1px solid var(--rule2);padding:2px 8px;}
+.poem-wrap{position:relative;margin-top:18px;height:560px;overflow:hidden;padding:0 34px;}
+.poem-fade{position:absolute;left:0;right:0;height:90px;z-index:2;pointer-events:none;}
+.poem-fade.top{top:0;background:linear-gradient(var(--paper),transparent);}
+.poem-fade.bottom{bottom:0;background:linear-gradient(transparent,var(--paper));}
+.poem{display:flex;flex-direction:column;gap:30px;padding-top:110px;}
+.poem p{font-family:var(--serif);font-size:16.5px;color:var(--ink3);letter-spacing:.12em;
+  line-height:1.7;text-align:center;transition:color .3s;}
+.poem p.past{opacity:.55;}
+.poem p.now{font-size:21px;color:var(--ink);font-weight:600;position:relative;}
+.poem p.now::after{content:"";position:absolute;left:50%;transform:translateX(-50%);
+  bottom:-11px;width:64px;height:2px;background:var(--seal);}
+.poem p.next{opacity:.8;}
+.poem-pagefoot{position:absolute;bottom:26px;left:0;right:0;text-align:center;
+  font-family:var(--serif);font-size:10px;color:var(--ink3);letter-spacing:.4em;}
+
+/* ============ D. 专栏 ============ */
+.colophon-head{padding:16px 20px 14px;}
+.colophon-head .kicker{font-family:var(--serif);font-size:11px;color:var(--gold);letter-spacing:.4em;margin-bottom:8px;}
+.colophon-head h2{font-family:var(--serif);font-size:27px;font-weight:700;letter-spacing:.08em;}
+.colophon-head .desc{margin-top:8px;font-size:12px;color:var(--ink3);letter-spacing:.1em;}
+.colophon-head .stat{margin-top:10px;font-family:var(--mono);font-size:10.5px;color:var(--ink2);letter-spacing:.1em;}
+.resume-note{margin:0 20px 14px;border:1px solid var(--seal);border-left:4px solid var(--seal);
+  padding:10px 14px;display:flex;justify-content:space-between;align-items:center;
+  background:var(--seal-soft);}
+.resume-note .txt{font-size:12px;color:var(--ink2);letter-spacing:.05em;}
+.resume-note .txt b{color:var(--seal);font-family:var(--serif);}
+.resume-note .go{font-family:var(--serif);font-size:12px;color:var(--seal);letter-spacing:.2em;}
+.batch-row{margin:0 20px 6px;display:flex;gap:14px;flex-wrap:wrap;padding:10px 0 12px;}
+.batch-row button{background:transparent;border:1px solid var(--rule2);color:var(--ink2);
+  padding:6px 13px;font-size:11.5px;letter-spacing:.16em;font-family:var(--serif);cursor:pointer;}
+.batch-row button:hover{border-color:var(--ink);color:var(--ink);}
+.article-tools{display:flex;justify-content:space-between;padding:0 20px 10px;
+  font-size:11px;color:var(--ink3);letter-spacing:.2em;}
+.article{padding:0 20px;}
+.art-row{display:flex;align-items:center;gap:12px;padding:12px 2px;border-top:1px solid var(--rule);}
+.art-row .no{font-family:var(--serif);font-style:italic;font-size:13px;color:var(--ink3);width:22px;flex:none;}
+.art-row .cv{width:40px;height:40px;flex:none;}
+.art-row .body{flex:1;min-width:0;}
+.art-row .t{font-family:var(--serif);font-size:14.5px;font-weight:600;letter-spacing:.04em;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.art-row .s{font-size:10.5px;color:var(--ink3);margin-top:3px;letter-spacing:.08em;}
+.art-row .dur{font-family:var(--mono);font-size:10.5px;color:var(--ink3);}
+.art-row.playing .t{color:var(--seal);}
+.art-row .more{width:22px;height:22px;display:grid;place-items:center;color:var(--ink3);flex:none;}
+.art-row .more svg{width:14px;height:14px;fill:currentColor;}
+
+/* ============ E. 卷宗 ============ */
+.archive-head{padding:18px 20px 14px;display:flex;gap:16px;align-items:center;}
+.archive-head .logo{width:64px;height:64px;border:2px solid var(--seal);display:grid;place-items:center;
+  font-family:var(--serif);font-size:22px;color:var(--seal);transform:rotate(-3deg);
+  background:var(--seal-soft);flex:none;}
+.archive-head .body{flex:1;}
+.archive-head h2{font-family:var(--serif);font-size:23px;font-weight:700;letter-spacing:.1em;}
+.archive-head .sub{font-size:11.5px;color:var(--ink3);margin-top:5px;letter-spacing:.1em;}
+.archive-head .gear{align-self:flex-start;color:var(--ink3);width:20px;height:20px;}
+.cards{padding:0 20px;display:flex;flex-direction:column;gap:14px;}
+.card{border:1px solid var(--rule);padding:15px 16px 13px;background:var(--paper-2);}
+.card .cap{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px;}
+.card .cap .name{font-family:var(--serif);font-size:13.5px;font-weight:600;letter-spacing:.22em;}
+.card .cap .tail{font-family:var(--serif);font-size:10.5px;color:var(--ink3);letter-spacing:.16em;}
+.card .lead{font-size:12px;color:var(--ink2);letter-spacing:.05em;line-height:1.7;}
+.card .lead b{color:var(--ink);font-family:var(--serif);}
+.stat-bars{display:flex;align-items:flex-end;gap:7px;height:56px;margin-top:14px;padding-top:12px;
+  border-top:1px solid var(--rule);}
+.stat-bars .bar{flex:1;display:flex;flex-direction:column;justify-content:flex-end;gap:4px;height:100%;}
+.stat-bars .bar i{display:block;background:var(--ink);opacity:.22;}
+.stat-bars .bar.today i{opacity:1;background:var(--seal);}
+.stat-bars .bar em{font-style:normal;font-family:var(--serif);font-size:9px;color:var(--ink3);
+  text-align:center;letter-spacing:.05em;}
+.stat-bars .bar.today em{color:var(--seal);}
+.card .foot{margin-top:10px;display:flex;justify-content:space-between;align-items:center;}
+.card .foot .top3{font-size:11px;color:var(--ink2);}
+.card .foot .top3 b{font-family:var(--serif);color:var(--ink);}
+.card .foot .more-link{font-family:var(--serif);font-size:11px;color:var(--gold);letter-spacing:.2em;}
+.mini-actions{display:flex;gap:10px;margin-top:12px;}
+.mini-actions button{flex:1;background:transparent;border:1px solid var(--rule2);color:var(--ink2);
+  padding:7px 0;font-size:11.5px;letter-spacing:.14em;font-family:var(--serif);cursor:pointer;}
+.mini-actions button:hover{border-color:var(--ink);color:var(--ink);}
+.tag-line{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;}
+.tag-line .tg{border:1px solid var(--rule2);font-size:10px;color:var(--ink2);
+  padding:2px 8px;letter-spacing:.1em;}
+.tag-line .tg.on{background:var(--ink);color:var(--paper);border-color:var(--ink);}
+
+/* ============ 侧注 ============ */
+.marginalia{width:280px;flex:none;color:#CFC8B6;font-size:12px;line-height:1.8;padding-top:6px;}
+.marginalia h3{font-family:var(--serif);font-size:13px;color:#E9E2D2;letter-spacing:.3em;
+  margin-bottom:12px;border-bottom:1px solid #56503F;padding-bottom:8px;}
+.marginalia .grp{margin-bottom:26px;}
+.marginalia .grp .cap{font-family:var(--serif);font-size:11px;color:#C2A061;letter-spacing:.24em;margin-bottom:8px;}
+.marginalia .sw{display:flex;height:26px;border:1px solid #56503F;}
+.marginalia .sw i{flex:1;}
+.marginalia .sw i+ i{border-left:1px solid rgba(0,0,0,.25);}
+.marginalia .swlab{display:flex;justify-content:space-between;font-family:var(--mono);font-size:9px;color:#8A8272;margin-top:5px;}
+.marginalia p{color:#ADA48E;}
+.marginalia p b{color:#E9E2D2;font-weight:600;}
+.marginalia .note{border-left:2px solid #C2A061;padding-left:12px;margin-bottom:14px;}
+.marginalia table{width:100%;border-collapse:collapse;font-size:11px;}
+.marginalia td{padding:4px 0;border-bottom:1px solid #3A362C;color:#ADA48E;}
+.marginalia td:last-child{text-align:right;font-family:var(--mono);color:#CFC8B6;}
+@media (max-width:1100px){.marginalia{width:400px;}}
+</style>
+</head>
+<body data-page-bg="dark">
+
+<div class="deskbar">
+  <a href="../index.html">← 总览</a>
+  <span class="brand">墨頻<span>INKWAVE</span></span>
+  <div class="pages">
+    <button data-scr="library" class="on">刊目</button>
+    <button data-scr="nowplaying">在听</button>
+    <button data-scr="lyrics">诗页</button>
+    <button data-scr="feature">专栏</button>
+    <button data-scr="archive">卷宗</button>
+  </div>
+  <div class="spacer"></div>
+  <div class="toggle">
+    <button data-th="light" class="on">日刊</button>
+    <button data-th="dark">午夜</button>
+  </div>
+</div>
+
+<div class="stage">
+<div class="phone">
+  <div class="statusbar"><span>23:47</span><span class="icons"><i></i><i style="width:18px"></i></span></div>
+  <div class="screens">
+
+    <!-- ======= A. 刊目 ====== -->
+    <section class="screen on" id="scr-library">
+      <div class="masthead-block">
+        <div class="left">
+          <div class="vol">私人声音刊物 · 第柒卷</div>
+          <h1 class="masthead-title">墨頻</h1>
+        </div>
+        <div class="right">
+          <div class="date">乙巳年 九月初三</div>
+        </div>
+      </div>
+      <div class="dbl" style="margin:0 20px;"></div>
+
+      <div class="nowplate">
+        <div class="cover cv" style="background:linear-gradient(135deg,#7A5C44 0%,#3E2E22 55%,#5C4634 100%);">
+          <div class="grain"></div><div class="title-mark">山丘</div>
+        </div>
+        <div class="meta">
+          <div class="t">山丘 <span class="eq" style="margin-left:8px;"><i></i><i></i><i></i><i></i></span></div>
+          <div class="a">李宗盛 · 《山丘》 · 撰者第 12 卷收录</div>
+        </div>
+        <div class="right">
+          <span class="seal-stamp" style="font-size:10px;padding:2px 5px;">在听</span>
+        </div>
+      </div>
+
+      <div class="searchrow">
+        <div class="searchbox"><span>检索刊内文章…</span><span class="glyph">◎</span></div>
+        <span class="liblink">馆藏</span>
+      </div>
+
+      <div class="toc">
+        <div class="type-chips" style="padding:2px 0 6px;">
+          <span class="type-chip on">专栏</span><span class="type-chip">撰者</span>
+          <span class="type-chip">唱片</span><span class="type-chip">情绪</span>
+        </div>
+        <div class="toc-head"><span class="cap">目 录</span><span class="cnt">CONTENTS · 34 个专栏</span></div>
+
+        <div class="toc-row">
+          <span class="no">01</span>
+          <div class="body">
+            <div class="name">深夜公路</div>
+            <div class="sub">十二篇 · 四十七分钟 · 续读至第四篇</div>
+          </div>
+          <span class="go"><svg viewBox="0 0 10 10"><path d="M2 1l5 4-5 4z"/></svg></span>
+        </div>
+        <div class="toc-row">
+          <span class="no">02</span>
+          <div class="body">
+            <div class="name">落雨的周日</div>
+            <div class="sub">十五篇 · 一小时零三分</div>
+          </div>
+          <span class="go"><svg viewBox="0 0 10 10"><path d="M2 1l5 4-5 4z"/></svg></span>
+        </div>
+        <div class="toc-row">
+          <span class="no">03</span>
+          <div class="body">
+            <div class="name">通勤快线</div>
+            <div class="sub">二十一篇 · 一小时三十九分</div>
+          </div>
+          <span class="go"><svg viewBox="0 0 10 10"><path d="M2 1l5 4-5 4z"/></svg></span>
+        </div>
+        <div class="toc-row">
+          <span class="no">04</span>
+          <div class="body">
+            <div class="name">无以名状</div>
+            <div class="sub">六篇 · 二十四分钟 · 未读</div>
+          </div>
+          <span class="go"><svg viewBox="0 0 10 10"><path d="M2 1l5 4-5 4z"/></svg></span>
+        </div>
+        <div class="toc-row">
+          <span class="no">05</span>
+          <div class="body">
+            <div class="name">充电时听的</div>
+            <div class="sub">九篇 · 三十一分钟</div>
+          </div>
+          <span class="go"><svg viewBox="0 0 10 10"><path d="M2 1l5 4-5 4z"/></svg></span>
+        </div>
+      </div>
+
+      <button class="newcol-fab">＋ 建立专栏</button>
+    </section>
+
+    <!-- ======= B. 在听 ====== -->
+    <section class="screen" id="scr-nowplaying">
+      <div class="folio-run">
+        <div class="dbl"></div>
+        <div class="runhead" style="padding-top:8px;"><span>在 听</span><span>第 12 期 · 总第 341 篇</span></div>
+      </div>
+
+      <div class="plate-full">
+        <div class="cover" style="height:296px;background:linear-gradient(140deg,#8A6849 0%,#4A3626 45%,#2E2118 80%,#6B4E36 100%);">
+          <div class="grain"></div>
+          <div class="title-mark" style="font-size:21px;">山丘 · 李宗盛</div>
+        </div>
+        <span class="hi-res">HI-RES 88.2k/24</span>
+        <span class="seal-stamp mood-stamp">治愈</span>
+      </div>
+
+      <div class="side-vertical">不 曾 停 在 风 里</div>
+
+      <div class="caption">
+        <h2>山丘</h2>
+        <div class="byline">演唱 <b>李宗盛</b><span class="dot">·</span>收录于<b>《山丘》</b><span class="dot">·</span>作词作曲<b>李宗盛</b></div>
+        <div class="spec">FLAC · 44.1kHz / 16bit · 06:58<span class="ver">本文另有 3 个版本¹</span></div>
+      </div>
+
+      <div class="progress-block">
+        <div class="prog-track"><div class="done"></div><div class="cursor"></div></div>
+        <div class="prog-times"><span>04:12</span><span>− 02:46</span></div>
+      </div>
+
+      <div class="controls">
+        <button class="ctrl side" title="目录（队列）"><svg viewBox="0 0 24 24"><path d="M4 5h16M4 12h10M4 19h13" stroke-linecap="round"/></svg></button>
+        <button class="ctrl side" title="上一篇"><svg viewBox="0 0 24 24"><path d="M18 5v14L8 12zM6 5v14" stroke-linejoin="round"/></svg></button>
+        <button class="ctrl play" title="暂停"><svg viewBox="0 0 24 24"><rect x="6" y="5" width="4" height="14"/><rect x="14" y="5" width="4" height="14"/></svg></button>
+        <button class="ctrl side" title="下一篇"><svg viewBox="0 0 24 24"><path d="M6 5v14l10-7zM18 5v14" stroke-linejoin="round"/></svg></button>
+        <button class="ctrl side" title="乱序"><svg viewBox="0 0 24 24"><path d="M4 6h5l3 5M20 18h-5l-3-5M4 18h5l3-5M20 6h-5l-3 5M16 3l4 3-4 3M16 15l4 3-4 3" stroke-linejoin="round"/></svg></button>
+      </div>
+
+      <div class="chips-block">
+        <div class="chips-label">附 注</div>
+        <div class="type-chips">
+          <span class="type-chip seal on">无限随机 · 进行中</span>
+          <span class="type-chip">关联播放</span>
+          <span class="type-chip">定时关闭</span>
+        </div>
+      </div>
+
+      <button class="lucky-fab">随心一读 ↗</button>
+    </section>
+
+    <!-- ======= C. 诗页 ====== -->
+    <section class="screen" id="scr-lyrics">
+      <div class="poem-top">
+        <span class="back">‹ 返回图版</span>
+        <span style="font-family:var(--serif);letter-spacing:.3em;font-size:12px;color:var(--ink2);">山丘 · 诗页</span>
+        <span class="fontsz"><span>A−</span><span>A+</span></span>
+      </div>
+      <div class="hairline"></div>
+      <div class="poem-wrap">
+        <div class="poem-fade top"></div>
+        <div class="poem-fade bottom"></div>
+        <div class="poem">
+          <p class="past">想说却还没说的 还很多</p>
+          <p class="past">攒着是因为想写成歌</p>
+          <p class="past">让人轻轻地唱着 淡淡地记着</p>
+          <p class="past">就算终于忘了 也值了</p>
+          <p class="now">说不定我一生涓滴意念</p>
+          <p class="next">侥幸汇成河</p>
+          <p>然后我俩各自一端</p>
+          <p>望着大河弯弯 终于敢放胆</p>
+          <p>嘻皮笑脸 面对 人生的难</p>
+        </div>
+        <div class="poem-pagefoot">墨 頻 · 第 12 期</div>
+      </div>
+    </section>
+
+    <!-- ======= D. 专栏 ====== -->
+    <section class="screen" id="scr-feature">
+      <div class="folio-run"><div class="dbl"></div>
+        <div class="runhead" style="padding-top:8px;"><span>‹ 目 录</span><span>专 栏</span></div>
+      </div>
+      <div class="colophon-head">
+        <div class="kicker">专栏 · 第 01 号</div>
+        <h2>深夜公路</h2>
+        <div class="desc">给零点后还醒着的人。车灯、护栏与未读的消息。</div>
+        <div class="stat">十二篇 · 总 47:32 · 编于乙巳年八月</div>
+      </div>
+      <div class="resume-note">
+        <span class="txt">续读 · 上次停在 <b>第四篇《成都》</b>三分十一秒处</span>
+        <span class="go">续读 →</span>
+      </div>
+      <div class="batch-row">
+        <button>从头读</button><button>从尾读</button><button>加入待读</button><button>下一篇</button>
+      </div>
+      <div class="article-tools"><span>检 索 · 多 选</span><span>已选 0 篇</span></div>
+      <div class="article">
+        <div class="art-row">
+          <span class="no">1</span>
+          <div class="cover cv" style="width:40px;height:40px;background:linear-gradient(135deg,#40556B,#22303F);"><div class="grain"></div></div>
+          <div class="body"><div class="t">贝加尔湖畔</div><div class="s">李健 · 《依然》</div></div>
+          <span class="eq"><i></i><i></i><i></i><i></i></span>
+        </div>
+        <div class="art-row playing">
+          <span class="no">2</span>
+          <div class="cover cv" style="width:40px;height:40px;background:linear-gradient(135deg,#7A5C44,#3E2E22);"><div class="grain"></div><div class="title-mark" style="font-size:8px;">山丘</div></div>
+          <div class="body"><div class="t">山丘</div><div class="s">李宗盛 · 《山丘》 · 3 版本</div></div>
+          <span class="dur">06:58</span>
+          <span class="more"><svg viewBox="0 0 14 14"><circle cx="2.5" cy="7" r="1.6"/><circle cx="7" cy="7" r="1.6"/><circle cx="11.5" cy="7" r="1.6"/></svg></span>
+        </div>
+        <div class="art-row">
+          <span class="no">3</span>
+          <div class="cover cv" style="width:40px;height:40px;background:linear-gradient(135deg,#5A6B4A,#2C3623);"><div class="grain"></div></div>
+          <div class="body"><div class="t">理想三旬</div><div class="s">陈鸿宇 · 《浓烟下的诗歌电台》</div></div>
+          <span class="dur">03:31</span>
+          <span class="more"><svg viewBox="0 0 14 14"><circle cx="2.5" cy="7" r="1.6"/><circle cx="7" cy="7" r="1.6"/><circle cx="11.5" cy="7" r="1.6"/></svg></span>
+        </div>
+        <div class="art-row">
+          <span class="no">4</span>
+          <div class="cover cv" style="width:40px;height:40px;background:linear-gradient(135deg,#8A7355,#4A3A26);"><div class="grain"></div></div>
+          <div class="body"><div class="t">成都</div><div class="s">赵雷 · 《无法长大》 · 续读标记</div></div>
+          <span class="dur">05:28</span>
+          <span class="more"><svg viewBox="0 0 14 14"><circle cx="2.5" cy="7" r="1.6"/><circle cx="7" cy="7" r="1.6"/><circle cx="11.5" cy="7" r="1.6"/></svg></span>
+        </div>
+        <div class="art-row">
+          <span class="no">5</span>
+          <div class="cover cv" style="width:40px;height:40px;background:linear-gradient(135deg,#4A5568,#252B36);"><div class="grain"></div></div>
+          <div class="body"><div class="t">漠河舞厅</div><div class="s">柳爽 · 《漠河舞厅》</div></div>
+          <span class="dur">03:38</span>
+          <span class="more"><svg viewBox="0 0 14 14"><circle cx="2.5" cy="7" r="1.6"/><circle cx="7" cy="7" r="1.6"/><circle cx="11.5" cy="7" r="1.6"/></svg></span>
+        </div>
+        <div class="art-row">
+          <span class="no">6</span>
+          <div class="cover cv" style="width:40px;height:40px;background:linear-gradient(135deg,#6B4A58,#33202A);"><div class="grain"></div></div>
+          <div class="body"><div class="t">消愁</div><div class="s">毛不易 · 《平凡的一天》</div></div>
+          <span class="dur">04:16</span>
+          <span class="more"><svg viewBox="0 0 14 14"><circle cx="2.5" cy="7" r="1.6"/><circle cx="7" cy="7" r="1.6"/><circle cx="11.5" cy="7" r="1.6"/></svg></span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======= E. 卷宗 ====== -->
+    <section class="screen" id="scr-archive">
+      <div class="folio-run"><div class="dbl"></div>
+        <div class="runhead" style="padding-top:8px;"><span>卷 宗</span><span>ARCHIVE</span></div>
+      </div>
+      <div class="archive-head">
+        <div class="logo">墨</div>
+        <div class="body">
+          <h2>编者的卷宗</h2>
+          <div class="sub">一本只为你一人出版的刊物 · 创刊于 2019 年春</div>
+        </div>
+        <svg class="gear" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9L17 7M7 17l-2.1 2.1"/></svg>
+      </div>
+
+      <div class="cards">
+        <div class="card">
+          <div class="cap"><span class="name">发行数据</span><span class="tail">本周 · 卷柒</span></div>
+          <div class="lead">今日已读 <b>三十二分钟</b>，距每日目标一小时尚差二十八分钟。本周共刊读 <b>四小时十一分</b>。</div>
+          <div class="stat-bars">
+            <div class="bar"><i style="height:34%"></i><em>一</em></div>
+            <div class="bar"><i style="height:58%"></i><em>二</em></div>
+            <div class="bar"><i style="height:22%"></i><em>三</em></div>
+            <div class="bar"><i style="height:72%"></i><em>四</em></div>
+            <div class="bar"><i style="height:45%"></i><em>五</em></div>
+            <div class="bar"><i style="height:88%"></i><em>六</em></div>
+            <div class="bar today"><i style="height:52%"></i><em>日</em></div>
+          </div>
+          <div class="foot">
+            <span class="top3">本周最常读：<b>山丘 ×23</b> · <b>贝加尔湖畔 ×17</b></span>
+            <span class="more-link">全集 →</span>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="cap"><span class="name">随心时段</span><span class="tail">生效中</span></div>
+          <div class="lead">「<b>深夜静谧</b>」正在领读 · 廿三时至六时 · 随心与无限随机将只取静谧、放松、治愈三类文章。</div>
+          <div class="tag-line">
+            <span class="tg on">静谧 ×86</span><span class="tg on">放松 ×64</span><span class="tg on">治愈 ×52</span><span class="tg">编辑</span>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="cap"><span class="name">情绪编目</span><span class="tail">已完成 328 / 402</span></div>
+          <div class="lead">为每篇文章标注气质。剩余七十四篇将在充电且闲暇时自动续编，亦可 <b>立即续编</b>。最近编目：<b>贝加尔湖畔 · 治愈</b>。</div>
+          <div class="mini-actions"><button>立即续编</button><button>编目详情</button></div>
+        </div>
+
+        <div class="card">
+          <div class="cap"><span class="name">馆藏校验</span><span class="tail">上次校验 · 十日前</span></div>
+          <div class="lead">未发现失效文章；检出重复馆藏 <b>三组</b>，共六篇，可并卷清理。另有多版本 <b>十四组</b> 待对照。</div>
+          <div class="mini-actions"><button>运行校验</button><button>多版本对照</button><button>重复详情</button></div>
+        </div>
+
+        <div class="card">
+          <div class="cap"><span class="name">装帧</span><span class="tail">当前 · 日刊</span></div>
+          <div class="lead">刊物的外观：日刊或午夜刊、纸色、图版尺寸与字级。装帧改动即时生效于全刊。</div>
+          <div class="mini-actions"><button>打开装帧柜</button></div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <div class="navbar">
+    <button class="on" data-nav="library">刊目<span class="sub">CONTENTS</span></button>
+    <button data-nav="nowplaying">在听<span class="sub">NOW</span></button>
+    <button data-nav="archive">卷宗<span class="sub">ARCHIVE</span></button>
+  </div>
+</div>
+
+<aside class="marginalia">
+  <h3>墨頻 · 侧注</h3>
+  <div class="grp">
+    <div class="cap">纸色（日刊 / 午夜刊）</div>
+    <div class="sw"><i style="background:#F6F1E7"></i><i style="background:#EFE9DC"></i><i style="background:#D9D2C2"></i><i style="background:#8A6D3B"></i><i style="background:#B23A26"></i><i style="background:#211E19"></i></div>
+    <div class="swlab"><span>paper</span><span>plate</span><span>rule</span><span>gold</span><span>seal</span><span>ink</span></div>
+    <div class="sw" style="margin-top:8px"><i style="background:#161310"></i><i style="background:#1E1A16"></i><i style="background:#332F28"></i><i style="background:#C2A061"></i><i style="background:#D96A50"></i><i style="background:#E9E2D2"></i></div>
+    <div class="swlab"><span>paper</span><span>plate</span><span>rule</span><span>gold</span><span>seal</span><span>ink</span></div>
+  </div>
+  <div class="grp">
+    <div class="cap">字号</div>
+    <table>
+      <tr><td>文章题（歌名）</td><td>serif 30 / 700</td></tr>
+      <tr><td>栏目题（页面题）</td><td>serif 27 / 700</td></tr>
+      <tr><td>目录条目</td><td>serif 16 / 600</td></tr>
+      <tr><td>正文/图注</td><td>sans 12–13</td></tr>
+      <tr><td>规格行</td><td>mono 10.5</td></tr>
+    </table>
+  </div>
+  <div class="grp">
+    <div class="cap">三条不可让步的决策</div>
+    <div class="note"><p><b>朱红只做批注，不做主题色。</b>印章、续读贴示、播放中的行标——它出现在「编辑对你说话」的时刻，其余时候整刊只有纸与墨。主题色八选一的旧设定在本方向中作废。</p></div>
+    <div class="note"><p><b>图版无圆角。</b>印刷品上没有圆角照片。封面一律直角、带极窄白边，圆角这个时代习惯在这里被有意打破。</p></div>
+    <div class="note"><p><b>队列叫目录。</b>播放队列在杂志语境里就是「本期目录」，点开的预期是翻目录而不是管理播放器。定时关闭显示为「本期刊物将于 23:40 停印」。</p></div>
+  </div>
+</aside>
+</div>
+
+<script>
+const root=document.documentElement;
+document.querySelectorAll('.deskbar .toggle button').forEach(b=>{
+  b.addEventListener('click',()=>{
+    document.querySelectorAll('.deskbar .toggle button').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on');
+    root.dataset.theme=b.dataset.th;
+    document.body.dataset.pageBg=b.dataset.th;
+  });
+});
+document.querySelectorAll('.deskbar .pages button').forEach(b=>{
+  b.addEventListener('click',()=>{
+    document.querySelectorAll('.deskbar .pages button').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on');
+    document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
+    document.getElementById('scr-'+b.dataset.scr).classList.add('on');
+  });
+});
+document.querySelectorAll('.navbar button').forEach(b=>{
+  b.addEventListener('click',()=>b.dataset.nav&&(()=>{
+    document.querySelectorAll('.deskbar .pages button').forEach(x=>x.classList.toggle('on',x.dataset.scr===b.dataset.nav));
+    document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
+    document.getElementById('scr-'+b.dataset.nav).classList.add('on');
+  })());
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UI 重构提案 · 第二轮 · 三方向</title>
+<style>
+  :root{
+    --bg:#F4F2EE; --card:#FFFFFF; --ink:#1C1A17; --ink2:#6B675F; --ink3:#A29D92;
+    --accent:#D97A45; --hair:#E5E1D8;
+    --sans:"PingFang SC","HarmonyOS Sans SC","Microsoft YaHei","Noto Sans SC",sans-serif;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --bg:#171513; --card:#211E1B; --ink:#EDEAE4; --ink2:#A6A098; --ink3:#6E6960;
+      --accent:#E8965F; --hair:#2C2925; }
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);
+    font-size:14px;line-height:1.8;transition:background .3s,color .3s;}
+  .page{max-width:880px;margin:0 auto;padding:64px 32px 96px;}
+
+  .top{display:flex;justify-content:space-between;font-size:12px;color:var(--ink3);letter-spacing:.1em;}
+  .hero{margin:64px 0 20px;}
+  .hero .kicker{font-size:12px;color:var(--accent);font-weight:600;letter-spacing:.24em;margin-bottom:14px;}
+  .hero h1{font-size:46px;font-weight:700;line-height:1.2;letter-spacing:-.01em;}
+  .hero p.lead{margin-top:16px;font-size:16.5px;color:var(--ink2);max-width:620px;line-height:1.9;}
+  .rule{height:1px;background:var(--hair);margin:40px 0;}
+
+  .cards{display:grid;gap:20px;}
+  .card{background:var(--card);border-radius:24px;padding:30px 30px 26px;
+    box-shadow:0 1px 2px rgba(30,25,18,.04),0 12px 32px rgba(30,25,18,.06);
+    text-decoration:none;color:inherit;display:block;
+    transition:transform .22s ease,box-shadow .22s ease;}
+  .card:hover{transform:translateY(-3px);box-shadow:0 2px 4px rgba(30,25,18,.05),0 20px 44px rgba(30,25,18,.10);}
+  .card .tag{display:inline-block;font-size:11px;font-weight:600;color:var(--accent);
+    letter-spacing:.22em;margin-bottom:10px;}
+  .card h2{font-size:26px;font-weight:700;letter-spacing:-.01em;}
+  .card h2 small{font-size:13px;color:var(--ink3);font-weight:400;margin-left:12px;letter-spacing:.06em;}
+  .card p{margin-top:10px;color:var(--ink2);font-size:14px;max-width:560px;}
+  .strip{display:flex;height:34px;border-radius:12px;overflow:hidden;margin-top:20px;}
+  .strip i{flex:1;}
+  .lab{display:flex;justify-content:space-between;margin-top:8px;font-size:11px;color:var(--ink3);}
+  .go{margin-top:18px;font-size:13px;font-weight:600;color:var(--accent);letter-spacing:.04em;}
+  .card:hover .go{text-decoration:underline;}
+
+  .howto{margin-top:44px;padding-top:24px;border-top:1px solid var(--hair);
+    font-size:13px;color:var(--ink2);}
+  .howto b{color:var(--ink);}
+  .foot{margin-top:52px;font-size:11.5px;color:var(--ink3);text-align:center;letter-spacing:.08em;}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="top"><span>melody-in-heart-x · UI 重构</span><span>第二轮 · 2026.10</span></div>
+
+  <div class="hero">
+    <div class="kicker">ROUND 2 · 无隐喻 · 质感优先</div>
+    <h1>音乐就是音乐。<br>这次把预算全部花在质感上。</h1>
+    <p class="lead">上一轮的教训：刊物、仪器、星图——世界观太重，类比盖过了音乐本身。这一轮推翻重来：所有功能回归本名（曲库、队列、定时关闭、情绪标签），不做任何概念包装。新颖感改从三个正统的视觉维度来：形体、光色、排版。三个方向各占其一，深浅主题齐备。</p>
+  </div>
+
+  <div class="rule"></div>
+
+  <div class="cards">
+
+    <a class="card" href="01-warmsand/index.html">
+      <span class="tag">方向一 · 形体</span>
+      <h2>暖砂<small>圆润 · 柔光 · 陪伴感</small></h2>
+      <p>把「圆」做到极致：超大连续圆角、全胶囊控件、悬浮玻璃 Dock。层级不再靠描边和灰阶，靠多层暖光阴影——像傍晚阳光落在原木家具上。奶油与焦糖配色，一切都是软的。</p>
+      <div class="strip">
+        <i style="background:#F7F3EC"></i><i style="background:#FDFBF7"></i><i style="background:#F0C9A0"></i><i style="background:#E8843C"></i><i style="background:#5C4632"></i>
+      </div>
+      <div class="lab"><span>浅色 · 奶油 / 焦糖</span><span>深色 · 暖炭 / 琥珀</span></div>
+      <div class="strip" style="margin-top:6px">
+        <i style="background:#201C18"></i><i style="background:#2B2620"></i><i style="background:#3D3226"></i><i style="background:#F0A868"></i><i style="background:#F5EFE6"></i>
+      </div>
+      <div class="go">打开原型 →</div>
+    </a>
+
+    <a class="card" href="02-lumen/index.html">
+      <span class="tag">方向二 · 光色</span>
+      <h2>流光<small>颜色跟着歌走</small></h2>
+      <p>整个界面的颜色由正在播放的那首歌决定：从封面取色，晕开成环境光，控制层是磨砂玻璃。换一首歌，整个 App 换一种光。情绪标签直接映射光色——治愈是暖橙的光，静谧是青色的光。原型里可以点「换一首」实时体验。</p>
+      <div class="strip">
+        <i style="background:#F6F5F2"></i><i style="background:rgba(232,140,72,.35)"></i><i style="background:#E8843C"></i><i style="background:rgba(82,158,176,.4)"></i><i style="background:#529EB0"></i>
+      </div>
+      <div class="lab"><span>浅色 · 晨光透雾</span><span>深色 · 琥珀 / 青蓝 双光演示</span></div>
+      <div class="strip" style="margin-top:6px">
+        <i style="background:#17161B"></i><i style="background:rgba(232,140,72,.5)"></i><i style="background:rgba(82,158,176,.5)"></i><i style="background:rgba(176,110,200,.45)"></i><i style="background:#EDEBE6"></i>
+      </div>
+      <div class="go">打开原型 →</div>
+    </a>
+
+    <a class="card" href="03-whitespace/index.html">
+      <span class="tag">方向三 · 排版</span>
+      <h2>留白<small>大字 · 大间距 · 高级感</small></h2>
+      <p>不用卡片、不用边框、不用阴影，层级全部交给字号、字重和留白。48px 的页面标题、76px 的行距、一个陶土色只标「正在发生」的事。安静、昂贵、克制——音乐 App 界里的 Arc 与 Linear。</p>
+      <div class="strip">
+        <i style="background:#F5F4F1"></i><i style="background:#E9E7E2"></i><i style="background:#C4572E"></i><i style="background:#1A1917"></i>
+      </div>
+      <div class="lab"><span>浅色 · 暖灰纸 / 陶土</span><span>深色 · 暖黑 / 蜜橘</span></div>
+      <div class="strip" style="margin-top:6px">
+        <i style="background:#141312"></i><i style="background:#26241F"></i><i style="background:#E8763C"></i><i style="background:#ECEAE6"></i>
+      </div>
+      <div class="go">打开原型 →</div>
+    </a>
+
+  </div>
+
+  <div class="howto">
+    <b>看稿须知</b> —— 原型为 400 × 860 手机画布，右上角切换深浅主题。第一轮三案已归档至 <b>archive-round1/</b> 供对照，本轮与其无继承关系。原型中的歌曲、时长、统计数为占位内容，视觉与信息层级才是定稿对象。项目代码未做任何改动。
+  </div>
+
+  <div class="foot">ui-reconstruction-glm-5-3 · 第二轮 · 定稿前不动代码</div>
+
+</div>
+</body>
+</html>

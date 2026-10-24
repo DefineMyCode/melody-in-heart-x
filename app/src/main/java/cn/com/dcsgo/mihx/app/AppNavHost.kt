@@ -118,6 +118,8 @@ fun AppNavHost(
     playerViewModel: PlayerViewModel,
     permissionCoordinator: PermissionCoordinator,
     onShowQueue: () -> Unit,
+    /** 全库分组后的歌曲列表（AppRoot 算一次，这里复用——抽屉内的详情页也要用）。 */
+    sharedLibrarySongs: List<Song>,
     themeMode: ThemeMode,
     onThemeModeChange: (ThemeMode) -> Unit,
     themeVariant: ThemeVariant,
@@ -148,12 +150,9 @@ fun AppNavHost(
     // 失败歌曲手动标记等 suspend 回调的协程作用域
     val navCoroutineScope = rememberCoroutineScope()
 
-    // 全库分组结果 AppRoot 级共享：曲库/歌单详情/歌手/专辑/榜单/版本管理等路由
-    // 原先各自 remember(uiState.songs) 重复执行 O(n) 分组，1100+ 首曲库下切页即重算。
-    // 提升到 NavHost 层只算一次，按 songs 列表实例失效。
-    val sharedLibrarySongs = remember(uiState.songs) {
-        flatGroupedSongs(uiState, playerViewModel)
-    }
+    // 全库分组结果由 AppRoot 传入（曲库/歌单详情/歌手/专辑/榜单/版本管理 + 抽屉内详情共用）。
+    // 原先在 NavHost 层 remember(uiState.songs) 做 O(n) 分组；抽屉内也要渲染歌手/专辑详情，
+    // 故提升到 AppRoot 只算一次，按 songs 列表实例失效。
 
     // B 方案:启动页在本窗口生命周期内固定,不跟随 shell.startRoute 变化。
     // 背景:NavGraph.equals 是结构判等(相同 routes + 相同 startDestinationId),NavController.setGraph
@@ -359,6 +358,8 @@ fun AppNavHost(
                     isPlaying = uiState.isPlaying,
                 ),
                 actions = ArtistDetailRouteActions(
+                    // 返回 = 弹掉这一页。若这一页是从播放抽屉跳出来的，
+                    // AppRoot 监听到它离栈会自动把抽屉拉回来（见 AppRoot 的栈监听）。
                     onBack = navController::navigateUp,
                     onSongClick = { song, contextSongs ->
                         playerViewModel.playWith(song, SongPlaybackStrategy.scope(contextSongs))
@@ -396,6 +397,7 @@ fun AppNavHost(
                     isPlaying = uiState.isPlaying,
                 ),
                 actions = AlbumDetailRouteActions(
+                    // 同歌手页：返回 = 弹掉这一页，"回抽屉"由 AppRoot 的栈监听接管
                     onBack = navController::navigateUp,
                     onSongClick = { song, contextSongs ->
                         playerViewModel.playWith(song, SongPlaybackStrategy.scope(contextSongs))

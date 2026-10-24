@@ -7,6 +7,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -32,11 +33,24 @@ import androidx.core.view.WindowCompat
 import cn.com.dcsgo.mihx.app.permissions.rememberPermissionCoordinator
 import cn.com.dcsgo.mihx.app.player.NowPlayingSurface
 import cn.com.dcsgo.mihx.app.player.PlayerQueueSheetHost
+import cn.com.dcsgo.mihx.app.player.SongPlaybackStrategy
+import cn.com.dcsgo.mihx.app.player.playWith
 import cn.com.dcsgo.mihx.app.player.PlayerSheetHost
 import cn.com.dcsgo.mihx.app.playlist.PlaylistResumeViewModel
 import cn.com.dcsgo.mihx.app.theme.SettingsViewModel
 import cn.com.dcsgo.mihx.app.shell.AppShell
 import cn.com.dcsgo.mihx.app.shell.PlayerEntry
+import cn.com.dcsgo.mihx.app.shell.PlayerSheetContent
+import cn.com.dcsgo.mihx.app.shell.previousPlayerSheetContent
+import cn.com.dcsgo.mihx.feature.lyrics.LyricsRoute
+import cn.com.dcsgo.mihx.feature.lyrics.LyricsRouteActions
+import cn.com.dcsgo.mihx.feature.lyrics.LyricsRouteState
+import cn.com.dcsgo.mihx.feature.playlist.AlbumDetailRoute
+import cn.com.dcsgo.mihx.feature.playlist.AlbumDetailRouteActions
+import cn.com.dcsgo.mihx.feature.playlist.AlbumDetailRouteState
+import cn.com.dcsgo.mihx.feature.playlist.ArtistDetailRoute
+import cn.com.dcsgo.mihx.feature.playlist.ArtistDetailRouteActions
+import cn.com.dcsgo.mihx.feature.playlist.ArtistDetailRouteState
 import cn.com.dcsgo.mihx.app.shell.SkinShellResolver
 import cn.com.dcsgo.mihx.app.shell.SkinSwitcherStore
 import cn.com.dcsgo.mihx.app.shell.withGridLayout
@@ -88,13 +102,29 @@ fun AppRoot(
     }
     var showQueueSheet by remember { mutableStateOf(false) }
     // P3：全局播放抽屉的开合状态。
-    // 仅当骨架声明 playerEntry = SHEET 时可达；默认骨架为 TAB，此值恒为 false，
-    // 因此默认骨架的行为与改造前完全一致。
+    //
+    // ⚠️ 2026-10-24：抽屉**只是浮层**，不进导航栈。
+    // 曾经试过把它注册成一条 dialog 目的地（好处是底下的页面不被销毁），
+    // 但 dialog 目的地会在系统里生成一个**全屏透明窗口**，
+    // 而这个空窗口会把触摸全部吃掉——抽屉整个点不动（真机实测）。
+    // 而且它与抽屉窗口的 z-order 取决于两个 StateFlow 谁先到，不可控。
+    // 所以回到"浮层 + 手动接线"的形态：抽屉开关不碰导航栈，
+    // 底下的页面始终 composed（关抽屉瞬间、不闪白）。
     var showPlayerSheet by remember { mutableStateOf(false) }
-    // 抽屉内嵌的歌词(2026-09-30)——抽屉内点封面→切到歌词,关歌词→回抽屉。
-    // 仅在 SHEET 骨架可达；TAB 骨架下词条仍走 NavHost 独立路由 AppRoutes.LYRICS。
-    var showLyricsInSheet by remember { mutableStateOf(false) }
+    // 抽屉内当前展示的内容（播放页 / 歌词 / 歌手详情 / 专辑详情）。
+    //
+    // ⚠️ 2026-10-24：详情页也放在抽屉里（和歌词同一层机制），导航不碰主导航栈。
+    // 之前把详情页做成导航目的地，"从详情页返回 → 回抽屉"只能靠抢系统返回键，
+    // 抢不过 Navigation 2.8 的 NavHost 内部 PredictiveBackHandler（真机实测失败两次）。
+    var sheetContent by remember { mutableStateOf<PlayerSheetContent>(PlayerSheetContent.Player) }
     val uiState by playerViewModel.uiState.collectAsStateWithLifecycle()
+
+    // 全库分组结果 AppRoot 级共享：曲库/歌单详情/歌手/专辑/榜单/版本管理等路由
+    // 原先在 NavHost 层各自 remember(uiState.songs) 重复执行 O(n) 分组，1100+ 首曲库下切页即重算。
+    // 现在抽屉内也要渲染歌手/专辑详情，故提升到 AppRoot 只算一次，按 songs 列表实例失效。
+    val sharedLibrarySongs = remember(uiState.songs) {
+        flatGroupedSongs(uiState, playerViewModel)
+    }
 
     // 样式切换持久化：当前选中的内置 skinId + 播放面板封面尺寸/圆角的覆盖。
     // 用 SharedPreferences 单文件 (skin_switcher)；覆盖按 skinId 分键，仅当前选中的 id 有意义。
@@ -143,9 +173,8 @@ fun AppRoot(
         showQueueSheet = false
     }
 
+    // 监听返回栈：从抽屉跳出去的那一页**离栈**了 → 回到播放抽屉。
     if (uiState.isLoading) {
-        LoadingSplash()
-        return
     }
 
     LaunchedEffect(uiState.errorMessage) {
@@ -269,6 +298,8 @@ fun AppRoot(
                     // P3：抽屉型骨架没有"播放页 Tab"，迷你条点击的语义变成"拉起抽屉"；
                     // 默认骨架（TAB）保持原语义不变（导航到播放页）。
                     if (shell.playerEntry == PlayerEntry.SHEET) {
+                        // 从迷你条拉起抽屉：重置到播放页（可能上次停在详情/歌词）
+                        sheetContent = PlayerSheetContent.Player
                         showPlayerSheet = true
                     } else {
                         navController.navigate(AppRoutes.HOME) {
@@ -290,6 +321,8 @@ fun AppRoot(
                     playerViewModel = playerViewModel,
                     permissionCoordinator = permissionCoordinator,
                     onShowQueue = { showQueueSheet = true },
+                    // 全库分组（抽屉内的歌手/专辑详情也要用，故在 AppRoot 算一次）
+                    sharedLibrarySongs = sharedLibrarySongs,
                     themeMode = themeMode,
                     onThemeModeChange = settingsViewModel::setThemeMode,
                     themeVariant = themeVariant,
@@ -319,56 +352,131 @@ fun AppRoot(
             }
 
             // P3：全局播放抽屉。仅当骨架声明 playerEntry = SHEET 时可能为 true。
-            // 内容与 Tab 形态共用同一个 NowPlayingSurface，避免两套实现漂移。
             //
-            // 2026-09-30：抽屉内嵌歌词——onDismiss 优先级：先关抽屉内歌词，再关抽屉；
-            // 点封面不再 jump 独立词条路由，避免"关抽屉再跳页"的两段式跳转。
+            // 抽屉是**全局浮层**，内部自己维护一层内容栈（播放页 / 歌词 / 歌手 / 专辑，
+            // 见 `PlayerSheetContent`）——导航**完全不碰主导航栈**：
+            //  - 系统返回键由抽屉自己的窗口消费 → onDismiss → 退回上一层内容；
+            //  - 页面内返回按钮走同一套内容切换；
+            // 两条路天然一致，也不存在与 NavHost 的 PredictiveBackHandler 抢返回键的问题
+            //（2026-10-24 真机连踩两次，见 P3 文档的"弯路"一节）。
             PlayerSheetHost(
                 isShown = showPlayerSheet,
                 // sheet 内挂焦点协调的 ToastHost:只让聚焦窗口画,不双 toast 也不被遮(2026-10-01)。
                 toastHost = toastHost,
-                // 关抽屉时优先关词条：这样下滑/返回只会"卸掉一层"而不是直接退出。
+                // 返回：先退一层内容（详情 → 播放页），退到底才关抽屉。
                 onDismiss = {
-                    if (showLyricsInSheet) {
-                        showLyricsInSheet = false
+                    val previous = previousPlayerSheetContent(sheetContent)
+                    if (previous != null) {
+                        sheetContent = previous
                     } else {
                         showPlayerSheet = false
                     }
                 },
-                showLyrics = showLyricsInSheet,
-                onLyricsBack = { showLyricsInSheet = false },
-                lyricsState = cn.com.dcsgo.mihx.feature.lyrics.LyricsRouteState(
-                    currentSong = uiState.currentSong,
-                    currentPositionMs = playerViewModel.positionMs.collectAsStateWithLifecycle().value,
-                    isPlaying = uiState.isPlaying,
-                    fontScale = lyricFontScale,
-                ),
-                lyricsActions = cn.com.dcsgo.mihx.feature.lyrics.LyricsRouteActions(
-                    onBackClick = { showLyricsInSheet = false },
-                    onSeekTo = playerViewModel::seekTo,
-                    onFontScaleChange = settingsViewModel::setLyricFontScale,
-                ),
-                loadLyrics = mediaMetadataViewModel::lyricsFor,
+                // 系统返回键：抽屉内还有上一层（详情/歌词）时，退回上一层而不是关抽屉。
+                // 接线在 PlayerSheetHost 的**内容里**（它比 M3 自己那条注册得晚 → 优先级更高）。
+                hasInnerContent = previousPlayerSheetContent(sheetContent) != null,
+                onBackToPreviousContent = {
+                    sheetContent = previousPlayerSheetContent(sheetContent)
+                        ?: PlayerSheetContent.Player
+                },
             ) {
-                NowPlayingSurface(
-                    playerViewModel = playerViewModel,
-                    uiState = uiState,
-                    onShowQueue = { showQueueSheet = true },
-                    loadSongInfo = mediaMetadataViewModel::songInfo,
-                    showToast = toastHost::showToast,
-                    deleteSongWithToast = ::deleteSongWithToast,
-                    playlistResumeViewModel = playlistResumeViewModel,
-                    topContentPaddingDp = 16.dp,
-                    onNavigateToLyrics = { showLyricsInSheet = true },
-                    onNavigateToArtist = { artistName ->
-                        showPlayerSheet = false
-                        navController.navigate(AppRoutes.artistDetail(artistName))
-                    },
-                    onNavigateToAlbum = { albumName ->
-                        showPlayerSheet = false
-                        navController.navigate(AppRoutes.albumDetail(albumName))
-                    },
-                )
+                when (val page = sheetContent) {
+                    is PlayerSheetContent.Player -> NowPlayingSurface(
+                        playerViewModel = playerViewModel,
+                        uiState = uiState,
+                        onShowQueue = { showQueueSheet = true },
+                        loadSongInfo = mediaMetadataViewModel::songInfo,
+                        showToast = toastHost::showToast,
+                        deleteSongWithToast = ::deleteSongWithToast,
+                        playlistResumeViewModel = playlistResumeViewModel,
+                        topContentPaddingDp = 16.dp,
+                        onNavigateToLyrics = { sheetContent = PlayerSheetContent.Lyrics },
+                        onNavigateToArtist = { artistName ->
+                            sheetContent = PlayerSheetContent.Artist(artistName)
+                        },
+                        onNavigateToAlbum = { albumName ->
+                            sheetContent = PlayerSheetContent.Album(albumName)
+                        },
+                    )
+
+                    is PlayerSheetContent.Lyrics -> LyricsRoute(
+                        state = LyricsRouteState(
+                            currentSong = uiState.currentSong,
+                            currentPositionMs = playerViewModel.positionMs
+                                .collectAsStateWithLifecycle().value,
+                            isPlaying = uiState.isPlaying,
+                            fontScale = lyricFontScale,
+                        ),
+                        actions = LyricsRouteActions(
+                            onBackClick = { sheetContent = PlayerSheetContent.Player },
+                            onSeekTo = playerViewModel::seekTo,
+                            onFontScaleChange = settingsViewModel::setLyricFontScale,
+                        ),
+                        loadLyrics = mediaMetadataViewModel::lyricsFor,
+                    )
+
+                    is PlayerSheetContent.Artist -> ArtistDetailRoute(
+                        state = ArtistDetailRouteState(
+                            artistName = page.name,
+                            songs = sharedLibrarySongs,
+                            playlists = uiState.playlists,
+                            currentSong = uiState.currentSong,
+                            isPlaying = uiState.isPlaying,
+                        ),
+                        actions = ArtistDetailRouteActions(
+                            onBack = { sheetContent = PlayerSheetContent.Player },
+                            onSongClick = { song, contextSongs ->
+                                playerViewModel.playWith(song, SongPlaybackStrategy.scope(contextSongs))
+                                playlistResumeViewModel.switchSource(null, uiState.currentSong?.id)
+                            },
+                            onAlbumClick = { albumName ->
+                                sheetContent = PlayerSheetContent.Album(albumName)
+                            },
+                            onAddSongToPlaylist = { song, playlist ->
+                                playerViewModel.addSongToPlaylist(playlist.id, song.id)
+                            },
+                            onAddSongsToPlaylist = { songs, playlist ->
+                                songs.count { song ->
+                                    playerViewModel.addSongToPlaylist(playlist.id, song.id)
+                                }
+                            },
+                            onCreatePlaylistWithResult = playerViewModel::createPlaylist,
+                        ),
+                        loadSongInfo = mediaMetadataViewModel::songInfo,
+                        showToast = toastHost::showToast,
+                    )
+
+                    is PlayerSheetContent.Album -> AlbumDetailRoute(
+                        state = AlbumDetailRouteState(
+                            albumName = page.name,
+                            songs = sharedLibrarySongs,
+                            playlists = uiState.playlists,
+                            currentSong = uiState.currentSong,
+                            isPlaying = uiState.isPlaying,
+                        ),
+                        actions = AlbumDetailRouteActions(
+                            onBack = { sheetContent = PlayerSheetContent.Player },
+                            onSongClick = { song, contextSongs ->
+                                playerViewModel.playWith(song, SongPlaybackStrategy.scope(contextSongs))
+                                playlistResumeViewModel.switchSource(null, uiState.currentSong?.id)
+                            },
+                            onAlbumClick = { albumName ->
+                                sheetContent = PlayerSheetContent.Album(albumName)
+                            },
+                            onAddSongToPlaylist = { song, playlist ->
+                                playerViewModel.addSongToPlaylist(playlist.id, song.id)
+                            },
+                            onAddSongsToPlaylist = { songs, playlist ->
+                                songs.count { song ->
+                                    playerViewModel.addSongToPlaylist(playlist.id, song.id)
+                                }
+                            },
+                            onCreatePlaylistWithResult = playerViewModel::createPlaylist,
+                        ),
+                        loadSongInfo = mediaMetadataViewModel::songInfo,
+                        showToast = toastHost::showToast,
+                    )
+                }
             }
 
             PlayerQueueSheetHost(

@@ -161,7 +161,89 @@ adb shell "run-as cn.com.dcsgo.mihx.debug sh -c 'printf \"<?xml version=\\x271.0
   `SheetState` 的初始值，收益不明确且增加状态机复杂度，留到有明确诉求时再说。
 
 
-## 六、下一步（P4）
+## 六、2026-10-24 追加：抽屉 → 歌手/专辑 → 返回 = 回到播放抽屉
+
+### 1. 最终形态：详情页也放在**抽屉里**（和歌词页同一层机制）
+
+抽屉是**全局浮层**，内部自己维护一层内容栈（`PlayerSheetContent`）：
+
+| 内容 | 说明 |
+|---|---|
+| `Player` | 播放页（抽屉首页） |
+| `Lyrics` | 歌词页 |
+| `Artist(name)` | 歌手详情 |
+| `Album(name)` | 专辑详情 |
+
+导航**完全不碰主导航栈**：
+
+- 抽屉里点歌手 → `sheetContent = Artist(name)`（抽屉不关、不卸载）；
+- 抽屉里点专辑 → `sheetContent = Album(name)`；
+- 抽屉里点封面 → `sheetContent = Lyrics`；
+- 返回（系统键 / 页面内返回按钮）→ 退回 `Player`；
+- 再返回 → 关抽屉。
+
+好处：
+
+- **系统返回与页面内返回天然一致**——两者都只切抽屉内的内容栈；
+- 抽屉**不卸载** → 不会重播"滑起"动画（用户 2026-10-24 反馈"重新拉起抽屉看着不舒服"）；
+- 主导航栈**完全不动** → 底下的曲库页始终 composed，关抽屉瞬间、不闪白。
+
+### 2. ⚠️ 走过的四条弯路（都真机翻车，勿重蹈）
+
+**弯路一：把抽屉注册成导航里的 dialog 目的地。**
+好处是底下的页面不被销毁。但 dialog 目的地会在系统里生成一个**窗口**——
+空内容 + `usePlatformDefaultWidth=false` = 一个**全屏透明窗口**，它把触摸全部吃掉，
+**抽屉整个点不动**（真机实测）。而且它与抽屉窗口的 z-order 取决于两个 StateFlow 谁先到，
+**不可控**。
+
+> 结论：**导航目的地 = 页面**，不是浮层。抽屉是浮层，就该用浮层的方式接线。
+
+**弯路二：用 M3 的 `rememberStandardBottomSheetState` 造带初值的状态。**
+本项目 M3 1.4.0 上：`skipHiddenState` 默认 **true**，而 `initialValue = Hidden` 会让
+`SheetState` 构造器的 `require` 直接失败 → **IllegalArgumentException 崩溃**；
+而且它把 `PartiallyExpanded` 放进锚点，`SheetState.show()` 会停在**半展开**。
+
+> 正解：自己构造 `SheetState`（公开构造器，参数与内部 `rememberSheetState` 一致）：
+> `skipPartiallyExpanded = true` + `skipHiddenState = false` + `initialValue = Hidden`。
+> `PlayerSheetStateTest` 用纯 JVM 单测锁住了不再抛异常。
+
+**弯路三：拿路由**模式**去比**填充后**的路由。**
+Navigation 的 `destination.route` 给的是**模式**（`artist/{artistName}`），
+而 `navigate()` 用的是**填充后**的（`artist/周杰伦`）——两者永远不相等。
+
+**弯路四：用 `BackHandler` 抢系统返回键 / 监听 entry 的 `ON_DESTROY`。**
+
+  补充（关键）：**主 window 挂 `BackHandler` 根本没机会收到这个键**——焦点在 sheet 的
+  dialog window 上，按键被那个窗口消费掉了。要抢必须在**抽屉内容里**注册（同一窗口、
+  组合更晚 → 同优先级内 LIFO 优先）。
+
+  而 M3 自己那条回调在 **dialog 初始化时**就注册（`ModalBottomSheet.android.kt`：
+  `onBackPressedDispatcher.addCallback(..., isEnabled = properties.shouldDismissOnBackPress)`，
+  默认 true）→ 它比内容组合更早 → **它先执行** → 先 `sheetState.hide()`（抽屉滑走）
+  才回调 `onDismissRequest` → 表现为"系统返回 = 关抽屉"，而页面内返回按钮正常
+  （它不走这条路）。
+本项目是 `activity-compose 1.12` + `navigation-compose 2.8.5`：返回走**新的
+`androidx.navigationevent` 通道**，规则是「**按优先级，同优先级内后注册的先执行**」。
+而 Navigation 2.8 的 `NavHost` 内部注册了 `PredictiveBackHandler(currentBackStack.size > 1)`，
+且它在**栈变化时会重新注册**（于是变成"最后一个"→ 优先）——把 `BackHandler` 挪到
+NavHost 之后注册也**抢不过它**。
+监听 `ON_DESTROY` 同样不行：弹栈时若转场动画还在跑，被弹的 entry 只走到 `CREATED`
+（`NavControllerImpl`：`if (!transitioning) DESTROYED else CREATED`），
+`ON_DESTROY` 在组合还活着时不会触发。
+
+表现很有辨识度：**系统返回没反应、页面内返回按钮正常**（两者是不同链路）。
+
+> 正解：**不抢，也不监听**——把详情页放进抽屉，导航不碰主导航栈（见 §一）。
+
+### 3. 未做真机验证
+
+以上改动只坏一条交互路径的话单测发现不了（见 §二·4 的教训），需真机逐条验：
+抽屉→歌手→**系统返回键**、抽屉→歌手→**页面内返回按钮**、抽屉→歌手→歌手页点专辑→返回两级、
+抽屉内点歌词→返回、抽屉→歌手后切 Tab、抽屉开着按系统键。
+
+---
+
+## 七、下一步（P4）
 
 P4 = L2 页面分区化 + L3 行模板/网格 + L4 播放页形态可配。
 

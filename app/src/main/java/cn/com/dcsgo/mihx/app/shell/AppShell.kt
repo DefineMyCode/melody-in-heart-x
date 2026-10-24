@@ -174,6 +174,7 @@ const val PLAYER_TAB_ID: String = "tab-player"
 /** 兜底播放页路由字面值。 */
 private const val DEFAULT_PLAYER_ROUTE = "home"
 
+
 /**
  * 迷你播放条是否应显示。**纯策略函数，可在 JVM 上直接单测。**
  *
@@ -184,6 +185,9 @@ private const val DEFAULT_PLAYER_ROUTE = "home"
  * 但在"播放页不在底栏"的骨架（抽屉型）下，只有按路由判定才能保持
  * "在播放页隐藏迷你条"这一既有行为——按 Tab 判定会因找不到而兜底到 home，
  * 恰好在**其他页面**误判为"在播放页"，把迷你条错误隐藏掉。
+ *
+ * 抽屉（SHEET 形态的播放页）不是路由而是浮层，它的迷你条让位由
+ * `AppScaffold` 的 `miniPlayerHiddenBySheet` 参数负责（瞬时 UI 状态，不进骨架）。
  */
 fun shouldShowMiniPlayer(
     shell: AppShell,

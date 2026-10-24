@@ -16,6 +16,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -415,67 +416,75 @@ fun AppRoot(
                         loadLyrics = mediaMetadataViewModel::lyricsFor,
                     )
 
-                    is PlayerSheetContent.Artist -> ArtistDetailRoute(
-                        state = ArtistDetailRouteState(
-                            artistName = page.name,
-                            songs = sharedLibrarySongs,
-                            playlists = uiState.playlists,
-                            currentSong = uiState.currentSong,
-                            isPlaying = uiState.isPlaying,
-                        ),
-                        actions = ArtistDetailRouteActions(
-                            onBack = { sheetContent = PlayerSheetContent.Player },
-                            onSongClick = { song, contextSongs ->
-                                playerViewModel.playWith(song, SongPlaybackStrategy.scope(contextSongs))
-                                playlistResumeViewModel.switchSource(null, uiState.currentSong?.id)
-                            },
-                            onAlbumClick = { albumName ->
-                                sheetContent = PlayerSheetContent.Album(albumName)
-                            },
-                            onAddSongToPlaylist = { song, playlist ->
-                                playerViewModel.addSongToPlaylist(playlist.id, song.id)
-                            },
-                            onAddSongsToPlaylist = { songs, playlist ->
-                                songs.count { song ->
+                    // ⚠️ `key(名字)`：详情页内部的分段选择器是 rememberSaveable，
+                    // 抽屉里所有详情页组合在同一个槽位 → 不加 key 的话，
+                    // 从专辑 A 切到专辑 B 会**沿用** A 的分段（停在"其他专辑"而不是"歌曲"）。
+                    // 加 key 后换页即换组合槽，保存态自然重置 ✓
+                    is PlayerSheetContent.Artist -> key(page.name) {
+                        ArtistDetailRoute(
+                            state = ArtistDetailRouteState(
+                                artistName = page.name,
+                                songs = sharedLibrarySongs,
+                                playlists = uiState.playlists,
+                                currentSong = uiState.currentSong,
+                                isPlaying = uiState.isPlaying,
+                            ),
+                            actions = ArtistDetailRouteActions(
+                                onBack = { sheetContent = PlayerSheetContent.Player },
+                                onSongClick = { song, contextSongs ->
+                                    playerViewModel.playWith(song, SongPlaybackStrategy.scope(contextSongs))
+                                    playlistResumeViewModel.switchSource(null, uiState.currentSong?.id)
+                                },
+                                onAlbumClick = { albumName ->
+                                    sheetContent = PlayerSheetContent.Album(albumName)
+                                },
+                                onAddSongToPlaylist = { song, playlist ->
                                     playerViewModel.addSongToPlaylist(playlist.id, song.id)
-                                }
-                            },
-                            onCreatePlaylistWithResult = playerViewModel::createPlaylist,
-                        ),
-                        loadSongInfo = mediaMetadataViewModel::songInfo,
-                        showToast = toastHost::showToast,
-                    )
+                                },
+                                onAddSongsToPlaylist = { songs, playlist ->
+                                    songs.count { song ->
+                                        playerViewModel.addSongToPlaylist(playlist.id, song.id)
+                                    }
+                                },
+                                onCreatePlaylistWithResult = playerViewModel::createPlaylist,
+                            ),
+                            loadSongInfo = mediaMetadataViewModel::songInfo,
+                            showToast = toastHost::showToast,
+                        )
+                    }
 
-                    is PlayerSheetContent.Album -> AlbumDetailRoute(
-                        state = AlbumDetailRouteState(
-                            albumName = page.name,
-                            songs = sharedLibrarySongs,
-                            playlists = uiState.playlists,
-                            currentSong = uiState.currentSong,
-                            isPlaying = uiState.isPlaying,
-                        ),
-                        actions = AlbumDetailRouteActions(
-                            onBack = { sheetContent = PlayerSheetContent.Player },
-                            onSongClick = { song, contextSongs ->
-                                playerViewModel.playWith(song, SongPlaybackStrategy.scope(contextSongs))
-                                playlistResumeViewModel.switchSource(null, uiState.currentSong?.id)
-                            },
-                            onAlbumClick = { albumName ->
-                                sheetContent = PlayerSheetContent.Album(albumName)
-                            },
-                            onAddSongToPlaylist = { song, playlist ->
-                                playerViewModel.addSongToPlaylist(playlist.id, song.id)
-                            },
-                            onAddSongsToPlaylist = { songs, playlist ->
-                                songs.count { song ->
+                    is PlayerSheetContent.Album -> key(page.name) {
+                        AlbumDetailRoute(
+                            state = AlbumDetailRouteState(
+                                albumName = page.name,
+                                songs = sharedLibrarySongs,
+                                playlists = uiState.playlists,
+                                currentSong = uiState.currentSong,
+                                isPlaying = uiState.isPlaying,
+                            ),
+                            actions = AlbumDetailRouteActions(
+                                onBack = { sheetContent = PlayerSheetContent.Player },
+                                onSongClick = { song, contextSongs ->
+                                    playerViewModel.playWith(song, SongPlaybackStrategy.scope(contextSongs))
+                                    playlistResumeViewModel.switchSource(null, uiState.currentSong?.id)
+                                },
+                                onAlbumClick = { albumName ->
+                                    sheetContent = PlayerSheetContent.Album(albumName)
+                                },
+                                onAddSongToPlaylist = { song, playlist ->
                                     playerViewModel.addSongToPlaylist(playlist.id, song.id)
-                                }
-                            },
-                            onCreatePlaylistWithResult = playerViewModel::createPlaylist,
-                        ),
-                        loadSongInfo = mediaMetadataViewModel::songInfo,
-                        showToast = toastHost::showToast,
-                    )
+                                },
+                                onAddSongsToPlaylist = { songs, playlist ->
+                                    songs.count { song ->
+                                        playerViewModel.addSongToPlaylist(playlist.id, song.id)
+                                    }
+                                },
+                                onCreatePlaylistWithResult = playerViewModel::createPlaylist,
+                            ),
+                            loadSongInfo = mediaMetadataViewModel::songInfo,
+                            showToast = toastHost::showToast,
+                        )
+                    }
                 }
             }
 

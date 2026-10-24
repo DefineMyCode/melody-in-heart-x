@@ -2,24 +2,21 @@ package cn.com.dcsgo.mihx.feature.settings
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
-import cn.com.dcsgo.mihx.core.model.ScreenOrientationMode
-import cn.com.dcsgo.mihx.core.model.ThemeMode
-import cn.com.dcsgo.mihx.core.model.ThemeVariant
 
+/**
+ * 设置页状态。
+ *
+ * 2026-10-24：主题 / 主题色 / 屏幕方向**移出**设置页（搬到「样式/主题切换」页，
+ * 那边才是外观相关的地方），这里只剩播放行为与权限相关项。
+ */
 @Stable
 data class SettingsRouteState(
-    val themeMode: ThemeMode,
-    val themeVariant: ThemeVariant,
-    val screenOrientationMode: ScreenOrientationMode,
     val globalUniformRandomEnabled: Boolean,
     val dailyListeningGoalMinutes: Int,
 )
 
 data class SettingsRouteActions(
     val onBack: () -> Unit,
-    val onThemeModeChange: (ThemeMode) -> Unit,
-    val onThemeVariantChange: (ThemeVariant) -> Unit,
-    val onScreenOrientationModeChange: (ScreenOrientationMode) -> Unit,
     val onGlobalUniformRandomEnabledChange: (Boolean) -> Unit,
     val onDailyListeningGoalMinutesChange: (Int) -> Unit,
     val onRequestBluetoothPermission: () -> Unit,
@@ -33,12 +30,6 @@ fun SettingsRoute(
 ) {
     SettingsScreen(
         onBack = actions.onBack,
-        themeMode = state.themeMode,
-        onThemeModeChange = actions.onThemeModeChange,
-        themeVariant = state.themeVariant,
-        onThemeVariantChange = actions.onThemeVariantChange,
-        screenOrientationMode = state.screenOrientationMode,
-        onScreenOrientationModeChange = actions.onScreenOrientationModeChange,
         globalUniformRandomEnabled = state.globalUniformRandomEnabled,
         onGlobalUniformRandomEnabledChange = actions.onGlobalUniformRandomEnabledChange,
         dailyListeningGoalMinutes = state.dailyListeningGoalMinutes,

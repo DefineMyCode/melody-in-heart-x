@@ -47,21 +47,11 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import cn.com.dcsgo.mihx.core.model.ThemeMode
-import cn.com.dcsgo.mihx.core.model.ThemeVariant
-import cn.com.dcsgo.mihx.core.model.ScreenOrientationMode
-import cn.com.dcsgo.mihx.ui.theme.themeSwatchColors
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
     onBack: () -> Unit,
-    themeMode: ThemeMode,
-    onThemeModeChange: (ThemeMode) -> Unit,
-    themeVariant: ThemeVariant,
-    onThemeVariantChange: (ThemeVariant) -> Unit,
-    screenOrientationMode: ScreenOrientationMode,
-    onScreenOrientationModeChange: (ScreenOrientationMode) -> Unit,
     globalUniformRandomEnabled: Boolean,
     onGlobalUniformRandomEnabledChange: (Boolean) -> Unit,
     dailyListeningGoalMinutes: Int,
@@ -98,16 +88,6 @@ fun SettingsScreen(
                     .verticalScroll(rememberScrollState())
                     .padding(horizontal = 20.dp, vertical = 16.dp),
             ) {
-                SettingsThemeSelector(
-                    themeMode = themeMode,
-                    onThemeModeChange = onThemeModeChange,
-                    themeVariant = themeVariant,
-                    onThemeVariantChange = onThemeVariantChange,
-                )
-                SettingsOrientationSelector(
-                    screenOrientationMode = screenOrientationMode,
-                    onScreenOrientationModeChange = onScreenOrientationModeChange,
-                )
                 SettingsSwitchRow(
                     title = "全局均匀随机",
                     description = "随机时优先选择原始播放次数较少的歌曲",
@@ -135,208 +115,6 @@ fun SettingsScreen(
                 )
             }
         }
-    }
-}
-
-@Composable
-private fun SettingsThemeSelector(
-    themeMode: ThemeMode,
-    onThemeModeChange: (ThemeMode) -> Unit,
-    themeVariant: ThemeVariant,
-    onThemeVariantChange: (ThemeVariant) -> Unit,
-) {
-    Column(modifier = Modifier.padding(vertical = 12.dp)) {
-        Text(
-            text = "主题",
-            style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.onSurface,
-        )
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 8.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            ThemeMode.entries.forEach { mode ->
-                ThemeModeChip(
-                    mode = mode,
-                    selected = mode == themeMode,
-                    modifier = Modifier.weight(1f),
-                    onClick = { onThemeModeChange(mode) },
-                )
-            }
-        }
-        Text(
-            text = "主题色",
-            style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.padding(top = 18.dp),
-        )
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 8.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            ThemeVariant.entries.forEach { variant ->
-                ThemeVariantCard(
-                    variant = variant,
-                    selected = variant == themeVariant,
-                    modifier = Modifier.weight(1f),
-                    onClick = { onThemeVariantChange(variant) },
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun SettingsOrientationSelector(
-    screenOrientationMode: ScreenOrientationMode,
-    onScreenOrientationModeChange: (ScreenOrientationMode) -> Unit,
-) {
-    Column(modifier = Modifier.padding(vertical = 12.dp)) {
-        Text(
-            text = "屏幕方向",
-            style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.onSurface,
-        )
-        Text(
-            text = "自动旋转开 = 跟随系统；也可手动固定为横屏或竖屏",
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 8.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            ScreenOrientationMode.entries.forEach { mode ->
-                val selected = mode == screenOrientationMode
-                val containerColor = if (selected) {
-                    MaterialTheme.colorScheme.primary
-                } else {
-                    MaterialTheme.colorScheme.surfaceVariant
-                }
-                val contentColor = if (selected) {
-                    MaterialTheme.colorScheme.onPrimary
-                } else {
-                    MaterialTheme.colorScheme.onSurfaceVariant
-                }
-                Row(
-                    modifier = Modifier
-                        .weight(1f)
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(containerColor)
-                        .clickable { onScreenOrientationModeChange(mode) }
-                        .padding(vertical = 10.dp),
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text(
-                        text = mode.label,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = contentColor,
-                        fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun ThemeVariantCard(
-    variant: ThemeVariant,
-    selected: Boolean,
-    modifier: Modifier = Modifier,
-    onClick: () -> Unit,
-) {
-    // m-11（评审 2026-10-15）：色卡由 core:ui 主题令牌派生（单一事实来源），
-    // 移除 24 处硬编码 Color(0x...)，主题调整时色卡自动跟随
-    val swatchColors = themeSwatchColors(variant)
-    // 对齐设计系统 §5.8 颜色选择卡：bg1 底 + 选中态 accent 描边 + 对勾
-    Column(
-        modifier = modifier
-            .clip(RoundedCornerShape(12.dp))
-            .background(MaterialTheme.colorScheme.surfaceContainerLowest)
-            .border(
-                width = 1.dp,
-                color = if (selected) MaterialTheme.colorScheme.primary
-                else MaterialTheme.colorScheme.outlineVariant,
-                shape = RoundedCornerShape(12.dp),
-            )
-            .clickable(onClick = onClick)
-            .padding(10.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            swatchColors.forEach { color ->
-                Box(
-                    modifier = Modifier
-                        .size(18.dp)
-                        .clip(RoundedCornerShape(5.dp))
-                        .background(color),
-                )
-            }
-        }
-        Spacer(modifier = Modifier.height(8.dp))
-        Text(
-            text = variant.label,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurface,
-            fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
-        )
-        if (selected) {
-            Icon(
-                imageVector = Icons.Default.Check,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier
-                    .padding(top = 4.dp)
-                    .size(16.dp),
-            )
-        }
-    }
-}
-
-@Composable
-private fun ThemeModeChip(
-    mode: ThemeMode,
-    selected: Boolean,
-    modifier: Modifier = Modifier,
-    onClick: () -> Unit,
-) {
-    // 对齐设计系统 §5.3 分段控件：选中项 accent 底 + onAccent 文字
-    val containerColor = if (selected) {
-        MaterialTheme.colorScheme.primary
-    } else {
-        MaterialTheme.colorScheme.surfaceVariant
-    }
-    val contentColor = if (selected) {
-        MaterialTheme.colorScheme.onPrimary
-    } else {
-        MaterialTheme.colorScheme.onSurfaceVariant
-    }
-    Row(
-        modifier = modifier
-            .clip(RoundedCornerShape(12.dp))
-            .background(containerColor)
-            .clickable(onClick = onClick)
-            .padding(vertical = 10.dp),
-        horizontalArrangement = Arrangement.Center,
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Text(
-            text = mode.label,
-            style = MaterialTheme.typography.bodyMedium,
-            color = contentColor,
-            fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
-        )
     }
 }
 

@@ -171,7 +171,7 @@ fun SkinSwitcherSection(
             ) {
                 Icon(
                     imageVector = Icons.Filled.Palette,
-                    contentDescription = "样式切换",
+                    contentDescription = "样式/主题切换",
                     modifier = Modifier.size(22.dp),
                     tint = MaterialTheme.colorScheme.primary,
                 )
@@ -179,14 +179,14 @@ fun SkinSwitcherSection(
             Spacer(modifier = Modifier.width(12.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = "样式切换",
+                    text = "样式/主题切换",
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface,
                 )
                 Text(
                     text = currentSkinName?.let { "当前: $it" }
-                        ?: "切换内置样式 / 调节播放面板尺寸",
+                        ?: "切换内置样式 / 主题 / 屏幕方向",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 1,

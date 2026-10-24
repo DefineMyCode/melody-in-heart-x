@@ -489,6 +489,39 @@ fun AppNavHost(
                 onPanelCoverCornerChange = onPanelCoverCornerChange,
                 gridLayoutEnabled = gridLayoutEnabled,
                 onGridLayoutChange = onGridLayoutChange,
+                // 2026-10-24：主题 / 主题色 / 屏幕方向从设置页搬来（外观相关放一起）
+                themeMode = themeMode,
+                onThemeModeChange = { mode ->
+                    onThemeModeChange(mode)
+                    showToast(
+                        when (mode) {
+                            ThemeMode.SYSTEM -> "已切换为跟随系统主题"
+                            ThemeMode.LIGHT -> "已切换为浅色主题"
+                            ThemeMode.DARK -> "已切换为深色主题"
+                        },
+                    )
+                },
+                themeVariant = themeVariant,
+                onThemeVariantChange = { variant ->
+                    onThemeVariantChange(variant)
+                    showToast(
+                        when (variant) {
+                            ThemeVariant.MONO -> "已切换为墨色主题"
+                            ThemeVariant.VERMILION -> "已切换为朱砂 · 心有乐章主题"
+                            ThemeVariant.INDIGO -> "已切换为靛蓝静夜主题"
+                            ThemeVariant.SAGE -> "已切换为苔藓森野主题"
+                            ThemeVariant.AMBER -> "已切换为琥珀暖忆主题"
+                            ThemeVariant.SKY -> "已切换为天空澄明主题"
+                            ThemeVariant.FRESH -> "已切换为新叶青翠主题"
+                            ThemeVariant.SUNRISE -> "已切换为晨光霞粉主题"
+                        },
+                    )
+                },
+                screenOrientationMode = screenOrientationMode,
+                onScreenOrientationModeChange = { mode ->
+                    onScreenOrientationModeChange(mode)
+                    showToast("屏幕方向：${mode.label}")
+                },
                 onBack = { navController.navigateUp() },
             )
         }
@@ -896,45 +929,11 @@ fun AppNavHost(
         composable(AppRoutes.SETTINGS) {
             SettingsRoute(
                 state = SettingsRouteState(
-                    themeMode = themeMode,
-                    themeVariant = themeVariant,
-                    screenOrientationMode = screenOrientationMode,
                     globalUniformRandomEnabled = uiState.globalUniformRandomEnabled,
                     dailyListeningGoalMinutes = uiState.dailyListeningGoalMinutes,
                 ),
                 actions = SettingsRouteActions(
                     onBack = navController::navigateUp,
-                    onThemeModeChange = { mode ->
-                        onThemeModeChange(mode)
-                        showToast(
-                            when (mode) {
-                                ThemeMode.SYSTEM -> "已切换为跟随系统主题"
-                                ThemeMode.LIGHT -> "已切换为浅色主题"
-                                ThemeMode.DARK -> "已切换为深色主题"
-                            },
-                        )
-                    },
-                    onThemeVariantChange = { variant ->
-                        onThemeVariantChange(variant)
-                        showToast(
-                            when (variant) {
-                                ThemeVariant.MONO -> "已切换为墨色主题"
-                                ThemeVariant.VERMILION -> "已切换为朱砂 · 心有乐章主题"
-                                ThemeVariant.INDIGO -> "已切换为靛蓝静夜主题"
-                                ThemeVariant.SAGE -> "已切换为苔藓森野主题"
-                                ThemeVariant.AMBER -> "已切换为琥珀暖忆主题"
-                                ThemeVariant.SKY -> "已切换为天空澄明主题"
-                                ThemeVariant.FRESH -> "已切换为新叶青翠主题"
-                                ThemeVariant.SUNRISE -> "已切换为晨光霞粉主题"
-                            },
-                        )
-                    },
-                    onScreenOrientationModeChange = { mode ->
-                        onScreenOrientationModeChange(mode)
-                        showToast(
-                            "屏幕方向：${mode.label}",
-                        )
-                    },
                     onGlobalUniformRandomEnabledChange = { enabled ->
                         playerViewModel.setGlobalUniformRandomEnabled(enabled)
                         showToast(if (enabled) "已开启全局均匀随机" else "已关闭全局均匀随机")

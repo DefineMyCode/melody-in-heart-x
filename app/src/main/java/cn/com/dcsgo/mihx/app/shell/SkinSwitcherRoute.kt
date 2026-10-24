@@ -2,6 +2,7 @@ package cn.com.dcsgo.mihx.app.shell
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -13,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
@@ -36,13 +38,18 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import cn.com.dcsgo.mihx.core.model.ScreenOrientationMode
+import cn.com.dcsgo.mihx.core.model.ThemeMode
+import cn.com.dcsgo.mihx.core.model.ThemeVariant
 import cn.com.dcsgo.mihx.ui.theme.PlaybackPanelTokens
+import cn.com.dcsgo.mihx.ui.theme.themeSwatchColors
 
 /**
- * 「样式切换」独立页（2026-09-30 用户拍板，替代 P5 用户自定义皮肤）。
+ * 「样式/主题切换」独立页（2026-09-30 用户拍板，替代 P5 用户自定义皮肤）。
  *
  * ## 范围
  *  - 仅在 [SkinShellResolver.knownSkins] 中的**内置骨架**之间切换；
@@ -53,6 +60,11 @@ import cn.com.dcsgo.mihx.ui.theme.PlaybackPanelTokens
  *  - 歌手/专辑网格布局在 2026-09-30 下沉为**全局开关**（不分样式，两种样式共用），
  *    样式项只显示名称（`dcsgo.skin.*` id 小字已去掉）；
  *  - 「当前值」摘要块（coverSizeDp=…）同批移除——滑条右侧数字已是当前值。
+ *
+ * ## 2026-10-24：主题 / 主题色 / 屏幕方向 从「设置」页搬到这里
+ *
+ * 这三项都是**外观**相关，和样式放在一起更好找；搬过来后「设置」页只剩
+ * 播放行为与权限相关的内容。用户拍板：入口标题也从「样式切换」改为「样式/主题切换」。
  *
  * ## 覆盖值归属
  *  - 旋钮的当前值是「当前选中样式」的覆盖，由 AppRoot 持久化（按 skinId 分键）；
@@ -74,6 +86,15 @@ fun SkinSwitcherRoute(
     onPanelCoverCornerChange: (Float) -> Unit,
     gridLayoutEnabled: Boolean,
     onGridLayoutChange: (Boolean) -> Unit,
+    /** 明暗模式（跟随系统 / 浅色 / 深色）。 */
+    themeMode: ThemeMode,
+    onThemeModeChange: (ThemeMode) -> Unit,
+    /** 主题色（墨色 / 朱砂 / 靛蓝 / …）。 */
+    themeVariant: ThemeVariant,
+    onThemeVariantChange: (ThemeVariant) -> Unit,
+    /** 屏幕方向（跟随系统 / 固定横屏 / 固定竖屏）。 */
+    screenOrientationMode: ScreenOrientationMode,
+    onScreenOrientationModeChange: (ScreenOrientationMode) -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -98,7 +119,7 @@ fun SkinSwitcherRoute(
                 Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "返回")
             }
             Text(
-                text = "样式切换",
+                text = "样式/主题切换",
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Medium,
                 modifier = Modifier.padding(start = 4.dp),
@@ -129,6 +150,81 @@ fun SkinSwitcherRoute(
                         )
                         if (index < skinOptions.lastIndex) HorizontalDivider(
                             modifier = Modifier.padding(horizontal = 12.dp),
+                        )
+                    }
+                }
+            }
+
+            // ── 主题（明暗模式）── 2026-10-24 从设置页搬来
+            SectionTitle("主题")
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                ThemeMode.entries.forEach { mode ->
+                    ThemeModeChip(
+                        mode = mode,
+                        selected = mode == themeMode,
+                        modifier = Modifier.weight(1f),
+                        onClick = { onThemeModeChange(mode) },
+                    )
+                }
+            }
+
+            // ── 主题色 ── 2026-10-24 从设置页搬来
+            SectionTitle("主题色")
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                ThemeVariant.entries.forEach { variant ->
+                    ThemeVariantCard(
+                        variant = variant,
+                        selected = variant == themeVariant,
+                        modifier = Modifier.weight(1f),
+                        onClick = { onThemeVariantChange(variant) },
+                    )
+                }
+            }
+
+            // ── 屏幕方向 ── 2026-10-24 从设置页搬来
+            SectionTitle("屏幕方向")
+            Text(
+                text = "自动旋转开 = 跟随系统；也可手动固定为横屏或竖屏",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                ScreenOrientationMode.entries.forEach { mode ->
+                    val selected = mode == screenOrientationMode
+                    val containerColor = if (selected) {
+                        MaterialTheme.colorScheme.primary
+                    } else {
+                        MaterialTheme.colorScheme.surfaceVariant
+                    }
+                    val contentColor = if (selected) {
+                        MaterialTheme.colorScheme.onPrimary
+                    } else {
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                    }
+                    Row(
+                        modifier = Modifier
+                            .weight(1f)
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(containerColor)
+                            .clickable { onScreenOrientationModeChange(mode) }
+                            .padding(vertical = 10.dp),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text(
+                            text = mode.label,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = contentColor,
+                            fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
                         )
                     }
                 }
@@ -256,5 +352,107 @@ private fun PanelSlider(
                 onChange(it)
             },
         )
+    }
+}
+
+/**
+ * 明暗模式分段控件（对齐设计系统 §5.3：选中项 accent 底 + onAccent 文字）。
+ *
+ * 2026-10-24 从「设置」页搬到「样式/主题切换」页。
+ */
+@Composable
+private fun ThemeModeChip(
+    mode: ThemeMode,
+    selected: Boolean,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit,
+) {
+    val containerColor = if (selected) {
+        MaterialTheme.colorScheme.primary
+    } else {
+        MaterialTheme.colorScheme.surfaceVariant
+    }
+    val contentColor = if (selected) {
+        MaterialTheme.colorScheme.onPrimary
+    } else {
+        MaterialTheme.colorScheme.onSurfaceVariant
+    }
+    Row(
+        modifier = modifier
+            .clip(RoundedCornerShape(12.dp))
+            .background(containerColor)
+            .clickable(onClick = onClick)
+            .padding(vertical = 10.dp),
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = mode.label,
+            style = MaterialTheme.typography.bodyMedium,
+            color = contentColor,
+            fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
+        )
+    }
+}
+
+/**
+ * 主题色卡（对齐设计系统 §5.8：bg1 底 + 选中态 accent 描边 + 对勾）。
+ *
+ * 色卡由 core:ui 主题令牌派生（单一事实来源），移除硬编码 Color(0x...)，主题调整时自动跟随。
+ *
+ * 2026-10-24 从「设置」页搬到「样式/主题切换」页。
+ */
+@Composable
+private fun ThemeVariantCard(
+    variant: ThemeVariant,
+    selected: Boolean,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit,
+) {
+    val swatchColors = themeSwatchColors(variant)
+    Column(
+        modifier = modifier
+            .clip(RoundedCornerShape(12.dp))
+            .background(MaterialTheme.colorScheme.surfaceContainerLowest)
+            .border(
+                width = 1.dp,
+                color = if (selected) MaterialTheme.colorScheme.primary
+                else MaterialTheme.colorScheme.outlineVariant,
+                shape = RoundedCornerShape(12.dp),
+            )
+            .clickable(onClick = onClick)
+            .padding(10.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            swatchColors.forEach { color ->
+                Box(
+                    modifier = Modifier
+                        .size(18.dp)
+                        .clip(RoundedCornerShape(5.dp))
+                        .background(color),
+                )
+            }
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(
+            text = variant.label,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurface,
+            fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
+        )
+        if (selected) {
+            Icon(
+                imageVector = Icons.Filled.Check,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier
+                    .padding(top = 4.dp)
+                    .size(16.dp),
+            )
+        }
     }
 }

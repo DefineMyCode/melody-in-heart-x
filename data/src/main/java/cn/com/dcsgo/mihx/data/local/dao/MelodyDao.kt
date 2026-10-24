@@ -19,6 +19,7 @@ import cn.com.dcsgo.mihx.data.local.entity.QuickSkipSongEntity
 import cn.com.dcsgo.mihx.data.local.entity.QuickSkipShortPlayEntity
 import cn.com.dcsgo.mihx.data.local.entity.SongArtistCrossRef
 import cn.com.dcsgo.mihx.data.local.entity.SongEmotionEntity
+import cn.com.dcsgo.mihx.data.local.entity.SongEmotionLite
 import cn.com.dcsgo.mihx.data.local.entity.SongEntity
 import cn.com.dcsgo.mihx.data.local.entity.SongGroupOverrideEntity
 import cn.com.dcsgo.mihx.data.local.entity.WordPreferenceEntity
@@ -389,12 +390,32 @@ interface MelodyDao {
     @Query("SELECT * FROM song_emotions WHERE songId = :songId")
     suspend fun songEmotion(songId: Int): SongEmotionEntity?
 
-    @Query("SELECT * FROM song_emotions")
-    suspend fun allSongEmotions(): List<SongEmotionEntity>
+    /**
+     * song_emotions 全量查询（轻量投影, 不含 embeddingB64）。
+     *
+     * P0（2026-10-24）：旧实现是 `SELECT *`，会把整库 embedding（约 5.3KB/首 base64）
+     * 物化成字符串再由仓储层解码成 FloatArray，而读路径（情绪词条缓存/曲库情绪 Tab/
+     * 时段统计）只用到 V/A 曲线与用户校准字段——整库白物化上百 MB。
+     * 改为显式列投影，Room 直接跳过 embeddingB64 列；表结构不变，无需迁移。
+     */
+    @Query(
+        "SELECT songId, valence, arousal, curveJson, peakSec, windowsAnalyzed, " +
+            "durationSec, modelVersion, analyzedAt, userValence, userArousal, userTags " +
+            "FROM song_emotions"
+    )
+    suspend fun allSongEmotions(): List<SongEmotionLite>
 
-    /** song_emotions 可观察流（Room 表失效自动重发）：PlayerRuntime 情绪词条缓存的数据源（M-2，评审 2026-10-15） */
-    @Query("SELECT * FROM song_emotions")
-    fun observeAllSongEmotions(): Flow<List<SongEmotionEntity>>
+    /**
+     * song_emotions 可观察流（Room 表失效自动重发）：PlayerRuntime 情绪词条缓存的数据源（M-2，评审 2026-10-15）。
+     * 轻量投影同 [allSongEmotions]：批扫每写一首都会触发整表重发，
+     * 投影让每次重发不再携带整库 embedding。
+     */
+    @Query(
+        "SELECT songId, valence, arousal, curveJson, peakSec, windowsAnalyzed, " +
+            "durationSec, modelVersion, analyzedAt, userValence, userArousal, userTags " +
+            "FROM song_emotions"
+    )
+    fun observeAllSongEmotions(): Flow<List<SongEmotionLite>>
 
     /**
      * 全库已知最大 songId（含统计/播放事件/秒切/情绪等关联表的残留引用）。

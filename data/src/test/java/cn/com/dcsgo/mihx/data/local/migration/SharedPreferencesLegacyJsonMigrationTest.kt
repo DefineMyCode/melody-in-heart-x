@@ -7,6 +7,8 @@ import cn.com.dcsgo.mihx.data.local.dao.ArtistCatalogRow
 import cn.com.dcsgo.mihx.data.local.dao.MelodyDao
 import cn.com.dcsgo.mihx.data.local.dao.SongEmotionVersion
 import cn.com.dcsgo.mihx.data.local.entity.SongEmotionEntity
+import cn.com.dcsgo.mihx.data.local.entity.SongEmotionLite
+import cn.com.dcsgo.mihx.data.local.entity.toLite
 import cn.com.dcsgo.mihx.data.local.entity.AlbumEntity
 import cn.com.dcsgo.mihx.data.local.entity.ArtistEntity
 import cn.com.dcsgo.mihx.data.local.entity.MigrationStateEntity
@@ -368,11 +370,11 @@ class SharedPreferencesLegacyJsonMigrationTest {
         override suspend fun songEmotion(songId: Int): SongEmotionEntity? =
             songEmotions[songId]
 
-        override suspend fun allSongEmotions(): List<SongEmotionEntity> =
-            songEmotions.values.toList()
+        override suspend fun allSongEmotions(): List<SongEmotionLite> =
+            songEmotions.values.map { it.toLite() }
 
-        override fun observeAllSongEmotions(): Flow<List<SongEmotionEntity>> =
-            flow { emit(songEmotions.values.toList()) }
+        override fun observeAllSongEmotions(): Flow<List<SongEmotionLite>> =
+            flow { emit(songEmotions.values.map { it.toLite() }) }
 
         override suspend fun maxKnownSongId(): Int? = listOf(
             songs.maxOfOrNull { it.id },

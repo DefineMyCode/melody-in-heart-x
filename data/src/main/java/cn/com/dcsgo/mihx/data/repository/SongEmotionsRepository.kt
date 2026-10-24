@@ -3,6 +3,7 @@ package cn.com.dcsgo.mihx.data.repository
 import cn.com.dcsgo.mihx.core.model.SongEmotion
 import cn.com.dcsgo.mihx.data.local.dao.MelodyDao
 import cn.com.dcsgo.mihx.data.local.entity.SongEmotionEntity
+import cn.com.dcsgo.mihx.data.local.entity.SongEmotionLite
 import cn.com.dcsgo.mihx.domain.repository.SongEmotionRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -15,6 +16,11 @@ import org.json.JSONArray
  * curveJson 用 JSONArray 编解 [v,a,v,a,...] 扁平数组(零额外依赖).
  *
  * M-5（评审 2026-10-15）：接口改 suspend，直接挂起查询，不再 runBlocking 桥接。
+ *
+ * P0（2026-10-24）：读路径（[getAll] / [observeAll]）改走**轻量投影**，
+ * 不再解码 embedding——整库 embedding 约 5.3KB/首（base64 文本 + float32 数组），
+ * 而这两个入口的消费者（情绪词条缓存/曲库情绪 Tab/时段统计）只用得到曲线与校准字段。
+ * embedding 仍随分析入库（未来监督重训 VA 头的原料），需要时用 [get] 单条整行读取。
  */
 class SongEmotionsRepository(
     private val melodyDao: MelodyDao,
@@ -25,7 +31,7 @@ class SongEmotionsRepository(
     }
 
     override suspend fun getAll(): Map<Int, SongEmotion> = withContext(Dispatchers.IO) {
-        melodyDao.allSongEmotions().associate { it.songId to it.toDomain() }
+        melodyDao.allSongEmotions().associate { it.songId to it.toDomainLite() }
     }
 
     override suspend fun analyzedVersions(): Map<Int, String> = withContext(Dispatchers.IO) {
@@ -34,7 +40,7 @@ class SongEmotionsRepository(
 
     override fun observeAll(): Flow<Map<Int, SongEmotion>> =
         melodyDao.observeAllSongEmotions().map { rows ->
-            rows.associate { it.songId to it.toDomain() }
+            rows.associate { it.songId to it.toDomainLite() }
     }
 
     override suspend fun analyzedTimeline(): List<Long> = withContext(Dispatchers.IO) {
@@ -127,31 +133,58 @@ private fun decodeEmbedding(b64: String?): FloatArray? {
     }.getOrNull()
 }
 
-private fun SongEmotionEntity.toDomain(): SongEmotion {
-    val flat = try {
-        val arr = JSONArray(curveJson)
-        List(arr.length() / 2) { i ->
-            arr.getDouble(i * 2).toFloat() to arr.getDouble(i * 2 + 1).toFloat()
-        }
-    } catch (_: Exception) {
-        emptyList()
+/** 扁平 [v,a,v,a,...] JSON → 逐窗曲线；解析失败降级为空曲线 */
+private fun parseCurve(curveJson: String): List<Pair<Float, Float>> = try {
+    val arr = JSONArray(curveJson)
+    List(arr.length() / 2) { i ->
+        arr.getDouble(i * 2).toFloat() to arr.getDouble(i * 2 + 1).toFloat()
     }
-    return SongEmotion(
-        songId = songId,
-        valence = valence,
-        arousal = arousal,
-        curve = flat,
-        peakSec = peakSec,
-        windowsAnalyzed = windowsAnalyzed,
-        durationSec = durationSec,
-        modelVersion = modelVersion,
-        analyzedAt = analyzedAt,
-        embedding = decodeEmbedding(embeddingB64),
-        userValence = userValence,
-        userArousal = userArousal,
-        userTags = userTags?.split(",")?.filter { it.isNotBlank() } ?: emptyList(),
-    )
+} catch (_: Exception) {
+    emptyList()
 }
+
+/** 逗号拼接的词条串 → 词条列表（过滤空段） */
+private fun parseTags(userTags: String?): List<String> =
+    userTags?.split(",")?.filter { it.isNotBlank() } ?: emptyList()
+
+/** 整行读（含 embedding）：仅单条查询用 */
+private fun SongEmotionEntity.toDomain(): SongEmotion = SongEmotion(
+    songId = songId,
+    valence = valence,
+    arousal = arousal,
+    curve = parseCurve(curveJson),
+    peakSec = peakSec,
+    windowsAnalyzed = windowsAnalyzed,
+    durationSec = durationSec,
+    modelVersion = modelVersion,
+    analyzedAt = analyzedAt,
+    embedding = decodeEmbedding(embeddingB64),
+    userValence = userValence,
+    userArousal = userArousal,
+    userTags = parseTags(userTags),
+)
+
+/**
+ * 轻量投影 → 域模型（**不含 embedding**，P0 2026-10-24）。
+ *
+ * embedding 为 null 是刻意的：读路径的消费者（情绪词条缓存/曲库情绪 Tab/时段统计）
+ * 都不读 embedding，整库解码会物化上百 MB。需要 embedding 时走整行读 [SongEmotionEntity.toDomain]。
+ */
+private fun SongEmotionLite.toDomainLite(): SongEmotion = SongEmotion(
+    songId = songId,
+    valence = valence,
+    arousal = arousal,
+    curve = parseCurve(curveJson),
+    peakSec = peakSec,
+    windowsAnalyzed = windowsAnalyzed,
+    durationSec = durationSec,
+    modelVersion = modelVersion,
+    analyzedAt = analyzedAt,
+    embedding = null,
+    userValence = userValence,
+    userArousal = userArousal,
+    userTags = parseTags(userTags),
+)
 
 private fun SongEmotion.toEntity(): SongEmotionEntity {
     val arr = JSONArray()

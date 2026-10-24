@@ -6,6 +6,8 @@ import cn.com.dcsgo.mihx.data.local.dao.ArtistCatalogRow
 import cn.com.dcsgo.mihx.data.local.dao.MelodyDao
 import cn.com.dcsgo.mihx.data.local.dao.SongEmotionVersion
 import cn.com.dcsgo.mihx.data.local.entity.SongEmotionEntity
+import cn.com.dcsgo.mihx.data.local.entity.SongEmotionLite
+import cn.com.dcsgo.mihx.data.local.entity.toLite
 import cn.com.dcsgo.mihx.data.local.entity.AlbumEntity
 import cn.com.dcsgo.mihx.data.local.entity.ArtistEntity
 import cn.com.dcsgo.mihx.data.local.entity.MigrationStateEntity
@@ -308,10 +310,10 @@ class PlayStatsRepositoryRoomTest {
         override suspend fun songEmotion(songId: Int): SongEmotionEntity? =
             songEmotions.firstOrNull { it.songId == songId }
 
-        override suspend fun allSongEmotions(): List<SongEmotionEntity> = songEmotions
+        override suspend fun allSongEmotions(): List<SongEmotionLite> = songEmotions.map { it.toLite() }
 
-        override fun observeAllSongEmotions(): Flow<List<SongEmotionEntity>> =
-            flow { emit(songEmotions.toList()) }
+        override fun observeAllSongEmotions(): Flow<List<SongEmotionLite>> =
+            flow { emit(songEmotions.map { it.toLite() }) }
 
         override suspend fun maxKnownSongId(): Int? = listOf(
             songs.maxOfOrNull { it.id },

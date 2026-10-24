@@ -1,0 +1,225 @@
+package cn.com.dcsgo.mihx.data.repository
+
+import androidx.room.Room
+import androidx.test.core.app.ApplicationProvider
+import cn.com.dcsgo.mihx.core.model.SongEmotion
+import cn.com.dcsgo.mihx.data.local.MelodyDatabase
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
+import org.junit.After
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
+import org.junit.Before
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
+
+/**
+ * 情绪仓库回归（真实 Room 内存库，不用假 DAO——投影 SQL 本身要被验证）。
+ *
+ * 覆盖两件事：
+ * 1. **P0（2026-10-24）轻量投影**：批量读（getAll/observeAll）不再物化 embedding，
+ *    但 embedding 仍随分析入库（未来监督重训 VA 头的原料不能丢），单条整行读仍能拿到。
+ * 2. **此前无测试覆盖的语义**：upsert 继承用户校准（重扫不吞校准）、
+ *    saveCorrection 的 user-only 行、clearCorrection 的删行规则、curve 编解码往返。
+ */
+@RunWith(RobolectricTestRunner::class)
+@Config(sdk = [34])
+class SongEmotionsRepositoryTest {
+
+    private lateinit var db: MelodyDatabase
+    private lateinit var repository: SongEmotionsRepository
+
+    @Before
+    fun setUp() {
+        db = Room.inMemoryDatabaseBuilder(
+            ApplicationProvider.getApplicationContext(),
+            MelodyDatabase::class.java,
+        ).allowMainThreadQueries().build()
+        repository = SongEmotionsRepository(db.melodyDao())
+    }
+
+    @After
+    fun tearDown() {
+        db.close()
+    }
+
+    private fun emotion(
+        songId: Int,
+        valence: Float = 0.2f,
+        arousal: Float = 0.8f,
+        curve: List<Pair<Float, Float>> = listOf(0.1f to 0.2f, 0.3f to 0.4f),
+        embedding: FloatArray? = null,
+        userValence: Float? = null,
+        userArousal: Float? = null,
+        userTags: List<String> = emptyList(),
+        modelVersion: String = MODEL_VERSION,
+    ) = SongEmotion(
+        songId = songId,
+        valence = valence,
+        arousal = arousal,
+        curve = curve,
+        peakSec = 2.5f,
+        windowsAnalyzed = curve.size,
+        durationSec = 10f,
+        modelVersion = modelVersion,
+        analyzedAt = 1L,
+        embedding = embedding,
+        userValence = userValence,
+        userArousal = userArousal,
+        userTags = userTags,
+    )
+
+    // ───────────── P0：轻量投影与 embedding 契约 ─────────────
+
+    @Test
+    fun `getAll omits embedding while the row still stores it`() = runBlocking {
+        repository.upsert(emotion(songId = 1, embedding = floatArrayOf(0.5f, -0.25f)))
+
+        val all = repository.getAll()
+
+        assertEquals(1, all.size)
+        // 库里确实存了 embedding（整行读能拿到）
+        assertNotNull(repository.get(1)?.embedding)
+        // 但批量读路径不物化 embedding（读路径只用得到曲线与校准字段）
+        assertNull(all.getValue(1).embedding)
+    }
+
+    @Test
+    fun `observeAll omits embedding`() = runBlocking {
+        repository.upsert(emotion(songId = 1, embedding = floatArrayOf(0.5f, -0.25f)))
+
+        val all = repository.observeAll().first()
+
+        assertNull(all.getValue(1).embedding)
+    }
+
+    @Test
+    fun `get returns full row with decoded embedding`() = runBlocking {
+        repository.upsert(emotion(songId = 7, embedding = floatArrayOf(0.5f, -0.25f, 1f, 0f)))
+
+        val row = repository.get(7)
+
+        assertNotNull(row)
+        val emb = row!!.embedding
+        assertNotNull(emb)
+        assertEquals(4, emb!!.size)
+        assertEquals(0.5f, emb[0], 1e-6f)
+        assertEquals(-0.25f, emb[1], 1e-6f)
+    }
+
+    @Test
+    fun `upsert still persists embedding for future va head retraining`() = runBlocking {
+        repository.upsert(emotion(songId = 12, embedding = floatArrayOf(0.1f, 0.2f)))
+
+        val row = db.melodyDao().songEmotion(12)
+
+        assertNotNull(row)
+        assertNotNull(row!!.embeddingB64)
+    }
+
+    // ───────────── 校准写回语义（此前无测试） ─────────────
+
+    @Test
+    fun `upsert inherits user calibration so rescan does not swallow it`() = runBlocking {
+        repository.upsert(emotion(songId = 3, embedding = floatArrayOf(1f)))
+        repository.saveCorrection(3, 0.44f, -0.22f, listOf("燃", "静谧"))
+
+        // 模型升级重扫：新记录不带校准
+        repository.upsert(
+            emotion(songId = 3, valence = 0.9f, arousal = 0.9f, modelVersion = "yamnet-va-v4")
+        )
+
+        val row = repository.get(3)!!
+        assertEquals("yamnet-va-v4", row.modelVersion) // 模型数据已更新
+        assertEquals(0.9f, row.valence, 1e-6f)
+        assertEquals(0.44f, row.userValence!!, 1e-6f) // 校准被继承
+        assertEquals(-0.22f, row.userArousal!!, 1e-6f)
+        assertEquals(listOf("燃", "静谧"), row.userTags)
+    }
+
+    @Test
+    fun `upsert with explicit calibration overrides old one`() = runBlocking {
+        repository.upsert(emotion(songId = 4))
+        repository.saveCorrection(4, 0.1f, 0.2f, listOf("emo"))
+
+        repository.upsert(
+            emotion(songId = 4, userValence = 0.5f, userArousal = 0.6f, userTags = listOf("燃"))
+        )
+
+        val row = repository.get(4)!!
+        assertEquals(0.5f, row.userValence!!, 1e-6f)
+        assertEquals(0.6f, row.userArousal!!, 1e-6f)
+        assertEquals(listOf("燃"), row.userTags)
+    }
+
+    @Test
+    fun `saveCorrection creates user-only row for unanalyzed song`() = runBlocking {
+        repository.saveCorrection(9, 0.3f, 0.4f, listOf("治愈"))
+
+        val row = repository.get(9)!!
+
+        assertEquals("user-only", row.modelVersion)
+        assertTrue(row.curve.isEmpty())
+        assertEquals(0, row.windowsAnalyzed)
+        assertEquals(listOf("治愈"), row.userTags)
+        assertEquals(0.3f, row.userValence!!, 1e-6f)
+        assertEquals(0.4f, row.userArousal!!, 1e-6f)
+    }
+
+    @Test
+    fun `saveCorrection keeps model data untouched`() = runBlocking {
+        repository.upsert(
+            emotion(songId = 5, valence = 0.7f, arousal = -0.3f, curve = listOf(0.4f to 0.5f))
+        )
+
+        repository.saveCorrection(5, 0.1f, 0.2f, listOf("emo"))
+
+        val row = repository.get(5)!!
+        assertEquals(0.7f, row.valence, 1e-6f)
+        assertEquals(-0.3f, row.arousal, 1e-6f)
+        assertEquals(listOf(0.4f to 0.5f), row.curve)
+        assertEquals(MODEL_VERSION, row.modelVersion)
+        assertEquals(listOf("emo"), row.userTags)
+    }
+
+    @Test
+    fun `clearCorrection resets user fields but keeps model data`() = runBlocking {
+        repository.upsert(emotion(songId = 6))
+        repository.saveCorrection(6, 0.1f, 0.2f, listOf("emo"))
+
+        repository.clearCorrection(6)
+
+        val row = repository.get(6)!!
+        assertNull(row.userValence)
+        assertNull(row.userArousal)
+        assertTrue(row.userTags.isEmpty())
+        assertEquals(MODEL_VERSION, row.modelVersion)
+        assertEquals(2, row.windowsAnalyzed)
+    }
+
+    @Test
+    fun `clearCorrection deletes user-only row entirely`() = runBlocking {
+        repository.saveCorrection(8, 0.1f, 0.2f, listOf("emo"))
+
+        repository.clearCorrection(8)
+
+        assertNull(repository.get(8))
+    }
+
+    @Test
+    fun `curve round-trips through flat json`() = runBlocking {
+        val curve = listOf(0.1f to -0.2f, 0.33f to 0.44f, -0.5f to 0.6f)
+
+        repository.upsert(emotion(songId = 11, curve = curve))
+
+        assertEquals(curve, repository.get(11)!!.curve)
+    }
+
+    private companion object {
+        const val MODEL_VERSION = "yamnet-va-v3"
+    }
+}

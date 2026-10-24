@@ -11,14 +11,30 @@ import kotlinx.coroutines.flow.Flow
  * 现有调用方（元数据页/情绪页/批扫 Worker/配置页统计）均已在挂起上下文，无需改动。
  */
 interface SongEmotionRepository {
+    /**
+     * 单条查询（整行）：**含 embedding**。
+     *
+     * P0（2026-10-24）：只有这个入口会带回 embedding（约 5.3KB/首），
+     * 供将来监督重训 VA 头按需取用；批量读接口一律不带。
+     */
     suspend fun get(songId: Int): SongEmotion?
 
+    /**
+     * 全量查询（轻量）：**不含 embedding**（[SongEmotion.embedding] 恒为 null）。
+     *
+     * P0（2026-10-24）：整库 embedding 约 5.3KB/首（base64 文本 + float32 数组），
+     * 而批量读的消费方（情绪词条缓存/曲库情绪 Tab/时段统计）只用到曲线与校准字段，
+     * 故批量路径走轻量投影，避免整库物化上百 MB。
+     */
     suspend fun getAll(): Map<Int, SongEmotion>
 
     /**
      * 全量情绪可观察流（写入即重发）：M-2（评审 2026-10-15）
      * PlayerRuntime 情绪词条缓存由此持续订阅，新分析/用户校准即时反哺随心播放判定，
      * 不再依赖启动时一次性快照。
+     *
+     * P0（2026-10-24）：同 [getAll]，**不含 embedding**——批扫每写一首都会触发整表重发，
+     * 投影保证每次重发不再携带整库 embedding。
      */
     fun observeAll(): Flow<Map<Int, SongEmotion>>
 

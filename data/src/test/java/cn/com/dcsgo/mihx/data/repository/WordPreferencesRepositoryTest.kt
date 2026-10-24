@@ -179,9 +179,9 @@ class WordPreferencesRepositoryTest {
         override suspend fun migrationState(name: String): cn.com.dcsgo.mihx.data.local.entity.MigrationStateEntity? = null
         override suspend fun upsertMigrationState(state: cn.com.dcsgo.mihx.data.local.entity.MigrationStateEntity) = Unit
         override suspend fun songEmotion(songId: Int): cn.com.dcsgo.mihx.data.local.entity.SongEmotionEntity? = null
-        override suspend fun allSongEmotions(): List<cn.com.dcsgo.mihx.data.local.entity.SongEmotionEntity> = emptyList()
-        override fun observeAllSongEmotions(): Flow<List<cn.com.dcsgo.mihx.data.local.entity.SongEmotionEntity>> =
-            MutableStateFlow<List<cn.com.dcsgo.mihx.data.local.entity.SongEmotionEntity>>(emptyList()).asStateFlow()
+        override suspend fun allSongEmotions(): List<cn.com.dcsgo.mihx.data.local.entity.SongEmotionLite> = emptyList()
+        override fun observeAllSongEmotions(): Flow<List<cn.com.dcsgo.mihx.data.local.entity.SongEmotionLite>> =
+            MutableStateFlow<List<cn.com.dcsgo.mihx.data.local.entity.SongEmotionLite>>(emptyList()).asStateFlow()
         override suspend fun maxKnownSongId(): Int? = null
         override suspend fun songEmotionVersions(): List<cn.com.dcsgo.mihx.data.local.dao.SongEmotionVersion> = emptyList()
         override suspend fun emotionCorrectionCount(): Int = 0

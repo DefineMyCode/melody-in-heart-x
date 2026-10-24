@@ -39,3 +39,7 @@ build_output.txt
 
 # 设备端拉取的曲库数据库（情绪诊断用；含个人听歌数据，绝不入库）
 .emotion-diag/
+
+# Python 工具的字节码缓存
+__pycache__/
+*.pyc

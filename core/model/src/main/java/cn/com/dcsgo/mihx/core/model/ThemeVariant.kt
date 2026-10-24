@@ -9,7 +9,7 @@ package cn.com.dcsgo.mihx.core.model
  */
 enum class ThemeVariant(val label: String) {
     MONO("墨色"),
-    VERMILION("朱砂 · 心有乐章"),
+    VERMILION("朱砂"),
     INDIGO("靛蓝静夜"),
     SAGE("苔藓森野"),
     AMBER("琥珀暖忆"),

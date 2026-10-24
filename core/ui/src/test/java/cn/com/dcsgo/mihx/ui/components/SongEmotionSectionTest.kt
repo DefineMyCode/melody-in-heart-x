@@ -76,20 +76,24 @@ class SongEmotionSectionTest {
     fun `categoriesFor picks nearest group by vote ratio`() {
         // 全程落在「燃」的锚点上 -> RAGE
         // （锚点坐标会随坐标系重标定变化，这里跟着锚点走，不断言具体数值）
+        val anchors = EmotionGroup.anchorsFor(EmotionGroup.CURRENT_MODEL_VERSION)
         val rage = EmotionGroup.RAGE
         val energetic = List(20) { rage.anchorV to rage.anchorA }
-        val top = EmotionGroup.categoriesFor(energetic)
+        val top = EmotionGroup.categoriesFor(energetic, anchors)
         assertTrue(top.isNotEmpty())
         assertEquals(EmotionGroup.RAGE, top.first().first)
         // 全零窗弃权 -> 空
-        assertTrue(EmotionGroup.categoriesFor(List(10) { 0.05f to 0.05f }).isEmpty())
+        assertTrue(
+            EmotionGroup.categoriesFor(List(10) { 0.05f to 0.05f }, anchors).isEmpty()
+        )
     }
 
     @Test
     fun `WITTY excluded from auto voting (center-vacuum fix)`() {
-        // 鬼畜锚点(0.2,0.3)是 V-A 图中心, 中庸窗曾整片被吸成"鬼畜"
+        // 鬼畜锚点是 V-A 图中心, 中庸窗曾整片被吸成"鬼畜"
+        val anchors = EmotionGroup.anchorsFor(EmotionGroup.CURRENT_MODEL_VERSION)
         val lukewarm = List(20) { 0.2f to 0.3f }
-        val top = EmotionGroup.categoriesFor(lukewarm)
+        val top = EmotionGroup.categoriesFor(lukewarm, anchors)
         assertTrue(top.none { it.first == EmotionGroup.WITTY })
         // 但手动标记链路(groupOf)不受限
         assertEquals(EmotionGroup.WITTY, EmotionGroup.groupOf("鬼畜"))
@@ -99,7 +103,7 @@ class SongEmotionSectionTest {
     fun `headlineTagsFor caps at MAX_TAGS`() {
         val mixed = List(5) { 0.6f to 0.4f } + List(5) { -0.5f to -0.4f } +
             List(5) { 0.3f to -0.55f } + List(5) { -0.4f to 0.6f } + List(5) { 0.4f to -0.3f }
-        val tags = EmotionGroup.headlineTagsFor(mixed)
+        val tags = EmotionGroup.headlineTagsFor(mixed, EmotionGroup.CURRENT_MODEL_VERSION)
         assertTrue(tags.size <= EmotionGroup.MAX_TAGS)
     }
 

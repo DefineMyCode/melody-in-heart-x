@@ -22,6 +22,7 @@ EmotionGroup.categoriesFor 的投票逻辑，输出四类诊断：
       改那边就要同步改这里（本脚本内 GROUP 常量即其镜像）。
 """
 import argparse
+import collections
 import json
 import os
 import sqlite3
@@ -47,6 +48,34 @@ GROUPS = [
 LOW_CONF = 0.15        # SongEmotion.LOW_CONF
 MIN_RATIO = 0.15       # categoriesFor(minRatio)
 MAX_TAGS = 4           # categoriesFor(topN)
+
+CUR_MODEL_VERSION = "yamnet-va-v4-rms"
+
+# 改造前(v3 及更早)的锚点表 —— 旧曲线在**旧坐标系**里, 必须配旧锚点投票。
+# 顺序与 GROUPS 完全一致(组序相同 → cell 下标含义相同, 可混合统计)。
+LEGACY_GROUPS = [
+    ("BRIGHT", 0.6, 0.4, "元气", True),
+    ("RAGE", 0.3, 0.85, "燃", True),
+    ("EPIC", 0.2, 0.5, "神圣", True),
+    ("WITTY", 0.2, 0.3, "鬼畜", False),
+    ("LOVE", 0.6, -0.1, "治愈", True),
+    ("STILL", 0.3, -0.55, "静谧", True),
+    ("SAD", -0.5, -0.4, "emo", True),
+    ("ANXIOUS", -0.4, 0.6, "躁", True),
+    ("CHILL", 0.4, -0.3, "放松", True),
+    ("ABYSS", -0.7, -0.2, "窒息", True),
+]
+
+
+def groups_for(model_version):
+    """曲线所属坐标系 → 锚点表(组序与 GROUPS 一致)。"""
+    return GROUPS if model_version == CUR_MODEL_VERSION else LEGACY_GROUPS
+
+
+def anchor_array(groups):
+    """锚点表 → auto 组坐标数组 (9, 2)。"""
+    idx = [i for i, g in enumerate(groups) if g[4]]
+    return np.array([[groups[i][1], groups[i][2]] for i in idx])
 
 # ── 改造前(A/B 之前)的原始语义锚点 —— 冻结引用 ──────────────────────────
 # 2026-10-25 起 EmotionGroup 的锚点已按新坐标系重算，但"语义蓝图"仍以这张表为准:
@@ -76,20 +105,24 @@ RANDOM_BASELINE = 1.0 / len(AUTO)   # top1 随机基线 = 1/9 ≈ 11.1%
 
 
 # ── 投票（categoriesFor 的向量化镜像）────────────────────────────────────
-def nearest_group(v, a):
+def nearest_group(v, a, anchor=None):
     """逐窗找最近的 auto 组下标；近零窗返回 -1（弃权）。"""
-    d = (AUTO_ANCHOR[:, 0] - v) ** 2 + (AUTO_ANCHOR[:, 1] - a) ** 2
+    anchor = AUTO_ANCHOR if anchor is None else anchor
+    d = (anchor[:, 0] - v) ** 2 + (anchor[:, 1] - a) ** 2
     return int(np.argmin(d))
 
 
-def curve_to_groups(curve):
-    """曲线 -> (groups[], ) 每窗的 auto 组下标（-1 = 弃权窗）。"""
+def curve_to_groups(curve, anchor=None):
+    """曲线 -> (groups[], ) 每窗的 auto 组下标（-1 = 弃权窗）。
+
+    anchor: 该曲线所属坐标系的锚点表(旧曲线必须用旧锚点, 否则坐标系错配)。
+    """
     out = np.empty(len(curve), dtype=np.int16)
     for i, (v, a) in enumerate(curve):
         if abs(v) < LOW_CONF and abs(a) < LOW_CONF:
             out[i] = -1
         else:
-            out[i] = AUTO_IDX[nearest_group(v, a)]
+            out[i] = AUTO_IDX[nearest_group(v, a, anchor)]
     return out
 
 
@@ -142,6 +175,7 @@ def load_songs(conn, model_version=None):
             "valence": float(r["valence"]),
             "arousal": float(r["arousal"]),
             "curve": curve,
+            "modelVersion": r["modelVersion"] or "",
             "userTags": [t for t in (r["userTags"] or "").split(",") if t.strip()],
             "userValence": r["userValence"],
             "userArousal": r["userArousal"],
@@ -278,16 +312,19 @@ def main():
         print("没有可分析的曲线数据。")
         return 1
 
-    # 逐窗预计算
+    # 逐窗预计算（旧曲线用旧锚点, 否则坐标系错配: valence 正偏会被当成"正面"）
     per_song = []
     all_v, all_a = [], []
+    ver_counts = collections.Counter(s["modelVersion"] for s in songs)
     for s in songs:
-        g = curve_to_groups(s["curve"])
+        g = curve_to_groups(s["curve"], anchor_array(groups_for(s["modelVersion"])))
         per_song.append(g)
         all_v.extend(c[0] for c in s["curve"])
         all_a.extend(c[1] for c in s["curve"])
     all_v = np.asarray(all_v)
     all_a = np.asarray(all_a)
+    if len(ver_counts) > 1:
+        print(f"  曲线版本分布: {dict(ver_counts)}（混合坐标系，逐首按各自版本的锚点投票）")
 
     # ── 1. 输出分布 ──
     print("─" * 66)
@@ -544,11 +581,14 @@ def main():
     pts = np.array([[s["valence"], s["arousal"]] for s in songs], dtype=np.float64)
     centers, labels = kmeans(pts, len(AUTO), seed=args.seed)
 
+    # 被分析曲线的"当前锚点"= 其所属坐标系对应的表（混合库取占多数的版本）
+    active = groups_for(ver_counts.most_common(1)[0][0])
+
     # 1-1 贪心最优匹配：每个组锚点配一个簇中心（不允许两个簇抢同一组）
     pairs = []
     for j, c in enumerate(centers):
         for gi in AUTO_IDX:
-            pairs.append((float(np.hypot(c[0] - GROUPS[gi][1], c[1] - GROUPS[gi][2])), j, int(gi)))
+            pairs.append((float(np.hypot(c[0] - active[gi][1], c[1] - active[gi][2])), j, int(gi)))
     pairs.sort()
     used_c, used_g, match = set(), set(), {}
     for dist, j, gi in pairs:
@@ -560,7 +600,7 @@ def main():
         if len(match) == len(AUTO):
             break
 
-    cur_anchors = [(g[1], g[2]) for g in GROUPS if g[4]]
+    cur_anchors = [(g[1], g[2]) for g in active if g[4]]
     cur_hist = window_histogram(cur_anchors)
     new_anchors = []
     for gi in AUTO_IDX:
@@ -572,7 +612,7 @@ def main():
     print(f"  {'组':<6} {'当前锚点':<15} {'实际中心':<15} {'偏移':<7} "
           f"{'现锚点窗占比':<13} {'重标定后':<9}")
     for k, gi in enumerate(AUTO_IDX):
-        g = GROUPS[gi]
+        g = active[gi]
         j, dist = match[gi]
         c = centers[j]
         print(f"  {g[3]:<6} ({g[1]:+.2f},{g[2]:+.2f})    ({c[0]:+.2f},{c[1]:+.2f})    "
@@ -580,8 +620,8 @@ def main():
               f"{new_hist[k] / new_hist.sum() * 100:5.1f}%")
     print(f"\n  歌级 V 均值 {song_v.mean():+.3f} / A 均值 {song_a.mean():+.3f}  "
           f"(正值多 = 模型系统性正偏)")
-    neg_cur = sum(cur_hist[k] for k, gi in enumerate(AUTO_IDX) if GROUPS[gi][1] < 0)
-    neg_new = sum(new_hist[k] for k, gi in enumerate(AUTO_IDX) if GROUPS[gi][1] < 0)
+    neg_cur = sum(cur_hist[k] for k, gi in enumerate(AUTO_IDX) if active[gi][1] < 0)
+    neg_new = sum(new_hist[k] for k, gi in enumerate(AUTO_IDX) if active[gi][1] < 0)
     print(f"  负面组(V<0) 窗占比: 现锚点 {neg_cur / cur_hist.sum() * 100:.1f}%  →  "
           f"重标定 {neg_new / new_hist.sum() * 100:.1f}%")
     print("\n  → 判读: 偏移大 = 该组锚点与实际输出分布脱节（词条覆盖不均的根因）")

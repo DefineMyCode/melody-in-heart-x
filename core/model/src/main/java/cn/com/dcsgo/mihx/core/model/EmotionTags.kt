@@ -7,10 +7,14 @@ package cn.com.dcsgo.mihx.core.model
  * 传染对率 ~30% ≈ 瞎蒙, 且 embedding 空间音色主导、hubness 结构性误伤
  * (论证与数据: docs/architecture/EMOTION_KNN_ANALYSIS.md), 已整体下线.
  * 整曲 embedding 仍随分析入库——那是未来监督重训 VA 头的原料, 不是垃圾.
+ *
+ * 投票必须用**曲线自己坐标系**的锚点表(见 [EmotionGroup.anchorsFor]):
+ * 改造前的旧曲线还躺在库里(后台渐进重扫要数天), 用新锚点给旧曲线投票
+ * 会把 valence 的系统性正偏当成"正面"——实测 47.1% 的歌会变成「治愈」。
  */
 fun emotionTagsOf(emotion: SongEmotion): List<String> {
     if (emotion.userTags.isNotEmpty()) return emotion.userTags
-    return EmotionGroup.headlineTagsFor(emotion.curve)
+    return EmotionGroup.headlineTagsFor(emotion.curve, emotion.modelVersion)
 }
 
 /**
@@ -23,7 +27,8 @@ fun emotionTagsOf(emotion: SongEmotion): List<String> {
  * 曲线为空（未分析/分析失败）→ 空列表，表示无模型输出可比。
  */
 fun modelTagsOf(emotion: SongEmotion): List<String> =
-    if (emotion.curve.isEmpty()) emptyList() else EmotionGroup.headlineTagsFor(emotion.curve)
+    if (emotion.curve.isEmpty()) emptyList()
+    else EmotionGroup.headlineTagsFor(emotion.curve, emotion.modelVersion)
 
 /**
  * 用户手动选的词条是否「不认同」模型结论。

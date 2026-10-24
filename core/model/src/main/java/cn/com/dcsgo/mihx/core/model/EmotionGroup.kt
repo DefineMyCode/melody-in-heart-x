@@ -65,11 +65,77 @@ enum class EmotionGroup(
         const val MAX_TAGS = 4
 
         /**
+         * 当前情绪模型标识。
+         *
+         * 放在 :core:model 是因为它零依赖, 不能反向依赖 :player;
+         * :player 的 [cn.com.dcsgo.mihx.player.EmotionAnalyzer.MODEL_VERSION]
+         * 直接引用本常量, 避免两处漂移。
+         */
+        const val CURRENT_MODEL_VERSION = "yamnet-va-v4-rms"
+
+        /**
+         * 改造前(v3 及更早)的锚点表 —— 那些曲线在**旧坐标系**里。
+         *
+         * A(arousal→RMS 响度) + B(valence 标定) 换了坐标系定义, 旧曲线必须
+         * 配旧锚点投票。配错的后果是实测出来的: 旧曲线的 valence 系统性正偏
+         * +0.264, 用新锚点投票会被当成"正面" —— 全库 1095 首里 **47.1% 变成
+         * 「治愈」**, 负面词条(emo/躁/窒息)几乎消失。
+         *
+         * 重扫是后台渐进式的(每 6 小时 40 首、需充电), 混合坐标系会存在数天,
+         * 所以必须按曲线自己的坐标系选锚点, 不能一刀切。
+         */
+        private val LEGACY_ANCHORS: Map<EmotionGroup, Pair<Float, Float>> = mapOf(
+            BRIGHT to (0.6f to 0.4f),
+            RAGE to (0.3f to 0.85f),
+            EPIC to (0.2f to 0.5f),
+            WITTY to (0.2f to 0.3f),
+            LOVE to (0.6f to -0.1f),
+            STILL to (0.3f to -0.55f),
+            SAD to (-0.5f to -0.4f),
+            ANXIOUS to (-0.4f to 0.6f),
+            CHILL to (0.4f to -0.3f),
+            ABYSS to (-0.7f to -0.2f),
+        )
+
+        /** 当前坐标系(v4)的锚点表 = 枚举自带的 anchorV/anchorA. */
+        private val CURRENT_ANCHORS: Map<EmotionGroup, Pair<Float, Float>> by lazy {
+            entries.associateWith { it.anchorV to it.anchorA }
+        }
+
+        /**
+         * 按曲线所属坐标系取锚点表。
+         *
+         * 只有 [CURRENT_MODEL_VERSION] 产出的曲线在当前坐标系里; 更早的
+         * modelVersion 一律用旧锚点.
+         */
+        fun anchorsFor(modelVersion: String): Map<EmotionGroup, Pair<Float, Float>> =
+            if (modelVersion == CURRENT_MODEL_VERSION) CURRENT_ANCHORS else LEGACY_ANCHORS
+
+        /**
+         * 用户手动点该用哪套锚点表。
+         *
+         * - 有曲线: 必须与曲线**同坐标系**, 否则手动点在 V-A 图上与曲线错位
+         * - 无曲线(未分析 / "user-only" 空曲线行): 未来的曲线一定由当前模型产出,
+         *   用当前锚点, 将来重扫时继承下来才是对的
+         */
+        fun anchorsForManualPoint(
+            emotion: SongEmotion?,
+        ): Map<EmotionGroup, Pair<Float, Float>> =
+            if (emotion != null && emotion.windowsAnalyzed > 0) {
+                anchorsFor(emotion.modelVersion)
+            } else {
+                CURRENT_ANCHORS
+            }
+
+        /**
          * 逐窗曲线 → 组投票: 每窗找最近锚点组, 按占比排序取 top-n.
          * 近零窗弃权. 返回组+占比, 展示用 headline.
+         *
+         * [anchors] 必须与曲线所属坐标系匹配 —— 用 [anchorsFor] 按 modelVersion 取.
          */
         fun categoriesFor(
             curve: List<Pair<Float, Float>>,
+            anchors: Map<EmotionGroup, Pair<Float, Float>>,
             topN: Int = MAX_TAGS,
             minRatio: Float = 0.15f,
         ): List<Pair<EmotionGroup, Float>> {
@@ -82,8 +148,9 @@ enum class EmotionGroup(
                 ) continue
                 total++
                 val nearest = entries.filter { it.auto }.minByOrNull { g ->
-                    val dv = v - g.anchorV
-                    val da = a - g.anchorA
+                    val p = anchors.getValue(g)
+                    val dv = v - p.first
+                    val da = a - p.second
                     dv * dv + da * da
                 } ?: continue
                 votes[nearest] = (votes[nearest] ?: 0) + 1
@@ -96,16 +163,30 @@ enum class EmotionGroup(
                 .take(topN)
         }
 
-        /** 自动分析展示词(组代表词列表). */
-        fun headlineTagsFor(curve: List<Pair<Float, Float>>): List<String> =
-            categoriesFor(curve).map { it.first.headline }
+        /**
+         * 自动分析展示词(组代表词列表).
+         *
+         * [modelVersion] 决定用哪套锚点 —— 曲线和锚点必须同坐标系.
+         */
+        fun headlineTagsFor(
+            curve: List<Pair<Float, Float>>,
+            modelVersion: String,
+        ): List<String> =
+            categoriesFor(curve, anchorsFor(modelVersion)).map { it.first.headline }
 
-        /** 用户勾选词 → 平均坐标(组锚点均值). */
-        fun avgOfWords(words: List<String>): Pair<Float, Float>? {
+        /**
+         * 用户勾选词 → 平均坐标(组锚点均值).
+         *
+         * [anchors] 要与该歌曲线的坐标系一致, 这样用户点与曲线画在同一张 V-A 图上.
+         */
+        fun avgOfWords(
+            words: List<String>,
+            anchors: Map<EmotionGroup, Pair<Float, Float>> = CURRENT_ANCHORS,
+        ): Pair<Float, Float>? {
             val groups = words.mapNotNull { groupOf(it) }.distinct()
             if (groups.isEmpty()) return null
-            return groups.map { it.anchorV }.average().toFloat() to
-                groups.map { it.anchorA }.average().toFloat()
+            return groups.map { anchors.getValue(it).first }.average().toFloat() to
+                groups.map { anchors.getValue(it).second }.average().toFloat()
         }
     }
 }

@@ -133,7 +133,54 @@ class EmotionGroupAnchorTest {
     fun `WITTY stays excluded from automatic voting`() {
         // 鬼畜不参与投票：它的锚点居中，会把中庸窗整片吸走
         assertTrue(!EmotionGroup.WITTY.auto)
-        val top = EmotionGroup.categoriesFor(List(20) { 0.2f to 0.3f })
+        val top = EmotionGroup.categoriesFor(
+            List(20) { 0.2f to 0.3f },
+            EmotionGroup.anchorsFor(EmotionGroup.CURRENT_MODEL_VERSION),
+        )
         assertTrue(top.none { it.first == EmotionGroup.WITTY })
+    }
+
+    @Test
+    fun `legacy curves vote with the legacy anchor table`() {
+        // 改造前的曲线在旧坐标系里(v3 的 valence 系统性正偏 +0.264, arousal 来自 VA 头)。
+        // 后台渐进重扫要数天, 期间必须用旧锚点投票:
+        // 用新锚点给旧曲线投票, 实测全库 47.1% 的歌会变成「治愈」。
+        val legacy = EmotionGroup.anchorsFor("yamnet-va-v3")
+        val current = EmotionGroup.anchorsFor(EmotionGroup.CURRENT_MODEL_VERSION)
+        assertEquals(0.6f to 0.4f, legacy.getValue(EmotionGroup.BRIGHT))
+        assertEquals(0.3f to 0.85f, legacy.getValue(EmotionGroup.RAGE))
+        assertTrue(current.getValue(EmotionGroup.RAGE) != legacy.getValue(EmotionGroup.RAGE))
+        // 同一条曲线, 两套锚点给出的结论不同 —— 这正是必须按坐标系分表的原因
+        val curve = List(20) { 0.6f to 0.8f }
+        assertEquals(listOf("燃"), EmotionGroup.headlineTagsFor(curve, "yamnet-va-v3"))
+        assertEquals(listOf("元气"), EmotionGroup.headlineTagsFor(curve, EmotionGroup.CURRENT_MODEL_VERSION))
+    }
+
+    @Test
+    fun `manual point uses the same coordinate system as the curve`() {
+        val legacyEmotion = SongEmotion(
+            songId = 1, valence = 0f, arousal = 0f,
+            curve = List(20) { 0.6f to 0.4f },
+            peakSec = 0f, windowsAnalyzed = 20, durationSec = 60f,
+            modelVersion = "yamnet-va-v3", analyzedAt = 0L,
+        )
+        val currentEmotion = legacyEmotion.copy(
+            modelVersion = EmotionGroup.CURRENT_MODEL_VERSION,
+        )
+        // 手动点 = 用户勾选词的锚点均值, 必须与曲线同坐标系
+        assertEquals(
+            EmotionGroup.avgOfWords(listOf("元气"), EmotionGroup.anchorsForManualPoint(legacyEmotion)),
+            EmotionGroup.avgOfWords(listOf("元气"), EmotionGroup.anchorsFor("yamnet-va-v3")),
+        )
+        assertEquals(
+            EmotionGroup.avgOfWords(listOf("元气"), EmotionGroup.anchorsForManualPoint(currentEmotion)),
+            EmotionGroup.avgOfWords(listOf("元气"), EmotionGroup.anchorsFor(EmotionGroup.CURRENT_MODEL_VERSION)),
+        )
+        // 无曲线(user-only / 未分析)的歌: 未来曲线必是当前坐标系 → 用当前锚点
+        val noCurve = legacyEmotion.copy(curve = emptyList(), windowsAnalyzed = 0)
+        assertEquals(
+            EmotionGroup.avgOfWords(listOf("元气"), EmotionGroup.anchorsForManualPoint(noCurve)),
+            EmotionGroup.avgOfWords(listOf("元气")),
+        )
     }
 }

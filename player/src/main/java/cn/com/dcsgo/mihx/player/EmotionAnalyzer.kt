@@ -423,8 +423,11 @@ class EmotionAnalyzer @Inject constructor(
          *
          * v4（2026-10-24）：arousal 改真实响度包络 + valence 零点斜率标定。
          * 见 docs/architecture/EMOTION_VA_UPGRADE.md。
+         *
+         * 取值引用 [cn.com.dcsgo.mihx.core.model.EmotionGroup.CURRENT_MODEL_VERSION]
+         * —— 锚点表要按这个版本号判断曲线属于哪套坐标系, 两处不能各写一份。
          */
-        const val MODEL_VERSION = "yamnet-va-v4-rms"
+        const val MODEL_VERSION = cn.com.dcsgo.mihx.core.model.EmotionGroup.CURRENT_MODEL_VERSION
         const val SR = 16000
         const val FRAME = 16384
         const val WINDOW_SEC = 5.0f

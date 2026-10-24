@@ -17,6 +17,7 @@ class EmotionTagsCorrectionTest {
     private fun emotion(
         curve: List<Pair<Float, Float>>,
         userTags: List<String> = emptyList(),
+        modelVersion: String = EmotionGroup.CURRENT_MODEL_VERSION,
     ) = SongEmotion(
         songId = 1,
         valence = 0f,
@@ -25,13 +26,14 @@ class EmotionTagsCorrectionTest {
         peakSec = 0f,
         windowsAnalyzed = curve.size,
         durationSec = 60f,
-        modelVersion = "test",
+        modelVersion = modelVersion,
         analyzedAt = 0L,
         userTags = userTags,
     )
 
-    /** 一条明确落在 BRIGHT 锚点附近的曲线 → 模型词条为「元气」 */
-    private val brightCurve = List(20) { 0.6f to 0.4f }
+    /** 一条明确落在 BRIGHT 锚点上的曲线 → 模型词条为「元气」 */
+    private val brightCurve =
+        List(20) { EmotionGroup.BRIGHT.anchorV to EmotionGroup.BRIGHT.anchorA }
 
     @Test
     fun `modelTagsOf returns the model conclusion ignoring user override`() {

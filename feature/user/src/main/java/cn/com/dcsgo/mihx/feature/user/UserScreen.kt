@@ -244,7 +244,7 @@ internal fun MoodTimeSlotSection(
                     painter = painterResource(R.drawable.shuffle_24),
                     contentDescription = "随心播放增强",
                     modifier = Modifier.size(22.dp),
-                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                    tint = MaterialTheme.colorScheme.primary,
                 )
             }
             Spacer(Modifier.width(12.dp))

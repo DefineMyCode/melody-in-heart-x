@@ -36,3 +36,6 @@ tmp/
 log.txt
 build_output.txt
 .gradle-verify/
+
+# 设备端拉取的曲库数据库（情绪诊断用；含个人听歌数据，绝不入库）
+.emotion-diag/

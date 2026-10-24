@@ -124,7 +124,16 @@ class EmotionAnalyzer @Inject constructor(
                     headIn.asFloatBuffer().put(acc)
                     headIn.rewind()
                     head.run(headIn, headOut)
-                    series.add(headOut[0][0] to headOut[0][1])
+                    // A（2026-10-24）：arousal 改为**真实响度包络**（物理定义），
+                    //    不再取 VA 头的 arousal 输出——后者是"曲风代理"：
+                    //    YAMNet 认得鼓/电子/嘻哈，测的是"像不像那类曲风"，
+                    //    导致「燃」「静谧」这类**绝对能量**词条几乎不可达。
+                    //    窗内 RMS 直接从已解码的 16k PCM 算，零额外解码、零额外分配。
+                    val arousal = windowArousal(pcmData, s)
+                    // B（2026-10-24）：valence 零点/斜率标定——模型输出系统性正偏
+                    //    （真机 1094 首歌级均值 +0.264），标定后居中（+0.017）。
+                    val valence = calibrateValence(headOut[0][0])
+                    series.add(valence to arousal)
                     windowDone++
                     onProgress((windowDone.toFloat() / totalWindows).coerceIn(0f, 1f))
                     s += HOP_SAMPLES
@@ -408,13 +417,75 @@ class EmotionAnalyzer @Inject constructor(
         private const val TAG = "EmotionAnalyzer"
         private const val YAMNET_ASSET = "emotion_yamnet.tflite"
         private const val HEAD_ASSET = "emotion_va_head.tflite"
-        const val MODEL_VERSION = "yamnet-va-v3"
+
+        /**
+         * 模型版本戳：换模型/换语义后据此判定重扫。
+         *
+         * v4（2026-10-24）：arousal 改真实响度包络 + valence 零点斜率标定。
+         * 见 docs/architecture/EMOTION_VA_UPGRADE.md。
+         */
+        const val MODEL_VERSION = "yamnet-va-v4-rms"
         const val SR = 16000
         const val FRAME = 16384
         const val WINDOW_SEC = 5.0f
         const val HOP_SEC = 2.5f
-        private const val WINDOW_SAMPLES = (WINDOW_SEC * SR).toInt()
+        /** 滑窗窗长（样本数）：5s @16k */
+        const val WINDOW_SAMPLES = (WINDOW_SEC * SR).toInt()
         private const val HOP_SAMPLES = (HOP_SEC * SR).toInt()
+
+        /**
+         * arousal 映射区间（dBFS，方案 A）。
+         *
+         * 固定物理标定，**不随曲库变化**——若用库内自适应区间，同一首歌在两台
+         * 曲库不同的设备上会得到不同词条，用户会认为功能有 bug。
+         *
+         * 语义自洽（由区间反推各词条的典型响度）：燃 ≈ −6.9dB / 治愈 ≈ −18.8dB /
+         * 静谧 ≈ −24.4dB —— 安静抒情、很响的燃、中间态的治愈，量级都对得上。
+         *
+         * 依据：真机 69 首样本的窗内 dB 分布 median −11.8 / p5 −28.1 / p95 −5.2。
+         * 更深的下限（−60dB）会让低能量段不可达（实测 0.7%），「静谧」「窒息」
+         * 这类词条永远出不来。
+         */
+        const val DB_FLOOR = -30.0
+        const val DB_CEIL = -5.0
+
+        /**
+         * valence 零点/斜率标定（方案 B）：v' = (v − B) / S。
+         *
+         * B 来自真机 1094 首的歌级 valence 均值 +0.264（标定后 +0.017，居中）；
+         * S 保留原尺度的八成，避免过度放大噪声。
+         */
+        const val V_CAL_BIAS = 0.25f
+        const val V_CAL_SCALE = 0.85f
+
+        /** 窗内 RMS（复用已解码的 16k PCM，零额外解码、零额外分配） */
+        fun windowRms(pcm: FloatArray, start: Int, length: Int): Double {
+            var sumSq = 0.0
+            var i = start
+            val end = start + length
+            while (i < end) {
+                val x = pcm[i].toDouble()
+                sumSq += x * x
+                i++
+            }
+            return kotlin.math.sqrt(sumSq / length)
+        }
+
+        /** dBFS → arousal ∈ [-1,1]（区间外截断） */
+        fun dbToArousal(db: Double): Float {
+            val a = (db - DB_FLOOR) / (DB_CEIL - DB_FLOOR) * 2.0 - 1.0
+            return a.coerceIn(-1.0, 1.0).toFloat()
+        }
+
+        /** 窗内响度 → arousal（方案 A 的完整一步） */
+        fun windowArousal(pcm: FloatArray, start: Int = 0, length: Int = WINDOW_SAMPLES): Float {
+            val rms = windowRms(pcm, start, length)
+            return dbToArousal(20.0 * kotlin.math.log10(rms + 1e-6))
+        }
+
+        /** valence 零点/斜率标定（方案 B） */
+        fun calibrateValence(v: Float): Float =
+            ((v - V_CAL_BIAS) / V_CAL_SCALE).coerceIn(-1f, 1f)
 
         /** 单曲解码看门狗: 正常 <10s, 卡死时 60s 强制放弃该曲 */
         private const val MAX_DECODE_MS = 60_000L

@@ -252,6 +252,6 @@ class SongEmotionsRepositoryTest {
     }
 
     private companion object {
-        const val MODEL_VERSION = "yamnet-va-v3"
+        const val MODEL_VERSION = "yamnet-va-v4-rms"
     }
 }

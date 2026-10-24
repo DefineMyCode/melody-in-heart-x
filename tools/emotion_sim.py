@@ -335,6 +335,8 @@ def main():
     ap.add_argument("--full-library", action="store_true",
                     help="无音频样本的歌也纳入（用模型自身 arousal），用于全库 B/C 分析")
     ap.add_argument("--only-no-a", action="store_true", help="只跑不含 A 的方案")
+    ap.add_argument("--db-cache", default="",
+                    help="app 精确路径的 dB 缓存(JSON: {songId: [dB...]})，由 tools 侧生成")
     args = ap.parse_args()
 
     try:
@@ -348,6 +350,12 @@ def main():
         con.execute("PRAGMA wal_checkpoint(TRUNCATE)")
     except Exception:
         pass
+
+    db_cache = None
+    if args.db_cache and os.path.exists(args.db_cache):
+        with io.open(args.db_cache, "r", encoding="utf-8") as fp:
+            db_cache = json.load(fp)
+        print(f"载入 dB 缓存: {args.db_cache}（{len(db_cache)} 首，app 精确路径）")
 
     rows = con.execute("""
         SELECT e.songId, e.curveJson, e.valence, e.arousal, s.artist, s.title
@@ -366,12 +374,23 @@ def main():
             if os.path.exists(fp):
                 cand = fp
                 break
-        if cand is None and not args.full_library:
+        if cand is None and not args.full_library and not (
+                db_cache is not None and str(sid) in db_cache):
             continue
         curve = json.loads(next(r["curveJson"] for r in rows if r["songId"] == sid))
         n = len(curve) // 2
         v = np.array([curve[i * 2] for i in range(n)], dtype=np.float64)
         a = np.array([curve[i * 2 + 1] for i in range(n)], dtype=np.float64)
+        if cand is None and db_cache is not None and str(sid) in db_cache:
+            curve = json.loads(next(r["curveJson"] for r in rows if r["songId"] == sid))
+            n = len(curve) // 2
+            v = np.array([curve[i * 2] for i in range(n)], dtype=np.float64)
+            a = np.array([curve[i * 2 + 1] for i in range(n)], dtype=np.float64)
+            db = np.asarray(db_cache[str(sid)], dtype=np.float64)
+            m = min(len(db), len(v))
+            songs.append({"id": sid, "artist": artist, "title": title,
+                          "v": v[:m], "a": a[:m], "db": db[:m]})
+            continue
         if cand is None:
             # --full_library: 无音频样本时用模型自身的 arousal 占位（仅供 B/C 全库分析）
             songs.append({
@@ -379,7 +398,10 @@ def main():
                 "v": v, "a": a, "db": None,
             })
             continue
-        db = decode_db(cand)
+        if db_cache is not None and str(sid) in db_cache:
+            db = np.asarray(db_cache[str(sid)], dtype=np.float64)
+        else:
+            db = decode_db(cand)
         if db is None:
             skipped += 1
             continue
@@ -440,7 +462,10 @@ def main():
             per_song_v = {s["id"]: s["v"] for s in songs}
         else:
             B, S = B_CANDS[b_name]
-            per_song_v = {s["id"]: (s["v"] - B) / S for s in songs}
+            # 与 EmotionAnalyzer.calibrateValence 一致: 标定后 clamp 回 [-1,1]
+            per_song_v = {
+                s["id"]: np.clip((s["v"] - B) / S, -1.0, 1.0) for s in songs
+            }
 
         allv = np.concatenate([per_song_v[s["id"]] for s in songs])
         alla = np.concatenate([per_song_a[s["id"]] for s in songs])

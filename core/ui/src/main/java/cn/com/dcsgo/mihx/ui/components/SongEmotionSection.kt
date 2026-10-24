@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -40,6 +41,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -244,12 +246,20 @@ fun SongEmotionSection(
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
         ) {
-            Text(
-                text = "蓝=冷暖(参考) 橙=能量 红点=高潮",
-                style = MaterialTheme.typography.labelSmall,
-                color = scheme.onSurfaceVariant,
-            )
+            // 图例色标直接画曲线用的实际颜色(V=primary / A=tertiary / 高潮=error),
+            // 不写死"蓝/橙/红"字样——换主题(墨色等)后图例仍与曲线一致
+            FlowRow(
+                modifier = Modifier.weight(1f, fill = false),
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                verticalArrangement = Arrangement.spacedBy(2.dp),
+            ) {
+                EmotionLegendItem(color = vColor, asDot = false, label = "冷暖（参考）")
+                EmotionLegendItem(color = aColor, asDot = false, label = "能量")
+                EmotionLegendItem(color = peakColor, asDot = true, label = "高潮")
+            }
+            Spacer(modifier = Modifier.width(8.dp))
             val m = emotion.peakSec.toInt()
             Text(
                 text = if (hasSignificantPeak(emotion.curve)) {
@@ -287,6 +297,41 @@ fun SongEmotionSection(
                     showCalibrate = false
                 }
             },
+        )
+    }
+}
+
+/**
+ * 图例项: 色标 + 名称.
+ * 色标形状与曲线上实际笔迹一致——V/A 是折线(短线段), 高潮是圆点.
+ */
+@Composable
+private fun EmotionLegendItem(
+    color: Color,
+    asDot: Boolean,
+    label: String,
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+    ) {
+        Canvas(modifier = Modifier.size(width = 14.dp, height = 8.dp)) {
+            if (asDot) {
+                drawCircle(color = color, radius = 3.dp.toPx(), center = center)
+            } else {
+                drawLine(
+                    color = color,
+                    start = Offset(0f, size.height / 2f),
+                    end = Offset(size.width, size.height / 2f),
+                    strokeWidth = 2.dp.toPx(),
+                    cap = StrokeCap.Round,
+                )
+            }
+        }
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }
 }

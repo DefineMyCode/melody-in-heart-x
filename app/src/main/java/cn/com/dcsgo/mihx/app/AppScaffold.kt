@@ -287,9 +287,14 @@ private fun TextNavRail(
             .fillMaxHeight()
             .width(72.dp)
             .background(MaterialTheme.colorScheme.surfaceContainer)
+            // 大屏横屏时状态栏在**屏幕顶部**、手势条在底部，
+            // 导航栏不避让的话第一项会被状态栏（时间/信号）压住（2026-10-24 用户反馈）。
+            .statusBarsPadding()
+            .navigationBarsPadding()
             .padding(vertical = 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(8.dp),
+        // 两端分散对齐：第一项贴顶、最后一项贴底，中间均匀留白。
+        verticalArrangement = Arrangement.SpaceBetween,
     ) {
         shell.tabs.forEachIndexed { index, tab ->
             val selected = index == selectedIndex

@@ -293,8 +293,8 @@ private fun TextNavRail(
             .navigationBarsPadding()
             .padding(vertical = 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        // 两端分散对齐：第一项贴顶、最后一项贴底，中间均匀留白。
-        verticalArrangement = Arrangement.SpaceBetween,
+        // 整组在导航栏里**垂直居中**（间距 8dp 与原样式一致）。
+        verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterVertically),
     ) {
         shell.tabs.forEachIndexed { index, tab ->
             val selected = index == selectedIndex

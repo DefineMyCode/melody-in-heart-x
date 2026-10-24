@@ -35,7 +35,7 @@ import cn.com.dcsgo.mihx.data.local.entity.WordPreferenceEntity
         SongEmotionEntity::class,
         WordPreferenceEntity::class,
     ],
-    version = 11,
+    version = 12,
     exportSchema = true,
 )
 abstract class MelodyDatabase : RoomDatabase() {

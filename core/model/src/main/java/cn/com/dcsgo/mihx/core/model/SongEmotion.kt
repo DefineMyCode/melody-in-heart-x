@@ -24,6 +24,17 @@ data class SongEmotion(
     val userArousal: Float? = null,
     /** 用户勾选的词条名 (EmotionCategory.label) */
     val userTags: List<String> = emptyList(),
+    /**
+     * 用户是否**不认同**模型结论：true = 手动选的词条与模型自动词条不同（用户主动纠正）。
+     *
+     * null = 无模型输出可比（该歌未分析/分析失败，或历史数据在加此列之前），
+     * false = 用户只是采纳了模型词条（点确认没改）。
+     *
+     * 存在的意义：校准弹窗预勾选模型词条，用户直接点「确认」即写回同一组词——
+     * 这种"采纳"不是独立标注，混进训练集等于用模型输出训练模型。
+     * 只有 true 的样本（外加未分析歌的纯人工标记）才是可作真值的独立纠正。
+     */
+    val userTagsEdited: Boolean? = null,
 ) {
     /** 低置信: 均值落在未定带, UI 应显示"氛围:未定"而非具体象限 */
     val lowConfidence: Boolean

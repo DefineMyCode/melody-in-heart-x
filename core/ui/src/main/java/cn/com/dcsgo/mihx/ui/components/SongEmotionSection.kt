@@ -49,6 +49,8 @@ import androidx.compose.ui.window.Dialog
 import cn.com.dcsgo.mihx.core.model.EmotionGroup
 import cn.com.dcsgo.mihx.core.model.SongEmotion
 import cn.com.dcsgo.mihx.core.model.emotionTagsOf
+import cn.com.dcsgo.mihx.core.model.isUserCorrection
+import cn.com.dcsgo.mihx.core.model.modelTagsOf
 import kotlin.math.abs
 import kotlinx.coroutines.launch
 
@@ -165,7 +167,7 @@ fun SongEmotionSection(
                 }
                 if (shown.userTags.isNotEmpty()) {
                     Text(
-                        text = "已由你校准",
+                        text = if (shown.userTagsEdited == true) "已由你纠正" else "已由你校准",
                         style = MaterialTheme.typography.labelSmall,
                         color = scheme.primary,
                     )
@@ -283,15 +285,18 @@ fun SongEmotionSection(
             onConfirm = { words ->
                 scope.launch {
                     if (controller.save(shown.songId, words)) {
+                        // 本地覆盖立即反映「是否纠正了模型」, 与仓储层写入的标记一致
+                        val edited = isUserCorrection(modelTagsOf(shown), words)
                         // 空词 = 恢复自动: 本地覆盖立即回到曲线词
                         overrideEmotion = if (words.isEmpty()) {
                             shown.copy(
                                 userTags = emptyList(),
                                 userValence = null,
                                 userArousal = null,
+                                userTagsEdited = null,
                             )
                         } else {
-                            shown.copy(userTags = words.toList())
+                            shown.copy(userTags = words.toList(), userTagsEdited = edited)
                         }
                     }
                     showCalibrate = false

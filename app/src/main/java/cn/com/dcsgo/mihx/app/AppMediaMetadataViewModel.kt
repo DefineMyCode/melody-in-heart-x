@@ -5,6 +5,8 @@ import cn.com.dcsgo.mihx.core.model.EmotionGroup
 import cn.com.dcsgo.mihx.core.model.Lyrics
 import cn.com.dcsgo.mihx.core.model.Song
 import cn.com.dcsgo.mihx.core.model.SongInfo
+import cn.com.dcsgo.mihx.core.model.isUserCorrection
+import cn.com.dcsgo.mihx.core.model.modelTagsOf
 import cn.com.dcsgo.mihx.domain.repository.LyricsRepository
 import cn.com.dcsgo.mihx.domain.repository.SongEmotionRepository
 import cn.com.dcsgo.mihx.domain.repository.SongMetadataRepository
@@ -27,6 +29,11 @@ class AppMediaMetadataViewModel @Inject constructor(
      * 保存用户情绪校准(词条 -> 组锚点平均坐标). 返回 false 表示词表非法.
      * 2026-09-04: 分析失败的歌曲也允许手动标记——无分析行时仓库会创建
      * 仅含 user 字段的记录(词条即用户结论, 曲线留空待重扫)。
+     *
+     * 2026-10-24: 同时判定「用户是否不认同模型结论」——校准弹窗预勾选模型词条,
+     * 用户直接点确认即写回同一组词, 那种"采纳"不是独立标注。判定用
+     * [modelTagsOf] 从曲线重算模型结论(不能用 emotionTagsOf: 已校准的歌
+     * 那里返回的是用户自己的词, 比出来永远是"没改")。
      */
     suspend fun saveEmotionCorrection(songId: Int, words: Set<String>): Boolean {
         // 空词 = 恢复自动词条: 清掉用户标记列(值置 NULL), 展示层回落到曲线投票。
@@ -41,7 +48,9 @@ class AppMediaMetadataViewModel @Inject constructor(
         val avg = EmotionGroup.avgOfWords(words.toList()) ?: return false
         // 仓库读写是 runBlocking(IO) 桥, 搬到 Default 线程避免主线程直调卡 UI
         return withContext(Dispatchers.Default) {
-            emotionRepository.saveCorrection(songId, avg.first, avg.second, words.toList())
+            val current = emotionRepository.get(songId)
+            val edited = current?.let { isUserCorrection(modelTagsOf(it), words) }
+            emotionRepository.saveCorrection(songId, avg.first, avg.second, words.toList(), edited)
             true
         }
     }

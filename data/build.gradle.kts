@@ -34,6 +34,16 @@ android {
     }
 }
 
+// Room schema JSON 由主源集的 KSP 任务生成(kspXxxKotlin)，单测 assets 的合并必须排在它之后：
+// 否则 mergeXxxUnitTestAssets 先跑完，新版本 schema(12.json 等) 还没落盘，
+// MigrationTestHelper 读 assets 报 "Cannot find the schema file"。
+// 2026-10-24 迁移 v11→v12 时首次踩到（merge 任务对已生成的旧 schema 是 UP-TO-DATE 的，
+// 新文件出现也不会自动触发重跑）。
+tasks.matching { it.name.matches(Regex("merge\\w+UnitTestAssets")) }.configureEach {
+    val variant = name.removePrefix("merge").removeSuffix("UnitTestAssets")
+    dependsOn("ksp${variant}Kotlin")
+}
+
 dependencies {
     implementation(project(":core:model"))
     implementation(project(":core:common"))

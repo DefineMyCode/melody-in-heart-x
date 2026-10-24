@@ -27,6 +27,11 @@ data class SongEmotionEntity(
     val userArousal: Float? = null,
     /** 用户勾选词条, 逗号分隔的 label */
     val userTags: String? = null,
+    /**
+     * 用户是否不认同模型结论（true=主动纠正 / false=直接采纳 / null=无模型输出可比）。
+     * 可空而非 NOT NULL DEFAULT 0：老数据无从判断"改没改"，存 null 才是诚实的。
+     */
+    val userTagsEdited: Boolean? = null,
 )
 
 /**
@@ -54,6 +59,7 @@ data class SongEmotionLite(
     val userValence: Float? = null,
     val userArousal: Float? = null,
     val userTags: String? = null,
+    val userTagsEdited: Boolean? = null,
 )
 
 /** 实体 → 轻量投影（丢弃 embeddingB64，不解码 base64） */
@@ -70,4 +76,5 @@ fun SongEmotionEntity.toLite(): SongEmotionLite = SongEmotionLite(
     userValence = userValence,
     userArousal = userArousal,
     userTags = userTags,
+    userTagsEdited = userTagsEdited,
 )

@@ -303,9 +303,11 @@ class MusicRepositoryDeleteSongTest {
             songEmotions.removeAll { it.songId == emotion.songId }
             songEmotions.add(emotion)
         }
-        override suspend fun updateSongEmotionCorrection(songId: Int, v: Float, a: Float, tags: String) {
+        override suspend fun updateSongEmotionCorrection(
+            songId: Int, v: Float, a: Float, tags: String, edited: Boolean?
+        ) {
             val idx = songEmotions.indexOfFirst { it.songId == songId }
-            if (idx >= 0) songEmotions[idx] = songEmotions[idx].copy(userValence = v, userArousal = a, userTags = tags)
+            if (idx >= 0) songEmotions[idx] = songEmotions[idx].copy(userValence = v, userArousal = a, userTags = tags, userTagsEdited = edited)
         }
         override suspend fun upsertUserOnlyCorrection(emotion: SongEmotionEntity) {
             songEmotions.removeAll { it.songId == emotion.songId }

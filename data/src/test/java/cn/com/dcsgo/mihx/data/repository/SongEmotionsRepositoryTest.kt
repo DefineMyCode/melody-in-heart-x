@@ -126,7 +126,7 @@ class SongEmotionsRepositoryTest {
     @Test
     fun `upsert inherits user calibration so rescan does not swallow it`() = runBlocking {
         repository.upsert(emotion(songId = 3, embedding = floatArrayOf(1f)))
-        repository.saveCorrection(3, 0.44f, -0.22f, listOf("燃", "静谧"))
+        repository.saveCorrection(3, 0.44f, -0.22f, listOf("燃", "静谧"), edited = true)
 
         // 模型升级重扫：新记录不带校准
         repository.upsert(
@@ -139,12 +139,13 @@ class SongEmotionsRepositoryTest {
         assertEquals(0.44f, row.userValence!!, 1e-6f) // 校准被继承
         assertEquals(-0.22f, row.userArousal!!, 1e-6f)
         assertEquals(listOf("燃", "静谧"), row.userTags)
+        assertEquals(true, row.userTagsEdited) // 「是否纠正模型」标记一并继承
     }
 
     @Test
     fun `upsert with explicit calibration overrides old one`() = runBlocking {
         repository.upsert(emotion(songId = 4))
-        repository.saveCorrection(4, 0.1f, 0.2f, listOf("emo"))
+        repository.saveCorrection(4, 0.1f, 0.2f, listOf("emo"), edited = true)
 
         repository.upsert(
             emotion(songId = 4, userValence = 0.5f, userArousal = 0.6f, userTags = listOf("燃"))
@@ -158,7 +159,7 @@ class SongEmotionsRepositoryTest {
 
     @Test
     fun `saveCorrection creates user-only row for unanalyzed song`() = runBlocking {
-        repository.saveCorrection(9, 0.3f, 0.4f, listOf("治愈"))
+        repository.saveCorrection(9, 0.3f, 0.4f, listOf("治愈"), edited = null)
 
         val row = repository.get(9)!!
 
@@ -176,7 +177,7 @@ class SongEmotionsRepositoryTest {
             emotion(songId = 5, valence = 0.7f, arousal = -0.3f, curve = listOf(0.4f to 0.5f))
         )
 
-        repository.saveCorrection(5, 0.1f, 0.2f, listOf("emo"))
+        repository.saveCorrection(5, 0.1f, 0.2f, listOf("emo"), edited = true)
 
         val row = repository.get(5)!!
         assertEquals(0.7f, row.valence, 1e-6f)
@@ -189,7 +190,7 @@ class SongEmotionsRepositoryTest {
     @Test
     fun `clearCorrection resets user fields but keeps model data`() = runBlocking {
         repository.upsert(emotion(songId = 6))
-        repository.saveCorrection(6, 0.1f, 0.2f, listOf("emo"))
+        repository.saveCorrection(6, 0.1f, 0.2f, listOf("emo"), edited = false)
 
         repository.clearCorrection(6)
 
@@ -197,13 +198,44 @@ class SongEmotionsRepositoryTest {
         assertNull(row.userValence)
         assertNull(row.userArousal)
         assertTrue(row.userTags.isEmpty())
+        assertNull(row.userTagsEdited) // 恢复自动后无从判断"改没改"，重置为 null
         assertEquals(MODEL_VERSION, row.modelVersion)
         assertEquals(2, row.windowsAnalyzed)
     }
 
+    // ───────────── userTagsEdited：区分「用户纠正模型」与「用户只是采纳」 ─────────────
+
+    @Test
+    fun `saveCorrection persists the edited flag`() = runBlocking {
+        repository.upsert(emotion(songId = 21))
+
+        repository.saveCorrection(21, 0.1f, 0.2f, listOf("emo"), edited = true)
+
+        assertEquals(true, repository.get(21)!!.userTagsEdited)
+    }
+
+    @Test
+    fun `saveCorrection persists the not-edited flag`() = runBlocking {
+        repository.upsert(emotion(songId = 22))
+
+        repository.saveCorrection(22, 0.1f, 0.2f, listOf("emo"), edited = false)
+
+        assertEquals(false, repository.get(22)!!.userTagsEdited)
+    }
+
+    @Test
+    fun `user-only row carries no edited flag because there is no model to disagree with`() =
+        runBlocking {
+            repository.saveCorrection(23, 0.1f, 0.2f, listOf("emo"), edited = null)
+
+            val row = repository.get(23)!!
+            assertEquals("user-only", row.modelVersion)
+            assertNull(row.userTagsEdited)
+        }
+
     @Test
     fun `clearCorrection deletes user-only row entirely`() = runBlocking {
-        repository.saveCorrection(8, 0.1f, 0.2f, listOf("emo"))
+        repository.saveCorrection(8, 0.1f, 0.2f, listOf("emo"), edited = null)
 
         repository.clearCorrection(8)
 

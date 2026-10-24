@@ -179,4 +179,37 @@ class MelodyDatabaseMigrationTest {
         }
         db.close()
     }
+
+    @Test
+    fun migration11To12AddsUserTagsEditedColumnWithNullDefault() {
+        val name = dbName("11-12")
+        helper.createDatabase(name, 11).apply {
+            execSQL(
+                "INSERT INTO song_emotions (songId, valence, arousal, curveJson, peakSec, " +
+                    "windowsAnalyzed, durationSec, modelVersion, analyzedAt, userTags) " +
+                    "VALUES (5, 0.3, 0.7, '[0.1,0.2]', 1.0, 3, 120.0, 'v1', 42, 'emo')"
+            )
+            close()
+        }
+
+        val db = helper.runMigrationsAndValidate(name, 12, true, MelodyMigrations.MIGRATION_11_12)
+
+        // 老数据无从判断"用户改没改模型" → NULL（诚实的"未知"），不是 false
+        db.query("SELECT userTagsEdited FROM song_emotions WHERE songId = 5").use { cursor ->
+            assertTrue(cursor.moveToFirst())
+            assertTrue(cursor.isNull(0))
+        }
+        // 新写入三态可用：true=主动纠正 / false=只是采纳
+        db.execSQL("UPDATE song_emotions SET userTagsEdited = 1 WHERE songId = 5")
+        db.execSQL(
+            "INSERT INTO song_emotions (songId, valence, arousal, curveJson, peakSec, " +
+                "windowsAnalyzed, durationSec, modelVersion, analyzedAt, userTagsEdited) " +
+                "VALUES (6, 0.1, 0.2, '[]', 0.0, 0, 0.0, 'user-only', 43, 0)"
+        )
+        db.query("SELECT userTagsEdited FROM song_emotions WHERE songId = 6").use { cursor ->
+            assertTrue(cursor.moveToFirst())
+            assertEquals(0, cursor.getInt(0))
+        }
+        db.close()
+    }
 }

@@ -61,6 +61,9 @@ class SongEmotionsRepository(
                         userValence = old.userValence,
                         userArousal = old.userArousal,
                         userTags = old.userTags,
+                        // 校准的"是否被纠正"标记一并继承：重扫换了模型，
+                        // 但用户的判断仍然成立（词条是用户定的，不是模型定的）
+                        userTagsEdited = old.userTagsEdited,
                     )
                 )
                 return@withContext
@@ -76,10 +79,16 @@ class SongEmotionsRepository(
      * （曲线空、modelVersion="user-only"），读侧 emotionTagsOf 以 userTags 优先，
      * 渲染端对空曲线显示词条列表而非曲线图。
      */
-    override suspend fun saveCorrection(songId: Int, valence: Float, arousal: Float, tags: List<String>) = withContext(Dispatchers.IO) {
+    override suspend fun saveCorrection(
+        songId: Int,
+        valence: Float,
+        arousal: Float,
+        tags: List<String>,
+        edited: Boolean?,
+    ) = withContext(Dispatchers.IO) {
         val tagsText = tags.joinToString(",")
         if (melodyDao.songEmotion(songId) != null) {
-            melodyDao.updateSongEmotionCorrection(songId, valence, arousal, tagsText)
+            melodyDao.updateSongEmotionCorrection(songId, valence, arousal, tagsText, edited)
         } else {
             melodyDao.upsertUserOnlyCorrection(
                 SongEmotionEntity(
@@ -96,6 +105,7 @@ class SongEmotionsRepository(
                     userValence = valence,
                     userArousal = arousal,
                     userTags = tagsText,
+                    userTagsEdited = null,
                 ),
             )
         }
@@ -162,6 +172,7 @@ private fun SongEmotionEntity.toDomain(): SongEmotion = SongEmotion(
     userValence = userValence,
     userArousal = userArousal,
     userTags = parseTags(userTags),
+    userTagsEdited = userTagsEdited,
 )
 
 /**
@@ -184,6 +195,7 @@ private fun SongEmotionLite.toDomainLite(): SongEmotion = SongEmotion(
     userValence = userValence,
     userArousal = userArousal,
     userTags = parseTags(userTags),
+    userTagsEdited = userTagsEdited,
 )
 
 private fun SongEmotion.toEntity(): SongEmotionEntity {
@@ -206,5 +218,6 @@ private fun SongEmotion.toEntity(): SongEmotionEntity {
         userValence = userValence,
         userArousal = userArousal,
         userTags = userTags.joinToString(",").ifEmpty { null },
+        userTagsEdited = userTagsEdited,
     )
 }

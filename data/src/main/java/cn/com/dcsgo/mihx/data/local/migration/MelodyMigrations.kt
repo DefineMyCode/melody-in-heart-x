@@ -152,9 +152,20 @@ object MelodyMigrations {
         }
     }
 
+    val MIGRATION_11_12 = object : Migration(11, 12) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            // 用户是否「不认同」模型结论（2026-10-24）：区分「主动纠正」与「直接采纳」。
+            // 可空且无 DEFAULT —— 老数据无从判断改没改（迁移前没有这个信息），
+            // 存 NULL 才是诚实的；新建库由 @Entity 生成同一形态（INTEGER 可空），
+            // 故新旧 schema 完全一致。
+            db.execSQL("ALTER TABLE `song_emotions` ADD COLUMN `userTagsEdited` INTEGER")
+        }
+    }
+
     /** 声明于末尾：object 属性按声明顺序初始化，需引用上方全部迁移 */
     val ALL: Array<Migration> = arrayOf(
         MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6,
         MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11,
+        MIGRATION_11_12,
     )
 }

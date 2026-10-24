@@ -400,8 +400,8 @@ interface MelodyDao {
      */
     @Query(
         "SELECT songId, valence, arousal, curveJson, peakSec, windowsAnalyzed, " +
-            "durationSec, modelVersion, analyzedAt, userValence, userArousal, userTags " +
-            "FROM song_emotions"
+            "durationSec, modelVersion, analyzedAt, userValence, userArousal, userTags, " +
+            "userTagsEdited FROM song_emotions"
     )
     suspend fun allSongEmotions(): List<SongEmotionLite>
 
@@ -412,8 +412,8 @@ interface MelodyDao {
      */
     @Query(
         "SELECT songId, valence, arousal, curveJson, peakSec, windowsAnalyzed, " +
-            "durationSec, modelVersion, analyzedAt, userValence, userArousal, userTags " +
-            "FROM song_emotions"
+            "durationSec, modelVersion, analyzedAt, userValence, userArousal, userTags, " +
+            "userTagsEdited FROM song_emotions"
     )
     fun observeAllSongEmotions(): Flow<List<SongEmotionLite>>
 
@@ -451,10 +451,16 @@ interface MelodyDao {
     suspend fun upsertSongEmotion(emotion: SongEmotionEntity)
 
     @Query(
-        "UPDATE song_emotions SET userValence = :v, userArousal = :a, userTags = :tags " +
-            "WHERE songId = :songId"
+        "UPDATE song_emotions SET userValence = :v, userArousal = :a, userTags = :tags, " +
+            "userTagsEdited = :edited WHERE songId = :songId"
     )
-    suspend fun updateSongEmotionCorrection(songId: Int, v: Float, a: Float, tags: String)
+    suspend fun updateSongEmotionCorrection(
+        songId: Int,
+        v: Float,
+        a: Float,
+        tags: String,
+        edited: Boolean?,
+    )
 
     /**
      * 用户-only 校准 upsert（2026-09-04）：分析失败的歌曲没有 emotion 行，
@@ -469,8 +475,8 @@ interface MelodyDao {
     suspend fun deleteSongEmotion(songId: Int)
 
     @Query(
-        "UPDATE song_emotions SET userValence = NULL, userArousal = NULL, userTags = NULL " +
-            "WHERE songId = :songId"
+        "UPDATE song_emotions SET userValence = NULL, userArousal = NULL, userTags = NULL, " +
+            "userTagsEdited = NULL WHERE songId = :songId"
     )
     suspend fun clearSongEmotionCorrection(songId: Int)
 

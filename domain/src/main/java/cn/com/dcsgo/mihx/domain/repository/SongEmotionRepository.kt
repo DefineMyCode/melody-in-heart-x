@@ -49,8 +49,20 @@ interface SongEmotionRepository {
 
     suspend fun upsert(emotion: SongEmotion)
 
-    /** 用户校准: 只写 user 三字段, 不动模型数据 */
-    suspend fun saveCorrection(songId: Int, valence: Float, arousal: Float, tags: List<String>)
+    /**
+     * 用户校准: 只写 user 三字段, 不动模型数据.
+     *
+     * @param edited 用户是否不认同模型结论: true=主动纠正模型的词 / false=只是采纳 /
+     *              null=无模型输出可比（该歌未分析）。用于把「独立纠正」与
+     *              「用户点确认」区分开——后者不是标注, 不能当训练真值。
+     */
+    suspend fun saveCorrection(
+        songId: Int,
+        valence: Float,
+        arousal: Float,
+        tags: List<String>,
+        edited: Boolean?,
+    )
 
     /** 清除用户校准(值列置 NULL), 该歌回落到曲线自动词条 */
     suspend fun clearCorrection(songId: Int)

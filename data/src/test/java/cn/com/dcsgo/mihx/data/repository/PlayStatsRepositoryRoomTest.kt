@@ -369,10 +369,12 @@ class PlayStatsRepositoryRoomTest {
             songEmotions.removeAll { it.songId in songIds }
         }
 
-        override suspend fun updateSongEmotionCorrection(songId: Int, v: Float, a: Float, tags: String) {
+        override suspend fun updateSongEmotionCorrection(
+            songId: Int, v: Float, a: Float, tags: String, edited: Boolean?
+        ) {
             val idx = songEmotions.indexOfFirst { it.songId == songId }
             if (idx >= 0) songEmotions[idx] = songEmotions[idx].copy(
-                userValence = v, userArousal = a, userTags = tags
+                userValence = v, userArousal = a, userTags = tags, userTagsEdited = edited
             )
         }
 

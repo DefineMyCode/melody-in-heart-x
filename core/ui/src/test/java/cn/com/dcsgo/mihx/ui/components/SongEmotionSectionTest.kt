@@ -74,8 +74,10 @@ class SongEmotionSectionTest {
 
     @Test
     fun `categoriesFor picks nearest group by vote ratio`() {
-        // 全程高能量+正 valence -> RAGE(0.3,0.85) 系
-        val energetic = List(20) { 0.5f to 0.9f }
+        // 全程落在「燃」的锚点上 -> RAGE
+        // （锚点坐标会随坐标系重标定变化，这里跟着锚点走，不断言具体数值）
+        val rage = EmotionGroup.RAGE
+        val energetic = List(20) { rage.anchorV to rage.anchorA }
         val top = EmotionGroup.categoriesFor(energetic)
         assertTrue(top.isNotEmpty())
         assertEquals(EmotionGroup.RAGE, top.first().first)
@@ -127,7 +129,8 @@ class SongEmotionSectionTest {
         assertEquals(
             (EmotionGroup.RAGE.anchorV + EmotionGroup.STILL.anchorV) / 2, v2, 1e-6f
         )
-        assertTrue(a2 > 0f) // RAGE 拉高
+        // 均值必须落在两个组成锚点之间（燃=高能量，静谧=低能量）
+        assertTrue(a2 > EmotionGroup.STILL.anchorA && a2 < EmotionGroup.RAGE.anchorA)
         // 非法词 -> null
         assertEquals(null, EmotionGroup.avgOfWords(listOf("不存在的词")))
         assertEquals(null, EmotionGroup.avgOfWords(emptyList()))

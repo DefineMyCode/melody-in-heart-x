@@ -30,7 +30,7 @@ class EmotionTagsCorrectionTest {
         userTags = userTags,
     )
 
-    /** 一条明确落在 BRIGHT(0.6,0.4) 锚点附近的曲线 → 模型词条为「元气」 */
+    /** 一条明确落在 BRIGHT 锚点附近的曲线 → 模型词条为「元气」 */
     private val brightCurve = List(20) { 0.6f to 0.4f }
 
     @Test

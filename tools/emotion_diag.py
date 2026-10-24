@@ -31,21 +31,39 @@ import numpy as np
 
 # ── EmotionGroup 镜像（core/model/EmotionGroup.kt）────────────────────────
 # (anchorV, anchorA, headline, auto) —— 顺序与 Kotlin enum 一致
+# 2026-10-25: 锚点已按 A/B 改造后的新坐标系在全库真值上重标定（见 §10 方案 C）
 GROUPS = [
-    ("BRIGHT", 0.6, 0.4, "元气", True),
-    ("RAGE", 0.3, 0.85, "燃", True),
-    ("EPIC", 0.2, 0.5, "神圣", True),
+    ("BRIGHT", 0.486, 0.492, "元气", True),
+    ("RAGE", 0.009, 0.607, "燃", True),
+    ("EPIC", 0.228, 0.277, "神圣", True),
     ("WITTY", 0.2, 0.3, "鬼畜", False),   # auto=false: 不参与自动投票
-    ("LOVE", 0.6, -0.1, "治愈", True),
-    ("STILL", 0.3, -0.55, "静谧", True),
-    ("SAD", -0.5, -0.4, "emo", True),
-    ("ANXIOUS", -0.4, 0.6, "躁", True),
-    ("CHILL", 0.4, -0.3, "放松", True),
-    ("ABYSS", -0.7, -0.2, "窒息", True),
+    ("LOVE", 0.431, -0.124, "治愈", True),
+    ("STILL", 0.078, -0.733, "静谧", True),
+    ("SAD", -0.744, -0.432, "emo", True),
+    ("ANXIOUS", -0.769, 0.590, "躁", True),
+    ("CHILL", 0.012, -0.310, "放松", True),
+    ("ABYSS", -0.774, -0.104, "窒息", True),
 ]
 LOW_CONF = 0.15        # SongEmotion.LOW_CONF
 MIN_RATIO = 0.15       # categoriesFor(minRatio)
 MAX_TAGS = 4           # categoriesFor(topN)
+
+# ── 改造前(A/B 之前)的原始语义锚点 —— 冻结引用 ──────────────────────────
+# 2026-10-25 起 EmotionGroup 的锚点已按新坐标系重算，但"语义蓝图"仍以这张表为准:
+# 锚点重标定工具(anchor_fit/anchor_opt)需要它来做"旧坐标系 → 新坐标系"的映射与
+# 语义序约束。它**不再**跟随 GROUPS 变化, 改 GROUPS 时不要动这里。
+PRE_VA_ANCHORS = {
+    "元气": (0.6, 0.4),
+    "燃": (0.3, 0.85),
+    "神圣": (0.2, 0.5),
+    "鬼畜": (0.2, 0.3),
+    "治愈": (0.6, -0.1),
+    "静谧": (0.3, -0.55),
+    "emo": (-0.5, -0.4),
+    "躁": (-0.4, 0.6),
+    "放松": (0.4, -0.3),
+    "窒息": (-0.7, -0.2),
+}
 
 AUTO = [g for g in GROUPS if g[4]]
 AUTO_IDX = np.array([i for i, g in enumerate(GROUPS) if g[4]])
@@ -98,12 +116,17 @@ def tags_to_headlines(picked):
 
 
 # ── 数据读取 ────────────────────────────────────────────────────────────
-def load_songs(conn):
-    rows = conn.execute(
+def load_songs(conn, model_version=None):
+    sql = (
         "SELECT songId, valence, arousal, curveJson, peakSec, windowsAnalyzed, "
         "durationSec, modelVersion, userValence, userArousal, userTags "
         "FROM song_emotions WHERE windowsAnalyzed > 0"
-    ).fetchall()
+    )
+    params = ()
+    if model_version:
+        sql += " AND modelVersion = ?"
+        params = (model_version,)
+    rows = conn.execute(sql, params).fetchall()
     out = []
     for r in rows:
         try:
@@ -216,6 +239,7 @@ def main():
     ap.add_argument("db")
     ap.add_argument("--bootstrap", type=int, default=200)
     ap.add_argument("--seed", type=int, default=7)
+    ap.add_argument("--model", default="", help="只分析指定 modelVersion 的曲线")
     args = ap.parse_args()
 
     try:
@@ -234,7 +258,7 @@ def main():
     except Exception:
         pass
 
-    songs = load_songs(con)
+    songs = load_songs(con, args.model or None)
     titles = load_titles(con)
     total_songs = con.execute("SELECT COUNT(*) c FROM songs").fetchone()["c"]
     n_tagged = con.execute(

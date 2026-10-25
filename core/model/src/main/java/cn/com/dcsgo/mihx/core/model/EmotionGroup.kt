@@ -172,6 +172,48 @@ enum class EmotionGroup(
             }
 
         /**
+         * 逐窗曲线 → 各组的**完整**投票比例（不过滤、不截断）.
+         *
+         * 这是 [categoriesFor] 的底座, 也是**置信度**的来源 ——
+         * 最高票组的占比就是"模型对『这是什么情绪』有多大把握"
+         * (见 [confidenceOf]). 以前这个量在 [categoriesFor] 里算出来
+         * 就被 minRatio 过滤掉了, 等于白算.
+         *
+         * 排序契约: 占比降序, 并列按组声明序([EmotionGroup.ordinal])升序
+         * —— 与 [categoriesFor] 完全一致(同一个底座, 不可能分叉).
+         *
+         * [anchors] 必须与曲线所属坐标系匹配 —— 用 [anchorsFor] 按 modelVersion 取.
+         */
+        fun voteRatios(
+            curve: List<Pair<Float, Float>>,
+            anchors: Map<EmotionGroup, Pair<Float, Float>>,
+        ): List<Pair<EmotionGroup, Float>> {
+            if (curve.isEmpty()) return emptyList()
+            val votes = HashMap<EmotionGroup, Int>()
+            var total = 0
+            for ((v, a) in curve) {
+                if (kotlin.math.abs(v) < SongEmotion.LOW_CONF &&
+                    kotlin.math.abs(a) < SongEmotion.LOW_CONF
+                ) continue
+                total++
+                val nearest = entries.filter { it.auto }.minByOrNull { g ->
+                    val p = anchors.getValue(g)
+                    val dv = v - p.first
+                    val da = a - p.second
+                    dv * dv + da * da
+                } ?: continue
+                votes[nearest] = (votes[nearest] ?: 0) + 1
+            }
+            if (total == 0) return emptyList()
+            return votes.entries
+                .map { (g, n) -> g to n.toFloat() / total }
+                .sortedWith(
+                    compareByDescending<Pair<EmotionGroup, Float>> { it.second }
+                        .thenBy { it.first.ordinal },
+                )
+        }
+
+        /**
          * 逐窗曲线 → 组投票: 每窗找最近锚点组, 按占比排序取 top-n.
          * 近零窗弃权. 返回组+占比, 展示用 headline.
          *
@@ -193,33 +235,23 @@ enum class EmotionGroup(
             anchors: Map<EmotionGroup, Pair<Float, Float>>,
             topN: Int = MAX_TAGS,
             minRatio: Float = 0.15f,
-        ): List<Pair<EmotionGroup, Float>> {
-            if (curve.isEmpty()) return emptyList()
-            val votes = HashMap<EmotionGroup, Int>()
-            var total = 0
-            for ((v, a) in curve) {
-                if (kotlin.math.abs(v) < SongEmotion.LOW_CONF &&
-                    kotlin.math.abs(a) < SongEmotion.LOW_CONF
-                ) continue
-                total++
-                val nearest = entries.filter { it.auto }.minByOrNull { g ->
-                    val p = anchors.getValue(g)
-                    val dv = v - p.first
-                    val da = a - p.second
-                    dv * dv + da * da
-                } ?: continue
-                votes[nearest] = (votes[nearest] ?: 0) + 1
-            }
-            if (total == 0) return emptyList()
-            return votes.entries
-                .map { (g, n) -> g to n.toFloat() / total }
+        ): List<Pair<EmotionGroup, Float>> =
+            voteRatios(curve, anchors)
                 .filter { it.second >= minRatio }
-                .sortedWith(
-                    compareByDescending<Pair<EmotionGroup, Float>> { it.second }
-                        .thenBy { it.first.ordinal },
-                )
                 .take(topN)
-        }
+
+        /**
+         * 模型对这首的**把握程度**: 最高票组的占比（0~1）.
+         *
+         * 值越大 = 越多窗口落在同一个情绪组 = 模型越确定.
+         * 值越小 = 票摊在多个组之间 = 模型自己也没把握.
+         *
+         * 无有效窗(全近零)返回 0f —— 没有任何结论, 等于最没把握.
+         */
+        fun confidenceOf(
+            curve: List<Pair<Float, Float>>,
+            anchors: Map<EmotionGroup, Pair<Float, Float>>,
+        ): Float = voteRatios(curve, anchors).firstOrNull()?.second ?: 0f
 
         /**
          * 自动分析展示词(组代表词列表).

@@ -51,6 +51,7 @@ import cn.com.dcsgo.mihx.core.model.SongEmotion
 import cn.com.dcsgo.mihx.core.model.emotionTagsOf
 import cn.com.dcsgo.mihx.core.model.isUserCorrection
 import cn.com.dcsgo.mihx.core.model.modelTagsOf
+import cn.com.dcsgo.mihx.core.model.needsConfidenceHint
 import kotlin.math.abs
 import kotlinx.coroutines.launch
 
@@ -170,6 +171,16 @@ fun SongEmotionSection(
                         text = if (shown.userTagsEdited == true) "已由你纠正" else "已由你校准",
                         style = MaterialTheme.typography.labelSmall,
                         color = scheme.primary,
+                    )
+                }
+                // 低把握提示: 词条是模型的投票结论, 票摊得开就会同时冒出冷暖两个词
+                // (全库 29% 的歌如此). 明说"把握不大", 好过让用户以为
+                // 「治愈 · emo」就是这歌的真实写照.
+                if (needsConfidenceHint(shown)) {
+                    Text(
+                        text = "模型把握不大，词条仅供参考",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = scheme.onSurfaceVariant,
                     )
                 }
             }

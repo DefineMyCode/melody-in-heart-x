@@ -311,4 +311,37 @@ class MelodyDatabaseMigrationTest {
         }
         db.close()
     }
+
+    @Test
+    fun migration15To16RescalesHistoricalVotesToTheWeightedScale() {
+        val name = dbName("15-16")
+        helper.createDatabase(name, 15).apply {
+            execSQL(
+                "INSERT INTO word_preferences (word, likeVotes, dislikeVotes, updatedAt) " +
+                    "VALUES ('emo', 0, 3, 42)"
+            )
+            execSQL(
+                "INSERT INTO word_preferences (word, likeVotes, dislikeVotes, updatedAt) " +
+                    "VALUES ('治愈', 2, 5, 43)"
+            )
+            close()
+        }
+
+        val db = helper.runMigrationsAndValidate(name, 16, true, MelodyMigrations.MIGRATION_15_16)
+
+        // 历史票统一 x100 —— 新票是 15~100 票/次, 不缩放的话新票会立刻淹没历史
+        db.query("SELECT likeVotes, dislikeVotes FROM word_preferences WHERE word = 'emo'")
+            .use { cursor ->
+                assertTrue(cursor.moveToFirst())
+                assertEquals(0, cursor.getInt(0))
+                assertEquals(300, cursor.getInt(1))
+            }
+        db.query("SELECT likeVotes, dislikeVotes FROM word_preferences WHERE word = '治愈'")
+            .use { cursor ->
+                assertTrue(cursor.moveToFirst())
+                assertEquals(200, cursor.getInt(0))
+                assertEquals(500, cursor.getInt(1))
+            }
+        db.close()
+    }
 }

@@ -1,5 +1,6 @@
 package cn.com.dcsgo.mihx.domain.playback
 
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -39,5 +40,16 @@ class ExplorePlaybackPolicyTest {
     fun isSkipped_shortSong_playedFullyUnder30s() {
         // 20 秒的短歌听完整首（20s）仍不足 30s → 按规则记「快速跳过」
         assertTrue(ExplorePlaybackPolicy.isSkipped(playedMs = 20_000L, durationMs = 20_000L))
+    }
+
+    @Test
+    fun `vote weight scales with the word share`() {
+        // 票重 = 占比 × 100：主情绪票重高、顺带蹭到的次要词票重低
+        assertEquals(80, ExplorePlaybackPolicy.voteWeightOf(0.80f))
+        assertEquals(20, ExplorePlaybackPolicy.voteWeightOf(0.20f))
+        assertEquals(100, ExplorePlaybackPolicy.voteWeightOf(1.00f))
+        // 占比极低 -> 0 票（等于不投：那不是"这个情绪"，只是碰巧落在附近）
+        assertEquals(0, ExplorePlaybackPolicy.voteWeightOf(0.004f))
+        assertEquals(0, ExplorePlaybackPolicy.voteWeightOf(0f))
     }
 }

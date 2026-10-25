@@ -14,6 +14,9 @@ import org.junit.Test
 /**
  * 情绪词条收听偏好计票（2026-10-20 探索播放）：
  * 验证 recordSongOutcome 的票数累计与归属判定（计票制，单次跳过不翻转已喜欢的词条）。
+ *
+ * 2026-10-25：票重改为按**词条占比**给（`votes` 是 词 -> 票重），
+ * 这里仍用票重 1 验证「累计 + 归属判定」的语义不变，另外单独有一条测加权主次。
  */
 class WordPreferencesRepositoryTest {
 
@@ -25,7 +28,7 @@ class WordPreferencesRepositoryTest {
         )
         val repo = WordPreferencesRepository(dao)
 
-        repo.recordSongOutcome(words = listOf("静谧", "伤感"), liked = false)
+        repo.recordSongOutcome(votes = mapOf("静谧" to 1, "伤感" to 1), liked = false)
 
         val quiet = repo.getAll()["静谧"]!!
         assertEquals(3, quiet.likeVotes)
@@ -40,7 +43,7 @@ class WordPreferencesRepositoryTest {
         val dao = FakeMelodyDao()
         val repo = WordPreferencesRepository(dao)
 
-        repo.recordSongOutcome(words = listOf("快乐", "治愈"), liked = true)
+        repo.recordSongOutcome(votes = mapOf("快乐" to 1, "治愈" to 1), liked = true)
 
         val map = repo.getAll()
         assertEquals(1, map["快乐"]!!.likeVotes)
@@ -54,8 +57,8 @@ class WordPreferencesRepositoryTest {
         val dao = FakeMelodyDao()
         val repo = WordPreferencesRepository(dao)
 
-        repo.recordSongOutcome(words = listOf("静谧"), liked = true)
-        repo.recordSongOutcome(words = listOf("静谧"), liked = false)
+        repo.recordSongOutcome(votes = mapOf("静谧" to 1), liked = true)
+        repo.recordSongOutcome(votes = mapOf("静谧" to 1), liked = false)
 
         val quiet = repo.getAll()["静谧"]!!
         assertEquals(1, quiet.likeVotes)
@@ -65,11 +68,38 @@ class WordPreferencesRepositoryTest {
     }
 
     @Test
+    fun recordSongOutcome_usesTheGivenWeightPerWord() = runBlocking {
+        // 票重 = 词条在整首里占的比例（×100）：主情绪票重高、顺带蹭到的次要词票重低
+        val dao = FakeMelodyDao()
+        val repo = WordPreferencesRepository(dao)
+
+        repo.recordSongOutcome(votes = mapOf("emo" to 80, "治愈" to 20), liked = false)
+
+        val map = repo.getAll()
+        assertEquals(0, map["emo"]!!.likeVotes)
+        assertEquals(80, map["emo"]!!.dislikeVotes)
+        assertEquals(20, map["治愈"]!!.dislikeVotes)
+        // 归属判定是相对比较，票重不影响它
+        assertEquals(WordPreferenceKind.DISLIKE, map["emo"]!!.kind)
+    }
+
+    @Test
+    fun recordSongOutcome_ignoresZeroWeightWords() = runBlocking {
+        // 占比极低(票重 0)的词不该留下任何记录 —— 那不是"这个情绪", 只是碰巧落在附近
+        val dao = FakeMelodyDao()
+        val repo = WordPreferencesRepository(dao)
+
+        repo.recordSongOutcome(votes = mapOf("emo" to 0, "治愈" to 0), liked = true)
+
+        assertTrue(repo.getAll().isEmpty())
+    }
+
+    @Test
     fun recordSongOutcome_ignoresEmptyWords() = runBlocking {
         val dao = FakeMelodyDao()
         val repo = WordPreferencesRepository(dao)
 
-        repo.recordSongOutcome(words = emptyList(), liked = true)
+        repo.recordSongOutcome(votes = emptyMap(), liked = true)
 
         assertTrue(repo.getAll().isEmpty())
     }
@@ -79,8 +109,8 @@ class WordPreferencesRepositoryTest {
         val dao = FakeMelodyDao()
         val repo = WordPreferencesRepository(dao)
 
-        repo.recordSongOutcome(words = listOf("静谧", "伤感"), liked = true)
-        repo.recordSongOutcome(words = listOf("燃"), liked = false)
+        repo.recordSongOutcome(votes = mapOf("静谧" to 1, "伤感" to 1), liked = true)
+        repo.recordSongOutcome(votes = mapOf("燃" to 1), liked = false)
         assertEquals(3, repo.getAll().size)
 
         repo.clearAll()

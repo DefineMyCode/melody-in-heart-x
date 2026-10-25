@@ -900,21 +900,34 @@ internal class PlayerRuntime(
      * 探索播放收听结果学习（2026-10-20）：一首歌结束/切歌时结算其收听时长，
      * 按「<30s 或 <1/4 总时长 → 快速跳过 → 全部情绪词条投不喜欢票，否则投喜欢票」，
      * 计票制入库（[WordPreferenceRepository.recordSongOutcome]）。
+     *
+     * 2026-10-25：**票重按词条在整首里占的比例给** —— 跳过一首 80% emo 的歌，
+     * 「emo」扣得多、顺带蹭到的次要词扣得少；原来每个词一刀切 1 票，主次不分。
      */
     private fun handleExploreSongSettled(songId: Int, playedMs: Long) {
         val song = _uiState.value.songs.firstOrNull { it.id == songId }
-        val words = moodEmotionRatiosCache[songId]?.keys?.toList().orEmpty()
+        val ratios = moodEmotionRatiosCache[songId].orEmpty()
         val skipped = ExplorePlaybackPolicy.isSkipped(playedMs, song?.durationMs ?: 0L)
-        if (words.isEmpty()) {
+        if (ratios.isEmpty()) {
             AppLog.debug(
                 TAG,
                 "explore settle: song=$songId played=${playedMs}ms skipped=$skipped, no emotion words to learn"
             )
             return
         }
+        // 词条占比 -> 票重（整数票, 比例 ×100）
+        val votes = ratios.mapValues { (_, ratio) -> ExplorePlaybackPolicy.voteWeightOf(ratio) }
+            .filterValues { it > 0 }
+        if (votes.isEmpty()) {
+            AppLog.debug(
+                TAG,
+                "explore settle: song=$songId has no word with meaningful share, nothing to learn"
+            )
+            return
+        }
         scope.launch {
             try {
-                wordPreferenceRepository.recordSongOutcome(words, liked = !skipped)
+                wordPreferenceRepository.recordSongOutcome(votes, liked = !skipped)
                 // 展示当前全局喜欢/不喜欢/中立词条（写后重读快照，验证计票制累计与翻转）
                 val prefs = wordPreferenceRepository.getAll()
                 val likeWords = prefs.filterValues { it.kind == WordPreferenceKind.LIKE }.keys.sorted()
@@ -923,7 +936,7 @@ internal class PlayerRuntime(
                 AppLog.info(
                     TAG,
                     "explore learn: song=$songId played=${playedMs}ms skipped=$skipped " +
-                        "words=${words.joinToString(",")}"
+                        "votes=${votes.entries.joinToString(",") { "${it.key}x${it.value}" }}"
                 )
                 AppLog.info(
                     TAG,

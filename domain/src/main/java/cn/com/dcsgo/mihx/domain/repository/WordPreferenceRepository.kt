@@ -14,12 +14,16 @@ interface WordPreferenceRepository {
     suspend fun getAll(): Map<String, WordPreference>
 
     /**
-     * 记录一首歌的收听结果：
-     * @param words 该歌的情绪词条集合
-     * @param liked true = 完整收听（≥30s 且 ≥1/4 总时长）→ 全部词条喜欢票 +1；
-     *              false = 快速跳过 → 全部词条不喜欢票 +1。
+     * 记录一首歌的收听结果（**按词条占比加权**，2026-10-25）。
+     *
+     * @param votes 词条 → 票重。该歌每个情绪词条按它在整首里占的比例投票
+     *   （见 [cn.com.dcsgo.mihx.domain.playback.ExplorePlaybackPolicy.voteWeightOf]）。
+     *   原来是无视占比的「每个词 ±1 票」—— 那让「80% emo」和「20% emo」
+     *   对「emo」这个词的贡献完全一样，主次不分。
+     * @param liked true = 完整收听（≥30s 且 ≥1/4 总时长）→ 词条喜欢票 += 票重；
+     *              false = 快速跳过 → 词条不喜欢票 += 票重。
      */
-    suspend fun recordSongOutcome(words: List<String>, liked: Boolean)
+    suspend fun recordSongOutcome(votes: Map<String, Int>, liked: Boolean)
 
     /** 清空全部词条偏好（「重新探索」：重置喜欢/不喜欢学习统计） */
     suspend fun clearAll()

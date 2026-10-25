@@ -15,11 +15,36 @@ object ExplorePlaybackPolicy {
      *  注：在 handleMediaItemEnded（切歌后）中测量——剩余 0 首 ⟺ 结束的是倒数第二首；剩余 1 首是倒数第三首，不补。 */
     const val REFILL_THRESHOLD = 0
 
-    /** 判定「没好好听」的最短时长：不足 30 秒 */
+    /**
+     * 判定「没好好听」的最短时长：不足 30 秒 */
     const val MIN_LISTEN_MS = 30_000L
 
     /** 判定「没好好听」的完播比例：不足总时长的 1/4 */
     const val MIN_LISTEN_RATIO = 0.25f
+
+    /**
+     * 票重缩放系数：票重 = 占比 × 该系数（2026-10-25）。
+     *
+     * 计票原来是无视占比的「每个词 ±1 票」，于是「80% emo」和「20% emo」
+     * 对「emo」这个词的贡献完全一样 —— 主次不分，而且「只是蹭到」的词
+     * （占比 15%）和「这歌就是这个情绪」的词一样重。
+     *
+     * 用**整数票 ×100** 而不是把表列改成 REAL：
+     * 整数票不需要改 Room schema 与类型判定，只需一条迁移把历史票 ×100
+     * 保持尺度一致（否则新票 15~100 票会立刻淹没历史的 6 票）。
+     *
+     * 归属判定 [cn.com.dcsgo.mihx.core.model.WordPreference.kind] 是**相对**
+     * 比较（喜欢票多 vs 不喜欢票多），票的绝对尺度不影响它。
+     */
+    const val VOTE_WEIGHT_SCALE = 100
+
+    /**
+     * 词条占比 → 票重（整数票）。
+     *
+     * 占比 <0.5% 的词拿到 0 票（等于不投）—— 那不是"这个情绪"，只是碰巧落在附近。
+     */
+    fun voteWeightOf(ratio: Float): Int =
+        Math.round(ratio * VOTE_WEIGHT_SCALE)
 
     /**
      * 是否判定为「快速跳过」（→ 整首歌情绪词条投不喜欢票）。

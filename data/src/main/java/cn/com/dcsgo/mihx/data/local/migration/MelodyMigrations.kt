@@ -226,10 +226,28 @@ object MelodyMigrations {
         }
     }
 
+    val MIGRATION_15_16 = object : Migration(15, 16) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            // 词条计票改为**按占比加权**（2026-10-25）：票重 = 占比 × 100。
+            //
+            // 表结构没变（票仍是整数），但**尺度变了**：新票 15~100 票/次，
+            // 旧票是 1 票/词。不缩放历史票的话，新票会立刻淹没历史
+            // （历史 6 票 vs 新 15 票，判定直接失衡）—— 所以历史票统一 ×100，
+            // 让新旧票在同一把尺子上。
+            //
+            // 归属判定是**相对**比较（喜欢票多 vs 不喜欢票多），缩放不改变它。
+            db.execSQL(
+                "UPDATE `word_preferences` SET " +
+                    "`likeVotes` = `likeVotes` * 100, " +
+                    "`dislikeVotes` = `dislikeVotes` * 100",
+            )
+        }
+    }
+
     /** 声明于末尾：object 属性按声明顺序初始化，需引用上方全部迁移 */
     val ALL: Array<Migration> = arrayOf(
         MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6,
         MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11,
-        MIGRATION_11_12, MIGRATION_12_13, MIGRATION_13_14, MIGRATION_14_15,
+        MIGRATION_11_12, MIGRATION_12_13, MIGRATION_13_14, MIGRATION_14_15, MIGRATION_15_16,
     )
 }

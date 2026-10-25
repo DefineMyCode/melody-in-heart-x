@@ -15,6 +15,10 @@ import kotlinx.coroutines.withContext
  * 计票制（域层 [WordPreference.kind] 判定归属）：单曲结果只做票数累计，
  * 不直接覆盖归属——词条可同时存在于喜欢/不喜欢票（如 A B 已在喜欢、C D 已在不喜欢），
  * 票多者胜，单次跳过不会立刻翻转已喜欢的词条。
+ *
+ * 2026-10-25：票重按**词条在整首里占的比例**给（[ExplorePlaybackPolicy.voteWeightOf]），
+ * 不再是每个词一刀切 1 票 —— 「80% emo」比「20% emo」对「emo」这个词的贡献大得多。
+ * 票仍是整数（比例 ×100），所以表结构不变，只有一次历史票缩放的迁移。
  */
 class WordPreferencesRepository(
     private val melodyDao: MelodyDao,
@@ -29,18 +33,19 @@ class WordPreferencesRepository(
         melodyDao.allWordPreferences().associate { it.word to it.toDomain() }
     }
 
-    override suspend fun recordSongOutcome(words: List<String>, liked: Boolean) {
-        if (words.isEmpty()) return
+    override suspend fun recordSongOutcome(votes: Map<String, Int>, liked: Boolean) {
+        val effective = votes.filterValues { it > 0 }
+        if (effective.isEmpty()) return
         withContext(Dispatchers.IO) {
             val existing = melodyDao.allWordPreferences()
                 .associateBy { it.word }
             val now = System.currentTimeMillis()
-            val updates = words.distinct().map { word ->
+            val updates = effective.map { (word, weight) ->
                 val old = existing[word]
                 WordPreferenceEntity(
                     word = word,
-                    likeVotes = (old?.likeVotes ?: 0) + if (liked) 1 else 0,
-                    dislikeVotes = (old?.dislikeVotes ?: 0) + if (liked) 0 else 1,
+                    likeVotes = (old?.likeVotes ?: 0) + if (liked) weight else 0,
+                    dislikeVotes = (old?.dislikeVotes ?: 0) + if (liked) 0 else weight,
                     updatedAt = now,
                 )
             }

@@ -47,6 +47,14 @@ interface SongEmotionRepository {
     /** 已分析过的 songId -> modelVersion（据此判断是否需按新模型重扫） */
     suspend fun analyzedVersions(): Map<Int, String>
 
+    /**
+     * 已分析但缺人声分数的 songId（2026-10-25 引入 vocalScore 之前的数据）。
+     *
+     * 这些行需要补扫一次, 把人声分数补上 —— 它是校正 valence「人声偏置」的关键变量。
+     * 补完后该列表自然为空, 不会反复重扫。
+     */
+    suspend fun songIdsMissingVocalScore(): Set<Int>
+
     suspend fun upsert(emotion: SongEmotion)
 
     /**

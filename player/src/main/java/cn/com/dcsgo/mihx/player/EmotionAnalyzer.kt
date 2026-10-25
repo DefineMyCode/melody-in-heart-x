@@ -100,6 +100,11 @@ class EmotionAnalyzer @Inject constructor(
             val totalWindows = (pcmData.size - WINDOW_SAMPLES) / HOP_SAMPLES + 1
             var s = 0
             var windowDone = 0
+            // 人声分数累加器（2026-10-25）：YAMNet 本来就输出 521 个 AudioSet 类别分数
+            // （输出张量 Identity_1[2,521]），以前只取 embedding，类别分数被扔掉了。
+            // 人声类是现成输入 —— 零模型变更、零 APK 体积、零新授权。
+            var vocalScoreSum = 0.0
+            var vocalFrames = 0
             // 解码在锁外(纯 CPU, 无共享状态); 推理全程持锁: 周期/手动是两个不同
             // unique 任务, WorkManager 可并发跑两个 Worker, TFLite Interpreter
             // 非线程安全, 并发 invoke 会 native 崩溃 — 与 close() 同一把 lock 串行化.
@@ -114,6 +119,11 @@ class EmotionAnalyzer @Inject constructor(
                         inBuf.rewind()
                         yam.runForMultipleInputsOutputs(arrayOf(inBuf), yamOut)
                         for (fr in embArr) for (j in 0 until 1024) acc[j] += fr[j]
+                        // 同一批输出里把人声类的分数也收走(scoreArr 与 embArr 同批产出)
+                        for (fr in scoreArr) {
+                            vocalScoreSum += YamnetClassMap.vocalScoreOf(fr)
+                        }
+                        vocalFrames += 2
                         nf += 2
                         st += FRAME
                     }
@@ -143,6 +153,10 @@ class EmotionAnalyzer @Inject constructor(
             // 高潮 = A(能量)正向峰值
             for (i in series.indices) if (series[i].second > series[peak].second) peak = i
             val nWin = series.size.coerceAtLeast(1)
+            // 人声分数: 人声类 sigmoid 分数在整曲所有帧上的平均(0~数, 越大越有人声)。
+            // vocalFrames >= 1 由上面的 TOO_SHORT 检查保证, 故不会出现除零/空值 ——
+            // 空值会让这行永远被判"待补扫", 形成无限重扫。
+            val vocalScore = (vocalScoreSum / vocalFrames.coerceAtLeast(1)).toFloat()
             EmotionAnalysisResult.Success(
                 SongEmotion(
                     songId = songId,
@@ -155,6 +169,7 @@ class EmotionAnalyzer @Inject constructor(
                     modelVersion = modelVersion,
                     analyzedAt = System.currentTimeMillis(),
                     embedding = FloatArray(1024) { j -> (songEmb[j] / nWin).toFloat() },
+                    vocalScore = vocalScore,
                 ),
             )
         } catch (oom: OutOfMemoryError) {

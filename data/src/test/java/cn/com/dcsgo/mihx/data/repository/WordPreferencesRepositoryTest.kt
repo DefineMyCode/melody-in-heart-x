@@ -183,6 +183,7 @@ class WordPreferencesRepositoryTest {
         override fun observeAllSongEmotions(): Flow<List<cn.com.dcsgo.mihx.data.local.entity.SongEmotionLite>> =
             MutableStateFlow<List<cn.com.dcsgo.mihx.data.local.entity.SongEmotionLite>>(emptyList()).asStateFlow()
         override suspend fun maxKnownSongId(): Int? = null
+        override suspend fun songIdsMissingVocalScore(): List<Int> = emptyList()
         override suspend fun songEmotionVersions(): List<cn.com.dcsgo.mihx.data.local.dao.SongEmotionVersion> = emptyList()
         override suspend fun emotionCorrectionCount(): Int = 0
         override suspend fun emotionAnalyzedTimeline(): List<Long> = emptyList()

@@ -38,6 +38,10 @@ class SongEmotionsRepository(
         melodyDao.songEmotionVersions().associate { it.songId to it.modelVersion }
     }
 
+    override suspend fun songIdsMissingVocalScore(): Set<Int> = withContext(Dispatchers.IO) {
+        melodyDao.songIdsMissingVocalScore().toSet()
+    }
+
     override fun observeAll(): Flow<Map<Int, SongEmotion>> =
         melodyDao.observeAllSongEmotions().map { rows ->
             rows.associate { it.songId to it.toDomainLite() }
@@ -172,6 +176,7 @@ private fun SongEmotionEntity.toDomain(): SongEmotion = SongEmotion(
     userArousal = userArousal,
     userTags = parseTags(userTags),
     userTagsEdited = userTagsEdited,
+    vocalScore = vocalScore,
 )
 
 /**
@@ -195,6 +200,7 @@ private fun SongEmotionLite.toDomainLite(): SongEmotion = SongEmotion(
     userArousal = userArousal,
     userTags = parseTags(userTags),
     userTagsEdited = userTagsEdited,
+    vocalScore = vocalScore,
 )
 
 private fun SongEmotion.toEntity(): SongEmotionEntity {
@@ -218,5 +224,6 @@ private fun SongEmotion.toEntity(): SongEmotionEntity {
         userArousal = userArousal,
         userTags = userTags.joinToString(",").ifEmpty { null },
         userTagsEdited = userTagsEdited,
+        vocalScore = vocalScore,
     )
 }

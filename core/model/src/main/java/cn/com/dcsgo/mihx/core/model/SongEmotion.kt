@@ -43,6 +43,17 @@ data class SongEmotion(
      * 只有 true 的样本（外加未分析歌的纯人工标记）才是可作真值的独立纠正。
      */
     val userTagsEdited: Boolean? = null,
+    /**
+     * 人声分数（0~数）：YAMNet 的 AudioSet 人声类分数在整曲所有帧上的平均。
+     *
+     * 为什么需要它（2026-10-25）：实测现网 valence 与「有没有人声」存在系统性偏置 ——
+     * 器乐曲被平均判低 0.154（MWU p=0.011），人声概率与 valence 相关系数 +0.530。
+     * 也就是说 valence 有一部分在测"有没有人唱"而不是"什么情绪"。
+     * 这个分数是校正该偏置的关键变量（条件标定），也是"纯器乐 / 有人声"标记的来源。
+     *
+     * null = 该行是 2026-10-25 之前分析的，没有这个值。
+     */
+    val vocalScore: Float? = null,
 ) {
     /** 低置信: 均值落在未定带, UI 应显示"氛围:未定"而非具体象限 */
     val lowConfidence: Boolean

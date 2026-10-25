@@ -437,6 +437,18 @@ interface MelodyDao {
     @Query("SELECT songId, modelVersion FROM song_emotions")
     suspend fun songEmotionVersions(): List<SongEmotionVersion>
 
+    /**
+     * 已分析但**缺人声分数**的行（2026-10-25 之前分析的数据）。
+     *
+     * vocalScore 为 NULL = 这一行是引入人声分数之前算的, 缺了条件标定要用的变量
+     * → 需要补扫一次。补完后 vocalScore 非空, 这条查询自然为空, 不会反复重扫。
+     *
+     * 只取 windowsAnalyzed > 0: user-only 行（分析失败但用户手动标了词）由失败重试
+     * 机制管，不算"待补扫"。
+     */
+    @Query("SELECT songId FROM song_emotions WHERE vocalScore IS NULL AND windowsAnalyzed > 0")
+    suspend fun songIdsMissingVocalScore(): List<Int>
+
     /** 已用户校准的歌曲数（以**词条**为准 —— 坐标不再落库） */
     @Query(
         "SELECT COUNT(*) FROM song_emotions " +

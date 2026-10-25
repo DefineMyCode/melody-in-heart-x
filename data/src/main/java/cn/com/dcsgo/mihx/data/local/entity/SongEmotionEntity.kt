@@ -32,6 +32,14 @@ data class SongEmotionEntity(
      * 可空而非 NOT NULL DEFAULT 0：老数据无从判断"改没改"，存 null 才是诚实的。
      */
     val userTagsEdited: Boolean? = null,
+    /**
+     * 人声分数：YAMNet AudioSet 人声类分数的整曲平均（0~数）。
+     *
+     * 2026-10-25 新增：分析器本来就把 521 个类别分数算出来了（只是以前扔掉），
+     * 这里把用人声类的分数和存下来，用于校正 valence 的"人声偏置"。
+     * 可空：2026-10-25 之前分析的行没有这个值。
+     */
+    val vocalScore: Float? = null,
 )
 
 /**
@@ -60,6 +68,8 @@ data class SongEmotionLite(
     val userArousal: Float? = null,
     val userTags: String? = null,
     val userTagsEdited: Boolean? = null,
+    /** 人声分数（见 [SongEmotionEntity.vocalScore]） */
+    val vocalScore: Float? = null,
 )
 
 /** 实体 → 轻量投影（丢弃 embeddingB64，不解码 base64） */
@@ -77,4 +87,5 @@ fun SongEmotionEntity.toLite(): SongEmotionLite = SongEmotionLite(
     userArousal = userArousal,
     userTags = userTags,
     userTagsEdited = userTagsEdited,
+    vocalScore = vocalScore,
 )

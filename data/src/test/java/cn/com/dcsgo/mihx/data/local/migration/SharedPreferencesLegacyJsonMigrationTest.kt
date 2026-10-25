@@ -384,6 +384,7 @@ class SharedPreferencesLegacyJsonMigrationTest {
             songEmotions.keys.maxOrNull(),
         ).filterNotNull().maxOrNull()
 
+        override suspend fun songIdsMissingVocalScore(): List<Int> = emptyList()
         override suspend fun songEmotionVersions(): List<SongEmotionVersion> =
             songEmotions.values.map { SongEmotionVersion(it.songId, it.modelVersion) }
 

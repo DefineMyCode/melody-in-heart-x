@@ -295,6 +295,7 @@ class QuickSkipSongsRepositoryRoomTest {
             songEmotions.maxOfOrNull { it.songId },
         ).filterNotNull().maxOrNull()
 
+        override suspend fun songIdsMissingVocalScore(): List<Int> = emptyList()
         override suspend fun songEmotionVersions(): List<SongEmotionVersion> =
             songEmotions.map { SongEmotionVersion(it.songId, it.modelVersion) }
 

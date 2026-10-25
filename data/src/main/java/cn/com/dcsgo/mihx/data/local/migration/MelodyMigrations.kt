@@ -187,10 +187,21 @@ object MelodyMigrations {
         }
     }
 
+    val MIGRATION_13_14 = object : Migration(13, 14) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            // 人声分数（2026-10-25）：valence 存在「人声偏置」——器乐曲被平均判低
+            // 0.154（实测 MWU p=0.011）。分析器本来就把 YAMNet 的 521 个 AudioSet
+            // 类别分数算出来了，只是以前扔掉；这里把用人声类的分数和落库，
+            // 作为条件标定与「纯器乐/有人声」标记的输入。
+            // 可空且无 DEFAULT：老行没有这个值，存 NULL 才是诚实的。
+            db.execSQL("ALTER TABLE `song_emotions` ADD COLUMN `vocalScore` REAL")
+        }
+    }
+
     /** 声明于末尾：object 属性按声明顺序初始化，需引用上方全部迁移 */
     val ALL: Array<Migration> = arrayOf(
         MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6,
         MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11,
-        MIGRATION_11_12, MIGRATION_12_13,
+        MIGRATION_11_12, MIGRATION_12_13, MIGRATION_13_14,
     )
 }

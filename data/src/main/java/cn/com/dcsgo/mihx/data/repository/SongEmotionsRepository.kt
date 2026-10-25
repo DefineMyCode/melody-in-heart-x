@@ -52,49 +52,48 @@ class SongEmotionsRepository(
     }
 
     override suspend fun upsert(emotion: SongEmotion) = withContext(Dispatchers.IO) {
-        // 重扫(模型升级)不吞用户校准: 新记录无校准数据时继承旧记录
-        if (emotion.userValence == null) {
-            val old = melodyDao.songEmotion(emotion.songId)
-            if (old != null && old.userValence != null) {
-                melodyDao.upsertSongEmotion(
-                    emotion.toEntity().copy(
-                        userValence = old.userValence,
-                        userArousal = old.userArousal,
-                        userTags = old.userTags,
-                        // 校准的"是否被纠正"标记一并继承：重扫换了模型，
-                        // 但用户的判断仍然成立（词条是用户定的，不是模型定的）
-                        userTagsEdited = old.userTagsEdited,
-                    )
+        // 重扫(模型升级)不吞用户校准: 继承旧记录的**词条**与"是否被纠正"标记。
+        // 坐标不继承 —— 它是派生值(词条 → 该曲线坐标系的锚点均值), 读时现算。
+        // 继承坐标正是"手动点过期"的根源: 曲线换了坐标系, 存的坐标还停在旧的。
+        val old = melodyDao.songEmotion(emotion.songId)
+        if (old != null && !old.userTags.isNullOrEmpty() && emotion.userTags.isEmpty()) {
+            melodyDao.upsertSongEmotion(
+                emotion.toEntity().copy(
+                    userTags = old.userTags,
+                    // 校准的"是否被纠正"标记一并继承：重扫换了模型，
+                    // 但用户的判断仍然成立（词条是用户定的，不是模型定的）
+                    userTagsEdited = old.userTagsEdited,
                 )
-                return@withContext
-            }
+            )
+            return@withContext
         }
         melodyDao.upsertSongEmotion(emotion.toEntity())
     }
 
         /**
      * 保存用户校准（2026-09-04 支持"分析失败歌曲"手动标记）：
-     * 已有分析行 → UPDATE user 三字段（不动模型数据）；
+     * 已有分析行 → UPDATE user 字段（不动模型数据）；
      * 无分析行（分析失败/未分析）→ INSERT 仅含 user 字段的行
      * （曲线空、modelVersion="user-only"），读侧 emotionTagsOf 以 userTags 优先，
      * 渲染端对空曲线显示词条列表而非曲线图。
+     *
+     * **只写词条，不写坐标** —— 坐标是派生值，读时按曲线坐标系现算
+     * （见 SongEmotion.effectiveValence）。
      */
     override suspend fun saveCorrection(
         songId: Int,
-        valence: Float,
-        arousal: Float,
         tags: List<String>,
         edited: Boolean?,
     ) = withContext(Dispatchers.IO) {
         val tagsText = tags.joinToString(",")
         if (melodyDao.songEmotion(songId) != null) {
-            melodyDao.updateSongEmotionCorrection(songId, valence, arousal, tagsText, edited)
+            melodyDao.updateSongEmotionCorrection(songId, tagsText, edited)
         } else {
             melodyDao.upsertUserOnlyCorrection(
                 SongEmotionEntity(
                     songId = songId,
-                    valence = valence,
-                    arousal = arousal,
+                    valence = 0f,
+                    arousal = 0f,
                     curveJson = "[]",
                     peakSec = 0f,
                     windowsAnalyzed = 0,
@@ -102,8 +101,8 @@ class SongEmotionsRepository(
                     modelVersion = "user-only",
                     analyzedAt = System.currentTimeMillis(),
                     embeddingB64 = null,
-                    userValence = valence,
-                    userArousal = arousal,
+                    userValence = null,
+                    userArousal = null,
                     userTags = tagsText,
                     userTagsEdited = null,
                 ),

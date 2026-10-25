@@ -162,10 +162,35 @@ object MelodyMigrations {
         }
     }
 
+    val MIGRATION_12_13 = object : Migration(12, 13) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            // 情绪坐标系版本改成 "<标签>@<内容指纹>"（2026-10-25）。
+            //
+            // ① 版本串补指纹: 老行是**当前资产**产出的(本次发布没换模型资产,
+            //    :core:model 的 generateEmotionModelSpec 校验过哈希), 所以补当前指纹
+            //    是事实陈述 -> 零重扫。
+            //    以后换了资产, 指纹自动变, 老行与新串不等 -> 自动重扫(无需新迁移)。
+            // ② 坐标列置空: 用户校准的坐标改成**读时派生**(词条 → 该曲线坐标系的
+            //    锚点均值), 存的坐标会在曲线换坐标系后过期(手动点过期问题的根源)。
+            //    词条 userTags 不动 —— 它才是真值。
+            db.execSQL(
+                "UPDATE `song_emotions` SET `modelVersion` = ? WHERE `modelVersion` = ?",
+                arrayOf(
+                    cn.com.dcsgo.mihx.core.model.EmotionModelSpec.MODEL_VERSION,
+                    cn.com.dcsgo.mihx.core.model.EmotionModelSpec.LABEL,
+                ),
+            )
+            db.execSQL(
+                "UPDATE `song_emotions` SET `userValence` = NULL, `userArousal` = NULL " +
+                    "WHERE `userTags` IS NOT NULL AND `userTags` <> ''",
+            )
+        }
+    }
+
     /** 声明于末尾：object 属性按声明顺序初始化，需引用上方全部迁移 */
     val ALL: Array<Migration> = arrayOf(
         MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6,
         MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11,
-        MIGRATION_11_12,
+        MIGRATION_11_12, MIGRATION_12_13,
     )
 }

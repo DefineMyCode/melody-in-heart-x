@@ -188,7 +188,7 @@ class WordPreferencesRepositoryTest {
         override suspend fun emotionAnalyzedTimeline(): List<Long> = emptyList()
         override suspend fun upsertSongEmotion(emotion: cn.com.dcsgo.mihx.data.local.entity.SongEmotionEntity) = Unit
         override suspend fun updateSongEmotionCorrection(
-            songId: Int, v: Float, a: Float, tags: String, edited: Boolean?
+            songId: Int, tags: String, edited: Boolean?
         ) = Unit
         override suspend fun upsertUserOnlyCorrection(emotion: cn.com.dcsgo.mihx.data.local.entity.SongEmotionEntity) = Unit
         override suspend fun deleteSongEmotion(songId: Int) = Unit

@@ -67,11 +67,42 @@ enum class EmotionGroup(
         /**
          * 当前情绪模型标识。
          *
+         * 格式: "<坐标系标签>@<内容指纹>"。两部分各司其职:
+         *  - 标签是坐标系的**语义身份**(人可读), 锚点表按它选(见 [anchorsFor]);
+         *  - 指纹是**内容身份**(模型资产 + 坐标参数), 重扫判定比它
+         *    (见 app 的 EmotionScanWorker)。
+         *
+         * 取值来自生成物 [EmotionModelSpec], 源头是
+         * core/model/emotion_model_spec.properties —— 换模型资产却忘了改那份清单,
+         * **构建会直接失败**, 不会再出现"老数据静默留存、永远不重扫"。
+         *
          * 放在 :core:model 是因为它零依赖, 不能反向依赖 :player;
          * :player 的 [cn.com.dcsgo.mihx.player.EmotionAnalyzer.MODEL_VERSION]
          * 直接引用本常量, 避免两处漂移。
          */
-        const val CURRENT_MODEL_VERSION = "yamnet-va-v4-rms"
+        const val CURRENT_MODEL_VERSION = EmotionModelSpec.MODEL_VERSION
+
+        /** 当前坐标系标签(版本串里 '@' 之前的部分) */
+        const val CURRENT_MODEL_LABEL = EmotionModelSpec.LABEL
+
+        /**
+         * 这套锚点表是按**哪一组坐标定义参数**标定的。
+         *
+         * 刻意写成硬编码字面量(而不是引用 [EmotionModelSpec.PARAMS_FINGERPRINT]):
+         * 只有硬编码才能当"标定时点的凭据"。改了
+         * emotion_model_spec.properties 里的 A/B 参数而没重标定锚点表时,
+         * EmotionGroupAnchorTest 会拿它跟当前参数指纹比对并失败 ——
+         * 把"改了坐标系却沿用旧锚点"从静默错误变成响亮的构建失败。
+         *
+         * 每次重标定锚点表, 把这里更新成新的参数指纹。
+         */
+        const val ANCHORS_CALIBRATED_FOR = "09ee136b"
+
+        /** 旧坐标系(改造前 v3 及更早)的版本标签 */
+        const val LEGACY_MODEL_LABEL = "yamnet-va-v3"
+
+        /** 版本串里标签与指纹的分隔符 */
+        const val FINGERPRINT_SEPARATOR = '@'
 
         /**
          * 改造前(v3 及更早)的锚点表 —— 那些曲线在**旧坐标系**里。
@@ -105,11 +136,24 @@ enum class EmotionGroup(
         /**
          * 按曲线所属坐标系取锚点表。
          *
-         * 只有 [CURRENT_MODEL_VERSION] 产出的曲线在当前坐标系里; 更早的
+         * 匹配的是版本串里**标签**部分(('@' 之前), 指纹不参与选表 ——
+         * 指纹只回答"这条曲线是这版权本产出的吗", 不回答"它属于哪套坐标系"。
+         * 这样换模型资产(指纹变)与换坐标系语义(标签变)是两件独立的事:
+         * 前者只需重扫, 后者还要换锚点表。
+         *
+         * 只有 [CURRENT_MODEL_LABEL] 标定的坐标系在当前坐标系里; 更早的
          * modelVersion 一律用旧锚点.
          */
-        fun anchorsFor(modelVersion: String): Map<EmotionGroup, Pair<Float, Float>> =
-            if (modelVersion == CURRENT_MODEL_VERSION) CURRENT_ANCHORS else LEGACY_ANCHORS
+        fun anchorsFor(modelVersion: String): Map<EmotionGroup, Pair<Float, Float>> {
+            val label = modelVersion.substringBefore(FINGERPRINT_SEPARATOR)
+            return when (label) {
+                CURRENT_MODEL_LABEL -> CURRENT_ANCHORS
+                LEGACY_MODEL_LABEL -> LEGACY_ANCHORS
+                // 未登记的标签按旧坐标系处理: 旧曲线占绝大多数, 用错表的代价
+                // 实测是 47.1% 的歌变成「治愈」(docs/architecture/EMOTION_VA_UPGRADE.md §11.7)。
+                else -> LEGACY_ANCHORS
+            }
+        }
 
         /**
          * 用户手动点该用哪套锚点表。

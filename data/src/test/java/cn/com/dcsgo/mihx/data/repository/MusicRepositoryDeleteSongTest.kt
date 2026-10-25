@@ -298,16 +298,16 @@ class MusicRepositoryDeleteSongTest {
         override suspend fun songEmotionVersions(): List<SongEmotionVersion> =
             songEmotions.map { SongEmotionVersion(it.songId, it.modelVersion) }
         override suspend fun emotionAnalyzedTimeline(): List<Long> = emptyList()
-        override suspend fun emotionCorrectionCount(): Int = songEmotions.count { it.userValence != null }
+        override suspend fun emotionCorrectionCount(): Int = songEmotions.count { !it.userTags.isNullOrEmpty() }
         override suspend fun upsertSongEmotion(emotion: SongEmotionEntity) {
             songEmotions.removeAll { it.songId == emotion.songId }
             songEmotions.add(emotion)
         }
         override suspend fun updateSongEmotionCorrection(
-            songId: Int, v: Float, a: Float, tags: String, edited: Boolean?
+            songId: Int, tags: String, edited: Boolean?
         ) {
             val idx = songEmotions.indexOfFirst { it.songId == songId }
-            if (idx >= 0) songEmotions[idx] = songEmotions[idx].copy(userValence = v, userArousal = a, userTags = tags, userTagsEdited = edited)
+            if (idx >= 0) songEmotions[idx] = songEmotions[idx].copy(userValence = null, userArousal = null, userTags = tags, userTagsEdited = edited)
         }
         override suspend fun upsertUserOnlyCorrection(emotion: SongEmotionEntity) {
             songEmotions.removeAll { it.songId == emotion.songId }

@@ -36,6 +36,7 @@ import numpy as np
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from emotion_diag import AUTO, AUTO_IDX, GROUPS, LOW_CONF, PRE_VA_ANCHORS  # noqa: E402
+from emotion_mirror import CURRENT_MODEL_VERSION, label_pattern  # noqa: E402
 from emotion_sim import (  # noqa: E402
     artist_icc,
     bootstrap_stability,
@@ -49,7 +50,7 @@ from emotion_sim import (  # noqa: E402
 MIN_SPACING = 0.25
 ANCHOR_BOUND = 0.95
 MAX_SHIFT = 0.40
-NEW_MODEL = "yamnet-va-v4-rms"
+NEW_MODEL = CURRENT_MODEL_VERSION
 
 # 手工语义网格：在新坐标系里按语义蓝图重排的锚点候选。
 # 语义蓝图（arousal 高→低）：
@@ -80,8 +81,8 @@ def load_curves(db, model_version=None):
         pass
     sql = "SELECT songId, curveJson, modelVersion FROM song_emotions WHERE windowsAnalyzed > 0"
     if model_version:
-        sql += " AND modelVersion = ?"
-        rows = con.execute(sql, (model_version,)).fetchall()
+        sql += " AND modelVersion LIKE ?"
+        rows = con.execute(sql, (label_pattern(model_version),)).fetchall()
     else:
         rows = con.execute(sql).fetchall()
     out = {}

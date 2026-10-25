@@ -714,5 +714,153 @@ Redmi 23113RKC6C（Android 16）装新包后逐首比对：
 > 这个字符串**（实测 `classes20.dex` 只有引用，类定义在 `classes12.dex`）。
 > 正确做法是读 dex header 的 `class_defs` 找真正定义该类的那个 dex。
 
+## 13. 版本单一真源 + 手动点坐标派生（2026-10-25）
+
+§11 把锚点表按坐标系分开了，但**坐标系本身怎么被标识**还是手写的 —— 这一节把
+那部分也收口，顺带修掉"手动点坐标过期"。
+
+### 13.1 问题：版本标识是手写字符串
+
+改造前：
+
+```kotlin
+// core/model/EmotionGroup.kt
+const val CURRENT_MODEL_VERSION = "yamnet-va-v4-rms"
+// player/EmotionAnalyzer.kt
+const val MODEL_VERSION = EmotionGroup.CURRENT_MODEL_VERSION
+// app/EmotionScanWorker.kt
+pending = songs.filter { analyzed[it.id] != EmotionAnalyzer.MODEL_VERSION && ... }
+```
+
+**整个重扫触发就挂在这一个手写字符串上。** 换了 `emotion_va_head.tflite`、
+或改了 A/B 常量，却忘了改这个串 → `pending` 永远为空 → 日志还打
+`library up-to-date (1098 songs)` → **老数据静默留存、永远不重扫**。
+
+这不是假想：A/B 改造就是改了坐标系，那个串是我手动从 `yamnet-va-v3` 改成
+`yamnet-va-v4-rms` 的。**下次就可能忘。**
+
+### 13.2 修法：版本串 = `<坐标系标签>@<内容指纹>`
+
+单一真源落在 `core/model/emotion_model_spec.properties`（新增）：
+
+```properties
+label = yamnet-va-v4-rms
+dbFloor = -30.0
+dbCeil = -5.0
+vCalBias = 0.25
+vCalScale = 0.85
+yamnetSha256 = db0bb6fb...
+headSha256 = edbc3e4e...
+```
+
+`:core:model` 的 `generateEmotionModelSpec` 任务（新增）做两件事：
+
+1. **校验两个 tflite 的 SHA-256 与清单一致** —— 不一致就**构建直接失败**，
+   附一句"换了资产必须更新清单 / 评估坐标系 / 重扫"。
+   → 「换了资产忘了改版本号」从此**不可能静默发生**。
+2. 算出指纹并生成 `EmotionModelSpec.kt`（生成物，勿手改）：
+
+   | 常量 | 含义 | 用途 |
+   |---|---|---|
+   | `LABEL` | 坐标系语义身份（人可读） | 锚点表按它选 |
+   | `PARAMS_FINGERPRINT` | 坐标定义（label + A/B 参数）哈希 | **守锚点表** |
+   | `FINGERPRINT` | 坐标定义 + 资产哈希 | 写进 `modelVersion` |
+   | `MODEL_VERSION` | `<label>@<fingerprint>` | 写进 `song_emotions.modelVersion` |
+   | `DB_FLOOR/DB_CEIL/V_CAL_*` | A/B 参数 | `EmotionAnalyzer` 引用（不再各写一份） |
+
+**为什么标签与指纹要分开**：标签是**坐标系**的身份，指纹是**这一版模型**的身份。
+换模型资产（重训 VA 头）→ 指纹变 → 重扫，但坐标系没变 → 标签不变 → 锚点表不变。
+换坐标系语义（改 A/B 参数）→ 标签必须变 → 锚点表也要重标定。
+两件事独立，才不会互相绑死。
+
+### 13.3 锚点表按标签选 + 参数指纹守锚点表
+
+```kotlin
+fun anchorsFor(modelVersion: String) = when (modelVersion.substringBefore('@')) {
+    CURRENT_MODEL_LABEL -> CURRENT_ANCHORS
+    LEGACY_MODEL_LABEL  -> LEGACY_ANCHORS
+    else                -> LEGACY_ANCHORS
+}
+```
+
+而"改了 A/B 参数却没重标定锚点表"这个错，由**参数指纹**守住：
+
+```kotlin
+// 刻意硬编码, 不引用生成物 —— 只有硬编码才能当"标定时点的凭据"
+const val ANCHORS_CALIBRATED_FOR = "09ee136b"
+```
+
+`EmotionModelSpecTest` 拿它跟当前 `PARAMS_FINGERPRINT` 比 —— 改了参数而没重标定
+锚点表，**单测会红**。这把"改了坐标系却沿用旧锚点"（实测 47.1% 的歌变「治愈」）
+从静默错误变成响亮的构建失败。
+
+### 13.4 手动点坐标：从"存"改成"读时派生"
+
+**词条是真值，坐标是派生值。** 原来是：标记时按当时的锚点算好坐标写进
+`userValence/userArousal`，重扫时**原样继承** —— 曲线换了坐标系，坐标还停在旧的。
+
+真机实测（改造前的库，3 首用户校准的歌）：
+
+```
+「僕は...」/ Blue[3-6]   存的 v=+0.250 a=+0.675
+                        当前坐标系应该是 v=+0.119 a=+0.442
+```
+
+现在：
+
+```kotlin
+// SongEmotion.kt —— 读时派生，不读库里那两列
+private fun userPoint() = if (userTags.isEmpty()) null
+    else EmotionGroup.avgOfWords(userTags, EmotionGroup.anchorsForManualPoint(this))
+val effectiveValence get() = userPoint()?.first ?: valence
+```
+
+连带改动：
+
+| 位置 | 改什么 |
+|---|---|
+| `SongEmotionsRepository.upsert` | 只继承**词条** + `userTagsEdited`，不继承坐标 |
+| `SongEmotionsRepository.saveCorrection` | 只写词条，坐标列置 NULL |
+| `MelodyDao.emotionCorrectionCount` | `userValence IS NOT NULL` → `userTags IS NOT NULL`（否则校准数直接归零） |
+| `AppMediaMetadataViewModel` | 不再算 avg 往下传；改用 `groupOf` 校验词表合法性 |
+
+> 顺带修了一个小坑：`avgOfWords` 会**静默丢弃**非法词（只剩一个合法词时照样
+> 返回坐标），不能拿它当词表校验器 —— 校验改成 `words.any { groupOf(it) == null }`。
+
+### 13.5 数据迁移 v12 → v13
+
+```sql
+-- ① 当前坐标系的行补上内容指纹 -> 零重扫
+UPDATE song_emotions SET modelVersion = '<label>@<fp>' WHERE modelVersion = '<label>'
+-- ② 坐标列清空(改成读时派生), 词条保留 —— 词条才是真值
+UPDATE song_emotions SET userValence = NULL, userArousal = NULL
+  WHERE userTags IS NOT NULL AND userTags <> ''
+```
+
+老坐标系（`yamnet-va-v3`）的行**不补指纹** → 仍待扫（标签不同 → 用旧锚点表），
+这是对的：它们本来就该重扫。
+
+> 以后换了资产，**不需要新迁移** —— 指纹进了版本串，老行与新串不等，
+> `EmotionScanWorker` 的待扫判定自动把它们排进队列。
+
+### 13.6 Python 镜像不再手抄
+
+`tools/emotion_diag.py` 以前**手抄**了一份 Kotlin 的锚点表（`GROUPS` /
+`LEGACY_GROUPS` / `CUR_MODEL_VERSION`）。漂移是真实发生过的故障：§12 那轮我
+把 auto 数组下标与组声明序搞混，靠单测与镜像互校才发现。
+
+现在 `tools/emotion_mirror.py`（新增）**直接解析源文件**：
+
+- `core/model/.../EmotionGroup.kt` → 枚举常量（词 + 新锚点 + auto）+ `LEGACY_ANCHORS`
+- `core/model/emotion_model_spec.properties` → 标签 + 参数 + 资产哈希 → 算指纹
+
+指纹算法必须与 Gradle 侧**逐字一致**，所以镜像会跟 `:core:model` 的生成物
+**交叉校验**，对不上直接抛错。
+
+工具按 `modelVersion` 过滤的地方也改成**标签前缀匹配**
+（`modelVersion LIKE 'yamnet-va-v4-rms%'`）—— 按精确串过滤的话，每次换指纹
+都得改工具。
+
+
 
 

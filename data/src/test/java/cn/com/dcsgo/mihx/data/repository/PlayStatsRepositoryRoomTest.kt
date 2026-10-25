@@ -331,7 +331,7 @@ class PlayStatsRepositoryRoomTest {
                 .sortedBy { it.analyzedAt }.map { it.analyzedAt }
 
         override suspend fun emotionCorrectionCount(): Int =
-            songEmotions.count { it.userValence != null }
+            songEmotions.count { !it.userTags.isNullOrEmpty() }
 
 
         override suspend fun upsertUserOnlyCorrection(emotion: SongEmotionEntity) {
@@ -370,11 +370,11 @@ class PlayStatsRepositoryRoomTest {
         }
 
         override suspend fun updateSongEmotionCorrection(
-            songId: Int, v: Float, a: Float, tags: String, edited: Boolean?
+            songId: Int, tags: String, edited: Boolean?
         ) {
             val idx = songEmotions.indexOfFirst { it.songId == songId }
             if (idx >= 0) songEmotions[idx] = songEmotions[idx].copy(
-                userValence = v, userArousal = a, userTags = tags, userTagsEdited = edited
+                userValence = null, userArousal = null, userTags = tags, userTagsEdited = edited
             )
         }
 

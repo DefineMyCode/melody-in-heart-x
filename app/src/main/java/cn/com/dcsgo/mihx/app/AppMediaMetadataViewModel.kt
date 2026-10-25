@@ -45,15 +45,16 @@ class AppMediaMetadataViewModel @Inject constructor(
                 true
             }
         }
+        // 词表合法性校验: 组外词直接拒绝。
+        // 不能用 avgOfWords 当校验器 —— 它会静默丢弃非法词, 只剩一个合法词时照样返回坐标。
+        if (words.any { EmotionGroup.groupOf(it) == null }) return false
         // 仓库读写是 runBlocking(IO) 桥, 搬到 Default 线程避免主线程直调卡 UI
         return withContext(Dispatchers.Default) {
             val current = emotionRepository.get(songId)
             val edited = current?.let { isUserCorrection(modelTagsOf(it), words) }
-            // 手动点必须与该歌曲线同坐标系: 旧曲线还没被重扫时用旧锚点,
-            // 否则手动点在 V-A 图上与曲线错位(重扫会继承这个点)
-            val anchors = EmotionGroup.anchorsForManualPoint(current)
-            val avg = EmotionGroup.avgOfWords(words.toList(), anchors) ?: return@withContext false
-            emotionRepository.saveCorrection(songId, avg.first, avg.second, words.toList(), edited)
+            // 只写**词条**: 坐标是派生值(词条 → 该曲线坐标系的锚点均值),
+            // 读时现算 —— 存下来的坐标会在曲线换坐标系后过期(手动点过期问题的根源)。
+            emotionRepository.saveCorrection(songId, words.toList(), edited)
             true
         }
     }

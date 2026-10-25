@@ -29,8 +29,9 @@ import numpy as np
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from emotion_diag import AUTO_IDX, GROUPS, LOW_CONF, PRE_VA_ANCHORS  # noqa: E402
+from emotion_mirror import CURRENT_MODEL_VERSION, label_pattern  # noqa: E402
 
-NEW_MODEL = "yamnet-va-v4-rms"
+NEW_MODEL = CURRENT_MODEL_VERSION
 MIN_SPACING = 0.25
 BOUND = 0.95
 SHARE_MIN = 3.0
@@ -96,7 +97,7 @@ def load_windows(db, model_version=NEW_MODEL):
         pass
     rows = con.execute(
         "SELECT songId, curveJson FROM song_emotions "
-        "WHERE windowsAnalyzed > 0 AND modelVersion = ?", (model_version,)
+        "WHERE windowsAnalyzed > 0 AND modelVersion LIKE ?", (label_pattern(model_version),)
     ).fetchall()
     con.close()
     vs, as_, idx, ids = [], [], [], []

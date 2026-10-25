@@ -212,4 +212,57 @@ class MelodyDatabaseMigrationTest {
         }
         db.close()
     }
+
+    @Test
+    fun migration12To13StampsModelFingerprintAndClearsStaleCoordinates() {
+        val name = dbName("12-13")
+        helper.createDatabase(name, 12).apply {
+            // 当前坐标系(旧格式, 无指纹)的一行 + 一行旧坐标系的行 + 一行用户校准
+            execSQL(
+                "INSERT INTO song_emotions (songId, valence, arousal, curveJson, peakSec, " +
+                    "windowsAnalyzed, durationSec, modelVersion, analyzedAt) " +
+                    "VALUES (1, 0.3, 0.7, '[0.1,0.2]', 1.0, 3, 120.0, " +
+                    "'yamnet-va-v4-rms', 42)"
+            )
+            execSQL(
+                "INSERT INTO song_emotions (songId, valence, arousal, curveJson, peakSec, " +
+                    "windowsAnalyzed, durationSec, modelVersion, analyzedAt) " +
+                    "VALUES (2, 0.1, 0.2, '[]', 0.0, 0, 0.0, 'yamnet-va-v3', 43)"
+            )
+            execSQL(
+                "INSERT INTO song_emotions (songId, valence, arousal, curveJson, peakSec, " +
+                    "windowsAnalyzed, durationSec, modelVersion, analyzedAt, userValence, " +
+                    "userArousal, userTags, userTagsEdited) " +
+                    "VALUES (3, 0.3, 0.7, '[0.1,0.2]', 1.0, 3, 120.0, " +
+                    "'yamnet-va-v4-rms', 44, 0.25, 0.675, '燃,神圣', 1)"
+            )
+            close()
+        }
+
+        val db = helper.runMigrationsAndValidate(name, 13, true, MelodyMigrations.MIGRATION_12_13)
+
+        // 当前坐标系的行补上内容指纹 -> 零重扫
+        db.query("SELECT modelVersion FROM song_emotions WHERE songId = 1").use { cursor ->
+            assertTrue(cursor.moveToFirst())
+            assertEquals(
+                cn.com.dcsgo.mihx.core.model.EmotionModelSpec.MODEL_VERSION,
+                cursor.getString(0),
+            )
+        }
+        // 旧坐标系的行**不**补指纹 -> 仍待扫(标签不同, 用旧锚点表)
+        db.query("SELECT modelVersion FROM song_emotions WHERE songId = 2").use { cursor ->
+            assertTrue(cursor.moveToFirst())
+            assertEquals("yamnet-va-v3", cursor.getString(0))
+        }
+        // 坐标被清空(改成读时派生), 词条保留 —— 词条才是真值
+        db.query("SELECT userValence, userArousal, userTags, userTagsEdited " +
+            "FROM song_emotions WHERE songId = 3").use { cursor ->
+            assertTrue(cursor.moveToFirst())
+            assertTrue(cursor.isNull(0))
+            assertTrue(cursor.isNull(1))
+            assertEquals("燃,神圣", cursor.getString(2))
+            assertEquals(1, cursor.getInt(3))
+        }
+        db.close()
+    }
 }

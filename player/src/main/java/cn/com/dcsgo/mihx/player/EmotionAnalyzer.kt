@@ -421,13 +421,16 @@ class EmotionAnalyzer @Inject constructor(
         /**
          * 模型版本戳：换模型/换语义后据此判定重扫。
          *
-         * v4（2026-10-24）：arousal 改真实响度包络 + valence 零点斜率标定。
-         * 见 docs/architecture/EMOTION_VA_UPGRADE.md。
+         * 格式 "<坐标系标签>@<内容指纹>"，取值来自生成物
+         * [cn.com.dcsgo.mihx.core.model.EmotionModelSpec]，源头是
+         * core/model/emotion_model_spec.properties。
+         * 换了 tflite 资产却没更新那份清单 → **构建直接失败**，
+         * 不会再出现"老数据静默留存、永远不重扫"。
          *
-         * 取值引用 [cn.com.dcsgo.mihx.core.model.EmotionGroup.CURRENT_MODEL_VERSION]
-         * —— 锚点表要按这个版本号判断曲线属于哪套坐标系, 两处不能各写一份。
+         * 锚点表按**标签**选（[cn.com.dcsgo.mihx.core.model.EmotionGroup.anchorsFor]），
+         * 重扫判定比**整个串**（app 的 EmotionScanWorker）——两处不能各写一份。
          */
-        const val MODEL_VERSION = cn.com.dcsgo.mihx.core.model.EmotionGroup.CURRENT_MODEL_VERSION
+        const val MODEL_VERSION = cn.com.dcsgo.mihx.core.model.EmotionModelSpec.MODEL_VERSION
         const val SR = 16000
         const val FRAME = 16384
         const val WINDOW_SEC = 5.0f
@@ -448,18 +451,23 @@ class EmotionAnalyzer @Inject constructor(
          * 依据：真机 69 首样本的窗内 dB 分布 median −11.8 / p5 −28.1 / p95 −5.2。
          * 更深的下限（−60dB）会让低能量段不可达（实测 0.7%），「静谧」「窒息」
          * 这类词条永远出不来。
+         *
+         * 取值来自 emotion_model_spec.properties（坐标系规格的单一真源），
+         * 改了它 = 换了坐标系语义 → 必须同时改 label 并重标定锚点表。
          */
-        const val DB_FLOOR = -30.0
-        const val DB_CEIL = -5.0
+        const val DB_FLOOR = cn.com.dcsgo.mihx.core.model.EmotionModelSpec.DB_FLOOR
+        const val DB_CEIL = cn.com.dcsgo.mihx.core.model.EmotionModelSpec.DB_CEIL
 
         /**
          * valence 零点/斜率标定（方案 B）：v' = (v − B) / S。
          *
          * B 来自真机 1094 首的歌级 valence 均值 +0.264（标定后 +0.017，居中）；
          * S 保留原尺度的八成，避免过度放大噪声。
+         *
+         * 取值来自 emotion_model_spec.properties（坐标系规格的单一真源）。
          */
-        const val V_CAL_BIAS = 0.25f
-        const val V_CAL_SCALE = 0.85f
+        const val V_CAL_BIAS = cn.com.dcsgo.mihx.core.model.EmotionModelSpec.V_CAL_BIAS
+        const val V_CAL_SCALE = cn.com.dcsgo.mihx.core.model.EmotionModelSpec.V_CAL_SCALE
 
         /** 窗内 RMS（复用已解码的 16k PCM，零额外解码、零额外分配） */
         fun windowRms(pcm: FloatArray, start: Int, length: Int): Double {

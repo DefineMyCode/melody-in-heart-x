@@ -30,46 +30,29 @@ import sys
 
 import numpy as np
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from emotion_mirror import (  # noqa: E402
+    CURRENT_MODEL_VERSION as _CUR_MODEL_VERSION,
+    GROUPS as _GROUPS,
+    LEGACY_GROUPS as _LEGACY_GROUPS,
+    groups_for as _groups_for,
+    label_pattern,
+)
+
+
+def _mirror():
+    """把镜像模块的四个成员打包返回(便于一次 import 多项)。"""
+    return _GROUPS, _LEGACY_GROUPS, _groups_for, _CUR_MODEL_VERSION
+
 # ── EmotionGroup 镜像（core/model/EmotionGroup.kt）────────────────────────
 # (anchorV, anchorA, headline, auto) —— 顺序与 Kotlin enum 一致
-# 2026-10-25: 锚点已按 A/B 改造后的新坐标系在全库真值上重标定（见 §10 方案 C）
-GROUPS = [
-    ("BRIGHT", 0.486, 0.492, "元气", True),
-    ("RAGE", 0.009, 0.607, "燃", True),
-    ("EPIC", 0.228, 0.277, "神圣", True),
-    ("WITTY", 0.2, 0.3, "鬼畜", False),   # auto=false: 不参与自动投票
-    ("LOVE", 0.431, -0.124, "治愈", True),
-    ("STILL", 0.078, -0.733, "静谧", True),
-    ("SAD", -0.744, -0.432, "emo", True),
-    ("ANXIOUS", -0.769, 0.590, "躁", True),
-    ("CHILL", 0.012, -0.310, "放松", True),
-    ("ABYSS", -0.774, -0.104, "窒息", True),
-]
+#
+# 2026-10-25: 不再手抄 —— tools/emotion_mirror.py 直接解析 Kotlin 源 + 规格清单,
+# 手抄漂移是真实发生过的故障(把 auto 数组下标与组声明序搞混)。
+GROUPS, LEGACY_GROUPS, groups_for, CUR_MODEL_VERSION = _mirror()
 LOW_CONF = 0.15        # SongEmotion.LOW_CONF
 MIN_RATIO = 0.15       # categoriesFor(minRatio)
 MAX_TAGS = 4           # categoriesFor(topN)
-
-CUR_MODEL_VERSION = "yamnet-va-v4-rms"
-
-# 改造前(v3 及更早)的锚点表 —— 旧曲线在**旧坐标系**里, 必须配旧锚点投票。
-# 顺序与 GROUPS 完全一致(组序相同 → cell 下标含义相同, 可混合统计)。
-LEGACY_GROUPS = [
-    ("BRIGHT", 0.6, 0.4, "元气", True),
-    ("RAGE", 0.3, 0.85, "燃", True),
-    ("EPIC", 0.2, 0.5, "神圣", True),
-    ("WITTY", 0.2, 0.3, "鬼畜", False),
-    ("LOVE", 0.6, -0.1, "治愈", True),
-    ("STILL", 0.3, -0.55, "静谧", True),
-    ("SAD", -0.5, -0.4, "emo", True),
-    ("ANXIOUS", -0.4, 0.6, "躁", True),
-    ("CHILL", 0.4, -0.3, "放松", True),
-    ("ABYSS", -0.7, -0.2, "窒息", True),
-]
-
-
-def groups_for(model_version):
-    """曲线所属坐标系 → 锚点表(组序与 GROUPS 一致)。"""
-    return GROUPS if model_version == CUR_MODEL_VERSION else LEGACY_GROUPS
 
 
 def anchor_array(groups):
@@ -176,8 +159,9 @@ def load_songs(conn, model_version=None):
     )
     params = ()
     if model_version:
-        sql += " AND modelVersion = ?"
-        params = (model_version,)
+        # 按坐标系**标签**前缀匹配 —— 指纹变了也还在同一坐标系里
+        sql += " AND modelVersion LIKE ?"
+        params = (label_pattern(model_version),)
     rows = conn.execute(sql, params).fetchall()
     out = []
     for r in rows:

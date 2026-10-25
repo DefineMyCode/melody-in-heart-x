@@ -2,6 +2,7 @@ package cn.com.dcsgo.mihx.data.repository
 
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
+import cn.com.dcsgo.mihx.core.model.EmotionGroup
 import cn.com.dcsgo.mihx.core.model.SongEmotion
 import cn.com.dcsgo.mihx.data.local.MelodyDatabase
 import kotlinx.coroutines.flow.first
@@ -25,6 +26,9 @@ import org.robolectric.annotation.Config
  *    但 embedding 仍随分析入库（未来监督重训 VA 头的原料不能丢），单条整行读仍能拿到。
  * 2. **此前无测试覆盖的语义**：upsert 继承用户校准（重扫不吞校准）、
  *    saveCorrection 的 user-only 行、clearCorrection 的删行规则、curve 编解码往返。
+ *
+ * 2026-10-25：校准的**坐标不再落库**，只存词条 —— 坐标是派生值，读时按该行
+ * 曲线自己的坐标系现算（详见 SongEmotion.effectiveValence）。
  */
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [34])
@@ -124,42 +128,49 @@ class SongEmotionsRepositoryTest {
     // ───────────── 校准写回语义（此前无测试） ─────────────
 
     @Test
-    fun `upsert inherits user calibration so rescan does not swallow it`() = runBlocking {
+    fun `upsert inherits user tags so rescan does not swallow them`() = runBlocking {
         repository.upsert(emotion(songId = 3, embedding = floatArrayOf(1f)))
-        repository.saveCorrection(3, 0.44f, -0.22f, listOf("燃", "静谧"), edited = true)
+        repository.saveCorrection(3, listOf("燃", "静谧"), edited = true)
 
         // 模型升级重扫：新记录不带校准
         repository.upsert(
-            emotion(songId = 3, valence = 0.9f, arousal = 0.9f, modelVersion = "yamnet-va-v4")
+            emotion(songId = 3, valence = 0.9f, arousal = 0.9f, modelVersion = "yamnet-va-v3")
         )
 
         val row = repository.get(3)!!
-        assertEquals("yamnet-va-v4", row.modelVersion) // 模型数据已更新
+        assertEquals("yamnet-va-v3", row.modelVersion) // 模型数据已更新
         assertEquals(0.9f, row.valence, 1e-6f)
-        assertEquals(0.44f, row.userValence!!, 1e-6f) // 校准被继承
-        assertEquals(-0.22f, row.userArousal!!, 1e-6f)
-        assertEquals(listOf("燃", "静谧"), row.userTags)
+        assertEquals(listOf("燃", "静谧"), row.userTags) // 词条被继承
         assertEquals(true, row.userTagsEdited) // 「是否纠正模型」标记一并继承
+        // 坐标不再落库：它是派生值，读时按**该行的坐标系**现算
+        assertNull(row.userValence)
+        assertNull(row.userArousal)
+        // 派生值 = 燃+静谧 在旧坐标系锚点下的均值（旧表 燃(0.30,+0.85) 静谧(0.30,-0.55)）
+        assertEquals(0.3f, row.effectiveValence, 1e-6f)
+        assertEquals(0.15f, row.effectiveArousal, 1e-6f)
     }
 
     @Test
     fun `upsert with explicit calibration overrides old one`() = runBlocking {
         repository.upsert(emotion(songId = 4))
-        repository.saveCorrection(4, 0.1f, 0.2f, listOf("emo"), edited = true)
+        repository.saveCorrection(4, listOf("emo"), edited = true)
 
         repository.upsert(
-            emotion(songId = 4, userValence = 0.5f, userArousal = 0.6f, userTags = listOf("燃"))
+            emotion(songId = 4, userTags = listOf("燃"))
         )
 
         val row = repository.get(4)!!
-        assertEquals(0.5f, row.userValence!!, 1e-6f)
-        assertEquals(0.6f, row.userArousal!!, 1e-6f)
         assertEquals(listOf("燃"), row.userTags)
+        // 坐标不落库，派生值按当前曲线坐标系现算（燃 = RAGE 当前锚点）
+        assertNull(row.userValence)
+        assertNull(row.userArousal)
+        assertEquals(EmotionGroup.RAGE.anchorV, row.effectiveValence, 1e-6f)
+        assertEquals(EmotionGroup.RAGE.anchorA, row.effectiveArousal, 1e-6f)
     }
 
     @Test
     fun `saveCorrection creates user-only row for unanalyzed song`() = runBlocking {
-        repository.saveCorrection(9, 0.3f, 0.4f, listOf("治愈"), edited = null)
+        repository.saveCorrection(9, listOf("治愈"), edited = null)
 
         val row = repository.get(9)!!
 
@@ -167,8 +178,12 @@ class SongEmotionsRepositoryTest {
         assertTrue(row.curve.isEmpty())
         assertEquals(0, row.windowsAnalyzed)
         assertEquals(listOf("治愈"), row.userTags)
-        assertEquals(0.3f, row.userValence!!, 1e-6f)
-        assertEquals(0.4f, row.userArousal!!, 1e-6f)
+        // 坐标不落库
+        assertNull(row.userValence)
+        assertNull(row.userArousal)
+        // 但派生坐标仍有值：词条 → 当前坐标系锚点均值（治愈 = LOVE）
+        assertEquals(EmotionGroup.LOVE.anchorV, row.effectiveValence, 1e-6f)
+        assertEquals(EmotionGroup.LOVE.anchorA, row.effectiveArousal, 1e-6f)
     }
 
     @Test
@@ -177,7 +192,7 @@ class SongEmotionsRepositoryTest {
             emotion(songId = 5, valence = 0.7f, arousal = -0.3f, curve = listOf(0.4f to 0.5f))
         )
 
-        repository.saveCorrection(5, 0.1f, 0.2f, listOf("emo"), edited = true)
+        repository.saveCorrection(5, listOf("emo"), edited = true)
 
         val row = repository.get(5)!!
         assertEquals(0.7f, row.valence, 1e-6f)
@@ -190,7 +205,7 @@ class SongEmotionsRepositoryTest {
     @Test
     fun `clearCorrection resets user fields but keeps model data`() = runBlocking {
         repository.upsert(emotion(songId = 6))
-        repository.saveCorrection(6, 0.1f, 0.2f, listOf("emo"), edited = false)
+        repository.saveCorrection(6, listOf("emo"), edited = false)
 
         repository.clearCorrection(6)
 
@@ -209,7 +224,7 @@ class SongEmotionsRepositoryTest {
     fun `saveCorrection persists the edited flag`() = runBlocking {
         repository.upsert(emotion(songId = 21))
 
-        repository.saveCorrection(21, 0.1f, 0.2f, listOf("emo"), edited = true)
+        repository.saveCorrection(21, listOf("emo"), edited = true)
 
         assertEquals(true, repository.get(21)!!.userTagsEdited)
     }
@@ -218,7 +233,7 @@ class SongEmotionsRepositoryTest {
     fun `saveCorrection persists the not-edited flag`() = runBlocking {
         repository.upsert(emotion(songId = 22))
 
-        repository.saveCorrection(22, 0.1f, 0.2f, listOf("emo"), edited = false)
+        repository.saveCorrection(22, listOf("emo"), edited = false)
 
         assertEquals(false, repository.get(22)!!.userTagsEdited)
     }
@@ -226,7 +241,7 @@ class SongEmotionsRepositoryTest {
     @Test
     fun `user-only row carries no edited flag because there is no model to disagree with`() =
         runBlocking {
-            repository.saveCorrection(23, 0.1f, 0.2f, listOf("emo"), edited = null)
+            repository.saveCorrection(23, listOf("emo"), edited = null)
 
             val row = repository.get(23)!!
             assertEquals("user-only", row.modelVersion)
@@ -235,7 +250,7 @@ class SongEmotionsRepositoryTest {
 
     @Test
     fun `clearCorrection deletes user-only row entirely`() = runBlocking {
-        repository.saveCorrection(8, 0.1f, 0.2f, listOf("emo"), edited = null)
+        repository.saveCorrection(8, listOf("emo"), edited = null)
 
         repository.clearCorrection(8)
 
@@ -252,6 +267,7 @@ class SongEmotionsRepositoryTest {
     }
 
     private companion object {
-        const val MODEL_VERSION = "yamnet-va-v4-rms"
+        // 单一真源: 当前坐标系版本由 core/model 的生成物给出(含内容指纹)
+        const val MODEL_VERSION = cn.com.dcsgo.mihx.core.model.EmotionGroup.CURRENT_MODEL_VERSION
     }
 }

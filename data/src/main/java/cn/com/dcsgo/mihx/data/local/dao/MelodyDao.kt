@@ -437,8 +437,11 @@ interface MelodyDao {
     @Query("SELECT songId, modelVersion FROM song_emotions")
     suspend fun songEmotionVersions(): List<SongEmotionVersion>
 
-    /** 已用户校准的歌曲数 */
-    @Query("SELECT COUNT(*) FROM song_emotions WHERE userValence IS NOT NULL")
+    /** 已用户校准的歌曲数（以**词条**为准 —— 坐标不再落库） */
+    @Query(
+        "SELECT COUNT(*) FROM song_emotions " +
+            "WHERE userTags IS NOT NULL AND userTags <> ''"
+    )
     suspend fun emotionCorrectionCount(): Int
 
     /** 逐首完成时间(ms), 仅成功记录, 升序——相邻差值即单首耗时近似 */
@@ -450,14 +453,19 @@ interface MelodyDao {
     @Upsert
     suspend fun upsertSongEmotion(emotion: SongEmotionEntity)
 
+    /**
+     * 用户校准写入：**只写词条**。
+     *
+     * 坐标列一并置 NULL —— 坐标是派生值(词条 → 该曲线坐标系的锚点均值),
+     * 读时现算(见 SongEmotion.effectiveValence)。存下来的坐标会在曲线
+     * 换坐标系后过期(实测 3 首用户校准的歌坐标全错)。
+     */
     @Query(
-        "UPDATE song_emotions SET userValence = :v, userArousal = :a, userTags = :tags, " +
-            "userTagsEdited = :edited WHERE songId = :songId"
+        "UPDATE song_emotions SET userValence = NULL, userArousal = NULL, " +
+            "userTags = :tags, userTagsEdited = :edited WHERE songId = :songId"
     )
     suspend fun updateSongEmotionCorrection(
         songId: Int,
-        v: Float,
-        a: Float,
         tags: String,
         edited: Boolean?,
     )
@@ -465,7 +473,7 @@ interface MelodyDao {
     /**
      * 用户-only 校准 upsert（2026-09-04）：分析失败的歌曲没有 emotion 行，
      * UPDATE 语句静默无效——用户手动标记需要无记录时 INSERT 一条仅含 user 字段的行
-     * （valence/arousal 由词条锚点均值换算，曲线/embedding 留空，modelVersion 记 "user-only"）。
+     * （曲线/embedding 留空，modelVersion 记 "user-only"，坐标不落库）。
      * 已有行时与 updateSongEmotionCorrection 等价（@Upsert 按 songId 主键替换）。
      */
     @Upsert

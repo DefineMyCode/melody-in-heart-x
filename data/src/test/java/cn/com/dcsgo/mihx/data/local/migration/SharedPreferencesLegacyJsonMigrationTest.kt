@@ -392,7 +392,7 @@ class SharedPreferencesLegacyJsonMigrationTest {
                 .sortedBy { it.analyzedAt }.map { it.analyzedAt }
 
         override suspend fun emotionCorrectionCount(): Int =
-            songEmotions.values.count { it.userValence != null }
+            songEmotions.values.count { !it.userTags.isNullOrEmpty() }
 
 
         override suspend fun upsertUserOnlyCorrection(emotion: SongEmotionEntity) {
@@ -430,10 +430,10 @@ class SharedPreferencesLegacyJsonMigrationTest {
         }
 
         override suspend fun updateSongEmotionCorrection(
-            songId: Int, v: Float, a: Float, tags: String, edited: Boolean?
+            songId: Int, tags: String, edited: Boolean?
         ) {
             songEmotions[songId]?.let {
-                songEmotions[songId] = it.copy(userValence = v, userArousal = a, userTags = tags, userTagsEdited = edited)
+                songEmotions[songId] = it.copy(userValence = null, userArousal = null, userTags = tags, userTagsEdited = edited)
             }
         }
     }

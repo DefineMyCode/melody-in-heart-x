@@ -50,7 +50,10 @@ interface SongEmotionRepository {
     suspend fun upsert(emotion: SongEmotion)
 
     /**
-     * 用户校准: 只写 user 三字段, 不动模型数据.
+     * 用户校准: 只写 user 词条, 不动模型数据.
+     *
+     * **不写坐标** —— 坐标是派生值(词条 → 该曲线坐标系的锚点均值), 读时现算,
+     * 见 [SongEmotion.effectiveValence]。存下来的坐标会在曲线换坐标系后过期.
      *
      * @param edited 用户是否不认同模型结论: true=主动纠正模型的词 / false=只是采纳 /
      *              null=无模型输出可比（该歌未分析）。用于把「独立纠正」与
@@ -58,8 +61,6 @@ interface SongEmotionRepository {
      */
     suspend fun saveCorrection(
         songId: Int,
-        valence: Float,
-        arousal: Float,
         tags: List<String>,
         edited: Boolean?,
     )

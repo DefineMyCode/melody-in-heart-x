@@ -37,6 +37,19 @@ class PlayerRandomQueueFacade(
     private val moodSlotConfigs: () -> List<cn.com.dcsgo.mihx.core.model.TimeSlotConfig> = { emptyList() },
     private val moodSlotEnabled: suspend () -> Boolean = { false },
     private val moodEmotionTagsOf: (Song) -> List<String> = { emptyList() },
+    /**
+     * 时段匹配用的**词条占比**（词 -> 在整曲里占的比例）。
+     *
+     * 匹配改成按占比卡门槛（[MoodSlotPolicy.MATCH_MIN_RATIO]）后，池子里
+     * 才有「模型真的觉得这首歌是这个情绪」的歌 —— 纯 OR 判定下
+     * 「emo 时刻」池 182 首里只有 30% 是有把握的。
+     *
+     * 默认实现从 [moodEmotionTagsOf] 派生（每个词按 1.0 算），
+     * 行为与改造前的纯 OR 判定**完全一致** —— 没注入占比时不会悄悄变严。
+     */
+    private val moodEmotionTagRatiosOf: (Song) -> Map<String, Float> = { song ->
+        moodEmotionTagsOf(song).associateWith { 1f }
+    },
     // 探索播放（2026-10-20）：模式开关 + 情绪词条收听偏好（计票制）
     private val exploreModeEnabled: suspend () -> Boolean = { false },
     private val wordPreferenceOf: (String) -> WordPreference = {
@@ -68,13 +81,20 @@ class PlayerRandomQueueFacade(
      * 按生效时段的情绪词条过滤候选池（§4.2）。
      * 过滤发生在 planner 入口：分层抢占（低播放优先）与最近播放淘汰零改动复用。
      * 词条组合 0 首时返回 null → 调用方回退全库随机（§4.3 降级）。
+     *
+     * 命中判定带**占比门槛**（[MoodSlotPolicy.MATCH_MIN_RATIO]）：
+     * 词条在整曲里占的比例低于门槛就不算命中。
+     * 用户手动标记的词没有占比（null → 视作 1.0）—— 那是用户自己的判断，
+     * 比模型的更可信，理应算强匹配。
      */
     private fun filterByMoodTags(
         songs: List<Song>,
         mood: MoodSlotState,
     ): List<Song>? {
         val filtered = songs.filter { song ->
-            moodEmotionTagsOf(song).any { it in mood.tags }
+            moodEmotionTagRatiosOf(song).any { (word, ratio) ->
+                word in mood.tags && ratio >= MoodSlotPolicy.MATCH_MIN_RATIO
+            }
         }
         if (filtered.isEmpty()) {
             log("moodSlot: no songs for tags=${mood.tags}, fall back to full library")

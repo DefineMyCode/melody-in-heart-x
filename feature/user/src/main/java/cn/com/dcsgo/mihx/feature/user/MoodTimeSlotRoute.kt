@@ -14,6 +14,14 @@ data class MoodTimeSlotRouteState(
     val mode: RandomEnhanceMode,
     /** 词条 → 关联歌曲数（缺失词条视为 0） */
     val tagCounts: Map<String, Int>,
+    /**
+     * 按选中的词条算出**实际会进入随机池**的歌曲数。
+     *
+     * 不用「每词计数相加」—— 那样多词时同一首歌被重复计数，而且加上
+     * 占比门槛后「带这个词」与「会匹配上」已经不是一回事。
+     * 由调用方用与播放时同一套判定提供，保证界面数字 = 实际会播到的歌数。
+     */
+    val poolCountOf: (Set<String>) -> Int = { tags -> tags.sumOf { tagCounts[it] ?: 0 } },
     /** 曲库歌曲总数（合计条分母） */
     val librarySize: Int,
     /** 当前时刻分钟数（0–1439，用于“生效中”徽标；由调用方定时刷新） */

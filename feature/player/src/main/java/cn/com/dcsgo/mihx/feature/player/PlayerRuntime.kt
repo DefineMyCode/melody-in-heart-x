@@ -419,7 +419,7 @@ internal class PlayerRuntime(
     @Volatile
     private var moodSlotConfigsCache: List<cn.com.dcsgo.mihx.core.model.TimeSlotConfig> = emptyList()
     @Volatile
-    private var moodEmotionTagsCache: Map<Int, List<String>> = emptyMap()
+    private var moodEmotionRatiosCache: Map<Int, Map<String, Float>> = emptyMap()
     @Volatile
     private var wordPreferenceCache: Map<String, WordPreference> = emptyMap()
 
@@ -433,12 +433,12 @@ internal class PlayerRuntime(
             songEmotionRepository.observeAll()
                 .map { emotions ->
                     emotions.mapValues { (_, emotion) ->
-                        cn.com.dcsgo.mihx.core.model.emotionTagsOf(emotion)
+                        cn.com.dcsgo.mihx.core.model.emotionMatchRatiosOf(emotion)
                     }
                 }
                 .flowOn(dispatchers.default)
                 .catch { AppLog.warning(TAG, "observe mood emotion tags failed: ${it.message}") }
-                .collect { moodEmotionTagsCache = it }
+                .collect { moodEmotionRatiosCache = it }
         }
         // 探索播放（2026-10-20）：情绪词条收听偏好（计票制）持续订阅
         scope.launch {
@@ -479,7 +479,9 @@ internal class PlayerRuntime(
         log = { message -> AppLog.debug(TAG, message) },
         moodSlotConfigs = { moodSlotConfigsCache },
         moodSlotEnabled = { playerSettingsRepository.randomEnhanceMode.first() == RandomEnhanceMode.TIME_SLOT },
-        moodEmotionTagsOf = { song -> moodEmotionTagsCache[song.id].orEmpty() },
+        moodEmotionTagsOf = { song -> moodEmotionRatiosCache[song.id]?.keys?.toList().orEmpty() },
+        // 时段匹配按占比卡门槛（见 MoodSlotPolicy.MATCH_MIN_RATIO）
+        moodEmotionTagRatiosOf = { song -> moodEmotionRatiosCache[song.id].orEmpty() },
         exploreModeEnabled = { playerSettingsRepository.randomEnhanceMode.first() == RandomEnhanceMode.EXPLORE },
         wordPreferenceOf = { word ->
             wordPreferenceCache[word] ?: WordPreference(word = word, likeVotes = 0, dislikeVotes = 0)
@@ -901,7 +903,7 @@ internal class PlayerRuntime(
      */
     private fun handleExploreSongSettled(songId: Int, playedMs: Long) {
         val song = _uiState.value.songs.firstOrNull { it.id == songId }
-        val words = moodEmotionTagsCache[songId].orEmpty()
+        val words = moodEmotionRatiosCache[songId]?.keys?.toList().orEmpty()
         val skipped = ExplorePlaybackPolicy.isSkipped(playedMs, song?.durationMs ?: 0L)
         if (words.isEmpty()) {
             AppLog.debug(

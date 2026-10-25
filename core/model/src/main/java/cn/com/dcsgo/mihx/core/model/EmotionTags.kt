@@ -46,6 +46,26 @@ data class EmotionTagRatio(
 )
 
 /**
+ * 时段匹配用的词条占比表（词 -> 在整曲里占的比例）。
+ *
+ * 与 [emotionTagRatiosOf] 的区别：
+ *  - 这里给**完整分布**（不受展示门槛 15% 与 topN=4 限制）——
+ *    展示层只显示前 4 个词，但匹配不能被这个限制截断
+ *    （否则目标词排第 5 就永远匹配不上）。
+ *  - 用户手动标记的词占比未知，按 **1.0**（强匹配）处理 ——
+ *    那是用户自己的判断，比模型的更可信。
+ */
+fun emotionMatchRatiosOf(emotion: SongEmotion): Map<String, Float> {
+    if (emotion.userTags.isNotEmpty()) {
+        return emotion.userTags.associateWith { 1f }
+    }
+    return EmotionGroup.voteRatios(
+        curve = emotion.compensatedCurve,
+        anchors = EmotionGroup.anchorsFor(emotion.modelVersion),
+    ).associate { (group, ratio) -> group.headline to ratio }
+}
+
+/**
  * 这首歌的情绪词条 + 各自占比。
  *
  * 占比 = 落在该组锚点附近的窗口占全曲**有效窗口**（近零窗弃权）的比例。

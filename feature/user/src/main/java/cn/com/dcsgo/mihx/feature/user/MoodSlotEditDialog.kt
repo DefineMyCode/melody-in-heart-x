@@ -52,6 +52,14 @@ fun MoodSlotEditDialog(
     editing: TimeSlotConfig?,           // null = 新增
     existingConfigs: List<TimeSlotConfig>,
     tagCounts: Map<String, Int>,
+    /**
+     * 按选中的词条算出实际会进入随机池的歌曲数。
+     *
+     * 不用「每词计数相加」—— 那样多词时同一首歌被重复计数，
+     * 而且加上占比门槛后「带这个词」与「会匹配上」已经不是一回事。
+     * 由调用方用与播放时同一套判定提供，保证界面数字 = 实际会播到的歌数。
+     */
+    poolCountOf: (Set<String>) -> Int,
     librarySize: Int,
     availableTags: List<String>,        // 全部可选词条（自动可用 + 仅手动标记两组）
     manualOnlyTags: List<String>,       // 仅手动标记计入的词条
@@ -88,7 +96,8 @@ fun MoodSlotEditDialog(
     val totalSongs = if (tags.isEmpty()) {
         0
     } else {
-        tags.sumOf { tagCounts[it] ?: 0 }
+        // 与播放时判定完全一致: 词条在整首里的占比要够高才算命中
+        poolCountOf(tags)
     }
 
     Dialog(
@@ -222,6 +231,10 @@ fun MoodSlotEditDialog(
                         color = MaterialTheme.colorScheme.outline,
                     )
                 }
+                Explainer(
+                    "只算「${(cn.com.dcsgo.mihx.domain.playback.MoodSlotPolicy.MATCH_MIN_RATIO * 100).toInt()}%」的歌曲：" +
+                        "词条在整首里占的比例够高，才算真的这个情绪",
+                )
                 if (totalSongs in 1 until MOOD_POOL_WARN_THRESHOLD) {
                     Explainer("歌曲较少（$totalSongs 首），随心播放将循环播放这批歌曲", warn = true)
                 } else if (totalSongs == 0) {

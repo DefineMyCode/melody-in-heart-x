@@ -268,6 +268,7 @@ class PlayerRandomQueueFacadeTest {
         enabled: Boolean,
         tagsBySong: Map<Int, List<String>>,
         nowMinuteOfDay: Int = 22 * 60, // 默认 22:00，恰好命中深夜时段
+        ratiosBySong: Map<Int, Map<String, Float>>? = null,
     ): PlayerRandomQueueFacade = PlayerRandomQueueFacade(
         state = { state },
         updateState = { transform -> state = transform(state) },
@@ -292,6 +293,10 @@ class PlayerRandomQueueFacadeTest {
         moodSlotConfigs = { configs },
         moodSlotEnabled = { enabled },
         moodEmotionTagsOf = { song -> tagsBySong[song.id].orEmpty() },
+        // null = 不注入占比 -> 走默认实现(每词按 1.0), 行为与改造前的纯 OR 判定一致
+        moodEmotionTagRatiosOf = { song ->
+            ratiosBySong?.get(song.id) ?: tagsBySong[song.id].orEmpty().associateWith { 1f }
+        },
         nowMinuteOfDay = { nowMinuteOfDay },
     )
 
@@ -419,6 +424,51 @@ class PlayerRandomQueueFacadeTest {
 
         // 候选池只有 {3,4}，批量 2 全取；顺序上 0 次播放的歌 4 优先于 10 次的歌 3
         assertEquals(listOf(4, 3), setQueueSongs?.map { it.id })
+    }
+
+    @Test
+    fun moodFilterRequiresTheWordToDominateEnoughOfTheSong() {
+        // 词条占比低于门槛的不算命中 —— 16% 的「静谧」和 70% 的「静谧」不是一回事
+        val configs = listOf(
+            cn.com.dcsgo.mihx.core.model.TimeSlotConfig(
+                id = 1, name = "深夜静谧",
+                startMinutes = 22 * 60, endMinutes = 6 * 60,
+                tags = listOf("静谧"),
+            ),
+        )
+        val mood = moodFacade(
+            configs = configs,
+            enabled = true,
+            tagsBySong = mapOf(1 to listOf("静谧"), 3 to listOf("静谧")),
+            ratiosBySong = mapOf(
+                1 to mapOf("静谧" to 0.70f),  // 够高 -> 命中
+                3 to mapOf("静谧" to 0.16f),  // 太低 -> 不命中
+            ),
+        )
+        state = state.copy(songs = songs(1, 2, 3, 4))
+        runBlocking { mood.playRandomQueue() }
+        // 候选池只剩 {1}（2、4 没词条，3 占比不够）
+        assertEquals(listOf(1), setQueueSongs?.map { it.id })
+    }
+
+    @Test
+    fun moodFilterFallsBackToPlainTagMatchWhenNoRatiosAreInjected() {
+        // 不注入占比时行为与改造前完全一致（向后兼容）：有词就算命中
+        val configs = listOf(
+            cn.com.dcsgo.mihx.core.model.TimeSlotConfig(
+                id = 1, name = "深夜静谧",
+                startMinutes = 22 * 60, endMinutes = 6 * 60,
+                tags = listOf("静谧"),
+            ),
+        )
+        val mood = moodFacade(
+            configs = configs,
+            enabled = true,
+            tagsBySong = mapOf(1 to listOf("静谧"), 3 to listOf("静谧")),
+        )
+        state = state.copy(songs = songs(1, 2, 3, 4))
+        runBlocking { mood.playRandomQueue() }
+        assertEquals(setOf(1, 3), setQueueSongs?.map { it.id }?.toSet())
     }
 
     private fun songs(vararg ids: Int): List<Song> = ids.map { id ->

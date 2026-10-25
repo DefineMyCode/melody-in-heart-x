@@ -557,6 +557,9 @@ fun AppNavHost(
                     configs = moodConfigs,
                     mode = enhanceMode,
                     tagCounts = moodTagCounts.associate { it.tag to it.songCount },
+                    // 池子大小按与播放时一致的判定算（词条占比够高才算命中）,
+                    // 界面显示的数字必须等于实际会播到的歌数
+                    poolCountOf = { tags -> moodTimeSlotViewModel.matchCount(tags) },
                     librarySize = moodLibrarySize,
                     nowMinuteOfDay = moodNowMinute,
                     wordPreferences = moodWordPrefs,
@@ -593,6 +596,9 @@ fun AppNavHost(
                     editing = editing,
                     existingConfigs = moodConfigs,
                     tagCounts = moodTagCounts.associate { it.tag to it.songCount },
+                    // 池子大小按与播放时一致的判定算（词条占比够高才算命中）,
+                    // 界面显示的数字必须等于实际会播到的歌数
+                    poolCountOf = { tags -> moodTimeSlotViewModel.matchCount(tags) },
                     librarySize = moodLibrarySize,
                     availableTags = moodTagCounts.map { it.tag },
                     manualOnlyTags = listOf("鬼畜", "沙雕", "戏谑", "荒诞"),

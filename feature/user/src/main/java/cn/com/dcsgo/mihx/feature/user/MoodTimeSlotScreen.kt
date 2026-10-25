@@ -720,15 +720,10 @@ private fun PreferenceRow(
 
 private data class SlotItem(val config: TimeSlotConfig, val totalSongs: Int)
 
-/** 每卡合计可随机数：单词条直接取计数；多词条求和（同一首歌多词条只计一次的差异忽略，预览性质） */
+/** 每卡合计可随机数：按与播放时一致的判定算（词条占比够高才算命中） */
 private fun configs2Items(state: MoodTimeSlotRouteState): List<SlotItem> =
     state.configs.map { config ->
-        val total = if (config.tags.size == 1) {
-            state.tagCounts[config.tags.first()] ?: 0
-        } else {
-            config.tags.sumOf { state.tagCounts[it] ?: 0 }
-        }
-        SlotItem(config, total)
+        SlotItem(config, state.poolCountOf(config.tags.toSet()))
     }
 
 internal const val MOOD_POOL_WARN_THRESHOLD = 10

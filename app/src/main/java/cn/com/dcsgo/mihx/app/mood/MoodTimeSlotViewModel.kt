@@ -6,6 +6,7 @@ import cn.com.dcsgo.mihx.core.model.RandomEnhanceMode
 import cn.com.dcsgo.mihx.core.model.TimeSlotConfig
 import cn.com.dcsgo.mihx.core.model.WordPreference
 import cn.com.dcsgo.mihx.core.model.emotionTagsOf
+import cn.com.dcsgo.mihx.domain.playback.MoodSlotPolicy
 import cn.com.dcsgo.mihx.domain.repository.PlayerSettingsRepository
 import cn.com.dcsgo.mihx.domain.repository.SongEmotionRepository
 import cn.com.dcsgo.mihx.domain.repository.SongRepository
@@ -64,12 +65,40 @@ class MoodTimeSlotViewModel @Inject constructor(
     private val _librarySize = MutableStateFlow(0)
     val librarySize: StateFlow<Int> = _librarySize.asStateFlow()
 
+    /**
+     * 每首歌的词条占比表（词 -> 整曲占比）。
+     *
+     * 池子预览要用它算**真实**的匹配数：按词条计数相加是错的
+     * （多词时同一首歌被重复计数），而且加上占比门槛后
+     * "带这个词"与"会匹配上"已经不是一回事了。
+     */
+    @Volatile
+    private var emotionRatios: Map<Int, Map<String, Float>> = emptyMap()
+
+    /**
+     * 按选中的词条算出**实际会进入随机池**的歌曲数。
+     *
+     * 判定与播放时完全一致（同一个 [MoodSlotPolicy.MATCH_MIN_RATIO] 门槛）——
+     * 界面显示的数字必须等于实际会播到的歌数。
+     */
+    fun matchCount(tags: Set<String>): Int {
+        if (tags.isEmpty()) return 0
+        return emotionRatios.values.count { ratios ->
+            ratios.any { (word, ratio) ->
+                word in tags && ratio >= MoodSlotPolicy.MATCH_MIN_RATIO
+            }
+        }
+    }
+
     /** 进入配置页时调用：一次性计算词条歌曲数与曲库规模 */
     fun loadStats() {
         viewModelScope.launch {
             try {
-                val (counts, size) = withContext(Dispatchers.IO) {
+                val (counts, ratios, size) = withContext(Dispatchers.IO) {
                     val emotions = songEmotionRepository.getAll()
+                    val ratios = emotions.mapValues { (_, emotion) ->
+                        cn.com.dcsgo.mihx.core.model.emotionMatchRatiosOf(emotion)
+                    }
                     val counts = HashMap<String, Int>()
                     emotions.values.forEach { emotion ->
                         emotionTagsOf(emotion).forEach { tag ->
@@ -80,8 +109,9 @@ class MoodTimeSlotViewModel @Inject constructor(
                         .map { MoodTagCount(it.key, it.value) }
                         .sortedByDescending { it.songCount }
                     val size = songRepository.countSongs()
-                    sorted to size
+                    Triple(sorted, ratios, size)
                 }
+                emotionRatios = ratios
                 _tagCounts.value = counts
                 _librarySize.value = size
             } catch (e: Exception) {

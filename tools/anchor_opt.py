@@ -19,6 +19,7 @@
     python tools/anchor_opt.py --db <新库> [--iters 4000] [--seed 7] [--out cand.json]
 """
 import argparse
+import io
 import json
 import math
 import os
@@ -267,8 +268,18 @@ def main():
     print(f"窗口 {len(wv)} 个 / {nsongs} 首（modelVersion={NEW_MODEL}）")
 
     rng = np.random.default_rng(args.seed)
-    # 起点：手工网格 + 随机可行点（蓝图盒采样）
+    # 起点：--start 指定的表(优先) + 手工网格 + 随机可行点
     starts = []
+    if args.start:
+        with io.open(args.start, encoding="utf-8") as f:
+            st0 = json.load(f)
+        st0 = [(float(a[0]), float(a[1])) for a in st0]
+        s_start, _ = score(st0, wv, wa, sidx, nsongs)
+        if s_start > -1e8:
+            starts.append(st0)
+            print("起点表(--start)已纳入, obj=%.4f" % s_start)
+        else:
+            print("起点表(--start)不合规(违反硬约束), 忽略")
     hand = [(0.52, 0.22), (0.15, 0.72), (0.05, 0.40), (0.48, -0.12),
             (-0.12, -0.78), (-0.58, -0.42), (-0.60, 0.55), (0.15, -0.42),
             (-0.85, -0.02)]

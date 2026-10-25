@@ -244,8 +244,10 @@ class MelodyDatabaseMigrationTest {
         // 当前坐标系的行补上内容指纹 -> 零重扫
         db.query("SELECT modelVersion FROM song_emotions WHERE songId = 1").use { cursor ->
             assertTrue(cursor.moveToFirst())
+            // 写的是 **v4 时代的完整版本串**（那时的当前版本）,
+            // 不是"今天的当前版本" —— 见 EmotionGroup.V4_MODEL_VERSION 的说明
             assertEquals(
-                cn.com.dcsgo.mihx.core.model.EmotionModelSpec.MODEL_VERSION,
+                cn.com.dcsgo.mihx.core.model.EmotionGroup.V4_MODEL_VERSION,
                 cursor.getString(0),
             )
         }
@@ -262,6 +264,50 @@ class MelodyDatabaseMigrationTest {
             assertTrue(cursor.isNull(1))
             assertEquals("燃,神圣", cursor.getString(2))
             assertEquals(1, cursor.getInt(3))
+        }
+        db.close()
+    }
+
+    @Test
+    fun migration14To15StampsV5CoordinateSystemWithoutTouchingCurves() {
+        val name = dbName("14-15")
+        helper.createDatabase(name, 14).apply {
+            execSQL(
+                "INSERT INTO song_emotions (songId, valence, arousal, curveJson, peakSec, " +
+                    "windowsAnalyzed, durationSec, modelVersion, analyzedAt, vocalScore) " +
+                    "VALUES (1, 0.3, 0.7, '[0.1,0.2]', 1.0, 3, 120.0, " +
+                    "'yamnet-va-v4-rms@b18e43ff', 42, 0.003)"
+            )
+            execSQL(
+                "INSERT INTO song_emotions (songId, valence, arousal, curveJson, peakSec, " +
+                    "windowsAnalyzed, durationSec, modelVersion, analyzedAt, vocalScore) " +
+                    "VALUES (2, 0.1, 0.2, '[]', 0.0, 0, 0.0, 'yamnet-va-v3', 43, NULL)"
+            )
+            close()
+        }
+
+        val db = helper.runMigrationsAndValidate(name, 15, true, MelodyMigrations.MIGRATION_14_15)
+
+        // v4 的行换成 v5 版本串 —— **零重扫**：
+        // 人声成分补偿是读时派生的(库里存的仍是原始曲线), 曲线没变,
+        // 所以老曲线在新坐标系下的解释本来就是对的, 只换标签。
+        db.query("SELECT modelVersion FROM song_emotions WHERE songId = 1").use { cursor ->
+            assertTrue(cursor.moveToFirst())
+            assertEquals(
+                cn.com.dcsgo.mihx.core.model.EmotionModelSpec.MODEL_VERSION,
+                cursor.getString(0),
+            )
+        }
+        // 更老的坐标系不动(它本来就该重扫)
+        db.query("SELECT modelVersion FROM song_emotions WHERE songId = 2").use { cursor ->
+            assertTrue(cursor.moveToFirst())
+            assertEquals("yamnet-va-v3", cursor.getString(0))
+        }
+        // 曲线与 vocalScore 一律不动
+        db.query("SELECT curveJson, vocalScore FROM song_emotions WHERE songId = 1").use { cursor ->
+            assertTrue(cursor.moveToFirst())
+            assertEquals("[0.1,0.2]", cursor.getString(0))
+            assertEquals(0.003, cursor.getDouble(1), 1e-6)
         }
         db.close()
     }

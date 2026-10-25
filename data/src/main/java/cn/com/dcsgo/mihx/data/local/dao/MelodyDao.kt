@@ -401,7 +401,7 @@ interface MelodyDao {
     @Query(
         "SELECT songId, valence, arousal, curveJson, peakSec, windowsAnalyzed, " +
             "durationSec, modelVersion, analyzedAt, userValence, userArousal, userTags, " +
-            "userTagsEdited FROM song_emotions"
+            "userTagsEdited, vocalScore FROM song_emotions"
     )
     suspend fun allSongEmotions(): List<SongEmotionLite>
 
@@ -413,7 +413,7 @@ interface MelodyDao {
     @Query(
         "SELECT songId, valence, arousal, curveJson, peakSec, windowsAnalyzed, " +
             "durationSec, modelVersion, analyzedAt, userValence, userArousal, userTags, " +
-            "userTagsEdited FROM song_emotions"
+            "userTagsEdited, vocalScore FROM song_emotions"
     )
     fun observeAllSongEmotions(): Flow<List<SongEmotionLite>>
 

@@ -67,6 +67,8 @@ val generateEmotionModelSpec by tasks.registering {
         val dbCeil = required("dbCeil")
         val vCalBias = required("vCalBias")
         val vCalScale = required("vCalScale")
+        val vocalCompShift = required("vocalCompShift")
+        val vocalCompThreshold = required("vocalCompThreshold")
         val yamnetHash = required("yamnetSha256")
         val headHash = required("headSha256")
 
@@ -93,7 +95,10 @@ val generateEmotionModelSpec by tasks.registering {
         }
 
         // ② 指纹: 参数指纹守锚点表, 完整指纹守"要不要重扫"
-        val paramsMaterial = listOf(label, dbFloor, dbCeil, vCalBias, vCalScale).joinToString("\n")
+        val paramsMaterial = listOf(
+            label, dbFloor, dbCeil, vCalBias, vCalScale,
+            vocalCompShift, vocalCompThreshold,
+        ).joinToString("\n")
         val fullMaterial = listOf(paramsMaterial, yamnetHash, headHash).joinToString("\n")
         val paramsFingerprint = sha256Hex(paramsMaterial.toByteArray()).take(8)
         val fingerprint = sha256Hex(fullMaterial.toByteArray()).take(8)
@@ -134,6 +139,12 @@ val generateEmotionModelSpec by tasks.registering {
             |    /** B: valence 零点/斜率标定 v' = (v - V_CAL_BIAS) / V_CAL_SCALE */
             |    const val V_CAL_BIAS = ${vCalBias}f
             |    const val V_CAL_SCALE = ${vCalScale}f
+            |    /**
+            |     * C: 人声成分补偿 —— 器乐组(vocalScore <= VOCAL_COMP_THRESHOLD)的
+            |     *    valence 读时上移量。用来剥掉 valence 里"在测有没有人唱"的那部分。
+            |     */
+            |    const val VOCAL_COMP_SHIFT = ${vocalCompShift}f
+            |    const val VOCAL_COMP_THRESHOLD = ${vocalCompThreshold}f
             |}
             |
         """.trimMargin()

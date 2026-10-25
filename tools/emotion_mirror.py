@@ -15,6 +15,7 @@
 
 指纹算法必须与 core/model/build.gradle.kts 的 generateEmotionModelSpec **逐字一致**:
     paramsMaterial = label + "\\n" + dbFloor + "\\n" + dbCeil + "\\n" + vCalBias + "\\n" + vCalScale
+                     + "\\n" + vocalCompShift + "\\n" + vocalCompThreshold
     fullMaterial   = paramsMaterial + "\\n" + yamnetSha256 + "\\n" + headSha256
     paramsFingerprint = sha256(paramsMaterial)[:8]
     fingerprint        = sha256(fullMaterial)[:8]
@@ -59,6 +60,7 @@ def _parse_spec():
         key, _, value = line.partition("=")
         props[key.strip()] = value.strip()
     required = ["label", "dbFloor", "dbCeil", "vCalBias", "vCalScale",
+                "vocalCompShift", "vocalCompThreshold",
                 "yamnetSha256", "headSha256"]
     missing = [k for k in required if not props.get(k)]
     if missing:
@@ -76,6 +78,7 @@ CURRENT_LABEL = SPEC["label"]
 _PARAMS_MATERIAL = "\n".join([
     SPEC["label"], SPEC["dbFloor"], SPEC["dbCeil"],
     SPEC["vCalBias"], SPEC["vCalScale"],
+    SPEC["vocalCompShift"], SPEC["vocalCompThreshold"],
 ])
 _FULL_MATERIAL = "\n".join([
     _PARAMS_MATERIAL, SPEC["yamnetSha256"], SPEC["headSha256"],

@@ -61,6 +61,7 @@ class SongEmotionsRepositoryTest {
         userArousal: Float? = null,
         userTags: List<String> = emptyList(),
         modelVersion: String = MODEL_VERSION,
+        vocalScore: Float? = null,
     ) = SongEmotion(
         songId = songId,
         valence = valence,
@@ -75,6 +76,7 @@ class SongEmotionsRepositoryTest {
         userValence = userValence,
         userArousal = userArousal,
         userTags = userTags,
+        vocalScore = vocalScore,
     )
 
     // ───────────── P0：轻量投影与 embedding 契约 ─────────────
@@ -269,5 +271,28 @@ class SongEmotionsRepositoryTest {
     private companion object {
         // 单一真源: 当前坐标系版本由 core/model 的生成物给出(含内容指纹)
         const val MODEL_VERSION = cn.com.dcsgo.mihx.core.model.EmotionGroup.CURRENT_MODEL_VERSION
+    }
+
+    /**
+     * 批量读必须**保留 vocalScore**（2026-10-25 回归）。
+     *
+     * 这是一条真实的漏项：轻量投影 SQL 与 [SongEmotionLite] 当时都没带
+     * `vocalScore` 列，Room 映射成 null —— 于是
+     *  - 曲库「情绪」Tab 的列表行（走 getAll）**不做**人声成分补偿
+     *  - 歌曲详情弹窗（走整行读 get）**做**补偿
+     * 两条路径给出不同词条，而真机验证只看到列表行那一侧，差点误判成
+     * "补偿算法没生效"。
+     *
+     * 投影漏列是**静默**的：不会编译失败、不会崩，只是那一个字段变 null。
+     */
+    @Test
+    fun `bulk read keeps the vocal score`() = runBlocking {
+        repository.upsert(emotion(songId = 1, vocalScore = 0.0031f))
+
+        val all = repository.getAll()
+        assertEquals(0.0031f, all.getValue(1).vocalScore!!, 1e-6f)
+
+        val observed = repository.observeAll().first()
+        assertEquals(0.0031f, observed.getValue(1).vocalScore!!, 1e-6f)
     }
 }

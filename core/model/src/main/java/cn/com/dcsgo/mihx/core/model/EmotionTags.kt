@@ -11,10 +11,14 @@ package cn.com.dcsgo.mihx.core.model
  * 投票必须用**曲线自己坐标系**的锚点表(见 [EmotionGroup.anchorsFor]):
  * 改造前的旧曲线还躺在库里(后台渐进重扫要数天), 用新锚点给旧曲线投票
  * 会把 valence 的系统性正偏当成"正面"——实测 47.1% 的歌会变成「治愈」。
+ *
+ * 投票还必须用**人声成分补偿后**的曲线(见 [SongEmotion.compensatedCurve]):
+ * 补偿剥掉 valence 里"在测有没有人唱"的那部分, 否则器乐曲会被系统性判低
+ * (实测全库器乐组 valence 平均低 0.162, 补偿后回到与独立模型一致的水平)。
  */
 fun emotionTagsOf(emotion: SongEmotion): List<String> {
     if (emotion.userTags.isNotEmpty()) return emotion.userTags
-    return EmotionGroup.headlineTagsFor(emotion.curve, emotion.modelVersion)
+    return EmotionGroup.headlineTagsFor(emotion.compensatedCurve, emotion.modelVersion)
 }
 
 /**
@@ -28,7 +32,7 @@ fun emotionTagsOf(emotion: SongEmotion): List<String> {
  */
 fun modelTagsOf(emotion: SongEmotion): List<String> =
     if (emotion.curve.isEmpty()) emptyList()
-    else EmotionGroup.headlineTagsFor(emotion.curve, emotion.modelVersion)
+    else EmotionGroup.headlineTagsFor(emotion.compensatedCurve, emotion.modelVersion)
 
 /**
  * 用户手动选的词条是否「不认同」模型结论。

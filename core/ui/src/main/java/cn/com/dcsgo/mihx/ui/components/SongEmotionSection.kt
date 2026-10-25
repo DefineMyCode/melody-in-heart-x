@@ -204,7 +204,9 @@ fun SongEmotionSection(
                 )
                 .padding(horizontal = 8.dp, vertical = 6.dp),
         ) {
-            val smoothed = smoothCurve(emotion.curve)
+            // 画补偿后的曲线: 词条是按补偿后的曲线投票的, 图必须画同一份,
+            // 否则"图上在这里、词条是那个"会对不上
+            val smoothed = smoothCurve(shown.compensatedCurve)
             Canvas(modifier = Modifier.fillMaxSize()) {
                 val w = size.width
                 val h = size.height

@@ -28,6 +28,24 @@ package cn.com.dcsgo.mihx.core.model
  * docs/architecture/EMOTION_VA_UPGRADE.md §10.
  *
  * 锚点**只影响投票**, 不影响已存曲线 —— 所以重标定不需要重扫全库.
+ *
+ * ## v5：人声成分补偿后的锚点表（2026-10-25）
+ *
+ * v5 坐标系给器乐组（vocalScore 低）的 valence 加了**读时补偿**
+ * （见 [VocalCalibration]）—— valence 有一部分在测「有没有人唱」。
+ * 数据右移 0.091, 锚点必须跟着重标, 否则「元气」会独占 25.8% 的窗口退化成万能桶。
+ *
+ * 本表由 [tools/anchor_opt.py] 在**补偿后的**全库 1095 首真值上标定
+ * （窗口 81002 个, 优势 0.773, 各组占比 3.6%~19.0%, 均在 §11.2 的硬约束内）。
+ *
+ * 两处**不是**优化器直接给的, 是人工按语义回退的:
+ *  - 元气: 优化器给 arousal +0.129 —— 那会让「元气/快乐/轻快」跟「治愈」一样没有能量,
+ *    违背语义; 回退到 +0.240（神圣 0.332 / 燃 0.604 的能量序才成立:
+ *    震撼/史诗 > 轻快/俏皮）。
+ *  - 治愈: 优化器给 valence +0.697（占比 3.4%, 贴着硬约束下限）——
+ *    「治愈」被挤没了; 回退到 +0.390, 占比回到 9.4%。
+ *
+ * 详见 docs/architecture/EMOTION_VA_UPGRADE.md §16。
  */
 enum class EmotionGroup(
     val words: List<String>,
@@ -38,16 +56,16 @@ enum class EmotionGroup(
     /** 是否参与自动曲线投票(手动标记不受限) */
     val auto: Boolean = true,
 ) {
-    BRIGHT(listOf("元气", "快乐", "轻快", "俏皮"), 0.486f, 0.492f),
-    RAGE(listOf("燃", "热血", "战斗", "力量"), 0.009f, 0.607f),
-    EPIC(listOf("神圣", "浩瀚", "震撼", "史诗"), 0.228f, 0.277f),
+    BRIGHT(listOf("元气", "快乐", "轻快", "俏皮"), 0.590f, 0.240f),
+    RAGE(listOf("燃", "热血", "战斗", "力量"), 0.045f, 0.604f),
+    EPIC(listOf("神圣", "浩瀚", "震撼", "史诗"), 0.013f, 0.332f),
     WITTY(listOf("鬼畜", "沙雕", "戏谑", "荒诞"), 0.2f, 0.3f, auto = false),
-    LOVE(listOf("治愈", "心动", "缱绻", "深情"), 0.431f, -0.124f),
-    STILL(listOf("静谧", "空灵", "禅", "专注"), 0.078f, -0.733f),
-    SAD(listOf("emo", "伤感", "遗憾", "雨季"), -0.744f, -0.432f),
-    ANXIOUS(listOf("躁", "焦虑", "压迫", "狂躁"), -0.769f, 0.590f),
-    CHILL(listOf("放松", "慵懒", "午后", "微醺"), 0.012f, -0.310f),
-    ABYSS(listOf("窒息", "孤独", "深渊"), -0.774f, -0.104f),
+    LOVE(listOf("治愈", "心动", "缱绻", "深情"), 0.390f, 0.080f),
+    STILL(listOf("静谧", "空灵", "禅", "专注"), 0.213f, -0.610f),
+    SAD(listOf("emo", "伤感", "遗憾", "雨季"), -0.827f, -0.449f),
+    ANXIOUS(listOf("躁", "焦虑", "压迫", "狂躁"), -0.928f, 0.453f),
+    CHILL(listOf("放松", "慵懒", "午后", "微醺"), 0.279f, -0.302f),
+    ABYSS(listOf("窒息", "孤独", "深渊"), -0.941f, 0.055f),
     ;
 
     /** 组代表词(自动分析展示用) */
@@ -96,10 +114,30 @@ enum class EmotionGroup(
          *
          * 每次重标定锚点表, 把这里更新成新的参数指纹。
          */
-        const val ANCHORS_CALIBRATED_FOR = "09ee136b"
+        const val ANCHORS_CALIBRATED_FOR = "b8a45a93"
 
         /** 旧坐标系(改造前 v3 及更早)的版本标签 */
         const val LEGACY_MODEL_LABEL = "yamnet-va-v3"
+
+        /**
+         * v4 坐标系(全局标定、无人声补偿)的版本标签 —— 留档用。
+         *
+         * v4 的曲线在 MIGRATION_14_15 里被换成了 v5 标签（补偿是读时派生的,
+         * 曲线没变, 零重扫）, 所以正常情况下库里不该再有 v4 行。
+         * 但迁移可能没跑到/被打断, 所以这张表必须留着 —— 老行用错锚点投票
+         * 会比"用错坐标系"更隐蔽（§11.7 实测 47.1% 的歌会变成「治愈」）。
+         */
+        const val V4_MODEL_LABEL = "yamnet-va-v4-rms"
+
+        /**
+         * v4 时代的**完整**版本串（留档）。
+         *
+         * 12→13 迁移当时给「当前资产产出的行」补的指纹就是它 —— 迁移必须写
+         * **它当时的事实**，不能写"今天的当前版本"。否则从 v12 直升 v15 的用户，
+         * 那些行会被标成它们没经历过的坐标系，14→15 的 `LIKE 'yamnet-va-v4-rms%'`
+         * 就再也匹配不上它们（老行永远停在旧坐标系）。
+         */
+        const val V4_MODEL_VERSION = "yamnet-va-v4-rms@b18e43ff"
 
         /** 版本串里标签与指纹的分隔符 */
         const val FINGERPRINT_SEPARATOR = '@'
@@ -128,10 +166,30 @@ enum class EmotionGroup(
             ABYSS to (-0.7f to -0.2f),
         )
 
-        /** 当前坐标系(v4)的锚点表 = 枚举自带的 anchorV/anchorA. */
+        /** 当前坐标系(v5)的锚点表 = 枚举自带的 anchorV/anchorA. */
         private val CURRENT_ANCHORS: Map<EmotionGroup, Pair<Float, Float>> by lazy {
             entries.associateWith { it.anchorV to it.anchorA }
         }
+
+        /**
+         * v4 坐标系(全局标定、无人声补偿)的锚点表 —— 留档。
+         *
+         * v4 是 v5 的**前一版**：valence 只做过全局零点/斜率标定, 没有剥掉
+         * 「有没有人唱」那层成分。留着它是为了迁移万一没跑到时, 老曲线
+         * 还能按它自己的坐标系投票, 而不是被当成 v5 处理。
+         */
+        private val V4_ANCHORS: Map<EmotionGroup, Pair<Float, Float>> = mapOf(
+            BRIGHT to (0.486f to 0.492f),
+            RAGE to (0.009f to 0.607f),
+            EPIC to (0.228f to 0.277f),
+            WITTY to (0.2f to 0.3f),
+            LOVE to (0.431f to -0.124f),
+            STILL to (0.078f to -0.733f),
+            SAD to (-0.744f to -0.432f),
+            ANXIOUS to (-0.769f to 0.590f),
+            CHILL to (0.012f to -0.310f),
+            ABYSS to (-0.774f to -0.104f),
+        )
 
         /**
          * 按曲线所属坐标系取锚点表。
@@ -148,6 +206,7 @@ enum class EmotionGroup(
             val label = modelVersion.substringBefore(FINGERPRINT_SEPARATOR)
             return when (label) {
                 CURRENT_MODEL_LABEL -> CURRENT_ANCHORS
+                V4_MODEL_LABEL -> V4_ANCHORS
                 LEGACY_MODEL_LABEL -> LEGACY_ANCHORS
                 // 未登记的标签按旧坐标系处理: 旧曲线占绝大多数, 用错表的代价
                 // 实测是 47.1% 的歌变成「治愈」(docs/architecture/EMOTION_VA_UPGRADE.md §11.7)。

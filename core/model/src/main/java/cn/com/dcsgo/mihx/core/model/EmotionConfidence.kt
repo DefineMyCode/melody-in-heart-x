@@ -43,7 +43,13 @@ fun emotionConfidenceOf(emotion: SongEmotion): Float? =
     if (emotion.curve.isEmpty()) {
         null
     } else {
-        EmotionGroup.confidenceOf(emotion.curve, EmotionGroup.anchorsFor(emotion.modelVersion))
+        // 必须用**补偿后**的曲线: 词条是按补偿后的曲线投票的,
+        // 置信度必须描述**同一次投票**的把握程度。
+        // 用补偿前的曲线算, 等于在描述一个已经不存在的投票过程。
+        EmotionGroup.confidenceOf(
+            emotion.compensatedCurve,
+            EmotionGroup.anchorsFor(emotion.modelVersion),
+        )
     }
 
 /**

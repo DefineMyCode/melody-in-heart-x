@@ -176,8 +176,12 @@ object MelodyMigrations {
             db.execSQL(
                 "UPDATE `song_emotions` SET `modelVersion` = ? WHERE `modelVersion` = ?",
                 arrayOf(
-                    cn.com.dcsgo.mihx.core.model.EmotionModelSpec.MODEL_VERSION,
-                    cn.com.dcsgo.mihx.core.model.EmotionModelSpec.LABEL,
+                    // 写 **v4 时代的完整版本串**, 不是"今天的当前版本":
+                    // 这些曲线是 v4 坐标系产出的, 标成别的坐标系是事实错误,
+                    // 而且 14→15 迁移靠 `LIKE 'yamnet-va-v4-rms%'` 认出它们 ——
+                    // 若这里写成 v5, 从 v12 直升 v15 的用户的老行就永远匹配不上。
+                    cn.com.dcsgo.mihx.core.model.EmotionGroup.V4_MODEL_VERSION,
+                    cn.com.dcsgo.mihx.core.model.EmotionGroup.V4_MODEL_LABEL,
                 ),
             )
             db.execSQL(
@@ -198,10 +202,34 @@ object MelodyMigrations {
         }
     }
 
+    val MIGRATION_14_15 = object : Migration(14, 15) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            // 坐标系切到 v5「人声成分补偿」（2026-10-25）。
+            //
+            // valence 有一部分在测「有没有人唱」：全库 1095 首按 vocalScore 分组，
+            // 人声组 valence +0.120 / 器乐组 −0.041；在 arousal 分箱内匹配后
+            // 残余差 −0.091，而独立模型（MusicNN+DEAM）同样的匹配差是 +0.026（≈0）
+            // —— 这层成分是现网独有的。v5 把它剥掉（见 core/model 的 VocalCalibration）。
+            //
+            // 为什么这次迁移**不需要重扫**：
+            //   补偿是**读时派生**的 —— 库里存的仍是原始曲线，App 读的时候才按
+            //   vocalScore 给器乐组加补偿量。曲线本身一个字节都没变，
+            //   所以老曲线在新坐标系下的解释本来就是对的，直接换标签即可。
+            //   （若补偿改成在分析时施加，这里就必须触发全库重扫。）
+            db.execSQL(
+                "UPDATE `song_emotions` SET `modelVersion` = ? WHERE `modelVersion` LIKE ?",
+                arrayOf(
+                    cn.com.dcsgo.mihx.core.model.EmotionModelSpec.MODEL_VERSION,
+                    cn.com.dcsgo.mihx.core.model.EmotionGroup.V4_MODEL_LABEL + "%",
+                ),
+            )
+        }
+    }
+
     /** 声明于末尾：object 属性按声明顺序初始化，需引用上方全部迁移 */
     val ALL: Array<Migration> = arrayOf(
         MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6,
         MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11,
-        MIGRATION_11_12, MIGRATION_12_13, MIGRATION_13_14,
+        MIGRATION_11_12, MIGRATION_12_13, MIGRATION_13_14, MIGRATION_14_15,
     )
 }

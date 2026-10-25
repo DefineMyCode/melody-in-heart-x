@@ -61,6 +61,20 @@ data class SongEmotion(
             kotlin.math.abs(effectiveArousal) < LOW_CONF
 
     /**
+     * 读时补偿后的曲线 —— **投票与绘图都用它**。
+     *
+     * 补偿的是 valence 里"在测有没有人唱"的那部分（见 [VocalCalibration]）：
+     * 器乐组（vocalScore 低）的 valence 上移, 人声组不动。
+     * 库里存的仍是原始曲线, 补偿在读时施加 —— 所以改补偿量零重扫。
+     */
+    val compensatedCurve: List<Pair<Float, Float>>
+        get() = VocalCalibration.adjustedCurve(curve, vocalScore)
+
+    /** 读时补偿后的歌级 valence（补偿是逐窗常量平移, 均值同样平移） */
+    val compensatedValence: Float
+        get() = valence + VocalCalibration.shiftFor(vocalScore)
+
+    /**
      * 用户校准点的坐标 —— **读时派生**, 不读库里那两列。
      *
      * 坐标 = 用户勾选的词在**该行曲线自己的坐标系**下的锚点均值
@@ -80,7 +94,7 @@ data class SongEmotion(
         }
 
     /** 有效 valence: 用户校准优先(读时派生) */
-    val effectiveValence: Float get() = userPoint()?.first ?: valence
+    val effectiveValence: Float get() = userPoint()?.first ?: compensatedValence
 
     /** 有效 arousal: 用户校准优先(读时派生) */
     val effectiveArousal: Float get() = userPoint()?.second ?: arousal

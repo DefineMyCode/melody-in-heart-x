@@ -147,67 +147,14 @@ fun SongEmotionSection(
     // 词条 + 各自占比(模型投票时就算出来了, 这里只是不再丢掉)
     val tagRatios = emotionTagRatiosOf(shown)
     Column(modifier = Modifier.fillMaxWidth()) {
+        // 标题行: 「情绪」在左, 「不像？标记」在右(词条的上一行)
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = "情绪",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = scheme.onSurfaceVariant,
-                )
-                if (tags.isEmpty()) {
-                    Text(
-                        text = "未定",
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = FontWeight.Medium,
-                    )
-                } else {
-                    // 词条带占比: 一首歌是「燃 35%、元气 22%」还是「元气 55%、燃 20%」,
-                    // 听感完全不同 —— 光看词条名字分不出来
-                    FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                        tagRatios.forEach { t ->
-                            AssistChip(
-                                onClick = {},
-                                label = {
-                                    Row(verticalAlignment = Alignment.CenterVertically) {
-                                        Text(t.tag, style = MaterialTheme.typography.labelMedium)
-                                        t.ratio?.let { ratio ->
-                                            Spacer(modifier = Modifier.width(3.dp))
-                                            Text(
-                                                text = "${(ratio * 100).toInt()}%",
-                                                style = MaterialTheme.typography.labelSmall,
-                                                color = scheme.onSurfaceVariant,
-                                            )
-                                        }
-                                    }
-                                },
-                            )
-                        }
-                    }
-                }
-                if (shown.userTags.isNotEmpty()) {
-                    Text(
-                        text = if (shown.userTagsEdited == true) "已由你纠正" else "已由你校准",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = scheme.primary,
-                    )
-                }
-                // 低把握提示: 词条是模型的投票结论, 有两种"不牢靠":
-                // ① 票摊开 —— 模型自己也没把握
-                // ② 票集中但冷暖词同现 —— 结论很确定, 但两极(「治愈 · emo」)
-                // 两种对用户的含义不同, 文案也不能一样
-                val confidenceLevel = emotionConfidenceLevelOf(shown)
-                if (confidenceLevel != EmotionConfidenceLevel.HIGH) {
-                    Text(
-                        text = when (confidenceLevel) {
-                            EmotionConfidenceLevel.SPREAD -> "模型把握不大，词条仅供参考"
-                            EmotionConfidenceLevel.MIXED -> "词条里有冷有热，这首歌可能不止一种情绪"
-                            EmotionConfidenceLevel.HIGH -> ""
-                        },
-                        style = MaterialTheme.typography.labelSmall,
-                        color = scheme.onSurfaceVariant,
-                    )
-                }
-            }
+            Text(
+                text = "情绪",
+                style = MaterialTheme.typography.bodySmall,
+                color = scheme.onSurfaceVariant,
+                modifier = Modifier.weight(1f),
+            )
             if (controller != null) {
                 TextButton(onClick = { showCalibrate = true }) {
                     Text(
@@ -216,6 +163,59 @@ fun SongEmotionSection(
                     )
                 }
             }
+        }
+        if (tags.isEmpty()) {
+            Text(
+                text = "未定",
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Medium,
+            )
+        } else {
+            // 词条带占比: 一首歌是「燃 35%、元气 22%」还是「元气 55%、燃 20%」,
+            // 听感完全不同 —— 光看词条名字分不出来
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                tagRatios.forEach { t ->
+                    AssistChip(
+                        onClick = {},
+                        label = {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(t.tag, style = MaterialTheme.typography.labelMedium)
+                                t.ratio?.let { ratio ->
+                                    Spacer(modifier = Modifier.width(3.dp))
+                                    Text(
+                                        text = "${(ratio * 100).toInt()}%",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = scheme.onSurfaceVariant,
+                                    )
+                                }
+                            }
+                        },
+                    )
+                }
+            }
+        }
+        if (shown.userTags.isNotEmpty()) {
+            Text(
+                text = if (shown.userTagsEdited == true) "已由你纠正" else "已由你校准",
+                style = MaterialTheme.typography.labelSmall,
+                color = scheme.primary,
+            )
+        }
+        // 低把握提示: 词条是模型的投票结论, 有两种"不牢靠":
+        // ① 票摊开 —— 模型自己也没把握
+        // ② 票集中但冷暖词同现 —— 结论很确定, 但两极(「治愈 · emo」)
+        // 两种对用户的含义不同, 文案也不能一样
+        val confidenceLevel = emotionConfidenceLevelOf(shown)
+        if (confidenceLevel != EmotionConfidenceLevel.HIGH) {
+            Text(
+                text = when (confidenceLevel) {
+                    EmotionConfidenceLevel.SPREAD -> "模型把握不大，词条仅供参考"
+                    EmotionConfidenceLevel.MIXED -> "词条里有冷有热，这首歌可能不止一种情绪"
+                    EmotionConfidenceLevel.HIGH -> ""
+                },
+                style = MaterialTheme.typography.labelSmall,
+                color = scheme.onSurfaceVariant,
+            )
         }
         Spacer(modifier = Modifier.height(6.dp))
         Box(

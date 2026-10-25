@@ -559,11 +559,12 @@ class PlayerRandomQueueFacadeTest {
     @Test
     fun exploreRefillPrefersLikedAndNoDislikedWords() {
         // 喜欢词「静谧」、不喜欢词「伤感」；
-        // 歌1 静谧、歌2 伤感、歌3 静谧+伤感、歌4 静谧、歌5 静谧、歌6 无词
-        // → 补充候选应为 {1, 4, 5}（含喜欢词且不含不喜欢词）
+        // 歌1 静谧、歌2 伤感、歌3 静谧+伤感、歌4/5/7/8/9 静谧、歌6 无词
+        // → 补充候选应为 {1, 4, 5, 7, 8, 9}（含喜欢词且不含不喜欢词）
+        // 池必须够 5 首才用（不够就降级，见下一个测试）
         state = state.copy(
-            songs = songs(1, 2, 3, 4, 5, 6),
-            playQueue = PlayQueue().setQueue(songs(7, 8), startIndex = 0), // 队列中已有 7、8
+            songs = songs(1, 2, 3, 4, 5, 6, 7, 8, 9),
+            playQueue = PlayQueue().setQueue(songs(20, 21), startIndex = 0), // 队列中已有 20、21
             isExplorePlay = true,
         )
         val explore = exploreFacade(
@@ -574,6 +575,9 @@ class PlayerRandomQueueFacadeTest {
                 4 to listOf("静谧"),
                 5 to listOf("静谧"),
                 6 to emptyList(),
+                7 to listOf("静谧"),
+                8 to listOf("静谧"),
+                9 to listOf("静谧"),
             ),
             prefs = mapOf(
                 "静谧" to cn.com.dcsgo.mihx.core.model.WordPreference("静谧", 3, 1),   // LIKE
@@ -583,11 +587,42 @@ class PlayerRandomQueueFacadeTest {
 
         runBlocking { explore.refillExplorePlayQueue() }
 
-        // 只补 5 首上限内的候选（池大小 3 → 3 首），且全部来自 {1,4,5}
-        val added = state.playQueue.songs.map { it.id }.filterNot { it in setOf(7, 8) }
-        assertTrue(added.all { it in setOf(1, 4, 5) })
-        assertEquals(3, added.size)
+        // 补满 5 首，全部来自「含喜欢词且不含不喜欢词」的池
+        val added = state.playQueue.songs.map { it.id }.filterNot { it in setOf(20, 21) }
+        assertEquals(5, added.size)
+        assertTrue(added.all { it in setOf(1, 4, 5, 7, 8, 9) })
         assertTrue(logs.any { it.contains("explore refill") })
+    }
+
+    @Test
+    fun exploreRefillFallsBackWhenPreferredPoolIsSmallerThanTheRefillCount() {
+        // 回归（2026-10-25）：真实场景 —— 用户一路点下一首，每首都投「不喜欢」票，
+        // 很快所有词条都成了 DISLIKE。此时「仅不含不喜欢词」的池只剩**没有情绪分析**
+        // 的那几首（超 20 分钟、分析失败的歌没有词条，自然不含任何不喜欢词），
+        // 池子非空但只有 2 首 < REFILL_COUNT(5)。
+        //
+        // 旧判据是「池子非空即用」→ 只补 2 首 → 再切歌时这 2 首已在队列里 →
+        // 「no more songs outside queue」→ 永远不再补充，队列播完回到第一首。
+        // 新判据是「池子够不够补满 5 首」→ 降级到全库 → 一定能补满。
+        state = state.copy(
+            songs = songs(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20),
+            playQueue = PlayQueue().setQueue(songs(1, 2, 3, 4, 5, 6, 7, 8, 9, 10), startIndex = 0),
+            isExplorePlay = true,
+        )
+        val explore = exploreFacade(
+            // 歌 11..18 都含被讨厌的词；歌 19、20 没有词条 -> 「不含讨厌词」的池只剩这 2 首
+            tagsBySong = (11..18).associateWith { listOf("元气") } + (19..20).associateWith { listOf() },
+            prefs = mapOf(
+                "元气" to cn.com.dcsgo.mihx.core.model.WordPreference("元气", 0, 20),  // DISLIKE
+            ),
+        )
+
+        runBlocking { explore.refillExplorePlayQueue() }
+
+        // 必须补满 5 首（而不是只补「不含讨厌词」池里那 2 首）
+        val added = state.playQueue.songs.map { it.id }.filterNot { it in (1..10).toSet() }
+        assertEquals(5, added.size)
+        assertTrue(logs.any { it.contains("fall back to full library") })
     }
 
     @Test

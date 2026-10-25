@@ -259,7 +259,10 @@ class PlayerRandomQueueFacade(
         val current = state()
         if (!current.isExplorePlay) return
 
-        val pool = buildExploreRefillPool(current.songs)
+        val pool = buildExploreRefillPool(
+            songs = current.songs,
+            excludeIds = current.playQueue.songs.map { it.id }.toSet(),
+        )
         val queue = current.playQueue.withCurrentSongId(startedSongId)
         val plan = planner.planExploreRefill(
             allSongs = pool,
@@ -288,8 +291,21 @@ class PlayerRandomQueueFacade(
      * 2. 仅不含不喜欢词；
      * 3. 全库。
      * 词条来自歌曲情绪展示词条（用户校准优先）+ 计票归属（票多者胜）。
+     *
+     * **降级判据是「池子够不够补满 [ExplorePlaybackPolicy.REFILL_COUNT] 首」，
+     * 不是「池子非空」**（2026-10-25 修复）。
+     *
+     * 原来的「非空即用」会自锁：用户一路点下一首 → 每首歌都投「不喜欢」票 →
+     * 很快所有词条都成了 DISLIKE → 「仅不含不喜欢词」的池只剩**没有情绪分析**
+     * 的那几首（超 20 分钟、分析失败的歌没有词条，自然不含任何不喜欢词）→
+     * 池子非空但只有 3 首 < 5 首 → 只补 3 首 → 再切歌时这 3 首已在队列里 →
+     * 「no more songs outside queue」→ 永远不再补充。
+     *
+     * 现在保证：只要全库还剩 ≥REFILL_COUNT 首不在队列里，就一定能补满。
+     *
+     * @param excludeIds 已在播放队列里的歌（补歌不能重复补它们）
      */
-    private fun buildExploreRefillPool(songs: List<Song>): List<Song> {
+    private fun buildExploreRefillPool(songs: List<Song>, excludeIds: Set<Int>): List<Song> {
         val likedWords = mutableSetOf<String>()
         val dislikedWords = mutableSetOf<String>()
         val neutralWords = mutableSetOf<String>()
@@ -304,30 +320,36 @@ class PlayerRandomQueueFacade(
             "explore refill: liked=[${likedWords.sorted().joinToString(",")}] " +
                 "disliked=[${dislikedWords.sorted().joinToString(",")}] neutral=[${neutralWords.sorted().joinToString(",")}]"
         )
+        val candidates = songs.filter { it.id !in excludeIds }
+        val need = ExplorePlaybackPolicy.REFILL_COUNT
         if (likedWords.isEmpty() && dislikedWords.isEmpty()) {
             log("explore refill: no like/dislike words learned yet, use full library")
-            return songs
+            return candidates
         }
 
-        val likedAndNoDislike = songs.filter { song ->
+        val likedAndNoDislike = candidates.filter { song ->
             val tags = moodEmotionTagsOf(song)
             tags.any { it in likedWords } && tags.none { it in dislikedWords }
         }
-        if (likedAndNoDislike.isNotEmpty()) {
+        if (likedAndNoDislike.size >= need) {
             log("explore refill: pool=${likedAndNoDislike.size} (liked & no-dislike)")
             return likedAndNoDislike
         }
 
-        val noDislike = songs.filter { song ->
+        val noDislike = candidates.filter { song ->
             moodEmotionTagsOf(song).none { it in dislikedWords }
         }
-        if (noDislike.isNotEmpty()) {
+        if (noDislike.size >= need) {
             log("explore refill: pool=${noDislike.size} (no-dislike only, no liked match)")
             return noDislike
         }
 
-        log("explore refill: fall back to full library")
-        return songs
+        log(
+            "explore refill: preferred pools too small " +
+                "(liked&no-dislike=${likedAndNoDislike.size}, no-dislike=${noDislike.size}, " +
+                "need=$need) -> fall back to full library (${candidates.size})"
+        )
+        return candidates
     }
 
     private fun PlayQueue.withCurrentSongId(songId: Int?): PlayQueue {

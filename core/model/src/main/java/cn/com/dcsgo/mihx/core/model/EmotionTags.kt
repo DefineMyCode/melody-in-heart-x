@@ -35,6 +35,44 @@ fun modelTagsOf(emotion: SongEmotion): List<String> =
     else EmotionGroup.headlineTagsFor(emotion.compensatedCurve, emotion.modelVersion)
 
 /**
+ * 一个情绪词条 + 它在**整首**里占的比例（0~1）。
+ *
+ * @param ratio 该词条占全曲有效窗口的比例；**null = 用户手动标记** ——
+ *   用户选的词是"我觉得这歌是它"，没有"占比"这回事，不该编一个数出来。
+ */
+data class EmotionTagRatio(
+    val tag: String,
+    val ratio: Float?,
+)
+
+/**
+ * 这首歌的情绪词条 + 各自占比。
+ *
+ * 占比 = 落在该组锚点附近的窗口占全曲**有效窗口**（近零窗弃权）的比例。
+ * 换句话说：一首歌被判成「燃 35%、元气 22%」，
+ * 意思是整首歌 35% 的时间落在「燃」附近、22% 落在「元气」附近。
+ *
+ * @param minRatio 只保留占比不低于此值的词条（展示层用；传 0f 拿**完整分布**）
+ * @param topN 最多几个（展示层用）
+ */
+fun emotionTagRatiosOf(
+    emotion: SongEmotion,
+    minRatio: Float = EmotionGroup.MIN_RATIO,
+    topN: Int = EmotionGroup.MAX_TAGS,
+): List<EmotionTagRatio> {
+    if (emotion.userTags.isNotEmpty()) {
+        // 用户手动标记: 词条没有占比含义, 也不该跟模型词混在一个列表里比
+        return emotion.userTags.map { EmotionTagRatio(it, null) }
+    }
+    return EmotionGroup.categoriesFor(
+        curve = emotion.compensatedCurve,
+        anchors = EmotionGroup.anchorsFor(emotion.modelVersion),
+        topN = topN,
+        minRatio = minRatio,
+    ).map { EmotionTagRatio(it.first.headline, it.second) }
+}
+
+/**
  * 用户手动选的词条是否「不认同」模型结论。
  *
  * @param modelTags 模型自动词条（[modelTagsOf]），空列表 = 无模型输出可比

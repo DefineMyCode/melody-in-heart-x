@@ -51,6 +51,7 @@ import cn.com.dcsgo.mihx.core.model.EmotionGroup
 import cn.com.dcsgo.mihx.core.model.SongEmotion
 import cn.com.dcsgo.mihx.core.model.emotionConfidenceLevelOf
 import cn.com.dcsgo.mihx.core.model.emotionTagsOf
+import cn.com.dcsgo.mihx.core.model.emotionTagRatiosOf
 import cn.com.dcsgo.mihx.core.model.isUserCorrection
 import cn.com.dcsgo.mihx.core.model.modelTagsOf
 import kotlin.math.abs
@@ -143,6 +144,8 @@ fun SongEmotionSection(
     val shown = overrideEmotion ?: emotion
     // 词条行(主展示) — 弹窗"原有"排也复用
     val tags = emotionTagsOf(shown)
+    // 词条 + 各自占比(模型投票时就算出来了, 这里只是不再丢掉)
+    val tagRatios = emotionTagRatiosOf(shown)
     Column(modifier = Modifier.fillMaxWidth()) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Column(modifier = Modifier.weight(1f)) {
@@ -158,11 +161,25 @@ fun SongEmotionSection(
                         fontWeight = FontWeight.Medium,
                     )
                 } else {
+                    // 词条带占比: 一首歌是「燃 35%、元气 22%」还是「元气 55%、燃 20%」,
+                    // 听感完全不同 —— 光看词条名字分不出来
                     FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                        tags.forEach { t ->
+                        tagRatios.forEach { t ->
                             AssistChip(
                                 onClick = {},
-                                label = { Text(t, style = MaterialTheme.typography.labelMedium) },
+                                label = {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Text(t.tag, style = MaterialTheme.typography.labelMedium)
+                                        t.ratio?.let { ratio ->
+                                            Spacer(modifier = Modifier.width(3.dp))
+                                            Text(
+                                                text = "${(ratio * 100).toInt()}%",
+                                                style = MaterialTheme.typography.labelSmall,
+                                                color = scheme.onSurfaceVariant,
+                                            )
+                                        }
+                                    }
+                                },
                             )
                         }
                     }

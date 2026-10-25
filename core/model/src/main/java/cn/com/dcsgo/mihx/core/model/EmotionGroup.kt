@@ -83,6 +83,14 @@ enum class EmotionGroup(
         const val MAX_TAGS = 4
 
         /**
+         * 展示词条的占比门槛: 低于此值的组不进展示.
+         *
+         * 15% 的含义: 一个组要占到全曲 15% 以上的窗口才算"这首歌有这个情绪",
+         * 否则只是某一小段碰巧落在附近.
+         */
+        const val MIN_RATIO = 0.15f
+
+        /**
          * 当前情绪模型标识。
          *
          * 格式: "<坐标系标签>@<内容指纹>"。两部分各司其职:
@@ -293,7 +301,7 @@ enum class EmotionGroup(
             curve: List<Pair<Float, Float>>,
             anchors: Map<EmotionGroup, Pair<Float, Float>>,
             topN: Int = MAX_TAGS,
-            minRatio: Float = 0.15f,
+            minRatio: Float = MIN_RATIO,
         ): List<Pair<EmotionGroup, Float>> =
             voteRatios(curve, anchors)
                 .filter { it.second >= minRatio }

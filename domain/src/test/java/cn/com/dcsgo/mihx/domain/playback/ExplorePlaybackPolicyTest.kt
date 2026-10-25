@@ -1,5 +1,6 @@
 package cn.com.dcsgo.mihx.domain.playback
 
+import cn.com.dcsgo.mihx.core.model.EmotionGroup
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -51,5 +52,31 @@ class ExplorePlaybackPolicyTest {
         // 占比极低 -> 0 票（等于不投：那不是"这个情绪"，只是碰巧落在附近）
         assertEquals(0, ExplorePlaybackPolicy.voteWeightOf(0.004f))
         assertEquals(0, ExplorePlaybackPolicy.voteWeightOf(0f))
+    }
+
+    @Test
+    fun `vote gate is the same as the display gate`() {
+        // 刻意对齐：用户在详情页看到几个标签，跳过时就只否定那几个。
+        // 直接引用展示层的常量，两者不可能漂移 —— 这条测试就是那个保证。
+        assertEquals(
+            EmotionGroup.MIN_RATIO,
+            ExplorePlaybackPolicy.VOTE_MIN_RATIO,
+            0f,
+        )
+        assertEquals(
+            EmotionGroup.MAX_TAGS,
+            ExplorePlaybackPolicy.VOTE_MAX_TAGS,
+        )
+    }
+
+    @Test
+    fun `votesOf drops the words with zero weight`() {
+        val votes = ExplorePlaybackPolicy.votesOf(
+            mapOf("emo" to 0.50f, "治愈" to 0.20f, "躁" to 0.004f, "燃" to 0f)
+        )
+
+        assertEquals(setOf("emo", "治愈"), votes.keys)
+        assertEquals(50, votes.getValue("emo"))
+        assertEquals(20, votes.getValue("治愈"))
     }
 }

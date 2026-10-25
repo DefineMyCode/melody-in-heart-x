@@ -66,6 +66,43 @@ fun emotionMatchRatiosOf(emotion: SongEmotion): Map<String, Float> {
 }
 
 /**
+ * 探索播放**计票**用的词条分布 —— 卡占比门槛，与详情页显示**同一套口径**。
+ *
+ * 为什么不能直接用 [emotionMatchRatiosOf] 的完整分布：
+ * 完整分布是给**匹配**用的（时段匹配的目标词可能只占 10%，过滤掉就永远匹配不上）；
+ * 但**计票**的语义是「你不喜欢这首歌体现出来的那些主导情绪」——
+ * 一首 97% 的时间都不是「治愈」的歌，因为 3% 落在「治愈」附近就被记一笔
+ * 「不喜欢治愈」，那是把噪音当信号。
+ *
+ * 实测全库 1095 首：完整分布平均每首歌 **6.26 个词**，
+ * 卡 15% 后降到 **2.31 个**（正好等于详情页显示的词条数），
+ * 而且**没有一首歌投不出票** —— 每首歌至少有一个组 ≥15%。
+ *
+ * 少投的那几个词正是「不喜欢」扩散的源头：
+ * 每跳过一首歌同时否定 6.26 个词，比只否定主导词快 2.7 倍，
+ * 于是「不喜欢」会在几十首歌内把所有词条染黑（实测 9 个 auto 组代表词全变 DISLIKE）。
+ *
+ * @param minRatio 占比门槛（默认与展示层一致）
+ * @param topN 最多几个（默认与展示层一致）
+ */
+fun emotionVoteRatiosOf(
+    emotion: SongEmotion,
+    minRatio: Float = EmotionGroup.MIN_RATIO,
+    topN: Int = EmotionGroup.MAX_TAGS,
+): Map<String, Float> {
+    if (emotion.userTags.isNotEmpty()) {
+        // 用户手动标记: 那是用户自己的判断, 比模型的更可信 —— 按 1.0 强匹配处理
+        return emotion.userTags.associateWith { 1f }
+    }
+    return EmotionGroup.categoriesFor(
+        curve = emotion.compensatedCurve,
+        anchors = EmotionGroup.anchorsFor(emotion.modelVersion),
+        topN = topN,
+        minRatio = minRatio,
+    ).associate { (group, ratio) -> group.headline to ratio }
+}
+
+/**
  * 这首歌的情绪词条 + 各自占比。
  *
  * 占比 = 落在该组锚点附近的窗口占全曲**有效窗口**（近零窗弃权）的比例。

@@ -420,6 +420,20 @@ internal class PlayerRuntime(
     private var moodSlotConfigsCache: List<cn.com.dcsgo.mihx.core.model.TimeSlotConfig> = emptyList()
     @Volatile
     private var moodEmotionRatiosCache: Map<Int, Map<String, Float>> = emptyMap()
+
+    /**
+     * 探索播放**计票**用的词条分布 —— 卡占比门槛，与详情页显示同一套口径。
+     *
+     * 必须与 [moodEmotionRatiosCache]（完整分布，给时段匹配与补歌过滤用）**分开**：
+     * 完整分布对**匹配**是对的（目标词排第 5 也得能匹配上），
+     * 但对**计票**是错的 —— 一首 97% 的时间都不是「治愈」的歌，
+     * 不该因为 3% 落在「治愈」附近就被记一笔「不喜欢治愈」。
+     *
+     * 原来两者共用完整分布，于是详情页显示 2 个标签、跳过却投 6 个词，
+     * 「不喜欢」扩散速度是应有的 2.7 倍（见 [ExplorePlaybackPolicy.VOTE_MIN_RATIO]）。
+     */
+    @Volatile
+    private var exploreVoteRatiosCache: Map<Int, Map<String, Float>> = emptyMap()
     @Volatile
     private var wordPreferenceCache: Map<String, WordPreference> = emptyMap()
 
@@ -433,12 +447,21 @@ internal class PlayerRuntime(
             songEmotionRepository.observeAll()
                 .map { emotions ->
                     emotions.mapValues { (_, emotion) ->
-                        cn.com.dcsgo.mihx.core.model.emotionMatchRatiosOf(emotion)
+                        // 一次订阅算两份分布（匹配用完整 / 计票用卡门槛），不重复查库
+                        cn.com.dcsgo.mihx.core.model.emotionMatchRatiosOf(emotion) to
+                            cn.com.dcsgo.mihx.core.model.emotionVoteRatiosOf(
+                                emotion = emotion,
+                                minRatio = ExplorePlaybackPolicy.VOTE_MIN_RATIO,
+                                topN = ExplorePlaybackPolicy.VOTE_MAX_TAGS,
+                            )
                     }
                 }
                 .flowOn(dispatchers.default)
                 .catch { AppLog.warning(TAG, "observe mood emotion tags failed: ${it.message}") }
-                .collect { moodEmotionRatiosCache = it }
+                .collect { pairs ->
+                    moodEmotionRatiosCache = pairs.mapValues { it.value.first }
+                    exploreVoteRatiosCache = pairs.mapValues { it.value.second }
+                }
         }
         // 探索播放（2026-10-20）：情绪词条收听偏好（计票制）持续订阅
         scope.launch {
@@ -903,10 +926,16 @@ internal class PlayerRuntime(
      *
      * 2026-10-25：**票重按词条在整首里占的比例给** —— 跳过一首 80% emo 的歌，
      * 「emo」扣得多、顺带蹭到的次要词扣得少；原来每个词一刀切 1 票，主次不分。
+     *
+     * 2026-10-25（第二次）：**只对卡住占比门槛的词计票**
+     * （[ExplorePlaybackPolicy.VOTE_MIN_RATIO]，与详情页显示同一套口径）——
+     * 原来投的是完整分布，于是详情页显示 2 个标签、跳过却投 6 个词
+     * （全库平均 6.26 vs 2.30），「不喜欢」扩散快 2.7 倍，
+     * 几十首歌就能把所有词条染黑。现在跳过 = 否定详情页里看到的那几个标签。
      */
     private fun handleExploreSongSettled(songId: Int, playedMs: Long) {
         val song = _uiState.value.songs.firstOrNull { it.id == songId }
-        val ratios = moodEmotionRatiosCache[songId].orEmpty()
+        val ratios = exploreVoteRatiosCache[songId].orEmpty()
         val skipped = ExplorePlaybackPolicy.isSkipped(playedMs, song?.durationMs ?: 0L)
         if (ratios.isEmpty()) {
             AppLog.debug(
@@ -915,9 +944,8 @@ internal class PlayerRuntime(
             )
             return
         }
-        // 词条占比 -> 票重（整数票, 比例 ×100）
-        val votes = ratios.mapValues { (_, ratio) -> ExplorePlaybackPolicy.voteWeightOf(ratio) }
-            .filterValues { it > 0 }
+        // 词条占比 -> 票重（整数票, 比例 ×100）；票重 0 的词不投
+        val votes = ExplorePlaybackPolicy.votesOf(ratios)
         if (votes.isEmpty()) {
             AppLog.debug(
                 TAG,

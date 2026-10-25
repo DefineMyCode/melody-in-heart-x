@@ -1,5 +1,7 @@
 package cn.com.dcsgo.mihx.domain.playback
 
+import cn.com.dcsgo.mihx.core.model.EmotionGroup
+
 /**
  * 探索播放的纯策略常量与判定（2026-10-20）。
  * 无 Android 依赖，可独立 JVM 单测。
@@ -10,6 +12,24 @@ object ExplorePlaybackPolicy {
 
     /** 自动补充规模（当前歌曲是倒数第二首、播完后补 5 首） */
     const val REFILL_COUNT = 5
+
+    /**
+     * 计票门槛：词条在整首里占的比例 ≥ 此值才参与计票。
+     *
+     * **刻意与详情页显示用同一套门槛**（[EmotionGroup.MIN_RATIO] / [EmotionGroup.MAX_TAGS]）——
+     * 用户在详情页看到 2 个标签，他跳过这首歌时否定的就该是这 2 个标签。
+     *
+     * 原来计票走的是**完整分布**（任何组拿到过 1 窗就算），于是：
+     * 详情页显示 2 个词，跳过却投 6 个词 —— 全库平均每首 6.26 个词
+     * （显示只有 2.30 个），「不喜欢」扩散速度是应有的 2.7 倍，
+     * 几十首歌就能把所有词条染黑（实测 9 个 auto 组代表词全部 DISLIKE）。
+     *
+     * 直接引用展示层的常量，而不是抄一份数字 —— 这样两者**不可能漂移**。
+     */
+    const val VOTE_MIN_RATIO = EmotionGroup.MIN_RATIO
+
+    /** 计票最多取几个词（与展示层一致） */
+    const val VOTE_MAX_TAGS = EmotionGroup.MAX_TAGS
 
     /** 自动补充触发阈值：**刚结束**的歌曲是倒数第二首（切歌后新当前曲目之后剩余 0 首）时，播完后补 5 首。
      *  注：在 handleMediaItemEnded（切歌后）中测量——剩余 0 首 ⟺ 结束的是倒数第二首；剩余 1 首是倒数第三首，不补。 */
@@ -45,6 +65,16 @@ object ExplorePlaybackPolicy {
      */
     fun voteWeightOf(ratio: Float): Int =
         Math.round(ratio * VOTE_WEIGHT_SCALE)
+
+    /**
+     * 词条占比表 → 票重表（词 -> 整数票），票重 0 的词直接丢掉。
+     *
+     * 抽成纯函数是为了能单测「哪些词真的投了票、投了多少」——
+     * 这正是用户最容易察觉不一致的地方（详情页显示几个词 / 跳过投几个词）。
+     */
+    fun votesOf(ratios: Map<String, Float>): Map<String, Int> =
+        ratios.mapValues { (_, ratio) -> voteWeightOf(ratio) }
+            .filterValues { it > 0 }
 
     /**
      * 是否判定为「快速跳过」（→ 整首歌情绪词条投不喜欢票）。

@@ -32,7 +32,7 @@ import numpy as np
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from emotion_diag import (  # noqa: E402
     AUTO, AUTO_ANCHOR, AUTO_IDX, GROUPS, HEADLINES, LOW_CONF, MAX_TAGS, MIN_RATIO,
-    kmeans,
+    kmeans, sorted_group_order,
 )
 
 FFMPEG = "ffmpeg"
@@ -120,7 +120,7 @@ def tags_of(v, a, anchors=None):
     counts = np.bincount(win, minlength=len(av)).astype(np.float64)
     ratios = counts / total
     picked = []
-    for gi in np.argsort(-ratios):
+    for gi in sorted_group_order(ratios, order):
         if ratios[gi] < MIN_RATIO:
             break
         picked.append(int(gi))
@@ -292,7 +292,7 @@ def bootstrap_stability(songs, anchors, B=120, seed=7):
         for b in range(B):
             r = ratios[b]
             picked = []
-            for gi in np.argsort(-r):
+            for gi in sorted_group_order(r):
                 if r[gi] < MIN_RATIO:
                     break
                 picked.append(int(gi))

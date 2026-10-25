@@ -126,6 +126,25 @@ def curve_to_groups(curve, anchor=None):
     return out
 
 
+def sorted_group_order(ratios, group_index=None):
+    """按占比降序排组下标; 占比相同时按**组声明序**升序。
+
+    与 core/model/EmotionGroup.kt 的 categoriesFor 保持一致:
+        sortedWith(compareByDescending { 占比 }.thenBy { ordinal })
+
+    2026-10-25 起加了显式兜底。之前只靠 sortedByDescending, 而 votes 是
+    HashMap —— 迭代序取决于枚举 identity hash, 跨进程不保证一致, 同一首歌
+    的词条先后会随 App 重启而变。全库 1095 首里 92 首(8.4%)的展示集合存在
+    比例并列, 其中 17 首的 top1 也并列(并列会决定标题词)。
+
+    group_index: 每个下标对应的 GROUPS 组下标(用于按组声明序兜底);
+                 缺省认为下标本身就是 GROUPS 下标。
+    """
+    r = np.asarray(ratios, dtype=np.float64)
+    sec = np.arange(len(r)) if group_index is None else np.asarray(group_index)
+    return np.lexsort((sec, -r))
+
+
 def groups_to_tags(groups):
     """组下标序列 -> 展示词条列表（categoriesFor 的比例过滤 + topN）。"""
     valid = groups[groups >= 0]
@@ -135,7 +154,7 @@ def groups_to_tags(groups):
     counts = np.bincount(valid, minlength=len(GROUPS)).astype(np.float64)
     ratios = counts / total
     picked = []
-    for gi in np.argsort(-ratios):
+    for gi in sorted_group_order(ratios):
         if ratios[gi] < MIN_RATIO:
             break
         picked.append((int(gi), float(ratios[gi])))
@@ -402,7 +421,7 @@ def main():
         base_set = set(base)
         for b in range(B):
             r = ratios[b]
-            picked, order = [], np.argsort(-r)
+            picked, order = [], sorted_group_order(r)
             for gi in order:
                 if r[gi] < MIN_RATIO:
                     break

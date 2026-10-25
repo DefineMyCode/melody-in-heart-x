@@ -132,6 +132,17 @@ enum class EmotionGroup(
          * 近零窗弃权. 返回组+占比, 展示用 headline.
          *
          * [anchors] 必须与曲线所属坐标系匹配 —— 用 [anchorsFor] 按 modelVersion 取.
+         *
+         * **并列必须按组声明序兜底**(不能只靠 sortedByDescending):
+         * 票数是整数, 并列很常见 —— 全库 1095 首里 92 首(8.4%)的展示集合
+         * 存在比例并列, 其中 17 首的 top1 也并列(并列会决定标题词).
+         * 而 [votes] 是 HashMap, 它的迭代序取决于枚举的 identity hash,
+         * 契约上**不保证**跨进程一致 —— 同一首歌的词条先后可能随 App 重启而变.
+         * 用户能看见顺序, 顺序就不能是"碰运气"的.
+         * 所以: 先按占比降序, 再按 [EmotionGroup.ordinal](组声明序)升序.
+         *
+         * 组声明序**不随锚点表变**, 因此重标定锚点、切换坐标系都不会影响
+         * 并列时的先后 —— 与"锚点必须按坐标系分表"的原则一致.
          */
         fun categoriesFor(
             curve: List<Pair<Float, Float>>,
@@ -159,7 +170,10 @@ enum class EmotionGroup(
             return votes.entries
                 .map { (g, n) -> g to n.toFloat() / total }
                 .filter { it.second >= minRatio }
-                .sortedByDescending { it.second }
+                .sortedWith(
+                    compareByDescending<Pair<EmotionGroup, Float>> { it.second }
+                        .thenBy { it.first.ordinal },
+                )
                 .take(topN)
         }
 

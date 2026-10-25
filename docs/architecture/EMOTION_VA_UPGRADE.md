@@ -623,3 +623,96 @@ top1 词条分布（每首歌的首个词条，共 1095 首）：
    `anchor_opt.py` → `anchor_fit.py` → 手抄进 `EmotionGroup.kt` → 手改 4 个工具镜像，
    容易走样。理想状态是单一真源 + 生成镜像。
 
+## 12. 词条并列的确定性排序（2026-10-25）
+
+### 12.1 现象与根因
+
+票数是整数，所以**比例并列**很常见。在真机全库 1095 首上实测：
+
+| 现象 | 首数 | 占比 |
+|---|---|---|
+| top1 比例并列（并列会决定**标题词**） | 17 | 1.6% |
+| 展示集合内存在比例并列（并列会决定**词条先后**） | 92 | 8.4% |
+
+而 `categoriesFor` 原本只按占比降序排：
+
+```kotlin
+.sortedByDescending { it.second }
+```
+
+`sortedByDescending` 是**稳定排序** —— 并列项保持输入顺序，而输入顺序来自
+`votes` 这个 `HashMap` 的迭代序。Kotlin 枚举没有覆写 `hashCode()`，走的是
+`Object.hashCode()`（identity hash），**契约上不保证跨进程一致**。
+
+结论：**同一首歌的词条先后，可能随 App 重启而变**；而且 App 的排列约定
+与离线镜像（Python/numpy）不同，导致"设备 vs 镜像"回归比对无法逐字对齐
+—— 装机复核时 18 首抽样里有 1 首（`A Sky Full of Stars`，元气 27 票 /
+神圣 27 票）集合一致但顺序不同。
+
+### 12.2 修法：并列时按组声明序兜底
+
+```kotlin
+.sortedWith(
+    compareByDescending<Pair<EmotionGroup, Float>> { it.second }
+        .thenBy { it.first.ordinal },
+)
+```
+
+**先按占比降序（主序不变），并列时按 `EmotionGroup.ordinal`（组声明序）升序**。
+
+选组声明序而不是别的兜底，有三个理由：
+
+1. **确定性**：与锚点表无关，重标定锚点、切换坐标系都不影响并列时的先后。
+2. **跨坐标系稳定**：与 §11.7「锚点必须按坐标系分表」的原则一致 ——
+   同一个用户的两套坐标系下，同一对组的并列先后不会变。
+3. **好解释**：组声明序（元气→燃→神圣→鬼畜→治愈→静谧→emo→躁→放松→窒息）
+   本身就是一张展示顺序表，不需要额外维护一份优先级表。
+
+### 12.3 影响面（全库 1095 首实测）
+
+| 指标 | 数值 |
+|---|---|
+| top1 会变的歌 | 4 首 |
+| 展示顺序会变的歌（集合不变） | 17 首 |
+| top1 分布变化 | 静谧 +3、神圣 +1、放松 −2、emo −1、治愈 −1；元气/燃/躁/窒息 不变 |
+
+即：改动只影响并列的那部分歌，**词条集合一个都没变**，只有先后与个别
+top1 标题词按确定性规则落位。
+
+### 12.4 镜像与测试同步
+
+- `tools/emotion_diag.py`：新增 `sorted_group_order(ratios, group_index=None)`，
+  用 `np.lexsort` 实现「占比降序 + 组声明序升序」；`groups_to_tags` 与
+  bootstrap 稳定性统计都改用它。
+- `tools/emotion_sim.py`：`tags_of` 与锚点拟合的 bootstrap 同步改用该 helper。
+  （`tags_of` 的下标是 auto 数组下标，需要传 `order` 映射回 GROUPS 下标，
+  否则兜底序会变成 auto 序而不是组声明序。）
+- 新增 `core/model/src/test/.../EmotionGroupVoteOrderTest.kt`（4 例）：
+  并列按声明序、重复调用结果可复现、并列先后不随锚点表变、占比仍然优先于声明序。
+
+### 12.5 真机复验
+
+Redmi 23113RKC6C（Android 16）装新包后逐首比对：
+
+| 项 | 结果 |
+|---|---|
+| 安装 / 运行 | `Success`，无 crash buffer、无 FATAL、进程存活 |
+| 情绪页 | 已分析 1095、手动标记 3 |
+| 词条逐字比对（18 首抽样） | **18/18 严格一致**（改前是 17/18） |
+| 唯一变化 | `A Sky Full of Stars`（元气 27 票 / 神圣 27 票）：`神圣·元气·燃` → `元气·神圣·燃` |
+
+其余 17 首抽样（含 3 首用户校准的歌）词条与顺序**一字未变**。
+
+产物层面也复查了一遍 —— dex 里 `categoriesFor` 的比较器从
+`categoriesFor$$inlined$sortedByDescending$1` 变成
+`categoriesFor$$inlined$compareByDescending$1` +
+`categoriesFor$$inlined$thenBy$1`（后者内部是 `EmotionGroup;.ordinal:()I` 调用），
+确认新逻辑真的进了 APK，而不是只改了源码。
+
+> 顺带修了一个验证脚本自身的坑：定位 dex 时不能只判断
+> `Lcn/.../EmotionGroup;` 字符串在不在 —— **任何调用过该类方法的 dex 都会带上
+> 这个字符串**（实测 `classes20.dex` 只有引用，类定义在 `classes12.dex`）。
+> 正确做法是读 dex header 的 `class_defs` 找真正定义该类的那个 dex。
+
+
+

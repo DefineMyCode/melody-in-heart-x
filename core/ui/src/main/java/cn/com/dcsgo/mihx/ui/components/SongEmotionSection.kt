@@ -46,12 +46,13 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import cn.com.dcsgo.mihx.core.model.EmotionConfidenceLevel
 import cn.com.dcsgo.mihx.core.model.EmotionGroup
 import cn.com.dcsgo.mihx.core.model.SongEmotion
+import cn.com.dcsgo.mihx.core.model.emotionConfidenceLevelOf
 import cn.com.dcsgo.mihx.core.model.emotionTagsOf
 import cn.com.dcsgo.mihx.core.model.isUserCorrection
 import cn.com.dcsgo.mihx.core.model.modelTagsOf
-import cn.com.dcsgo.mihx.core.model.needsConfidenceHint
 import kotlin.math.abs
 import kotlinx.coroutines.launch
 
@@ -173,12 +174,18 @@ fun SongEmotionSection(
                         color = scheme.primary,
                     )
                 }
-                // 低把握提示: 词条是模型的投票结论, 票摊得开就会同时冒出冷暖两个词
-                // (全库 29% 的歌如此). 明说"把握不大", 好过让用户以为
-                // 「治愈 · emo」就是这歌的真实写照.
-                if (needsConfidenceHint(shown)) {
+                // 低把握提示: 词条是模型的投票结论, 有两种"不牢靠":
+                // ① 票摊开 —— 模型自己也没把握
+                // ② 票集中但冷暖词同现 —— 结论很确定, 但两极(「治愈 · emo」)
+                // 两种对用户的含义不同, 文案也不能一样
+                val confidenceLevel = emotionConfidenceLevelOf(shown)
+                if (confidenceLevel != EmotionConfidenceLevel.HIGH) {
                     Text(
-                        text = "模型把握不大，词条仅供参考",
+                        text = when (confidenceLevel) {
+                            EmotionConfidenceLevel.SPREAD -> "模型把握不大，词条仅供参考"
+                            EmotionConfidenceLevel.MIXED -> "词条里有冷有热，这首歌可能不止一种情绪"
+                            EmotionConfidenceLevel.HIGH -> ""
+                        },
                         style = MaterialTheme.typography.labelSmall,
                         color = scheme.onSurfaceVariant,
                     )

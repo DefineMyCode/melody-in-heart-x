@@ -41,6 +41,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import cn.com.dcsgo.mihx.core.model.EmotionConfidenceLevel
 import cn.com.dcsgo.mihx.core.model.EmotionSongUiRow
 import cn.com.dcsgo.mihx.core.model.Playlist
 import cn.com.dcsgo.mihx.core.model.Song
@@ -355,11 +356,14 @@ private fun EmotionLibrarySongItem(
         menuActions = menuActions,
         subline = {
             Row(verticalAlignment = Alignment.CenterVertically) {
+                // 把握不足的词条: 用次要色 + 标「不确定」——
+                // 列表里扫一眼就能看出这行词条不太牢靠, 不用点进详情页才发现
+                val lowConfidence = row.confidence != EmotionConfidenceLevel.HIGH
                 Text(
                     text = if (row.tags.isEmpty()) "未定"
-                    else row.tags.joinToString(" · "),
+                    else row.tags.joinToString(" · ") + if (lowConfidence) " · 不确定" else "",
                     style = MaterialTheme.typography.labelSmall,
-                    color = if (row.tags.isEmpty()) {
+                    color = if (row.tags.isEmpty() || lowConfidence) {
                         MaterialTheme.colorScheme.onSurfaceVariant
                     } else {
                         MaterialTheme.colorScheme.primary

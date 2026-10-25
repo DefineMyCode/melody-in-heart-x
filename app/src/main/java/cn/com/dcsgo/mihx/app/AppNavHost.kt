@@ -257,7 +257,12 @@ fun AppNavHost(
                     playerViewModel,
                     selectedPlaylist = null,
                     emotionRows = emotionRowsUi.map {
-                        EmotionSongUiRow(song = it.song, tags = it.tags, corrected = it.corrected)
+                        EmotionSongUiRow(
+                            song = it.song,
+                            tags = it.tags,
+                            corrected = it.corrected,
+                            confidence = it.confidence,
+                        )
                     },
                     precomputedLibrarySongs = sharedLibrarySongs,
                     sortMode = songSortMode,
@@ -306,7 +311,12 @@ fun AppNavHost(
                     selectedPlaylist,
                     resumeSong,
                     emotionRows = emotionRowsUi.map {
-                        EmotionSongUiRow(song = it.song, tags = it.tags, corrected = it.corrected)
+                        EmotionSongUiRow(
+                            song = it.song,
+                            tags = it.tags,
+                            corrected = it.corrected,
+                            confidence = it.confidence,
+                        )
                     },
                     precomputedLibrarySongs = sharedLibrarySongs,
                     songListTemplate = shell.librarySongListTemplate,

@@ -189,4 +189,63 @@ class EmotionConfidenceTest {
         val voiced = emotion(curve, vocalScore = 1f)
         assertEquals(0.75f, emotionConfidenceOf(voiced)!!, 1e-6f)
     }
+
+    @Test
+    fun `cold and warm words in one tag list are contradictory`() {
+        assertTrue(isMixedColdWarm(listOf("治愈", "emo")))
+        assertTrue(isMixedColdWarm(listOf("燃", "神圣", "窒息")))
+        // 同一极的两组不矛盾
+        assertFalse(isMixedColdWarm(listOf("emo", "躁")))
+        assertFalse(isMixedColdWarm(listOf("元气", "燃")))
+        // 「静谧」是中性词, 与任何一组同现都不算矛盾
+        assertFalse(isMixedColdWarm(listOf("静谧", "放松")))
+        assertFalse(isMixedColdWarm(emptyList()))
+    }
+
+    @Test
+    fun `spread votes outrank contradictory tags`() {
+        // 票摊开 + 冷暖同现 同时成立时, 以「票摊开」为准 —— 那才是更根本的原因
+        val anchors = EmotionGroup.anchorsFor(EmotionGroup.CURRENT_MODEL_VERSION)
+        val curve = listOf(
+            anchors.getValue(EmotionGroup.SAD),      // emo 冷
+            anchors.getValue(EmotionGroup.ANXIOUS),  // 躁 冷
+            anchors.getValue(EmotionGroup.LOVE),     // 治愈 暖
+            anchors.getValue(EmotionGroup.EPIC),     // 神圣 暖
+            anchors.getValue(EmotionGroup.BRIGHT),   // 元气 暖
+        )
+        // top1 = 1/5 = 0.20 < 0.35, 且冷暖同现
+        assertTrue(isMixedColdWarm(EmotionGroup.headlineTagsFor(curve, EmotionGroup.CURRENT_MODEL_VERSION)))
+        assertEquals(
+            EmotionConfidenceLevel.SPREAD,
+            emotionConfidenceLevelOf(emotion(curve)),
+        )
+    }
+
+    @Test
+    fun `concentrated but contradictory tags are their own level`() {
+        // 票很集中(0.75) 但冷暖同现 -> 不是「没把握」, 是「结论两极」
+        val anchors = EmotionGroup.anchorsFor(EmotionGroup.CURRENT_MODEL_VERSION)
+        val curve = List(3) { anchors.getValue(EmotionGroup.LOVE) } +
+            listOf(anchors.getValue(EmotionGroup.SAD))
+        assertEquals(
+            EmotionConfidenceLevel.MIXED,
+            emotionConfidenceLevelOf(emotion(curve)),
+        )
+        assertTrue(needsConfidenceHint(emotion(curve)))
+    }
+
+    @Test
+    fun `user tagged songs are always high confidence`() {
+        // 用户自己标的词, 模型把握多大与用户看到的词没关系
+        val e = emotion(listOf(0.5f to 0.5f), userTags = listOf("emo"), vocalScore = 0f)
+        assertEquals(EmotionConfidenceLevel.HIGH, emotionConfidenceLevelOf(e))
+        assertFalse(needsConfidenceHint(e))
+    }
+
+    @Test
+    fun `songs without a curve are high confidence`() {
+        val e = emotion(emptyList(), vocalScore = 0f)
+        assertEquals(EmotionConfidenceLevel.HIGH, emotionConfidenceLevelOf(e))
+        assertFalse(needsConfidenceHint(e))
+    }
 }

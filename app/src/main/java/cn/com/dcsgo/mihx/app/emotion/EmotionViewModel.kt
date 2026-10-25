@@ -14,6 +14,7 @@ import cn.com.dcsgo.mihx.domain.repository.PlayerSettingsRepository
 import cn.com.dcsgo.mihx.domain.repository.SongEmotionRepository
 import cn.com.dcsgo.mihx.domain.repository.SongRepository
 import cn.com.dcsgo.mihx.core.model.emotionTagsOf
+import cn.com.dcsgo.mihx.core.model.emotionConfidenceLevelOf
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
@@ -40,6 +41,9 @@ data class EmotionSongRow(
     /** 展示词条(用户校准优先, 否则曲线投票) */
     val tags: List<String>,
     val corrected: Boolean,
+    /** 把握程度 —— 列表行据此决定要不要标「不确定」 */
+    val confidence: cn.com.dcsgo.mihx.core.model.EmotionConfidenceLevel =
+        cn.com.dcsgo.mihx.core.model.EmotionConfidenceLevel.HIGH,
 )
 
 /** 我的页情绪扫描卡/详情页状态. */
@@ -213,6 +217,9 @@ class EmotionViewModel @Inject constructor(
                 emotion = e,
                 tags = emotionTagsOf(e),
                 corrected = e.userCorrected,
+                // 列表行也要标出把握程度: 词条冷暖打架时用户一眼就该看出来,
+                // 不必点进详情页才发现
+                confidence = emotionConfidenceLevelOf(e),
             )
         }
     }

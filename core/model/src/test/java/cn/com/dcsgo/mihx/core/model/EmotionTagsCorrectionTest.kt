@@ -73,4 +73,13 @@ class EmotionTagsCorrectionTest {
         // 多选一个也算改
         assertEquals(true, isUserCorrection(listOf("元气"), listOf("元气", "燃")))
     }
+
+    @Test
+    fun `like share percent reflects the vote balance`() {
+        // 票是「占比 x100」的加权票, 绝对值 15~1500; UI 显示占比才读得懂
+        val w = WordPreference(word = "emo", likeVotes = 400, dislikeVotes = 1500)
+        assertEquals(21, w.likeSharePercent)
+        assertEquals(WordPreferenceKind.DISLIKE, w.kind)
+        assertEquals(0, WordPreference(word = "x", likeVotes = 0, dislikeVotes = 0).likeSharePercent)
+    }
 }

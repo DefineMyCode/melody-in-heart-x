@@ -707,7 +707,13 @@ private fun PreferenceRow(
                             color = content,
                         )
                         Text(
-                            text = "${pref.likeVotes}:${pref.dislikeVotes}",
+                            // 显示占比而不是票数: 票是「占比 ×100」的加权票,
+                            // 绝对值是 15~1500 这种量级, 对用户没意义;
+                            // 占比才是判定依据(票多者胜)
+                            text = when (pref.kind) {
+                                cn.com.dcsgo.mihx.core.model.WordPreferenceKind.NEUTRAL -> "中立"
+                                else -> "喜 ${pref.likeSharePercent}%"
+                            },
                             style = MaterialTheme.typography.labelSmall,
                             color = content.copy(alpha = 0.7f),
                         )

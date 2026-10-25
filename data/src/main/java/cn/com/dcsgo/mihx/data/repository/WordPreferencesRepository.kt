@@ -42,10 +42,19 @@ class WordPreferencesRepository(
             val now = System.currentTimeMillis()
             val updates = effective.map { (word, weight) ->
                 val old = existing[word]
+                // 饱和加法: 票数撞到 Int 上限时**停在上限**, 不许溢出成负数 ——
+                // 负数会让 kind 判定静默翻转(票多者胜变成票少者胜), 比溢出本身更糟。
+                // 实际到不了(Int 上限 21 亿票 ≈ 118 年每天 100 首), 但这是纯逻辑,
+                // 票重或阈值将来一改就可能到, 所以在这里堵死。
+                //
+                // 注意必须用 **Long 中间值**: 先在 Int 里加再加, 溢出发生在加法那一步,
+                // 之后的 coerceAtMost 拦不住已经是负数的值(实测会漏成 -2147483554)。
+                fun addVotes(base: Int, delta: Int): Int =
+                    (base.toLong() + delta.toLong()).coerceAtMost(Int.MAX_VALUE.toLong()).toInt()
                 WordPreferenceEntity(
                     word = word,
-                    likeVotes = (old?.likeVotes ?: 0) + if (liked) weight else 0,
-                    dislikeVotes = (old?.dislikeVotes ?: 0) + if (liked) 0 else weight,
+                    likeVotes = addVotes(old?.likeVotes ?: 0, if (liked) weight else 0),
+                    dislikeVotes = addVotes(old?.dislikeVotes ?: 0, if (liked) 0 else weight),
                     updatedAt = now,
                 )
             }

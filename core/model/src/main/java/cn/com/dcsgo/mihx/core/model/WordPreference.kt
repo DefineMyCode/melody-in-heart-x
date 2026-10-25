@@ -34,4 +34,18 @@ data class WordPreference(
             dislikeVotes > likeVotes -> WordPreferenceKind.DISLIKE
             else -> WordPreferenceKind.NEUTRAL
         }
+
+    /**
+     * 喜欢票占比（0~100，四舍五入）。
+     *
+     * UI 用它而不是**票数**显示：票重是「占比 ×100」（见
+     * [cn.com.dcsgo.mihx.domain.playback.ExplorePlaybackPolicy.VOTE_WEIGHT_SCALE]），
+     * 票数是 15~1500 这种量级，而且票重 15 的歌折算成「1 首歌当量」会显示 0 ——
+     * 绝对票数对用户没有意义，占比才是判定依据（票多者胜）。
+     */
+    val likeSharePercent: Int
+        get() {
+            val total = likeVotes + dislikeVotes
+            return if (total <= 0) 0 else (likeVotes.toLong() * 100L / total).toInt()
+        }
 }

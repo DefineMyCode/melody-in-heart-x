@@ -225,4 +225,21 @@ class WordPreferencesRepositoryTest {
         override suspend fun deleteSongEmotion(songId: Int) = Unit
         override suspend fun clearSongEmotionCorrection(songId: Int) = Unit
     }
+
+    @Test
+    fun recordSongOutcome_saturatesInsteadOfOverflowing() = runBlocking {
+        // 票数撞到 Int 上限时**停在上限**, 不许溢出成负数 ——
+        // 负数会让 kind 判定静默翻转(票多者胜变成票少者胜), 比溢出本身更糟
+        val dao = FakeMelodyDao()
+        dao.upsertWordPreferences(
+            listOf(WordPreferenceEntity("emo", likeVotes = 0, dislikeVotes = Int.MAX_VALUE - 5, updatedAt = 1L)),
+        )
+        val repo = WordPreferencesRepository(dao)
+
+        repo.recordSongOutcome(votes = mapOf("emo" to 100), liked = false)
+
+        assertEquals(Int.MAX_VALUE, repo.getAll()["emo"]!!.dislikeVotes)
+        // 归属判定没被负数带翻
+        assertEquals(WordPreferenceKind.DISLIKE, repo.getAll()["emo"]!!.kind)
+    }
 }

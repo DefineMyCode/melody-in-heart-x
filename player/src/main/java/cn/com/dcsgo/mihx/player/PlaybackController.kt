@@ -11,6 +11,7 @@ import androidx.media3.common.Timeline
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
 import cn.com.dcsgo.mihx.core.common.AppLog
+import cn.com.dcsgo.mihx.core.common.ArtworkUriAccess
 import cn.com.dcsgo.mihx.core.common.PerformanceTrace
 import cn.com.dcsgo.mihx.core.model.Song
 import cn.com.dcsgo.mihx.domain.playback.ControllerPlaybackSnapshot
@@ -304,7 +305,9 @@ class PlaybackController(
             lastSyncedQueueFingerprint = plan.fingerprint()
             pendingQueueMutation = true
             controller.repeatMode = Player.REPEAT_MODE_ALL
-            controller.setMediaItems(plan.toMediaItems(), plan.startIndex, 0L)
+            val mediaItems = plan.toMediaItems()
+            grantArtworkRead(mediaItems)
+            controller.setMediaItems(mediaItems, plan.startIndex, 0L)
             controller.prepare()
             controller.play()
             PerformanceTrace.log(
@@ -313,6 +316,27 @@ class PlaybackController(
                 metadata = plan.performanceMetadata(),
             )
         }
+    }
+
+    /**
+     * 发布媒体项**之前**给其中的封面 URI 授予跨进程读权限。
+     *
+     * 封面 URI 走 FileProvider 的 `content://`（`:data` 的 `AlbumArtProvider` 产出）。
+     * 平台的 `MediaSessionRecord` 只**校验**该 URI 是否可被授予，**不负责授权**；
+     * 真正让 SystemUI 媒体控制卡片 / 平台媒体通知 / 车机等跨进程消费方读得到封面，
+     * 得由 App 显式 `grantUriPermission()`，否则对方会拿到
+     * `SecurityException: Permission Denial: reading ... requires the provider be exported,
+     *  or grantUriPermission()`。
+     *
+     * **为什么必须在这里（下发之前）**：跨进程消费方一收到 metadata 推送就会去读封面，
+     * 等 `onMediaItemTransition` 再授权就晚了（读取先于授权 → 首帧封面空白）。
+     * 这里补的是「存量 URI」的授权 —— 本进程没铸造过、来自上一次运行写进 Room 的封面，
+     * `:data` 的铸造时授权覆盖不到它们。
+     *
+     * 按 URI 去重：同一专辑的 N 首歌共享同一张内容哈希封面 → 同一个 URI。
+     */
+    private fun grantArtworkRead(mediaItems: List<MediaItem>) {
+        ArtworkUriAccess.grantRead(context, mediaItems.mapNotNull { it.mediaMetadata?.artworkUri })
     }
 
     /**
@@ -333,7 +357,9 @@ class PlaybackController(
             lastSyncedQueueFingerprint = plan.fingerprint()
             pendingQueueMutation = true
             controller.repeatMode = Player.REPEAT_MODE_ALL
-            controller.setMediaItems(plan.toMediaItems(), plan.startIndex, positionMs.coerceAtLeast(0L))
+            val mediaItems = plan.toMediaItems()
+            grantArtworkRead(mediaItems)
+            controller.setMediaItems(mediaItems, plan.startIndex, positionMs.coerceAtLeast(0L))
             controller.prepare()
             PerformanceTrace.log(
                 operation = "controller_prepare_queue",
@@ -400,6 +426,7 @@ class PlaybackController(
                         .subList(incremental.commonCount, plan.songs.size)
                         .mapNotNull { SongMediaItemMapper.toMediaItem(it) }
                     if (appended.isNotEmpty()) {
+                        grantArtworkRead(appended)
                         controller.addMediaItems(incremental.commonCount, appended)
                     }
                 }
@@ -418,7 +445,9 @@ class PlaybackController(
             val wasPlaying = controller.isPlaying
             pendingQueueMutation = true
             controller.repeatMode = Player.REPEAT_MODE_ALL
-            controller.setMediaItems(plan.toMediaItems(), plan.startIndex, positionMs)
+            val mediaItems = plan.toMediaItems()
+            grantArtworkRead(mediaItems)
+            controller.setMediaItems(mediaItems, plan.startIndex, positionMs)
             controller.prepare()
             if (wasPlaying) {
                 controller.play()

@@ -4,6 +4,7 @@ import android.content.Context
 import android.net.Uri
 import androidx.core.content.FileProvider
 import androidx.test.core.app.ApplicationProvider
+import cn.com.dcsgo.mihx.core.common.ArtworkUriAccess
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
@@ -39,7 +40,7 @@ class AlbumArtProviderTest {
         val field = FileProvider::class.java.getDeclaredField("sCache")
         field.isAccessible = true
         (field.get(null) as MutableMap<*, *>).clear()
-        AlbumArtProvider.resetGrants()
+        ArtworkUriAccess.resetGrants()
     }
 
     @Test
@@ -47,25 +48,8 @@ class AlbumArtProviderTest {
         val uri = AlbumArtProvider.toProviderUri(ctx, cacheFile("art_grant.jpg"))
 
         assertNotNull(uri)
-        assertEquals(1, AlbumArtProvider.grantedUriCount)
-    }
-
-    @Test
-    fun `the same cover is granted only once`() {
-        val file = cacheFile("art_grant_once.jpg")
-
-        AlbumArtProvider.toProviderUri(ctx, file)
-        AlbumArtProvider.toProviderUri(ctx, file)
-
-        assertEquals(1, AlbumArtProvider.grantedUriCount)
-    }
-
-    @Test
-    fun `distinct covers are granted independently`() {
-        AlbumArtProvider.toProviderUri(ctx, cacheFile("art_grant_a.jpg"))
-        AlbumArtProvider.toProviderUri(ctx, cacheFile("art_grant_b.jpg"))
-
-        assertEquals(2, AlbumArtProvider.grantedUriCount)
+        // 铸造即授权（共享 helper 的去重与过滤语义见 :core:common 的 ArtworkUriAccessTest）
+        assertEquals(1, ArtworkUriAccess.grantedUriCount)
     }
 
     @Test

@@ -17,6 +17,7 @@ import cn.com.dcsgo.mihx.core.model.Song
 import cn.com.dcsgo.mihx.data.local.dao.MelodyDao
 import cn.com.dcsgo.mihx.data.local.migration.LegacyJsonMigration
 import cn.com.dcsgo.mihx.data.util.AlbumArtExtractor
+import cn.com.dcsgo.mihx.data.util.AlbumArtProvider
 import cn.com.dcsgo.mihx.data.util.AudioFileUtils
 import cn.com.dcsgo.mihx.data.util.AudioMetadataExtractor
 import cn.com.dcsgo.mihx.data.util.SongPathResolver
@@ -187,6 +188,49 @@ class MusicRepository(
             nextPlaylistId = (playlists.maxOfOrNull { it.id } ?: 0) + 1
         }
         AppLog.info(TAG, "restoreFromRoom: restored ${restoredLibrary.songs.size} songs, ${restoredLibrary.playlists.size} playlists")
+        migrateLegacyAlbumArtUris()
+    }
+
+    /**
+     * 存量封面 URI 形态迁移（2026-10-27）。
+     *
+     * 旧版本持久化的是 `file://` 私有缓存路径。平台的 `MediaSessionRecord` 只对
+     * `content://` 的 artworkUri 做 URI 授权共享（`file://` 被直接跳过），于是跨进程
+     * 消费方（SystemUI 媒体控制卡片 / 通知栏 / Android Auto）读不到 →
+     * `MediaDataManager E Unable to load bitmap` + `FileNotFoundException`。
+     *
+     * 这里把存量 URI **零重解码**改写成 FileProvider 的 `content://`（同一个文件，
+     * 只换 URI 形态）并落库。
+     *
+     * **必须发生在恢复播放之前**：恢复流程会用内存里的 Song 构造 MediaItem，
+     * 若这里不改，本次会话发布给 MediaSession 的仍是旧 URI，SystemUI 会持续报错
+     * 直到下一次启动。
+     */
+    private fun migrateLegacyAlbumArtUris() {
+        val ctx = context ?: return
+        var changed = 0
+        lock.write {
+            for (i in songs.indices) {
+                val song = songs[i]
+                val uri = song.albumArtUri ?: continue
+                val legacyFile = AlbumArtProvider.legacyCacheFileOf(ctx, uri) ?: continue
+                val migrated = if (legacyFile.exists()) {
+                    // FileProvider 不可用时保留原 URI（App 内仍可显示封面）
+                    AlbumArtProvider.toProviderUri(ctx, legacyFile) ?: uri
+                } else {
+                    // 缓存文件已被系统清理：摘掉悬空 URI，否则跨进程消费方一直读到 ENOENT
+                    null
+                }
+                if (migrated != uri) {
+                    songs[i] = song.copy(albumArtUri = migrated)
+                    changed++
+                }
+            }
+        }
+        if (changed > 0) {
+            AppLog.info(TAG, "migrateLegacyAlbumArtUris: migrated $changed artwork URIs to content://")
+            persistSongs()
+        }
     }
 
     /** 测试探针：下一个将分配的歌曲 id（验证 M-4 修复后不复用被删歌曲的 id） */

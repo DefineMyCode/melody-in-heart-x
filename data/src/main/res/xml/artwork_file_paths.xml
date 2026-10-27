@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  专辑封面 FileProvider 暴露的路径：仅 cacheDir 下的 album_art 子目录。
+
+  路径名（album_art）必须与 data/.../util/AlbumArtProvider.CACHE_DIR_NAME 一致，
+  否则 FileProvider 解析不出根目录，content:// URI 会指向不存在的文件。
+-->
+<paths>
+    <cache-path name="album_art" path="album_art" />
+</paths>

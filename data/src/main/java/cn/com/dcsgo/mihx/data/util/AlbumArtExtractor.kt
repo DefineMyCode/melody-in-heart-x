@@ -185,7 +185,7 @@ object AlbumArtExtractor {
         if (artFile.exists()) {
             cacheHitCounter.incrementAndGet()
             AppLog.debug(TAG, "Album art cache hit: ${artFile.name}")
-            return Uri.fromFile(artFile)
+            return shareableUri(ctx, artFile)
         }
 
         // 抢「写入权」：同一哈希只允许一个线程做解码/压缩/落盘。
@@ -206,7 +206,7 @@ object AlbumArtExtractor {
                     // 别人写完了，直接复用（连等待都省了）
                     cacheHitCounter.incrementAndGet()
                     AppLog.debug(TAG, "Album art cache hit (concurrent): ${artFile.name}")
-                    return Uri.fromFile(artFile)
+                    return shareableUri(ctx, artFile)
                 }
             }
         } finally {
@@ -253,7 +253,7 @@ object AlbumArtExtractor {
 
             cacheWriteCounter.incrementAndGet()
             AppLog.info(TAG, "Album art cached: ${artFile.absolutePath}")
-            return Uri.fromFile(artFile)
+            return shareableUri(ctx, artFile)
         } finally {
             // 失败时别留下半截 .tmp
             if (tmpFile.exists()) tmpFile.delete()
@@ -280,7 +280,29 @@ object AlbumArtExtractor {
     }
 
     /**
-     * 校验封面 URI 对应的文件是否存在，不存在则重新尝试提取
+     * 把本地缓存文件包装成**跨进程可读**的 URI。
+     *
+     * 正常路径是 FileProvider 的 `content://`（平台会自动完成 URI 授权共享，
+     * 见 [AlbumArtProvider] 的类注释）；FileProvider 不可用时退回 `file://`，
+     * 此时 App 内仍能显示封面，只是跨进程消费方读不到——比整体拿不到封面好。
+     */
+    private fun shareableUri(ctx: Context, artFile: File): Uri {
+        val providerUri = AlbumArtProvider.toProviderUri(ctx, artFile)
+        if (providerUri != null) return providerUri
+        AppLog.warning(TAG, "FileProvider unavailable, falling back to file:// artwork URI")
+        return Uri.fromFile(artFile)
+    }
+
+    /**
+     * 校验封面 URI 对应的文件是否存在，不存在则重新尝试提取。
+     *
+     * 三种形态分别处理（2026-10-27）：
+     * 1. 本 provider 的 `content://` —— 映射回本地文件查存在性；
+     * 2. 旧版本遗留的 `file://` —— 文件在则零重解码迁移成 `content://`（只换 URI 形态），
+     *    文件不在（被系统清理过）则摘掉悬空 URI，等全库刷新重新提取；
+     * 3. **其它 URI**（如 MediaStore 的 `content://media/external/audio/albumart/<id>`）
+     *    —— 本来就能跨进程读，原样返回。
+     *
      * @return 有效的封面 URI，无则返回 null
      */
     fun refreshAlbumArtIfNeeded(ctx: Context, song: Song): Uri? {
@@ -290,16 +312,30 @@ object AlbumArtExtractor {
             return getAlbumArtUri(ctx, song.uri)
         }
 
-        // 检查当前封面 URI 是否还有效
-        if (currentUri.scheme == "file") {
-            val file = File(currentUri.path ?: return null)
+        // 1) 本 provider 的 content:// URI
+        AlbumArtProvider.fileOf(ctx, currentUri)?.let { file ->
             if (file.exists()) return currentUri
             // 文件不存在，重新提取
             AppLog.debug(TAG, "Album art cache missing for song ${song.id}, re-extracting...")
             return getAlbumArtUri(ctx, song.uri)
         }
 
-        // 非 file:// 的 URI（如 MediaStore albumart），直接返回
+        // 2) 旧版本遗留的 file:// 缓存 URI
+        AlbumArtProvider.legacyCacheFileOf(ctx, currentUri)?.let { file ->
+            if (!file.exists()) {
+                // 缓存文件已被系统清理：摘掉悬空 URI，否则跨进程消费方会一直读到 ENOENT
+                AppLog.debug(TAG, "Album art cache missing for song ${song.id}, clearing stale URI")
+                return null
+            }
+            val migrated = AlbumArtProvider.toProviderUri(ctx, file)
+            if (migrated != null) {
+                AppLog.debug(TAG, "Album art URI migrated for song ${song.id}")
+                return migrated
+            }
+            return currentUri
+        }
+
+        // 3) 其它 URI（如 MediaStore albumart），直接返回
         return currentUri
     }
 

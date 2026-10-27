@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <application>
+        <!--
+          专辑封面 FileProvider：把 cacheDir/album_art 暴露成 content:// URI，
+          供**跨进程**消费方读取（SystemUI 媒体控制卡片 / 通知栏 / Android Auto / 车机）。
+
+          为什么必须是 content://：平台 `MediaSessionRecord.sanitizeMediaMetadata()` 只对
+          content:// 的 artworkUri 做 URI 授权共享（file:// 直接 continue 跳过），于是 file://
+          形态的封面 URI 会被原样透传给控制器；控制器读不到 App 私有目录 →
+          `MediaDataManager E Unable to load bitmap` + `FileNotFoundException`。
+          （Media3 官方 issue androidx/media#271 描述的是同一个症状。）
+
+          这套 provider 是恢复 b2d6e82（2026-08-02）的原始设计——当时目录叫 cacheDir/artwork，
+          在 53269d3「废弃」旧单模块 App 时被整体删掉，封面遂退回 file:// 私有路径。
+
+          authority 用 ${applicationId} 而非硬编码包名：debug 变体的 applicationId 是
+          <package>.debug，硬编码会导致变体找不到 provider。
+        -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.artworkprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/artwork_file_paths" />
+        </provider>
+    </application>
+
+</manifest>

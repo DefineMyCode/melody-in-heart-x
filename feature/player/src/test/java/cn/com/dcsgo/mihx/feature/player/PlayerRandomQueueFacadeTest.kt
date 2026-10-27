@@ -292,7 +292,7 @@ class PlayerRandomQueueFacadeTest {
         ),
         moodSlotConfigs = { configs },
         moodSlotEnabled = { enabled },
-        moodEmotionTagsOf = { song -> tagsBySong[song.id].orEmpty() },
+        moodEmotionTagsOf = { song -> tagsBySong[song.id].orEmpty().toSet() },
         // null = 不注入占比 -> 走默认实现(每词按 1.0), 行为与改造前的纯 OR 判定一致
         moodEmotionTagRatiosOf = { song ->
             ratiosBySong?.get(song.id) ?: tagsBySong[song.id].orEmpty().associateWith { 1f }
@@ -415,7 +415,7 @@ class PlayerRandomQueueFacadeTest {
             ),
             moodSlotConfigs = { configs },
             moodSlotEnabled = { true },
-            moodEmotionTagsOf = { song -> if (song.id == 3 || song.id == 4) listOf("静谧") else emptyList() },
+            moodEmotionTagsOf = { song -> if (song.id == 3 || song.id == 4) setOf("静谧") else emptySet() },
             nowMinuteOfDay = { 22 * 60 },
         )
         state = state.copy(songs = songs(1, 2, 3, 4), globalUniformRandomEnabled = true)
@@ -504,7 +504,7 @@ class PlayerRandomQueueFacadeTest {
             isPlayable = { it.sampleRate > 0 },
         ),
         exploreModeEnabled = { true },
-        moodEmotionTagsOf = { song -> tagsBySong[song.id].orEmpty() },
+        moodEmotionTagsOf = { song -> tagsBySong[song.id].orEmpty().toSet() },
         wordPreferenceOf = { word -> prefs[word] ?: cn.com.dcsgo.mihx.core.model.WordPreference(word, 0, 0) },
     )
 

@@ -16,6 +16,16 @@ interface SongRepository {
     fun observeSongsSnapshot(): List<Song>
     fun setSongsChangedListener(listener: (() -> Unit)?)
 
+    /**
+     * 曲库里是否还有这首���（不产生任何分配）。
+     *
+     * 评审 2026-10-27 · M-2：批扫 Worker 每分析完一首歌都要确认「这首歌是否
+     * 已被用户删除」（防孤儿情绪行）。原先用 `observeSongsSnapshot().none { ... }`
+     * —— 每次都**拷贝整份曲库**（`songs.toList()`）再做一次 O(n) 线性扫描，
+     * 手动批扫 300 首 = 300 次整库拷贝。本方法只做一次不加分配的 O(n) 判定。
+     */
+    suspend fun containsSong(songId: Int): Boolean
+
     /** 查询持久化的歌手目录 */
     suspend fun loadLibraryArtists(): List<ArtistEntry>
 

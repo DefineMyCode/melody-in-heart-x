@@ -135,9 +135,13 @@ object SongVersionComparer {
             add(SpecRow("封面", finalVersions.map { SpecCell(if (it.song.albumArtUri != null) "有" else "无") }))
         }
 
-        val rows = allRows.filter { it.cells.map { cell -> cell.display }.distinct().size > 1 }
-        val commonFields = allRows
-            .filterNot { it.cells.map { cell -> cell.display }.distinct().size > 1 }
+        // 评审 2026-10-27 · N-16：判据只算一次。
+        // 原先同一个判据写了两遍、算了两遍（每遍都分配一个 List<String> + LinkedHashSet）。
+        val (diffRows, sameRows) = allRows.partition { row ->
+            row.cells.map { cell -> cell.display }.distinct().size > 1
+        }
+        val rows = diffRows
+        val commonFields = sameRows
             .map { it.label to (it.cells.firstOrNull()?.display.orEmpty()) }
             .sortedBy { (label, _) -> FIELD_ORDER.indexOf(label).takeIf { it >= 0 } ?: Int.MAX_VALUE }
 

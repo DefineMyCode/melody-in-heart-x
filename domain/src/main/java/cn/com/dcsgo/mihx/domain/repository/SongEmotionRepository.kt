@@ -38,8 +38,19 @@ interface SongEmotionRepository {
      */
     fun observeAll(): Flow<Map<Int, SongEmotion>>
 
-    /** 逐首完成时间(ms, 升序) — 详情页平均/上一首耗时统计 */
-    suspend fun analyzedTimeline(): List<Long>
+    /**
+     * 情绪表轻量统计（评审 2026-10-27 · M-3）。
+     *
+     * 轮询路径用它替代整表读：行数 + 最近一次分析时间足以作为「需要重建列表」的指纹。
+     */
+    suspend fun tableStat(): EmotionTableStat
+
+    /**
+     * 最近 N 条分析完成时间（**降序**）—— 轮询算「上一首耗时 / 近 N 首平均耗时」用。
+     *
+     * 只取最近若干条而非全表：1000 首库每 2 秒物化一次全表时间戳没有必要。
+     */
+    suspend fun recentAnalyzedTimestamps(limit: Int): List<Long>
 
     /** 已用户校准的歌曲数 */
     suspend fun correctionCount(): Int

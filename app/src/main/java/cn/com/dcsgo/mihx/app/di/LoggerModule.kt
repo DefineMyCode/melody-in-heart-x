@@ -14,5 +14,8 @@ import javax.inject.Singleton
 object LoggerModule {
     @Provides
     @Singleton
-    fun provideAppLogger(): AppLogger = AndroidAppLogger(BuildConfig.DEBUG)
+    // performanceLoggingEnabled = true：release 下普通日志全关，但
+    // `PerformanceTrace` 白名单登记的操作仍要输出（评审 2026-10-27 · M-20）。
+    fun provideAppLogger(): AppLogger =
+        AndroidAppLogger(BuildConfig.DEBUG, performanceLoggingEnabled = true)
 }

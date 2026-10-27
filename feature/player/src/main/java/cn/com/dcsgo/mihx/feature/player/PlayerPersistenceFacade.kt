@@ -12,7 +12,13 @@ class PlayerPersistenceFacade(
     private val playbackRestoreCoordinator: PlaybackRestorer,
     private val currentPlaybackPositionMs: () -> Long,
     private val prepareControllerQueue: (PlayQueue, Int, Long) -> Boolean,
-    private val launchIo: (() -> Unit) -> Unit,
+    /**
+     * 把一次持久化写入**排队**执行。
+     *
+     * 评审 2026-10-27 · N-1：入参改为挂起函数——底层 [PlaybackStateStorage] 已全部
+     * 挂起化（原先是 `runBlocking` 同步壳），这里不能再包一层同步阻塞。
+     */
+    private val launchIo: (suspend () -> Unit) -> Unit,
     private val log: (String) -> Unit,
 ) {
     fun savePlaybackStateAsync(positionMs: Long = currentPlaybackPositionMs()) {
@@ -24,11 +30,11 @@ class PlayerPersistenceFacade(
         }
     }
 
-    fun savePlaybackState(positionMs: Long = currentPlaybackPositionMs()) {
+    suspend fun savePlaybackState(positionMs: Long = currentPlaybackPositionMs()) {
         savePlaybackState(state(), positionMs)
     }
 
-    private fun savePlaybackState(snapshot: PlayerUiState, positionMs: Long) {
+    private suspend fun savePlaybackState(snapshot: PlayerUiState, positionMs: Long) {
         // 诊断：确认 5s autosaver 与事件保存确实在写盘、写入的是否是预期数据。
         log(
             "save playback state: queue=${snapshot.playQueue.songs.size}, index=${snapshot.playQueue.currentIndex}, " +
@@ -45,12 +51,12 @@ class PlayerPersistenceFacade(
         )
     }
 
-    fun clearPlaybackState() {
+    suspend fun clearPlaybackState() {
         playbackStateStore.clear()
     }
 
     /** 仅在 IO 线程读取并解码播放状态，返回 null 表示无需恢复；由调用方在合适线程 [applyRestoreResult] */
-    fun restorePlaybackState(): PlaybackRestoreResult? {
+    suspend fun restorePlaybackState(): PlaybackRestoreResult? {
         val librarySongs = state().songs
         val result = playbackRestoreCoordinator.restore(librarySongs)
         // 诊断：区分「无快照(null)」与「解码出空/少歌队列」——两者在 UI 上都表现为队列空，

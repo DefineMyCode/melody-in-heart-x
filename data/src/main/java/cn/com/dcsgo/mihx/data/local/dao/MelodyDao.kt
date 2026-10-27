@@ -7,6 +7,7 @@ import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Upsert
 import cn.com.dcsgo.mihx.core.model.Song
+import cn.com.dcsgo.mihx.domain.repository.EmotionTableStat
 import kotlinx.coroutines.flow.Flow
 import cn.com.dcsgo.mihx.data.local.entity.AlbumEntity
 import cn.com.dcsgo.mihx.data.local.entity.ArtistEntity
@@ -59,6 +60,12 @@ data class SongPlayCountRow(
     val playCount: Int,
 )
 
+/** 歌曲 id → 专辑实体 id（评审 2026-10-27 · M-7：只取这两列，不做 SELECT *） */
+data class SongAlbumIdRow(
+    val id: Int,
+    val albumId: Int?,
+)
+
 @Dao
 interface MelodyDao {
     @Query("SELECT * FROM songs ORDER BY id")
@@ -66,6 +73,21 @@ interface MelodyDao {
 
     @Query("SELECT COUNT(*) FROM songs")
     suspend fun songCount(): Int
+
+    /** 只要 id 列（评审 2026-10-27 · N-8）：`songs()` 是 `SELECT *`，为了拿 id 集合
+     *  会把每首歌的 uri / albumArtCacheUri / lrcUri 等全部列物化进内存。 */
+    @Query("SELECT id FROM songs")
+    suspend fun songIds(): List<Int>
+
+    /**
+     * 只取 id 与 albumId 两列（评审 2026-10-27 · M-7）。
+     *
+     * `syncLibraryCatalog` 会**重建专辑目录并把 albumId 回写到 songs 表**，所以
+     * 恢复流程必须在它之后重新读一次 albumId。但不需要 `SELECT *` ——
+     * 那会把每首歌的 uri / albumArtCacheUri / lrcUri 等全部列物化进内存。
+     */
+    @Query("SELECT id, albumId FROM songs")
+    suspend fun songAlbumIds(): List<SongAlbumIdRow>
 
     @Query("SELECT * FROM playlists ORDER BY id")
     suspend fun playlists(): List<PlaylistEntity>
@@ -242,6 +264,37 @@ interface MelodyDao {
     @Upsert
     suspend fun upsertQuickSkipShortPlay(count: QuickSkipShortPlayEntity)
 
+    /**
+     * 原子自增短播放计数（不存在则插入 1）。
+     *
+     * 评审 2026-10-27 · M-22：原实现是「读 → +1 → 整行 upsert」，并发下两个
+     * 调用读到同一基数、后写覆盖先写 → **丢一次计数**，而该计数驱动
+     * 「累计 2 次自动加入秒切列表」的规则，丢计数会推迟自动加入。
+     *
+     * 实现用「幂等建行 + 原子自增」两步（而不是 `INSERT ... ON CONFLICT DO UPDATE`）：
+     * 后者要 SQLite ≥ 3.24（UPSERT），而部分 JVM 测试环境的 SQLite 还不支持；
+     * 两步写法在任何 SQLite 版本上都能跑，且同样无 lost update ——
+     * `INSERT OR IGNORE` 保证行存在（已存在则忽略），`UPDATE ... SET count = count + 1`
+     * 是语句级原子。调用方必须**先 ensure 再 increment**。
+     */
+    @Query(
+        """
+        INSERT OR IGNORE INTO quick_skip_short_play_counts (songId, count, updatedAt)
+        VALUES (:songId, 0, :now)
+        """
+    )
+    suspend fun ensureQuickSkipShortPlay(songId: Int, now: Long)
+
+    /** 原子自增（语句级）：`count = count + 1`，饱和在 Int 上限不溢出。 */
+    @Query(
+        """
+        UPDATE quick_skip_short_play_counts
+        SET count = MIN(count + 1, 2147483647), updatedAt = :now
+        WHERE songId = :songId
+        """
+    )
+    suspend fun incrementQuickSkipShortPlay(songId: Int, now: Long)
+
     @Upsert
     suspend fun upsertSongGroupOverrides(overrides: List<SongGroupOverrideEntity>)
 
@@ -277,6 +330,16 @@ interface MelodyDao {
 
     @Query("DELETE FROM playback_events WHERE songId IN (:songIds)")
     suspend fun deletePlaybackEventsForSongs(songIds: List<Int>)
+
+    /**
+     * 删除超出保留期的播放事件（评审 2026-10-27 · M-6）。
+     *
+     * playback_events 是纯追加表，本项目原本**没有任何清理逻辑**——它随应用
+     * 生命周期无限增长，而每次删歌/去重/文件校验的「按 songId 清理」都要扫这张表。
+     * 配合 `index_playback_events_songId` 索引，清理成本回到可控范围。
+     */
+    @Query("DELETE FROM playback_events WHERE startedAtMs < :beforeMs")
+    suspend fun deletePlaybackEventsBefore(beforeMs: Long): Int
 
     @Query("DELETE FROM quick_skip_songs WHERE songId IN (:songIds)")
     suspend fun deleteQuickSkipSongsFor(songIds: List<Int>)
@@ -456,11 +519,27 @@ interface MelodyDao {
     )
     suspend fun emotionCorrectionCount(): Int
 
-    /** 逐首完成时间(ms), 仅成功记录, 升序——相邻差值即单首耗时近似 */
+    /**
+     * 情绪表轻量统计（评审 2026-10-27 · M-3）。
+     *
+     * 轮询路径用它替代「整表读 songId→modelVersion + 整表读逐首时间戳」：
+     * 行数 + 最近一次分析时间足以作为「需要重建列表」的指纹。
+     */
     @Query(
-        "SELECT analyzedAt FROM song_emotions WHERE windowsAnalyzed > 0 ORDER BY analyzedAt ASC"
+        "SELECT COUNT(*) AS count, IFNULL(MAX(analyzedAt), 0) AS maxAnalyzedAt FROM song_emotions"
     )
-    suspend fun emotionAnalyzedTimeline(): List<Long>
+    suspend fun emotionTableStat(): EmotionTableStat
+
+    /**
+     * 最近 N 条分析完成时间（**降序**）—— 轮询算「上一首耗时 / 近 N 首平均耗时」用。
+     *
+     * 只取最近若干条而不是全表：1000 首库的全表时间戳每 2 秒物化一次没有必要。
+     */
+    @Query(
+        "SELECT analyzedAt FROM song_emotions WHERE windowsAnalyzed > 0 " +
+            "ORDER BY analyzedAt DESC LIMIT :limit"
+    )
+    suspend fun emotionRecentAnalyzedTimestamps(limit: Int): List<Long>
 
     @Upsert
     suspend fun upsertSongEmotion(emotion: SongEmotionEntity)
@@ -512,6 +591,38 @@ interface MelodyDao {
     /** 批量 upsert：读当前值 → 票数 +1 → 写回，由仓储层完成（DAO 只做整行替换） */
     @Upsert
     suspend fun upsertWordPreferences(items: List<WordPreferenceEntity>)
+
+    /**
+     * 原子累加某个词条的喜欢/不喜欢票（不存在则按 delta 建行）。
+     *
+     * 评审 2026-10-27 · M-22：原实现是「读整表 → 算新票数 → 整表 upsert」，
+     * 两个并发的结算（跳过=不喜欢 / 听完=喜欢）会读到同一基数、后写覆盖先写
+     * → **票数丢失**，探索播放的偏好归属会静默漂移。
+     *
+     * 饱和加法保留：`MIN(x, 2147483647)` 让票数停在 Int 上限而不是溢出成
+     * 负数（负数会让「票多者胜」的判定静默翻转，比溢出本身更糟）。
+     *
+     * 与 [addWordVotesDelta] 配套：调用方先 [ensureWordPreference] 再自增。
+     */
+    @Query(
+        """
+        INSERT OR IGNORE INTO word_preferences (word, likeVotes, dislikeVotes, updatedAt)
+        VALUES (:word, 0, 0, :now)
+        """
+    )
+    suspend fun ensureWordPreference(word: String, now: Long)
+
+    /** 原子累加票数（语句级）：`x = MIN(x + delta, Int 上限)`。 */
+    @Query(
+        """
+        UPDATE word_preferences
+        SET likeVotes = MIN(likeVotes + :likeDelta, 2147483647),
+            dislikeVotes = MIN(dislikeVotes + :dislikeDelta, 2147483647),
+            updatedAt = :now
+        WHERE word = :word
+        """
+    )
+    suspend fun addWordVotesDelta(word: String, likeDelta: Int, dislikeDelta: Int, now: Long)
 
     @Query("DELETE FROM word_preferences")
     suspend fun clearWordPreferences()

@@ -92,6 +92,10 @@ class QuickSkipSongsRepositoryRoomTest {
 
         override suspend fun songs(): List<SongEntity> = songs
 
+        override suspend fun songIds(): List<Int> = songs.map { it.id }
+        override suspend fun songAlbumIds(): List<cn.com.dcsgo.mihx.data.local.dao.SongAlbumIdRow> =
+            songs.map { cn.com.dcsgo.mihx.data.local.dao.SongAlbumIdRow(it.id, it.albumId) }
+
         override suspend fun songCount(): Int = songs.size
         override suspend fun playlists(): List<PlaylistEntity> = playlists
         override suspend fun playlistSongRefs(): List<PlaylistSongCrossRef> = playlistSongRefs
@@ -180,6 +184,30 @@ class QuickSkipSongsRepositoryRoomTest {
             quickSkipShortPlayCounts.upsertItems(listOf(count)) { it.songId }
         }
 
+        /** 原子自增短播放计数（评审 2026-10-27 · M-22 新增 DAO 方法）。 */
+        override suspend fun ensureQuickSkipShortPlay(songId: Int, now: Long) = Unit
+        override suspend fun incrementQuickSkipShortPlay(songId: Int, now: Long) {
+            val existing = quickSkipShortPlayCounts.firstOrNull { it.songId == songId }
+            if (existing == null) {
+                quickSkipShortPlayCounts += QuickSkipShortPlayEntity(songId = songId, count = 1, updatedAt = now)
+            } else {
+                val index = quickSkipShortPlayCounts.indexOf(existing)
+                quickSkipShortPlayCounts[index] = existing.copy(
+                    count = (existing.count.toLong() + 1L).coerceAtMost(Int.MAX_VALUE.toLong()).toInt(),
+                    updatedAt = now,
+                )
+            }
+        }
+
+        override suspend fun ensureWordPreference(word: String, now: Long) = Unit
+
+        override suspend fun addWordVotesDelta(
+            word: String,
+            likeDelta: Int,
+            dislikeDelta: Int,
+            now: Long,
+        ) = Unit
+
         override suspend fun upsertSongGroupOverrides(overrides: List<SongGroupOverrideEntity>) {
             songGroupOverrides.upsertItems(overrides) { it.songId }
         }
@@ -239,6 +267,12 @@ class QuickSkipSongsRepositoryRoomTest {
         override suspend fun deletePlaybackEventsForSongs(songIds: List<Int>) {
             // 测试 Fake 不建模 playback_events 表
         }
+        override suspend fun deletePlaybackEventsBefore(beforeMs: Long): Int = 0
+
+        override suspend fun emotionTableStat(): cn.com.dcsgo.mihx.domain.repository.EmotionTableStat =
+            cn.com.dcsgo.mihx.domain.repository.EmotionTableStat(count = 0, maxAnalyzedAt = 0L)
+
+        override suspend fun emotionRecentAnalyzedTimestamps(limit: Int): List<Long> = emptyList()
 
         override suspend fun deleteQuickSkipSongsFor(songIds: List<Int>) {
             quickSkipSongs.removeIf { it.songId in songIds }
@@ -299,9 +333,6 @@ class QuickSkipSongsRepositoryRoomTest {
         override suspend fun songEmotionVersions(): List<SongEmotionVersion> =
             songEmotions.map { SongEmotionVersion(it.songId, it.modelVersion) }
 
-        override suspend fun emotionAnalyzedTimeline(): List<Long> =
-            songEmotions.filter { it.windowsAnalyzed > 0 }
-                .sortedBy { it.analyzedAt }.map { it.analyzedAt }
 
         override suspend fun emotionCorrectionCount(): Int =
             songEmotions.count { !it.userTags.isNullOrEmpty() }

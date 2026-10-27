@@ -50,6 +50,7 @@ import cn.com.dcsgo.mihx.core.model.EmotionConfidenceLevel
 import cn.com.dcsgo.mihx.core.model.EmotionGroup
 import cn.com.dcsgo.mihx.core.model.SongEmotion
 import cn.com.dcsgo.mihx.core.model.emotionConfidenceLevelOf
+import cn.com.dcsgo.mihx.core.model.emotionDisplayOf
 import cn.com.dcsgo.mihx.core.model.emotionTagsOf
 import cn.com.dcsgo.mihx.core.model.emotionTagRatiosOf
 import cn.com.dcsgo.mihx.core.model.isUserCorrection
@@ -85,6 +86,14 @@ fun hasSignificantPeak(curve: List<Pair<Float, Float>>): Boolean {
     val a = curve.map { it.second }
     return a.max() > a.average().toFloat() + PEAK_MARGIN
 }
+
+/**
+ * 基准线虚线效果：**文件级常量**，只建一次。
+ *
+ * 评审 2026-10-27 · M-11：原先在 Canvas 的 draw lambda 里每帧新建
+ * `PathEffect.dashPathEffect(...)`——绘制阶段每帧一次分配。
+ */
+private val REF_LINE_DASH = androidx.compose.ui.graphics.PathEffect.dashPathEffect(floatArrayOf(10f, 10f))
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -142,10 +151,20 @@ fun SongEmotionSection(
     val controller = LocalEmotionCorrectionController.current
     var overrideEmotion by remember(emotion) { mutableStateOf<SongEmotion?>(null) }
     val shown = overrideEmotion ?: emotion
+    // 评审 2026-10-27 · M-11：**只投票一次**。
+    // 原先词条、词条占比、把握档位分别调 emotionTagsOf / emotionTagRatiosOf /
+    // emotionConfidenceLevelOf —— 每个都从头再投一遍票（同一条曲线一次组合投票
+    // 3~4 遍），每次访问 compensatedCurve 还会重建整条补偿曲线。
+    // 现在一次投票派生出三样结论（见 core/model 的 emotionDisplayOf）。
+    val display = remember(shown) { emotionDisplayOf(shown) }
+    // 「高潮是否显著」提到组合期并 remember（评审 2026-10-27 · M-11）：
+    // 原先它直接跑在 **Canvas 的绘制阶段**（每帧一次全曲线扫描 + List 分配），
+    // 而且同一份计算在画峰值圆点与图例文字处各算了一遍。
+    val hasPeak = remember(emotion.curve) { hasSignificantPeak(emotion.curve) }
     // 词条行(主展示) — 弹窗"原有"排也复用
-    val tags = emotionTagsOf(shown)
+    val tags = display.tags
     // 词条 + 各自占比(模型投票时就算出来了, 这里只是不再丢掉)
-    val tagRatios = emotionTagRatiosOf(shown)
+    val tagRatios = display.tagRatios
     Column(modifier = Modifier.fillMaxWidth()) {
         // 标题行: 「情绪」在左, 「不像？标记」在右(词条的上一行)
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -205,7 +224,7 @@ fun SongEmotionSection(
         // ① 票摊开 —— 模型自己也没把握
         // ② 票集中但冷暖词同现 —— 结论很确定, 但两极(「治愈 · emo」)
         // 两种对用户的含义不同, 文案也不能一样
-        val confidenceLevel = emotionConfidenceLevelOf(shown)
+        val confidenceLevel = display.confidence
         if (confidenceLevel != EmotionConfidenceLevel.HIGH) {
             Text(
                 text = when (confidenceLevel) {
@@ -230,16 +249,17 @@ fun SongEmotionSection(
         ) {
             // 画补偿后的曲线: 词条是按补偿后的曲线投票的, 图必须画同一份,
             // 否则"图上在这里、词条是那个"会对不上
-            val smoothed = smoothCurve(shown.compensatedCurve)
+            //
+            // 评审 2026-10-27 · M-11：平滑曲线提到组合期并 remember —— 原先
+            // smoothCurve 每次重组重算。
+            val smoothed = remember(shown) { smoothCurve(shown.compensatedCurve) }
             Canvas(modifier = Modifier.fillMaxSize()) {
                 val w = size.width
                 val h = size.height
                 val mid = h / 2f
                 val half = mid - 4f
                 // 基准线: 与歌曲属性文字同色(onSurfaceVariant), 深浅主题都可读
-                val dash = androidx.compose.ui.graphics.PathEffect.dashPathEffect(
-                    floatArrayOf(10f, 10f)
-                )
+                val dash = REF_LINE_DASH
                 val refColor = scheme.onSurfaceVariant
                 fun drawRef(y: Float, alpha: Float, widthDp: Float) {
                     val p = Path().apply {
@@ -270,7 +290,7 @@ fun SongEmotionSection(
                 // A 峰标记: 峰值显著高于均值才画(平缓歌的噪声尖不标)
                 if (
                     emotion.durationSec > 0f && emotion.windowsAnalyzed > 0 &&
-                    hasSignificantPeak(emotion.curve)
+                    hasPeak
                 ) {
                     val peakX = (emotion.peakSec / emotion.durationSec)
                         .coerceIn(0f, 1f) * w
@@ -301,7 +321,7 @@ fun SongEmotionSection(
             Spacer(modifier = Modifier.width(8.dp))
             val m = emotion.peakSec.toInt()
             Text(
-                text = if (hasSignificantPeak(emotion.curve)) {
+                text = if (hasPeak) {
                     "高潮 %02d:%02d".format(m / 60, m % 60)
                 } else {
                     "高潮：不明显"

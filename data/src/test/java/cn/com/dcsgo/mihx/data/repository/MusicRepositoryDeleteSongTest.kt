@@ -191,6 +191,10 @@ class MusicRepositoryDeleteSongTest {
         val songEmotions = mutableListOf<SongEmotionEntity>()
 
         override suspend fun songs(): List<SongEntity> = songs.sortedBy { it.id }
+
+        override suspend fun songIds(): List<Int> = songs.map { it.id }
+        override suspend fun songAlbumIds(): List<cn.com.dcsgo.mihx.data.local.dao.SongAlbumIdRow> =
+            songs.map { cn.com.dcsgo.mihx.data.local.dao.SongAlbumIdRow(it.id, it.albumId) }
         override suspend fun songCount(): Int = songs.size
         override suspend fun playlists(): List<PlaylistEntity> = playlists.sortedBy { it.id }
         override suspend fun playlistSongRefs(): List<PlaylistSongCrossRef> =
@@ -252,6 +256,30 @@ class MusicRepositoryDeleteSongTest {
         override suspend fun upsertQuickSkipSong(song: QuickSkipSongEntity) = upsertAll(quickSkipSongs, listOf(song)) { it.songId }
         override suspend fun upsertQuickSkipShortPlay(count: QuickSkipShortPlayEntity) =
             upsertAll(quickSkipShortPlayCounts, listOf(count)) { it.songId }
+
+        /** 原子自增短播放计数（评审 2026-10-27 · M-22 新增 DAO 方法）。 */
+        override suspend fun ensureQuickSkipShortPlay(songId: Int, now: Long) = Unit
+        override suspend fun incrementQuickSkipShortPlay(songId: Int, now: Long) {
+            val existing = quickSkipShortPlayCounts.firstOrNull { it.songId == songId }
+            if (existing == null) {
+                quickSkipShortPlayCounts += QuickSkipShortPlayEntity(songId = songId, count = 1, updatedAt = now)
+            } else {
+                val index = quickSkipShortPlayCounts.indexOf(existing)
+                quickSkipShortPlayCounts[index] = existing.copy(
+                    count = (existing.count.toLong() + 1L).coerceAtMost(Int.MAX_VALUE.toLong()).toInt(),
+                    updatedAt = now,
+                )
+            }
+        }
+
+        override suspend fun ensureWordPreference(word: String, now: Long) = Unit
+
+        override suspend fun addWordVotesDelta(
+            word: String,
+            likeDelta: Int,
+            dislikeDelta: Int,
+            now: Long,
+        ) = Unit
         override suspend fun upsertSongGroupOverrides(overrides: List<SongGroupOverrideEntity>) =
             upsertAll(songGroupOverrides, overrides) { it.songId }
         override suspend fun insertArtists(values: List<ArtistEntity>) { artists += values }
@@ -265,6 +293,12 @@ class MusicRepositoryDeleteSongTest {
         override suspend fun deleteQuickSkipShortPlay(songId: Int) { quickSkipShortPlayCounts.removeIf { it.songId == songId } }
         override suspend fun deletePlayStatsForSongs(songIds: List<Int>) { playStats.removeIf { it.songId in songIds } }
         override suspend fun deletePlaybackEventsForSongs(songIds: List<Int>) { playbackEvents.removeIf { it.songId in songIds } }
+        override suspend fun deletePlaybackEventsBefore(beforeMs: Long): Int { playbackEvents.removeIf { it.startedAtMs < beforeMs }; return 0 }
+
+        override suspend fun emotionTableStat(): cn.com.dcsgo.mihx.domain.repository.EmotionTableStat =
+            cn.com.dcsgo.mihx.domain.repository.EmotionTableStat(count = 0, maxAnalyzedAt = 0L)
+
+        override suspend fun emotionRecentAnalyzedTimestamps(limit: Int): List<Long> = emptyList()
         override suspend fun deleteQuickSkipSongsFor(songIds: List<Int>) { quickSkipSongs.removeIf { it.songId in songIds } }
         override suspend fun deleteQuickSkipShortPlaysFor(songIds: List<Int>) { quickSkipShortPlayCounts.removeIf { it.songId in songIds } }
         override suspend fun deleteSongEmotionsFor(songIds: List<Int>) { songEmotions.removeIf { it.songId in songIds } }
@@ -298,7 +332,6 @@ class MusicRepositoryDeleteSongTest {
         override suspend fun songIdsMissingVocalScore(): List<Int> = emptyList()
         override suspend fun songEmotionVersions(): List<SongEmotionVersion> =
             songEmotions.map { SongEmotionVersion(it.songId, it.modelVersion) }
-        override suspend fun emotionAnalyzedTimeline(): List<Long> = emptyList()
         override suspend fun emotionCorrectionCount(): Int = songEmotions.count { !it.userTags.isNullOrEmpty() }
         override suspend fun upsertSongEmotion(emotion: SongEmotionEntity) {
             songEmotions.removeAll { it.songId == emotion.songId }

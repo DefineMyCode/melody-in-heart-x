@@ -37,28 +37,26 @@ class WordPreferencesRepository(
         val effective = votes.filterValues { it > 0 }
         if (effective.isEmpty()) return
         withContext(Dispatchers.IO) {
-            val existing = melodyDao.allWordPreferences()
-                .associateBy { it.word }
             val now = System.currentTimeMillis()
-            val updates = effective.map { (word, weight) ->
-                val old = existing[word]
-                // 饱和加法: 票数撞到 Int 上限时**停在上限**, 不许溢出成负数 ——
-                // 负数会让 kind 判定静默翻转(票多者胜变成票少者胜), 比溢出本身更糟。
-                // 实际到不了(Int 上限 21 亿票 ≈ 118 年每天 100 首), 但这是纯逻辑,
-                // 票重或阈值将来一改就可能到, 所以在这里堵死。
-                //
-                // 注意必须用 **Long 中间值**: 先在 Int 里加再加, 溢出发生在加法那一步,
-                // 之后的 coerceAtMost 拦不住已经是负数的值(实测会漏成 -2147483554)。
-                fun addVotes(base: Int, delta: Int): Int =
-                    (base.toLong() + delta.toLong()).coerceAtMost(Int.MAX_VALUE.toLong()).toInt()
-                WordPreferenceEntity(
+            // 评审 2026-10-27 · M-22：改为**逐词原子增量**。
+            // 原实现「读整表 → 算新票数 → 整表 upsert」，两个并发的结算
+            // （跳过=不喜欢 / 听完=喜欢）会读到同一基数、后写覆盖先写 → 票数丢失，
+            // 探索播放的偏好归属会静默漂移。
+            //
+            // 饱和加法搬进 SQL：`MIN(x, 2147483647)` 让票数停在 Int 上限而不是溢出
+            // 成负数（负数会让「票多者胜」判定静默翻转，比溢出本身更糟）。
+            effective.forEach { (word, weight) ->
+                // 幂等建行（已存在则忽略）→ 语句级原子增量。
+                // 两步之间不会被别的调用插队破坏：行不存在时建空行，
+                // 增量语句本身是 SQL 级原子的（x = x + delta），无 lost update。
+                melodyDao.ensureWordPreference(word, now)
+                melodyDao.addWordVotesDelta(
                     word = word,
-                    likeVotes = addVotes(old?.likeVotes ?: 0, if (liked) weight else 0),
-                    dislikeVotes = addVotes(old?.dislikeVotes ?: 0, if (liked) 0 else weight),
-                    updatedAt = now,
+                    likeDelta = if (liked) weight else 0,
+                    dislikeDelta = if (liked) 0 else weight,
+                    now = now,
                 )
             }
-            melodyDao.upsertWordPreferences(updates)
         }
     }
 

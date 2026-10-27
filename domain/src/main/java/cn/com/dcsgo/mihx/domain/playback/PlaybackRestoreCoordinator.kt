@@ -27,8 +27,18 @@ data class RestoredPlayableSession(
     val sameNameSongs: List<Song>,
 )
 
+/**
+ * 播放状态持久化端口。
+ *
+ * 评审 2026-10-27 · N-1：全部改为 `suspend`。
+ *
+ * 原实现（`:player` 的 `PlaybackStateStore`）内部用 `runBlocking(Dispatchers.IO)`
+ * 把 DataStore 的挂起写包装成同步接口——于是**主线程可达**的路径（ViewModel
+ * `onCleared`、用户「清空播放队列」）会同步阻塞在磁盘写上。挂起化后由调用方
+ * 决定在哪个线程执行，主线程不再被阻塞。
+ */
 interface PlaybackStateStorage {
-    fun save(
+    suspend fun save(
         queue: PlayQueue,
         positionMs: Long,
         isInfinitePlay: Boolean = false,
@@ -37,9 +47,9 @@ interface PlaybackStateStorage {
         currentSongId: Int? = null,
     )
 
-    fun saveCurrentPlaybackSnapshot(songId: Int, positionMs: Long)
-    fun clear()
-    fun restore(allSongs: List<Song>): RestoredPlaybackState?
+    suspend fun saveCurrentPlaybackSnapshot(songId: Int, positionMs: Long)
+    suspend fun clear()
+    suspend fun restore(allSongs: List<Song>): RestoredPlaybackState?
 }
 
 fun interface PlaybackStateStorageFactory {
@@ -47,14 +57,14 @@ fun interface PlaybackStateStorageFactory {
 }
 
 interface PlaybackRestorer {
-    fun restore(allSongs: List<Song>): PlaybackRestoreResult?
+    suspend fun restore(allSongs: List<Song>): PlaybackRestoreResult?
 }
 
 class PlaybackRestoreCoordinator(
-    private val restoreState: (allSongs: List<Song>) -> RestoredPlaybackState?,
+    private val restoreState: suspend (allSongs: List<Song>) -> RestoredPlaybackState?,
     private val isPlayable: (Song) -> Boolean = { it.uri != null },
 ) : PlaybackRestorer {
-    override fun restore(allSongs: List<Song>): PlaybackRestoreResult? {
+    override suspend fun restore(allSongs: List<Song>): PlaybackRestoreResult? {
         val restored = restoreState(allSongs) ?: return null
         val queue = restored.queue
         val currentSong = queue.currentSong

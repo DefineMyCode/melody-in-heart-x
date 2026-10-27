@@ -496,6 +496,47 @@ object ProductArchitectureVerification {
                 coreModelResourceIds.joinToString("\n") { it.relativeTo(rootDir).path })
         }
 
+        // ── 分层不变量：:core:model 与 :domain 不得依赖 Android 框架 ──
+        //
+        // 评审 2026-10-27 · M-21：此前门禁只查「资源 / R id」，**没有**查源码里的
+        // `import android.*` —— 于是 CLAUDE.md 声明的「:domain 与 :core:model 不得有
+        // Android 框架依赖」既没被强制、也已被违反（android.net.Uri 泄漏进域边界）。
+        //
+        // 本规则按**棘轮（ratchet）**方式落地：现存违规列入基线白名单（不会立刻把
+        // 构建打红），但**新增**任何一处 `import android.*` 都会让构建失败。
+        // 待 Uri → String 的机械迁移完成后，把基线清空即可升级为完全禁止。
+        //
+        // 说明：`androidx.compose.runtime.{Stable,Immutable}` **不在本规则范围内** ——
+        // 它们是编译期稳定性注解（无运行时行为），且每个 Compose 消费模块自己都直接
+        // 依赖 compose-runtime，Compose 编译器在消费方编译期照常读取，稳定性推断不受影响。
+        val androidFrameworkImportRegex = Regex("""^\s*import\s+android\.[a-zA-Z.]+""", RegexOption.MULTILINE)
+        val pureLayerBaseline = setOf(
+            // ── 基线：待 Uri → String 迁移后移除 ──
+            "core/model/src/main/java/cn/com/dcsgo/mihx/core/model/AlbumEntry.kt",
+            "core/model/src/main/java/cn/com/dcsgo/mihx/core/model/ArtistEntry.kt",
+            "core/model/src/main/java/cn/com/dcsgo/mihx/core/model/Song.kt",
+            "domain/src/main/java/cn/com/dcsgo/mihx/domain/importing/FolderImporter.kt",
+            "domain/src/main/java/cn/com/dcsgo/mihx/domain/repository/MusicImportRepository.kt",
+        )
+        val pureLayerDirs = listOf("core/model/src/main", "domain/src/main")
+        val pureLayerAndroidImports = pureLayerDirs
+            .map { dirName -> file(dirName) }
+            .filter { it.exists() }
+            .flatMap { dir -> projectFiles(dir, setOf("kt", "java")).toList() }
+            .filter { source ->
+                androidFrameworkImportRegex.containsMatchIn(source.readText())
+            }
+            .map { it.relativeTo(rootDir).path.replace(File.separatorChar, '/') }
+            .filterNot { it in pureLayerBaseline }
+            .sorted()
+        if (pureLayerAndroidImports.isNotEmpty()) {
+            fail(
+                ":core:model and :domain must not depend on the Android framework (import android.*); " +
+                    "use plain value types (e.g. String instead of android.net.Uri) and parse at the :data/:player boundary:\n" +
+                    pureLayerAndroidImports.joinToString("\n")
+            )
+        }
+
         val directAndroidLogRegex = Regex("""\bLog\.(d|i|w|e|v|wtf)\s*\(""")
         val directAndroidLogs = textFiles.filter { file ->
             val relativePath = file.relativeTo(rootDir).path.replace(File.separatorChar, '/')
@@ -504,6 +545,38 @@ object ProductArchitectureVerification {
         }
         if (directAndroidLogs.isNotEmpty()) {
             fail("Use AppLog instead of direct android.util.Log calls:\n" + directAndroidLogs.joinToString("\n") { it.relativeTo(rootDir).path })
+        }
+
+        // ── 不变量：src/main 不得出现 runBlocking ──
+        //
+        // 评审 2026-10-27 · N-1：runBlocking 把挂起的磁盘 IO 传染给调用线程，
+        // 主线程可达的路径（ViewModel onCleared、用户「清空播放队列」）会**同步阻塞 UI**。
+        // domain 契约层与 :data 已彻底清零；`:player/PlaybackStateStore` 也已挂起化。
+        // 本规则防止回潮。
+        val runBlockingRegex = Regex("""\brunBlocking\s*\(""")
+        val runBlockingInMain = textFiles.filter { file ->
+            val relativePath = file.relativeTo(rootDir).path.replace(File.separatorChar, '/')
+            if (!relativePath.contains("/src/main/")) return@filter false
+            // 只看**代码**，不看注释：历史说明里常提到 runBlocking（如「旧实现 17 处
+            // runBlocking 桥」），那些是叙述不是调用。
+            file.readLines().any { line ->
+                val trimmed = line.trimStart()
+                val isCommentLine = trimmed.startsWith("//") ||
+                    trimmed.startsWith("*") ||
+                    trimmed.startsWith("/*")
+                if (isCommentLine) {
+                    false
+                } else {
+                    runBlockingRegex.containsMatchIn(line.substringBefore("//"))
+                }
+            }
+        }
+        if (runBlockingInMain.isNotEmpty()) {
+            fail(
+                "src/main must not use runBlocking (it blocks the calling thread on disk IO); " +
+                    "use suspend functions and let the caller pick the dispatcher:\n" +
+                    runBlockingInMain.joinToString("\n") { it.relativeTo(rootDir).path }
+            )
         }
 
         val appManifest = file("app/src/main/AndroidManifest.xml")

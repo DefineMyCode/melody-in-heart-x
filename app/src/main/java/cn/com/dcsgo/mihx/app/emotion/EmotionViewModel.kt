@@ -10,6 +10,7 @@ import androidx.work.WorkManager
 import cn.com.dcsgo.mihx.core.common.AppLog
 import cn.com.dcsgo.mihx.core.model.Song
 import cn.com.dcsgo.mihx.core.model.SongEmotion
+import cn.com.dcsgo.mihx.domain.repository.EmotionTableStat
 import cn.com.dcsgo.mihx.domain.repository.PlayerSettingsRepository
 import cn.com.dcsgo.mihx.domain.repository.SongEmotionRepository
 import cn.com.dcsgo.mihx.domain.repository.SongRepository
@@ -160,34 +161,43 @@ class EmotionViewModel @Inject constructor(
 
     private suspend fun buildStatus(sig: ScanSignal): Pair<EmotionScanUiStatus, List<EmotionSongRow>?> {
         // 仓库读是 runBlocking(IO) 桥, 主线程直调会卡 UI — 整体搬到 Default 线程
-        val (total, versions, timeline, correctedCount, failures) = withContext(Dispatchers.Default) {
-            val total = runCatching { songRepository.countSongs() }.getOrDefault(0)
-            val versions = runCatching { emotionRepository.analyzedVersions() }
-                .getOrDefault(emptyMap())
-            val timeline = runCatching { emotionRepository.analyzedTimeline() }
-                .getOrDefault(emptyList())
-            val correctedCount = runCatching { emotionRepository.correctionCount() }.getOrDefault(0)
-            val failures = runCatching { failureRepository.currentFailures() }
-                .getOrDefault(emptyMap())
-            RowSources(total, versions, timeline, correctedCount, failures)
-        }
+        //
+        // 评审 2026-10-27 · M-3：原先每次轮询读**两次整表**
+        // （analyzedVersions 的 songId→modelVersion 映射 + analyzedTimeline 的逐首时间戳），
+        // 1000 首库 = 每 2 秒物化 2000 行。现在改为读聚合（行数 + 最近分析时间）
+        // 与最近 N 条时间戳，轮询成本从 O(库大小) 降到 O(1)。
+        val (total, stat, recentTimestamps, correctedCount, failures) =
+            withContext(Dispatchers.Default) {
+                val total = runCatching { songRepository.countSongs() }.getOrDefault(0)
+                val stat = runCatching { emotionRepository.tableStat() }
+                    .getOrDefault(EmotionTableStat(count = 0, maxAnalyzedAt = 0L))
+                val recentTimestamps = runCatching { emotionRepository.recentAnalyzedTimestamps(RECENT_TIMELINE_LIMIT) }
+                    .getOrDefault(emptyList())
+                val correctedCount = runCatching { emotionRepository.correctionCount() }.getOrDefault(0)
+                val failures = runCatching { failureRepository.currentFailures() }
+                    .getOrDefault(emptyMap())
+                RowSources(total, stat, recentTimestamps, correctedCount, failures)
+            }
         // 相邻成功时间差=单首耗时近似; 间隔>10min 视为批次间空闲, 剔除
-        val durations = timeline.zipWithNext { a, b -> b - a }.filter { it in 1..600_000 }
+        // recentTimestamps 是降序, 反转成升序再算相邻差值
+        val durations = recentTimestamps.reversed()
+            .zipWithNext { a, b -> b - a }
+            .filter { it in 1..600_000 }
         val status = EmotionScanUiStatus(
-            analyzedCount = minOf(versions.size, total),
+            analyzedCount = minOf(stat.count, total),
             totalCount = total,
             scanning = sig.manualRunning || sig.periodicRunning,
             paused = sig.paused,
             currentSongTitle = sig.progress?.getString(EmotionScanWorker.KEY_PROGRESS_CURRENT),
             lastSongMs = durations.lastOrNull() ?: 0L,
+            // 近 N 首的平均耗时（原为全库平均；扫描中的统计意义等价，且不再整表物化）
             avgSongMs = if (durations.isNotEmpty()) durations.average().toLong() else 0L,
             correctedCount = correctedCount,
             failures = failures,
         )
-        // 指纹含情绪内容: versions(map 指纹=逐首 songId→modelVersion, 顺序无关)
-        // + timeline(逐首 analyzedAt) + failures(失败记录变化也要推到 UI)
-        val contentFingerprint = "${versions.hashCode()}|${timeline.hashCode()}|${failures.hashCode()}"
-        val key = "$total|${versions.size}|$correctedCount|${sig.paused}|${tick.value}|$contentFingerprint"
+        // 指纹含情绪内容: 表统计(行数 + 最近分析时间) + failures(失败记录变化也要推到 UI)
+        val contentFingerprint = "${stat.count}|${stat.maxAnalyzedAt}|${failures.hashCode()}"
+        val key = "$total|${stat.count}|$correctedCount|${sig.paused}|${tick.value}|$contentFingerprint"
         return if (key != lastRowsKey) {
             val rowList = runCatching { buildRows() }.getOrDefault(null)
             // 只有构建成功才提交新指纹: 失败保留旧 key, 下一个 tick 自动重试
@@ -201,8 +211,8 @@ class EmotionViewModel @Inject constructor(
     /** buildStatus 的仓库读取结果(集中在一个 withContext 里减少线程切换). */
     private data class RowSources(
         val total: Int,
-        val versions: Map<Int, String>,
-        val timeline: List<Long>,
+        val stat: EmotionTableStat,
+        val recentTimestamps: List<Long>,
         val correctedCount: Int,
         val failures: Map<Int, cn.com.dcsgo.mihx.domain.repository.EmotionFailure>,
     )
@@ -270,5 +280,14 @@ class EmotionViewModel @Inject constructor(
 
     fun resumeScan() {
         startManualScan()
+    }
+
+    companion object {
+        /**
+         * 轮询取最近多少条分析时间戳（评审 2026-10-27 · M-3）。
+         *
+         * 够算「上一首耗时」与「近 N 首平均耗时」，又不必整表物化。
+         */
+        private const val RECENT_TIMELINE_LIMIT = 20
     }
 }

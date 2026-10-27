@@ -14,7 +14,9 @@ import dagger.hilt.android.HiltAndroidApp
 class MelodyApplication : Application(), ImageLoaderFactory {
     override fun onCreate() {
         super.onCreate()
-        AppLog.install(AndroidAppLogger(BuildConfig.DEBUG))
+        // performanceLoggingEnabled = true：release 下普通日志全关，但
+        // `PerformanceTrace` 白名单登记的操作仍要输出（评审 2026-10-27 · M-20）。
+        AppLog.install(AndroidAppLogger(BuildConfig.DEBUG, performanceLoggingEnabled = true))
         installUncaughtExceptionHandler()
         EmotionScanScheduler.schedule(this)
     }

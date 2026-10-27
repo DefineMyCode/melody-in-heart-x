@@ -344,4 +344,63 @@ class MelodyDatabaseMigrationTest {
             }
         db.close()
     }
+
+    /**
+     * 评审 2026-10-27 · M-5 / M-6：v16 → v17 补两个缺失索引。
+     *
+     * - `index_songs_albumId`：专辑目录查询与孤儿专辑清理按 albumId 关联 songs，
+     *   缺索引就是整表扫描，而孤儿清理在每次持久化/删歌/去重时都跑；
+     * - `index_playback_events_songId`：`DELETE FROM playback_events WHERE songId IN (...)`
+     *   用 songId 等值过滤，而在原复合索引里 songId 排第三位、无法作为查找前缀。
+     *
+     * `runMigrationsAndValidate` 会把迁移结果与 17.json 逐表校验（索引全对齐），
+     * 迁移 SQL 与 @Entity 定义漂移即失败；这里再显式断言两个索引确实建出来了。
+     */
+    @Test
+    fun migration16To17AddsTheTwoMissingIndexes() {
+        val name = dbName("16-17")
+        helper.createDatabase(name, 16).apply {
+            execSQL(
+                "INSERT INTO songs (id, title, artist, album, sampleRate, importedAt, durationMs, " +
+                    "uri, displayName, mimeType, lastModified, size, sourceTreeUri, albumArtCacheUri) " +
+                    "VALUES (1, 'Song', 'Artist', 'Album', 44100, 1, 0, " +
+                    "NULL, 's.mp3', 'audio/mpeg', NULL, NULL, NULL, NULL)"
+            )
+            execSQL(
+                "INSERT INTO playback_events (songId, startedAtMs, durationMs, isEffectivePlay) " +
+                    "VALUES (1, 1000, 60000, 1)"
+            )
+            close()
+        }
+
+        val db = helper.runMigrationsAndValidate(name, 17, true, MelodyMigrations.MIGRATION_16_17)
+
+        assertTrue(indexExists(db, "songs", "index_songs_albumId"))
+        assertTrue(indexExists(db, "playback_events", "index_playback_events_songId"))
+        // 数据存续
+        db.query("SELECT COUNT(*) FROM songs").use { cursor ->
+            assertTrue(cursor.moveToFirst())
+            assertEquals(1, cursor.getInt(0))
+        }
+        db.query("SELECT COUNT(*) FROM playback_events").use { cursor ->
+            assertTrue(cursor.moveToFirst())
+            assertEquals(1, cursor.getInt(0))
+        }
+        db.close()
+    }
+
+    /** 表上是否存在指定索引。 */
+    private fun indexExists(
+        db: androidx.sqlite.db.SupportSQLiteDatabase,
+        table: String,
+        indexName: String,
+    ): Boolean {
+        db.query("PRAGMA index_list('$table')").use { cursor ->
+            val nameColumn = cursor.getColumnIndex("name")
+            while (cursor.moveToNext()) {
+                if (cursor.getString(nameColumn) == indexName) return true
+            }
+        }
+        return false
+    }
 }

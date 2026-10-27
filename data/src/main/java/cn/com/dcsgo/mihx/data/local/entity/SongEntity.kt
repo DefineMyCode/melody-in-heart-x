@@ -6,7 +6,14 @@ import androidx.room.PrimaryKey
 
 @Entity(
     tableName = "songs",
-    indices = [Index(value = ["uri"], unique = true)],
+    // uri 唯一索引：同一文件不重复入库。
+    // albumId 索引（评审 2026-10-27 · M-5）：专辑目录查询与「孤儿专辑清理」都按
+    // albumId 关联/扫描 songs 表，没有索引就是整表扫描；而孤儿清理在每次持久化
+    // 以及每次删歌/去重/文件校验时都会跑。
+    indices = [
+        Index(value = ["uri"], unique = true),
+        Index(value = ["albumId"]),
+    ],
 )
 data class SongEntity(
     @PrimaryKey val id: Int,

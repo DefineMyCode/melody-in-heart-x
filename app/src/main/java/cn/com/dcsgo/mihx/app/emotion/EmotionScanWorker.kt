@@ -12,7 +12,10 @@ import cn.com.dcsgo.mihx.player.EmotionAnalyzer
 import cn.com.dcsgo.mihx.domain.repository.SongEmotionRepository
 import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
+import java.util.concurrent.atomic.AtomicBoolean
 
 /**
  * 情绪批扫 Worker: 给曲库中未分析(或模型版本过期)的歌曲补 V/A 曲线.
@@ -69,57 +72,73 @@ class EmotionScanWorker(
         var done = 0
         var attempted = 0
         var pausedMidway = false
-        for (song in pending.take(batch)) {
-            if (isStopped) break
-            if (isPaused()) {
-                pausedMidway = true
-                AppLog.info(TAG, "scan paused at $attempted/$batch")
-                break
+
+        // 评审 2026-10-27 · M-2：暂停标志改为「订阅一次、循环内读内存」。
+        // 原实现每首歌都 `emotionScanPaused.first()` —— 一首一次 DataStore 磁盘读，
+        // 手动批扫 300 首 = 300 次磁盘读。订阅后由流推送，循环内零 IO，
+        // 且暂停依然在「当前歌曲跑完即停」这一拍生效。
+        val paused = AtomicBoolean(false)
+        coroutineScope {
+            val pauseWatcher = launch {
+                ep.settingsRepository().emotionScanPaused.collect { paused.set(it) }
             }
-            val uri = song.uri ?: continue
-            attempted++
-            setProgress(workDataOf(KEY_PROGRESS_CURRENT to song.title))
-            val t0 = System.currentTimeMillis()
-            AppLog.info(TAG, "analyzing [$attempted]: ${song.title} (songId=${song.id})")
-            val result = runCatching {
-                analyzer.analyze(
-                    songId = song.id,
-                    uri = uri,
-                    modelVersion = EmotionAnalyzer.MODEL_VERSION,
-                )
-            }.getOrElse { cn.com.dcsgo.mihx.domain.repository.EmotionAnalysisResult.Failure(
-                cn.com.dcsgo.mihx.domain.repository.EmotionFailureReason.INFERENCE_ERROR,
-            ) }
-            when (result) {
-                is cn.com.dcsgo.mihx.domain.repository.EmotionAnalysisResult.Success -> {
-                    // 批内可能发生用户删除该歌：写入前校验 song 仍在当前曲库，防孤儿情绪行/失败记录
-                    if (ep.musicRepository().observeSongsSnapshot().none { it.id == song.id }) {
-                        AppLog.info(TAG, "analyzed [$attempted]: ${song.title} gone from library, skip persist")
-                        continue
+            try {
+                for (song in pending.take(batch)) {
+                    if (isStopped) break
+                    if (paused.get()) {
+                        pausedMidway = true
+                        AppLog.info(TAG, "scan paused at $attempted/$batch")
+                        break
                     }
-                    ep.emotionRepository().upsert(result.emotion)
-                    failureRepo.clear(song.id)
-                    done++
-                    AppLog.info(
-                        TAG,
-                        "analyzed [$attempted]: ${song.title} ok in " +
-                            "${(System.currentTimeMillis() - t0) / 1000}s, " +
-                            "${result.emotion.windowsAnalyzed}w",
-                    )
-                }
-                is cn.com.dcsgo.mihx.domain.repository.EmotionAnalysisResult.Failure -> {
-                    if (ep.musicRepository().observeSongsSnapshot().none { it.id == song.id }) {
-                        AppLog.info(TAG, "analyzed [$attempted]: ${song.title} gone from library, skip failure record")
-                        continue
+                    val uri = song.uri ?: continue
+                    attempted++
+                    setProgress(workDataOf(KEY_PROGRESS_CURRENT to song.title))
+                    val t0 = System.currentTimeMillis()
+                    AppLog.info(TAG, "analyzing [$attempted]: ${song.title} (songId=${song.id})")
+                    val result = runCatching {
+                        analyzer.analyze(
+                            songId = song.id,
+                            uri = uri,
+                            modelVersion = EmotionAnalyzer.MODEL_VERSION,
+                        )
+                    }.getOrElse { cn.com.dcsgo.mihx.domain.repository.EmotionAnalysisResult.Failure(
+                        cn.com.dcsgo.mihx.domain.repository.EmotionFailureReason.INFERENCE_ERROR,
+                    ) }
+                    when (result) {
+                        is cn.com.dcsgo.mihx.domain.repository.EmotionAnalysisResult.Success -> {
+                            // 批内可能发生用户删除该歌：写入前校验 song 仍在当前曲库，防孤儿情绪行/失败记录。
+                            // M-2：改用 containsSong（无分配的 O(n) 判定），不再拷贝整份曲库。
+                            if (!ep.musicRepository().containsSong(song.id)) {
+                                AppLog.info(TAG, "analyzed [$attempted]: ${song.title} gone from library, skip persist")
+                                continue
+                            }
+                            ep.emotionRepository().upsert(result.emotion)
+                            failureRepo.clear(song.id)
+                            done++
+                            AppLog.info(
+                                TAG,
+                                "analyzed [$attempted]: ${song.title} ok in " +
+                                    "${(System.currentTimeMillis() - t0) / 1000}s, " +
+                                    "${result.emotion.windowsAnalyzed}w",
+                            )
+                        }
+                        is cn.com.dcsgo.mihx.domain.repository.EmotionAnalysisResult.Failure -> {
+                            if (!ep.musicRepository().containsSong(song.id)) {
+                                AppLog.info(TAG, "analyzed [$attempted]: ${song.title} gone from library, skip failure record")
+                                continue
+                            }
+                            failureRepo.record(song.id, result.reason)
+                            AppLog.warning(
+                                TAG,
+                                "analyzed [$attempted]: ${song.title} FAILED(${result.reason.name}) in " +
+                                    "${(System.currentTimeMillis() - t0) / 1000}s",
+                                null,
+                            )
+                        }
                     }
-                    failureRepo.record(song.id, result.reason)
-                    AppLog.warning(
-                        TAG,
-                        "analyzed [$attempted]: ${song.title} FAILED(${result.reason.name}) in " +
-                            "${(System.currentTimeMillis() - t0) / 1000}s",
-                        null,
-                    )
                 }
+            } finally {
+                pauseWatcher.cancel()
             }
         }
         AppLog.info(TAG, "scan batch done: $done/$attempted analyzed")
@@ -139,7 +158,7 @@ class EmotionScanWorker(
         return Result.success()
     }
 
-    /** 用户是否手动暂停批扫(协作式: 当前歌曲跑完即停). M-5: 改用情绪暂停流 first()，不再同步 runBlocking。 */
+    /** 用户是否手动暂停批扫(协作式: 当前歌曲跑完即停). M-2: 改为订阅式，循环内读内存缓存。 */
     private suspend fun isPaused(): Boolean = runCatching {
         EntryPointAccessors.fromApplication(
             applicationContext, EmotionScanEntryPoint::class.java

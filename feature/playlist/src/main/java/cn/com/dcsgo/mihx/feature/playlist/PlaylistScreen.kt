@@ -65,6 +65,7 @@ import cn.com.dcsgo.mihx.core.model.SongInfo
 import cn.com.dcsgo.mihx.ui.components.BatchAddToPlaylistDialog
 import cn.com.dcsgo.mihx.ui.components.SingleSongAddToPlaylistDialog
 import cn.com.dcsgo.mihx.ui.components.SongInfoDialog
+import cn.com.dcsgo.mihx.ui.components.loadSongInfoSafely
 import cn.com.dcsgo.mihx.ui.components.locateHighlightFlash
 import cn.com.dcsgo.mihx.ui.components.rememberLocateHighlightState
 import sh.calvin.reorderable.ReorderableItem
@@ -163,7 +164,8 @@ fun PlaylistScreen(
     LaunchedEffect(songForInfo) {
         val uri = songForInfo?.uri
         if (uri != null) {
-            songInfo = songForInfo?.let { loadSongInfo(it) }
+            // 评审 2026-10-27 · C-1：统一走兜底加载，Room 异常不再崩进程
+            songInfo = loadSongInfoSafely(loadSongInfo, songForInfo)
         }
     }
 
@@ -347,6 +349,38 @@ fun PlaylistScreen(
                         selectedTab = selectedLibraryTab,
                         onTabSelected = { selectedLibraryTab = it },
                     )
+                    // 评审 2026-10-27 · M-16：搜索过滤**记忆化**。
+                    // 原先每次重组都重跑一遍全量过滤，且每次产出**新的 List 实例**
+                    // → LazyColumn 永远看到新数据集、无法复用 item 状态。
+                    // 现在只在「数据或搜索词变化」时重算一次。
+                    val visiblePlaylists = remember(playlists, librarySearchQuery) {
+                        if (librarySearchQuery.isBlank()) {
+                            playlists
+                        } else {
+                            playlists.filter { playlist ->
+                                playlist.name.contains(librarySearchQuery, ignoreCase = true)
+                            }
+                        }
+                    }
+                    val visibleArtists = remember(libraryArtists, librarySearchQuery) {
+                        if (librarySearchQuery.isBlank()) {
+                            libraryArtists
+                        } else {
+                            libraryArtists.filter { artist ->
+                                artist.name.contains(librarySearchQuery, ignoreCase = true)
+                            }
+                        }
+                    }
+                    val visibleAlbums = remember(libraryAlbums, librarySearchQuery) {
+                        if (librarySearchQuery.isBlank()) {
+                            libraryAlbums
+                        } else {
+                            libraryAlbums.filter { album ->
+                                album.name.contains(librarySearchQuery, ignoreCase = true) ||
+                                    album.artistNames.any { it.contains(librarySearchQuery, ignoreCase = true) }
+                            }
+                        }
+                    }
                     when (selectedLibraryTab) {
                         LibraryTab.PLAYLISTS -> PlaylistListView(
                             playlists = playlists.filter { playlist ->

@@ -107,17 +107,21 @@ object LrcParser {
                 AppLog.debug(TAG, "SAF: found LRC via real path: $lrcPath")
                 return parseLrcFile(lrcFile)
             }
-            // 大小写不敏感
-            File(lrcPath.substringBeforeLast(".")).parentFile?.listFiles()?.forEach { f ->
+            // 大小写不敏感 / 模糊匹配
+            //
+            // 评审 2026-10-27 · N-11：两轮匹配原先各自 `listFiles()` 一次
+            // （大目录里每次都是重系统调用），第二轮还把第一轮看过的文件再过一遍。
+            // 现在列一次目录，两轮匹配复用同一份数组。
+            val siblings = File(lrcPath.substringBeforeLast(".")).parentFile?.listFiles().orEmpty()
+            siblings.forEach { f ->
                 if (f.name.equals(lrcFileName, ignoreCase = true)) {
                     AppLog.debug(TAG, "SAF: found LRC (case-insensitive) via real path: ${f.absolutePath}")
                     return parseLrcFile(f)
                 }
             }
-            // 模糊匹配
-            File(lrcPath.substringBeforeLast(".")).parentFile?.listFiles()
-                ?.filter { it.extension.equals("lrc", ignoreCase = true) }
-                ?.forEach { f ->
+            siblings
+                .filter { it.extension.equals("lrc", ignoreCase = true) }
+                .forEach { f ->
                     val lrcBase = f.nameWithoutExtension.lowercase()
                     if (lrcBase.contains(songNameBase) || songNameBase.contains(lrcBase)) {
                         AppLog.debug(TAG, "SAF: found LRC (fuzzy) via real path: ${f.absolutePath}")
@@ -273,16 +277,18 @@ object LrcParser {
             return parseLrcFile(lrcFile)
         }
 
-        // 2. 大小写不敏感匹配
-        parentDir.listFiles()?.forEach { file ->
+        // 2. 大小写不敏感匹配 / 3. 文件名模糊匹配
+        //
+        // 评审 2026-10-27 · N-11：两轮匹配共用一次目录列举。
+        val siblings = parentDir.listFiles().orEmpty()
+        siblings.forEach { file ->
             if (file.name.equals(lrcFileName, ignoreCase = true)) {
                 AppLog.debug(TAG, "Found LRC file (case-insensitive): ${file.absolutePath}")
                 return parseLrcFile(file)
             }
         }
 
-        // 3. 文件名模糊匹配
-        parentDir.listFiles()?.filter { it.extension.equals("lrc", ignoreCase = true) }?.forEach { file ->
+        siblings.filter { it.extension.equals("lrc", ignoreCase = true) }.forEach { file ->
             val lrcBase = file.nameWithoutExtension.lowercase()
             if (lrcBase.contains(songNameBase) || songNameBase.contains(lrcBase)) {
                 AppLog.debug(TAG, "Found LRC file (fuzzy): ${file.absolutePath}")

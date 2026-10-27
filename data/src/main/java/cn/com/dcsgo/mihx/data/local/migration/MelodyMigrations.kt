@@ -244,10 +244,37 @@ object MelodyMigrations {
         }
     }
 
+    /**
+     * 16 → 17：补两个缺失的索引（评审 2026-10-27 · M-5 / M-6）。
+     *
+     * - `index_songs_albumId`：专辑目录查询与「孤儿专辑清理」都按 albumId 关联
+     *   songs 表，缺索引就是整表扫描；而孤儿清理在每次持久化以及每次
+     *   删歌/去重/文件校验时都会跑。
+     * - `index_playback_events_songId`：`DELETE FROM playback_events WHERE
+     *   songId IN (...)` 用 songId 等值过滤，而在原复合索引
+     *   (startedAtMs, isEffectivePlay, songId) 里 songId 排第三位、无法作为
+     *   查找前缀 → 每次清理都是全表扫描。本表纯追加且从不清理，会无限增长。
+     *
+     * 只加索引、不改列，schema 导出由 Room 自动生成 17.json（既有 JSON 不可变）。
+     */
+    val MIGRATION_16_17 = object : Migration(16, 17) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL(
+                "CREATE INDEX IF NOT EXISTS `index_songs_albumId` " +
+                    "ON `songs` (`albumId`)",
+            )
+            db.execSQL(
+                "CREATE INDEX IF NOT EXISTS `index_playback_events_songId` " +
+                    "ON `playback_events` (`songId`)",
+            )
+        }
+    }
+
     /** 声明于末尾：object 属性按声明顺序初始化，需引用上方全部迁移 */
     val ALL: Array<Migration> = arrayOf(
         MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6,
         MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11,
         MIGRATION_11_12, MIGRATION_12_13, MIGRATION_13_14, MIGRATION_14_15, MIGRATION_15_16,
+        MIGRATION_16_17,
     )
 }

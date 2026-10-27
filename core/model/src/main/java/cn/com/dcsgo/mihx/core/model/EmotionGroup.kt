@@ -72,6 +72,14 @@ enum class EmotionGroup(
     val headline: String get() = words.first()
 
     companion object {
+        /**
+         * 参与「最近锚点」投票的自动组（[auto] == true）。
+         *
+         * 评审 2026-10-27 · M-11：投票循环的循环不变量，**只算一次**。
+         * 原实现每个曲线窗口都 `entries.filter { it.auto }` 分配一个新 List。
+         */
+        private val AUTO_GROUPS: List<EmotionGroup> by lazy { entries.filter { it.auto } }
+
         /** 所有词 → 组 的反查表(懒加载, 词不重复). */
         private val wordIndex: Map<String, EmotionGroup> by lazy {
             entries.flatMap { g -> g.words.map { it to g } }.toMap()
@@ -256,20 +264,34 @@ enum class EmotionGroup(
             anchors: Map<EmotionGroup, Pair<Float, Float>>,
         ): List<Pair<EmotionGroup, Float>> {
             if (curve.isEmpty()) return emptyList()
-            val votes = HashMap<EmotionGroup, Int>()
+            // 评审 2026-10-27 · M-11：把**循环不变量**提到循环外。
+            // 原实现每个窗口都做一次 `entries.filter { it.auto }`（每窗分配一个新 List）
+            // 与 9 次 `anchors.getValue(g)`（每窗每候选一次 map 查找）——
+            // 96 窗的曲线 = 96 次 List 分配 + 864 次哈希查找；
+            // 而情绪展示区一次组合要跑 3~4 遍投票（见 SongEmotionSection）。
+            // 现在候选组与锚点只解析一次，循环内零分配。
+            val candidates = AUTO_GROUPS.map { it to anchors.getValue(it) }
+            if (candidates.isEmpty()) return emptyList()
+            val votes = HashMap<EmotionGroup, Int>(candidates.size)
             var total = 0
             for ((v, a) in curve) {
                 if (kotlin.math.abs(v) < SongEmotion.LOW_CONF &&
                     kotlin.math.abs(a) < SongEmotion.LOW_CONF
                 ) continue
                 total++
-                val nearest = entries.filter { it.auto }.minByOrNull { g ->
-                    val p = anchors.getValue(g)
+                var nearest: EmotionGroup? = null
+                var bestDist = Float.MAX_VALUE
+                for ((g, p) in candidates) {
                     val dv = v - p.first
                     val da = a - p.second
-                    dv * dv + da * da
-                } ?: continue
-                votes[nearest] = (votes[nearest] ?: 0) + 1
+                    val dist = dv * dv + da * da
+                    if (dist < bestDist) {
+                        bestDist = dist
+                        nearest = g
+                    }
+                }
+                val winner = nearest ?: continue
+                votes[winner] = (votes[winner] ?: 0) + 1
             }
             if (total == 0) return emptyList()
             return votes.entries
@@ -303,7 +325,20 @@ enum class EmotionGroup(
             topN: Int = MAX_TAGS,
             minRatio: Float = MIN_RATIO,
         ): List<Pair<EmotionGroup, Float>> =
-            voteRatios(curve, anchors)
+            categoriesFrom(voteRatios(curve, anchors), topN, minRatio)
+
+        /**
+         * 从**已算好的投票**派生展示分类（评审 2026-10-27 · M-11）。
+         *
+         * 与 [categoriesFor] 同义，区别是不再重新投票——调用方若已有一份投票
+         * （如 [emotionDisplayOf]），直接复用，避免同一条曲线被反复投票。
+         */
+        fun categoriesFrom(
+            votes: List<Pair<EmotionGroup, Float>>,
+            topN: Int = MAX_TAGS,
+            minRatio: Float = MIN_RATIO,
+        ): List<Pair<EmotionGroup, Float>> =
+            votes
                 .filter { it.second >= minRatio }
                 .take(topN)
 

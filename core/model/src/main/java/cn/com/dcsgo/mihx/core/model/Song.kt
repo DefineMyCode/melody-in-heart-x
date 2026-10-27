@@ -47,13 +47,19 @@ data class Song(
      * 歌曲文件中的歌手属性可能包含多个歌手，通过 `/` 分隔（`/` 两边可能带空格）。
      * 例如 "A / B" → ["A", "B"]。无 `/` 时返回原始歌手。
      * 用于曲库歌手/专辑聚合与歌手详情关联，保证歌手为不可再拆的最小单位。
+     *
+     * 评审 2026-10-27 · M-13：原先是**每次访问都重新 split/map/filter** 的 getter，
+     * 而它被用作排序比较器的键选择器（每次比较都调一次）、也被放进库级过滤循环里
+     * ——1000 首库按歌手排序 ≈ 1 万次比较 × 约 4 次分配 ≈ 4 万个短命对象。
+     *
+     * 现在在**构造期算一次**并缓存。`private val` 不属于 data class 的
+     * `equals`/`hashCode`/`copy` 契约，data class 语义完全不变。
      */
-    val parsedArtists: List<String>
-        get() = artist
-            .split('/')
-            .map { it.trim() }
-            .filter { it.isNotEmpty() }
-            .ifEmpty { listOf(artist.trim()) }
+    val parsedArtists: List<String> = artist
+        .split('/')
+        .map { it.trim() }
+        .filter { it.isNotEmpty() }
+        .ifEmpty { listOf(artist.trim()) }
 
     /**
      * 分组键：同名歌曲共享同一个 groupKey。

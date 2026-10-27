@@ -437,6 +437,17 @@ internal class PlayerRuntime(
     @Volatile
     private var wordPreferenceCache: Map<String, WordPreference> = emptyMap()
 
+    /**
+     * 随心播放增强模式（缓存）。
+     *
+     * 评审 2026-10-27 · N-3：原先 `moodSlotEnabled` / `exploreModeEnabled` 每次
+     * 都对 DataStore 流 `.first()` —— **一次真实磁盘读**。而本类
+     * [observeMoodSlotCaches] 已经持续订阅了同一个 `randomEnhanceMode` 流，
+     * 缓存下来即可，零 IO 且与 UI 状态（`isExploreModeActive`）口径一致。
+     */
+    @Volatile
+    private var randomEnhanceModeCache: RandomEnhanceMode = RandomEnhanceMode.OFF
+
     private fun observeMoodSlotCaches() {
         scope.launch {
             timeSlotConfigRepository.observeConfigs()
@@ -474,6 +485,8 @@ internal class PlayerRuntime(
             playerSettingsRepository.randomEnhanceMode
                 .catch { AppLog.warning(TAG, "observe random enhance mode failed: ${it.message}") }
                 .collect { mode ->
+                    // N-3：缓存模式，供 moodSlotEnabled / exploreModeEnabled 零 IO 读取
+                    randomEnhanceModeCache = mode
                     val explore = mode == RandomEnhanceMode.EXPLORE
                     val changed = _uiState.value.isExploreModeActive != explore
                     _uiState.update { current ->
@@ -501,11 +514,13 @@ internal class PlayerRuntime(
         rawPlayCounts = playStatsRepository::getRawPlayCounts,
         log = { message -> AppLog.debug(TAG, message) },
         moodSlotConfigs = { moodSlotConfigsCache },
-        moodSlotEnabled = { playerSettingsRepository.randomEnhanceMode.first() == RandomEnhanceMode.TIME_SLOT },
-        moodEmotionTagsOf = { song -> moodEmotionRatiosCache[song.id]?.keys?.toList().orEmpty() },
+        // N-3：读缓存，不再每次 `.first()` 读 DataStore
+        moodSlotEnabled = { randomEnhanceModeCache == RandomEnhanceMode.TIME_SLOT },
+        // M-4：直接透传缓存的 key 视图（Set），零分配
+        moodEmotionTagsOf = { song -> moodEmotionRatiosCache[song.id]?.keys ?: emptySet() },
         // 时段匹配按占比卡门槛（见 MoodSlotPolicy.MATCH_MIN_RATIO）
         moodEmotionTagRatiosOf = { song -> moodEmotionRatiosCache[song.id].orEmpty() },
-        exploreModeEnabled = { playerSettingsRepository.randomEnhanceMode.first() == RandomEnhanceMode.EXPLORE },
+        exploreModeEnabled = { randomEnhanceModeCache == RandomEnhanceMode.EXPLORE },
         wordPreferenceOf = { word ->
             wordPreferenceCache[word] ?: WordPreference(word = word, likeVotes = 0, dislikeVotes = 0)
         },
@@ -565,8 +580,12 @@ internal class PlayerRuntime(
                     bluetoothPlaybackMonitoringEnabled = playerSettingsRepository.bluetoothPlaybackMonitoringEnabled.first(),
                     playbackNotificationEnabled = playerSettingsRepository.playbackNotificationEnabled.first(),
                     dailyListeningGoalMinutes = playerSettingsRepository.dailyListeningGoalMinutes.first(),
+                    // N-3：启动时读一次增强模式，之后由 observeMoodSlotCaches 的订阅保持新鲜。
+                    // 先读一次是为了消除「用户点『随心播放』早于订阅建立」的竞态窗口。
+                    randomEnhanceMode = playerSettingsRepository.randomEnhanceMode.first(),
                 )
             }
+            randomEnhanceModeCache = startupSettings.randomEnhanceMode
             _uiState.update {
                 it.copy(
                     globalUniformRandomEnabled = startupSettings.globalUniformRandomEnabled,
@@ -1067,6 +1086,7 @@ private data class StartupSettings(
     val bluetoothPlaybackMonitoringEnabled: Boolean,
     val playbackNotificationEnabled: Boolean,
     val dailyListeningGoalMinutes: Int,
+    val randomEnhanceMode: RandomEnhanceMode,
 )
 
 /**

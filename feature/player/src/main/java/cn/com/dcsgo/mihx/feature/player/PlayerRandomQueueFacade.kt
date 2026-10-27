@@ -36,7 +36,14 @@ class PlayerRandomQueueFacade(
     private val moodSlotResolver: MoodSlotResolver = MoodSlotResolver(),
     private val moodSlotConfigs: () -> List<cn.com.dcsgo.mihx.core.model.TimeSlotConfig> = { emptyList() },
     private val moodSlotEnabled: suspend () -> Boolean = { false },
-    private val moodEmotionTagsOf: (Song) -> List<String> = { emptyList() },
+    /**
+     * 歌曲的情绪词条。
+     *
+     * 评审 2026-10-27 · M-4：类型从 `List<String>` 改为 `Set<String>`——调用方
+     * 只做成员判定（`in`），用 List 会被迫每次 `toList()` 分配一份新列表。
+     * `Set` 允许直接透传缓存里的 `Map.keys` 视图，**零分配**。
+     */
+    private val moodEmotionTagsOf: (Song) -> Set<String> = { emptySet() },
     /**
      * 时段匹配用的**词条占比**（词 -> 在整曲里占的比例）。
      *
@@ -306,10 +313,17 @@ class PlayerRandomQueueFacade(
      * @param excludeIds 已在播放队列里的歌（补歌不能重复补它们）
      */
     private fun buildExploreRefillPool(songs: List<Song>, excludeIds: Set<Int>): List<Song> {
+        // 评审 2026-10-27 · M-4：词条**只派生一次**。
+        // 原实现对全库做 3 遍派生（flatMap 一遍 + 两个 filter 各一遍），
+        // 每遍都重新取一次词条；取词条本身虽已走缓存，但每次仍要新建一份 List。
+        // 探索播放每约 5 首触发一次补歌 → 每次 3 × 全库次分配。
+        // 现在一次派生、全程复用：tagsBySong 的值直接是缓存里的 key 视图，零分配。
+        val tagsBySong = songs.associate { it.id to moodEmotionTagsOf(it) }
+
         val likedWords = mutableSetOf<String>()
         val dislikedWords = mutableSetOf<String>()
         val neutralWords = mutableSetOf<String>()
-        (songs.flatMap { moodEmotionTagsOf(it) }).distinct().forEach { word ->
+        tagsBySong.values.flatten().distinct().forEach { word ->
             when (wordPreferenceOf(word).kind) {
                 WordPreferenceKind.LIKE -> likedWords += word
                 WordPreferenceKind.DISLIKE -> dislikedWords += word
@@ -328,7 +342,7 @@ class PlayerRandomQueueFacade(
         }
 
         val likedAndNoDislike = candidates.filter { song ->
-            val tags = moodEmotionTagsOf(song)
+            val tags = tagsBySong[song.id].orEmpty()
             tags.any { it in likedWords } && tags.none { it in dislikedWords }
         }
         if (likedAndNoDislike.size >= need) {
@@ -337,7 +351,7 @@ class PlayerRandomQueueFacade(
         }
 
         val noDislike = candidates.filter { song ->
-            moodEmotionTagsOf(song).none { it in dislikedWords }
+            tagsBySong[song.id].orEmpty().none { it in dislikedWords }
         }
         if (noDislike.size >= need) {
             log("explore refill: pool=${noDislike.size} (no-dislike only, no liked match)")

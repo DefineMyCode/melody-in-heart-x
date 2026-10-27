@@ -5,6 +5,7 @@ import cn.com.dcsgo.mihx.core.model.Song
 import cn.com.dcsgo.mihx.domain.playback.PlaybackRestoreCoordinator
 import cn.com.dcsgo.mihx.domain.playback.PlaybackStateStorage
 import cn.com.dcsgo.mihx.domain.playback.RestoredPlaybackState
+import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
@@ -20,7 +21,8 @@ class PlayerPersistenceFacadeTest {
     private var preparedQueue: PlayQueue? = null
     private var preparedIndex: Int? = null
     private var preparedPositionMs: Long? = null
-    private val launchedTasks = mutableListOf<() -> Unit>()
+    // 评审 2026-10-27 · N-1：launchIo 入参改为挂起函数（底层存储已全部挂起化）
+    private val launchedTasks = mutableListOf<suspend () -> Unit>()
     private val logs = mutableListOf<String>()
     private val facade = PlayerPersistenceFacade(
         state = { state },
@@ -42,7 +44,7 @@ class PlayerPersistenceFacadeTest {
     )
 
     @Test
-    fun savePlaybackStateAsyncCapturesCurrentPositionBeforeLaunching() {
+    fun savePlaybackStateAsyncCapturesCurrentPositionBeforeLaunching() = runBlocking {
         currentPositionMs = 42L
         state = state.copy(playQueue = PlayQueue().setQueue(songs(1), startIndex = 0))
 
@@ -55,7 +57,7 @@ class PlayerPersistenceFacadeTest {
     }
 
     @Test
-    fun clearPlaybackStateRemovesSavedQueue() {
+    fun clearPlaybackStateRemovesSavedQueue() = runBlocking {
         state = state.copy(playQueue = PlayQueue().setQueue(songs(1), startIndex = 0))
         facade.savePlaybackState(positionMs = 10L)
 
@@ -65,7 +67,7 @@ class PlayerPersistenceFacadeTest {
     }
 
     @Test
-    fun restorePlaybackStateAppliesQueueAndPreparedSession() {
+    fun restorePlaybackStateAppliesQueueAndPreparedSession() = runBlocking {
         val allSongs = listOf(
             song(1, title = "Song", sampleRate = 44_100),
             song(2, title = "Song", sampleRate = 96_000),
@@ -94,7 +96,7 @@ class PlayerPersistenceFacadeTest {
     }
 
     @Test
-    fun applyRestoreResultRestoresUiQueueButSkipsControllerWhenLiveSessionActive() {
+    fun applyRestoreResultRestoresUiQueueButSkipsControllerWhenLiveSessionActive() = runBlocking {
         // live session 场景（息屏/后台回来、服务仍在播）：不得重建控制器队列，
         // 否则会把正在播放的会话覆盖成快照位置、进度回退。
         // 但 UI 侧的队列与歌曲数据**仍必须恢复**——controller 的 snapshot 同步只调整
@@ -134,7 +136,7 @@ class PlayerPersistenceFacadeTest {
     }
 
     @Test
-    fun restorePlaybackStateAppliesInfinitePlayState() {
+    fun restorePlaybackStateAppliesInfinitePlayState() = runBlocking {
         val allSongs = songs(1, 2, 3)
         val queue = PlayQueue().setQueue(allSongs.take(2), startIndex = 0)
         state = state.copy(
@@ -159,7 +161,7 @@ class PlayerPersistenceFacadeTest {
     }
 
     @Test
-    fun savePlaybackStatePersistsCurrentSongEvenWhenQueueIndexIsStale() {
+    fun savePlaybackStatePersistsCurrentSongEvenWhenQueueIndexIsStale() = runBlocking {
         val allSongs = songs(1, 2)
         state = state.copy(
             songs = allSongs,
@@ -193,7 +195,7 @@ class PlayerPersistenceFacadeTest {
     private class InMemoryPlaybackStateStorage : PlaybackStateStorage {
         private var saved: SavedPlaybackState? = null
 
-        override fun save(
+        override suspend fun save(
             queue: PlayQueue,
             positionMs: Long,
             isInfinitePlay: Boolean,
@@ -237,7 +239,7 @@ class PlayerPersistenceFacadeTest {
             )
         }
 
-        override fun saveCurrentPlaybackSnapshot(songId: Int, positionMs: Long) {
+        override suspend fun saveCurrentPlaybackSnapshot(songId: Int, positionMs: Long) {
             saved = SavedPlaybackState(
                 queue = saved?.queue ?: PlayQueue(),
                 positionMs = positionMs.coerceAtLeast(0L),
@@ -248,11 +250,11 @@ class PlayerPersistenceFacadeTest {
             )
         }
 
-        override fun clear() {
+        override suspend fun clear() {
             saved = null
         }
 
-        override fun restore(allSongs: List<Song>): RestoredPlaybackState? {
+        override suspend fun restore(allSongs: List<Song>): RestoredPlaybackState? {
             val snapshot = saved ?: return null
             val availableSongs = allSongs.associateBy { it.id }
             val queueSongs = snapshot.queue.songs.mapNotNull { availableSongs[it.id] }

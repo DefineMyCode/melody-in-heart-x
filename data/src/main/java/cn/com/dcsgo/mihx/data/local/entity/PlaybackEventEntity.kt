@@ -13,10 +13,18 @@ import androidx.room.PrimaryKey
  *
  * 索引 ([startedAtMs], [isEffectivePlay], [songId]) 覆盖全部按时间范围聚合的查询
  * （时长 / 去重歌数 / 逐日时长 / 歌曲榜），其中 TOP 榜查询可完全由索引覆盖。
+ *
+ * 另有 [songId] 单列索引（评审 2026-10-27 · M-6）：`DELETE FROM playback_events
+ * WHERE songId IN (...)`（删歌/去重/文件校验时清理关联数据）用 songId 等值过滤，
+ * 而在复合索引里 songId 排第三位、无法作为查找前缀 → 每次清理都是全表扫描。
+ * 而本表是纯追加的、从不清理，会随应用生命周期无限增长，扫描成本随之放大。
  */
 @Entity(
     tableName = "playback_events",
-    indices = [Index(value = ["startedAtMs", "isEffectivePlay", "songId"])],
+    indices = [
+        Index(value = ["startedAtMs", "isEffectivePlay", "songId"]),
+        Index(value = ["songId"]),
+    ],
 )
 data class PlaybackEventEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0L,

@@ -4,12 +4,14 @@ import cn.com.dcsgo.mihx.core.model.SongEmotion
 import cn.com.dcsgo.mihx.data.local.dao.MelodyDao
 import cn.com.dcsgo.mihx.data.local.entity.SongEmotionEntity
 import cn.com.dcsgo.mihx.data.local.entity.SongEmotionLite
+import cn.com.dcsgo.mihx.domain.repository.EmotionTableStat
 import cn.com.dcsgo.mihx.domain.repository.SongEmotionRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import org.json.JSONArray
+import java.util.concurrent.ConcurrentHashMap
 
 /**
  * 歌曲情绪仓库: Room song_emotions 表唯一数据源.
@@ -26,12 +28,70 @@ class SongEmotionsRepository(
     private val melodyDao: MelodyDao,
 ) : SongEmotionRepository {
 
+    /**
+     * 已解析曲线缓存：songId -> (analyzedAt, 曲线)。
+     *
+     * 评审 2026-10-27 · M-1：Room 的失效跟踪器在 `song_emotions` 任意一行变化时
+     * **重发整表**。批扫是「一首一首写」，于是 300 首 × 1000 首库 = 30 万次
+     * 曲线 JSON 重解析（每次重发都要把整表每行的 `curveJson` 重新 `JSONArray`）。
+     *
+     * `analyzedAt` 是行的分析时间戳——行没变它就不变，据此判定缓存是否可复用：
+     * 未变的行直接复用已解析曲线，**每次重发只有新写入的那一行需要解析**。
+     */
+    private val parsedCurveCache = ConcurrentHashMap<Int, ParsedCurve>()
+
+    private data class ParsedCurve(
+        val analyzedAt: Long,
+        val curve: List<Pair<Float, Float>>,
+    )
+
+    /**
+     * 曲线解析缓存（评审 2026-10-27 · M-1）。
+     *
+     * 行未变（`analyzedAt` 相同）→ 直接复用已解析曲线；变了才重新 `JSONArray` 解析。
+     * 用户校准（[updateSongEmotionCorrection]）不改 `analyzedAt` 也不改曲线，
+     * 因此校准后缓存依然有效。
+     */
+    private fun String.cachedCurve(songId: Int, analyzedAt: Long): List<Pair<Float, Float>> {
+        val cached = parsedCurveCache[songId]
+        if (cached != null && cached.analyzedAt == analyzedAt) return cached.curve
+        val parsed = parseCurve(this)
+        parsedCurveCache[songId] = ParsedCurve(analyzedAt, parsed)
+        return parsed
+    }
+
+    /**
+     * 轻量投影 → 域模型（**不含 embedding**，P0 2026-10-24）。
+     *
+     * embedding 为 null 是刻意的：读路径的消费者（情绪词条缓存/曲库情绪 Tab/时段统计）
+     * 都不读 embedding，整库解码会物化上百 MB。需要 embedding 时走整行读 [SongEmotionEntity.toDomain]。
+     *
+     * 曲线走 [parsedCurveCache]（评审 2026-10-27 · M-1）：行未变则复用已解析结果。
+     */
+    private fun SongEmotionLite.liteToDomain(): SongEmotion = SongEmotion(
+        songId = songId,
+        valence = valence,
+        arousal = arousal,
+        curve = curveJson.cachedCurve(songId, analyzedAt),
+        peakSec = peakSec,
+        windowsAnalyzed = windowsAnalyzed,
+        durationSec = durationSec,
+        modelVersion = modelVersion,
+        analyzedAt = analyzedAt,
+        embedding = null,
+        userValence = userValence,
+        userArousal = userArousal,
+        userTags = parseTags(userTags),
+        userTagsEdited = userTagsEdited,
+        vocalScore = vocalScore,
+    )
+
     override suspend fun get(songId: Int): SongEmotion? = withContext(Dispatchers.IO) {
         melodyDao.songEmotion(songId)?.toDomain()
     }
 
     override suspend fun getAll(): Map<Int, SongEmotion> = withContext(Dispatchers.IO) {
-        melodyDao.allSongEmotions().associate { it.songId to it.toDomainLite() }
+        melodyDao.allSongEmotions().associate { it.songId to it.liteToDomain() }
     }
 
     override suspend fun analyzedVersions(): Map<Int, String> = withContext(Dispatchers.IO) {
@@ -44,11 +104,20 @@ class SongEmotionsRepository(
 
     override fun observeAll(): Flow<Map<Int, SongEmotion>> =
         melodyDao.observeAllSongEmotions().map { rows ->
-            rows.associate { it.songId to it.toDomainLite() }
+            val result = rows.associate { it.songId to it.liteToDomain() }
+            // 清理已删除歌曲的缓存条目，避免无限增长
+            if (parsedCurveCache.size > result.size) {
+                parsedCurveCache.keys.retainAll(result.keys)
+            }
+            result
+        }
+
+    override suspend fun tableStat(): EmotionTableStat = withContext(Dispatchers.IO) {
+        melodyDao.emotionTableStat()
     }
 
-    override suspend fun analyzedTimeline(): List<Long> = withContext(Dispatchers.IO) {
-        melodyDao.emotionAnalyzedTimeline()
+    override suspend fun recentAnalyzedTimestamps(limit: Int): List<Long> = withContext(Dispatchers.IO) {
+        melodyDao.emotionRecentAnalyzedTimestamps(limit)
     }
 
     override suspend fun correctionCount(): Int = withContext(Dispatchers.IO) {
@@ -172,30 +241,6 @@ private fun SongEmotionEntity.toDomain(): SongEmotion = SongEmotion(
     modelVersion = modelVersion,
     analyzedAt = analyzedAt,
     embedding = decodeEmbedding(embeddingB64),
-    userValence = userValence,
-    userArousal = userArousal,
-    userTags = parseTags(userTags),
-    userTagsEdited = userTagsEdited,
-    vocalScore = vocalScore,
-)
-
-/**
- * 轻量投影 → 域模型（**不含 embedding**，P0 2026-10-24）。
- *
- * embedding 为 null 是刻意的：读路径的消费者（情绪词条缓存/曲库情绪 Tab/时段统计）
- * 都不读 embedding，整库解码会物化上百 MB。需要 embedding 时走整行读 [SongEmotionEntity.toDomain]。
- */
-private fun SongEmotionLite.toDomainLite(): SongEmotion = SongEmotion(
-    songId = songId,
-    valence = valence,
-    arousal = arousal,
-    curve = parseCurve(curveJson),
-    peakSec = peakSec,
-    windowsAnalyzed = windowsAnalyzed,
-    durationSec = durationSec,
-    modelVersion = modelVersion,
-    analyzedAt = analyzedAt,
-    embedding = null,
     userValence = userValence,
     userArousal = userArousal,
     userTags = parseTags(userTags),

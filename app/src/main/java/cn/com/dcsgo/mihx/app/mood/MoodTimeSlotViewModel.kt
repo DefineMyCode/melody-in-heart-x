@@ -76,6 +76,21 @@ class MoodTimeSlotViewModel @Inject constructor(
     private var emotionRatios: Map<Int, Map<String, Float>> = emptyMap()
 
     /**
+     * 匹配数缓存：词条集合 → 命中歌曲数。
+     *
+     * 评审 2026-10-27 · M-15：`matchCount` 是**全库扫描**（每首歌的词条占比表
+     * 都过一遍），而调用点在组合期：
+     *  - 配置页每张时段卡都调一次 → 每次重组重算「时段数 × 全库」；
+     *  - 编辑弹窗里 `name` 绑在 `OutlinedTextField` 上，**每敲一个字符**就重组
+     *    一次 → 每敲一个字做一次全库扫描。
+     *
+     * 缓存以「词条集合」为键：同一个词条组合的结果在数据不变时是恒定的，
+     * 而编辑弹窗的**打字并不改变词条集合** → 缓存直接命中，逐击键的扫描消失。
+     * 数据变化（[loadStats] 重算占比表）时整体失效。
+     */
+    private val matchCountCache = HashMap<Set<String>, Int>()
+
+    /**
      * 按选中的词条算出**实际会进入随机池**的歌曲数。
      *
      * 判定与播放时完全一致（同一个 [MoodSlotPolicy.MATCH_MIN_RATIO] 门槛）——
@@ -83,11 +98,18 @@ class MoodTimeSlotViewModel @Inject constructor(
      */
     fun matchCount(tags: Set<String>): Int {
         if (tags.isEmpty()) return 0
-        return emotionRatios.values.count { ratios ->
+        synchronized(matchCountCache) {
+            matchCountCache[tags]?.let { return it }
+        }
+        val count = emotionRatios.values.count { ratios ->
             ratios.any { (word, ratio) ->
                 word in tags && ratio >= MoodSlotPolicy.MATCH_MIN_RATIO
             }
         }
+        synchronized(matchCountCache) {
+            matchCountCache[tags] = count
+        }
+        return count
     }
 
     /** 进入配置页时调用：一次性计算词条歌曲数与曲库规模 */
@@ -112,6 +134,8 @@ class MoodTimeSlotViewModel @Inject constructor(
                     Triple(sorted, ratios, size)
                 }
                 emotionRatios = ratios
+                // 占比表换了 → 之前的匹配数全部失效
+                synchronized(matchCountCache) { matchCountCache.clear() }
                 _tagCounts.value = counts
                 _librarySize.value = size
             } catch (e: Exception) {

@@ -163,7 +163,9 @@ class PlayStatsRepository(
             }
             // M-4（评审 2026-10-15）：先过滤孤儿行（songId 不在曲库，如旧版本删歌残留）再 take(N)，
             // 否则孤儿行挤占 Top 名额，真实歌曲被顶出榜单。
-            val knownSongIds = melodyDao.songs().mapTo(mutableSetOf()) { it.id }
+            // 评审 2026-10-27 · N-8：只取 id 列（`songs()` 是 SELECT *，
+            // 为了拿一个 id 集合会把每首歌的全部列物化进内存）。
+            val knownSongIds = melodyDao.songIds().toMutableSet()
             val weeklyTop = melodyDao.playCountsBetween(startOfDay(weekStart), nowMs)
                 .filter { it.songId in knownSongIds }
                 .take(PlaybackStatsSnapshot.WEEKLY_TOP_SIZE)

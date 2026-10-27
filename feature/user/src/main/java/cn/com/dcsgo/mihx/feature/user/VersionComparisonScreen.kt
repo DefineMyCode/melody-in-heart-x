@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import cn.com.dcsgo.mihx.core.model.Song
 import cn.com.dcsgo.mihx.core.model.SongInfo
 import cn.com.dcsgo.mihx.domain.playback.SongVersionComparer
+import cn.com.dcsgo.mihx.ui.components.loadSongInfoSafely
 
 // ─────────────────────────────────────────────────────────────────
 // 版本对比页容器：基准切换 + 差异总览 + 规格表 + 文件路径 + A/B 聆听
@@ -64,7 +65,7 @@ fun VersionComparisonScreen(
         val loaded = buildMap {
             songs.forEach { song ->
                 song.uri?.let {
-                    loadSongInfo(song)?.let { info -> put(song.id, info) }
+                    loadSongInfoSafely(loadSongInfo, song)?.let { info -> put(song.id, info) }
                 }
             }
         }

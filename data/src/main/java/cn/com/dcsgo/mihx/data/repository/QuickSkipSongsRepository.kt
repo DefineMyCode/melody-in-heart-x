@@ -3,7 +3,6 @@ package cn.com.dcsgo.mihx.data.repository
 import cn.com.dcsgo.mihx.core.common.AppLog
 import cn.com.dcsgo.mihx.data.local.dao.MelodyDao
 import cn.com.dcsgo.mihx.data.local.entity.QuickSkipSongEntity
-import cn.com.dcsgo.mihx.data.local.entity.QuickSkipShortPlayEntity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -65,16 +64,16 @@ class QuickSkipSongsRepository(
     }?.count ?: 0
 
     override suspend fun incrementShortPlayCount(songId: Int): Int {
-        val newCount = getShortPlayCount(songId) + 1
+        // 评审 2026-10-27 · M-22：改为 SQL 级原子自增。原实现「读 → +1 → 整行 upsert」
+        // 在并发下会丢一次计数（后写覆盖先写），推迟「累计 2 次自动加入秒切列表」。
+        //
+        // 两步：幂等建行（已存在则忽略）→ 语句级原子自增（count = count + 1）。
+        val now = System.currentTimeMillis()
         withContext(Dispatchers.IO) {
-            melodyDao.upsertQuickSkipShortPlay(
-                QuickSkipShortPlayEntity(
-                    songId = songId,
-                    count = newCount,
-                    updatedAt = System.currentTimeMillis(),
-                )
-            )
+            melodyDao.ensureQuickSkipShortPlay(songId, now)
+            melodyDao.incrementQuickSkipShortPlay(songId, now)
         }
+        val newCount = getShortPlayCount(songId)
         AppLog.debug(TAG, "incrementShortPlayCount: songId=$songId, count=$newCount in Room")
         return newCount
     }

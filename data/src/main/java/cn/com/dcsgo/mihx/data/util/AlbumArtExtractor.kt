@@ -14,6 +14,9 @@ import java.io.FileOutputStream
 import java.security.MessageDigest
 import java.util.concurrent.atomic.AtomicInteger
 
+/** 十六进制查表（评审 2026-10-27 · N-12）。 */
+private const val HEX_DIGITS = "0123456789abcdef"
+
 private const val TAG = "AlbumArtExtractor"
 private const val CACHE_DIR_NAME = "album_art"
 private const val TARGET_ALBUM_ART_PX = 512
@@ -197,7 +200,13 @@ object AlbumArtExtractor {
     /** 封面原始字节的内容哈希（SHA-1），用作按内容去重的缓存文件名 */
     private fun contentHash(bytes: ByteArray): String {
         val digest = MessageDigest.getInstance("SHA-1").digest(bytes)
-        return digest.joinToString("") { "%02x".format(it.toInt() and 0xFF) }
+        // 评审 2026-10-27 · N-12：查表拼十六进制，不再逐字节 `String.format`
+        // （每个封面 40 次 format → 40 个 Formatter 分配，且 format 未指定 Locale、
+        //  在非 ASCII 数字 locale 下会渲染出本地化数字）。
+        return digest.joinToString("") { byte ->
+            val v = byte.toInt() and 0xFF
+            "${HEX_DIGITS[v ushr 4]}${HEX_DIGITS[v and 0x0F]}"
+        }
     }
 
     /**

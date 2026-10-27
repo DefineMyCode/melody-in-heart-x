@@ -50,6 +50,7 @@ import cn.com.dcsgo.mihx.core.model.SongInfo
 import cn.com.dcsgo.mihx.ui.components.BatchAddToPlaylistDialog
 import cn.com.dcsgo.mihx.ui.components.SingleSongAddToPlaylistDialog
 import cn.com.dcsgo.mihx.ui.components.SongInfoDialog
+import cn.com.dcsgo.mihx.ui.components.loadSongInfoSafely
 
 /**
  * 歌手详情页
@@ -96,7 +97,7 @@ fun ArtistDetailScreen(
     LaunchedEffect(songForInfo) {
         val uri = songForInfo?.uri
         if (uri != null) {
-            songInfo = songForInfo?.let { loadSongInfo(it) }
+            songInfo = loadSongInfoSafely(loadSongInfo, songForInfo)
         }
     }
 
@@ -373,6 +374,13 @@ fun ArtistDetailRoute(
     loadSongInfo: suspend (Song) -> SongInfo? = { null },
     showToast: (String) -> Unit = {},
 ) {
+    // 评审 2026-10-27 · M-17：点击时的「同歌手歌曲」上下文**记忆化**。
+    // 原先在 onSongClick 里每次点击都全库 filter 一遍（每首歌一次 parsedArtists 判定），
+    // 而 Screen 内部早就用同样的条件算过一次（remember(songs, artistName)）。
+    // 现在在 Route 层算一次，点击直接复用。
+    val artistSongs = remember(state.songs, state.artistName) {
+        state.songs.filter { state.artistName in it.parsedArtists }
+    }
     ArtistDetailScreen(
         artistName = state.artistName,
         songs = state.songs,
@@ -381,8 +389,7 @@ fun ArtistDetailRoute(
         isPlaying = state.isPlaying,
         onBack = actions.onBack,
         onSongClick = { song ->
-            val context = state.songs.filter { state.artistName in it.parsedArtists }
-            actions.onSongClick(song, context)
+            actions.onSongClick(song, artistSongs)
         },
         onAlbumClick = actions.onAlbumClick,
         loadSongInfo = loadSongInfo,

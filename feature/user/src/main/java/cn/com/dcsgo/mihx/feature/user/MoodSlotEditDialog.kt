@@ -93,11 +93,16 @@ fun MoodSlotEditDialog(
     }
     val conflict = errorMessage // 保存时由 resolver 返回的冲突信息
 
-    val totalSongs = if (tags.isEmpty()) {
-        0
-    } else {
-        // 与播放时判定完全一致: 词条在整首里的占比要够高才算命中
-        poolCountOf(tags)
+    // 评审 2026-10-27 · M-15：记忆化。
+    // 原先每次重组都重算，而 `name` 绑在 OutlinedTextField 上 → **每敲一个字**
+    // 就做一次全库匹配扫描。现在只在词条集合变化时重算（打字不改变词条 → 不重算）。
+    val totalSongs = remember(tags) {
+        if (tags.isEmpty()) {
+            0
+        } else {
+            // 与播放时判定完全一致: 词条在整首里的占比要够高才算命中
+            poolCountOf(tags)
+        }
     }
 
     Dialog(

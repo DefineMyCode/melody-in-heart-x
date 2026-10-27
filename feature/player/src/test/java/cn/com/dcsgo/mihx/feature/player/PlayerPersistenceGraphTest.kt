@@ -183,7 +183,7 @@ class PlayerPersistenceGraphTest {
     private class InMemoryPlaybackStateStorage : PlaybackStateStorage {
         private var saved: SavedPlaybackState? = null
 
-        override fun save(
+        override suspend fun save(
             queue: PlayQueue,
             positionMs: Long,
             isInfinitePlay: Boolean,
@@ -225,7 +225,7 @@ class PlayerPersistenceGraphTest {
             )
         }
 
-        override fun saveCurrentPlaybackSnapshot(songId: Int, positionMs: Long) {
+        override suspend fun saveCurrentPlaybackSnapshot(songId: Int, positionMs: Long) {
             saved = SavedPlaybackState(
                 queue = saved?.queue ?: PlayQueue(),
                 positionMs = positionMs.coerceAtLeast(0L),
@@ -236,11 +236,11 @@ class PlayerPersistenceGraphTest {
             )
         }
 
-        override fun clear() {
+        override suspend fun clear() {
             saved = null
         }
 
-        override fun restore(allSongs: List<Song>): RestoredPlaybackState? {
+        override suspend fun restore(allSongs: List<Song>): RestoredPlaybackState? {
             val snapshot = saved ?: return null
             val availableSongs = allSongs.associateBy { it.id }
             val queueSongs = snapshot.queue.songs.mapNotNull { availableSongs[it.id] }

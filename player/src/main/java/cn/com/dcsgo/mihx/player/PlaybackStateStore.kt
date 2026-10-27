@@ -20,7 +20,6 @@ import cn.com.dcsgo.mihx.domain.repository.PlaybackStateRepository
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 
 const val PLAYBACK_STATE_DATASTORE_NAME = "playback_state"
@@ -45,11 +44,11 @@ class PlaybackStateStore(
         ),
     )
 
-    fun save(queue: PlayQueue, positionMs: Long) {
+    suspend fun save(queue: PlayQueue, positionMs: Long) {
         save(queue, positionMs, isInfinitePlay = false, infinitePlayedSongIds = emptySet(), currentSongId = null)
     }
 
-    fun save(
+    suspend fun save(
         queue: PlayQueue,
         positionMs: Long,
         isInfinitePlay: Boolean,
@@ -58,7 +57,15 @@ class PlaybackStateStore(
         save(queue, positionMs, isInfinitePlay, infinitePlayedSongIds, currentSongId = null)
     }
 
-    override fun save(
+    /**
+     * 写入完整播放状态快照。
+     *
+     * 评审 2026-10-27 · N-1：原实现用 `runBlocking(Dispatchers.IO)` 把挂起的
+     * DataStore 写包装成同步调用——主线程可达的路径（ViewModel `onCleared`、
+     * 用户「清空播放队列」）会**同步阻塞在磁盘写上**。现在改为挂起，由调用方
+     * 决定在哪个线程执行。
+     */
+    override suspend fun save(
         queue: PlayQueue,
         positionMs: Long,
         isInfinitePlay: Boolean,
@@ -88,11 +95,10 @@ class PlaybackStateStore(
                 // - 无快照但有当前歌：写空队列 + 歌曲/位置，restore 按 currentSongId 兜底单曲队列；
                 // - 全空且无快照：不写任何键。
                 // 显式清空（用户清队列/结束播放）走 clearPlaybackState()，语义不受影响。
-                runBlocking(Dispatchers.IO) {
-                    var wroteSomething = false
-                    store.edit { preferences ->
-                        val existingQueueJson = preferences[PlaybackStateKeys.PLAY_QUEUE_JSON]
-                        when {
+                var wroteSomething = false
+                store.edit { preferences ->
+                    val existingQueueJson = preferences[PlaybackStateKeys.PLAY_QUEUE_JSON]
+                    when {
                             existingQueueJson != null && playbackSongId != null -> {
                                 // 保留既有队列，只更新当前歌曲与位置
                                 preferences[PlaybackStateKeys.CURRENT_SONG_ID] = playbackSongId
@@ -125,41 +131,39 @@ class PlaybackStateStore(
                             }
                         }
                     }
-                    // 仅在确实写入 DataStore 后才清除 legacy 键，避免把尚未迁移的 legacy 队列丢掉
-                    if (wroteSomething) {
-                        clearLegacyPrefs()
-                    }
+                // 仅在确实写入 DataStore 后才清除 legacy 键，避免把尚未迁移的 legacy 队列丢掉
+                if (wroteSomething) {
+                    clearLegacyPrefs()
                 }
                 return
             }
 
-            runBlocking(Dispatchers.IO) {
-                store.edit { preferences ->
-                    preferences[PlaybackStateKeys.PLAY_QUEUE_JSON] = serializer.encodeQueue(queue)
-                    preferences[PlaybackStateKeys.PLAY_POSITION_MS] = positionMs.coerceAtLeast(0L)
-                    preferences[PlaybackStateKeys.IS_INFINITE_PLAY] = isInfinitePlay
-                    preferences[PlaybackStateKeys.INFINITE_PLAYED_IDS] = serializer.encodeIds(infinitePlayedSongIds)
-                    preferences[PlaybackStateKeys.IS_EXPLORE_PLAY] = isExplorePlay
-                    if (playbackSongId != null) {
-                        preferences[PlaybackStateKeys.CURRENT_SONG_ID] = playbackSongId
-                    } else {
-                        preferences.remove(PlaybackStateKeys.CURRENT_SONG_ID)
-                    }
+            store.edit { preferences ->
+                preferences[PlaybackStateKeys.PLAY_QUEUE_JSON] = serializer.encodeQueue(queue)
+                preferences[PlaybackStateKeys.PLAY_POSITION_MS] = positionMs.coerceAtLeast(0L)
+                preferences[PlaybackStateKeys.IS_INFINITE_PLAY] = isInfinitePlay
+                preferences[PlaybackStateKeys.INFINITE_PLAYED_IDS] = serializer.encodeIds(infinitePlayedSongIds)
+                preferences[PlaybackStateKeys.IS_EXPLORE_PLAY] = isExplorePlay
+                if (playbackSongId != null) {
+                    preferences[PlaybackStateKeys.CURRENT_SONG_ID] = playbackSongId
+                } else {
+                    preferences.remove(PlaybackStateKeys.CURRENT_SONG_ID)
                 }
-                clearLegacyPrefs()
             }
-
+            clearLegacyPrefs()
+        } catch (ce: CancellationException) {
+            throw ce
         } catch (e: Exception) {
             // 落盘失败不应打断播放控制,但必须留痕,否则「进度丢失」类问题无从排查。
             logger.error(TAG, "save playback state failed: songCount=${queue.songs.size}", e)
         }
     }
 
-    override fun saveCurrentPlaybackSnapshot(songId: Int, positionMs: Long) {
+    override suspend fun saveCurrentPlaybackSnapshot(songId: Int, positionMs: Long) {
         try {
-            runBlocking(Dispatchers.IO) {
-                writeCurrentPlaybackSnapshot(songId, positionMs)
-            }
+            writeCurrentPlaybackSnapshot(songId, positionMs)
+        } catch (ce: CancellationException) {
+            throw ce
         } catch (e: Exception) {
             logger.error(TAG, "saveCurrentPlaybackSnapshot failed: song=$songId", e)
         }
@@ -194,25 +198,25 @@ class PlaybackStateStore(
         clearLegacyPrefs()
     }
 
-    override fun clear() {
+    override suspend fun clear() {
         try {
-            runBlocking(Dispatchers.IO) {
-                store.edit { preferences ->
-                    preferences.remove(PlaybackStateKeys.PLAY_QUEUE_JSON)
-                    preferences.remove(PlaybackStateKeys.PLAY_POSITION_MS)
-                    preferences.remove(PlaybackStateKeys.IS_INFINITE_PLAY)
-                    preferences.remove(PlaybackStateKeys.INFINITE_PLAYED_IDS)
-                    preferences.remove(PlaybackStateKeys.IS_EXPLORE_PLAY)
-                    preferences.remove(PlaybackStateKeys.CURRENT_SONG_ID)
-                }
-                clearLegacyPrefs()
+            store.edit { preferences ->
+                preferences.remove(PlaybackStateKeys.PLAY_QUEUE_JSON)
+                preferences.remove(PlaybackStateKeys.PLAY_POSITION_MS)
+                preferences.remove(PlaybackStateKeys.IS_INFINITE_PLAY)
+                preferences.remove(PlaybackStateKeys.INFINITE_PLAYED_IDS)
+                preferences.remove(PlaybackStateKeys.IS_EXPLORE_PLAY)
+                preferences.remove(PlaybackStateKeys.CURRENT_SONG_ID)
             }
+            clearLegacyPrefs()
+        } catch (ce: CancellationException) {
+            throw ce
         } catch (e: Exception) {
             logger.error(TAG, "clear playback state failed", e)
         }
     }
 
-    override fun save(queue: PlayQueue, positionMs: Long, currentSongId: Int?) {
+    override suspend fun save(queue: PlayQueue, positionMs: Long, currentSongId: Int?) {
         save(
             queue = queue,
             positionMs = positionMs,
@@ -222,35 +226,33 @@ class PlaybackStateStore(
         )
     }
 
-    override fun restore(allSongs: List<Song>): RestoredPlaybackState? {
+    override suspend fun restore(allSongs: List<Song>): RestoredPlaybackState? {
         return try {
-            val restored = runBlocking(Dispatchers.IO) {
-                val preferences = currentPreferences()
-                val legacy = legacyPrefs
-                val json = preferences[PlaybackStateKeys.PLAY_QUEUE_JSON]
-                    ?: legacy?.getString(KEY_PLAY_QUEUE_JSON, null)
-                    ?: return@runBlocking null
-                val positionMs = (preferences[PlaybackStateKeys.PLAY_POSITION_MS]
-                    ?: legacy?.getLong(KEY_PLAY_POSITION_MS, 0L)
-                    ?: 0L).coerceAtLeast(0L)
-                val isInfinitePlay = preferences[PlaybackStateKeys.IS_INFINITE_PLAY]
-                    ?: legacy?.getBoolean(KEY_IS_INFINITE_PLAY, false)
-                    ?: false
-                val currentSongId = (preferences[PlaybackStateKeys.CURRENT_SONG_ID]
-                    ?: legacy?.getInt(KEY_CURRENT_SONG_ID, -1)
-                    ?: -1).takeIf { it >= 0 }
-                val infinitePlayedIds = preferences[PlaybackStateKeys.INFINITE_PLAYED_IDS]
-                    ?: legacy?.getString(KEY_INFINITE_PLAYED_IDS, null)
-                val isExplorePlay = preferences[PlaybackStateKeys.IS_EXPLORE_PLAY] ?: false
-                StoredPlaybackSnapshot(
-                    queueJson = json,
-                    positionMs = positionMs,
-                    isInfinitePlay = isInfinitePlay,
-                    currentSongId = currentSongId,
-                    infinitePlayedIdsJson = infinitePlayedIds,
-                    isExplorePlay = isExplorePlay,
-                )
-            } ?: return null
+            val preferences = currentPreferences()
+            val legacy = legacyPrefs
+            val json = preferences[PlaybackStateKeys.PLAY_QUEUE_JSON]
+                ?: legacy?.getString(KEY_PLAY_QUEUE_JSON, null)
+                ?: return null
+            val positionMs = (preferences[PlaybackStateKeys.PLAY_POSITION_MS]
+                ?: legacy?.getLong(KEY_PLAY_POSITION_MS, 0L)
+                ?: 0L).coerceAtLeast(0L)
+            val isInfinitePlay = preferences[PlaybackStateKeys.IS_INFINITE_PLAY]
+                ?: legacy?.getBoolean(KEY_IS_INFINITE_PLAY, false)
+                ?: false
+            val currentSongId = (preferences[PlaybackStateKeys.CURRENT_SONG_ID]
+                ?: legacy?.getInt(KEY_CURRENT_SONG_ID, -1)
+                ?: -1).takeIf { it >= 0 }
+            val infinitePlayedIds = preferences[PlaybackStateKeys.INFINITE_PLAYED_IDS]
+                ?: legacy?.getString(KEY_INFINITE_PLAYED_IDS, null)
+            val isExplorePlay = preferences[PlaybackStateKeys.IS_EXPLORE_PLAY] ?: false
+            val restored = StoredPlaybackSnapshot(
+                queueJson = json,
+                positionMs = positionMs,
+                isInfinitePlay = isInfinitePlay,
+                currentSongId = currentSongId,
+                infinitePlayedIdsJson = infinitePlayedIds,
+                isExplorePlay = isExplorePlay,
+            )
             val availableSongIds = allSongs.map { it.id }.toSet()
             val infinitePlayedSongIds = serializer.decodeInfinitePlayedIds(
                 json = restored.infinitePlayedIdsJson,
@@ -277,6 +279,8 @@ class PlaybackStateStore(
                 infinitePlayedSongIds,
                 restored.isExplorePlay,
             )
+        } catch (ce: CancellationException) {
+            throw ce
         } catch (e: Exception) {
             logger.error(TAG, "restore playback state failed", e)
             null

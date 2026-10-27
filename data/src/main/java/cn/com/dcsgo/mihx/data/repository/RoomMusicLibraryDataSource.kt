@@ -14,12 +14,29 @@ data class RestoredMusicLibrary(
     val playlists: List<Playlist>,
 )
 
+/**
+ * 播放事件保留期（评审 2026-10-27 · M-6）。
+ *
+ * 12 个月：覆盖「今日/本周/本月」全部统计窗口（最远 1 个月），
+ * 同时把纯追加表 `playback_events` 的规模限制在可接受范围内。
+ */
+private const val PLAYBACK_EVENT_RETENTION_MS = 365L * 24 * 60 * 60 * 1000
+
+/** 早于该时间戳的播放事件应被清理。 */
+internal fun playbackEventRetentionCutoff(now: Long = System.currentTimeMillis()): Long =
+    now - PLAYBACK_EVENT_RETENTION_MS
+
 class RoomMusicLibraryDataSource(
     private val dao: MelodyDao,
 ) {
     suspend fun restore(): RestoredMusicLibrary {
         val songOverrides = dao.songGroupOverrides().associateBy { it.songId }
-        val restoredSongs = dao.songs().map { entity ->
+        // 评审 2026-10-27 · M-7：实体只读一次。
+        // 原先 `dao.songs()` 被调了两遍（:22 物化全部行 + :44 再物化一次只为拿
+        // albumId 映射），而 restore() 在**启动关键路径**上（「启动中…」页在等它），
+        // 每次全表物化都要把每首歌的 uri / albumArtCacheUri / lrcUri 等全部列读进内存。
+        val songEntities = dao.songs()
+        val restoredSongs = songEntities.map { entity ->
             entity.toSong(songOverrides[entity.id]?.titleOverride)
         }
         val restoredSongIds = restoredSongs.mapTo(mutableSetOf()) { it.id }
@@ -41,7 +58,11 @@ class RoomMusicLibraryDataSource(
         dao.syncLibraryCatalog(restoredSongs)
         val artistIdsBySong = dao.songArtistRefs().groupBy { it.songId }
             .mapValues { (_, refs) -> refs.map { it.artistId } }
-        val albumIdBySongId = dao.songs().associate { it.id to it.albumId }
+        // M-7：albumId 映射只取两列（`songs()` 是 SELECT *，会把每首歌的
+        // uri / albumArtCacheUri / lrcUri 等全部列物化进内存）。
+        // 注意必须在 syncLibraryCatalog **之后**读 —— 它会重建专辑目录并把
+        // albumId 回写到 songs 表。
+        val albumIdBySongId = dao.songAlbumIds().associate { it.id to it.albumId }
         val catalogedSongs = restoredSongs.map { song ->
             song.copy(
                 albumId = albumIdBySongId[song.id],
@@ -61,6 +82,11 @@ class RoomMusicLibraryDataSource(
             overrides = songs.mapNotNull { it.toOverrideEntity(importedAt) },
         )
         dao.syncLibraryCatalog(songs)
+        // 评审 2026-10-27 · M-6：播放事件保留策略。
+        // playback_events 是纯追加表，全项目原本**没有任何清理逻辑**，会随应用
+        // 生命周期无限增长；而删歌/去重/文件校验时的「按 songId 清理」每次都要
+        // 扫这张表。这里在每次落盘（导入/对账）时顺手删掉超出保留期的事件。
+        dao.deletePlaybackEventsBefore(playbackEventRetentionCutoff())
     }
 
     suspend fun persistPlaylists(playlists: List<Playlist>, updatedAt: Long) {

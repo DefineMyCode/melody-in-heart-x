@@ -7,7 +7,10 @@ import cn.com.dcsgo.mihx.core.model.Song
 import cn.com.dcsgo.mihx.domain.playback.PlaybackRestoreCoordinator
 import cn.com.dcsgo.mihx.domain.playback.PlaybackRestoreResult
 import cn.com.dcsgo.mihx.domain.playback.PlaybackStateStorageFactory
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -26,6 +29,43 @@ internal class PlayerPersistenceGraph(
     /** 恢复可播判定（默认按 uri 非空）；测试可注入不依赖 android.net.Uri 的判据 */
     private val isPlayable: (Song) -> Boolean = { it.uri != null },
 ) {
+    /**
+     * 持久化写入队列：**单消费者 + 无界通道**，保证写操作严格 FIFO。
+     *
+     * 评审 2026-10-27 · N-1：原先「清空快照」是同步阻塞调用、「写快照」是
+     * `scope.launch(dispatchers.io)` 异步调用，两者混用时序靠「同步那个先跑完」
+     * 保证。全异步化后若都挂到多线程的 `Dispatchers.IO` 上，**顺序不再保证**——
+     * 可能出现「快照刚写完又被清掉」，队列与进度丢失。
+     *
+     * 用「通道 + 单消费者」而不是 `limitedParallelism(1)`：前者与调度器无关
+     * （`Dispatchers.Unconfined` 不支持 `limitedParallelism`），且天然 FIFO。
+     *
+     * 该消费者**不挂在 ViewModel 生命周期上**：`onCleared` 时排队的最后一次写入
+     * 仍能落盘（原同步实现靠阻塞主线程来保证写入完成，现改为「队列保活直到写完」）。
+     */
+    private val persistCommands = Channel<suspend () -> Unit>(Channel.UNLIMITED)
+    private val persistScope = CoroutineScope(SupervisorJob() + dispatchers.io)
+
+    init {
+        persistScope.launch {
+            for (command in persistCommands) {
+                try {
+                    command()
+                } catch (ce: CancellationException) {
+                    throw ce
+                } catch (t: Throwable) {
+                    // 单条写失败不应终止消费者，否则后续所有写入永久排队不执行
+                    log("persist command failed: ${t.message}")
+                }
+            }
+        }
+    }
+
+    /** 把一次持久化写入排入 FIFO 队列（不阻塞调用线程）。 */
+    private fun enqueuePersist(command: suspend () -> Unit) {
+        persistCommands.trySend(command)
+    }
+
     private val playbackStateStore by lazy {
         playbackStateStorageFactory.create()
     }
@@ -40,7 +80,7 @@ internal class PlayerPersistenceGraph(
             playbackRestoreCoordinator = playbackRestoreCoordinator,
             currentPlaybackPositionMs = currentPlaybackPositionMs,
             prepareControllerQueue = prepareControllerQueue,
-            launchIo = { task -> scope.launch(dispatchers.io) { task() } },
+            launchIo = { task -> enqueuePersist(task) },
             log = log,
         )
     }
@@ -60,12 +100,14 @@ internal class PlayerPersistenceGraph(
         persistenceFacade.savePlaybackStateAsync(positionMs)
     }
 
+    /** 排队写入快照（不阻塞调用线程）。 */
     fun savePlaybackState(positionMs: Long = currentPlaybackPositionMs()) {
-        persistenceFacade.savePlaybackState(positionMs)
+        persistenceFacade.savePlaybackStateAsync(positionMs)
     }
 
+    /** 排队清空快照（不阻塞调用线程）。与写入同一条 FIFO 队列，顺序得到保证。 */
     fun clearPlaybackState() {
-        persistenceFacade.clearPlaybackState()
+        enqueuePersist { persistenceFacade.clearPlaybackState() }
     }
 
     /**

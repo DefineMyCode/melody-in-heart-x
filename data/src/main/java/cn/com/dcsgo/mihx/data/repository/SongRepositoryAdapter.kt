@@ -19,6 +19,8 @@ class SongRepositoryAdapter @Inject constructor(
 
     override fun observeSongsSnapshot(): List<Song> = musicRepository.observeSongsSnapshot()
 
+    override suspend fun containsSong(songId: Int): Boolean = musicRepository.containsSong(songId)
+
     override fun setSongsChangedListener(listener: (() -> Unit)?) {
         musicRepository.setSongsChangedListener(listener)
     }

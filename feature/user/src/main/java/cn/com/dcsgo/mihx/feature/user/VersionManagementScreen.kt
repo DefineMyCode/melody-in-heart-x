@@ -58,6 +58,7 @@ import cn.com.dcsgo.mihx.core.model.Song
 import cn.com.dcsgo.mihx.core.model.SongInfo
 import cn.com.dcsgo.mihx.domain.playback.SongVersionComparer
 import cn.com.dcsgo.mihx.ui.components.SongInfoDialog
+import cn.com.dcsgo.mihx.ui.components.loadSongInfoSafely
 import cn.com.dcsgo.mihx.ui.components.locateHighlightFlash
 import cn.com.dcsgo.mihx.ui.components.rememberLocateHighlightState
 import kotlinx.coroutines.launch
@@ -171,7 +172,7 @@ fun VersionManagementScreen(
     LaunchedEffect(songForInfo) {
         val uri = songForInfo?.uri
         if (uri != null) {
-            songInfo = songForInfo?.let { loadSongInfo(it) }
+            songInfo = loadSongInfoSafely(loadSongInfo, songForInfo)
         }
     }
 

@@ -143,7 +143,48 @@ class WordPreferencesRepositoryTest {
             words.value = emptyList()
         }
 
+        /**
+         * 原子累加某词条的喜欢/不喜欢票（评审 2026-10-27 · M-22 新增 DAO 方法）。
+         *
+         * 与真库 SQL 的 `MIN(x + delta, 2147483647)` 语义对齐：票数停在 Int 上限，
+         * 不许溢出成负数（负数会让「票多者胜」判定静默翻转）。
+         */
+        override suspend fun ensureWordPreference(word: String, now: Long) = Unit
+
+        override suspend fun addWordVotesDelta(
+            word: String,
+            likeDelta: Int,
+            dislikeDelta: Int,
+            now: Long,
+        ) {
+            val existing = words.value.firstOrNull { it.word == word }
+            words.value = if (existing == null) {
+                words.value + WordPreferenceEntity(
+                    word = word,
+                    likeVotes = likeDelta,
+                    dislikeVotes = dislikeDelta,
+                    updatedAt = now,
+                )
+            } else {
+                words.value.map {
+                    if (it.word != word) {
+                        it
+                    } else {
+                        it.copy(
+                            likeVotes = (it.likeVotes.toLong() + likeDelta.toLong())
+                                .coerceAtMost(Int.MAX_VALUE.toLong()).toInt(),
+                            dislikeVotes = (it.dislikeVotes.toLong() + dislikeDelta.toLong())
+                                .coerceAtMost(Int.MAX_VALUE.toLong()).toInt(),
+                            updatedAt = now,
+                        )
+                    }
+                }
+            }
+        }
+
         override suspend fun songs(): List<cn.com.dcsgo.mihx.data.local.entity.SongEntity> = emptyList()
+        override suspend fun songIds(): List<Int> = emptyList()
+        override suspend fun songAlbumIds(): List<cn.com.dcsgo.mihx.data.local.dao.SongAlbumIdRow> = emptyList()
         override suspend fun songCount(): Int = 0
         override suspend fun playlists(): List<cn.com.dcsgo.mihx.data.local.entity.PlaylistEntity> = emptyList()
         override suspend fun playlistSongRefs(): List<cn.com.dcsgo.mihx.data.local.entity.PlaylistSongCrossRef> = emptyList()
@@ -177,6 +218,10 @@ class WordPreferencesRepositoryTest {
         override suspend fun upsertQuickSkipSongs(songs: List<cn.com.dcsgo.mihx.data.local.entity.QuickSkipSongEntity>) = Unit
         override suspend fun upsertQuickSkipSong(song: cn.com.dcsgo.mihx.data.local.entity.QuickSkipSongEntity) = Unit
         override suspend fun upsertQuickSkipShortPlay(count: cn.com.dcsgo.mihx.data.local.entity.QuickSkipShortPlayEntity) = Unit
+
+        /** 原子自增短播放计数（评审 2026-10-27 · M-22 新增 DAO 方法）；本 fake 不覆盖秒切表。 */
+        override suspend fun ensureQuickSkipShortPlay(songId: Int, now: Long) = Unit
+        override suspend fun incrementQuickSkipShortPlay(songId: Int, now: Long) = Unit
         override suspend fun upsertSongGroupOverrides(overrides: List<cn.com.dcsgo.mihx.data.local.entity.SongGroupOverrideEntity>) = Unit
         override suspend fun insertArtists(artists: List<cn.com.dcsgo.mihx.data.local.entity.ArtistEntity>) = Unit
         override suspend fun insertAlbums(albums: List<cn.com.dcsgo.mihx.data.local.entity.AlbumEntity>) = Unit
@@ -189,6 +234,12 @@ class WordPreferencesRepositoryTest {
         override suspend fun deleteQuickSkipShortPlay(songId: Int) = Unit
         override suspend fun deletePlayStatsForSongs(songIds: List<Int>) = Unit
         override suspend fun deletePlaybackEventsForSongs(songIds: List<Int>) = Unit
+        override suspend fun deletePlaybackEventsBefore(beforeMs: Long): Int = 0
+
+        override suspend fun emotionTableStat(): cn.com.dcsgo.mihx.domain.repository.EmotionTableStat =
+            cn.com.dcsgo.mihx.domain.repository.EmotionTableStat(count = 0, maxAnalyzedAt = 0L)
+
+        override suspend fun emotionRecentAnalyzedTimestamps(limit: Int): List<Long> = emptyList()
         override suspend fun deleteQuickSkipSongsFor(songIds: List<Int>) = Unit
         override suspend fun deleteQuickSkipShortPlaysFor(songIds: List<Int>) = Unit
         override suspend fun deleteSongEmotionsFor(songIds: List<Int>) = Unit
@@ -216,7 +267,6 @@ class WordPreferencesRepositoryTest {
         override suspend fun songIdsMissingVocalScore(): List<Int> = emptyList()
         override suspend fun songEmotionVersions(): List<cn.com.dcsgo.mihx.data.local.dao.SongEmotionVersion> = emptyList()
         override suspend fun emotionCorrectionCount(): Int = 0
-        override suspend fun emotionAnalyzedTimeline(): List<Long> = emptyList()
         override suspend fun upsertSongEmotion(emotion: cn.com.dcsgo.mihx.data.local.entity.SongEmotionEntity) = Unit
         override suspend fun updateSongEmotionCorrection(
             songId: Int, tags: String, edited: Boolean?

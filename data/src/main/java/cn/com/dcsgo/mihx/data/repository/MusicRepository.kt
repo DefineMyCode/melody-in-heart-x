@@ -241,6 +241,17 @@ class MusicRepository(
     fun observeSongsSnapshot(): List<Song> = getSongs()
 
     /**
+     * 曲库里是否还有这首歌（**不产生任何分配**）。
+     *
+     * 评审 2026-10-27 · M-2：批扫 Worker 每分析完一首歌都要确认「是否已被用户
+     * 删除」（防孤儿情绪行）。原先走 `observeSongsSnapshot()`——每次都**拷贝整份
+     * 曲库**再做 O(n) 扫描。这里直接在线程安全的读锁内做一次无分配的线性判定。
+     */
+    suspend fun containsSong(songId: Int): Boolean = lock.read {
+        songs.any { it.id == songId }
+    }
+
+    /**
      * 从持久化的 artists 表查询歌手目录（按歌手名排序）。
      * 无 Room 时回退到内存歌曲派生。
      */

@@ -10,7 +10,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import cn.com.dcsgo.mihx.app.playlist.PlaylistResumeViewModel
-import cn.com.dcsgo.mihx.core.common.AppLog
 import cn.com.dcsgo.mihx.core.model.Song
 import cn.com.dcsgo.mihx.core.model.SongInfo
 import cn.com.dcsgo.mihx.feature.home.HomeRoute
@@ -21,6 +20,7 @@ import cn.com.dcsgo.mihx.feature.player.PlayerViewModel
 import cn.com.dcsgo.mihx.feature.playlist.DeleteSongConfirmDialog
 import cn.com.dcsgo.mihx.ui.components.SingleSongAddToPlaylistDialog
 import cn.com.dcsgo.mihx.ui.components.SongInfoDialog
+import cn.com.dcsgo.mihx.ui.components.loadSongInfoSafely
 
 /**
  * 播放页内容（"现在播放"界面本体）。
@@ -63,12 +63,9 @@ fun NowPlayingSurface(
     LaunchedEffect(songForInfo) {
         val uri = songForInfo?.uri
         if (uri != null) {
-            // m6（评审 2026-09-03）：底层走 Room runBlocking 桥，DB 异常会让协程崩溃，这里兜底。
-            songInfo = runCatching { songForInfo?.let { loadSongInfo(it) } }
-                .onFailure {
-                    AppLog.error("NowPlayingSurface", "loadSongInfo failed: ${it.message}", it)
-                }
-                .getOrNull()
+            // 评审 2026-10-27 · C-1：统一走 :core:ui 的兜底加载器（其余 7 处调用点同步收敛）。
+            // 底层 DB 异常会让协程崩溃，这里兜住；取消异常仍原样上抛。
+            songInfo = loadSongInfoSafely(loadSongInfo, songForInfo)
         }
     }
     HomeRoute(

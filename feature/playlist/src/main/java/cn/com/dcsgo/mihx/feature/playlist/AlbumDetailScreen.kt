@@ -51,6 +51,7 @@ import cn.com.dcsgo.mihx.core.model.SongInfo
 import cn.com.dcsgo.mihx.ui.components.BatchAddToPlaylistDialog
 import cn.com.dcsgo.mihx.ui.components.SingleSongAddToPlaylistDialog
 import cn.com.dcsgo.mihx.ui.components.SongInfoDialog
+import cn.com.dcsgo.mihx.ui.components.loadSongInfoSafely
 
 /**
  * 专辑详情页
@@ -80,9 +81,18 @@ fun AlbumDetailScreen(
     // 该专辑关联的所有歌手（拆分后的最小单位）
     val albumArtists = remember(albumSongs) { albumSongs.flatMap { it.parsedArtists }.distinct() }
     // 与专辑共享任一歌手的其他专辑
+    //
+    // 评审 2026-10-27 · M-17：原先对**全库** deriveAlbums（groupBy + 排序 + 逐首
+    // parsedArtists），再筛出与本专辑共享歌手的那些 —— 为显示几个「同歌手其他专辑」
+    // 而把整库分组排序一遍。现在只从「含共享歌手的歌曲」派生专辑：
+    // 判定等价（专辑 X 命中 ⟺ X 至少有一首歌的歌手在 albumArtists 里），
+    // 但 groupBy/排序的规模从全库缩到同歌手子集。
     val otherAlbums = remember(songs, albumName, albumArtists) {
-        LibraryCatalog.deriveAlbums(songs)
-            .filter { it.name != albumName && it.artistNames.any { artist -> artist in albumArtists } }
+        val siblingSongs = songs.filter { song ->
+            song.parsedArtists.any { artist -> artist in albumArtists }
+        }
+        LibraryCatalog.deriveAlbums(siblingSongs)
+            .filter { it.name != albumName }
     }
     var selectedSection by rememberSaveable { mutableStateOf(0) }
 
@@ -102,7 +112,7 @@ fun AlbumDetailScreen(
     LaunchedEffect(songForInfo) {
         val uri = songForInfo?.uri
         if (uri != null) {
-            songInfo = songForInfo?.let { loadSongInfo(it) }
+            songInfo = loadSongInfoSafely(loadSongInfo, songForInfo)
         }
     }
 
@@ -386,6 +396,10 @@ fun AlbumDetailRoute(
     loadSongInfo: suspend (Song) -> SongInfo? = { null },
     showToast: (String) -> Unit = {},
 ) {
+    // 评审 2026-10-27 · M-17：点击时的「同专辑歌曲」上下文**记忆化**（原为每次点击全库 filter）。
+    val albumSongs = remember(state.songs, state.albumName) {
+        state.songs.filter { it.album == state.albumName }
+    }
     AlbumDetailScreen(
         albumName = state.albumName,
         songs = state.songs,
@@ -394,8 +408,7 @@ fun AlbumDetailRoute(
         isPlaying = state.isPlaying,
         onBack = actions.onBack,
         onSongClick = { song ->
-            val context = state.songs.filter { it.album == state.albumName }
-            actions.onSongClick(song, context)
+            actions.onSongClick(song, albumSongs)
         },
         onAlbumClick = actions.onAlbumClick,
         loadSongInfo = loadSongInfo,

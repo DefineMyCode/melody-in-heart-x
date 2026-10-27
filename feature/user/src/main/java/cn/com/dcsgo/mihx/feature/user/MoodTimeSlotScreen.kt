@@ -347,6 +347,13 @@ internal fun MoodTimeSlotScreen(
             }
         },
     ) { padding ->
+        // 评审 2026-10-27 · M-15：时段卡的「合计可随机数」记忆化。
+        // 原先这个派生直接写在列表的 content 里，每次重组都重算「时段数 × 全库」；
+        // 现在只在配置或统计变化时算一次。
+        // （注意：必须放在 LazyColumn 之外 —— LazyListScope 不是组合作用域。）
+        val slotItems = remember(state.configs, state.tagCounts) {
+            configs2Items(state)
+        }
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             contentPadding = androidx.compose.foundation.layout.PaddingValues(
@@ -447,7 +454,7 @@ internal fun MoodTimeSlotScreen(
                     }
 
                     // 时段卡
-                    items(configs2Items(state), key = { it.config.id }) { item ->
+                    items(slotItems, key = { it.config.id }) { item ->
                         SlotCard(
                             config = item.config,
                             isActive = item.config.covers(state.nowMinuteOfDay),

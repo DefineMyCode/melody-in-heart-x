@@ -51,6 +51,7 @@ import cn.com.dcsgo.mihx.ui.components.BatchAddToPlaylistDialog
 import cn.com.dcsgo.mihx.ui.components.SingleSongAddToPlaylistDialog
 import cn.com.dcsgo.mihx.ui.components.SongInfoDialog
 import cn.com.dcsgo.mihx.ui.components.SongItemAction
+import cn.com.dcsgo.mihx.ui.components.loadSongInfoSafely
 
 /**
  * 曲库「情绪」Tab: 已分析歌曲列表.
@@ -321,7 +322,7 @@ fun EmotionLibraryView(
     LaunchedEffect(infoSong) {
         // 先清上一首的旧信息: 不清的话换歌瞬间弹窗会用新标题配旧歌的 SongInfo
         songInfo = null
-        if (infoSong != null) songInfo = loadSongInfo(infoSong)
+        if (infoSong != null) songInfo = loadSongInfoSafely(loadSongInfo, infoSong)
     }
     val currentSongInfo = songInfo
     if (infoSong != null && currentSongInfo != null) {

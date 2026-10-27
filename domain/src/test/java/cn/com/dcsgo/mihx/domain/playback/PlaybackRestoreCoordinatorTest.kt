@@ -4,6 +4,7 @@ import cn.com.dcsgo.mihx.core.model.PlayQueue
 import cn.com.dcsgo.mihx.core.model.Song
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
+import kotlinx.coroutines.runBlocking
 import org.junit.Test
 
 class PlaybackRestoreCoordinatorTest {
@@ -15,14 +16,14 @@ class PlaybackRestoreCoordinatorTest {
     )
 
     @Test
-    fun restoreReturnsNullWhenStoreHasNoState() {
+    fun restoreReturnsNullWhenStoreHasNoState() = runBlocking {
         restoredState = null
 
         assertNull(coordinator.restore(songs(1)))
     }
 
     @Test
-    fun restoreReturnsQueueWithoutPlayableSessionWhenCurrentSongIsMissing() {
+    fun restoreReturnsQueueWithoutPlayableSessionWhenCurrentSongIsMissing() = runBlocking {
         val queue = PlayQueue(songs = songs(1), currentIndex = -1)
         restoredState = RestoredPlaybackState(queue, positionMs = 42L)
 
@@ -33,7 +34,7 @@ class PlaybackRestoreCoordinatorTest {
     }
 
     @Test
-    fun restoreReturnsQueueWithoutPlayableSessionWhenCurrentSongIsNotPlayable() {
+    fun restoreReturnsQueueWithoutPlayableSessionWhenCurrentSongIsNotPlayable() = runBlocking {
         val queue = PlayQueue().setQueue(listOf(song(1, sampleRate = 0)), startIndex = 0)
         restoredState = RestoredPlaybackState(queue, positionMs = 42L)
 
@@ -44,7 +45,7 @@ class PlaybackRestoreCoordinatorTest {
     }
 
     @Test
-    fun restoreBuildsPlayableSessionForCurrentSong() {
+    fun restoreBuildsPlayableSessionForCurrentSong() = runBlocking {
         val current = song(1, title = "Song", sampleRate = 44_100)
         val higherRate = song(2, title = "Song", sampleRate = 96_000)
         val songs = listOf(current, higherRate, song(3, title = "Other"))
@@ -60,7 +61,7 @@ class PlaybackRestoreCoordinatorTest {
     }
 
     @Test
-    fun restoreKeepsInfinitePlayState() {
+    fun restoreKeepsInfinitePlayState() = runBlocking {
         val queue = PlayQueue().setQueue(songs(1, 2), startIndex = 0)
         restoredState = RestoredPlaybackState(
             queue = queue,

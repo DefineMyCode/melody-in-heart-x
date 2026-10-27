@@ -10,6 +10,7 @@ data class QuickSkipSongsRouteState(
     val currentSong: Song?,
 )
 
+@Stable
 data class QuickSkipSongsRouteActions(
     val onBack: () -> Unit,
     val onSongClick: (Song) -> Unit,

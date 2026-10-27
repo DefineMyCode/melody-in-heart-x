@@ -18,6 +18,7 @@ data class LyricsRouteState(
     val fontScale: Float = 1f,
 )
 
+@Stable
 data class LyricsRouteActions(
     val onBackClick: () -> Unit,
     val onSeekTo: (Long) -> Unit,

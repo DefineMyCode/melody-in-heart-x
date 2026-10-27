@@ -8,6 +8,7 @@ import cn.com.dcsgo.mihx.core.model.PlayMode
 import cn.com.dcsgo.mihx.core.model.Song
 import cn.com.dcsgo.mihx.feature.home.HomeScreen
 import cn.com.dcsgo.mihx.ui.theme.MusicplayerTheme
+import kotlinx.coroutines.flow.MutableStateFlow
 import org.junit.Rule
 import org.junit.Test
 
@@ -22,7 +23,7 @@ class HomeScreenComposeTest {
                 HomeScreen(
                     currentSong = null,
                     isPlaying = false,
-                    currentPositionMs = 0L,
+                    positionMs = MutableStateFlow(0L),
                     durationMs = 0L,
                     playMode = PlayMode.SEQUENTIAL,
                     onPlayPauseClick = {},
@@ -56,7 +57,7 @@ class HomeScreenComposeTest {
                         sampleRate = 96_000,
                     ),
                     isPlaying = true,
-                    currentPositionMs = 12_000L,
+                    positionMs = MutableStateFlow(12_000L),
                     durationMs = 240_000L,
                     playMode = PlayMode.SEQUENTIAL,
                     onPlayPauseClick = {},

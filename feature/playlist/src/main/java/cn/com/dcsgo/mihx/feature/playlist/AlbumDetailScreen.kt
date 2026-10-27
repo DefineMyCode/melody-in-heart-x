@@ -380,6 +380,7 @@ data class AlbumDetailRouteState(
     val isPlaying: Boolean,
 )
 
+@Stable
 data class AlbumDetailRouteActions(
     val onBack: () -> Unit,
     val onSongClick: (Song, List<Song>) -> Unit,

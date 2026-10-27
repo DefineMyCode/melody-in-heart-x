@@ -35,6 +35,7 @@ data class PlaylistRouteState(
     val songListTemplate: SongListTemplate = SongListTemplate.DEFAULT,
 )
 
+@Stable
 data class PlaylistRouteActions(
     val onPlaylistClick: (Playlist) -> Unit,
     val onSongClick: (Song, List<Song>) -> Unit,

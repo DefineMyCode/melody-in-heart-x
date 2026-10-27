@@ -14,6 +14,7 @@ data class SongTopListRouteState(
     val initialPeriod: String = "week",
 )
 
+@Stable
 data class SongTopListRouteActions(
     val onBack: () -> Unit,
     /** 点击歌曲，第二个参数为该歌曲所在时间段（周/月）的整个榜单 */

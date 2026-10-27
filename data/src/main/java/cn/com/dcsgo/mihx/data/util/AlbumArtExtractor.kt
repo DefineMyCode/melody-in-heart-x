@@ -12,7 +12,9 @@ import cn.com.dcsgo.mihx.core.model.Song
 import java.io.File
 import java.io.FileOutputStream
 import java.security.MessageDigest
+import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.locks.ReentrantLock
 
 /** 十六进制查表（评审 2026-10-27 · N-12）。 */
 private const val HEX_DIGITS = "0123456789abcdef"
@@ -30,6 +32,19 @@ object AlbumArtExtractor {
     private val cacheWriteCounter = AtomicInteger(0)
     val cacheHitCount: Int get() = cacheHitCounter.get()
     val cacheWriteCount: Int get() = cacheWriteCounter.get()
+
+    /**
+     * 同一封面哈希的**写入互斥 + 等待通知**（评审 2026-10-27 · M-9）。
+     *
+     * 同一专辑的 N 首歌内嵌同一张封面字节 → 相同哈希 → 同一个缓存文件。
+     * 用它保证同一哈希只被一个线程解码/压缩/落盘，其余线程等它完成后复用产物。
+     */
+    private val artWriteLock = ReentrantLock()
+    private val artWriteDone = artWriteLock.newCondition()
+    private val inFlightArtHashes = mutableSetOf<String>()
+
+    /** 等另一个线程写同一张封面的最长时间（毫秒）；超时则自己写，不死锁。 */
+    private const val ART_WRITE_WAIT_MS = 5_000L
 
     fun resetCacheStats() {
         cacheHitCounter.set(0)
@@ -149,6 +164,17 @@ object AlbumArtExtractor {
     /**
      * 把已提取的内嵌封面字节按内容哈希缓存；同哈希命中则直接复用缓存文件，跳过解码/压缩/写盘。
      * @return file:// URI（缓存文件），无则返回 null
+     *
+     * 评审 2026-10-27 · M-9：两处修复。
+     *
+     * 1. **原子落盘**：原先直接写最终名 `art_<hash>.jpg`，文件以最终名出现时可能还没写完，
+     *    并发读者（UI 加载封面 / `refreshAlbumArtIfNeeded` 只判 `exists()`、从不校验可解码性）
+     *    会读到**截断的 JPEG，且永远不自愈**。现在先写 `.tmp` 再 `renameTo` ——
+     *    同一文件系统内 rename 是原子的，读者要么看到旧文件、要么看到完整文件。
+     * 2. **同哈希并发去重**：同一专辑的 N 首歌内嵌**同一张封面字节** → 相同哈希 →
+     *    同一个缓存文件路径。原先 N 个线程各自解码 + JPEG 压缩 + 覆写同一文件，
+     *    恰好把「按内容哈希去重」想省的活又干了一遍。现在同一哈希只允许一个线程写，
+     *    其余线程等它完成后直接复用产物。
      */
     private fun cacheArtBytes(ctx: Context, artBytes: ByteArray): Uri? {
         val cacheDir = File(ctx.cacheDir, CACHE_DIR_NAME)
@@ -162,39 +188,83 @@ object AlbumArtExtractor {
             return Uri.fromFile(artFile)
         }
 
-        // 先采样解码到 ~512px 量级，避免整幅超大内嵌封面导致内存尖峰
-        val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
-        BitmapFactory.decodeByteArray(artBytes, 0, artBytes.size, bounds)
-        // 解码器无法给出尺寸时拒绝解码（避免 sampleSize=1 整幅原稿解码）
-        if (bounds.outWidth <= 0 || bounds.outHeight <= 0) {
-            AppLog.warning(TAG, "Album art bounds undecodable ($bounds), skipped")
-            return null
+        // 抢「写入权」：同一哈希只允许一个线程做解码/压缩/落盘。
+        // 等不到（对方卡住/失败）就自己写 —— 并发写现在是安全的（原子 rename）。
+        artWriteLock.lock()
+        try {
+            val deadline = System.currentTimeMillis() + ART_WRITE_WAIT_MS
+            while (!inFlightArtHashes.add(hash)) {
+                val remaining = deadline - System.currentTimeMillis()
+                if (remaining <= 0L) break
+                try {
+                    artWriteDone.await(remaining, TimeUnit.MILLISECONDS)
+                } catch (e: InterruptedException) {
+                    Thread.currentThread().interrupt()
+                    break
+                }
+                if (artFile.exists()) {
+                    // 别人写完了，直接复用（连等待都省了）
+                    cacheHitCounter.incrementAndGet()
+                    AppLog.debug(TAG, "Album art cache hit (concurrent): ${artFile.name}")
+                    return Uri.fromFile(artFile)
+                }
+            }
+        } finally {
+            artWriteLock.unlock()
         }
-        var sampleSize = 1
-        while (
-            bounds.outWidth / (sampleSize * 2) >= TARGET_ALBUM_ART_PX &&
-            bounds.outHeight / (sampleSize * 2) >= TARGET_ALBUM_ART_PX
-        ) {
-            sampleSize *= 2
-        }
-        val decodeOptions = BitmapFactory.Options().apply { inSampleSize = sampleSize }
-        val original = BitmapFactory.decodeByteArray(artBytes, 0, artBytes.size, decodeOptions)
-            ?: return null
 
-        val scaled = scaleBitmap(original, TARGET_ALBUM_ART_PX)
-        // 只在确实创建了新 bitmap 时回收 original，避免双重回收
-        if (scaled !== original) {
-            original.recycle()
-        }
+        val tmpFile = File(cacheDir, "art_$hash.jpg.tmp")
+        try {
+            // 先采样解码到 ~512px 量级，避免整幅超大内嵌封面导致内存尖峰
+            val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+            BitmapFactory.decodeByteArray(artBytes, 0, artBytes.size, bounds)
+            // 解码器无法给出尺寸时拒绝解码（避免 sampleSize=1 整幅原稿解码）
+            if (bounds.outWidth <= 0 || bounds.outHeight <= 0) {
+                AppLog.warning(TAG, "Album art bounds undecodable ($bounds), skipped")
+                return null
+            }
+            var sampleSize = 1
+            while (
+                bounds.outWidth / (sampleSize * 2) >= TARGET_ALBUM_ART_PX &&
+                bounds.outHeight / (sampleSize * 2) >= TARGET_ALBUM_ART_PX
+            ) {
+                sampleSize *= 2
+            }
+            val decodeOptions = BitmapFactory.Options().apply { inSampleSize = sampleSize }
+            val original = BitmapFactory.decodeByteArray(artBytes, 0, artBytes.size, decodeOptions)
+                ?: return null
 
-        FileOutputStream(artFile).use { fos ->
-            scaled.compress(Bitmap.CompressFormat.JPEG, 85, fos)
-        }
-        scaled.recycle()
+            val scaled = scaleBitmap(original, TARGET_ALBUM_ART_PX)
+            // 只在确实创建了新 bitmap 时回收 original，避免双重回收
+            if (scaled !== original) {
+                original.recycle()
+            }
 
-        cacheWriteCounter.incrementAndGet()
-        AppLog.info(TAG, "Album art cached: ${artFile.absolutePath}")
-        return Uri.fromFile(artFile)
+            // 原子落盘：先写临时文件，再 rename（同文件系统内 rename 是原子的）。
+            FileOutputStream(tmpFile).use { fos ->
+                scaled.compress(Bitmap.CompressFormat.JPEG, 85, fos)
+            }
+            scaled.recycle()
+            if (!tmpFile.renameTo(artFile)) {
+                // rename 失败（目标已存在 / 跨设备）→ 退化为直接写最终名
+                tmpFile.copyTo(artFile, overwrite = true)
+                tmpFile.delete()
+            }
+
+            cacheWriteCounter.incrementAndGet()
+            AppLog.info(TAG, "Album art cached: ${artFile.absolutePath}")
+            return Uri.fromFile(artFile)
+        } finally {
+            // 失败时别留下半截 .tmp
+            if (tmpFile.exists()) tmpFile.delete()
+            artWriteLock.lock()
+            try {
+                inFlightArtHashes.remove(hash)
+                artWriteDone.signalAll()
+            } finally {
+                artWriteLock.unlock()
+            }
+        }
     }
 
     /** 封面原始字节的内容哈希（SHA-1），用作按内容去重的缓存文件名 */

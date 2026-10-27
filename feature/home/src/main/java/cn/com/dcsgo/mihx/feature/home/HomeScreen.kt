@@ -60,6 +60,8 @@ import cn.com.dcsgo.mihx.ui.theme.LocalPlaybackPanelTokens
 import cn.com.dcsgo.mihx.ui.theme.LocalSpacingTokens
 import cn.com.dcsgo.mihx.ui.components.SongItemAction
 import cn.com.dcsgo.mihx.ui.icons.iconRes
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import kotlinx.coroutines.flow.StateFlow
 
 /**
  * 首页（播放器主界面）
@@ -73,7 +75,8 @@ fun HomeScreen(
     topContentPaddingDp: Dp = 16.dp,
     currentSong: Song?,
     isPlaying: Boolean,
-    currentPositionMs: Long,
+    /** 播放位置窄流（M-14）：只在进度条叶子内部订阅，不驱动整屏重组 */
+    positionMs: StateFlow<Long>,
     durationMs: Long,
     playMode: PlayMode,
     isInfinitePlay: Boolean = false,
@@ -141,7 +144,7 @@ fun HomeScreen(
                     SongInfoSection(
                         currentSong = currentSong,
                         isPlaying = isPlaying,
-                        currentPositionMs = currentPositionMs,
+                        positionMs = positionMs,
                         durationMs = durationMs,
                         playMode = playMode,
                         isInfinitePlay = isInfinitePlay,
@@ -350,11 +353,83 @@ private fun AlbumCoverSection(
 // 歌曲信息与播放控制栏
 // ─────────────────────────────────────────────────────────────────────────────
 
+/**
+ * 播放进度条（**叶子组件**，评审 2026-10-27 · M-14）。
+ *
+ * 播放位置窄流在这里订阅 —— 整棵 Home 子树不再随播放进度每秒重组 5 次。
+ *
+ * 拖动状态按**歌曲 id** 作为 remember key：换歌时若用户正拖着，旧歌的拖动位置
+ * 会被带进新歌（滑杆跳到别的歌的位置、seek 到错误位置）。原先没有 key，
+ * 这里一并修掉。
+ */
+@Composable
+private fun PlaybackProgressBar(
+    positionMs: StateFlow<Long>,
+    durationMs: Long,
+    songId: Int,
+    onStartSeeking: () -> Unit,
+    onEndSeeking: (Long) -> Unit,
+) {
+    val currentPositionMs by positionMs.collectAsStateWithLifecycle()
+
+    Column(
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        // 本地状态：跟踪拖动中的进度（按歌曲 id 复位，换歌不串位置）
+        var localPositionMs by remember(songId) { mutableStateOf(currentPositionMs.toFloat()) }
+        var isDragging by remember(songId) { mutableStateOf(false) }
+
+        // 拖动时用 localPositionMs，非拖动时直接用 currentPositionMs
+        // 这样拖动期间不会因播放进度更新而跳动
+        val sliderValue = if (isDragging) localPositionMs else currentPositionMs.toFloat()
+
+        Slider(
+            value = sliderValue,
+            onValueChange = { newValue ->
+                if (!isDragging) {
+                    isDragging = true
+                    onStartSeeking()
+                    localPositionMs = newValue
+                } else {
+                    localPositionMs = newValue
+                }
+            },
+            onValueChangeFinished = {
+                isDragging = false
+                onEndSeeking(localPositionMs.toLong())
+            },
+            valueRange = 0f..durationMs.coerceAtLeast(1L).toFloat(),
+            modifier = Modifier.fillMaxWidth(),
+            colors = SliderDefaults.colors(
+                thumbColor = MaterialTheme.colorScheme.primary,
+                activeTrackColor = MaterialTheme.colorScheme.primary,
+                // 对齐设计系统 §5.4：未完成轨道用 out1（outlineVariant）
+                inactiveTrackColor = MaterialTheme.colorScheme.outlineVariant
+            )
+        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                text = formatDurationTime(currentPositionMs),
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Text(
+                text = formatDurationTime(durationMs),
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+    }
+}
+
 @Composable
 private fun SongInfoSection(
     currentSong: Song,
     isPlaying: Boolean,
-    currentPositionMs: Long,
+    positionMs: StateFlow<Long>,
     durationMs: Long,
     playMode: PlayMode,
     isInfinitePlay: Boolean,
@@ -444,57 +519,19 @@ private fun SongInfoSection(
         Spacer(modifier = Modifier.height(24.dp))
 
         // 播放进度条
-        Column(
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            // 本地状态：跟踪拖动中的进度
-            var localPositionMs by remember { mutableStateOf(currentPositionMs.toFloat()) }
-            var isDragging by remember { mutableStateOf(false) }
-
-            // 拖动时用 localPositionMs，非拖动时直接用 currentPositionMs
-            // 这样拖动期间不会因播放进度更新而跳动
-            val sliderValue = if (isDragging) localPositionMs else currentPositionMs.toFloat()
-
-            Slider(
-                value = sliderValue,
-                onValueChange = { newValue ->
-                    if (!isDragging) {
-                        isDragging = true
-                        onStartSeeking()
-                        localPositionMs = newValue
-                    } else {
-                        localPositionMs = newValue
-                    }
-                },
-                onValueChangeFinished = {
-                    isDragging = false
-                    onEndSeeking(localPositionMs.toLong())
-                },
-                valueRange = 0f..durationMs.coerceAtLeast(1L).toFloat(),
-                modifier = Modifier.fillMaxWidth(),
-                colors = SliderDefaults.colors(
-                    thumbColor = MaterialTheme.colorScheme.primary,
-                    activeTrackColor = MaterialTheme.colorScheme.primary,
-                    // 对齐设计系统 §5.4：未完成轨道用 out1（outlineVariant）
-                    inactiveTrackColor = MaterialTheme.colorScheme.outlineVariant
-                )
-            )
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(
-                    text = formatDurationTime(currentPositionMs),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Text(
-                    text = formatDurationTime(durationMs),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        }
+        //
+        // 评审 2026-10-27 · M-14：进度条抽成**叶子组件**，窄流在它内部订阅。
+        // 原先播放位置是普通 Long 参数，从 Route 一路传到 31 参数的 SongInfoSection，
+        // 每 200ms 一个新值 → 整棵 Home 子树每秒重组 5 次（复制按钮、版本选择器、
+        // 播放控制栏、各 chip、「更多」菜单列表全都跟着重算）。
+        // 现在只有这一小块（滑杆 + 两个时间标签）会重组。
+        PlaybackProgressBar(
+            positionMs = positionMs,
+            durationMs = durationMs,
+            songId = currentSong.id,
+            onStartSeeking = onStartSeeking,
+            onEndSeeking = onEndSeeking,
+        )
 
         Spacer(modifier = Modifier.height(16.dp))
 

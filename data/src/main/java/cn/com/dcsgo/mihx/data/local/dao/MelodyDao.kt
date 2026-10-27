@@ -545,6 +545,65 @@ interface MelodyDao {
     suspend fun upsertSongEmotion(emotion: SongEmotionEntity)
 
     /**
+     * 原子写入模型结果，**保留行上已有的用户校准**（评审 2026-10-27 · M-23）。
+     *
+     * 原来的实现是「读旧行 → 在内存里合并 userTags → 整行 upsert」，
+     * 读与写之间有窗口：用户在那一瞬间保存校准，扫描随后用**陈旧的** userTags
+     * 覆写回去 —— 用户亲手标的词条**静默消失**，且他不知道为什么。
+     *
+     * 现在把合并规则搬进 SQL 的 CASE 表达式，一条语句完成：
+     * 新值带词条 → 用新值（用户主动标记的场景）；
+     * 新值不带词条 → 保留行上已有的词条（重扫不吞校准）。
+     * 无论用户的校准落在读之前还是读之后，都不会被覆盖 —— **窗口消失**。
+     *
+     * 坐标不继承：坐标是派生值（词条 → 该曲线坐标系的锚点均值），读时现算，
+     * 存下来的坐标会在曲线换坐标系后过期（"手动点过期"的根源）。
+     *
+     * @return 受影响行数（0 = 该 songId 尚无行，调用方需走插入路径）
+     */
+    @Query(
+        """
+        UPDATE song_emotions SET
+            valence = :valence,
+            arousal = :arousal,
+            curveJson = :curveJson,
+            peakSec = :peakSec,
+            windowsAnalyzed = :windowsAnalyzed,
+            durationSec = :durationSec,
+            modelVersion = :modelVersion,
+            analyzedAt = :analyzedAt,
+            embeddingB64 = :embeddingB64,
+            userValence = :userValence,
+            userArousal = :userArousal,
+            userTags = CASE
+                WHEN :userTags IS NULL OR :userTags = '' THEN userTags
+                ELSE :userTags END,
+            userTagsEdited = CASE
+                WHEN :userTags IS NULL OR :userTags = '' THEN userTagsEdited
+                ELSE :userTagsEdited END,
+            vocalScore = :vocalScore
+        WHERE songId = :songId
+        """
+    )
+    suspend fun updateSongEmotionPreservingUserTags(
+        songId: Int,
+        valence: Float,
+        arousal: Float,
+        curveJson: String,
+        peakSec: Float,
+        windowsAnalyzed: Int,
+        durationSec: Float,
+        modelVersion: String,
+        analyzedAt: Long,
+        embeddingB64: String?,
+        userValence: Float?,
+        userArousal: Float?,
+        userTags: String?,
+        userTagsEdited: Boolean?,
+        vocalScore: Float?,
+    ): Int
+
+    /**
      * 用户校准写入：**只写词条**。
      *
      * 坐标列一并置 NULL —— 坐标是派生值(词条 → 该曲线坐标系的锚点均值),
@@ -559,16 +618,37 @@ interface MelodyDao {
         songId: Int,
         tags: String,
         edited: Boolean?,
-    )
+    ): Int
 
     /**
-     * 用户-only 校准 upsert（2026-09-04）：分析失败的歌曲没有 emotion 行，
-     * UPDATE 语句静默无效——用户手动标记需要无记录时 INSERT 一条仅含 user 字段的行
-     * （曲线/embedding 留空，modelVersion 记 "user-only"，坐标不落库）。
-     * 已有行时与 updateSongEmotionCorrection 等价（@Upsert 按 songId 主键替换）。
+     * 用户-only 校准**插入**（评审 2026-10-27 · M-23）：分析失败/未分析的歌曲没有
+     * emotion 行，UPDATE 语句静默无效 —— 用户手动标记需要无记录时 INSERT 一条
+     * 仅含 user 字段的行（曲线/embedding 留空，modelVersion 记 "user-only"，坐标不落库）。
+     *
+     * 用 `INSERT OR IGNORE` 而不是 `@Upsert`：后者在「行其实已存在」时会把**整行**
+     * 替换成 user-only 的空曲线 —— 用户的校准反而把分析结果**擦掉**了。
+     * `INSERT OR IGNORE` 在行已存在时什么都不做（由调用方改走 UPDATE 路径）。
+     *
+     * @return 实际插入的行数（0 = 行已存在）
      */
-    @Upsert
-    suspend fun upsertUserOnlyCorrection(emotion: SongEmotionEntity)
+    @Query(
+        """
+        INSERT OR IGNORE INTO song_emotions (
+            songId, valence, arousal, curveJson, peakSec, windowsAnalyzed, durationSec,
+            modelVersion, analyzedAt, embeddingB64, userValence, userArousal,
+            userTags, userTagsEdited, vocalScore
+        ) VALUES (
+            :songId, 0, 0, '[]', 0, 0, 0, 'user-only', :now, NULL, NULL, NULL,
+            :tags, :edited, NULL
+        )
+        """
+    )
+    suspend fun insertUserOnlyCorrectionIfAbsent(
+        songId: Int,
+        tags: String,
+        edited: Boolean?,
+        now: Long,
+    )
 
     @Query("DELETE FROM song_emotions WHERE songId = :songId")
     suspend fun deleteSongEmotion(songId: Int)

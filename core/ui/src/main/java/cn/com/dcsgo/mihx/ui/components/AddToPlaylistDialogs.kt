@@ -62,6 +62,13 @@ fun BatchAddToPlaylistDialog(
     var showCreateInput by remember { mutableStateOf(false) }
     var newPlaylistName by remember { mutableStateOf("") }
 
+    // 评审 2026-10-27 · M-12：成员判定改用 **Set**。
+    // 原先 `songs.count { it.id in playlist.songIds }` 是 O(歌数 × 歌单歌曲数) ——
+    // `playlist.songIds` 是 List，`in` 是线性扫描。批量加 300 首到 2000 首的歌单
+    // = 每个歌单行 60 万次比较，屏幕上 10 个歌单就是 600 万次/帧；
+    // 而且未 memoize，每次重组（打字、滚动）都重算 → 弹窗掉帧。
+    val songIds = remember(songs) { songs.mapTo(mutableSetOf()) { it.id } }
+
     LaunchedEffect(playlists.isEmpty()) {
         if (playlists.isNotEmpty()) showCreateInput = false
     }
@@ -93,7 +100,9 @@ fun BatchAddToPlaylistDialog(
                         verticalArrangement = Arrangement.spacedBy(2.dp)
                     ) {
                         items(playlists, key = { "batch_dlg_${it.id}" }) { playlist ->
-                            val alreadyInCount = songs.count { it.id in playlist.songIds }
+                            // M-12：歌单歌曲 id 也转 Set，成员判定 O(1)
+                            val playlistIds = remember(playlist.songIds) { playlist.songIds.toSet() }
+                            val alreadyInCount = songIds.count { it in playlistIds }
                             val allAlreadyIn = alreadyInCount == songs.size
 
                             Row(
@@ -230,7 +239,9 @@ fun SingleSongAddToPlaylistDialog(
                         verticalArrangement = Arrangement.spacedBy(2.dp)
                     ) {
                         items(playlists, key = { "single_dlg_${it.id}" }) { playlist ->
-                            val alreadyIn = song.id in playlist.songIds
+                            // M-12：歌单歌曲 id 转 Set，成员判定 O(1) 而非 O(歌单歌曲数)
+                            val playlistIds = remember(playlist.songIds) { playlist.songIds.toSet() }
+                            val alreadyIn = song.id in playlistIds
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()

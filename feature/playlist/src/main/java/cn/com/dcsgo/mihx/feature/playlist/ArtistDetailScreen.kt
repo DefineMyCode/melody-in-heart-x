@@ -358,6 +358,7 @@ data class ArtistDetailRouteState(
     val isPlaying: Boolean,
 )
 
+@Stable
 data class ArtistDetailRouteActions(
     val onBack: () -> Unit,
     val onSongClick: (Song, List<Song>) -> Unit,

@@ -15,6 +15,7 @@ data class SettingsRouteState(
     val dailyListeningGoalMinutes: Int,
 )
 
+@Stable
 data class SettingsRouteActions(
     val onBack: () -> Unit,
     val onGlobalUniformRandomEnabledChange: (Boolean) -> Unit,

@@ -12,6 +12,7 @@ data class PlayStatsRouteState(
     val currentSong: Song?,
 )
 
+@Stable
 data class PlayStatsRouteActions(
     val onBack: () -> Unit,
     val onSongClick: (Song) -> Unit,

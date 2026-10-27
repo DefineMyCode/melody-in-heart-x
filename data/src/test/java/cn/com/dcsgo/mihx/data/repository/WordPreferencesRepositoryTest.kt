@@ -268,10 +268,18 @@ class WordPreferencesRepositoryTest {
         override suspend fun songEmotionVersions(): List<cn.com.dcsgo.mihx.data.local.dao.SongEmotionVersion> = emptyList()
         override suspend fun emotionCorrectionCount(): Int = 0
         override suspend fun upsertSongEmotion(emotion: cn.com.dcsgo.mihx.data.local.entity.SongEmotionEntity) = Unit
+        override suspend fun updateSongEmotionPreservingUserTags(
+            songId: Int, valence: Float, arousal: Float, curveJson: String, peakSec: Float,
+            windowsAnalyzed: Int, durationSec: Float, modelVersion: String, analyzedAt: Long,
+            embeddingB64: String?, userValence: Float?, userArousal: Float?,
+            userTags: String?, userTagsEdited: Boolean?, vocalScore: Float?,
+        ): Int = 0
         override suspend fun updateSongEmotionCorrection(
             songId: Int, tags: String, edited: Boolean?
+        ): Int = 0
+        override suspend fun insertUserOnlyCorrectionIfAbsent(
+            songId: Int, tags: String, edited: Boolean?, now: Long,
         ) = Unit
-        override suspend fun upsertUserOnlyCorrection(emotion: cn.com.dcsgo.mihx.data.local.entity.SongEmotionEntity) = Unit
         override suspend fun deleteSongEmotion(songId: Int) = Unit
         override suspend fun clearSongEmotionCorrection(songId: Int) = Unit
     }

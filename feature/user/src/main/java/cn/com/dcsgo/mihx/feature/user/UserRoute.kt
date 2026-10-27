@@ -35,6 +35,7 @@ data class UserRouteState(
     val sectionOrder: List<String> = UserSections.DEFAULT_ORDER,
 )
 
+@Stable
 data class UserRouteActions(
     val onShowSettings: () -> Unit,
     val onShowPlaybackStats: () -> Unit,

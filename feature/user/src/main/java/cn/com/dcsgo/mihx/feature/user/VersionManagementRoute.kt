@@ -12,6 +12,7 @@ data class VersionManagementRouteState(
     val isPlaying: Boolean,
 )
 
+@Stable
 data class VersionManagementRouteActions(
     val onBack: () -> Unit,
     val onPlayVersion: (Song) -> Unit,

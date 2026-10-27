@@ -20,6 +20,7 @@ data class FileCheckRouteState(
     val hasScannedDuplicates: Boolean = false,
 )
 
+@Stable
 data class FileCheckRouteActions(
     val onBack: () -> Unit,
     /** 启动后台校验（快速/深度由 UI 按钮决定） */

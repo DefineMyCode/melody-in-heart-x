@@ -19,6 +19,7 @@ data class VersionComparisonRouteState(
     val durationMs: Long,
 )
 
+@Stable
 data class VersionComparisonRouteActions(
     val onBack: () -> Unit,
     val onPlayVersion: (Song) -> Unit,

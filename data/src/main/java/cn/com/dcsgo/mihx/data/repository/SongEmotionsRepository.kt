@@ -125,22 +125,36 @@ class SongEmotionsRepository(
     }
 
     override suspend fun upsert(emotion: SongEmotion) = withContext(Dispatchers.IO) {
-        // 重扫(模型升级)不吞用户校准: 继承旧记录的**词条**与"是否被纠正"标记。
-        // 坐标不继承 —— 它是派生值(词条 → 该曲线坐标系的锚点均值), 读时现算。
-        // 继承坐标正是"手动点过期"的根源: 曲线换了坐标系, 存的坐标还停在旧的。
-        val old = melodyDao.songEmotion(emotion.songId)
-        if (old != null && !old.userTags.isNullOrEmpty() && emotion.userTags.isEmpty()) {
-            melodyDao.upsertSongEmotion(
-                emotion.toEntity().copy(
-                    userTags = old.userTags,
-                    // 校准的"是否被纠正"标记一并继承：重扫换了模型，
-                    // 但用户的判断仍然成立（词条是用户定的，不是模型定的）
-                    userTagsEdited = old.userTagsEdited,
-                )
-            )
-            return@withContext
+        // 评审 2026-10-27 · M-23：合并规则下沉到 SQL，消除 TOCTOU。
+        //
+        // 原实现是「读旧行 → 内存里合并 userTags → 整行 upsert」，读与写之间有窗口：
+        // 用户恰在那一瞬间保存校准，扫描随后用**陈旧的** userTags 覆写回去 ——
+        // 用户亲手标的词条**静默消失**。
+        //
+        // 现在一条原子 UPDATE 完成合并（新值不带词条就保留行上已有的），
+        // 无论用户的校准落在读之前还是读之后都不会被覆盖。
+        val entity = emotion.toEntity()
+        val updated = melodyDao.updateSongEmotionPreservingUserTags(
+            songId = entity.songId,
+            valence = entity.valence,
+            arousal = entity.arousal,
+            curveJson = entity.curveJson,
+            peakSec = entity.peakSec,
+            windowsAnalyzed = entity.windowsAnalyzed,
+            durationSec = entity.durationSec,
+            modelVersion = entity.modelVersion,
+            analyzedAt = entity.analyzedAt,
+            embeddingB64 = entity.embeddingB64,
+            userValence = entity.userValence,
+            userArousal = entity.userArousal,
+            userTags = entity.userTags,
+            userTagsEdited = entity.userTagsEdited,
+            vocalScore = entity.vocalScore,
+        )
+        if (updated == 0) {
+            // 该 songId 尚无行 → 直接插入（此时没有用户校准可继承）
+            melodyDao.upsertSongEmotion(entity)
         }
-        melodyDao.upsertSongEmotion(emotion.toEntity())
     }
 
         /**
@@ -159,26 +173,22 @@ class SongEmotionsRepository(
         edited: Boolean?,
     ) = withContext(Dispatchers.IO) {
         val tagsText = tags.joinToString(",")
-        if (melodyDao.songEmotion(songId) != null) {
-            melodyDao.updateSongEmotionCorrection(songId, tagsText, edited)
-        } else {
-            melodyDao.upsertUserOnlyCorrection(
-                SongEmotionEntity(
-                    songId = songId,
-                    valence = 0f,
-                    arousal = 0f,
-                    curveJson = "[]",
-                    peakSec = 0f,
-                    windowsAnalyzed = 0,
-                    durationSec = 0f,
-                    modelVersion = "user-only",
-                    analyzedAt = System.currentTimeMillis(),
-                    embeddingB64 = null,
-                    userValence = null,
-                    userArousal = null,
-                    userTags = tagsText,
-                    userTagsEdited = null,
-                ),
+        // 评审 2026-10-27 · M-23：改为「先原子 UPDATE，没有行再原子 INSERT」。
+        //
+        // 原实现是 check-then-act（先查有没有行，再二选一）——两个窗口：
+        // ① 查时无行、查后扫描写入 → 走 INSERT 分支，而当时的 `@Upsert`
+        //    会把**整行**替换成 user-only 的空曲线 → **把分析结果擦掉**；
+        // ② 查时有行、查后行被删 → UPDATE 静默无效 → 用户的校准丢失。
+        //
+        // 现在两条路径各自原子：UPDATE 命中已有行（只动 user 字段，绝不碰模型列）；
+        // 没命中则 INSERT OR IGNORE 补一条 user-only 行（行已存在时什么都不做）。
+        val updated = melodyDao.updateSongEmotionCorrection(songId, tagsText, edited)
+        if (updated == 0) {
+            melodyDao.insertUserOnlyCorrectionIfAbsent(
+                songId = songId,
+                tags = tagsText,
+                edited = edited,
+                now = System.currentTimeMillis(),
             )
         }
     }

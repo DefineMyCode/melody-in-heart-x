@@ -10,12 +10,21 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import cn.com.dcsgo.mihx.core.model.PlayMode
 import cn.com.dcsgo.mihx.core.model.Song
+import kotlinx.coroutines.flow.StateFlow
 
 @Stable
 data class HomeRouteState(
     val currentSong: Song?,
     val isPlaying: Boolean,
-    val currentPositionMs: Long,
+    /**
+     * 播放位置（毫秒）**窄流**。
+     *
+     * 评审 2026-10-27 · M-14：原先这里放的是 `currentPositionMs: Long`（每 200ms
+     * 一个新值），于是**整条 Home 子树**（Route → Screen → 31 参数的 SongInfoSection）
+     * 每秒重组 5 次 —— 而真正需要位置的只有进度条与两个时间标签。
+     * 现在传窄流，由**叶子节点**（进度条）自己订阅，重组范围收缩到那一小块。
+     */
+    val positionMs: StateFlow<Long>,
     val durationMs: Long,
     val playMode: PlayMode,
     val isInfinitePlay: Boolean,
@@ -27,6 +36,15 @@ data class HomeRouteState(
     val sleepTimerPausePending: Boolean = false,
 )
 
+/**
+ * 评审 2026-10-27 · M-18：标 `@Stable`。
+ *
+ * 全由函数类型构成的数据类会被 Compose 编译器推断为 **unstable**，于是
+ * `HomeRoute(state, actions, …)` 永远无法跳过 —— Route 边界形同虚设。
+ * 与 `HomeRouteState` 一样标注后，配合调用方 `remember` 出来的稳定实例，
+ * 路由才真正具备跳过重组的能力。
+ */
+@Stable
 data class HomeRouteActions(
     val onPlayPauseClick: () -> Unit,
     val onPreviousClick: () -> Unit,
@@ -84,7 +102,7 @@ fun HomeRoute(
         topContentPaddingDp = topContentPaddingDp,
         currentSong = state.currentSong,
         isPlaying = state.isPlaying,
-        currentPositionMs = state.currentPositionMs,
+        positionMs = state.positionMs,
         durationMs = state.durationMs,
         playMode = state.playMode,
         isInfinitePlay = state.isInfinitePlay,
@@ -107,31 +125,43 @@ fun HomeRoute(
         onSeekTo = actions.onSeekTo,
         onQueueClick = actions.onQueueClick,
         onShowLyrics = actions.onShowLyrics,
-        onTogglePlayMode = {
-            val label = actions.onTogglePlayMode()
-            showToast("播放模式: $label")
+        // 评审 2026-10-27 · M-18：包装出来的 lambda 用 remember 固定身份 ——
+        // 否则每次重组都是新 lambda，`HomeScreen` 的参数每次都变 → 整屏重组。
+        onTogglePlayMode = remember(actions, showToast) {
+            {
+                val label = actions.onTogglePlayMode()
+                showToast("播放模式: $label")
+            }
         },
-        onSwitchVersion = { song ->
-            actions.onSwitchVersion(song)
-            showToast("已切换到 ${song.sampleRateDisplay} 版本")
+        onSwitchVersion = remember(actions, showToast) {
+            { song ->
+                actions.onSwitchVersion(song)
+                showToast("已切换到 ${song.sampleRateDisplay} 版本")
+            }
         },
-        onTextCopied = { text -> showToast("已复制: $text") },
+        onTextCopied = remember(showToast) {
+            { text -> showToast("已复制: $text") }
+        },
         onArtistClick = actions.onArtistClick,
         onAlbumClick = actions.onAlbumClick,
         onLuckyPlayClick = actions.onLuckyPlayClick,
-        onInfinitePlayClick = {
-            if (state.isExplorePlay) {
-                // 探索播放（2026-10-20）：探索会话中无限随机播放按钮失效，仅弹提示对话框
-                showExploreHintDialog = true
-            } else if (state.isInfinitePlay) {
-                actions.onStopInfinitePlay()
-                showToast("已退出无限随机播放模式")
-            } else {
-                actions.onStartInfinitePlay()
+        onInfinitePlayClick = remember(actions, state.isExplorePlay, state.isInfinitePlay, showToast) {
+            {
+                if (state.isExplorePlay) {
+                    // 探索播放（2026-10-20）：探索会话中无限随机播放按钮失效，仅弹提示对话框
+                    showExploreHintDialog = true
+                } else if (state.isInfinitePlay) {
+                    actions.onStopInfinitePlay()
+                    showToast("已退出无限随机播放模式")
+                } else {
+                    actions.onStartInfinitePlay()
+                }
             }
         },
-        onRelatedPlayClick = {
-            state.currentSong?.let { song -> actions.onRelatedPlayClick(song) }
+        onRelatedPlayClick = remember(actions, state.currentSong) {
+            {
+                state.currentSong?.let { song -> actions.onRelatedPlayClick(song) }
+            }
         },
     )
 }

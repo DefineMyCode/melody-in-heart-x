@@ -50,10 +50,10 @@ fun NowPlayingSurface(
      * 让「状态栏底→封面」视觉对齐默认三页（实测三页≈71dp）。默认 16dp = 三页形态。 */
     topContentPaddingDp: androidx.compose.ui.unit.Dp = 16.dp,
 ) {
-    // 播放位置窄流：只在本内容订阅，不驱动整壳重组
-    val positionMs by playerViewModel.positionMs.collectAsStateWithLifecycle()
-    // M-6（评审 2026-09-03）：定时关闭剩余毫秒窄流——倒计时每秒 tick 只驱动
-    // 定时关闭 Chip 局部重组，不写主 UiState 导致整壳重组。
+    // 播放位置窄流：**不**在此处订阅 —— 评审 2026-10-27 · M-14。
+    // 原先在这里 collect，每 200ms 一个新值经 HomeRouteState 一路传到 31 参数的
+    // SongInfoSection → 整棵 Home 子树每秒重组 5 次。现在把窄流本身传下去，
+    // 由进度条叶子节点自己订阅 —— 重组范围收缩到那一小块。
     val sleepTimerRemainingMs by playerViewModel.sleepTimerRemainingMs.collectAsStateWithLifecycle()
     // 播放页"更多"功能对话框状态
     var songForInfo by remember { mutableStateOf<Song?>(null) }
@@ -68,12 +68,29 @@ fun NowPlayingSurface(
             songInfo = loadSongInfoSafely(loadSongInfo, songForInfo)
         }
     }
-    HomeRoute(
-        topContentPaddingDp = topContentPaddingDp,
-        state = HomeRouteState(
+    // 评审 2026-10-27 · M-18：Route 的 state / actions 实例用 `remember` 固定身份。
+    //
+    // 原先每次重组都新建这两个对象（Actions 里更是全��新 lambda），于是
+    // `HomeRoute(state, actions, …)` 的参数每次都变 → 路由**永远无法跳过重组**，
+    // Route 边界形同虚设。配合 `@Stable` 标注（feature 层已统一补齐），
+    // 路由才真正具备跳过能力。
+    val homeState = remember(
+        uiState.currentSong,
+        uiState.isPlaying,
+        uiState.durationMs,
+        uiState.playQueue.playMode,
+        uiState.isInfinitePlay,
+        uiState.isExplorePlay,
+        uiState.sameNameSongs,
+        uiState.isSleepTimerActive,
+        sleepTimerRemainingMs,
+        uiState.sleepTimerPlayLastSong,
+        uiState.sleepTimerPausePending,
+    ) {
+        HomeRouteState(
             currentSong = uiState.currentSong,
             isPlaying = uiState.isPlaying,
-            currentPositionMs = positionMs,
+            positionMs = playerViewModel.positionMs,
             durationMs = uiState.durationMs,
             playMode = uiState.playQueue.playMode,
             isInfinitePlay = uiState.isInfinitePlay,
@@ -83,8 +100,19 @@ fun NowPlayingSurface(
             sleepTimerRemainingMs = sleepTimerRemainingMs,
             sleepTimerPlayLastSong = uiState.sleepTimerPlayLastSong,
             sleepTimerPausePending = uiState.sleepTimerPausePending,
-        ),
-        actions = HomeRouteActions(
+        )
+    }
+    val homeActions = remember(
+        playerViewModel,
+        playlistResumeViewModel,
+        showToast,
+        onShowQueue,
+        onNavigateToLyrics,
+        onNavigateToArtist,
+        onNavigateToAlbum,
+        uiState.currentSong?.id,
+    ) {
+        HomeRouteActions(
             onPlayPauseClick = playerViewModel::togglePlayPause,
             onPreviousClick = playerViewModel::playPrevious,
             onNextClick = playerViewModel::playNext,
@@ -145,7 +173,12 @@ fun NowPlayingSurface(
             },
             onAddToPlaylist = { song -> songForAddToPlaylist = song },
             onDeleteSong = { song -> songForDelete = song },
-        ),
+        )
+    }
+    HomeRoute(
+        topContentPaddingDp = topContentPaddingDp,
+        state = homeState,
+        actions = homeActions,
         showToast = showToast,
     )
     // 歌曲详细信息对话框（更多菜单 → 查看歌曲详细信息）

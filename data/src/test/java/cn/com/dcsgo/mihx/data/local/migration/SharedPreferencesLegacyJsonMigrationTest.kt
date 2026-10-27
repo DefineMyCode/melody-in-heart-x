@@ -427,13 +427,20 @@ class SharedPreferencesLegacyJsonMigrationTest {
             songEmotions.values.count { !it.userTags.isNullOrEmpty() }
 
 
-        override suspend fun upsertUserOnlyCorrection(emotion: SongEmotionEntity) {
-        songEmotions[emotion.songId] = emotion
-    }
+        override suspend fun insertUserOnlyCorrectionIfAbsent(
+            songId: Int, tags: String, edited: Boolean?, now: Long,
+        ) = Unit
 
-    override suspend fun upsertSongEmotion(emotion: SongEmotionEntity) {
+        override suspend fun upsertSongEmotion(emotion: SongEmotionEntity) {
             songEmotions[emotion.songId] = emotion
         }
+
+        override suspend fun updateSongEmotionPreservingUserTags(
+            songId: Int, valence: Float, arousal: Float, curveJson: String, peakSec: Float,
+            windowsAnalyzed: Int, durationSec: Float, modelVersion: String, analyzedAt: Long,
+            embeddingB64: String?, userValence: Float?, userArousal: Float?,
+            userTags: String?, userTagsEdited: Boolean?, vocalScore: Float?,
+        ): Int = 0
 
         override suspend fun deleteSongEmotion(songId: Int) {
             songEmotions.remove(songId)
@@ -463,10 +470,12 @@ class SharedPreferencesLegacyJsonMigrationTest {
 
         override suspend fun updateSongEmotionCorrection(
             songId: Int, tags: String, edited: Boolean?
-        ) {
+        ): Int {
+            val existed = songEmotions[songId] != null
             songEmotions[songId]?.let {
                 songEmotions[songId] = it.copy(userValence = null, userArousal = null, userTags = tags, userTagsEdited = edited)
             }
+            return if (existed) 1 else 0
         }
     }
 

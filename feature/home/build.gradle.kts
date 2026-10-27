@@ -21,6 +21,8 @@ dependencies {
     implementation(project(":core:common"))
     implementation(project(":core:ui"))
     implementation(project(":domain"))
+    // 播放位置窄流在**叶子节点**内订阅（评审 2026-10-27 · M-14），需要生命周期感知的 collect
+    implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.ui)
     implementation(libs.androidx.material3)

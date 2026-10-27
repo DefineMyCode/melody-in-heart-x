@@ -15,6 +15,7 @@ data class PlaybackStatsRouteState(
     val dailyListeningGoalMinutes: Int = 120,
 )
 
+@Stable
 data class PlaybackStatsRouteActions(
     val onBack: () -> Unit,
     val onSongClick: (Song) -> Unit,

@@ -79,6 +79,52 @@ class SongEmotionsRepositoryTest {
         vocalScore = vocalScore,
     )
 
+    // ───────────── M-23：用户校准不被重扫覆盖（TOCTOU 修复） ─────────────
+
+    /**
+     * 评审 2026-10-27 · M-23：重扫（模型结果不带用户词条）**必须保留**用户校准。
+     *
+     * 原实现是「读旧行 → 内存里合并 userTags → 整行 upsert」，读与写之间有窗口：
+     * 用户恰在那一瞬间保存校准，扫描随后用**陈旧的** userTags 覆写回去 ——
+     * 用户亲手标的词条静默消失。修复后合并规则下沉到 SQL 的 CASE 表达式，
+     * 一条语句完成，窗口消失。
+     */
+    @Test
+    fun `rescan keeps user correction when upsert carries no user tags`() = runBlocking {
+        repository.saveCorrection(songId = 1, tags = listOf("燃"), edited = true)
+
+        // 模拟重扫：模型结果**不带**用户词条
+        repository.upsert(emotion(songId = 1, userTags = emptyList()))
+
+        assertEquals(listOf("燃"), repository.get(1)?.userTags)
+        assertEquals(true, repository.get(1)?.userTagsEdited)
+    }
+
+    /** 反向：本次写入**带**用户词条时，以新值为准（用户主动标记的场景）。 */
+    @Test
+    fun `upsert with user tags wins over the stored correction`() = runBlocking {
+        repository.saveCorrection(songId = 1, tags = listOf("燃"), edited = true)
+
+        repository.upsert(emotion(songId = 1, userTags = listOf("治愈")))
+
+        assertEquals(listOf("治愈"), repository.get(1)?.userTags)
+    }
+
+    /** 没有分析行时保存校准 → 插入一条 user-only 行，且不吞掉后续重扫的模型数据。 */
+    @Test
+    fun `correction on unanalysed song creates user-only row without wiping later analysis`() =
+        runBlocking {
+            repository.saveCorrection(songId = 42, tags = listOf("静谧"), edited = true)
+            assertEquals(listOf("静谧"), repository.get(42)?.userTags)
+
+            // 之后这首歌被分析（模型结果不带用户词条）→ 用户词条仍在，模型数据也写上了
+            repository.upsert(emotion(songId = 42, userTags = emptyList()))
+
+            val row = repository.get(42)
+            assertEquals(listOf("静谧"), row?.userTags)
+            assertTrue((row?.windowsAnalyzed ?: 0) > 0)
+        }
+
     // ───────────── P0：轻量投影与 embedding 契约 ─────────────
 
     @Test

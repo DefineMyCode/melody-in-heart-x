@@ -289,8 +289,13 @@ class FfmpegPcmDecoder @Inject constructor() {
     }
 }
 
-/** FfmpegLibrary.isAvailable 安全探针(so 缺失/加载失败=false, 不抛). */
-private object FfmpegLibraryProbe {
+/**
+ * FfmpegLibrary.isAvailable 安全探针(so 缺失/加载失败=false, 不抛).
+ *
+ * internal 而非 private：播放链路的渲染器编排（[PlayerFactory]）也依赖同一判定，
+ * 以保证「ALAC 排除回 FFmpeg 扩展」与「扩展确实可用」两件事始终一致。
+ */
+internal object FfmpegLibraryProbe {
     val available: Boolean by lazy {
         try {
             Class.forName("androidx.media3.decoder.ffmpeg.FfmpegLibrary")

@@ -1,10 +1,12 @@
 package cn.com.dcsgo.mihx.data.util
 
 import android.content.Context
+import android.content.Intent
 import android.net.Uri
 import androidx.core.content.FileProvider
 import cn.com.dcsgo.mihx.core.common.AppLog
 import java.io.File
+import java.util.concurrent.ConcurrentHashMap
 
 /**
  * 专辑封面的跨进程访问契约：本地缓存文件 ↔ FileProvider 的 `content://` URI。
@@ -34,6 +36,20 @@ internal object AlbumArtProvider {
     /** 封面缓存子目录名（cacheDir 下）。必须与 `res/xml/artwork_file_paths.xml` 的 `<cache-path>` 一致。 */
     const val CACHE_DIR_NAME = "album_art"
 
+    /** 跨进程消费方：AOSP SystemUI（媒体控制卡片）+ 框架包（平台媒体通知），两者都是 uid 1000。 */
+    private val GRANT_TARGETS = listOf("com.android.systemui", "android")
+
+    /** 已授权过的 URI（进程内去重，避免重复 IPC）。 */
+    private val grantedUris = ConcurrentHashMap.newKeySet<String>()
+
+    /** 测试探针：已授权的 URI 数量。 */
+    internal val grantedUriCount: Int get() = grantedUris.size
+
+    /** 测试用：清空授权去重表。 */
+    internal fun resetGrants() {
+        grantedUris.clear()
+    }
+
     /** FileProvider authority = <applicationId> + [AUTHORITY_SUFFIX]。 */
     fun authority(ctx: Context): String = ctx.packageName + AUTHORITY_SUFFIX
 
@@ -41,7 +57,18 @@ internal object AlbumArtProvider {
     fun cacheDir(ctx: Context): File = File(ctx.cacheDir, CACHE_DIR_NAME)
 
     /**
-     * 本地缓存文件 → 可跨进程读取的 `content://` URI。
+     * 本地缓存文件 → 可跨进程读取的 `content://` URI，**并同时授予跨进程读权限**。
+     *
+     * 平台的 `MediaSessionRecord.sanitizeMediaMetadata()` 对 artwork URI 只做**校验**
+     * （`checkGrantUriPermission`），**不负责授权**——真正让控制器（SystemUI 媒体控制卡片 /
+     * 通知栏 / Android Auto / 车机）读得到封面，得由 App 显式 `grantUriPermission()`，
+     * 否则跨进程消费方会拿到：
+     * `SecurityException: Permission Denial: reading ... requires the provider be exported,
+     *  or grantUriPermission()`。
+     *
+     * **为什么在这里授权（而不是播放时）**：跨进程消费方一收到 metadata 推送就会去读封面，
+     * 若等 `onMediaItemTransition` 再授权就有竞态（读取先于授权 → 首帧封面空白）。
+     * 在 URI 被铸造时（导入期 / 启动迁移期）授权，从根上消除这个窗口，且不占播放主线程。
      *
      * @return null 表示 FileProvider 不可用（provider 未声明 / 文件不在允许的根目录下），
      *   调用方需自行决定兜底策略。
@@ -51,7 +78,30 @@ internal object AlbumArtProvider {
         result.exceptionOrNull()?.let {
             AppLog.warning(TAG, "toProviderUri failed for ${file.name}: ${it.message}")
         }
-        return result.getOrNull()
+        val uri = result.getOrNull() ?: return null
+        grantCrossProcessRead(ctx, uri)
+        return uri
+    }
+
+    /**
+     * 给跨进程消费方授予封面 URI 的读权限。同一 URI 只授权一次（进程内去重）。
+     *
+     * 授权目标：`com.android.systemui`（AOSP 标准包名，媒体控制卡片）与 `android`
+     * （框架包）—— 二者在 AOSP 上都是 uid 1000(system)，平台媒体通知也在 system_server
+     * (uid 1000) 里构建封面，所以一次授权同时覆盖媒体控制卡片与通知栏。
+     *
+     * 授权是**运行时授予**，随 App 进程死亡消失；这里不做 revoke —— 通知栏在配置变化 /
+     * 重新渲染时可能重读上一首的封面，撤销会让那些重读失败。
+     */
+    private fun grantCrossProcessRead(ctx: Context, uri: Uri) {
+        if (!grantedUris.add(uri.toString())) return
+        for (target in GRANT_TARGETS) {
+            try {
+                ctx.grantUriPermission(target, uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            } catch (e: Exception) {
+                AppLog.warning(TAG, "grantUriPermission($target) failed: ${e.message}")
+            }
+        }
     }
 
     /**

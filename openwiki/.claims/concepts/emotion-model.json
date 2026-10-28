@@ -1,185 +1,7 @@
 {
   "schemaVersion": 1,
-  "pageVersion": "sha256:4f282a06ebe5fe66008d47f3b2c82adf03253f0f9978ccea45dd44e42a558b93",
+  "pageVersion": "sha256:8ba51751eeca8465f9b55da6414077e1f9e78ccadef136d44d4a86c139ee84f0",
   "claims": [
-    {
-      "id": "claim_7e4a17a19aeb4d9fac20b89858af9b29",
-      "statement": "情绪领域采用分层双轨设计：EmotionGroup 是 10 组 × V-A 锚定中文词（名义 4 词，例外 ABYSS 组 3 词，全表 39 个不重复词）的枚举，每组携带 anchorV/anchorA（-1..1）；词表只做映射展示层、绝不做分类训练目标，组代表词 headline=words.first() 用于自动展示，companion 的懒加载 wordIndex/groupOf 提供词→组反查，上限 MAX_TAGS=4。",
-      "evidence": [
-        {
-          "resource": "repo://core/model/src/main/java/cn/com/dcsgo/mihx/core/model/EmotionGroup.kt#L3-L47",
-          "version": "repo-lines-v1:sha256:6d9415665c438e396b100a5eb14d6b22c91a68c2a38581c37225cb5b518df6cc:eyJzZWxlY3RlZExpbmVDb3VudCI6NDUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVhZjIyY2YwNzMyNTkyYzI0NzE0MWNiZTYxZWZhMTEwMTI2MTJmNWEzMTIyYjlhZjliYmFmNTJmNTcyNGQxOTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjgwMzBlMTQ4M2E2ZDc4YTZkN2FkN2RhYjJiMTQzODNjN2ExODk0YmUyYjJmYjFiNWIzZjFmMjYyNmYzODc4OTkiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjoyLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjYxNDE4ZmZkMjQ0MjBmYzE2Zjc2YjVlZWEwNTRjYzE2YTJlMmU1YWM0Mjk1YzUwMmYwMGI4YWQ3OTU5MzRjMWMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjkyZGVlOWZlNTYxZTM3MTMwMDM4ZjhhMjlhOTQwZGVkZGI4ZDQyMTNhZjI4ZWQ0MGYxMWZmN2RhODA2ODhjMjMifQ"
-        },
-        {
-          "resource": "repo://core/ui/src/test/java/cn/com/dcsgo/mihx/ui/components/SongEmotionSectionTest.kt#L61-L71",
-          "version": "repo-lines-v1:sha256:951049ae774e837064b0c5e4e1d2aba1ee551685361363e18f6b4a2e3f7a215a:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRjZjA5ZWIwYzU3NDRmYjk3MzMxYjk4ZmYzZmJmMDVhNjAyYmEzZjdmNjdlNWRhNWJlOTA5NTAzM2Y2MjU4MjUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjY0NzEzMzhlYzVhNTE1YmUzNTdjYjMxYzk1OWE0NDZhNGM3MzAwYWUyOTM1MzNhMGIxMzJjYzdiYmU2YmM5YTYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjRmZmUyZjE4NGE2OTQ2NDgzMjk0NjliYzQ0MWM3ZDQ2OWNlOWYxZmY0ODlkMDdjZDA2YTAwZWFlNTlkMWUxNWEifQ"
-        }
-      ]
-    },
-    {
-      "id": "claim_8694100d3dbd467a90e8a7809d44d1d2",
-      "statement": "EmotionGroup.categoriesFor 把逐窗曲线投票为组：|v| 与 |a| 同时小于 SongEmotion.LOW_CONF(0.15) 的近零窗弃权；每个有效窗按 (v-anchorV)²+(a-anchorA)² 投给最近的 auto=true 组；占比降序、过滤 minRatio=0.15、取前 topN（默认 MAX_TAGS=4）；曲线为空或全弃权返回空。headlineTagsFor 在此之上取各组 headline。",
-      "evidence": [
-        {
-          "resource": "repo://core/model/src/main/java/cn/com/dcsgo/mihx/core/model/EmotionGroup.kt#L49-L83",
-          "version": "repo-lines-v1:sha256:7a49ad9d636b230baca11842fccf5ec11122c678b13e8bb7abbdcc956671e1da:eyJzZWxlY3RlZExpbmVDb3VudCI6MzUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAwNjhlNjlkNmVmODY4ZGRmZGY5ZmY4N2E5NTY2YzdiMTVjMmE0ODhiYzQxNDM2NmE4ZjYwMTJjY2EyNDQ2ZGUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU3YTE2MjcxNzM5MzA0N2E2YmYxOThlMThiYTNjMDE2NDQ1MjNkMmU5NmU2YjVjZTkwMGQwZmVlMjEzNzVjZmQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjdlYWQ1MDRiZDI1NDI2OTYwNWM4ODQ1NTljNzVjZjk4OTQ2ODQyYjAwNmZlNTk3OWQwODlmMmNjYzIxMGI2YjMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijg1N2VlY2JkNDU2MGNhZWMyMjY5YjU5Y2VhMTNlZWRmYmZiYWI3YTdmOTQwZmRlMDEzYTQ2OWY5MmY1MmZmZDIifQ"
-        },
-        {
-          "resource": "repo://core/model/src/main/java/cn/com/dcsgo/mihx/core/model/SongEmotion.kt#L40-L42",
-          "version": "repo-lines-v1:sha256:fd36990cef654d9fa5604d18ceaf74691e8fe1bf931f5677f5780909de8e6a11:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYmYzMzAyN2JjMjBiNWJjYzRiMTM5MGI2MzZiMmFjYThiMDg1M2JmNTAyMDRiMDIwOWExN2I4ZjQ4NDA3Yzc4YiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDg5M2Y0MGUzNzgxZWI4OTZjODJkMDQ2YTA4MDY3YTExZTM1Y2RmMmYxZGZhZjI2ZmVhOTBiOGRiNjY3NjQxMyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYjY0OWI0ZjM1OWMyZGE0MGMyNmQ3ZDY3OWU3YmQ2MjRkYjdjMjY3MzI3MzJjNTU5YjVkNDY0MzJmZTRiYjgyMSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjEsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNDEyY2EzNDVjY2Y3NWJmOWMwODA2YmNlNjk1YmU4ZGU4MDhiNzk5ODQyNTFhN2E1NGQyMDJjZjYxMDFkZDQ1MSJ9"
-        }
-      ]
-    },
-    {
-      "id": "claim_90dacd66e5ba4433bd3fffc92433ca66",
-      "statement": "EmotionGroup.avgOfWords 把用户勾选词解析为组集合后取组锚点均值坐标（同组多词即该组锚点，跨组取平均，非法词/空表返回 null）；AppMediaMetadataViewModel.saveEmotionCorrection 正是用它把词条换算为 userValence/userArousal 后调 saveCorrection。",
-      "evidence": [
-        {
-          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/AppMediaMetadataViewModel.kt#L31-L47",
-          "version": "repo-lines-v1:sha256:6a9ebea91f0aa70c9e0d773ba6aaa995c586ba50d2bf800672008f7a269855ab:eyJzZWxlY3RlZExpbmVDb3VudCI6MTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjUxMjJkNjA4ZDY0MjRjYWIxODhmNzAyMDE3NzVmOTQxYzJhMzdhMTk1ZGZlYjY2ZWZlMTMzNjcwMTg1ZjUzN2UiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjVkYzAxOGIxY2Y2Y2FiNjUzNWIzNzFmN2MzOGQzNDNhOTYyZTE0ZjMxODkyODVhNjVmZTNjZTM2ZWE0OWI0YTYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
-        },
-        {
-          "resource": "repo://core/model/src/main/java/cn/com/dcsgo/mihx/core/model/EmotionGroup.kt#L85-L91",
-          "version": "repo-lines-v1:sha256:13168c65dad6c469dc2ef5b32f5582ff7a5cd9a27923952f5b66a465da38bf3e:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNmI0ZGEyMzQwY2I5ZGUwMDMxOTUyMzZiMTIzOWI5MjAzMzZmMDlkNDcyZmE2M2U3ZGY3YTc0YjU2ZmQwMjJjOSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZTZiMDQ0OTE0Njk3MjJlODM2M2E5NGU0MDQ0NTM4ZTAxM2EyYTIxN2UzNmIxZTU2OGJhNjBhY2I3YjRjOGYyZSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMmUwNjcxZDFkOTliMzczMzdkYjUxNWE0MjEwOWM2M2VkNzNkNTAzNzVkNjIzYjhlZTEyZjg5MGUxYThlY2Y0OCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjIsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMzc5NGQwMmE4MTIxOTQ0ZDE3NmQyNjVlOWJiOWNjNTlmNmFiODkwYmNhZGY4YWVmZGViZGJiYjRmMmVhODQ0NCJ9"
-        }
-      ]
-    },
-    {
-      "id": "claim_fc888ae206e24d5e90572832bf56d432",
-      "statement": "WITTY（鬼畜/沙雕/戏谑/荒诞）是唯一的 auto=false 组，退出自动投票、仅手动标记可用：鬼畜/沙雕是故意做坏/重复剪切的文化梗，声学上无法与正经燃/快乐区分；且锚点 (0.2,0.3) 位于 V-A 图中心，YAMNet 偏暖的中庸窗会被整片吸走造成误标（测试以 20 个 (0.2,0.3) 窗断言投票结果不含 WITTY，同时 groupOf(\"鬼畜\") 手动链路可达）。",
-      "evidence": [
-        {
-          "resource": "repo://core/model/src/main/java/cn/com/dcsgo/mihx/core/model/EmotionGroup.kt#L10-L12",
-          "version": "repo-lines-v1:sha256:56d3999a77dbf06af149e63f6ef23337e9cf517d162ad118834792695ee32bdf:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYTY4NDJmYTA2MmIzMDE0NjBhOTU0ODM3ODg2YjIwYzRlNzAxYjY4OGRlOWNjMmFjNDJkMDQ5Y2FkOTY2Mzc4MyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiOTIyMmEyMmRmZjgxMDEwNjI3MTdmMDYwY2RiYTQyZWM1ZDE1YmQ0NmI5YTcwM2EzZTM1ZDM3MmYzMDJlZjJjZCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMjI3NzRhYzZlNjYwYjU5MDhiOTVjMGVjNTdkOTY0MGFjNWQwOGRiNjljOTVjNTIzZDlhNmUzY2YyNzIxYjc0MCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYjgzOTYzMGE3ZGMwMGI1OTMxMjE4NGI1OWQ2M2IxYTIzNDZhMjNjODE0MTM4Y2EyOTJhNDkzMTBjZWQxNmYxZiJ9"
-        },
-        {
-          "resource": "repo://core/model/src/main/java/cn/com/dcsgo/mihx/core/model/EmotionGroup.kt#L26-L70",
-          "version": "repo-lines-v1:sha256:a0c1d234c5805a160b460ca0a3901a034d052e0d54cc54d692c9144b79c08a06:eyJzZWxlY3RlZExpbmVDb3VudCI6NDUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZkMThkZTljYjRhNDZmMjNkODQ2OTAxZDZmYzJkMDQxZGM1MjQxOWQxM2ZjNzczMzQyYzkwMzY5MWVhZDgyZDkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImMzMzMwNDQ4Njc2ZWViOTIxODVjZGYxYjNmOGUwOWE4YWU3MjlhOGJmYTcxMGMyOGEwYTA0YWRkYTI2YTc4MTgiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjQ0ZDljNzU4MzRlMTFiYjhhZmUwNDJkYTMxMzA4Mzc2MTc2MTU3MWJkYzQzYzVhZjY3ZWI5ZjI5YzY3OWExYzIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjdkYzQ2ZDA4YzFhMTczYjJjMWFlNzI4OGQ4M2E0NWNhODJhODgwOTAxMDk3MWJiMTM0OTM4YTQ3NmE5NDM5Y2QifQ"
-        },
-        {
-          "resource": "repo://core/ui/src/test/java/cn/com/dcsgo/mihx/ui/components/SongEmotionSectionTest.kt#L87-L94",
-          "version": "repo-lines-v1:sha256:f9eae7febd9078e7c130adf13b95c5c47dcd9d996757d3ba974d04c9bb990ff5:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNDY2ZWQzOWE2OWE3ZmRjZmQyZWZiYTE2Yjc0YTlkMGVjNmJlNzJiOWVmODY1MWQ1Y2I1ZjJkMGEwNWJjOWE1ZCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDg5M2Y0MGUzNzgxZWI4OTZjODJkMDQ2YTA4MDY3YTExZTM1Y2RmMmYxZGZhZjI2ZmVhOTBiOGRiNjY3NjQxMyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZThlYWYzZTFkYjI4NGY2YTZmZDRlMDY2YWUyZmI2NTRhZTY4ZmRmY2YzZTdlNGRjYTRjMmRkMjE0YTQ5YjlkMCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMGQ0YWRhOTQyNDgyM2QyNjQzNDZlNGQ2OTBhZmQyMGE5NGU4ZmUxNWNhZjU2YjgxOGI2Y2E0MjRmZTFlZmEzNiJ9"
-        }
-      ]
-    },
-    {
-      "id": "claim_bf2b8f2ff679418d96ca8517309ee374",
-      "statement": "auto=false 组对随手播配置页的影响：AppNavHost 把 4 个 WITTY 词硬编码为 manualOnlyTags 传入 MoodSlotEditDialog，该弹窗单独分组展示（标题\"仅手动标记计入\"+ 提示文案），歌曲数为 0 的 chip 置灰——WITTY 词只有用户手动标记过的歌曲才计入候选池统计。",
-      "evidence": [
-        {
-          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/AppNavHost.kt#L586-L593",
-          "version": "repo-lines-v1:sha256:6252a102422696411d47a680fe9aa2c06ff0e77f72042c713a7915e37c0c74be:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNTFhZmZkMzViMTc2NjRkNWRiYjQ1ZDBiMWUxODc2MjAzMjIyY2JiMTU3MjUzMGE0YWE2OWEzOTE1ZDlhMmQzYiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYThiMTg1NTZmNjBjZjJjY2ZkNjUxNTg5NWQ3MzM4MTYzZWQwZDRhZThjMTAwMWY5ZGVjZGE2YTc1MDcyY2FjOCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMTRmY2JhNzUzYjAyNTQ2NzQ5ZDQyZTI2ZjQzOThmNGE0N2ExOWZlNjU3YTU4NzRjMDQxODYwMWVkYmRhOTMwZiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiODhjMjViZTBlMmVkNGRlOTY2YmFmMGJhZWIxNjM4MzgzMWRhNTJjMjUwMjMyMjRhNmZiNzA4YWYwNDc4ZDdmYSJ9"
-        },
-        {
-          "resource": "repo://feature/user/src/main/java/cn/com/dcsgo/mihx/feature/user/MoodSlotEditDialog.kt#L168-L196",
-          "version": "repo-lines-v1:sha256:5397b34b213a768b4820f19bd3658f8da9311e1ba812442dd93d8b749a266860:eyJzZWxlY3RlZExpbmVDb3VudCI6MjksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjVmYzgyNDRlM2I1NzkxNGU2Nzg5MzA1Y2JlNWY1ZDJmYmYwZGZhMWRlMGZjYjc0OGYzYzBkYTUyNzk4ZDBmZTIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU1MjJjNDJjZDE5YzZkMDNkODA4YzQ1MjcyMDU1MjgyNWI3ZWExYzViNDkxYjIxODUxMWNhYzc0MTVjZjlkOWIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijc2MzIxODllYjBhOWI2ZmU2MzkzMGRkNDJlNDYzZDQ2NDY4OTgyMjc3N2EzOWVhZWZiYzk0NjE1MGQ1NjcxNmEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImJlZjQyODViNjAwYmNlZTUzNGExODdkZDY2Mzc0Yzg5NzgwNjBhNjkzZjI1ZDJhMzAxMzMzMmU2ZmNhNDQxYjAifQ"
-        },
-        {
-          "resource": "repo://feature/user/src/main/java/cn/com/dcsgo/mihx/feature/user/MoodSlotEditDialog.kt#L56-L57",
-          "version": "repo-lines-v1:sha256:707e5a1a2f5b9f9d5faf9b5b5bae457c91e24151b2e34f8e7792e9d1e050887b:eyJzZWxlY3RlZExpbmVDb3VudCI6MiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiODZiMThmMTU2OTdkNDY5ZDU2MmUzMmIyYzdlZDY5MWFhYmY4MDI2NWVkMzRhNjFkNzUyNWQxMzVhZDljNWM0NyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiOTdiYzcwYjMwN2VlNTU2MzFjNTVlNjg2NjA5MWRhOTgwOTdkZGFjOGE1YjBkYzViMTdmMzMwMjU0NTQ2YTQ5NyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiOTM4NDk2ZGExMTBiMTI1ODc3MmI5OWJlMDRiZjRiMjU4YmUxNDc5NTRmYzZlOGEyNzg4NGEzZTAyODI4YmQ2OCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZDQzN2RkOTYwYjE1ZDcyMjZhNWY2NjdmMmI2MDk3MTlkZTkwMTRlMjg2YzhiMzY2MGIzOGNjYmQ2MDFjYzJjNyJ9"
-        }
-      ]
-    },
-    {
-      "id": "claim_731ae469653f427db8d1d8ebdd041c59",
-      "statement": "emotionTagsOf(emotion) 是展示词条的唯一出口：userTags 非空时原样返回（用户词最高优先，可覆盖模型结论），否则按逐窗曲线投票取各组 headline；曲库情绪 Tab（EmotionViewModel.buildRows→EmotionSongRow/EmotionSongUiRow）、歌曲详情 SongEmotionSection、随手播缓存（PlayerRuntime.moodEmotionTagsCache 在 observeMoodSlotCaches 中持续订阅映射）与时段词条统计（MoodTimeSlotViewModel.loadStats 用同一函数）全部经该函数取词条。",
-      "evidence": [
-        {
-          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/emotion/EmotionViewModel.kt#L207-L218",
-          "version": "repo-lines-v1:sha256:b0472da8f56fd8be2685a053a547a087ba2770ea0c11e51d8edd6ab6f8041939:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU5ZTA4YmFlZWZmNmYzMDdmZjA3NTJmMDhmODhkYzI0OGJiNmE3MWM1OGNiYmU1YmEwNzcyMTQ4NzRjZTA5NzEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjE5Zjc1ZTExNWE2ZjZhNTc2NDlmZjk4NWIxOGI0MmI4NDA0MmZjNjU5YzY0NmU0YTcyNWIwYjMxODEyMmM5MjUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImI2M2FlMGY2MDk5NTM4MzJkZDYwZDIxN2Q4MDdkMTU0NWExYjMxNTQ5YjQzNjcyYjc4ZTdjNjdhNzYzNTgyNmMifQ"
-        },
-        {
-          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/mood/MoodTimeSlotViewModel.kt#L71-L77",
-          "version": "repo-lines-v1:sha256:a01de4c6f10ae406ddf5dfa23a540867875f83b14a7db1b865e38bc89e9516ba:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNTkxN2FlOWE3MDYzZTAxMzIzMTQ4ZTUwOTM4YWMwOGVlZTJjY2VjNWQ1NDljMjRiNTVjYjEyMmVjNjQ1NzM5ZCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNTdhNWZmYTNlMDk1ZGYwNWI2YjMzMzM4NzFhYmExYzFiM2UyNWFiM2RiZjFkNDkyZjE1NGMyY2MyYjEyMmY1NyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMWM0MGU2MWY5MmE1MzMyODkyM2Q1NjIyZGY0ZGZjYjRhNTFlZTFkNmJjN2MyZjg1YTQwN2YyYzdmODM5OTUyYyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTFkZDc5MjE5NzdhMTRkOTIzN2IyMzJlMWU2ZDE2YTZiNjk2YmE3MjljOTM5ZWZmMGY2YTg0MGY1ZDBlMjVjOSJ9"
-        },
-        {
-          "resource": "repo://core/model/src/main/java/cn/com/dcsgo/mihx/core/model/EmotionTags.kt#L11-L13",
-          "version": "repo-lines-v1:sha256:d860b682b0d022ed58ac02f8bee8dfc4894788508bc575631dc09e26531d17e4:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiN2Y1ZjkyZjlkYjk1ODRlNGQ0MjFlZGNkZDY4NjM0OTk3MzkzY2MwMzFjOWE5OWVkOWZiYjViMmZkZGEzZTYzMCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiODM3YWYxOGExY2FlNjMxZThhNTI1ZmNiMTI0YmQxZWFkYzk3NTUxM2JjMTBmNDI5MzNkZTYxOGI1NjhiOTFlMyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMGQ0NGEwODZkOTk0MGI0NDc0NDFhZTAzMGQ2NGE4ZWViYzZiYTY0MDE0ZWU4OGRlNWRjNjEwMzJmNmQ1NjI4MiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjEsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNDEyY2EzNDVjY2Y3NWJmOWMwODA2YmNlNjk1YmU4ZGU4MDhiNzk5ODQyNTFhN2E1NGQyMDJjZjYxMDFkZDQ1MSJ9"
-        },
-        {
-          "resource": "repo://core/ui/src/main/java/cn/com/dcsgo/mihx/ui/components/SongEmotionSection.kt#L136-L163",
-          "version": "repo-lines-v1:sha256:a133dd9d431f93b1ea618dcb9c89b96079a4a1cc21b6a3b423ca0c7375b07944:eyJzZWxlY3RlZExpbmVDb3VudCI6MjgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjYyNmM2MzlmZGJkNjg3MjQ0MjdkNzcyZmRhYTZhY2VmYjg3MjViMjRmNzhhNjM1ZDVkMDc5MDg4ZTgzNjdhNjYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBjNjQ3OWNjMjMwNDQwZmQ0MWU4MjI0MjE4Njc5Njk4NTU5ZDI4OTNiZDY3YjQzODBhZmFiODExYjM4YTU1YWEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijg3OGQ5MTg1ZGMzNmIzZTljZWYyNGFkYzc2YmZjMDNjMGIyYzYwOTZhZWRiNzVmZmRjYTY0NzAwODQ1NjNkNmEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjI5ZDg5NWNiZDM0YzY1NjkyNWFmMjNlYzFhOWFjYzE2MDU3N2FlMDU0ZGU4MTY2MGM2NzEyMzdjY2M4YWYwNTMifQ"
-        },
-        {
-          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRuntime.kt#L428-L437",
-          "version": "repo-lines-v1:sha256:df5b58c71a3823721ec14134fc6d2ffb50338fc7506ce602bc88b7e52df51c22:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjdhMWE5NWJiZjNlNmFlNTRkNTI2OWM5NmIxYzkyYzljY2EyNWU3Njg4NDc1NzA1MmJjN2RkZmEwMjVhMzM4ZmYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY1YjdhOWVmNTYyODc4Mzc4YzIwZjMzN2JiMTE2YWViYzAyMWY1YThjZjE2YjNjODY5MDdlNWJhZDFkMjFjYWQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQzY2FiNTVmMTkzNTk5NzYwOGQ5NjNmOTJhZDQ1MTMxNjk3ZjI1MTY2Y2UwNDg4YjI2MTcyZGVmZjgzMWY0YzMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImNhZDE0ZDIzNjExNmM1NWY4NDE0ZWVhYWZlMzdiYWEwYjc2OTZmMTllNmVmMmYwNzY0ZGJiMGFlZDU5ODJjZjQifQ"
-        }
-      ]
-    },
-    {
-      "id": "claim_83bbbacbfd3b476b806c91f2cf708724",
-      "statement": "SongEmotion 定义未定带与校准优先语义：LOW_CONF=0.15，|有效V| 或 |有效A| 低于该值为 lowConfidence（UI 显示\"未定\"不硬判象限）；effectiveValence/effectiveArousal 用户校准值优先（userValence ?: valence）；userCorrected 要求两个校准坐标均非空。",
-      "evidence": [
-        {
-          "resource": "repo://core/model/src/main/java/cn/com/dcsgo/mihx/core/model/SongEmotion.kt#L7-L42",
-          "version": "repo-lines-v1:sha256:1822c24dc871334c88b9deb190272b58c2a450afb79b0f982f0bd53295c15f65:eyJzZWxlY3RlZExpbmVDb3VudCI6MzYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjgxMGMyODhjM2U3YzQ1NTFmOTNlODdkMTFjNjI0NzY0ZTNhODJjM2VlZWFjOThiMWI2YmU3NmRkYTRiN2FmOGUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImYxNTAwNDU0YzlkNTdlNThiZjgxOGZmMDk3YjVlMDQwY2E4MDcyNWUxZDMyMGU5NDY0NTY5Zjg3NjhjNzRmYmEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
-        }
-      ]
-    },
-    {
-      "id": "claim_19d9bfb20e02434e9ca2af31f053ad62",
-      "statement": "SongEmotion 域模型承载：全曲 V/A 逐窗均值、原始未平滑逐窗曲线（5s 窗/2.5s hop，平滑归渲染端）、A 轴正向峰值秒数 peakSec、windowsAnalyzed/durationSec、modelVersion/analyzedAt、可空的整曲平均 embedding 与用户校准三字段（userValence/userArousal/userTags）。",
-      "evidence": [
-        {
-          "resource": "repo://core/model/src/main/java/cn/com/dcsgo/mihx/core/model/SongEmotion.kt#L10-L42",
-          "version": "repo-lines-v1:sha256:a48c1b4552297f9dc180cb4a4b14313904ff55d2daa69e8e4c77ffbc318f2489:eyJzZWxlY3RlZExpbmVDb3VudCI6MzMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijg0ZGRjMWU2ZjMzNjQwODAyYWI5OTI5MDY1ZjNjN2QxMTQ4ZDVlNThmODBkMGRhOWU4OTExY2JiN2VmNDIwM2EiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjRmZjQwODBiN2I4ZDNkY2IwMmQxOWVjMjI0Yjc4ZTBlNWNiZmMxMDdhMTczNjQ2OWE2YzQ4NWFlMjc4MTUxOTMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
-        },
-        {
-          "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/player/EmotionAnalyzer.kt#L115-L150",
-          "version": "repo-lines-v1:sha256:551925c2a3829d9f4fee09a60652766a7928026aa9670e3a370abec892d331c3:eyJzZWxlY3RlZExpbmVDb3VudCI6MzYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImI5MWMxNDU3YzY1YzcxYjdlY2M5ZDAzOWZmZjgyYzM1ZjQ0OGU1NDUyMjA3YjlhODU3ZDU4YmRlMjBmNjI3ZGYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU1MDMyZTk2NGQwOTMyMzUxZTVkMTg1MjY5MjgxYjE3MWEzYTA5YjA4YjI4NmU2NjFlYTQ3MDMyM2M4MmViNGQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjBmMjAzMzM4YjIxZGU3MGZlYjhkZjZlMmY0YmM3YWYwNDQzNWM3YWYzOTZjZmE0NTJhZjhkYjA1M2Q2NWYwOTgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjllMDA0NjNiMTYwN2E1NzNlMTI1MjQ2ZjQ2YmFmZmJmMTliODEwNDIxMjFlM2RmY2IyODE4OTZiZjEyNzlhNTMifQ"
-        }
-      ]
-    },
-    {
-      "id": "claim_82763ebb7fad40a8aad39615fa028369",
-      "statement": "SongEmotionEntity（Room song_emotions 表，主键 songId、无外键）与 SongEmotion 由 SongEmotionsRepository 私有扩展互转：curveJson 为扁平 [v,a,v,a,...] JSONArray（解析失败降级空曲线）、embeddingB64 为 base64(float32 小端)、userTags 逗号拼接（读侧过滤空段）；迁移轨迹为 v8→v9 建表、v9→v10 增列 embeddingB64 与 user 三字段。",
-      "evidence": [
-        {
-          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/local/entity/SongEmotionEntity.kt#L12-L29",
-          "version": "repo-lines-v1:sha256:ebc64db63b69d907457778120263dc69fc5cf707250d7e10b349dac78c00fc16:eyJzZWxlY3RlZExpbmVDb3VudCI6MTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijc4OTQwYTg4MzI0MDA3NmNhNmYyOWFkMDU1NmExODZhZjE3OWE4ZDBjM2ViNGMwMTk3YWJiYjYwODA3N2RkNzIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijc0YmExY2VkMjBlYTBjMDZhM2ZkZjU4MTNjMzNhYTZhMWI5MTQzN2Q4YzA0NGY0ZDhmYzQ3OWE4M2JmODc3YmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjM4MjJlZjAyY2U1OTBiYTNiN2IxODc2MDE0Y2MwNzAyNTg5NDNlNGNhYzU4MmZlMTU0YjdjZmYyNzVhMTk2MDUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImZhZmJhMDUyN2MzOTUzYzRiNmUwZTViNTczOWJhODM2MTJmODA1M2JjZGM5NDY2NzMwMTkzY2QxZDU5MGI0MDgifQ"
-        },
-        {
-          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/local/migration/MelodyMigrations.kt#L112-L139",
-          "version": "repo-lines-v1:sha256:4560176e350b536e5300691b2ebfa7cbdc538efd3221e0db81a76d2863919b0c:eyJzZWxlY3RlZExpbmVDb3VudCI6MjgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImI2NGU5M2U2ZWNiZjYwZjIxOGI0NWQyZTQyN2FmNzYzOWY4YzE0ZmEzMDUxNGY1ZDZkMTAxMWQ2MzE5NzA3ZTAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk5OWJkZWZlZWFjYTYzNDBlMDI5MGRjODZlODg5Yzg5ZDVlMTg5YWE1YmE0NGI1ODViM2I3MDczNGY0YTYyZDgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjhmYmE5Y2VhNWVjYzAwNTE5YmI0ZGMyNzg5MzhkYzJkOGQxOGQ4OWUwYjBkZTVlNTE5MGVjOGVjNDcyMTkxODgifQ"
-        },
-        {
-          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/repository/SongEmotionsRepository.kt#L130-L177",
-          "version": "repo-lines-v1:sha256:f38119da2458d064d3208b930a6efaf9f9980e927e3efb10706414b7843e11da:eyJzZWxlY3RlZExpbmVDb3VudCI6NDgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjkwZWU2ZTAxZWE2MDJkNzUwYTY3NDY0OGQ5MzBkNzNiNmFmNzY4MDI2YTRlYmU4ZGM3Y2FhNjAwZjMyMWE3MDkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjkyYjVlOGExZjRmMmE0YzQ4ODNiZjJmMWQwNWVlYzI3YWI5NjU3MjY4NmMwY2Q1MzBhNTg0NGQ1MWI3OTA4YzQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
-        }
-      ]
-    },
-    {
-      "id": "claim_1381745d00fd40728a40ee9066ad25c3",
-      "statement": "SongEmotionsRepository 是 song_emotions 表的唯一数据源（:data 单例绑定 MelodyDao，对外仅暴露 :domain 的 SongEmotionRepository；:player 分析器为主要写入方）；其 upsert 在重扫（模型升级）且新记录无校准数据时继承旧行 userValence/userArousal/userTags 再写入——重扫不吞用户校准。",
-      "evidence": [
-        {
-          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/di/RepositoryModule.kt#L62-L67",
-          "version": "repo-lines-v1:sha256:d9cc55230c4ee1f5beff1856d05abadc0d99546cc1cec9214387c4bc29ecd29b:eyJzZWxlY3RlZExpbmVDb3VudCI6NiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYTAwM2NkOTg5YzZiODM5NmJkYWExM2M1MzE0MDc0MWJmNDc0NzEyZGNkMjhlOGUzYjE2Yjg4NDI2ZGMwOTgxOSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNTM2ZWYxNWFmYjc0OTEyNmVmYmE4ODViODM1ZTAwMjJkOWFkMTZjYTRlMzM5YjM2NGFiMzUzNjhmNzc1NWVmZCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMmI3YzE5MTYzZTM5ZjgyZGI0NGM1ZmRkYjllMmVhZWUxZjM4ZWQ4OGU1ZDlmODU0YWE4OWViOGExNTc0YjBlYyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYmMyZWFmZDI1NTEyMjFkMTljOTFhNGZiNDQwYzQ4ZjNlNWZmNzNmZDA3OTA3MjA4ZjUyOTViN2NkN2U4YzgxNCJ9"
-        },
-        {
-          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/repository/SongEmotionsRepository.kt#L48-L64",
-          "version": "repo-lines-v1:sha256:7271e80c6c3bc64a5a877d5686c684e680bd47fbade1e5f28a7ae751544eb98c:eyJzZWxlY3RlZExpbmVDb3VudCI6MTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk4MmYwYTRiODkyNjFlMmQwNWJiYWYyMjk1MzJhOTA3YTJmOWNkN2MzOWY5ZjYyYjJlNmUxMzg3NmQ5NmNmOTUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjZkYTVlYmQwODk4YzZhZmQxYjU1NDVhYjI0NDgwYjIxZTViZmI5MmQ4YjcxOTM5OWMyYTE5ZDcyNWE1YTlhY2YiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijg1Mzg1MjFiNWEzYWMzYjY0MTZlMzJmMWFhYWJiNjc5MjRkZDQ3YzMxOTYxOTY5NzQxNDYxNTcyOTAyN2M5NzkifQ"
-        },
-        {
-          "resource": "repo://domain/src/main/java/cn/com/dcsgo/mihx/domain/repository/SongEmotionRepository.kt#L13-L23",
-          "version": "repo-lines-v1:sha256:1393bf40457065b6e60c8d5c0a9a3ed698b44c4de15e2211cc0ac49bdc0e5978:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBkNTdmNmNhN2JiNGJiNTEzYTRjOTk4NTUzNDg3MTgzMGU0YmNmZWE2ZjdlYzZmMjEyMTIzOGE0ZjMzYjczZmMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImMxNTE3NmU1MTc0NDM0ODczNmZkYWE0NmY2Yjk1MDJlNDcxOGM0YWMxNTdmNGRhNTJiMzE0NzAyZGM5MzI5YjciLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjZiZGNlNDNmMWZjNmRiMjgzNDhhMTY0OTQxMjVmODZhYmRkN2E4MTI5N2RiNmNhZjI5ZmEzYmU5ZTZmMGYxNDciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImU0Y2RjZjIwMmEyYjI0Yzc2Y2I2NjRlYjE3Y2JjYzcxYzg3OWMzM2Q0ODU3MzFiYzQ0NjI1YjI5ZTIxMTY5ZGUifQ"
-        }
-      ]
-    },
-    {
-      "id": "claim_0216270f844848df8616852c615674e1",
-      "statement": "saveCorrection 支持无分析行时建 user-only 行：已有分析行仅 UPDATE user 三字段（updateSongEmotionCorrection，不动模型数据）；无行时 INSERT 仅含 user 字段的行（curveJson=\"[]\"、windowsAnalyzed=0、durationSec=0、embeddingB64=null、modelVersion=\"user-only\"、analyzedAt=当前时间），因此分析失败歌曲也可手动标记，读侧以 userTags 优先。",
-      "evidence": [
-        {
-          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/local/dao/MelodyDao.kt#L432-L445",
-          "version": "repo-lines-v1:sha256:46ae5413a6949b5fec750979b39066c1110e146d027b9f0938297268f802641f:eyJzZWxlY3RlZExpbmVDb3VudCI6MTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY5ODRkYjcyNDcwZjU1MmIzYWM0OTcwNTA0N2E0ZDAxNjk5ZTZiMTBhOWJjYzNhOGIyODk0YTEyYmY2MmEzZWMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ2ZDBkYjc0MDVhNmIwMDYxNDJiODkxNGE0ZTMwNTQyYTg0Mjc5YmUxNGRkZGU3YWRlNjUxNWRiYjk5OTk0MmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQ4NjU0ODIzZDlmZDQzNTVlYTQ0YzRiZmFmMzA5NzZmZjBlZDcxMjIwZmYxNTM1ZTYyM2Q0ZDgxYzZkMjM1YmQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjIyZTI0MDAxMmFhZWI3NTAyMjYxNDVkNTM4MzA3ODI0YjJlM2Y2MjExMGY1MDBkZWMyYjU5MWZkYzNhNDc3ZDcifQ"
-        },
-        {
-          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/repository/SongEmotionsRepository.kt#L73-L96",
-          "version": "repo-lines-v1:sha256:89a75271715647f6b044ee8e4ed2ffaea00b9f1b0a9d871d85bf5de4a2d20fce:eyJzZWxlY3RlZExpbmVDb3VudCI6MjQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjE0MWZmNDNkYWFkYTFkNWNjNzIxMTE3MDMzM2E1YmIzYjI3NWExZWY2NjEwYzFmNmY3YzQ3NmQ3MjhlODRiMjQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjE0MDlhNTJjOGMwYzQxMDYxYjMwYjA5NjA0ZWZmMWEzYjUyMTNlMDI2OGRjMDBmN2UxNWZjNmJlNjgyOGJjMzciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjUxZDMyODUzYTRkMzY4NzJkZjQ4NWUxY2RkZDZjZTBmY2E1MzIxM2I5MzE1MzA0MDE0OWY4NGE4M2QxNjNlNmIifQ"
-        }
-      ]
-    },
     {
       "id": "claim_4101d61fcd4e4055bd666ea73c417e7e",
       "statement": "clearCorrection 将 user 三字段置 NULL，并在该行为全空 user-only 行（windowsAnalyzed==0 且 embeddingB64 为空）时直接删行——否则全空行会被列表构建（以情绪行非空判定\"已分析\"）误判。",
@@ -187,34 +9,6 @@
         {
           "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/repository/SongEmotionsRepository.kt#L98-L106",
           "version": "repo-lines-v1:sha256:b5f9e6d245c77e37d8bc66ecab7b09a65d61a598ace920a69bba43ceddb0da6e:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZTczYzZlNDEwNWE1OTQzNWZjMDMxZWRlOTg5NWY4M2M3MjZkNmExYjFjODgzNzRmNTJjYTdhMjk1ZDJiNTA4ZiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDg5M2Y0MGUzNzgxZWI4OTZjODJkMDQ2YTA4MDY3YTExZTM1Y2RmMmYxZGZhZjI2ZmVhOTBiOGRiNjY3NjQxMyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiOTk5YmRlZmVlYWNhNjM0MGUwMjkwZGM4NmU4ODljODlkNWUxODlhYTViYTQ0YjU4NWIzYjcwNzM0ZjRhNjJkOCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMDA5NmY2YmIzMjEyODE0ZTdkMjdhMjQ0NTk5NGJhMjU3YTBmOTJhZTQ5YjQ1Yzk3ODU2ZjExYjcwNzYzOTNmMSJ9"
-        }
-      ]
-    },
-    {
-      "id": "claim_7e59a69145b5415e80ab62561b18043d",
-      "statement": "重扫由 modelVersion 驱动：EmotionScanWorker 以 analyzedVersions()（songId→modelVersion 轻量投影）中 analyzed[songId] != EmotionAnalyzer.MODEL_VERSION（当前 \"yamnet-va-v3\"）判定待分析歌曲，换模型后旧数据自动重扫并经 upsert 继承校准。",
-      "evidence": [
-        {
-          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/emotion/EmotionScanWorker.kt#L40-L52",
-          "version": "repo-lines-v1:sha256:7e8c5083c333fb433e537bdd19bff13514aa62798d10ed44ef2f390984f736ac:eyJzZWxlY3RlZExpbmVDb3VudCI6MTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImJiZjI2NjcyOGE3Zjk2NDYzZWE4MWRiOThmMWVjZTNkOWQ2MmUzMDNhY2I1YTkzYjI5MTY5MGE3MTk0MTk1NDciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQ5ZTNiNjA3OTRhNzEwODIxYjMyNjc0ZWU3NTEyODUyM2UxOTc0YWRkNTdiM2UyNDBhZmNjNGMwODI1MmIwNGUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImI1MmIzMTA4MjRkY2Q2NDU4ZGJmN2Q3YWI0MTE4YmFmYjBlMTE3NzYzNzAwMjdiZDUyZGYzMzU5OWVhODk0YmQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjZhNGM0M2NkZjA5ZDQ0NzFhMGMxYWM1OWU4NTg3ODAzYzMxNmU5MzhmNGNlNDc4NzgyZTQ1OTU1ZjkxMjVjMGUifQ"
-        },
-        {
-          "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/player/EmotionAnalyzer.kt#L411-L411",
-          "version": "repo-lines-v1:sha256:869d9dd5b3e18815f9c609750244ca1ea744fad2e09aa77d2d147a9a7885f143:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiODY5ZDlkZDViM2UxODgxNWY5YzYwOTc1MDI0NGNhMWVhNzQ0ZmFkMmUwOWFhNzdkMmQxNDdhOWE3ODg1ZjE0MyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiODY5ZDlkZDViM2UxODgxNWY5YzYwOTc1MDI0NGNhMWVhNzQ0ZmFkMmUwOWFhNzdkMmQxNDdhOWE3ODg1ZjE0MyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNjUyZDYwNmQxYTJlZjc4MTYyYWVlZmY5NmYxMmRkY2IzYzk4ZDc1Mzk3N2NkOWZjNDlhZTRkZWRhOGRhODBjOCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNDY3MjQ1Njg4NjY3NjhmMjU5NDM2ZjM2MmNjOGIyMDhkMWRhYzA0ZWRjNWQ1NzczMTcxZDgxYTE3YWJlZjhmZiJ9"
-        }
-      ]
-    },
-    {
-      "id": "claim_ce8e5f444b8d4e2188517506999d4fd7",
-      "statement": "整曲平均 YAMNet embedding（1024 维，base64 存 embeddingB64）仍在每次分析时随结果入库，旧数据可空；它不是垃圾字段，而是未来用户标记攒够后离线监督重训 VA 头的原料，当前词条判定不读 embedding。",
-      "evidence": [
-        {
-          "resource": "repo://docs/architecture/EMOTION_KNN_ANALYSIS.md#L47-L52",
-          "version": "repo-lines-v1:sha256:46220c618390876eb730b6ca7bc1b64c333d998c78ce7560f7bc0e5772cd97fa:eyJzZWxlY3RlZExpbmVDb3VudCI6NiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZGJiZWM4MDJhY2U2Nzc1MThjNmQ2NzE3NTk2ZjJjNGM1MjgxNThmNzJlYzVkM2IzZmViNTNlMDE5NDUwNDM5OCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZDk2NWEyYjdiNWNmOTQ5YTgwMTU0NWJjMThhMTJlZDExYmY4NGUxZWRlYzQ1ZGM5YzNjOWZjOWNlOGExZTc5NiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZmY4MzMyMjJhMDUzNjE0MTVjOTA1YmM3ZDE4ODU0NTM1YmM3OWViYTFiYWFiYTdlZDNhNWI2OGNhNDUzMDgxMyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNmUyOWYwMDdmYWI2Y2RjZmZhNzNhMzQ3MTEyYzU4ZGEzM2MwYTM0NmNhYWY3ZjY0MDkwZjhhNWJhMGM3ZTVhOCJ9"
-        },
-        {
-          "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/player/EmotionAnalyzer.kt#L115-L150",
-          "version": "repo-lines-v1:sha256:551925c2a3829d9f4fee09a60652766a7928026aa9670e3a370abec892d331c3:eyJzZWxlY3RlZExpbmVDb3VudCI6MzYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImI5MWMxNDU3YzY1YzcxYjdlY2M5ZDAzOWZmZjgyYzM1ZjQ0OGU1NDUyMjA3YjlhODU3ZDU4YmRlMjBmNjI3ZGYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU1MDMyZTk2NGQwOTMyMzUxZTVkMTg1MjY5MjgxYjE3MWEzYTA5YjA4YjI4NmU2NjFlYTQ3MDMyM2M4MmViNGQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjBmMjAzMzM4YjIxZGU3MGZlYjhkZjZlMmY0YmM3YWYwNDQzNWM3YWYzOTZjZmE0NTJhZjhkYjA1M2Q2NWYwOTgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjllMDA0NjNiMTYwN2E1NzNlMTI1MjQ2ZjQ2YmFmZmJmMTliODEwNDIxMjFlM2RmY2IyODE4OTZiZjEyNzlhNTMifQ"
         }
       ]
     },
@@ -237,100 +31,6 @@
       ]
     },
     {
-      "id": "claim_c882fd64a0e94cafb4fa674ff621874a",
-      "statement": "用户校准链路：:core:ui 的 LocalEmotionCorrectionController（默认 null）由 AppRoot 在最外层 CompositionLocalProvider 一次性提供（包住 NavHost 所在 AppScaffold），任何渲染 SongEmotionSection 的页面自动获得\"不像？标记\"能力；保存走 AppMediaMetadataViewModel.saveEmotionCorrection（空词=clearCorrection 且要求已有行，否则 avgOfWords→saveCorrection），仓库 runBlocking(IO) 桥统一搬到 Dispatchers.Default，成功后刷新 EmotionViewModel、失败弹 toast。",
-      "evidence": [
-        {
-          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/AppMediaMetadataViewModel.kt#L31-L47",
-          "version": "repo-lines-v1:sha256:6a9ebea91f0aa70c9e0d773ba6aaa995c586ba50d2bf800672008f7a269855ab:eyJzZWxlY3RlZExpbmVDb3VudCI6MTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjUxMjJkNjA4ZDY0MjRjYWIxODhmNzAyMDE3NzVmOTQxYzJhMzdhMTk1ZGZlYjY2ZWZlMTMzNjcwMTg1ZjUzN2UiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjVkYzAxOGIxY2Y2Y2FiNjUzNWIzNzFmN2MzOGQzNDNhOTYyZTE0ZjMxODkyODVhNjVmZTNjZTM2ZWE0OWI0YTYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
-        },
-        {
-          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/AppRoot.kt#L216-L233",
-          "version": "repo-lines-v1:sha256:a5e0933c799b9886bae22c8621fe9e3f4b50ffe5c32e0dc820ab85e7ebfbc1b4:eyJzZWxlY3RlZExpbmVDb3VudCI6MTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBiODA1ZjlkMTJiZjE3ODgxNTFiNmJjOGVhZTQ2NGExMzJhNzNmM2NhMjNjMjc3Y2FmNWFkYjJiODhjMzRhZDYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZhMjBhMzkzNmY3ZDgxMmU1OWQ3OTIxZWE4ZTVhNDQ0MjI1Y2ZiM2E3ZTVhN2ExMjg2M2M4NDg4ZTU0NTEzMGMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImMzNmZjYTBjN2M2Y2Y5OWZiNDQ3OTdmM2Y1OTQ4YWRiNWE2YjdjNmYzMzA1MmY3ZmYyNTY4YTdiNDdhODUwYjIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImNhZWMxZWJiMTZkMDI4ZmI3NTI0NzU2ZGFmMGU0MGQyMDVjYjlmMWU0YTlkYzIyZDg5ZmZjY2I3OTc0YmMyNTIifQ"
-        },
-        {
-          "resource": "repo://core/ui/src/main/java/cn/com/dcsgo/mihx/ui/components/EmotionCorrection.kt#L6-L17",
-          "version": "repo-lines-v1:sha256:e7411dbcde65addf6d5df2a9ebe6a12b5a254bc4792cf3cfac66c412d57e0c72:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVhZjIyY2YwNzMyNTkyYzI0NzE0MWNiZTYxZWZhMTEwMTI2MTJmNWEzMTIyYjlhZjliYmFmNTJmNTcyNGQxOTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVmOGQxNTExYmZmM2FkZjA5MTk5YzU3NjhlYmRhMmMxYmMyYzJmODExZTY0MGQ0MzY5ZDM2NDQ4MzhhMWE3ZDYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImRjMzllYmM3MDdjZDNlYTdmMTIxMDViZTExZjlmNmFiOTgzNDg0MWQxN2U3OWQ5ZjljOTU3MjFmZGM1YTcyNGYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
-        }
-      ]
-    },
-    {
-      "id": "claim_d7986408464a471aa8ffe8fe1dcf3386",
-      "statement": "曲库情绪 Tab 数据流：EmotionViewModel.buildRows 把 getAll() 与曲库拍平为 EmotionSongRow（tags=emotionTagsOf(e)、corrected=e.userCorrected），AppNavHost 二次映射为 core-model 的 EmotionSongUiRow（song/tags/corrected，与情绪分析详情页共用）；EmotionLibraryView 以行 tags 去重生成 tagOptions 提供词条 chips 过滤，并按\"已校准优先→有词条优先→标题\"排序。",
-      "evidence": [
-        {
-          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/AppNavHost.kt#L335-L345",
-          "version": "repo-lines-v1:sha256:f853775852d03fefa321d09d058eba49f6942b1ae4283aaf65cb9a618bd31712:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjlmZjdmNmJkMTE5ZTc0YjUyODMwODc1NjI5OTE2OGE3ZjkwMDQ0N2UwMGNhM2I2YTk5ZWVhZGM1NzA1YjRiYzkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZlNGNlZmUxOGM2MDRlY2ZjNjNlYzE5NjkxNTU2ZGVkZTNiYTFkY2NiNzhhYmNhYmQyMDI4MjM0YjI3MjE0MTAiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImI1YjljZjQ3MzRmNjE2MDIyMzM4MzcxMjU2ZDhjMGY1MjhlY2M2NDhiMDIzODJjNjQ3ODQzM2FmODE0NmRmZWYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijk2ZmRmM2VlZjJmNmNmMTUxZDRlNDQzYjFlNmRlOTI5ODc3OWE5YzBjYTY3MTA1ZTc5MzQyYTZkNzRkY2M0NWEifQ"
-        },
-        {
-          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/emotion/EmotionViewModel.kt#L190-L202",
-          "version": "repo-lines-v1:sha256:0ed30074758da8afaabd791f3f7dff9ca50a50b7661825eb5f3519e36d439a1a:eyJzZWxlY3RlZExpbmVDb3VudCI6MTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjYzNWJiN2UzODI1ZDlhMWE2MDIyZGMxMTgwMThmNDJhY2Y4MTY4YWQ5ZTkzYTE2MDYzYmQ3YTljNDU3Mzg5Y2UiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjhlYzFlODAxY2M2Njc0ZjcxNTcyZGFkNmY5NTA2Zjc5Yjg1NDFhOWM0ZjNkMzZkZDE3Njg5ZGExYjZlZTY2YTciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImI2M2FlMGY2MDk5NTM4MzJkZDYwZDIxN2Q4MDdkMTU0NWExYjMxNTQ5YjQzNjcyYjc4ZTdjNjdhNzYzNTgyNmMifQ"
-        },
-        {
-          "resource": "repo://core/model/src/main/java/cn/com/dcsgo/mihx/core/model/EmotionSongUiRow.kt#L1-L10",
-          "version": "repo-lines-v1:sha256:cf8e529ab884490380cb33e1598cc0c7bc79f8bf7d1137321a84209fffcd621e:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQxYjBhZjczZDMwN2RiNDYwYTk0YTZhZjk1Y2VlN2JhMzEwNTIxNzhlY2IwNzgwNTFjZGE1ZDY1ZDJjMzA4YWUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZhZmJhMDUyN2MzOTUzYzRiNmUwZTViNTczOWJhODM2MTJmODA1M2JjZGM5NDY2NzMwMTkzY2QxZDU5MGI0MDgiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
-        },
-        {
-          "resource": "repo://feature/playlist/src/main/java/cn/com/dcsgo/mihx/feature/playlist/EmotionLibraryView.kt#L81-L95",
-          "version": "repo-lines-v1:sha256:c1f2e5e461937ec448e0892210da3dfb4b4a30aadcb4866b9c293cbeab7b48f4:eyJzZWxlY3RlZExpbmVDb3VudCI6MTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFiZjdlYjBkMzkyMmYyNjNlYTY2ODZmM2NlYTJlMzk3NTU1YzRmNjJkMWJhMDhkMDkxNGE5OGQyYjZjZDE1N2IiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZmYzgwOTBkOTlkZTc5MmRjMDMxMWJhMTk2NTI3MjRmMWYwYjU5NmFkZThjZmY0NDY3ZjQ5Nzg2ODU5ZTc4N2QiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImM5ODhiNGUyYmRmYWZlY2M0MzllZDhmMTMxODQyNTg0Mjk0MzEyNTIwNzllOTJjM2M0YjE2MzI1OTJjMDkzZjQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjY2NWVjM2UwYjNmOGI2MmQ4ZGRjM2Q1NDdlYjA3MTFhZGEwMWFkMGFkMGE1MjdlMmI4OTQ5ZGY2Y2M2NDJkOTUifQ"
-        }
-      ]
-    },
-    {
-      "id": "claim_2fa08463577d4211a533fa67a8190239",
-      "statement": "歌曲详情情绪区的渲染契约：smoothCurve 做窗口 5 的滑动平均（边界缩窗，长度<3 原样返回）；高潮红点仅在 hasSignificantPeak（A 最大值 > A 均值 + PEAK_MARGIN=0.5，20 首实测分布定标）时绘制，peakSec 按 2.5s hop 折算窗下标；曲线不足 2 窗的行（user-only 行）不 early-return，显示词条列表并标注\"已由你标记（自动分析失败，词条以你的标记为准）\"。",
-      "evidence": [
-        {
-          "resource": "repo://core/ui/src/main/java/cn/com/dcsgo/mihx/ui/components/SongEmotionSection.kt#L226-L238",
-          "version": "repo-lines-v1:sha256:3d13d6010dee00bc89f47813f5145b1fe95d8b7b0b54dc17159dbc5ba06d4c74:eyJzZWxlY3RlZExpbmVDb3VudCI6MTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjEzNWM0OTI4YzU2MTcxNzVmZGQxMjU0ZjYxNTdhMmVlNDE0MTAzOTBiYmExODMxMTNlNzVjNmE0YjE3Mjk5OTMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBjNjQ3OWNjMjMwNDQwZmQ0MWU4MjI0MjE4Njc5Njk4NTU5ZDI4OTNiZDY3YjQzODBhZmFiODExYjM4YTU1YWEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjBhZDU0YmM5MzM0Mzk2ZjhiOTU2ZGZiMDdlYTljZTk3OGFjOGRlYWNiYzNmYjY5YzMyNTJiNTRiMWNlNDA1NTMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjA5NjRmNWMwMGIzMmZmNTNiZDBlNmU4YjlmMDE1NjE1MThjMDYyYWEyYzg0NDIxMDk3M2M3ZTY2MTdiNzJkY2UifQ"
-        },
-        {
-          "resource": "repo://core/ui/src/main/java/cn/com/dcsgo/mihx/ui/components/SongEmotionSection.kt#L59-L80",
-          "version": "repo-lines-v1:sha256:88ae1155c67464a1edf594703169be171ad1140ce79eaa37f00395021be70b28:eyJzZWxlY3RlZExpbmVDb3VudCI6MjIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImIyNzJlMTZmMzU4M2ExNzI0NDcyZjNhYWU4MTc5OGYyNzcwYzZjNzVmMTQxNWI5MmU4OTEyZDY0ZDYxNWI1YmYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjE3NWE4ZGNhMjQ3OGFjNzBhNmE0ZjFhNmI5MjI0YjA0YWZmY2Q5ZWI0YjBmYWU3ZTkxN2M3YjBlMjJmODJkYjMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjA5NTFjOTljMTY3YzM1MTYwNmZjN2U5M2UyNzRkYTE3NDBiMWZlMmE1YTk4OGQ4M2I5MmIxODc3ODQ1MzgwOGMifQ"
-        },
-        {
-          "resource": "repo://core/ui/src/main/java/cn/com/dcsgo/mihx/ui/components/SongEmotionSection.kt#L87-L115",
-          "version": "repo-lines-v1:sha256:38f1a55ecc80b6edc3cc01d58b08206cf350850304e41a2515aa19f76158cae7:eyJzZWxlY3RlZExpbmVDb3VudCI6MjksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImYyY2MxMGM4NmM5N2IzNjY5NmFlN2I0Njg1NTkwYTIzNDNhMjIxMDgwZTc0MjQwNGQzZGNiMGVmYWI5MmIwMGMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImJkM2FiZWE3MjZiMzc5MDI3NzlhZWFmZjU1Mjg2ZTAzMGIxNzcyYTljYTM1MGQyMTJiNzk5MmQ3MjA4NjE0YTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjE4Yzc0ZGQ2M2YzYTc5YmQzMjFmZjAxYTliMDcxMGU2YTk3YzQ0NzQxY2VhYmQ1OGVjNTg5MjYxM2QzNDRjM2QifQ"
-        }
-      ]
-    },
-    {
-      "id": "claim_a3797182e6484f8d92616545cbbfbfed",
-      "statement": "情绪时段随心播放消费词条：PlayerRuntime 启动时把 getAll() 逐首过 emotionTagsOf 快照进 volatile moodEmotionTagsCache（用户校准自然反哺判定）；PlayerRandomQueueFacade 在随机队列与无限补队列入口用 filterByMoodTags 按命中时段词条过滤候选池，过滤后为空回退全库随机；MoodTimeSlotViewModel.tagCounts 用同一函数统计每词条歌曲数供配置页角标。",
-      "evidence": [
-        {
-          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/mood/MoodTimeSlotViewModel.kt#L56-L59",
-          "version": "repo-lines-v1:sha256:3d168b20a1a2cf3dcebf6be92f9a2835f1d63aa9ade27fe4c3c3d6486ee8611b:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiOTc1Nzc2N2Q0OTIyMjc5Y2QxNWE0NTVhNTQzODQ5NDRjNTBkMzI4MDA2MzJhMDc0OTk3MDRkMzQ3ZjZlZGMyOSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiM2Y0OTM0OWJiZWE0NjUxYjIwZmE0ODI2YzlmY2Q3OTQ1ZDg3NzVjYmViYjdjYTdiY2E1NDM2Yzg1YWVhZGQ4YSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMWE0OGNlYjdjZmI0MjY4YWFkZGNlZGI2OGIzYmU1NzIzYzQxYzcxYjc5NGQxMWFkYjc1ZTQzYjQ5OGUwZGVhNSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiOGM4ZjQyYjIwNWMxNDBkOWUyOWUwMWFiMDAxYjBhOWIyM2RjMDZmZmQ0NGMwODAxMjA0NTg0ODY5OTZkYzJhNyJ9"
-        },
-        {
-          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRandomQueueFacade.kt#L187-L201",
-          "version": "repo-lines-v1:sha256:a43ee20600b1b298bc49fafc999b8c8d81e25d626a73dba82668a8419175e0ef:eyJzZWxlY3RlZExpbmVDb3VudCI6MTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM4ZmE5NjlkYWYyZTEyMGZiYmY5OGI1NjNiMWRkZGMyNzk5ZDc5NDdlNGE0ODEzYjM2ZjVjYzI3ZTllZjViMWIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImEzYzc0YWJhNzNmYjIyZGExMThlN2NkNDJiOGU4Mjc5MWZhNmYzMmMxNDRiNGFiZTBjYzc3YzBkNWY3MmRmMGYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjhlYTdlMThiYTBlMzM4ZjJiODJkNzExYzRmNjZkZjE2N2JhMjg2MmQ0ZTNmMzIzMDFmOTdkM2NlOGQ4OTgzYjkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQ1NWFhMzkyMmY2ZmM2MTRlMGZmZWI3ZmFkMGUyM2Q0OTlhNTg5ZGZmMmE1NzUwNjIyMjI4ZjQ1NjRiODU0OTIifQ"
-        },
-        {
-          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRandomQueueFacade.kt#L72-L87",
-          "version": "repo-lines-v1:sha256:641a2af88cd0dabfe6f23a976224cb7e7571ed9db8db892de51dae36fe672f58:eyJzZWxlY3RlZExpbmVDb3VudCI6MTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImI5ODAyNzQxN2Q3OTU5YzRmZWNjYWY2MWZhN2IyMGMxMzZlZmVmZjNhYmM5MjMyY2UzNzliYzQ2OGNhYTkwOWUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImJjYjkxZDkxN2IzMmMyYmMzM2IzNjcyNjk0ZDIwOTViYmQzYTRhN2IzOThmYTM5ZTc1ZjZlZGIwYWQ0MzNhNTkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjEyZTIwNzQ1ODAwMGE1NTIxZGUyYWJlYjg4Yzg3ODIwZjQxODlmZmFlNTUyNjM3NjE2ZTQ4YjlkZGI2NTlhODUifQ"
-        },
-        {
-          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRuntime.kt#L422-L465",
-          "version": "repo-lines-v1:sha256:18f5e86f1c90059404c2541f63875a7dc957c4fc003a892f8cddcbf8775a6125:eyJzZWxlY3RlZExpbmVDb3VudCI6NDQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImJkMmE1ODkyOTFhMjJjZjc4NWIwZjI5MmYxZWZhYTU2Y2EzNmNhY2E0MmJiOTc4OTU4NzYwNTU0Njg2YTRlZDYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImIxNjY4OWE0ODMwMTE3M2M3NWQ3MjRiNzQ4NmVhZDI4YzM1ZWVkZTIwOTcxNWM5MDFjMjRiYTY2MjhjZDJjNjMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjBiOGEzMzM5ZDA4MWUzM2Y4ZmQyZDViZGI5ZGQyNmUwNGY5YjE5YTM1NDE0NjBlZTEyNmYzOWQzNzBiZTFjYmMifQ"
-        },
-        {
-          "resource": "repo://feature/user/src/main/java/cn/com/dcsgo/mihx/feature/user/MoodTimeSlotScreen.kt#L607-L668",
-          "version": "repo-lines-v1:sha256:0808858f20c74f214f19ff8227fede2b977dafa1b82292f50f1c8b2f32efae89:eyJzZWxlY3RlZExpbmVDb3VudCI6NjIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBjZjZmMjE4NzFlNTRjOTJlZTgwZGE0NGJhNWQwMmY3NTA0MDAxZjJjMmJjYTIxMWI0ZWFmM2ExZDNjMDQzNmYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjE5ZTc2MzU1Y2YxMTk5NDgwYzNmOTk4MzZiMTQ4NmM4NDFkODkxZmFhZDkwNGM2MDhlMDkzMDIyZDM3NTdhZWUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImNiNjZmZGM3Y2JkMzNmZTJmMGRhMDcyYmNiYmYyN2Y3YTNhYWVhMWJjYmFiN2U5MzM4Mjk1ZjNjMThmN2RiYTcifQ"
-        }
-      ]
-    },
-    {
-      "id": "claim_569030d110b744639fa213db73718317",
-      "statement": "SongEmotionSectionTest 以纯函数单测锁定模型契约：39 词封闭词表无重复且 headline=words.first()；categoriesFor 最近组投票、全弃权返回空；WITTY 不出现在自动投票但 groupOf 可达；headlineTagsFor 不超 MAX_TAGS；emotionTagsOf 用户词覆盖模型结论、低置信返回空；avgOfWords 同组取组锚点、跨组取均值、非法词返回 null；另有 smoothCurve 保长缩噪与 lowConfidence/hasSignificantPeak 边界语义。",
-      "evidence": [
-        {
-          "resource": "repo://core/ui/src/test/java/cn/com/dcsgo/mihx/ui/components/SongEmotionSectionTest.kt#L31-L134",
-          "version": "repo-lines-v1:sha256:7b5081ac2739cdb64d7f3c1c2589397d8ee36c713abc322ef96395dbce2f85a7:eyJzZWxlY3RlZExpbmVDb3VudCI6MTA0LCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiI0Y2YwOWViMGM1NzQ0ZmI5NzMzMWI5OGZmM2ZiZjA1YTYwMmJhM2Y3ZjY3ZTVkYTViZTkwOTUwMzNmNjI1ODI1IiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI0ODkzZjQwZTM3ODFlYjg5NmM4MmQwNDZhMDgwNjdhMTFlMzVjZGYyZjFkZmFmMjZmZWE5MGI4ZGI2Njc2NDEzIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiJkYTQ1YWVjN2EyNzM0MzQwY2RhMWIxY2M4OWQ1YThjMTRkOWUyNTYxZjE0ZTU2ZDA4NTI1YzFhNmViNTg1OGU3IiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MSwiZm9sbG93aW5nQ29udGV4dEhhc2giOiI0MTJjYTM0NWNjZjc1YmY5YzA4MDZiY2U2OTViZThkZTgwOGI3OTk4NDI1MWE3YTU0ZDIwMmNmNjEwMWRkNDUxIn0"
-        }
-      ]
-    },
-    {
       "id": "claim_1e8ab30d4eef45feb229197b5ccd3aa6",
       "statement": "v3.11.0（2026-10-20）新增情绪词条收听偏好计票模型 WordPreference/WordPreferenceKind（core/model/WordPreference.kt）：kind 在域层判定（likeVotes>dislikeVotes→LIKE、dislike>like→DISLIKE、平票→NEUTRAL），票多者胜；词条只出现在一侧，单次跳过只给不喜欢票 +1 且不立即翻转已喜欢的词条（需多次证据）。",
       "evidence": [
@@ -341,54 +41,240 @@
       ]
     },
     {
-      "id": "claim_ac3c866d0a29441aaadc0acc4e9dd306",
-      "statement": "WordPreference 的投票写入由 PlayerRuntime.handleExploreSongSettled 驱动：切/播完时取该歌展示词条（moodEmotionTagsCache，即 emotionTagsOf 结果），用 ExplorePlaybackPolicy.isSkipped（<30s 或 <1/4 总时长判为快速跳过，时长未知只按 30s）结算，完整收听给全部词条喜欢票 +1、快速跳过给不喜欢票 +1，调 WordPreferenceRepository.recordSongOutcome 计票入库。",
+      "id": "claim_32c166d7b5ed453bac9358fc3e313d52",
+      "statement": "EmotionGroup 枚举定义 10 组 × V-A 锚定中文词（名义每组 4 词，ABYSS 组 3 词，全表 39 个不重复词），每组带 anchorV/anchorA（-1..1）；词表只做映射展示层、绝不做分类训练目标，组代表词 headline=words.first() 用于自动展示，groupOf 懒加载 wordIndex 提供词→组反查，MAX_TAGS=4、MIN_RATIO=0.15。锚点表按曲线坐标系分三套，anchorsFor(modelVersion) 按版本串 '@' 前的 label 选：CURRENT_ANCHORS='yamnet-va-v5-vocal'（枚举自带）/ V4_ANCHORS='yamnet-va-v4-rms'（留档）/ LEGACY_ANCHORS='yamnet-va-v3' 及未登记；当前 v5 表由 tools/anchor_opt.py 在补偿后全库 1095 首（81002 窗，优势 0.773）上受约束优化标定、tools/anchor_fit.py 复核详见 EMOTION_VA_UPGRADE.md；锚点只影响投票不影响已存曲线，故换坐标系重标定零重扫。",
       "evidence": [
         {
-          "resource": "repo://domain/src/main/java/cn/com/dcsgo/mihx/domain/playback/ExplorePlaybackPolicy.kt#L18-L33",
-          "version": "repo-lines-v1:sha256:ac8c8c76b9341776c2654885d59f82258f8df40446a7ec4fb2f399214def7738:eyJzZWxlY3RlZExpbmVDb3VudCI6MTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjdmYWQ0Mzg2YWM4ZWFmMGZhMDBhNzFhMTVkM2ZmOWYwN2RiNWVlOWM3NDRmMTVlNjM1NDFiMDlmNTZmMDI0YWYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImNiZDI0YjY4NmNjZTk1MGMyYTViYzAyMTBiNDM3MGM0YTY4OGE2NDAxMjA5MWYxMDdmYjkzZjExNzYwNDJiM2IiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+          "resource": "repo://core/model/src/main/java/cn/com/dcsgo/mihx/core/model/EmotionGroup.kt",
+          "version": "repo-file-v1:sha256:e4985826f7319fb5c06de4b3c0162000d92600e55eb5b9c23000f1dc6435dd09"
         },
         {
-          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRuntime.kt#L893-L931",
-          "version": "repo-lines-v1:sha256:de71de7bfcd7a882e055985cf7f1bcd17cee54d013aff8b4cccd6032ce8b5684:eyJzZWxlY3RlZExpbmVDb3VudCI6MzksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM5Y2JiYzY1NDY5ZGIxY2EyODQyZWZkOTdkZjdlZTJjZTZjYzE1NzE0ODJkMDFhMThiNzkwYTEwYzdjNTEwZjMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImVkYjQxZGQ4MmE0MmI5NWEyM2U2NmQyY2UyODNlNjcxYjIyMjkwNzJhNmU3ZjM2NjFhZTFiNDg4NGJmZjUxNzAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImRmZGZjMmIyZmVjYTcxODIzMDA5ZjViNjY4Nzc1N2ExMWZkZGIwZTI3OWVmZGRmNmMzZTdkMDA1YWE2MDY0ZGYifQ"
+          "resource": "repo://docs/architecture/EMOTION_VA_UPGRADE.md",
+          "version": "repo-file-v1:sha256:faa1c4e77b3b8827e8df0bfc9210025af37ae199fcfb7eb61c89db63cb4e6601"
+        },
+        {
+          "resource": "repo://tools/anchor_opt.py",
+          "version": "repo-file-v1:sha256:7de10b33b2d4e0a918b94823aeb510db60c05a8580159af5d6888129f068ed85"
         }
       ]
     },
     {
-      "id": "claim_81b186c6d98f40529d526f711f5cbaaf",
-      "statement": "word_preferences 表由 MIGRATION_10_11 创建（主键 word、likeVotes/dislikeVotes/updatedAt），使 melody.db 升到 v11、14 实体，与 song_emotions 完全独立；WordPreferencesRepository 是唯一数据源（:data 单例绑定 MelodyDao，对外暴露 :domain WordPreferenceRepository），可观察流 observeAll 持续喂给 PlayerRuntime.wordPreferenceCache 与 MoodTimeSlotViewModel.wordPreferences，recordSongOutcome 只累计票数（distinct 词、空列表忽略、@Upsert 整行替换），clearAll 清空整表（重新探索）。",
+      "id": "claim_2711f79b052f4f7585ddc811738adf73",
+      "statement": "坐标系改造：arousal 改为窗内 PCM 的 RMS→dB（-30..-5 dBFS→[-1,1]）物理响度包络，不再是 VA 头回归的曲风代理（救回「燃」「静谧」这类绝对能量词条）；valence 做零点/斜率标定 v'=(v-0.25)/0.85 去除系统性正偏（真机 1094 首歌级均值 +0.264→+0.017）；窗口 5s/2.5s hop，逐窗存原始未平滑曲线，平滑归渲染端；|v| 或 |a| < 0.15 视为该轴未定 UI 不硬判。",
       "evidence": [
         {
-          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/local/MelodyDatabase.kt#L35-L39",
-          "version": "repo-lines-v1:sha256:ec16bf278044a14275ece9b5fbf52fec4b6ddb95a451e4891f8859612008f7a0:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiY2FkMDQzNWIyNDk4M2JlMzZhNjM1NzA1MzhlZGQ5MjRiNjZkYmQzMWFlYjQwM2FjNGVkNzdmOGM3MjE1NGFhYiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZDcxZWFlMWFjN2NmNDYxZDNkNzA0ZDJkN2EwY2M2MzYyY2NkNWYzNThlOWJjZDUxNzViMmJlN2ZkNDNhZjhkNyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNzYyNTk3MzVhZmY2Mjg1M2UwNGQ2ODQzNDBmOGY1YWFhMTIwMWJjNzVhMTRmNDBjODE2NmU3MWRlOWEwNDg3YSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiN2E1ZjlmYWRlYTc1ODU1N2I3OTk2N2NhMmY0NTA1ZjE2ZDQ4NzFjNjk3M2RmZWNmYjE4NzM3ODgyMDVkMDFhYSJ9"
+          "resource": "repo://docs/architecture/EMOTION_VA_UPGRADE.md",
+          "version": "repo-file-v1:sha256:faa1c4e77b3b8827e8df0bfc9210025af37ae199fcfb7eb61c89db63cb4e6601"
         },
         {
-          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/local/migration/MelodyMigrations.kt#L141-L153",
-          "version": "repo-lines-v1:sha256:3ec485f671d646817f62057d8b6fdb18b91094443de36c308ee1bd1bb838262b:eyJzZWxlY3RlZExpbmVDb3VudCI6MTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjJmM2QwNGI4NzhiMjlhNjA3Njc2ZjE4NzQ5MjFhNTdiMTVjZmEyMDlkZGY2YjFkNzEyNTE1OTAxYWY1YzBhZjciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk5OWJkZWZlZWFjYTYzNDBlMDI5MGRjODZlODg5Yzg5ZDVlMTg5YWE1YmE0NGI1ODViM2I3MDczNGY0YTYyZDgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijk5M2VmYTJiZTAxMmNhZDU3OWYyZWM1Y2RkZjliOTMxZWVlMmRjZDZlNzlkMjRkYzdmOWVjYTQ3N2YzZjc2NzUifQ"
-        },
-        {
-          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/repository/WordPreferencesRepository.kt#L23-L53",
-          "version": "repo-lines-v1:sha256:9a6282e1376da478a88a1b0e4e9e3a88aa9d60a589cfa36e33203c16f969c40f:eyJzZWxlY3RlZExpbmVDb3VudCI6MzEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVlYThjNmVmN2IyMDlhMGZjODdmNTNmZmM4YjFkN2Q5ZjkzYmU2ZDU0OTBiZmVkOGZhN2M5ZjE1MGQyNzk4ZjgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijg0YmU0YTAyMTFjYWJlOTJjNjllYTk5YzI2ODYyNzUxMzMxZDlmYTQ5ODNhYzE4OGZjNTlmMzgwNjBjNjliYzkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImM1MTYzOTRhMmRhODg4ZDk2ZWMxMzY1MjdjOGMzZTA3ODI4NzRlYzk0NWZiMWVjNTBmODk2NWI4YWZhZjZmMzIifQ"
+          "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/player/EmotionAnalyzer.kt",
+          "version": "repo-file-v1:sha256:46e740e436459d88903644df323a606fb51a893a355039975c157aa4ba7a3156"
         }
       ]
     },
     {
-      "id": "claim_ef304c0bb9c54e9796b9c00849bba2f5",
-      "statement": "探索播放（randomEnhanceMode==EXPLORE，与 TIME_SLOT 互斥）时 PlayerRandomQueueFacade 不走时段过滤，从全库随机 10 首（ExplorePlaybackPolicy.INITIAL_BATCH_SIZE）并置 isExplorePlay；补队列 refillExplorePlayQueue 用 buildExploreRefillPool 按词条偏好分层降级：①含 ≥1 喜欢词且无不喜欢词 → ②仅无不喜欢词 → ③回退全库，每次补 REFILL_COUNT=5 首；偏好归属经 wordPreferenceOf(word).kind 读取，未学到视为 0:0 中立。",
+      "id": "claim_812bf1309b2b4fc39b5b626e1b1b2c7a",
+      "statement": "SongEmotion 域模型承载：全曲 V/A 逐窗均值、原始未平滑逐窗曲线（5s 窗/2.5s hop）、peakSec、windowsAnalyzed/durationSec、modelVersion/analyzedAt、可空整曲平均 embedding、vocalScore，以及用户词条 userTags + userTagsEdited + 已废弃的 userValence/userArousal。用户校准语义：userTags 是真值，userValence/userArousal 已废弃仅存历史行，坐标读时由 userPoint()（EmotionGroup.avgOfWords(userTags, anchorsForManualPoint)）按该行自己的坐标系派生 effectiveValence/Arousal；userCorrected=userTags.isNotEmpty()；userTagsEdited 区分主动纠正（选词≠模型自动词）与直接采纳，null=无模型输出可比；lowConfidence=任一轴 effective 的绝对值 < LOW_CONF(0.15)。",
       "evidence": [
         {
-          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRandomQueueFacade.kt#L238-L311",
-          "version": "repo-lines-v1:sha256:580716b5a837b068a76cd832413e37c374bfc9c22a0e413da93e3665585ca0c3:eyJzZWxlY3RlZExpbmVDb3VudCI6NzQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImJjNDgzNmFlNmE3ZmU5NGRiZjAxMjdlMmIwZTFmZTVmZDMzNjcyOGZjNTU3MmYxOGM5MTMwYzRlYWQxOWEyYzQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImE5YTk2ZDVmZjg2N2JiY2UyMzU2MTNlMTc4OTkzMDhlZjUyY2ZjMjMyNzA2NDc0MjgzNDIyNDM4ODgyYTk3MWYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImI1ZGEyNDc2MTQ0ZjcyYTc2YjhlNjU4M2VhYjdiZmE5NjVmY2Q2YzI0MWY1MTNlYzgzYTg1YTQ2ZjM5ZDFjOWIifQ"
+          "resource": "repo://core/model/src/main/java/cn/com/dcsgo/mihx/core/model/EmotionTags.kt",
+          "version": "repo-file-v1:sha256:3bad7e417e803b57481ecca90d449b4c6e8e335703354b71f38204a97db10662"
         },
         {
-          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRandomQueueFacade.kt#L95-L137",
-          "version": "repo-lines-v1:sha256:08ff0cbbb6aa62875b84394c7d5190c11fcf1ea6d3f100be40848f0fb374a80c:eyJzZWxlY3RlZExpbmVDb3VudCI6NDMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQ3NDM4YzMxNjUyOTFlOTc2ODk4YTczYTU2MDdmMzZhYjg0NTU1ZjUxNWMxZjE1ZTMwZTRlZTFlZjE1OTNjZjAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQwN2Y0MjViMzgxOGVkZmQ5NmRhMjUxZmI4MTI2ZjJkODljMWJjZDkwYjRjZTg5MWRjMTRjNzA3YWU5ODk1MTAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjNhZDUxZTE0OGNmZGJmMDU2NTA2NGZhODNlMDU1NjQwMzA2NGZlOWZmZjQyZDFjNWU2MzNjYWMyMzcwNzM3ZTIifQ"
+          "resource": "repo://core/model/src/main/java/cn/com/dcsgo/mihx/core/model/SongEmotion.kt",
+          "version": "repo-file-v1:sha256:f5002cdbc0ce24b19cdd02ce40c814aec8fe07ab9b7700964bb2712ad71ec86f"
+        }
+      ]
+    },
+    {
+      "id": "claim_aa2bd95ab7464fb28b82dbe4be8afa86",
+      "statement": "VocalCalibration 做人声成分补偿：vocalScore 为 null 的老行不补偿；器乐组（vocalScore <= VOCAL_COMP_THRESHOLD=0.010）的 valence 每窗读时上移 VOCAL_COMP_SHIFT=+0.091，arousal 不动。补偿量取全库 1095 首按 vocalScore 分组、在 arousal 分箱内匹配后的残余差 -0.091（独立模型 MusicNN+DEAM 对照同样的匹配差 ≈0，证明是现网独有成分）。补偿是读时对原始曲线的常量平移、库里仍存原始曲线，因此改补偿量零重扫；投票与置信度必须用 compensatedCurve。",
+      "evidence": [
+        {
+          "resource": "repo://core/model/emotion_model_spec.properties",
+          "version": "repo-file-v1:sha256:520184be4e7951523df86e7c5e00ec475a66414ffdbecfc13ff8ac1faad9aacd"
+        },
+        {
+          "resource": "repo://core/model/src/main/java/cn/com/dcsgo/mihx/core/model/SongEmotion.kt",
+          "version": "repo-file-v1:sha256:f5002cdbc0ce24b19cdd02ce40c814aec8fe07ab9b7700964bb2712ad71ec86f"
+        },
+        {
+          "resource": "repo://core/model/src/main/java/cn/com/dcsgo/mihx/core/model/VocalCalibration.kt",
+          "version": "repo-file-v1:sha256:f2db1ef9fbce4226f4fae773040b0fe602ab246e6cce02cdaee942128526c1f3"
+        }
+      ]
+    },
+    {
+      "id": "claim_c80cc5191b554ca7a227450fd6fcedcc",
+      "statement": "置信度档位 EmotionConfidenceLevel(HIGH/SPREAD/MIXED)，信号=逐窗投票最高组占比 voteRatios.first().second（EmotionGroup.confidenceOf）。LOW_CONFIDENCE_RATIO=0.35 取全库 p25 分位；MIXED=票集中（top1≥0.35）但冷暖词同现（isMixedColdWarm 检测 COOL_WORDS={emo,躁,窒息} 与 WARM_WORDS={元气,燃,神圣,治愈,放松}，静谧算中性）；判定先看票型摊不摊开、再看冷暖矛盾、两者都成立以摊开为准；用户已手动标记一律 HIGH。emotionConfidenceOf 必须用补偿后曲线。实测冷暖矛盾歌 top1 占比均值 0.398 vs 不矛盾 0.484（Mann-Whitney U p=1.7e-14），且 137 首占比高却冷暖同现，故需三档而非单一阈值。",
+      "evidence": [
+        {
+          "resource": "repo://core/model/src/main/java/cn/com/dcsgo/mihx/core/model/EmotionConfidence.kt",
+          "version": "repo-file-v1:sha256:ec5440337733efc2227d5c8962f366fe7924b7a77756b0a0a291ef57e73b4747"
+        },
+        {
+          "resource": "repo://core/model/src/main/java/cn/com/dcsgo/mihx/core/model/EmotionGroup.kt",
+          "version": "repo-file-v1:sha256:e4985826f7319fb5c06de4b3c0162000d92600e55eb5b9c23000f1dc6435dd09"
+        }
+      ]
+    },
+    {
+      "id": "claim_ae83ee9665c64a2aad3962c06c2fa1bf",
+      "statement": "EmotionTags 提供多套词条分布口径：emotionTagsOf 是展示词条唯一出口（userTags 非空原样返回，否则 headlineTagsFor(compensatedCurve, modelVersion)）；modelTagsOf 忽略用户优先从曲线重算模型结论（判断用户是否不认同模型必须用它）；emotionTagRatiosOf 展示词条+各自占比（用户手动标记的 ratio=null）；emotionMatchRatiosOf 给时段匹配用完整分布（不受展示 15% 与 topN=4 截断、用户词按 1.0 强匹配）；emotionVoteRatiosOf 给探索计票用卡展示同门槛分布。emotionDisplayOf 一次投票派生 tags/tagRatios/confidence（评审 M-11 把原先 3~4 遍重复投票合并），用户校准/空曲线一律 HIGH。",
+      "evidence": [
+        {
+          "resource": "repo://core/model/src/main/java/cn/com/dcsgo/mihx/core/model/EmotionDisplay.kt",
+          "version": "repo-file-v1:sha256:2ffbc3693e56397bee54a3ca7fc602dabc07f0742a03380ea39051c1b448f1b5"
+        },
+        {
+          "resource": "repo://core/model/src/main/java/cn/com/dcsgo/mihx/core/model/EmotionTags.kt",
+          "version": "repo-file-v1:sha256:3bad7e417e803b57481ecca90d449b4c6e8e335703354b71f38204a97db10662"
+        }
+      ]
+    },
+    {
+      "id": "claim_2356afd84d014da7829d88bf5fa3e63c",
+      "statement": "SongEmotionEntity（song_emotions 表，主键 songId、无外键）↔ SongEmotion 由 SongEmotionsRepository 私有扩展互转：curveJson 扁平 [v,a,v,a,...] JSONArray（解析失败降级空曲线）、embeddingB64 为 base64(float32 小端)、userTags 逗号拼接（读侧去空段）、modelVersion 可为 'user-only'；另有废弃的 userValence/userArousal、userTagsEdited、vocalScore 列。读路径 getAll/observeAll 走轻量投影 SongEmotionLite 不解码 embedding（整库约 90MB 物化），需要时用 get 整行读；parsedCurveCache 按 analyzedAt 判行未变则复用已解析曲线，缓解 Room 失效重发整表导致的曲线 JSON 重解析。迁移轨迹 v8→v17（Room melody.db v17）：v9 建表、v10 增 embedding 与用户三字段、v11 建 word_preferences、v12 增 userTagsEdited、v13 版本串补指纹+坐标置 NULL、v14 增 vocalScore、v15 切 v5 标签（零重扫）、v16 词条票×100、v17 补索引。",
+      "evidence": [
+        {
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/local/MelodyDatabase.kt",
+          "version": "repo-file-v1:sha256:44435e014b132a8103db6b7eecec6317440d8139d651264ab0f13ad7ab7a7c5b"
+        },
+        {
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/local/entity/SongEmotionEntity.kt",
+          "version": "repo-file-v1:sha256:93c0b2487c70e75fdf2d80a875503d82d202e6a491ab88af31e0f8302236237c"
+        },
+        {
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/local/migration/MelodyMigrations.kt",
+          "version": "repo-file-v1:sha256:1218e71f300f4d56bd7b61ff0a0d1821922942188583b3622d49e1231f599b18"
+        },
+        {
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/repository/SongEmotionsRepository.kt",
+          "version": "repo-file-v1:sha256:9dc1bcb8e4cef101baf823e2c0b5280d48352568264df27a2aa34b38379c2a91"
+        }
+      ]
+    },
+    {
+      "id": "claim_d41f9c21ea3e4f41894c8d4f4dbff5c6",
+      "statement": "SongEmotionsRepository 是 song_emotions 表唯一数据源（:data 单例绑定 MelodyDao，对外仅暴露 :domain 接口；:player 分析器为主要写入方）。三条写路径：upsert（重扫）走 updateSongEmotionPreservingUserTags 一条原子 SQL——新值 userTags 为空则保留行上已有 userTags/userTagsEdited（用户标记不见可丢、消除读-写 TOCTOU），UPDATE 命中 0 行才 upsertSongEmotion 插入且坐标投 NULL；saveCorrection 只写词条（userTags+userTagsEdited）并将坐标列置 NULL，UPDATE 命中 0 行走 insertUserOnlyCorrectionIfAbsent（INSERT OR IGNORE 而非 @Upsert，避免整行替换成 user-only 空曲线擦掉分析结果；modelVersion='user-only'）；clearCorrection 清词条后若全空 user-only 行（windowsAnalyzed==0 且无 embedding）直接删行防被误判已分析。",
+      "evidence": [
+        {
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/local/dao/MelodyDao.kt",
+          "version": "repo-file-v1:sha256:aa7cc91f639a7c59274cf23837642e20dfd778d5ec6c8467d61772cc398c31f6"
+        },
+        {
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/repository/SongEmotionsRepository.kt",
+          "version": "repo-file-v1:sha256:9dc1bcb8e4cef101baf823e2c0b5280d48352568264df27a2aa34b38379c2a91"
+        }
+      ]
+    },
+    {
+      "id": "claim_5f3d16eb2d32468a9701e45e6fbc9c29",
+      "statement": "重扫由 modelVersion 驱动：EmotionScanWorker 的待扫集 = analyzed[songId] != EmotionAnalyzer.MODEL_VERSION（当前 'yamnet-va-v5-vocal@edbf6fe5'，定义在 player/EmotionAnalyzer.kt 直接引用 EmotionModelSpec.MODEL_VERSION 防两处漂移）或已分析但缺 vocalScore（songIdsMissingVocalScore() 补 v5 前老行）；失败 >=3 次的歌曲不再自动重试。换模型资产=FINGERPRINT 变=整串不等→自动重扫；v5 人声补偿是读时派生、MIGRATION_14_15 仅把模型版本串换成当前串故零重扫。",
+      "evidence": [
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/emotion/EmotionScanWorker.kt",
+          "version": "repo-file-v1:sha256:71677d3757484645417305e045eca4c1e8311bac11cf9a98790985c0a6b43e17"
+        },
+        {
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/local/migration/MelodyMigrations.kt",
+          "version": "repo-file-v1:sha256:1218e71f300f4d56bd7b61ff0a0d1821922942188583b3622d49e1231f599b18"
+        },
+        {
+          "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/player/EmotionAnalyzer.kt",
+          "version": "repo-file-v1:sha256:46e740e436459d88903644df323a606fb51a893a355039975c157aa4ba7a3156"
+        }
+      ]
+    },
+    {
+      "id": "claim_acd94eb2ba934aba8a502f21d7a7bea3",
+      "statement": "用户校准链路：:core:ui 的 LocalEmotionCorrectionController（默认 null）由 AppRoot 最外层 CompositionLocalProvider 一次性提供（包住 NavHost 所在的 AppScaffold），任何渲染 SongEmotionSection 的页面自动获得不像标记能力。AppMediaMetadataViewModel.saveEmotionCorrection：空词→clearCorrection（要求已有行）；非空词先校验 words.any { groupOf(it)==null }（不能用 avgOfWords 当校验器，它静默丢非法词），再用 isUserCorrection(modelTagsOf(current), words) 判定 userTagsEdited，最后 saveCorrection 只写词条；坐标是读时派生、永不落库。",
+      "evidence": [
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/AppMediaMetadataViewModel.kt",
+          "version": "repo-file-v1:sha256:7d4ed380a5be27e40699a41aa57581c469240b4dcc112b34b03c5bcb818d80fd"
+        },
+        {
+          "resource": "repo://core/ui/src/main/java/cn/com/dcsgo/mihx/ui/components/EmotionCorrection.kt",
+          "version": "repo-file-v1:sha256:334680a922a9787f4239d6d3bec333110200dae618e2fb880b8bbf458d46f262"
+        }
+      ]
+    },
+    {
+      "id": "claim_44c2be944d4e4baa95034ee967e96979",
+      "statement": "WordPreference 计票按占比加权：票重=词条在整首里的占比×VOTE_WEIGHT_SCALE(=100)（ExplorePlaybackPolicy.votesOf→voteWeightOf，<0.5% 得 0 票等于不投）；只投卡占比门槛的分布——emotionVoteRatiosOf 用 VOTE_MIN_RATIO(=EmotionGroup.MIN_RATIO)、VOTE_MAX_TAGS(=MAX_TAGS)（直接引用展示常量防漂移），即跳过=否定详情页见的那些标签；完整分布平均 6.26 词会导致不喜欢扩散快 2.7 倍。归属 kind=票多者胜（LIKE/DISLIKE/NEUTRAL）在域层判定；UI 用 likeSharePercent（喜欢票占比 0-100）而非绝对票数（票数 15~1500 量级）；票仍为整数(x100)故表结构不变，历史票由 MIGRATION_15_16 统一×100 保持尺度。",
+      "evidence": [
+        {
+          "resource": "repo://core/model/src/main/java/cn/com/dcsgo/mihx/core/model/WordPreference.kt",
+          "version": "repo-file-v1:sha256:f617e13c08db023fd5db4fd40bbb092de3ef00d91c559bdbf29ee93943e8717b"
+        },
+        {
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/local/migration/MelodyMigrations.kt",
+          "version": "repo-file-v1:sha256:1218e71f300f4d56bd7b61ff0a0d1821922942188583b3622d49e1231f599b18"
+        },
+        {
+          "resource": "repo://domain/src/main/java/cn/com/dcsgo/mihx/domain/playback/ExplorePlaybackPolicy.kt",
+          "version": "repo-file-v1:sha256:3586ba7b18f068d169c257d5e9a86b17aed40e0c3fc86e2d43cd9722353b5ed8"
+        }
+      ]
+    },
+    {
+      "id": "claim_c21af6ff4d7043ee8a4f89a6a6de5dfd",
+      "statement": "探索播放词条偏好投票写入：PlayerRuntime.handleExploreSongSettled 在一首歌结束/切歌时结算，取 exploreVoteRatiosCache（observeMoodSlotCaches 预算的 emotionVoteRatiosOf 卡门槛分布），按 ExplorePlaybackPolicy.isSkipped(playedMs<30s 或 <总时长 1/4，时长未知只按 30s)判定完整/跳过，votesOf 转票重后 WordPreferenceRepository.recordSongOutcome(votes, liked=!skipped)。recordSongOutcome 逐词 ensureWordPreference(幂等建行)+addWordVotesDelta(语句级原子增量、MIN(x,MAX) 饱和加法防溢出翻转判定、消除并发丢票)；单次跳过只 +不喜欢票不会立即翻转已喜欢的词条。word_preferences 表由 MIGRATION_10_11 创建（主键 word）。",
+      "evidence": [
+        {
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/local/migration/MelodyMigrations.kt",
+          "version": "repo-file-v1:sha256:1218e71f300f4d56bd7b61ff0a0d1821922942188583b3622d49e1231f599b18"
+        },
+        {
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/repository/WordPreferencesRepository.kt",
+          "version": "repo-file-v1:sha256:fadf9531186b94e03f847c5a2f908123e7309d714b2c864d0ea14ecbf46b6308"
+        },
+        {
+          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRuntime.kt",
+          "version": "repo-file-v1:sha256:580361ae1c1f9443eb5263dfd5f82a5a41b02114953223593a16501be710e1db"
+        }
+      ]
+    },
+    {
+      "id": "claim_8baf103971544094847be6c18591e956",
+      "statement": "emotionTagsOf 是展示词条唯一出口（用户词最高优先，可覆盖模型结论）；曲库情绪 Tab（buildRows→EmotionSongRow，AppNavHost 二次拍平为 EmotionSongUiRow 含 confidence 字段）与歌曲详情 SongEmotionSection 经它/emotionDisplayOf 取词条。但时段匹配与探索计票不走 emotionTagsOf：PlayerRuntime.observeMoodSlotCaches 逐首预算完整分布 emotionMatchRatiosOf（→volatile moodEmotionRatiosCache，匹配用）与卡门槛 emotionVoteRatiosOf（→volatile exploreVoteRatiosCache，计票用），MoodTimeSlotViewModel 的匹配/统计也按占比分布而非显示词条。",
+      "evidence": [
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/emotion/EmotionViewModel.kt",
+          "version": "repo-file-v1:sha256:dd4ef9811b4e93053635ae6aac2ebe0c694033f708040b3501b3b88ea6211851"
+        },
+        {
+          "resource": "repo://core/model/src/main/java/cn/com/dcsgo/mihx/core/model/EmotionSongUiRow.kt",
+          "version": "repo-file-v1:sha256:54aefaf18afd122e3668cbe56aaf5dc6648262cefb2420828b5f1fc2020a3f40"
+        },
+        {
+          "resource": "repo://core/model/src/main/java/cn/com/dcsgo/mihx/core/model/EmotionTags.kt",
+          "version": "repo-file-v1:sha256:3bad7e417e803b57481ecca90d449b4c6e8e335703354b71f38204a97db10662"
+        },
+        {
+          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRuntime.kt",
+          "version": "repo-file-v1:sha256:580361ae1c1f9443eb5263dfd5f82a5a41b02114953223593a16501be710e1db"
+        }
+      ]
+    },
+    {
+      "id": "claim_9b3ebd0df717450a8e50c52cb7d50e59",
+      "statement": "歌曲详情渲染契约：SongEmotionSection 用 emotionDisplayOf 只投票一次派生词条/占比/置信度；user-only 行（曲线 <2 窗）不 early-return，显示词条列表并标注已由你标记（自动分析失败，词条以你的标记为准）；渲染用 smoothCurve(compensatedCurve)（窗口 5 滑动平均、边界缩窗、长度<3 原样返回），绘的是补偿后曲线（投票与图同一份）；高潮红点仅当 hasSignificantPeak（A 最大值 > A 均值 + PEAK_MARGIN=0.5，非 HIGH 时按档位提示文案）时画，peakSec 按 2.5s hop 折算窗下标。置信度非 HIGH 显示两种文案：SPREAD=模型把握不大词条仅供参考；MIXED=词条里有冷有热这首歌可能不止一种情绪。",
+      "evidence": [
+        {
+          "resource": "repo://core/model/src/main/java/cn/com/dcsgo/mihx/core/model/EmotionDisplay.kt",
+          "version": "repo-file-v1:sha256:2ffbc3693e56397bee54a3ca7fc602dabc07f0742a03380ea39051c1b448f1b5"
+        },
+        {
+          "resource": "repo://core/ui/src/main/java/cn/com/dcsgo/mihx/ui/components/SongEmotionSection.kt",
+          "version": "repo-file-v1:sha256:bf2e32a89e63c9ea76c224b1c3ce6f894af1ae3cbf997f12726d6066c60cfd54"
         }
       ]
     }
   ],
   "verification": {
     "by": "openwiki/0.5.0",
-    "at": "2026-10-21T03:20:08.093Z"
+    "at": "2026-10-27T08:49:20.803Z"
   }
 }

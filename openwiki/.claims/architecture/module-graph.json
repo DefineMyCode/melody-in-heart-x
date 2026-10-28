@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "pageVersion": "sha256:d6394bb0af01d0ec741f3fbea14a635bf32f5a065dbbbee8e44a44a20d3b200e",
+  "pageVersion": "sha256:faf52c9f81a6e7a2c1d3b4b80f0df9a90f112f88dca22281135145aa5234137e",
   "claims": [
     {
       "id": "claim_466622531e04474fbe41f37e24ac9842",
@@ -26,7 +26,7 @@
         },
         {
           "resource": "repo://feature/home/build.gradle.kts#L19-L29",
-          "version": "repo-lines-v1:sha256:34baa1729f202240c6d47aa9eef0a283b06174597b74a8ab14e42219fcaac3f9:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImNiYTMxNDVhZWUwZGEwNTkyNGQzYWQwYjFlZWI0YWRlNzc2MWI2NjdkOGE5NjE0NmRlZWYzOWFiZDFjZTQ4Y2IiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjZjODU3YmRlMjJiOGIxMDQxYzkwYjMzMzRmZDhjMGUyNGZlNTkwODYwYTg2NGU3Njk1OTVkZjBkZWQ3NTk5NTciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+          "version": "repo-lines-v1:sha256:31514403560b7d9ef10b08905ad7302f024422fecb4b9cbfc33e48adcbb54a6c:eyJzZWxlY3RlZExpbmVDb3VudCI6MTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImNiYTMxNDVhZWUwZGEwNTkyNGQzYWQwYjFlZWI0YWRlNzc2MWI2NjdkOGE5NjE0NmRlZWYzOWFiZDFjZTQ4Y2IiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjZjODU3YmRlMjJiOGIxMDQxYzkwYjMzMzRmZDhjMGUyNGZlNTkwODYwYTg2NGU3Njk1OTVkZjBkZWQ3NTk5NTciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
         }
       ]
     },
@@ -82,7 +82,7 @@
         },
         {
           "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/AppNavHost.kt#L112-L147",
-          "version": "repo-lines-v1:sha256:544d6d3c00c55cb73555c090d59b62eec9c4cb4307be444bee382a88811e00a2:eyJzZWxlY3RlZExpbmVDb3VudCI6MzYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjJlOGQ5NzlhM2JiNjU4M2YyOWJhYmZlZmJlNGM4YjUwMGMxMDcxOWJjOTc4ODgwNzYyMTlhYWY3NTUzZDAzOGIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNmMTYzZjc3ODZjNDJjYTg4OTI3MGY3NTNhNzgwNjI2NDI2YzAzZjk3M2EwNWFkZWFlZGQ0ZmE0ZDI3MGYwZDUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImZlODkzYzdkMmE1NjY3ZWE3YWJmMThjMjAyNmVmMmE4YmI5MDZjZDBhZjA5MzE2YzViZmNkNjU0YzY1MmQ3YTAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQ5ZWM0YmZjZDQ0NDM0YWNkMTZjZmM2MTBkMmRiYzk5MzFjOGQ0M2M5M2ZiYzNkYTU0ZGU0MGVmYWI4MmYyZDkifQ"
+          "version": "repo-lines-v1:sha256:9a11ff28dac2fd01484854f2d72fe4bb39f456fddc73fbcaae3fae600aa35c30:eyJzZWxlY3RlZExpbmVDb3VudCI6MzgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjJlOGQ5NzlhM2JiNjU4M2YyOWJhYmZlZmJlNGM4YjUwMGMxMDcxOWJjOTc4ODgwNzYyMTlhYWY3NTUzZDAzOGIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNmMTYzZjc3ODZjNDJjYTg4OTI3MGY3NTNhNzgwNjI2NDI2YzAzZjk3M2EwNWFkZWFlZGQ0ZmE0ZDI3MGYwZDUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImZlODkzYzdkMmE1NjY3ZWE3YWJmMThjMjAyNmVmMmE4YmI5MDZjZDBhZjA5MzE2YzViZmNkNjU0YzY1MmQ3YTAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQ5ZWM0YmZjZDQ0NDM0YWNkMTZjZmM2MTBkMmRiYzk5MzFjOGQ0M2M5M2ZiYzNkYTU0ZGU0MGVmYWI4MmYyZDkifQ"
         }
       ]
     },
@@ -96,7 +96,7 @@
         },
         {
           "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/MelodyApplication.kt#L13-L20",
-          "version": "repo-lines-v1:sha256:fdb98a871f47a9936e9fb35ebdfa76a7bbab1d468661d7ddb5a84417c417ac1e:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMGU2ODY5YTlhZGY1Njk5MDA3YjIzMTdhYWE2MjM2ZTY2MjRlZTBiMjlmNDRhOTNkNDk4NDI4ZGI5NTdlMWE0YiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDg5M2Y0MGUzNzgxZWI4OTZjODJkMDQ2YTA4MDY3YTExZTM1Y2RmMmYxZGZhZjI2ZmVhOTBiOGRiNjY3NjQxMyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiOTk0ODgyYWEwNjUzYjE0N2RhMmU0ZGMwZDYxY2U3NTU5MDQ0N2IxODlhYWEwOTU3MDg3OGY5Y2I2MmJiODExNCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiOTU0MmNlMWIxNWJlYjRhNWYwNTNjNTQ1MTM3Y2JjYmMyZmM4ODM4ODhjNjYwZTIwYTIzMmIzZDliZjdjMTA4ZSJ9"
+          "version": "repo-lines-v1:sha256:9375577afef66052e954db9d9875ec49a904c1ecad04f308179387a228fc60d0:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBlNjg2OWE5YWRmNTY5OTAwN2IyMzE3YWFhNjIzNmU2NjI0ZWUwYjI5ZjQ0YTkzZDQ5ODQyOGRiOTU3ZTFhNGIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk5NDg4MmFhMDY1M2IxNDdkYTJlNGRjMGQ2MWNlNzU1OTA0NDdiMTg5YWFhMDk1NzA4NzhmOWNiNjJiYjgxMTQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijk1NDJjZTFiMTViZWI0YTVmMDUzYzU0NTEzN2NiY2JjMmZjODgzODg4YzY2MGUyMGEyMzJiM2Q5YmY3YzEwOGUifQ"
         },
         {
           "resource": "repo://buildSrc/src/main/kotlin/cn/com/dcsgo/mihx/verify/ProductArchitectureVerification.kt#L112-L123",
@@ -108,7 +108,7 @@
         },
         {
           "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/player/AppMediaSessionService.kt",
-          "version": "repo-file-v1:sha256:4f6ac3d1873687ef903e7b708979abad161af36ec1d715b3ef04b12957b0559f"
+          "version": "repo-file-v1:sha256:2581354024fc0f317cc66081c5c7d7f74fe47cd82e55e74f5031f41a36fb53c1"
         }
       ]
     },
@@ -136,7 +136,7 @@
         },
         {
           "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/repository/SongRepositoryAdapter.kt#L12-L38",
-          "version": "repo-lines-v1:sha256:a54da052cead22cf9deb0c40b04595018677394a4cbc667a6ecee8b0394c6a7b:eyJzZWxlY3RlZExpbmVDb3VudCI6MjcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRjYmU4YzhkNTE3YTIxNGVlNjU0NDBiMDMxNzM4ZjNmYzQ3OGM4YzVjZDIzZGE2OTA2MzhhZGU1NTk2YzUzMTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImI3MTgyNGJiYjhmM2I1MTA4Yjk3MTMzYjMxMTVjYzM1ZmQ5NjY3MjU2YzllMDc2ZmI0NzdjOThkMmY0NDgwNTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImRjZDZmNGYyYWMwMjI5OGY1OTY2Mjk4N2NjMWM2NWY5ZDJlMDE0ODNhYWRjNDE5NzU1ZmUxN2FmZjg0NzAzZGMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+          "version": "repo-lines-v1:sha256:ed12afce4db3774adb6c2330a0459be8caffc501434b8aa2ccb5d5466c01b441:eyJzZWxlY3RlZExpbmVDb3VudCI6MzUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRjYmU4YzhkNTE3YTIxNGVlNjU0NDBiMDMxNzM4ZjNmYzQ3OGM4YzVjZDIzZGE2OTA2MzhhZGU1NTk2YzUzMTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFlNzYwZjI4MmUxZTM2NDMxMzFhYTFlZWQ2OWY2OTU0MTlhNTBkODQ3ZDZkZTYxNTljODE1NjYxZWQ5ZGFmNGQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImRjZDZmNGYyYWMwMjI5OGY1OTY2Mjk4N2NjMWM2NWY5ZDJlMDE0ODNhYWRjNDE5NzU1ZmUxN2FmZjg0NzAzZGMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
         }
       ]
     },
@@ -266,25 +266,29 @@
         },
         {
           "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/local/migration/MelodyMigrations.kt",
-          "version": "repo-file-v1:sha256:1074dd822ba30aa3874f8f867f574ecfad70e5f7b9080261dae74b1135e02d04"
+          "version": "repo-file-v1:sha256:1218e71f300f4d56bd7b61ff0a0d1821922942188583b3622d49e1231f599b18"
         }
       ]
     },
     {
       "id": "claim_309caff45e6846c6b5b7b685ee785e30",
-      "statement": "The exported schema history has grown to 11.json: MelodyDatabase declares version = 11 with 14 entities (adding WordPreferenceEntity in the 10->11 migration that creates the word_preferences table), and migrations are registered through the MelodyMigrations.ALL array; the standing rule is to add new snapshots/migrations, never edit existing schema JSON files.",
+      "statement": "The exported schema history runs through 17.json: MelodyDatabase declares version = 17 with 14 entities (WordPreferenceEntity added in the 10->11 migration that creates the word_preferences table), migrations from 1->2 through 16->17 are registered via the MelodyMigrations.ALL array, and MIGRATION_16_17 adds the missing index_songs_albumId and index_playback_events_songId indexes; the standing rule is to add new snapshots/migrations, never edit existing schema JSON files.",
       "evidence": [
         {
-          "resource": "repo://data/schemas/cn.com.dcsgo.mihx.data.local.MelodyDatabase/11.json",
-          "version": "repo-file-v1:sha256:287d47540285d12af2c034f108087b869e98884714b762dd73f937b866efd50d"
+          "resource": "repo://data/schemas/cn.com.dcsgo.mihx.data.local.MelodyDatabase/17.json",
+          "version": "repo-file-v1:sha256:542521ebe902f64972b59e0016acea0ee1abc215bc7f2efa20097b2d3b25a67f"
         },
         {
           "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/local/MelodyDatabase.kt#L21-L40",
-          "version": "repo-lines-v1:sha256:0953c6f50cf0094890372b54ced6ada4ae1e78fe461008d3a0266be6daec1b56:eyJzZWxlY3RlZExpbmVDb3VudCI6MjAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQwNmYxZGI1MWFhM2I3OWY5OWM4ZjlhMTc5ZjQxYTcxNmY3YzU4Y2Y4M2ZlYjY1MjcwOGIwOWYxMzZmNGU2M2MiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZhZmJhMDUyN2MzOTUzYzRiNmUwZTViNTczOWJhODM2MTJmODA1M2JjZGM5NDY2NzMwMTkzY2QxZDU5MGI0MDgiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjEyNWI1ODI2MzQ1ZmM4NzgyZjg0YjIzNjFkZjMyNmQwMmMxZmYwNTE1MGRlMTYwZjg0NjRhY2ViZTNiYjg3MzUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImU0YmYwODllNWQ1OWUwMGZlZGNjZjEyMmJiOTU0YWIyMDVmN2Q2N2RlM2ZmNTYwYmY5YzVhMDMxYmY5YWUzYTAifQ"
+          "version": "repo-lines-v1:sha256:649d655bee2b1047ea9a5e86cacf61d09d7da22b3bc733f5ab3e3a4269a166f0:eyJzZWxlY3RlZExpbmVDb3VudCI6MjAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQwNmYxZGI1MWFhM2I3OWY5OWM4ZjlhMTc5ZjQxYTcxNmY3YzU4Y2Y4M2ZlYjY1MjcwOGIwOWYxMzZmNGU2M2MiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZhZmJhMDUyN2MzOTUzYzRiNmUwZTViNTczOWJhODM2MTJmODA1M2JjZGM5NDY2NzMwMTkzY2QxZDU5MGI0MDgiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjEyNWI1ODI2MzQ1ZmM4NzgyZjg0YjIzNjFkZjMyNmQwMmMxZmYwNTE1MGRlMTYwZjg0NjRhY2ViZTNiYjg3MzUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImU0YmYwODllNWQ1OWUwMGZlZGNjZjEyMmJiOTU0YWIyMDVmN2Q2N2RlM2ZmNTYwYmY5YzVhMDMxYmY5YWUzYTAifQ"
         },
         {
-          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/local/migration/MelodyMigrations.kt#L130-L160",
-          "version": "repo-lines-v1:sha256:17ce94ebdd95b5a6dcf5e7b7515e89af1cfb692ce3adfd7272b962772179ee48:eyJzZWxlY3RlZExpbmVDb3VudCI6MzEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjAyMjc5NjRkNmQ4OGIwNWViMGZiZDZjMzY3MTYzYTdmNzY5MjljNmVlN2E5Y2UxZDRkZjRmN2Y0MWIzNGUxNGUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/local/migration/MelodyMigrations.kt#L141-L153",
+          "version": "repo-lines-v1:sha256:3ec485f671d646817f62057d8b6fdb18b91094443de36c308ee1bd1bb838262b:eyJzZWxlY3RlZExpbmVDb3VudCI6MTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjJmM2QwNGI4NzhiMjlhNjA3Njc2ZjE4NzQ5MjFhNTdiMTVjZmEyMDlkZGY2YjFkNzEyNTE1OTAxYWY1YzBhZjciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk5OWJkZWZlZWFjYTYzNDBlMDI5MGRjODZlODg5Yzg5ZDVlMTg5YWE1YmE0NGI1ODViM2I3MDczNGY0YTYyZDgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjdjMzgyZjczYmRjZDM2ZGQ3YjY1YTk2ZmM1NDEyNWIyNmYzNTUzNjZlNGQzNTkzMzJkNjJlYmI1MzE5ODFiM2QifQ"
+        },
+        {
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/local/migration/MelodyMigrations.kt#L260-L279",
+          "version": "repo-lines-v1:sha256:7db138ef9c4271a615c27859a16f4c6e71b45536758e0def8c54f5a3f707bf97:eyJzZWxlY3RlZExpbmVDb3VudCI6MjAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjYyYWNkODJkMzZmOWJmYWZkZmM0YjViYjA2Mjg2ZDg1YjZlNDk2YmJjYWUyYjQzZGE1OWU0MTlhY2M0ZDUwNjIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjMwYzFmMTg4ZjE0MmVkN2E4MjQ2ODBiMjA3MTcyYzU1MTliYzYxNGE0OGZkYTdjZjE2N2VkYjhkZGY3OTk1NmMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjQ5MTJiYWVkNjQ5ZGI1OTllYTE4NmUwZWZkNmU1YjZiOTZhZjY2YjNiNGFjYWJmYjNkNjRlODY4YmQ2YTU2OWIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
         }
       ]
     },
@@ -460,31 +464,31 @@
     },
     {
       "id": "claim_ef208e249d85406c90e51afadf8c51c1",
-      "statement": "Explore playback (v3.11.0) is a domain-policy feature split across the boundaries: :domain owns ExplorePlaybackPolicy (INITIAL_BATCH_SIZE = 10, REFILL_COUNT = 5, REFILL_THRESHOLD = 0, and MIN_LISTEN_MS=30_000L / MIN_LISTEN_RATIO=0.25f defining a quick skip) plus RandomQueuePlanner.planExploreRefill; :feature:player owns PlayerRandomQueueFacade.refillExplorePlayQueue/buildExploreRefillPool with a layered candidate pool (liked & no-dislike, then no-dislike, then full library); :data persists votes through WordPreferencesRepository reading the Room word_preferences table, and WordPreferenceRepository.recordSongOutcome adds a like vote to every emotion word on a full listen and a dislike vote on a quick skip.",
+      "statement": "Explore playback (v3.11.0) is a domain-policy feature split across the boundaries: :domain owns ExplorePlaybackPolicy (INITIAL_BATCH_SIZE = 10, REFILL_COUNT = 5, REFILL_THRESHOLD = 0, MIN_LISTEN_MS = 30_000L / MIN_LISTEN_RATIO = 0.25f defining a quick skip, plus VOTE_MIN_RATIO/VOTE_MAX_TAGS/VOTE_WEIGHT_SCALE for proportional voting) and RandomQueuePlanner; :feature:player owns PlayerRandomQueueFacade.playRandomQueue/refillExplorePlayQueue/buildExploreRefillPool with a layered candidate pool (liked & no-dislike, then no-dislike, then full library), which applies votes through the WordPreferenceRepository contract; :data persists votes via WordPreferencesRepository (Room word_preferences) using per-word atomic SQL increments (ensureWordPreference + addWordVotesDelta, M-22) so concurrent skip/full-listen settlements never lose a vote, weighted by the word's proportion in the song (x100 scale, historical votes rescaled in MIGRATION_15_16).",
       "evidence": [
         {
-          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/repository/WordPreferencesRepository.kt",
-          "version": "repo-file-v1:sha256:ea6871212458d76411a332239c70c42f474db460570b3be9360fb798fbc861ac"
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/local/migration/MelodyMigrations.kt#L229-L245",
+          "version": "repo-lines-v1:sha256:82dc698d98320cac3210cae6114d01acaf2b57ba25c2d41c76c0dfd5451e8bc7:eyJzZWxlY3RlZExpbmVDb3VudCI6MTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImJkM2IxNzg0YjVjZWQ0MzE2MTBhYWE5MDgzMmVhYTIxZGIzMzZmMWYzYmZiZjdiZWVjYTAwODMxMzdlYTZhYzYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk5OWJkZWZlZWFjYTYzNDBlMDI5MGRjODZlODg5Yzg5ZDVlMTg5YWE1YmE0NGI1ODViM2I3MDczNGY0YTYyZDgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjYwZTBmNzI2ODE0ZjllYTA3YzM0NzEwZDhlOTRmYTQxM2M3NmQ3NTQ3MTEzNjNlNzEwMTlkM2Y3YWY0NmI4YjMifQ"
         },
         {
-          "resource": "repo://domain/src/main/java/cn/com/dcsgo/mihx/domain/playback/ExplorePlaybackPolicy.kt#L7-L33",
-          "version": "repo-lines-v1:sha256:b5b70b81c4876b7eaa8f74bd86501efd7bc5a1ae27eb4d0c4adee0a3f7acebaf:eyJzZWxlY3RlZExpbmVDb3VudCI6MjcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQzMjE0MTkzY2ZkZjhjMmMzMDU0ZTM2Njk3ZmI3MzRlNTM0M2ZiZDY5YmIwNGJmYWFkOWFlOTBlNGRjOTc1MDEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQ4ZjI4ODUzNGI2YmZjMTFmYmU4OGJiODMxM2EzY2EyNDFlNmJjOTEyZjc2OTJlMjM3MTUzNjkyMzk3NzZmODEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/repository/WordPreferencesRepository.kt#L12-L61",
+          "version": "repo-lines-v1:sha256:77cbd848a664335adae3b08e5be347747ad76124317510c08e300c085a315f76:eyJzZWxlY3RlZExpbmVDb3VudCI6NTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVhZjIyY2YwNzMyNTkyYzI0NzE0MWNiZTYxZWZhMTEwMTI2MTJmNWEzMTIyYjlhZjliYmFmNTJmNTcyNGQxOTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImI1MTc4YTE2ZTMxNzJhNWY3OTk4M2VkY2M3Y2ViYzY1NDdlOTk2YjRlMGYzOWI1NjY1ZjIwZDcyYTVlMjE5YzkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjgwYjNlOGM1YTIzYjk3MTZlOTdkYWEwMDdjZDI1MzM4YmRhOWRiNDQzOGRmNjJjYjdlZjVlZGQyYTZjNjM5YmEifQ"
+        },
+        {
+          "resource": "repo://domain/src/main/java/cn/com/dcsgo/mihx/domain/playback/ExplorePlaybackPolicy.kt#L7-L59",
+          "version": "repo-lines-v1:sha256:e18071f2036c1ac060b7bed52a74fa95dbb68fd46fff4aa81d209ab8f6d30144:eyJzZWxlY3RlZExpbmVDb3VudCI6NTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjA3OTJhNzIzMTM5ZjBhMmE4ZDdjZDg3NjU5YmMxYTZiMjcwNGVkZmNiNzQ0ZTIyZjNhMTZiMGI0MzQ2MGY5NzgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImI0NDI0MzliZWQ5YWE0ZDA1N2Q4ZTlmZjIwNjZhNGMzMzcyMzZiOWVhODIxMGZmMDVmMTRlYTQwYWVjODIyYmQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImY2MzE0OGU4M2JmNjE4M2YxZjAyZWJhMDFhZDhmNmI4ZTU0ZTIwZTFkYWU4MzY4ZjA4OWIzNmRjNjM0NWQ0NzMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjFiZjk1N2Q1ZDI3YzEyNmY3Mzg5MTI5ZGVlZjhiNzYwYThhODQxMmRjM2E1NzU3MDdmMmRkNDQyODM0MTgyNGIifQ"
         },
         {
           "resource": "repo://domain/src/main/java/cn/com/dcsgo/mihx/domain/playback/RandomQueuePlanner.kt#L34-L57",
           "version": "repo-lines-v1:sha256:67019e924c668bd05959902f45357413cc6f83d2ead1f6df3cca1b0704832158:eyJzZWxlY3RlZExpbmVDb3VudCI6MjQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM5Y2JiYzY1NDY5ZGIxY2EyODQyZWZkOTdkZjdlZTJjZTZjYzE1NzE0ODJkMDFhMThiNzkwYTEwYzdjNTEwZjMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjE3ZGYzOGI4YzZlMjQzNmMyYzFiYjFkNWE4OWJhMDBmZmUxMDBjMWNjNmZmN2FhZWZkYzhlYjM5MTk3NDUxYzUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjJjYmU0MTNmNjE4M2ZiYjg1NDAyZTQ1MTNkNjkxNjkwM2RhNjgyNGNjNGNiZDZjOTE2MWIyNTViNDBiOTdhNWUifQ"
         },
         {
-          "resource": "repo://domain/src/main/java/cn/com/dcsgo/mihx/domain/repository/WordPreferenceRepository.kt#L10-L25",
-          "version": "repo-lines-v1:sha256:c363801fec432d214a011f0677b60470779a68c40810d468d12731b96ceb50ba:eyJzZWxlY3RlZExpbmVDb3VudCI6MTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU2NjVhOWQ3NDVkODBkYmFiNjVkN2NiMWI5ZTJjMDMwYzQ4YTMxYzgyZjJlMGZhMTBkOTA5OGU3OGEwMDA0NzYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk2MmVmYzNhOTI1MzM1OTBhN2ZjNzY2MDcxMWYzNjZlNTliODJkODc1YjdhYWMxY2Y1NzEyOTIxY2U3MzY5MGQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjBkYzMxYWI3ZGQ3YTJmNmQyYjJkNTRiOGQ5MGExNmE0MDFhMDkyMWI1OTZhOGUzN2VmNDhhYmY4ZGQzZTkwODEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+          "resource": "repo://domain/src/main/java/cn/com/dcsgo/mihx/domain/repository/WordPreferenceRepository.kt#L16-L26",
+          "version": "repo-lines-v1:sha256:5c90939619cae17cd162eb2cf9be53b1c2b8a3b017f75b3640eecfea1d5495c8:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM5Y2JiYzY1NDY5ZGIxY2EyODQyZWZkOTdkZjdlZTJjZTZjYzE1NzE0ODJkMDFhMThiNzkwYTEwYzdjNTEwZjMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjcxZDI2YzE5ZWM1MDdiNGI4YzdjODFiZDY4YzFkMTA1YmVhNGMzYzUwODA5ODAxZGEzNWI3ZmMwMGUyMmNhNTQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjQ0YzFmODk3MDk5MmE4NzJiNDBiMGRlZjIyNTNlYWM5ODM0NmM5MzA5Y2E1YTNkN2E5N2RjMDgzM2YzYjkxMTkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImI4NjBjYmFmZGE4MjI1YWZkNjhlYzg4ZjI0NjQyODFmMWYzMGMzNzUyMTgyNzUzNTkzYjc1ZjQ4ZDE1NjE0ZjMifQ"
         },
         {
-          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRandomQueueFacade.kt#L238-L310",
-          "version": "repo-lines-v1:sha256:878266d97ebdfe0a9beaee60ff5b07eb747a97dc47b0f27397f40c89092cf8c9:eyJzZWxlY3RlZExpbmVDb3VudCI6NzMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImJjNDgzNmFlNmE3ZmU5NGRiZjAxMjdlMmIwZTFmZTVmZDMzNjcyOGZjNTU3MmYxOGM5MTMwYzRlYWQxOWEyYzQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4M2Q4YmYzYTNkNGY4ZWY5ZGYzNTkxNjk4ODQ5MmVlMzNlNmMzOGY2OGRkNmMzNDAxNDYxYzdjZmZhNTZiMGUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImE5YTk2ZDVmZjg2N2JiY2UyMzU2MTNlMTc4OTkzMDhlZjUyY2ZjMjMyNzA2NDc0MjgzNDIyNDM4ODgyYTk3MWYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjMwZGYyYTZhMGRkMjZlYzFlMjBlOTk0NjJkY2NhYmU5NzA4NjdjMjk3ODE4MTE0YzVhMjhmZjA0MWY5MGYzMWUifQ"
-        },
-        {
-          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRandomQueueFacade.kt#L89-L137",
-          "version": "repo-lines-v1:sha256:53a1a934f217db91784653c03f20ad1defd4f5513173167017530d90a1b3d6af:eyJzZWxlY3RlZExpbmVDb3VudCI6NDksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM5Y2JiYzY1NDY5ZGIxY2EyODQyZWZkOTdkZjdlZTJjZTZjYzE1NzE0ODJkMDFhMThiNzkwYTEwYzdjNTEwZjMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImU5MWY0NDMxMWEyMmUyMWRmMzQzOTJhN2MzOGQ3MGFkZTZkNzM0ZDlkOTY4ZjVlZTc5ZjEyZWEyZGM0M2Q5OTAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjNhZDUxZTE0OGNmZGJmMDU2NTA2NGZhODNlMDU1NjQwMzA2NGZlOWZmZjQyZDFjNWU2MzNjYWMyMzcwNzM3ZTIifQ"
+          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRandomQueueFacade.kt#L85-L164",
+          "version": "repo-lines-v1:sha256:08cd07b79721357bb977ad19af0094103754f6235b0b33c4417d734f37e2050d:eyJzZWxlY3RlZExpbmVDb3VudCI6ODAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjE1ZWM0YWQzZThiYTFiZWUyZTgzNmQ5NjU2YmNkYzE3NzNiYmJhMWU1NWZiYjJjMGQxOGVmZjRhMzI3YTUwN2MiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjNhZDUxZTE0OGNmZGJmMDU2NTA2NGZhODNlMDU1NjQwMzA2NGZlOWZmZjQyZDFjNWU2MzNjYWMyMzcwNzM3ZTIifQ"
         }
       ]
     },
@@ -520,13 +524,33 @@
         },
         {
           "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/player/AppMediaSessionService.kt",
-          "version": "repo-file-v1:sha256:4f6ac3d1873687ef903e7b708979abad161af36ec1d715b3ef04b12957b0559f"
+          "version": "repo-file-v1:sha256:2581354024fc0f317cc66081c5c7d7f74fe47cd82e55e74f5031f41a36fb53c1"
+        }
+      ]
+    },
+    {
+      "id": "claim_bc197c8a2c934e67a777dca84a10ab2f",
+      "statement": "The M-21 gate rule (2026-10-27) bans new `import android.*` in :core:model and :domain on a ratchet basis: pre-existing Android-framework imports are whitelisted in a baseline (android.net.Uri in Song/AlbumEntry/ArtistEntry, and FolderImporter/MusicImportRepository in :domain), so they compile today but any new Android-framework import in those two layers fails the build; the Uri->String migration that would clear the baseline has not happened yet.",
+      "evidence": [
+        {
+          "resource": "repo://buildSrc/src/main/kotlin/cn/com/dcsgo/mihx/verify/ProductArchitectureVerification.kt#L499-L538",
+          "version": "repo-lines-v1:sha256:d5117f582521f66671350632b96d8bf13103e7eed6a4489988b06cc04a124f6b:eyJzZWxlY3RlZExpbmVDb3VudCI6NDAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZhZDc3MDNkNGQzMmIzMTc3M2ZlMjlmYjM1MTgxMDM5YTU2ODMwM2ZlYmY0YmUwOGI3ZDk4MzEyNTI5ZGM5MmEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjQyMTBkOTJkYTBiZDk3Mjg4ODI5MjYxZDBmOGJkMzJlMGNlMTAzZGE4ZGQwMmQxNTZjNDA4Y2U1ZWI5YjJkYTIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjJhMjM5NDExZTI0ODkyZWRmYmY4ZmIyZDYwMTYwYjk1OTVkY2JhYjNmNzg2ZDg2Mzc3OWQzYTE2ZDY4YjVkYmIifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_50b73f50bb024041873b443fa7083afd",
+      "statement": ":data declares the album-art FileProvider in its manifest with authority `${applicationId}.artworkprovider` and an `@xml/artwork_file_paths` path mapping, exposing cacheDir/album_art as content:// URIs for cross-process consumers (notifications/SystemUI/Android Auto); the authority uses `${applicationId}` rather than a hardcoded package so the debug variant's `<package>.debug` applicationId still resolves, and the gate forbids the :app manifest from declaring AppMediaSessionService in the same manifest.",
+      "evidence": [
+        {
+          "resource": "repo://data/src/main/AndroidManifest.xml#L4-L29",
+          "version": "repo-lines-v1:sha256:748b3b9202dc61e0976fa42cef5a34494bb8637979aff65169cf3c31fae7552c:eyJzZWxlY3RlZExpbmVDb3VudCI6MjYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjMzMWY2ZjkyZjI5YjNiMDQwZjU1MWNmZjhlOTQ5YjIwNDc5N2ZlOGMyMGM5Y2Y5ZDBmMTQzZjk4MDBhY2UzMWUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImI4NzUxOGJmZWFmOWZjYjBlZmFmMDJlZjcyMTBmODUxOThiZjAwZDc3MjFiNmJmNThjZGVlZjQyYTYwYjhhNmYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjUxYWNlOGRjMzQxODViNmZiY2RkNjA5NTEyMDZlZDVmY2Y4MjY4ZmE4Yjg1MDQ2MjQ1ZTY5NDEzMDI1OWEzYmMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjZlYWU3NTYwODI0YTcyM2ExYzBiZTExNzk0ZmIyOTI0NDE1NDI3NGY1MjZhOWU5NWExYThhNjdlNzg0ZTEyZmUifQ"
         }
       ]
     }
   ],
   "verification": {
     "by": "openwiki/0.5.0",
-    "at": "2026-10-21T03:20:08.093Z"
+    "at": "2026-10-27T08:49:20.803Z"
   }
 }

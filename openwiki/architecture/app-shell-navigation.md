@@ -1,7 +1,7 @@
 ---
 type: architecture
 title: App Shell, Navigation, and Cross-Module Wiring
-description: How the :app shell wires AppRoot/AppNavHost Route+State+Actions pages, the AppRoutes table, the runtime AppShell derived from skin descriptions (replacing the removed compile-time AppDestinations enum), the skin switcher, Activity-scoped ViewModel assembly, permission coordination, theming, ToastHost attribution, and the CompositionLocal emotion-correction controller across feature modules — including the v3.11.0 RandomEnhanceMode (OFF/TIME_SLOT/EXPLORE) that drives 随心播放增强 and explore play via the LuckyPlayEntryBar/HomeRoute entries.
+description: How the :app shell wires AppRoot/AppNavHost Route+State+Actions pages, the AppRoutes table, the runtime AppShell derived from skin descriptions (replacing the removed compile-time AppDestinations), the skin switcher, Activity-scoped ViewModel assembly, permission coordination, theming, ToastHost attribution, and the CompositionLocal emotion-correction controller across feature modules — including the v3.12.2 RandomEnhanceMode (OFF/TIME_SLOT/EXPLORE) that drives 随心播放增强 and explore play via the LuckyPlayEntryBar/HomeRoute entries.
 tags: [android, jetpack-compose, navigation, app-shell, hilt, permissions, theming, skins]
 sources:
   - id: openwiki-source-96607d29d5086ea5d14045e9
@@ -30,6 +30,8 @@ sources:
     resource: repo://app/src/main/java/cn/com/dcsgo/mihx/app/playlist/PlaylistResumeViewModel.kt
   - id: openwiki-source-2c2546b12c2a5a0327cc383e
     resource: repo://app/src/main/java/cn/com/dcsgo/mihx/app/shell/AppShell.kt
+  - id: openwiki-source-f868655efcf780250d5d05e2
+    resource: repo://app/src/main/java/cn/com/dcsgo/mihx/app/shell/SkinSwitcherRoute.kt
   - id: openwiki-source-8b9c333cb12fd2a4e0abbb46
     resource: repo://app/src/main/java/cn/com/dcsgo/mihx/app/theme/SettingsViewModel.kt
   - id: openwiki-source-5635d1597a4bd6c4e03aa193
@@ -76,14 +78,10 @@ sources:
     resource: repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerViewModel.kt
   - id: openwiki-source-c8fbf05cb50e314288bd4f9d
     resource: repo://feature/settings/src/main/java/cn/com/dcsgo/mihx/feature/settings/SettingsRoute.kt
-  - id: openwiki-source-6c62ee9f2720b7d2a8615c18
-    resource: repo://feature/settings/src/main/java/cn/com/dcsgo/mihx/feature/settings/SettingsScreen.kt
-  - id: openwiki-source-cbcd65bf05e82170bf55f02c
-    resource: repo://feature/user/src/main/java/cn/com/dcsgo/mihx/feature/user/MoodTimeSlotRoute.kt
 verified:
   - by: openwiki/0.5.0
-    at: 2026-10-21T03:20:08.093Z
-generated: { by: "openwiki/0.5.0", at: "2026-10-21T03:20:08.093Z" }
+    at: 2026-10-28T09:27:41.475Z
+generated: { by: "openwiki/0.5.0", at: "2026-10-28T09:27:41.475Z" }
 ---
 
 # App Shell, Navigation, and Cross-Module Wiring
@@ -93,9 +91,7 @@ The `:app` module is the **application shell**. It owns `MainActivity`/`MelodyAp
 ```mermaid
 flowchart TD
     MA["MainActivity setContent"] --> AR["AppRoot"]
-    AR --> GATE{"uiState.isLoading"}
-    GATE -->|true| SPLASH["LoadingSplash then return"]
-    GATE -->|false| THEME["MusicplayerTheme darkTheme + variant"]
+    AR --> THEME["MusicplayerTheme darkTheme + variant"]
     THEME --> BARS["SyncSystemBarsAppearance"]
     THEME --> TOKENS["CompositionLocalProvider LocalPlaybackPanelTokens"]
     TOKENS --> PROVIDER["CompositionLocalProvider LocalEmotionCorrectionController"]
@@ -106,7 +102,7 @@ flowchart TD
     PROVIDER --> TOASTS["ToastHost + AutoDismissToasts"]
 ```
 
-*Composition structure of the shell: the loading gate short-circuits everything; once loaded, the theme, the panel-token and emotion-correction CompositionLocals, the scaffold frame, the player-sheet/queue-sheet overlays, and the toast host wrap the NavHost.*
+*Composition structure of the shell: `MainActivity.setContent { AppRoot() }`; `AppRoot` composes the theme, the panel-token and emotion-correction CompositionLocals, the scaffold frame, the NavHost, the player-sheet/queue-sheet overlays, and the toast host. The shell is composed unconditionally — `isLoading` no longer gates composition (see below).*
 
 ```mermaid
 flowchart TD
@@ -140,10 +136,11 @@ data class AppShell(
 Key properties of the shell:
 
 - **`AppShell.withGridLayout(enabled)`** — a global, skin-independent switch extracted as a function so the "switch → shell" mapping is unit-testable. `enabled = true` forces `SongListTemplate.GRID` (two-column artist/album grid) for both built-in skins, ignoring the description's `songList.template`; `false` keeps the skin's own resolution (both built-ins default to list rows). User decision 2026-09-30 promoted grid from a style to a switch.
-- **`RouteAffinity.owningTopLevelRoute(route)`** — the pure-function successor carrying the old `AppDestinations.fromRoute` mapping semantics verbatim. It maps every sub-page to its owning top-level route: the USER children set (`user`, `skin-switcher`, `settings`, `playback-stats`, `file-check`, raw/effective play stats, `song-top-list`, `emotion-analysis`, `mood-time-slot`) → `AppRoutes.USER`; PLAYLIST children (`playlist`, `version-management`, `quick-skip-songs`) plus the PLAYLIST prefixes (`playlist/`, `artist/`, `album/`, `version-comparison/`) → `AppRoutes.PLAYLIST`; everything else (Home, lyrics) → `AppRoutes.HOME` as the fallback. Because the conclusion is now a runtime route string (not an enum constant), the tab count is variable (2/3/5-item bars all work).
-- **`List<AppTab>.indexOfRoute(route)`** resolves the owning tab ordinal: empty → 0; otherwise `owningTopLevelRoute` → exact match, degrading to exact-route self-match then 0 when the skeleton omits the owning route (e.g. a two-page sheet skeleton with the player out of the bar). `tabAt(index)` returns `getOrNull` so swipe paging can check the boundary.
+- **`RouteAffinity.owningTopLevelRoute(route)`** — the pure-function successor carrying the old `AppDestinations.fromRoute` mapping semantics verbatim. It maps every sub-page to its owning top-level route: the USER children set (`user`, `skin-switcher`, `settings`, `playback-stats`, `file-check`, raw/effective play stats, `song-top-list`, `emotion-analysis`, `mood-time-slot`) → `AppRoutes.USER`; PLAYLIST children (`playlist`, `version-management`, `quick-skip-songs`) plus the PLAYLIST prefixes (`playlist/`, `artist/`, `album/`, `version-comparison/`) → `AppRoutes.PLAYLIST`; everything else (Home, lyrics, and a null route) → `AppRoutes.HOME` as the fallback.
+- **`List<AppTab>.indexOfRoute(route)`** resolves the owning tab ordinal: empty → 0; otherwise `owningTopLevelRoute` → exact match, degrading to exact-route self-match then 0 when the skeleton omits the owning route (e.g. a two-page sheet skeleton with the player out of the bar). `tabAt(index)` returns `getOrNull` so swipe paging can check the boundary, and `tabForRoute` returns the resolved tab.
 - **`shouldShowMiniPlayer(shell, activeRoute, hasCurrentSong)`** — a pure, JVM-testable policy: `hasCurrentSong && shell.miniPlayer && RouteAffinity.owningTopLevelRoute(activeRoute) != shell.playerRoute`. Mirrored `shouldShowLuckyPlayEntry` (2026-10-01) shows a "随心播放" entry bar when the skeleton is a drawer (`playerEntry == SHEET`), no current song, and not on the player route — the two conditions are mutually exclusive and together cover every drawer state.
-- The DefaultShell `= pre-refactor behavior verbatim`, deliberately built from Kotlin constants (not runtime skin parsing) so nothing on the startup path can fail to bring up the app. `DefaultShellTest` asserts both paths (constant shell vs `resolve(DefaultSkin.skin())`) agree; `DefaultShellConsistencyTest` asserts `playerRoute` falls back to the literal `"home"` matching `AppRoutes.HOME`.
+- `playerRoute` falls back to the literal `"home"` (matching `AppRoutes.HOME`), deliberately not referencing the navigation constant table so the shell package stays free of nav dependencies; `PlayerEntry` (TAB/SHEET) and `AppTab` (id + route + label) round out the runtime model. `DefaultShellConsistencyTest` asserts the fallback matches `AppRoutes.HOME`.
+- The DefaultShell `= pre-refactor behavior verbatim`, deliberately built from Kotlin constants (not runtime skin parsing) so nothing on the startup path can fail to bring up the app. `DefaultShellTest` asserts both paths (constant shell vs `resolve(DefaultSkin.skin())`) agree.
 
 ## `SkinShellResolver` (app-layer bridge) and the skin switcher
 
@@ -154,7 +151,7 @@ Key properties of the shell:
 - **`resolveMyPageSectionOrder`** — maps `pages.me.sections` `part` names to `feature:user` `UserSections` keys, keeping the old P5 literal `"customSkin"` mapped to `UserSections.SKIN_SWITCHER` (visual compatibility for already-delivered skin zips), then filters to known keys.
 - **`resolveLibrarySongListTemplate`** — finds the first `part == "songList"` section in `pages.library` and reads its `template` prop, defaulting to `DEFAULT`. `SkipLight-resolver` `fromId` tolerates unknown values by defaulting.
 
-**`SkinSwitcherRoute`** (route `AppRoutes.SKIN_SWITCHER = "skin-switcher"`) is an independent page that replaced the P5 user custom-skin import (CustomSkinSection / UserSkinRoute / UserSkinStore / SkinIdDeriver all removed). It lists only the built-in skeletons from `knownSkins`, exposes only two panel knobs (cover size default 252, cover corner default 20) delivered live via `LocalPlaybackPanelTokens`, and the grid-layout global switch. **`SkinSwitcherStore`** persists to a single `skin_switcher` SharedPreferences file: `active_id`, per-skinId `panel_cover_size_<id>`/`panel_cover_corner_<id>` overrides, and the global `grid_layout` flag. Overrides are keyed by skinId so switching skins loads that skin's own overrides without cross-pollution.
+**`SkinSwitcherRoute`** (route `AppRoutes.SKIN_SWITCHER = "skin-switcher"`) is an independent page that replaced the P5 user custom-skin import (CustomSkinSection / UserSkinRoute / UserSkinStore / SkinIdDeriver all removed). It lists only the built-in skeletons from `knownSkins`, exposes only two panel knobs (cover size default 252, cover corner default 20) delivered live via `LocalPlaybackPanelTokens`, and the grid-layout global switch. Since 2026-10-24 the **theme mode / theme variant / screen orientation** controls also moved here from the Settings page (they are appearance-related), so the switcher owns all appearance toggles. **`SkinSwitcherStore`** persists to a single `skin_switcher` SharedPreferences file: `active_id`, per-skinId `panel_cover_size_<id>`/`panel_cover_corner_<id>` overrides, and the global `grid_layout` flag. Overrides are keyed by skinId so switching skins loads that skin's own overrides without cross-pollution. `ThemeVariantCard` (the swatch color card) now lives in this shell file, not in `feature/settings`.
 
 In `AppRoot`: `currentSkinId` is initialized from `SkinSwitcherStore.activeId()` gated by membership in `knownSkins` (an old prefs id for a now-decommissioned skin falls back to `DEFAULT_SKIN_ID`); `onSkinSelected` writes prefs and swaps the panel overrides; `shell = remember(currentSkinId, gridLayoutEnabled) { SkinShellResolver.resolveById(currentSkinId).withGridLayout(gridLayoutEnabled) }`.
 
@@ -170,11 +167,11 @@ In `AppRoot`: `currentSkinId` is initialized from `SkinSwitcherStore.activeId()`
 
 This constraint matters for anyone adding a new page: create the ViewModel in `AppRoot`, add a parameter to `AppNavHost`, and consume it inside the route. Never re-resolve it inside the destination composable.
 
-### Loading splash gate and system bars
+### Loading, system bars, and screen orientation
 
-`PlayerUiState.isLoading` defaults to `true` so the first frame is a splash, not an empty Home. While it is true, `AppRoot` renders only the full-screen black `LoadingSplash` ("启动中...") and `return`s — the `MusicplayerTheme` block, `ToastHost`, `AppScaffold`, and `AppNavHost` are not composed at all until startup loading completes. Error toasts (`uiState.errorMessage` → toast + `playerViewModel.clearError()`) are also gated behind loading. `SyncSystemBarsAppearance` uses `WindowCompat.getInsetsController(...).isAppearanceLightStatusBars = !darkTheme` in a `SideEffect`.
+`PlayerUiState.isLoading` still defaults to `true` and is set `false` once the initial library load finishes (via `PlayerLibraryFacade.loadInitialData` / the restore-trigger catch), but it **no longer gates composition**: the `if (uiState.isLoading) {}` block in `AppRoot` is empty and the private `LoadingSplash` composable is dead code. `AppRoot` composes `MusicplayerTheme`, `AppScaffold`, `AppNavHost`, and the overlays unconditionally from the first frame. Error toasts (`uiState.errorMessage` → `toastHost.showToast(message)` + `playerViewModel.clearError()`) run in a `LaunchedEffect(errorMessage)` that is **not** gated by loading.
 
-A `LaunchedEffect(screenOrientationMode)` applies the persisted screen orientation to the Activity (`SENSOR_AUTO` → `SCREEN_ORIENTATION_UNSPECIFIED`, `LANDSCAPE` → `SENSOR_LANDSCAPE`, `PORTRAIT` → `SENSOR_PORTRAIT`).
+`SyncSystemBarsAppearance` uses `WindowCompat.getInsetsController(...).isAppearanceLightStatusBars = !darkTheme` in a `SideEffect`. A `LaunchedEffect(screenOrientationMode)` applies the persisted screen orientation to the Activity (`SENSOR_AUTO` → `SCREEN_ORIENTATION_UNSPECIFIED`, `LANDSCAPE` → `SENSOR_LANDSCAPE`, `PORTRAIT` → `SENSOR_PORTRAIT`).
 
 ### Theme pipeline and `MusicplayerTheme`
 
@@ -182,7 +179,7 @@ A `LaunchedEffect(screenOrientationMode)` applies the persisted screen orientati
 - `AppRoot` derives `isDarkTheme` from `themeMode` (`SYSTEM` → `isSystemInDarkTheme()`, `LIGHT` → false, `DARK` → true), passes `darkTheme` + `variant` into `MusicplayerTheme`, and syncs status-bar icon appearance.
 - `MusicplayerTheme` (in `:core:ui`) maps `ThemeTokens.builtin(variant, dark)` — **16 palettes** (eight variants × day/night) — into Material3 `ColorScheme` via `tokensToColorScheme`. Dynamic color is deliberately off (`dynamicColor = false`, brand colors win), and `LocalContentColor` is explicitly provided as `colorScheme.onSurface` so uncolored text follows the theme.
 
-Theme variants come from `ThemeVariant` (**eight entries**): `MONO` "墨色", `VERMILION` "朱砂 · 心有乐章", `INDIGO` "靛蓝静夜", `SAGE` "苔藓森野", `AMBER` "琥珀暖忆", `SKY` "天空澄明", `FRESH` "新叶青翠", `SUNRISE` "晨光霞粉". `ThemeVariant.entries` drives the Settings color card automatically; `feature/settings` `ThemeVariantCard` carries the swatch color branches per variant. Settings toasts each switch ("已切换为墨色主题", "已切换为朱砂 · 心有乐章主题", … through SUNRISE). Token definitions: `MONO × 明暗` (dark is OLED pure black), `VERMILION × 昼夜`, plus INDIGO/SAGE/AMBER/SKY/FRESH/SUNRISE each with day/night presets.
+Theme variants come from `ThemeVariant` (**eight entries**): `MONO` "墨色", `VERMILION` "朱砂 · 心有乐章", `INDIGO` "靛蓝静夜", `SAGE` "苔藓森野", `AMBER` "琥珀暖忆", `SKY` "天空澄明", `FRESH` "新叶青翠", `SUNRISE` "晨光霞粉". `ThemeVariant.entries` drives the skin-switcher page's color card automatically via `ThemeVariantCard` (swatch color branches per variant). Each switch toasts ("已切换为墨色主题", "已切换为朱砂 · 心有乐章主题", … through SUNRISE), and theme mode / screen orientation changes toast from the same route. Token definitions: `MONO × 明暗` (dark is OLED pure black), `VERMILION × 昼夜`, plus INDIGO/SAGE/AMBER/SKY/FRESH/SUNRISE each with day/night presets.
 
 ### Toast host and attribution toasts
 
@@ -193,17 +190,17 @@ Attribution toasts are the shell's user-facing explanation layer:
 - Mood-slot / explore attribution (design doc §4.5): the mood slot name arrives from the `playRandomQueue`/`startInfinitePlay` **callback** (`moodSlotName`, no longer a `currentMoodSlotName()` poll), not from a separate ViewModel getter. The LuckyPlayEntryBar path (AppRoot `onLuckyPlayClick`) shows `已按「{slotName}」为你随机播放` when a slot is hit; the Home/now-playing surface's lucky play instead shows the generic `已生成随机队列，开始播放~` (only its infinite play shows `已按「{slotName}」开启无限随机播放`). Both handlers also settle the playlist source via `playlistResumeViewModel.switchSource(null, …)`.
 - SAF import results (`✓ 已添加 N 首歌曲` / `未在该文件夹中找到音乐文件`), deletion results, queue mutations ("已从播放队列移除"), theme switches, emotion actions, and Settings toggles all flow through the same host.
 
-## RandomEnhanceMode: 随心播放增强 entry points (v3.11.0)
+## RandomEnhanceMode: 随心播放增强 entry points (v3.12.2)
 
 Since 2026-10-20 the "随心播放增强" feature is driven by a single persisted enum, `RandomEnhanceMode` (`core/model/RandomEnhanceMode.kt`): **`OFF`** (plain random), **`TIME_SLOT`** (the original mood-slot × emotion-tag pool filtering), and **`EXPLORE`** (explore play). Time-slot and explore modes are mutually exclusive — selecting one closes the other, and turning off returns to plain random. The mode is a persisted `PlayerSettingsRepository.randomEnhanceMode` DataStore setting surfaced two ways:
 
-- `MoodTimeSlotViewModel.randomEnhanceMode` (a `stateIn` over the repo flow) feeds the config page so `onSelectMode` writes the mode and emits the toast (`已切换为时段模式` / `已切换为探索模式` / `已关闭随心播放增强`).
+- `MoodTimeSlotViewModel.randomEnhanceMode` (a `stateIn` over the repo flow) feeds the config page so `onSelectMode` writes the mode via `setMode` and emits the toast (`已切换为时段模式` / `已切换为探索模式` / `已关闭随心播放增强`).
 - `PlayerRuntime` observes the same repo flow (`observeMoodSlotCaches`' fourth stream). It derives `isExploreModeActive` into `PlayerUiState`, and when the mode leaves explore while an explore session is running it calls `randomQueueFacade.stopExplorePlay()` to exit the session immediately.
 
 **Explore play (`RandomEnhanceMode.EXPLORE`)** changes the random-queue semantics carried by `PlayerRandomQueueFacade`:
 - `playRandomQueue()` generates a fixed **10-song** batch from the full library (ignoring mood-slot filtering) and sets `isExplorePlay` in `PlayerUiState`, which is surfaced as `HomeRouteState.isExplorePlay`.
-- Infinite random play is **disabled** while explore is active; tapping it in the HomeRoute instead opens the "探索播放中" dialog (`HomeRoute.kt`) telling the user to switch modes in 我的 → 随心播放增强 or click a song to exit explore.
-- While listening, liked/disliked word preferences accumulate (vote-based, timed by short-skip detection); when the queue drops to 1 song it auto-refills **5** songs that favor liked words and avoid disliked ones, from `WordPreferenceRepository` data collected into `wordPreferenceCache`.
+- Infinite random play is **disabled** while an explore session is active; tapping it in the HomeRoute instead opens the "探索播放中" dialog (`HomeRoute.kt`) telling the user to switch modes in 我的 → 随心播放增强 or click a song to exit explore.
+- While listening, liked/disliked word preferences accumulate (vote-based, timed by short-skip detection); when the queue drops to 1 song it auto-refills **5** songs that favor liked words and avoid disliked ones, from `WordPreferenceRepository` data collected into `wordPreferenceCache`. Refill pool degrades only when the pool too small to fill the whole batch (2026-10-25 fix), guaranteed to top up as long as the full library has enough songs outside the queue.
 
 **`isExplorePlay` session state** lives on `PlayerUiState` (`PlayerUiState.kt`) and is distinct from the continuously-subscribed `isExploreModeActive` mode flag: exploring is the running session, while the mode flag says the user has picked explore in settings.
 
@@ -231,11 +228,11 @@ sequenceDiagram
     CB->>CB: toastHost.showToast(message)
 ```
 
-*M-3 (review 2026-09-03): the whole chain is suspending. `MusicRepository.deleteSong` runs entirely inside `withContext(Dispatchers.IO)` — it performs the SAF `DocumentFile` cross-process delete via `deleteBackingFile`, then removes the song from songs/playlists, persists both, and deletes the emotion rows (incl. the ~4KB embedding) — so the main thread is never blocked by ContentProvider calls (no ANR). `DeleteSongResult.Success/Failure` map directly to toasts.*
+*M-3 (review 2026-09-03): the whole chain is suspending. `MusicRepository.deleteSong` runs entirely inside `withContext(Dispatchers.IO)` — it performs the SAF `DocumentFile` cross-process delete via `deleteBackingFile`, then removes the song from songs/playlists, persists both, and deletes the emotion rows — so the main thread is never blocked by ContentProvider calls (no ANR). `DeleteSongResult.Success/Failure` map directly to toasts.*
 
 ### Player sheet and queue sheet overlays
 
-- **`PlayerSheetHost`** (P3) renders the global player drawer, only reachable when the skeleton declares `playerEntry == SHEET` (default skeleton keeps `TAB` and the drawer never opens). It shares the same `NowPlayingSurface` as the TAB route to avoid two drifting implementations. Since 2026-09-30 the drawer embeds lyrics: `onDismiss` first closes in-drawer lyrics (`showLyricsInSheet`), then the drawer; tapping the cover no longer jumps the standalone lyrics route. From the drawer, artist/album navigation closes the drawer and navigates to those detail routes.
+- **`PlayerSheetHost`** (P3) renders the global player drawer, only reachable when the skeleton declares `playerEntry == SHEET` (default skeleton keeps `TAB` and the drawer never opens). It shares the same `NowPlayingSurface` as the TAB route to avoid two drifting implementations. Since 2026-10-24 the drawer's content (player / lyrics / artist detail / album detail) is carried by a **single-layer `sheetContent` state carved as a floating overlay that never touches the NavHost back stack** (dialog destinations were tried and abandoned because the transparent window eats touches). `key(page.name)` resets each detail page's rememberSaveable segment-selection state when switching albums/artists. Since 2026-09-30 the drawer embeds lyrics: `onDismiss` first closes in-drawer lyrics, then the drawer; tapping the cover no longer jumps the standalone lyrics route. From the drawer, artist/album navigation swaps the sheet content.
 - **`PlayerQueueSheetHost`** renders `PlayQueueSheet` above the scaffold, driven by shell-local `showQueueSheet` state with a `BackHandler` in `AppRoot`. Song clicks play the queue index and dismiss; removal/clear emit confirmation toasts.
 
 ## Permission coordination
@@ -259,7 +256,7 @@ Settings wires grants to player features: `onRequestBluetoothPermission` → `in
 | `PLAYLIST_DETAIL` | `playlist/{playlistId}` | `NavType.IntType` arg; helper `playlistDetail(id)` |
 | `ARTIST_DETAIL` / `ALBUM_DETAIL` | `artist/{artistName}` / `album/{albumName}` | built via helpers that `Uri.encode` |
 | `USER` | `user` | profile tab |
-| `SETTINGS` | `settings` | theme/toggles/permission rows |
+| `SETTINGS` | `settings` | playback behavior + permission rows (theme controls moved out) |
 | `PLAYBACK_STATS` | `playback-stats` | stats overview |
 | `RAW_PLAY_STATS` / `EFFECTIVE_PLAY_STATS` | `play-stats/raw` / `play-stats/effective` | ranked count sub-pages |
 | `SONG_TOP_LIST_FULL` | `song-top-list?period={period}` | `period` = `week`/`month`, default `week`; helper `songTopList(period)` |
@@ -269,7 +266,7 @@ Settings wires grants to player features: `onRequestBluetoothPermission` → `in
 | `EMOTION_ANALYSIS` | `emotion-analysis` | scan status + failure rows |
 | `MOOD_TIME_SLOT` | `mood-time-slot` | contextual lucky-play config |
 | `LYRICS` | `lyrics` | full-screen lyrics |
-| `SKIN_SWITCHER` | `skin-switcher` | built-in skin switcher page (2026-09-30) |
+| `SKIN_SWITCHER` | `skin-switcher` | built-in skin switcher page + appearance controls |
 | `FILE_CHECK` | `file-check` | local-file validation |
 | `DUPLICATE_DETAIL` | `duplicate-detail` | duplicate-group detail screen |
 
@@ -279,7 +276,7 @@ Parameterized routes are always built through the `AppRoutes` helper functions, 
 
 The old `AppDestinations.fromRoute` compile-time enum mapping is gone; its semantics now live in `RouteAffinity.owningTopLevelRoute(route)` (a pure function in `app/shell/AppShell.kt`, fully described above) plus `List<AppTab>.indexOfRoute(route)` / `tabAt`. This single mapping drives:
 
-1. **Bottom-bar highlight sync** — the highlight is **derived** from `activeRoute` + the tab list (`tabs.indexOfRoute(activeRoute)`), not synced into a local state variable. `AppScaffold`'s `TextBottomBar`/`TextNavRail` compute `selectedIndex = shell.tabs.indexOfRoute(activeRoute)` directly. The 2026-09-29 `LaunchedEffect(activeRoute)` in `AppRoot` is retained only for a hypothetical future hot-swap recomposition; it currently has no side effect.
+1. **Bottom-bar highlight sync** — the highlight is **derived** from `activeRoute` + the tab list (`tabs.indexOfRoute(activeRoute)`), not synced into a local state variable. `AppScaffold`'s `TextBottomBar`/`TextNavRail` compute `selectedIndex = shell.tabs.indexOfRoute(activeRoute)` directly.
 2. **Tab transitions** — `AppNavHost`'s `enterTransition`/`exitTransition` use `tabOrdinal(initialState.destination.route, shell.tabs)` vs the target (both calling `indexOfRoute`): target ordinal larger → slide in from the right, smaller → from the left (300 ms tween + fade); same tab → `EnterTransition.None`; `popEnterTransition`/`popExitTransition` are disabled.
 3. **Edge swipe paging** — `AppScaffold` consumes horizontal drags (96 dp threshold) and moves to `tabs.indexOfRoute(activeRoute) ± 1` via `tabs.tabAt(...)` (null at the boundary); `swipeEnabled = activeRoute != AppRoutes.LYRICS` disables it on the lyrics route.
 
@@ -296,11 +293,11 @@ Each feature module exposes exactly `XxxRoute` (public composable taking `XxxRou
 
 ### Hoisted shared library grouping (M-7)
 
-`sharedLibrarySongs = remember(uiState.songs) { flatGroupedSongs(uiState, playerViewModel) }` computes the O(n) grouped-and-flattened library **once at NavHost level**, keyed by the songs list instance. Playlist, playlist detail, artist, album, stats, top list, and version routes receive `precomputedLibrarySongs`; the mappers fall back to internal computation only for legacy callers/tests. Before this hoist, every route recomputed the grouping on each recomposition (~1100+ song libraries made tab switches janky).
+Since P3, the O(n) grouped-and-flattened library is computed **once at `AppRoot` level** — `sharedLibrarySongs = remember(uiState.songs) { flatGroupedSongs(uiState, playerViewModel) }` — and passed into `AppNavHost` as `sharedLibrarySongs`. Playlist, playlist detail, artist, album, stats, top list, and version routes (including the artist/album details rendered *inside the player sheet drawer*, which is why this hoisted out of NavHost) receive `precomputedLibrarySongs`; the mappers fall back to internal computation only for legacy callers/tests. Before the hoist, every route recomputed the grouping on each recomposition (~1100+ song libraries made tab switches janky).
 
 ### Narrow position/sleep-timer streams (M-6)
 
-`PlayerViewModel.positionMs` (~500 ms updates) and `sleepTimerRemainingMs` (1 s ticks) are narrow `StateFlow`s deliberately **not** part of the main `uiState`. Only the pages that need them subscribe — `HomeRoute` (position + sleep timer), `LyricsRoute` (position), `VersionComparisonRoute` (position for its seek bar) — so each tick recomposes just the progress UI instead of the whole shell. This was the fix for the M-6 review finding that per-second sleep-timer writes to the main state flow recomposed `AppRoot` entirely.
+`PlayerViewModel.positionMs` (~500 ms updates) and `sleepTimerRemainingMs` (1 s ticks) are narrow `StateFlow`s deliberately **not** part of the main `uiState`. Only the pages that need them subscribe — `HomeRoute` (position + sleep timer), `LyricsRoute` (position), `VersionComparisonRoute` (position for its seek bar) — so each tick recomposes just the progress UI instead of the whole shell. On the now-playing surface the position narrow stream is passed down directly and consumed by the leaf `PlaybackProgressBar`, shrinking recomposition to that leaf (M-14).
 
 ### Queue scope strategy and playlist-resume settling
 
@@ -310,18 +307,18 @@ All "click a song" actions go through `PlayerViewModel.playWith(song, SongPlayba
 
 ### Representative page wiring
 
-- **HOME / now-playing** — the `AppRoutes.HOME` destination renders the shared `NowPlayingSurface` (same one used in the SHEET drawer). It surfaces `HomeRouteState.isExplorePlay` from `PlayerUiState`, and its infinite-play button is explore-aware: during an explore session it shows the "探索播放中" dialog instead of starting infinite play. `NowPlayingSurface`'s lucky play shows the generic `已生成随机队列，开始播放~`, while infinite play adds the mood-slot attribution `已按「{slotName}」开启无限随机播放`; both settle the playlist source.
-- **USER** — refreshes emotion status on entry (`emotionViewModel.observe()`, `refresh()`), loads `PlaybackStatsSnapshot` via `produceState` with `runCatching` fallback to `EMPTY` (C-2: the Room runBlocking bridge can throw), feeds the mood entry card `nowMinuteOfDay` from a 30-second refresh loop, and applies `sectionOrder = shell.myPageSectionOrder` for the P4 L2 sectioned "我的" page. `onOpenSkinSwitcher` navigates to `SKIN_SWITCHER`.
-- **MOOD_TIME_SLOT** — the "随心播放增强" config page collects `configs` plus `randomEnhanceMode` (the `RandomEnhanceMode` StateFlow: `OFF`/`TIME_SLOT`/`EXPLORE`), `wordPreferences` (explore-play liked/neutral/disliked words, sorted by word), `tagCounts`/`librarySize` from the Activity-scoped `MoodTimeSlotViewModel`. `mode` flows into the route state so the page exposes the exclusive mode switch (selecting one mode closes the other) and an explore "重新探索" action that clears the word-preference counts (`clearWordPreferences()` → toast "已清空词条统计，重新探索开始~"). `loadStats()` snapshots tag counts + library size once per page entry (on failure the chip badges degrade to zero instead of blocking config). Edit/add dialog state is local (`editingSlot`/`showAddDialog`); saving goes through `save(config) { success, message -> }` so overlap/zero-length validation errors surface as toasts. The `MoodSlotEditDialog` receives tag counts and the manual-only tag list (`鬼畜`, `沙雕`, `戏谑`, `荒诞`).
-- **SKIN_SWITCHER** — lists `knownSkins`, exposes the two panel knobs + grid switch, all threaded from `AppRoot` through `AppNavHost` params; `onBack` = `navigateUp`.
-- **SETTINGS** — `SettingsRouteState` is assembled from theme flows + `uiState` (uniform random, daily goal); actions call the persisted settings writers and the permission coordinator as described above.
+- **HOME / now-playing** — the `AppRoutes.HOME` destination renders the shared `NowPlayingSurface` (same one used in the SHEET drawer). It surfaces `HomeRouteState.isExplorePlay` from `PlayerUiState`, and its infinite-play button is explore-aware: during an explore session it shows the "探索播放中" dialog instead of starting infinite play. Since M-18 (`@Stable` + `remember`-built state/actions instances) the route boundary can actually skip recomposition; `NowPlayingSurface` builds `homeState`/`homeActions` with `remember` keyed on the narrow streams and current song, and `HomeRoute` wraps its derived lambdas (`onTogglePlayMode`, `onSwitchVersion`, `onInfinitePlayClick`, `onRelatedPlayClick`) in `remember(...)` to stabilize their identity. The now-playing lucky play shows the generic `已生成随机队列，开始播放~`, infinite play adds `已按「{slotName}」开启无限随机播放`; both settle the playlist source. `loadSongInfo` calls route through `loadSongInfoSafely` (C-1 fix) to swallow Room exceptions.
+- **USER** — refreshes emotion status on entry (`emotionViewModel.observe()`, `refresh()`), loads `PlaybackStatsSnapshot` via `produceState` with `runCatching` fallback to `EMPTY` (C-2: the Room runBlocking bridge can throw), feeds the mood entry card `nowMinuteOfDay` from a 30-second refresh loop, and applies `sectionOrder = shell.myPageSectionOrder` for the P4 L2 sectioned "我的" page. `userRouteActions` wires `onEmotionScanNow` (starts a manual scan with "已开始扫描，可离开本页，后台继续"), `onOpenMoodTimeSlot`, and `onOpenSkinSwitcher`.
+- **MOOD_TIME_SLOT** — the "随心播放增强" config page collects `configs` plus `randomEnhanceMode` (the `RandomEnhanceMode` StateFlow: `OFF`/`TIME_SLOT`/`EXPLORE`), `wordPreferences` (explore-play liked/neutral/disliked words, sorted by word), `tagCounts`/`librarySize` from the Activity-scoped `MoodTimeSlotViewModel`. `mode` flows into the route state so the page exposes the exclusive mode switch (selecting one mode closes the other) and an explore "重新探索" action that clears the word-preference counts (`clearWordPreferences()` → toast "已清空词条统计，重新探索开始~"). `loadStats()` snapshots tag counts + library size once per page entry (on failure the chip badges degrade to zero instead of blocking config). `poolCountOf` uses `matchCount(tags)` — now a **per-tag-set cache** (M-15, review 2026-10-27) so typing in the edit dialog no longer triggers a full-library scan per keystroke — returning the pool size that the playback-time `MoodSlotPolicy.MATCH_MIN_RATIO` gate would actually produce. Edit/add dialog state is local (`editingSlot`/`showAddDialog`); saving goes through `save(config) { success, message -> }` so overlap/zero-length validation errors surface as toasts. The `MoodSlotEditDialog` receives tag counts and the manual-only tag list (`鬼畜`, `沙雕`, `戏谑`, `荒诞`).
+- **SKIN_SWITCHER** — lists `knownSkins`, exposes the two panel knobs + grid switch, and (since 2026-10-24) the theme mode / theme variant / screen orientation controls, all threaded from `AppRoot` through `AppNavHost` params with toast-attributed change callbacks; `onBack` = `navigateUp`.
+- **SETTINGS** — `SettingsRouteState` carries only `globalUniformRandomEnabled` + `dailyListeningGoalMinutes` (theme controls moved to the skin switcher); actions call the persisted settings writers (`setGlobalUniformRandomEnabled`/`setDailyListeningGoalMinutes`) and wire the Bluetooth/notification rows through `PermissionCoordinator` → `initializeBluetoothPlayback` / `setPlaybackNotificationEnabled(true)`, each with a toast.
 - **FILE_CHECK / DUPLICATE_DETAIL** — validation state + duplicate-group scan from `PlayerViewModel`; `onOpenDetail` navigates to `DUPLICATE_DETAIL`.
 
 ## CompositionLocal: site-wide emotion correction ("不像？标记")
 
 `:core:ui` defines `LocalEmotionCorrectionController: ProvidableCompositionLocal<EmotionCorrectionController?>` (default `null`) with a single `suspend fun save(songId, words): Boolean`. `AppRoot` provides it once, above the entire scaffold:
 
-- The controller delegates to `AppMediaMetadataViewModel.saveEmotionCorrection(songId, words)`: empty `words` means "restore auto tags" (`clearCorrection`, requires an existing row); otherwise `EmotionGroup.avgOfWords` resolves the word set to V-A anchor coordinates and `saveCorrection` persists it. Repository read/write bridges run on `Dispatchers.Default` to keep the `runBlocking(IO)` bridges off the main thread.
+- The controller delegates to `AppMediaMetadataViewModel.saveEmotionCorrection(songId, words)`. Since 2026-10-24 the method **validates the word set**: an empty word set means "restore auto tags" (`clearCorrection`, requiring an existing row); a non-empty set is rejected outright (`return false`) if any word is outside `EmotionGroup` — `avgOfWords` is not used as the validator because it silently drops illegal words; it also computes whether the user is *disagreeing* with the model conclusion via `isUserCorrection(modelTagsOf(it), words)` (a "采纳" write-back of the model's own tags is not counted as an independent mark). Repository read/write bridges run on `Dispatchers.Default` to keep the `runBlocking(IO)` bridges off the main thread.
 - On success the controller refreshes `EmotionViewModel`; on failure (unanalyzed song / invalid word set) it toasts "这首歌还没完成分析".
 - Because the provider sits at the shell root, **any page that renders `SongInfoDialog`/`SongEmotionSection`** (library, artist, album, local music, player, detail pages) automatically gains the "不像？标记" capability — `SongEmotionSection` shows its calibrate button only when `LocalEmotionCorrectionController.current != null`, so no callback threading through feature props is needed.
 
@@ -329,11 +326,11 @@ The emotion-analysis page uses the same controller with an extra subtlety: `onCa
 
 ## State, lifecycle, and failure semantics summary
 
-- **Startup**: `isLoading = true` → splash only; loading done → themed shell with toast host; errors during operation surface as toasts and are cleared immediately.
+- **Startup**: the shell composes from the first frame regardless of `isLoading`; the persisted library loads on a background dispatcher and the state is published when ready. Errors during operation surface as toasts and are cleared immediately.
 - **Permission flows**: SAF audio access silently requests `READ_MEDIA_AUDIO` then always launches the folder picker; runtime pre-checks skip the dialog; in-flight requests hold exactly one pending continuation; denial shows the policy's message; SDK-inapplicable requests succeed silently.
 - **Navigation**: state save/restore on tab switches; per-tab-ordinal transitions; `navigateUp` for all back actions; parameterized routes always via helpers with URI encoding. The start destination is fixed for the window lifetime (`rememberSaveable`), so a skin switch that changes `startRoute` does **not** clear the back stack.
 - **Data-bridge failures**: every direct repository call reached from composition (`loadSongInfo`, stats snapshots, tag counts, calibrated tags) is wrapped in `runCatching` with a safe default, because the Room `runBlocking` bridge throws rather than returning null.
-- **Mood playback**: the player resolves the active slot from volatile `moodSlotConfigsCache`/`moodEmotionTagsCache`/`wordPreferenceCache` snapshots and falls back to full-library random when the tag-filtered pool is empty. Since M-2 (review 2026-10-15) the caches are no longer startup-only snapshots: `PlayerRuntime.observeMoodSlotCaches()` continuously subscribes to `TimeSlotConfigRepository.observeConfigs()`, `SongEmotionRepository.observeAll()` (mapped to tags on `Dispatchers.Default`), and `WordPreferenceRepository.observeAll()`, so config saves/deletes and newly analyzed/calibrated emotions take effect immediately — the old `onConfigsChanged`/`refreshMoodSlots()` manual-refresh seam no longer exists. The mode gate is live too: `PlayerRandomQueueFacade` reads `moodSlotEnabled` as `randomEnhanceMode == TIME_SLOT` and `exploreModeEnabled` as `== EXPLORE` (via `first()`), so switching the mode in settings takes effect without a restart.
+- **Mood playback**: the player resolves the active slot from volatile `moodSlotConfigsCache`/`moodEmotionRatiosCache`/`exploreVoteRatiosCache`/`wordPreferenceCache` snapshots and falls back to full-library random when the tag-filtered pool is empty. Since M-2 (review 2026-10-15) the caches are no longer startup-only snapshots: `PlayerRuntime.observeMoodSlotCaches()` continuously subscribes to `TimeSlotConfigRepository.observeConfigs()`, `SongEmotionRepository.observeAll()` (mapped on `Dispatchers.Default`), and `WordPreferenceRepository.observeAll()`, so config saves/deletes and newly analyzed/calibrated emotions take effect immediately — the old `onConfigsChanged`/`refreshMoodSlots()` manual-refresh seam no longer exists. The single emotion subscription derives **two** ratio distributions — the full match distribution (for pool matching) and the vote/gate distribution (for explore vote counting), split because counting votes off the full distribution over-diffuses dislikes (review 2026-10-27). The mode gate is live too: `PlayerRuntime` caches the mode into a `@Volatile randomEnhanceModeCache` (review 2026-10-27 · N-3, zero-IO reads consistent with `isExploreModeActive`), and `PlayerRandomQueueFacade` reads `moodSlotEnabled` as `== TIME_SLOT` and `exploreModeEnabled` as `== EXPLORE`, so switching the mode in settings takes effect without a restart.
 
 ## Delete chain, import flow, and the real-path scan (M-3 / M-5)
 
@@ -341,7 +338,7 @@ The delete chain is covered above. For **import**, `MusicRepository` offers a fa
 
 ## Extension points
 
-Adding a page means, in order: (1) add the `AppRoutes` constant (and helper for parameterized routes); (2) register the skeleton/tab in the skin description if it is a bottom-level tab, or rely on `RouteAffinity.owningTopLevelRoute` for child pages; (3) create the feature's `XxxRoute/XxxScreen/State/Actions` if new; (4) create any new ViewModel in `AppRoot` (Activity scope!) and thread it into `AppNavHost`; (5) add the `composable(...)` block in `AppNavHost`, deriving state through the mappers and binding actions through the action assemblers, including `SKIN_SWITCHER` and grid-layout params for shell-dependent routes; (6) run `verifyProductArchitecture` — it fails on feature-to-feature deps, `:data`/`:player` leaks, missing Route/Screen pairs, and any reintroduction of overlay routing (`AppOverlay.kt`, `AppOverlayHost.kt`, `OverlayRoute.kt`).
+Adding a page means, in order: (1) add the `AppRoutes` constant (and helper for parameterized routes); (2) register the skeleton/tab in the skin description if it is a bottom-level tab, or rely on `RouteAffinity.owningTopLevelRoute` for child pages; (3) create the feature's `XxxRoute/XxxScreen/State/Actions` if new, annotating the Route state/actions `@Stable` so the route boundary can skip recomposition; (4) create any new ViewModel in `AppRoot` (Activity scope!) and thread it into `AppNavHost`; (5) add the `composable(...)` block in `AppNavHost`, deriving state through the mappers and binding actions through the action assemblers, including `SKIN_SWITCHER` and grid-layout params for shell-dependent routes; (6) run `verifyProductArchitecture` — it fails on feature-to-feature deps, `:data`/`:player` leaks, missing Route/Screen pairs, and any reintroduction of overlay routing (`AppOverlay.kt`, `AppOverlayHost.kt`, `OverlayRoute.kt`).
 
 ## Focused tests
 

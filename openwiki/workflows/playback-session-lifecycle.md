@@ -46,8 +46,6 @@ sources:
     resource: repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerViewModel.kt
   - id: openwiki-source-4712a58a73a521c17f95b5f0
     resource: repo://feature/player/src/test/java/cn/com/dcsgo/mihx/feature/player/PlayerMediaEventFacadeTest.kt
-  - id: openwiki-source-ca2d7e504c1ad19cbaff9046
-    resource: repo://feature/player/src/test/java/cn/com/dcsgo/mihx/feature/player/PlayerPersistenceFacadeTest.kt
   - id: openwiki-source-6cbc32290e81c1e4b344fe2b
     resource: repo://feature/player/src/test/java/cn/com/dcsgo/mihx/feature/player/PlayerPersistenceGraphTest.kt
   - id: openwiki-source-e0c3384d9aa25ad5cfc535e4
@@ -64,10 +62,10 @@ sources:
     resource: repo://player/src/main/java/cn/com/dcsgo/mihx/player/PlayDurationTracker.kt
   - id: openwiki-source-1335b79015e69d8ed73b7fd8
     resource: repo://player/src/test/java/cn/com/dcsgo/mihx/player/MediaItemWrapDetectionTest.kt
-generated: { by: "openwiki/0.5.0", at: "2026-10-21T03:20:08.093Z" }
+generated: { by: "openwiki/0.5.0", at: "2026-10-27T08:49:20.803Z" }
 verified:
   - by: openwiki/0.5.0
-    at: 2026-10-21T03:20:08.093Z
+    at: 2026-10-27T08:49:20.803Z
 ---
 
 # Workflow: Playback Session Lifecycle
@@ -212,7 +210,7 @@ Translation-rule highlights:
 4. **Restore the add-next play mode**: `QueueManager.restorePlayModeAfterNextSong` only when "current song == `nextPlaySongId`" restores the queue mode to `playModeBeforeNext`, corrects the business queue's current item with `startedSongId`, clears the temp flags, and `syncPlayerQueue` re-orders the window.
 5. **Sleep-timer hook**: `onSleepTimerSongEnded()` handles the "pause after the final song" deadline (see Phase 6).
 
-The explore settlement semantics: `PlayerRuntime.handleExploreSongSettled(songId, playedMs)` reads the song's emotion tags from `moodEmotionTagsCache`, decides `ExplorePlaybackPolicy.isSkipped(playedMs, durationMs)` — skipped when heard **< 30 s or < ¼ of the total duration** (unknown duration falls back to the 30-second rule) — and casts a **dislike** vote on every word when skipped, otherwise a **like** vote, tallying into the `wordPreferenceRepository`; the re-read snapshot feeds `wordPreferenceCache`, which powers the explore refill pool (`PlayerRandomQueueFacade.buildExploreRefillPool`: liked-with-no-dislike → no-dislike → full library). The pure decision lives in `:domain`'s `ExplorePlaybackPolicy` (JVM-testable) with constants `INITIAL_BATCH_SIZE = 10`, `REFILL_COUNT = 5`, `REFILL_THRESHOLD = 0`, `MIN_LISTEN_MS = 30_000`, `MIN_LISTEN_RATIO = 0.25f`.
+The explore settlement semantics (v3.12.2): `PlayerRuntime.handleExploreSongSettled(songId, playedMs)` reads the song's emotion **displayed-tag share ratios** from `exploreVoteRatiosCache` — deliberately distinct from `moodEmotionTagsCache`/`moodEmotionRatiosCache`, because the full distribution is correct for tag *matching* but wrong for *vote counting* (a song 97% non-「治愈」 should not accrue a dislike for「治愈」 just because 3% falls near it). It decides `ExplorePlaybackPolicy.isSkipped(playedMs, durationMs)` — skipped when heard **< 30 s or < ¼ of the total duration** (unknown duration falls back to the 30-second rule) — then builds a **weighted, gated vote map** via `ExplorePlaybackPolicy.votesOf(ratios)` (each tag whose share clears `VOTE_MIN_RATIO = EmotionGroup.MIN_RATIO`, capped at `VOTE_MAX_TAGS = EmotionGroup.MAX_TAGS` so skip/dislike only negates the same tags the detail page displays; weight = rounded share × `VOTE_WEIGHT_SCALE = 100`, zero-weight tags dropped). It casts that integer vote map as **dislike** when skipped, otherwise **like**, into `wordPreferenceRepository.recordSongOutcome(votes, liked = !skipped)`; the re-read snapshot feeds `wordPreferenceCache`, which powers the explore refill pool (`PlayerRandomQueueFacade.buildExploreRefillPool`: liked-with-no-dislike → no-dislike → full library). The pure decision and vote algebra live in `:domain`'s `ExplorePlaybackPolicy` (JVM-testable) with constants `INITIAL_BATCH_SIZE = 10`, `REFILL_COUNT = 5`, `REFILL_THRESHOLD = 0`, `MIN_LISTEN_MS = 30_000`, `MIN_LISTEN_RATIO = 0.25f`, `VOTE_MIN_RATIO`, `VOTE_MAX_TAGS`, `VOTE_WEIGHT_SCALE = 100`.
 
 ### Window refill for non-infinite queues
 

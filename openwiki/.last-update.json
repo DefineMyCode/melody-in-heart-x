@@ -1,8 +1,8 @@
 {
-  "updatedAt": "2026-10-21T05:21:58.377Z",
+  "updatedAt": "2026-10-28T09:43:25.577Z",
   "command": "update",
-  "gitHead": "fac4dae56c59057141e57f10a245b4cc48127435",
+  "gitHead": "d4a6703e24314a264ca81fd9e352302df0f53756",
   "model": "ark-code-latest",
-  "status": "interrupted",
+  "status": "complete",
   "language": "en"
 }

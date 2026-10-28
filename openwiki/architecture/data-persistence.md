@@ -1,7 +1,11 @@
 ---
 type: "Reference"
 title: "Data Persistence: Room and DataStore"
-openwiki_generated: true
+description: "MelodyDatabase (Room v17, 14 tables) owns all structured library/playlist/stats/emotion/word-preference data; five Preferences DataStore files and two legacy SharedPreferences channels cover settings and playback snapshots. Covers the schema-change workflow, all migrations v1→v17, and the suspend persistence contract."
+tags: [persistence, room, datastore, migration, sqlite, playback-restore]
+verified:
+  - by: openwiki/0.5.0
+    at: 2026-10-27T08:49:20.803Z
 sources:
   - id: openwiki-source-186e96b8d6739f3745947903
     resource: repo://app/src/main/AndroidManifest.xml
@@ -39,6 +43,8 @@ sources:
     resource: repo://data/src/main/java/cn/com/dcsgo/mihx/data/local/entity/PlaylistSongCrossRef.kt
   - id: openwiki-source-2171009a4a060165d9540fcf
     resource: repo://data/src/main/java/cn/com/dcsgo/mihx/data/local/entity/SongArtistCrossRef.kt
+  - id: openwiki-source-8afa2e64020072855e89b8ac
+    resource: repo://data/src/main/java/cn/com/dcsgo/mihx/data/local/entity/SongEmotionEntity.kt
   - id: openwiki-source-e1ce80f5abb863f1723b9ef6
     resource: repo://data/src/main/java/cn/com/dcsgo/mihx/data/local/entity/SongEntity.kt
   - id: openwiki-source-12a1d6d0e5553c5cb1517529
@@ -65,8 +71,6 @@ sources:
     resource: repo://data/src/main/java/cn/com/dcsgo/mihx/data/repository/PlaylistResumeDataStore.kt
   - id: openwiki-source-d8c173fb82dbd4c82e845d11
     resource: repo://data/src/main/java/cn/com/dcsgo/mihx/data/repository/PlayStatsRepository.kt
-  - id: openwiki-source-815e01d571755955a0c9b700
-    resource: repo://data/src/main/java/cn/com/dcsgo/mihx/data/repository/QuickSkipSongsRepository.kt
   - id: openwiki-source-fde478f222951a2e504c17b0
     resource: repo://data/src/main/java/cn/com/dcsgo/mihx/data/repository/RoomMusicLibraryDataSource.kt
   - id: openwiki-source-20d823efa2e1a5f403b02d3e
@@ -87,6 +91,8 @@ sources:
     resource: repo://data/src/test/java/cn/com/dcsgo/mihx/data/repository/PlaylistResumeDataStoreTest.kt
   - id: openwiki-source-6f066b97b53f49eacd4c62a0
     resource: repo://domain/src/main/java/cn/com/dcsgo/mihx/domain/model/DuplicateSongGroup.kt
+  - id: openwiki-source-39979cc6e8c7e5b52ecabd5f
+    resource: repo://domain/src/main/java/cn/com/dcsgo/mihx/domain/playback/ExplorePlaybackPolicy.kt
   - id: openwiki-source-ee8d5713acafafdce234f04d
     resource: repo://domain/src/main/java/cn/com/dcsgo/mihx/domain/playback/MoodSlotResolver.kt
   - id: openwiki-source-31721788a95f08f3d7c7f198
@@ -121,20 +127,16 @@ sources:
     resource: repo://player/src/test/java/cn/com/dcsgo/mihx/player/PlaybackStateSnapshotSerializerTest.kt
   - id: openwiki-source-ba9ccc172d5e5f490a763733
     resource: repo://player/src/test/java/cn/com/dcsgo/mihx/player/PlaybackStateStoreTest.kt
-generated: { by: "openwiki/0.5.0", at: "2026-10-21T03:20:08.093Z" }
-verified:
-  - by: openwiki/0.5.0
-    at: 2026-10-21T03:20:08.093Z
+generated: { by: "openwiki/0.5.0", at: "2026-10-27T08:49:20.803Z" }
 ---
-
 
 # Data Persistence: Room and DataStore
 
-The app persists data through two complementary stacks: **Room** (`MelodyDatabase`, version 11, 14 entity tables) owns all structured data — library, playlists, stats, quick-skip, emotions, and the emotion word-preference vote table (`word_preferences`); **DataStore Preferences** (5 independent files) owns small-scale settings and state snapshots (player settings, playback snapshot, playlist resume, mood time-slot config JSON, emotion failure records). There are also three **legacy read-only SharedPreferences channels**: the one-shot `SharedPreferencesLegacyJsonMigration` that moves v1 JSON into Room, and the legacy-value fallbacks inside `PlayerSettingsRepository`/`PlaybackStateStore` — every legacy key is deleted as soon as the new storage is written, so legacy SharedPreferences survive only to serve the migration path.
+The app persists data through two complementary stacks: **Room** (`MelodyDatabase`, version 17, 14 entity tables) owns all structured data — library, playlists, stats, quick-skip, emotions, and the emotion word-preference vote table (`word_preferences`); **DataStore Preferences** (5 independent files) owns small-scale settings and state snapshots (player settings, playback snapshot, playlist resume, mood time-slot config JSON, emotion failure records). There are also three **legacy read-only SharedPreferences channels**: the one-shot `SharedPreferencesLegacyJsonMigration` that moves v1 JSON into Room, and the legacy-value fallbacks inside `PlayerSettingsRepository`/`PlaybackStateStore` — every legacy key is deleted as soon as the new storage is written, so legacy SharedPreferences survive only to serve the migration path.
 
 ```mermaid
 flowchart LR
-    MUSIC["MusicRepository"] --> DB[("Room melody.db v11")]
+    MUSIC["MusicRepository"] --> DB[("Room melody.db v17")]
     STATS["PlayStatsRepository"] --> DB
     SKIP["QuickSkipSongsRepository"] --> DB
     EMO["SongEmotionsRepository"] --> DB
@@ -153,17 +155,17 @@ flowchart LR
 
 Module ownership: Room and all DataStores except `playback_state` live in `:data` and are exposed narrowly through `:domain` repository interfaces; `PlaybackStateStore` lives in `:player` (it directly serves the Media3 session) and is wired through the `PlaybackStateStorage`/`PlaybackStateRepository` interfaces by `app/di/PlayerModule`. Dependency boundaries are covered in `/openwiki/architecture/module-graph.md`.
 
-## Room: MelodyDatabase v11 (14 entity tables)
+## Room: MelodyDatabase v17 (14 entity tables)
 
-`MelodyDatabase` declares `version = 11, exportSchema = true` with 14 entities and a single DAO, `MelodyDao`. The database file is `melody.db`, built by `DatabaseModule` via `Room.databaseBuilder` (singleton) with all migrations v1→v11 registered through `MelodyMigrations.ALL`.
+`MelodyDatabase` declares `version = 17, exportSchema = true` with 14 entities and a single DAO, `MelodyDao`. The database file is `melody.db`, built by `DatabaseModule` via `Room.databaseBuilder` (singleton) with all migrations v1→v17 registered through `MelodyMigrations.ALL`.
 
 | Table | Entity | Purpose |
 | --- | --- | --- |
-| `songs` | `SongEntity` | Library master table: title/artist/album/sample rate/uri/lrcUri/durationMs and other import metadata; `uri` has a unique index |
+| `songs` | `SongEntity` | Library master table: title/artist/album/sample rate/uri/lrcUri/durationMs and other import metadata; `uri` unique index + `albumId` index (M-5, 2026-10-27) |
 | `playlists` | `PlaylistEntity` | Playlist catalog (id, name, created/updated timestamps) |
 | `playlist_song_cross_ref` | `PlaylistSongCrossRef` | Playlist↔song many-to-many; `sortOrder` preserves order |
 | `play_stats` | `PlayStatsEntity` | Per-song aggregate stats: effective play count, raw play count, accumulated duration, last played |
-| `playback_events` | `PlaybackEventEntity` | One row per playback session (started at, duration, effective flag); supports day/week/month aggregation |
+| `playback_events` | `PlaybackEventEntity` | One row per playback session (started at, duration, effective flag); supports day/week/month aggregation; composite index + `songId` index (M-6) |
 | `quick_skip_songs` | `QuickSkipSongEntity` | Quick-skipped songs |
 | `quick_skip_short_play_counts` | `QuickSkipShortPlayEntity` | Short-play counters (accumulate to trigger auto quick-skip) |
 | `song_group_overrides` | `SongGroupOverrideEntity` | Title overrides for same-name song groups |
@@ -171,8 +173,8 @@ Module ownership: Room and all DataStores except `playback_state` live in `:data
 | `artists` | `ArtistEntity` | Atomic artist rows (`name` unique; artists split from `/`-separated tags) |
 | `albums` | `AlbumEntity` | Albums (`name` unique) |
 | `song_artist_cross_ref` | `SongArtistCrossRef` | Song↔atomic-artist many-to-many |
-| `song_emotions` | `SongEmotionEntity` | Emotion analysis results: V/A, per-window `curveJson`, `embeddingB64`, three user-calibration fields |
-| `word_preferences` | `WordPreferenceEntity` | Emotion word listen-preference tallies (`word` primary key, `likeVotes`/`dislikeVotes`/`updatedAt`); per word-preference-vote row |
+| `song_emotions` | `SongEmotionEntity` | Emotion analysis results: V/A, per-window `curveJson`, `embeddingB64`, user calibration fields (`userTags` is truth; `userValence`/`userArousal` retained but deprecated), `userTagsEdited`, `vocalScore` |
+| `word_preferences` | `WordPreferenceEntity` | Emotion word listen-preference tallies (`word` primary key, `likeVotes`/`dislikeVotes`/`updatedAt`); ratio-weighted votes |
 
 Note that entities declare **no Room foreign-key constraints**; all relationships (playlist↔song, song↔artist/album, and the songId-keyed stat tables) are logical, maintained by repository code rather than enforced by the schema.
 
@@ -198,7 +200,9 @@ erDiagram
 
 `MusicRepository` holds the in-memory library (`songs`/`playlists`) and persists via **asynchronous full-table snapshots**: every change snapshots the current list into `persistScope` (a single-threaded IO scope, `Dispatchers.IO.limitedParallelism(1)`), where `RoomMusicLibraryDataSource.persistSongs`/`persistPlaylists` replace everything inside the `@Transaction` methods `replaceSongs`/`replacePlaylists`. Serializing snapshots on one thread guarantees the later snapshot always supersedes the earlier one (the final state is correct) while UI actions on the main thread never wait for disk.
 
-`RoomMusicLibraryDataSource.restore()` rebuilds domain objects from `songs` + `song_group_overrides` + `playlists` + refs at startup and calls `MelodyDao.syncLibraryCatalog` to sync the artist/album catalogs: idempotently insert missing atomic artists and albums, rebuild all `song_artist_cross_ref` rows, batch-backfill `songs.albumId` (avoiding the early per-song N+1 query regression), then delete orphan artists/albums.
+`RoomMusicLibraryDataSource.restore()` rebuilds domain objects from `songs` + `song_group_overrides` + `playlists` + refs at startup and calls `MelodyDao.syncLibraryCatalog` to sync the artist/album catalogs: idempotently insert missing atomic artists and albums, rebuild all `song_artist_cross_ref` rows, batch-backfill `songs.albumId` (avoiding the early per-song N+1 query regression), then delete orphan artists/albums. Restore reads entities only once (M-7) and the `albumId` mapping is read with a two-column projection *after* `syncLibraryCatalog` rebuilds the album directory.
+
+`persistSongs` also enforces **playback-event retention** (M-6, 2026-10-27): `playback_events` is a pure-append table with no cleanup in the original design, so each persist/import deletes events older than `PLAYBACK_EVENT_RETENTION_MS` (365 days) — covering the "today/this-week/this-month" aggregation windows while bounding the table's growth. The new `index_playback_events_songId` index keeps the per-song cleanup scans cost-bounded.
 
 ### File-check dedup scan and cleanup
 
@@ -209,31 +213,34 @@ Detecting and removing songs that point at the same physical file is a persisten
 
 ### Emotion word listen-preference tallies (word_preferences)
 
-`WordPreferencesRepository` is the **only data source** for the `word_preferences` table (added in v11, 2026-10-20 explore-play). Each emotion word has a single row keyed by `word` with `likeVotes`/`dislikeVotes`/`updatedAt`. Playback outcomes **accumulate votes only** — they never overwrite an affinity directly — so a word can simultaneously hold votes on both sides; the domain-level `WordPreference.kind` (`core/model/WordPreference.kt`) decisively labels it `LIKE`/`DISLIKE`/`NEUTRAL` by which count is higher (a tie is neutral), making a single skip unable to flip a liked word (multiple evidence is required to flip). It is the "same song A B already liked, C D already disliked" conflict resolver.
+`WordPreferencesRepository` is the **only data source** for the `word_preferences` table (added in v11, 2026-10-20 explore-play). Each emotion word has a single row keyed by `word` with `likeVotes`/`dislikeVotes`/`updatedAt`. Playback outcomes **accumulate votes only** — they never overwrite an affinity directly — so a word can simultaneously hold votes on both sides; the domain-level `WordPreference.kind` (`core/model/WordPreference.kt`) decisively labels it `LIKE`/`DISLIKE`/`NEUTRAL` by which count is higher (a tie is neutral), making a single skip unable to flip a liked word (multiple evidence is required to flip).
 
-- **Write path**: `recordSongOutcome(words, liked)` reads the current rows, computes `likeVotes`/`dislikeVotes` (+1 on the matching side), and bulk-`upsert`s via the DAO's `@Upsert` (the DAO only does whole-row replacement; vote accumulation lives in the repository). Empty input is a no-op, and words are deduplicated before tallying.
+- **Weighted votes (2026-10-25)**: vote weight = the word's ratio in the song × `ExplorePlaybackPolicy.VOTE_WEIGHT_SCALE` (100) — "80% emo" votes far more than "20% emo". Votes are cast only for words meeting `VOTE_MIN_RATIO` (= `EmotionGroup.MIN_RATIO`, deliberately the same threshold used on the detail page so a skip negates exactly the tags the user saw). The table schema stays integer; migration 15→16 rescales all historical votes ×100 so old and new votes share one scale.
+- **Write path**: `recordSongOutcome(votes, liked)` reads the current rows and applies **per-word SQL-atomic increments** (`ensureWordPreference` idempotent row creation + `addWordVotesDelta` with `MIN(x, 2147483647)` saturation so votes never overflow to negative — M-22). This replaced the "read whole table → recompute → whole-table upsert" that lost votes under two concurrent settlements. Empty input is a no-op, and words with non-positive vote weight are dropped.
 - **Read path**: `observeAll()` maps `MelodyDao.observeAllWordPreferences()` (Room invalidation-driven Flow, cached by `PlayerRuntime` for explore-play) and `getAll()` is a full-table blocking snapshot.
-- **Consumer**: `PlayerRuntime.handleExploreSongSettled` decides per completed/skipped song (settlement is via `ExplorePlaybackPolicy.isSkipped` — <30s or <1/4 total duration is a skip) and calls `recordSongOutcome(words, liked = !skipped)`; `PlayerRandomQueueFacade` filters candidates by word preference kind, and the user screen renders the like/neutral/dislike buckets.
-- **Tests**: `WordPreferencesRepositoryTest` locks the vote-accumulation semantics (single skip does not flip, tie is neutral, empty input ignored) and `MelodyDatabaseMigrationTest.migration10To11CreatesWordPreferencesTable`.
+- **Consumer**: `PlayerRuntime.handleExploreSongSettled` decides per completed/skipped song (settlement is via `ExplorePlaybackPolicy.isSkipped` — <30s or <1/4 total duration is a skip) and calls `recordSongOutcome(votes, liked = !skipped)`; `PlayerRandomQueueFacade` filters candidates by word preference kind, and the user screen renders the like/neutral/dislike buckets.
+- **Tests**: `WordPreferencesRepositoryTest` locks the vote-accumulation semantics (single skip does not flip, tie is neutral, empty input ignored) and `MelodyDatabaseMigrationTest.migration15To16RescalesHistoricalVotes`.
 
 ## The playback_events index design
 
 The composite index `(startedAtMs, isEffectivePlay, songId)` on `playback_events` covers every time-range aggregation query: `totalDurationBetween` (duration), `distinctSongsBetween` (distinct songs), `dailyDurationsBetween` (per-day), and `playCountsBetween` (song TOP chart, fully index-covered). The v7→v8 migration replaced the single-column `startedAtMs` index created in v5→v6 with this composite index (the old one was a redundant prefix) and repaired the historical inconsistency of "fresh installs missing the index".
+
+M-6 (2026-10-27) added a **`songId` single-column index** to `playback_events`: `DELETE FROM playback_events WHERE songId IN (...)` (song deletion/dedup/file-check cleanup) filters by `songId` equality, and in the composite index `songId` sits third so it cannot be a lookup prefix — every cleanup was a full table scan on an unbounded append table. Likewise M-5 added `index_songs_albumId` to `songs` so album-catalog queries and the "orphan album cleanup" (which runs on every persist and every song deletion/dedup/file-check) do not scan the whole table.
 
 ## Room schema change workflow (enforced)
 
 Every entity/DAO change must follow this workflow (codified in `CLAUDE.md`, machine-enforced by `verifyProductArchitecture`):
 
 1. **Change the entity/DAO** under `data/src/main/java/cn/com/dcsgo/mihx/data/local/{entity,dao}`.
-2. **Bump the version**: `MelodyDatabase.VERSION` (currently 11 → next 12).
-3. **Export the new schema JSON**: `:data` configures KSP with `room.schemaLocation = $projectDir/schemas` (`data/build.gradle.kts`); building generates `data/schemas/cn.com.dcsgo.mihx.data.local.MelodyDatabase/12.json` automatically.
+2. **Bump the version**: `MelodyDatabase.VERSION` (currently 17 → next 18).
+3. **Export the new schema JSON**: `:data` configures KSP with `room.schemaLocation = $projectDir/schemas` (`data/build.gradle.kts`); building generates `data/schemas/cn.com.dcsgo.mihx.data.local.MelodyDatabase/18.json` automatically.
 4. **Register the migration**: add `Migration(N, N+1)` in `MelodyMigrations` (a dedicated object in `data/.../migration/MelodyMigrations.kt`, extracted from `DatabaseModule` so migration regression tests reference the same instances) and include it in `MelodyMigrations.ALL`; `DatabaseModule` registers the whole array via `addMigrations(*MelodyMigrations.ALL)`.
 5. **Add a unit test** for any migration involving complex data movement.
 6. **Never modify existing schema JSONs** — they are immutable historical snapshots.
 
 `verifyProductArchitecture` (root `build.gradle.kts`, rule body moved to `buildSrc` `ProductArchitectureVerification` and unit-covered) hard-checks persistence invariants: schema v1 must not contain `quick_skip_short_play_counts`, v2 must contain it and must not contain `lrcUri`, v3 must contain `lrcUri` (version history is tamper-evident); `MelodyMigrations` must register `Migration(1, 2)`/`Migration(2, 3)` and `DatabaseModule` must call `addMigrations(*MelodyMigrations.ALL)`; both backup rule files must contain the full privacy exclude list (below). The full rule inventory lives in `/openwiki/operations/build-and-verification.md`.
 
-### Migration history v1 → v11
+### Migration history v1 → v17
 
 | Migration | Content |
 | --- | --- |
@@ -247,6 +254,12 @@ Every entity/DAO change must follow this workflow (codified in `CLAUDE.md`, mach
 | 8→9 | Create `song_emotions` (V/A curve table) |
 | 9→10 | Add `embeddingB64`/`userValence`/`userArousal`/`userTags` to `song_emotions` (personalization loop) |
 | 10→11 | Create `word_preferences` (emotion word listen-preference tallies, explore play) |
+| 11→12 | Add `userTagsEdited` to `song_emotions` (whether the user disagreed with the model; nullable — old rows had no way to know if the user edited, so `NULL` is honest) |
+| 12→13 | **modelVersion fingerprint rewrite + coordinate deprecation**: rewrite v4-era version strings to `V4_MODEL_VERSION` (`yamnet-va-v4-rms@b18e43ff`) so later `LIKE 'yamnet-va-v4-rms%'` matches still work through 14→15 (writing the actual **v4** string, not today's version — these curves were produced under v4); null `userValence`/`userArousal` on user-tagged rows because coordinates are now **read-time derived** from `userTags` (the true source) and stored coords would go stale on curve-coordinate-system change |
+| 13→14 | Add `vocalScore` to `song_emotions` (YAMNet vocal-class score mean; the analyzer always computed it but discarded it; nullable, NULL for rows analyzed before its introduction) |
+| 14→15 | Rewrite v4 label rows to current `EmotionModelSpec.MODEL_VERSION` (`yamnet-va-v5-vocal@edbf6fe5`); **no rescan** because v5 vocal compensation is read-time derived — stored curves are unchanged so old curves remain valid under the new label |
+| 15→16 | Rescale `word_preferences` historical votes ×100 (likeVotes/dislikeVotes) so new ratio-weighted votes (15–100/word) and old 1-vote units share one scale; relative like-vs-dislike judgments are scale-invariant |
+| 16→17 | Add `index_songs_albumId` and `index_playback_events_songId` (M-5/M-6); index-only change, `17.json` auto-exported |
 
 `MelodyDatabaseMigrationTest` (Robolectric `MigrationTestHelper`) validates each hand-written migration against the stored schema snapshots (`:data` exposes the schemas dir as test assets).
 
@@ -283,7 +296,7 @@ The process-death recovery data, living in `:player`:
 <!-- openwiki: mermaid parse failed and this diagram was converted to a text fence so it does not break rendering. Fix the diagram source and restore the mermaid fence. Parser error: Heuristic: a semicolon inside a label breaks rendering; rephrase the label. -->
 ```text
 flowchart TD
-    A["startup restorePlaybackState"] --> B["read DataStore snapshot on IO coroutine"]
+    A["startup restorePlaybackState"] -->|"IO coroutine"| B["read DataStore snapshot"]
     B -->|"no play_queue_json"| C["return null, nothing to restore"]
     B -->|"snapshot exists"| D["decode and filter against current library"]
     D --> E["set pendingRestore; wait for controllerReady handshake"]
@@ -315,16 +328,15 @@ Mood time-slot configs for contextual random playback: a single key `time_slot_c
 
 Emotion analysis failure records (same design as TimeSlotConfigStore): one key `emotion_failures` holds a JSONObject keyed by songId with `{reason, failedAt, attempts}`. `record` reads-modifies-writes in one transaction, accumulating `attempts` and overwriting `reason`/`failedAt` with the latest; parsing skips corrupted entries. The consumer is `EmotionScanWorker`: songs with `attempts >= MAX_ATTEMPTS(3)` stop being retried automatically (the detail page still allows manual retry via `clearForRetry`, which clears records and re-enqueues), otherwise every scan pass spins on the same broken files. A successful analysis clears the record via `clear(songId)`. The periodic scan is scheduled by `EmotionScanScheduler` in `MelodyApplication.onCreate` (charging + battery-not-low constraints, one pass every 6 hours, ≤40 songs per pass).
 
-## The suspend persistence contract and residual blocking bridges
+## The suspend persistence contract
 
-Most `:data` repositories now expose **suspend/`Flow` APIs that `withContext(Dispatchers.IO)`** the Room query rather than blocking: `SongEmotionsRepository` (get/getAll/upsert/saveCorrection…), `PlayStatsRepository` (the room read/writes plus atomic SQL upserts such as `incrementPlayCount`), and `QuickSkipSongsRepository` were refactored (M-5, 2026-10-15) from `runBlocking(IO)` bridges to `already-suspend` functions — the old 17-call-site blocking families (`currentXxx()`/`setXxxBlocking()` on `PlayerSettingsRepository`) were removed in the same refactor in favor of `Flow` observation plus suspend writes. This removed main-thread blocking from `PlayerRuntime.start`'s startup settings and the sleep-timer restore path.
+Most `:data` repositories expose **suspend/`Flow` APIs that `withContext(Dispatchers.IO)`** the Room query rather than blocking: `SongEmotionsRepository`, `PlayStatsRepository` (the room read/writes plus atomic SQL upserts such as `incrementPlayCount`), and `QuickSkipSongsRepository` were refactored (M-5, 2026-10-15) from `runBlocking(IO)` bridges to `already-suspend` functions — the old 17-call-site blocking families (`currentXxx()`/`setXxxBlocking()` on `PlayerSettingsRepository`) were removed in the same refactor in favor of `Flow` observation plus suspend writes. This removed main-thread blocking from `PlayerRuntime.start`'s startup settings and the sleep-timer restore path.
 
-**`runBlocking(IO)` remains only where a coroutine-less or synchronous domain signature demands it**:
+**All persistence entrypoints are now suspend** (N-1, 2026-10-27): `PlaybackStateStore.save`/`restore`/`clear`/`saveCurrentPlaybackSnapshot` and `PlaybackStateStorage`/`PlaybackStateRepository` are fully suspend — the N-1 review removed the last `runBlocking(Dispatchers.IO)` that wrapped DataStore writes as synchronous calls, so main-thread-reachable paths (ViewModel `onCleared`, "clear queue") no longer block on disk. Callers choose the thread; the suspend `persistCurrentPlaybackSnapshot` variant still offloads to `Dispatchers.IO` for service-teardown paths. `PlaybackStateStore.save` exceptions are caught and logged (re-throwing `CancellationException`), never interrupting playback control.
 
-- `PlaybackStateStore.save`/`restore`/`clear` (in `:player`) still `runBlocking(Dispatchers.IO)`, because `PlaybackStateStorage`/`PlaybackStateRepository` expose synchronous methods consumed by the Media3 session and service teardown; the suspend variant `persistCurrentPlaybackSnapshot` exists for non-blocking service-destroy paths.
-- `PlayerSettingsKeys` legacy SharedPreferences reads (`readLegacyBoolean`) run `withContext(Dispatchers.IO)` and are merged into the DataStore Flow on the IO thread (`m-12`), never read synchronously inside the DataStore map on the collector thread.
+Playback snapshot writes are additionally serialized through **`PlayerPersistenceGraph`'s FIFO persist queue**: a single-consumer, unbounded channel on an IO scope (`persistCommands`) that guarantees write ordering — the N-1 async refactor otherwise broke the "clear runs before save" timing guarantee that relied on the old synchronous clear. Because the consumer outlives the ViewModel, the last queued write on `onCleared` still lands on disk.
 
-**Contract for callers**: blocking/suspend bridges must not be called on the main thread — suspend paths offload via `Dispatchers.IO` internally or the caller switches (e.g. `AppMediaMetadataViewModel.saveEmotionCorrection` wraps the emotion repository calls in `withContext(Dispatchers.Default)` so the DataStore/Room writes do not jank the UI). For new repository methods prefer suspend/`Flow` APIs and `withContext(Dispatchers.IO)`; add a `runBlocking` bridge only when the domain contract (or a coroutine-less path such as service teardown) requires it, and document the thread requirement in the KDoc.
+**Contract for callers**: suspend bridges must not be called purely for thread-shifting convenience on the hot path; suspend paths offload via `Dispatchers.IO` internally or the caller switches (e.g. `AppMediaMetadataViewModel.saveEmotionCorrection` wraps the emotion repository calls in `withContext(Dispatchers.Default)` so the DataStore/Room writes do not jank the UI). For new repository methods prefer suspend/`Flow` APIs and `withContext(Dispatchers.IO)`; document the thread requirement in the KDoc.
 
 ## Backup and privacy exclusions (release checklist)
 
@@ -345,6 +357,14 @@ Emotion analysis is memory-heavy, and the app runs with `android:largeHeap="true
 - `memoryBudgetForHeap(max)` = `(maxHeap - RESERVED_BYTES)` clamped into `[96MB, 512MB]`, with a 64MB baseline reservation for the inference models + app baseline (does not scale with heap). A 256MB heap → 192MB (identical to the old fixed value, so low-end behavior is unchanged); 384MB → 320MB; 512MB → 448MB — larger heaps automatically allow longer 192 kHz files.
 - The budget is a soft cap on the combined decode buffer + resample output (see `EmotionAnalyzerLimitsTest`). Because `ShortAccum` doubling can blow past the steady-state peak at sample rates above 64 kHz (`TRANSIENT_DOMINANT_RATE`), the cap constrains both the steady-state and transient peaks (2026-10-21 OOM regression). It also drives whether an oversized/high-rate song is reported as `TOO_LARGE_FOR_DEVICE` (memory budget hit first) versus `TOO_LONG` (20-minute cap hit first) — the two are distinguished so large files are not misreported.
 
+## Song emotions read path: lightweight projection and curve cache
+
+`SongEmotionsRepository` reads `song_emotions` through the **`SongEmotionLite` projection** (same shape minus `embeddingB64`) for `getAll()` and `observeAll()` (P0, 2026-10-24): each row's embedding is ~5.3KB of base64, so `SELECT *` materializes the whole library's embeddings (~90MB of strings + ~64MB of arrays) even though the consumers (emotion word-tag caches, library emotion tab, time-slot stats) never touch embeddings. The projection makes Room skip the column; the table schema is unchanged (no migration), and `embedding` is still stored per analysis for future supervised retraining — retrieved only through the full-row `get(songId)`.
+
+Re-parsing is capped by a **`parsedCurveCache`** keyed on `(songId -> analyzedAt)` (M-1, 2026-10-27): Room's invalidation tracker re-emits the whole table whenever any row changes, and batch scan writes one song at a time → 300 writes × 1000-row library = 300k curve JSON re-parses per sweep. Rows whose `analyzedAt` is unchanged reuse the cached parsed curve, so each re-emit parses only the newly written row. `analyzedAt` is the analysis timestamp and does not change on user calibration (`updateSongEmotionCorrection`), so calibration keeps the cache valid; entries for deleted songs are pruned.
+
+Calibration and scan writes are **conflict-free at the SQL level** (M-23, 2026-10-27): `upsert` merges via a single atomic `UPDATE song_emotions SET ... WHERE songId = :id` that leaves existing user tags intact when the incoming value has none, then falls back to `INSERT` when no row exists — eliminating the TOCTOU where a scan overwrote a user's just-saved tags. `saveCorrection` uses the same update-then-insert pattern (never touching model columns), and `clearCorrection` deletes the now-empty row so it is not misread as analyzed.
+
 ## Key tests
 
 | Test | Locked behavior |
@@ -354,8 +374,8 @@ Emotion analysis is memory-heavy, and the app runs with `android:largeHeap="true
 | `SharedPreferencesLegacyJsonMigrationTest` | Full migration + completion marker, stats still migrated on corrupt JSON, marker skips migration |
 | `PlaylistResumeDataStoreTest` | Resume record/overwrite/per-playlist clear, corrupt JSON returns null, source marker and transactional settle semantics |
 | `PlayerSettingsRepositoryTest` | Theme legacy fallback → DataStore write → legacy key cleared, defaults |
-| `WordPreferencesRepositoryTest` | Vote accumulation on skip/full-listen, tie → neutral, empty input ignored |
-| `MelodyDatabaseMigrationTest` | Each hand-written migration validated against stored schema snapshots (Robolectric), incl. 10→11 `word_preferences` |
+| `WordPreferencesRepositoryTest` | Vote accumulation on skip/full-listen (weighted), tie → neutral, empty input ignored |
+| `MelodyDatabaseMigrationTest` | Each hand-written migration validated against stored schema snapshots (Robolectric), incl. 12→13 fingerprint rewrite, 15→16 vote rescale, 16→17 index additions |
 | `EmotionAnalyzerLimitsTest` | Memory budget scales with heap (256→192MB, 512→448MB) and clamps; budget-vs-duration cutoff reason |
 | `MusicRepositoryRoomTest` / `PlayStatsRepositoryRoomTest` / `QuickSkipSongsRepositoryRoomTest` | Room repository contracts against FakeDaos |
 

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "pageVersion": "sha256:c77083113c13c58683a09317e497f8e27d1c8fd02e5516f446c17fcff62f4984",
+  "pageVersion": "sha256:51951add29d0bb6e0dbd9356821e99bc5be35aa0ff3135541a5f2d34d1854535",
   "claims": [
     {
       "id": "claim_f59636cd28e54ab198edf9893c008642",
@@ -16,7 +16,7 @@
         },
         {
           "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/player/PlaybackController.kt#L42-L51",
-          "version": "repo-lines-v1:sha256:c70a99d66ff946b1c42f9f3b14b581df3b84184ee3d600c6c11828c7fb7fce59:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY0NjlmYjNhYTlhYjRjOTE0OWU2NDM0NGQxZDdlNzQwYmJkMjhmNmU5YmJiODhhYmY2MzJiMzBjYjQ2MjRiMDMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjcwNjA4ZmJiYTQ3OGJiNTc3MTRhOTljZTFlM2Y2YzUwNGUwZDEyY2YyOTMwZmMwYjIwZjJhMWQ0NDliNWQxNDMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjRjMzcxMmJjNmFjZDM4ODUzOGVhYmYwMWIyODUwNDliZjhiMDA0YjViYzYyYzljMDkxOGMzZjA2MGRkYTA0OTYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjU1NzM0MTlkYzU2ZjE4MjM4YjNhZGI3NDAxZDExYTU1YTAyZTNkNDMxY2Y2NDdlNzA5YjlhYmRiOTA4YzkwNDUifQ"
+          "version": "repo-lines-v1:sha256:15d6c3f31c8611a8b4a50b1ec0b2fc54ca738801e2e16ce6b0d0270a7549f864:eyJzZWxlY3RlZExpbmVDb3VudCI6MTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY0NjlmYjNhYTlhYjRjOTE0OWU2NDM0NGQxZDdlNzQwYmJkMjhmNmU5YmJiODhhYmY2MzJiMzBjYjQ2MjRiMDMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjcwNjA4ZmJiYTQ3OGJiNTc3MTRhOTljZTFlM2Y2YzUwNGUwZDEyY2YyOTMwZmMwYjIwZjJhMWQ0NDliNWQxNDMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjRjMzcxMmJjNmFjZDM4ODUzOGVhYmYwMWIyODUwNDliZjhiMDA0YjViYzYyYzljMDkxOGMzZjA2MGRkYTA0OTYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjU1NzM0MTlkYzU2ZjE4MjM4YjNhZGI3NDAxZDExYTU1YTAyZTNkNDMxY2Y2NDdlNzA5YjlhYmRiOTA4YzkwNDUifQ"
         }
       ]
     },
@@ -106,15 +106,11 @@
     },
     {
       "id": "claim_962f6efb7f4f4590b925b211645540e5",
-      "statement": "PlaybackController's Player.Listener translates Media3 events as: onIsPlayingChanged → onIsPlayingChanged(isPlaying, isBuffering = playbackState == STATE_BUFFERING); onPlayWhenReadyChanged with reason END_OF_MEDIA_ITEM while pausing → onMediaItemEnded(null, false); onEvents → high-frequency onPlaybackSnapshot(ControllerPlaybackSnapshot{mediaId, isPlaying, isBuffering, currentPositionMs, durationMs with TIME_UNSET mapped to null}); onPlaybackStateChanged STATE_ENDED → onPlaybackEnded(); onPlayerError → onPlayerError(current song id).",
+      "statement": "PlaybackController's Player.Listener translates Media3 events as: onIsPlayingChanged → onIsPlayingChanged(isPlaying, isBuffering = playbackState == STATE_BUFFERING); onPlayWhenReadyChanged with reason END_OF_MEDIA_ITEM while pausing → onMediaItemEnded(null, false); onPositionDiscontinuity → single-item loop-rewind detection emitting onMediaItemEnded(current song id, false); onMediaItemTransition → onMediaItemEnded(songId, wrapped) only for AUTO/SEEK/REPEAT; onEvents → high-frequency onPlaybackSnapshot(ControllerPlaybackSnapshot{mediaId, isPlaying, isBuffering, currentPositionMs, durationMs with TIME_UNSET mapped to null}); onPlaybackStateChanged STATE_ENDED → onPlaybackEnded(); onPlayerError → onPlayerError(current song id).",
       "evidence": [
         {
-          "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/player/PlaybackController.kt#L407-L415",
-          "version": "repo-lines-v1:sha256:4a94aab1e147b41d61d4a90e12b361bfd1cfefd165af32c5a3f0271a960133b2:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMjY2MTU0NTU1YzIyNjU2NWZmMmZiMzE5ZWMxYWNmYTJkMWRmOGUxOGM4YTI5MmM1NDI1ODQwNzc0YzA5YmEyMyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDg5M2Y0MGUzNzgxZWI4OTZjODJkMDQ2YTA4MDY3YTExZTM1Y2RmMmYxZGZhZjI2ZmVhOTBiOGRiNjY3NjQxMyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZmYwZDc1OTUwZGYwZmY5YTNlZTk2NjM5ZGNjOGZmNWVhZWRiNDBkNjgyYmVhOTI2MjJiNTIwZGQ4ODdkOTNlOSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiY2UyNjRhOTFhMGExODkzMjczYmE3NmI2ZDgzOGEzODllNTIyM2RhMzAxYWEyMWI4ZThiN2JlYzZhODQ4OWMyZSJ9"
-        },
-        {
-          "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/player/PlaybackController.kt#L52-L131",
-          "version": "repo-lines-v1:sha256:7f3d9594f3fd8c95096c4e074468b1b952dc44af7a08031b08eb5d3d460c971f:eyJzZWxlY3RlZExpbmVDb3VudCI6ODAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImM3ZjViOWQ1MGYxZWQ2NzViNjUwNTI3MThkMzY4YzY3MzVmZmQ1YmM2NjMyOGFlMDk1YjIwNGEwNmQxNjcwOWEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImM1NzM2YzA1YmQwZjA1MmM4ZjFlYmQwNjE2YWVlNmIzMzAxODU2OWNmMWZlMDMzMzY3YzNkYTE0NzMzOGQyZGEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjkzN2ExNTYyOWU4ZDgxNWU3NTllZGFjYzZmZmZmOGRjNWY1NTkxY2U4ZjRiOGFkNzQwOGFiZDc2YjYzZGE4ZDQifQ"
+          "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/player/PlaybackController.kt#L62-L153",
+          "version": "repo-lines-v1:sha256:956a71d9c3522f6c80e133a8af41e0718533855f450bc789d730c51fe37b3a60:eyJzZWxlY3RlZExpbmVDb3VudCI6OTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImM3ZjViOWQ1MGYxZWQ2NzViNjUwNTI3MThkMzY4YzY3MzVmZmQ1YmM2NjMyOGFlMDk1YjIwNGEwNmQxNjcwOWEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImFjYjE1NjkzMGE3ODlhMjc3NzAxZGVkNWQxOGFjOGM4NDJhZjFmMWEwYmI2ZTE4OGU4OGQ0NDY0MGIxNjM5MjkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjkzN2ExNTYyOWU4ZDgxNWU3NTllZGFjYzZmZmZmOGRjNWY1NTkxY2U4ZjRiOGFkNzQwOGFiZDc2YjYzZGE4ZDQifQ"
         }
       ]
     },
@@ -162,11 +158,11 @@
       "evidence": [
         {
           "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/player/PlaybackController.kt#L272-L320",
-          "version": "repo-lines-v1:sha256:957ea0973bde035fc22908a0b0c845236a9915ef84fc85c1d04f4f955e9a3346:eyJzZWxlY3RlZExpbmVDb3VudCI6NDksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM5Y2JiYzY1NDY5ZGIxY2EyODQyZWZkOTdkZjdlZTJjZTZjYzE1NzE0ODJkMDFhMThiNzkwYTEwYzdjNTEwZjMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjAyZDllNmMyOGQ2ZmY2MzgyMWVkNDI2NzRkNDZkNWI4NGJkZDM2ZjY3ZDY3ODdhZGU3OWY0NWI0MDdkN2EwMjkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImZiZDQ0MmMwOWE1YWE3NmMxYjFjYTFiMzkxMzE2ZDM5ZmNmMGI2YmNkYTNmNzYxM2JjMDVmYTJlYjRlZmZiNGEifQ"
+          "version": "repo-lines-v1:sha256:d5c19dde5ff24c600878b176136a9990cef59c77e044aab295cbae1ec6f3c254:eyJzZWxlY3RlZExpbmVDb3VudCI6NzYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM5Y2JiYzY1NDY5ZGIxY2EyODQyZWZkOTdkZjdlZTJjZTZjYzE1NzE0ODJkMDFhMThiNzkwYTEwYzdjNTEwZjMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjAyZDllNmMyOGQ2ZmY2MzgyMWVkNDI2NzRkNDZkNWI4NGJkZDM2ZjY3ZDY3ODdhZGU3OWY0NWI0MDdkN2EwMjkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImZiZDQ0MmMwOWE1YWE3NmMxYjFjYTFiMzkxMzE2ZDM5ZmNmMGI2YmNkYTNmNzYxM2JjMDVmYTJlYjRlZmZiNGEifQ"
         },
         {
           "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/player/PlaybackController.kt#L334-L354",
-          "version": "repo-lines-v1:sha256:75c32d162ed344b7f1a21df4974a05b7c84c3c4e73476743521cb62a6daf1ee3:eyJzZWxlY3RlZExpbmVDb3VudCI6MjEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijc2NGE0Mzk4ZmJkMzg3NmFjMjUzZWY4NzIyNzlkMGYzMGNkZDE4ODc1NGI3ZTFiYTI2ZWU3Zjk5OTExODMwNGMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImM4MDU1NTIyN2IxNGM1ZmEwYTQ0NTA1NjhmM2U0N2RmNzAxMDg1NjFlZDU4NjM3ZTZiODlkZDc5ZmVhOGE3NzgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjkzOWI2YzBkN2Y3MzJjYmM2M2RiYzg1NDk0N2YyYTIzYmMyODYzYTJiZmE4ZGNkNGNjMWMyMzA2ZGRlMzA5NzQifQ"
+          "version": "repo-lines-v1:sha256:e450bf4b2c84d34d9ee11560f40c8cf781cd8345f3892cee526cd1b950a1d65b:eyJzZWxlY3RlZExpbmVDb3VudCI6ODUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijc2NGE0Mzk4ZmJkMzg3NmFjMjUzZWY4NzIyNzlkMGYzMGNkZDE4ODc1NGI3ZTFiYTI2ZWU3Zjk5OTExODMwNGMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImM4MDU1NTIyN2IxNGM1ZmEwYTQ0NTA1NjhmM2U0N2RmNzAxMDg1NjFlZDU4NjM3ZTZiODlkZDc5ZmVhOGE3NzgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjkzOWI2YzBkN2Y3MzJjYmM2M2RiYzg1NDk0N2YyYTIzYmMyODYzYTJiZmE4ZGNkNGNjMWMyMzA2ZGRlMzA5NzQifQ"
         }
       ]
     },
@@ -176,29 +172,29 @@
       "evidence": [
         {
           "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/player/PlaybackController.kt#L279-L293",
-          "version": "repo-lines-v1:sha256:18de2a14ee5cd312570e3c99997bae04855b87a3819228f239e3f6b78384f42a:eyJzZWxlY3RlZExpbmVDb3VudCI6MTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjczM2RhMjIwZDQ0MTZlYTE2ZTUwZDQ1NmEyYWY3OGNjM2FkOGI0MjA3ODI3ZmE4ODY0ZDcyZWYzNDAyN2FhOGYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImZlYjUzZmM4NGRjMTNjZTUwMTU1MDk2ZmE0YTJlOTExOTg1NjRhMzVlZDdhNzgyMjAxZjNiZGRhZWY5NDBiNTYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImJjZGZmMzkwN2M5ZWJmNDQxMTAxN2NmM2RiMzIzNDAzMGM4YmUxYjFmNjE0NjQzYmM0MTBmZTBhMDU1NzgwYzEifQ"
+          "version": "repo-lines-v1:sha256:efb3fae24986cfe4e1e3703728ad71e2547cc1cd60cb7a69fb01d4722233a681:eyJzZWxlY3RlZExpbmVDb3VudCI6MzksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjczM2RhMjIwZDQ0MTZlYTE2ZTUwZDQ1NmEyYWY3OGNjM2FkOGI0MjA3ODI3ZmE4ODY0ZDcyZWYzNDAyN2FhOGYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImZlYjUzZmM4NGRjMTNjZTUwMTU1MDk2ZmE0YTJlOTExOTg1NjRhMzVlZDdhNzgyMjAxZjNiZGRhZWY5NDBiNTYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImJjZGZmMzkwN2M5ZWJmNDQxMTAxN2NmM2RiMzIzNDAzMGM4YmUxYjFmNjE0NjQzYmM0MTBmZTBhMDU1NzgwYzEifQ"
         },
         {
           "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/player/PlaybackController.kt#L303-L332",
-          "version": "repo-lines-v1:sha256:75cd4a838ceacbd525c38334107dc2bda5b72d5181b9616fceb474e76dedf69c:eyJzZWxlY3RlZExpbmVDb3VudCI6MzAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijc5M2JmMDcwOWE0ODdkMTdiZmQwNmUzNjZjZTNiYjIxYTQxZjMxMGE0MTg5NGIxMDBkZWZjOTEwZmZkMWFkMWIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImExNDE2ODI1YzJkOTdiNGFjNjY2MTk3YjRiYjA1NDMxZGFjZDM5MzQwNDMwMWUxMWE0NTEzODYxNGI5ZTZmZDQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImIzMzQ2NmIyMmY2YTllYjRjNmRlMjM1YzZjOTk0Nzk1YTI0NzQ0YmUwOGU5NjlkNzdkZTc5ZDI0ZjlmYzg4MjYifQ"
+          "version": "repo-lines-v1:sha256:b87bfe0ee0fa67e9806cb32d5e3d7bfc17978cb1a6ebbd863225dd5966a3ef48:eyJzZWxlY3RlZExpbmVDb3VudCI6MzQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijc5M2JmMDcwOWE0ODdkMTdiZmQwNmUzNjZjZTNiYjIxYTQxZjMxMGE0MTg5NGIxMDBkZWZjOTEwZmZkMWFkMWIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImExNDE2ODI1YzJkOTdiNGFjNjY2MTk3YjRiYjA1NDMxZGFjZDM5MzQwNDMwMWUxMWE0NTEzODYxNGI5ZTZmZDQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImIzMzQ2NmIyMmY2YTllYjRjNmRlMjM1YzZjOTk0Nzk1YTI0NzQ0YmUwOGU5NjlkNzdkZTc5ZDI0ZjlmYzg4MjYifQ"
         }
       ]
     },
     {
       "id": "claim_13afea41b42846cea8856286a7a744a3",
-      "statement": "PerformanceTrace anchors controller_play_queue, controller_prepare_queue, controller_sync_queue, and play_next_command wrap PlaybackController's queue/prepare/sync/next operations with timing metadata (song count, start index, wasPlaying, mediaItemCount/currentIndex); these anchors are enforced by the verifyProductArchitecture gate and must not be removed.",
+      "statement": "PerformanceTrace anchors controller_play_queue, controller_prepare_queue, controller_sync_queue, and play_next_command wrap PlaybackController's queue/prepare/sync/next operations with timing metadata (song count, start index, wasPlaying, mediaItemCount/currentIndex, and for sync the incremental mode/trimCount/appendCount or rebuild restoreMs/currentMediaId); these anchors are enforced by the verifyProductArchitecture gate and must not be removed.",
       "evidence": [
         {
-          "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/player/PlaybackController.kt#L249-L266",
+          "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/player/PlaybackController.kt#L272-L289",
           "version": "repo-lines-v1:sha256:a20ea808e1f86de76db2d6e8748e020ecee6e4252aacd8b6768d8b9503a2537b:eyJzZWxlY3RlZExpbmVDb3VudCI6MTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU0ZTJlZDM2NDUxNTEyMWYwYTNmZWJmMjAzMmRjODFhOTJjZDhmOTA0NTI0NGEwNjllZTRiYzc2MzI1MDEzNWUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk5OWJkZWZlZWFjYTYzNDBlMDI5MGRjODZlODg5Yzg5ZDVlMTg5YWE1YmE0NGI1ODViM2I3MDczNGY0YTYyZDgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjFjMWZmN2JlZGQ2Mjc0MzJiM2E5MTAxNTQzYjdiZDlhMjQxY2I2MjcyNDJiODljM2UwNjEwNDA1N2Y3NGM0ZGMifQ"
         },
         {
-          "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/player/PlaybackController.kt#L287-L318",
-          "version": "repo-lines-v1:sha256:673e6b99ad9695f905bb1222600c521561d3cb5e31b48487d8efac111b34bc42:eyJzZWxlY3RlZExpbmVDb3VudCI6MzIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZiMTc0OTdmMzhkMGI5NGIzNjU0Y2Q3MDM5OGQ0NWViNGE3Yjc0MDk0MzNlMzMzOWRjM2EzOTJjMmUyNzdmMDQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU1MDMyZTk2NGQwOTMyMzUxZTVkMTg1MjY5MjgxYjE3MWEzYTA5YjA4YjI4NmU2NjFlYTQ3MDMyM2M4MmViNGQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijc0OWY3ZmI0Y2FjY2IwNTYyOTY0YzdhNjczNmNiMWFlZGU1ODhiZjQ3MGU1OWI1NzkyZmY4MmVkNWNjN2UwZjIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijk5OWJkZWZlZWFjYTYzNDBlMDI5MGRjODZlODg5Yzg5ZDVlMTg5YWE1YmE0NGI1ODViM2I3MDczNGY0YTYyZDgifQ"
+          "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/player/PlaybackController.kt#L302-L319",
+          "version": "repo-lines-v1:sha256:bbac23ca212a766a4e54f08c03bc6b4189f8885bf928245f57d2ed74cdf703e2:eyJzZWxlY3RlZExpbmVDb3VudCI6MTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjczM2RhMjIwZDQ0MTZlYTE2ZTUwZDQ1NmEyYWY3OGNjM2FkOGI0MjA3ODI3ZmE4ODY0ZDcyZWYzNDAyN2FhOGYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImZlYjUzZmM4NGRjMTNjZTUwMTU1MDk2ZmE0YTJlOTExOTg1NjRhMzVlZDdhNzgyMjAxZjNiZGRhZWY5NDBiNTYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjU4MjI4ZWI3MTVhNDRjNzg5MjFjNDU5OWNjMTNkZDU5YTk3NzgwNDY0ZjBkMzIzY2U4ZGEyMTUzNjMwMDZjMWYifQ"
         },
         {
-          "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/player/PlaybackController.kt#L348-L353",
-          "version": "repo-lines-v1:sha256:3e0538657f11f04da900137cfed9595b68d0bc6bea10ca47e1c908420f38c0ad:eyJzZWxlY3RlZExpbmVDb3VudCI6NiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZmIxNzQ5N2YzOGQwYjk0YjM2NTRjZDcwMzk4ZDQ1ZWI0YTdiNzQwOTQzM2UzMzM5ZGMzYTM5MmMyZTI3N2YwNCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZTZiMDQ0OTE0Njk3MjJlODM2M2E5NGU0MDQ0NTM4ZTAxM2EyYTIxN2UzNmIxZTU2OGJhNjBhY2I3YjRjOGYyZSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiY2ZhMzUxZGQyNGNlZWRlYzg2ODM2ZmY5NWYyNTgxMjBjOWRhNWRjNzRkOTk4NGZkNjQwY2IxZTcxMzQzMjhkNiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMzExNjY3MTQyN2IxOTkyZmYzODk5NWEzY2YxOTJiZTA0MDY3MTg3MGEwYTAzZDc1NTBlYjYyNTRmNjIyNmFjMCJ9"
+          "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/player/PlaybackController.kt#L433-L467",
+          "version": "repo-lines-v1:sha256:e8b777ab9d8aadf5021f8006edcedfbfd35466583d86c3597cea34ca3dc36ada:eyJzZWxlY3RlZExpbmVDb3VudCI6MzUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImE1NzJmZjQ2MmIzMjBiNGMwYjNmNTdmNGI1OThmMWIxYmIwMTBmZGI4YTU0NDExNjUyOWMyNmIxODlkNzI1MGMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU1MDMyZTk2NGQwOTMyMzUxZTVkMTg1MjY5MjgxYjE3MWEzYTA5YjA4YjI4NmU2NjFlYTQ3MDMyM2M4MmViNGQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjU4NWNmMzk2NWRhMWE5NzRkMzEyNjRlZTk4ZTJmZmQyZGQ0YTRjYTExN2ZiODBlZTcwMTQ3NjExNzgzODg4N2EiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijk5OWJkZWZlZWFjYTYzNDBlMDI5MGRjODZlODg5Yzg5ZDVlMTg5YWE1YmE0NGI1ODViM2I3MDczNGY0YTYyZDgifQ"
         }
       ]
     },
@@ -230,7 +226,7 @@
         },
         {
           "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRuntime.kt#L529-L561",
-          "version": "repo-lines-v1:sha256:288dd419337dcd3d1fa10ba423e4f889fc16bca2450c35c60224ba6f1f78631e:eyJzZWxlY3RlZExpbmVDb3VudCI6MzMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjhjMDFjMGY3NjI1YTQyYjMyNDcxNWU1MWI3MmZhNDY3Y2I1ZjAxZDFkYzU3MjgwNDVkODIyYjc5ZTZkOWY1YjIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjNkZmRjZjY4NmY4NWNhMzU2NDdkN2I3ZTlhYzg0NjY2YzA1YmJjN2NhZDJjY2EzMGIyZjgyYjY4MmI5MGI5ZTEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImM3MDViM2Y1YTUzNzVjZGQ5ZjVkOGExYjBjYzI1ZjhlYTI0NDQyOTJkM2Y2MjVkYmE5ZGUyMzAwY2Y1NDY2ZjEifQ"
+          "version": "repo-lines-v1:sha256:13fbb00802bcc19353a43b12313ff1e2a9457cb5ef91922f817284b3fbb6b692:eyJzZWxlY3RlZExpbmVDb3VudCI6MzcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjhjMDFjMGY3NjI1YTQyYjMyNDcxNWU1MWI3MmZhNDY3Y2I1ZjAxZDFkYzU3MjgwNDVkODIyYjc5ZTZkOWY1YjIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjNkZmRjZjY4NmY4NWNhMzU2NDdkN2I3ZTlhYzg0NjY2YzA1YmJjN2NhZDJjY2EzMGIyZjgyYjY4MmI5MGI5ZTEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImM3MDViM2Y1YTUzNzVjZGQ5ZjVkOGExYjBjYzI1ZjhlYTI0NDQyOTJkM2Y2MjVkYmE5ZGUyMzAwY2Y1NDY2ZjEifQ"
         },
         {
           "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRuntime.kt#L958-L967",
@@ -254,15 +250,19 @@
     },
     {
       "id": "claim_7b2ac62098c74c2988e0cd31b3e7b2ca",
-      "statement": "PlayerFactory builds the service's ExoPlayer with DefaultRenderersFactory in EXTENSION_RENDERER_MODE_PREFER (plus float output, decoder fallback, audio focus, handleAudioBecomingNoisy, and setPauseAtEndOfMediaItems(false)); this is also why playback never crashes on vendor software decoders — formats like ALAC preferentially hit the bundled FFmpeg extension decoder, the same decoder FfmpegPcmDecoder drives directly for emotion analysis after vendor MediaCodec components SIGSEGV'd the process on some ROMs.",
+      "statement": "PlayerFactory builds the service's ExoPlayer with DefaultRenderersFactory in EXTENSION_RENDERER_MODE_ON (platform MediaCodec first, FFmpeg extension as fallback), with float output disabled, decoder fallback, audio focus, handleAudioBecomingNoisy, and setPauseAtEndOfMediaItems(false). Because extension renderers are ON, it also installs a MimeExcludingMediaCodecSelector (only when FfmpegLibraryProbe.available) that excludes ALAC mimes (audio/alac and the vendor alias audio/x-lg-alac) so those formats route back to the bundled FFmpeg extension. MimeExcludingMediaCodecSelector returns an empty candidate list for excluded mimes, which makes MediaCodecAudioRenderer report the format unsupported so the renderer falls through to the FFmpeg extension renderer, and fails safely back to platform-default precedence if it ever does not take effect. This ON+selector arrangement and the same FFmpeg extension driven directly by FfmpegPcmDecoder is why playback no longer crashes on vendor software decoders after a real-device SIGSEGV on Xiaomi/Qualcomm vendor codecs.",
       "evidence": [
         {
           "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/player/FfmpegPcmDecoder.kt#L20-L36",
           "version": "repo-lines-v1:sha256:40029b210f9c06d5ecdd2af68cb77962b39c195cadb06caf3c2d20c80d6ee061:eyJzZWxlY3RlZExpbmVDb3VudCI6MTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVhZjIyY2YwNzMyNTkyYzI0NzE0MWNiZTYxZWZhMTEwMTI2MTJmNWEzMTIyYjlhZjliYmFmNTJmNTcyNGQxOTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk3MmE0MjkzODJiMmUxNDcxOGUwZTM3YjA1NzBhOGExNzAyOTkxZmNkODQ5OGNkODQwNjBhOGJmNGYwNTAxN2IiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImJjNDE3MzI3ZTM5MTA5MjVmZDE1ODZkNzc2OTBjODdjNjNmODU2ZDA1Y2ViNGIwYmU3YjdmMjE2MTk0NzM1MmMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjE2OGEwZmIwODk5MGUyNTg4ZWMxY2U5NWJiN2Q2Zjc3MzAwMGM1YmE4NTY4M2RlZTk3NTU5MDU0ZjNiNTRhZjcifQ"
         },
         {
-          "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/player/PlayerFactory.kt#L23-L55",
-          "version": "repo-lines-v1:sha256:7c3def8ca643def754e46c5dda2a077e03d7547f3a577c05e5fcb1588d192ce5:eyJzZWxlY3RlZExpbmVDb3VudCI6MzMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImYwYzYyMzI4NWVjYjkxMzBlNDRhYzAwZjk4OTBiNmZmYmEwMzIzMDM4MGQ0NWI3YTk1MjU0ODVmMDExMjhmYTMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjU0NmE4OTA2MjMyZDg5YzUzZjhlZDYxYWQ3ZDJjNDcxOThmYjlkMTNlNDlhZjRmMGRjZTk5NTU2Mzk1Y2QyYjIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+          "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/player/MimeExcludingMediaCodecSelector.kt#L20-L32",
+          "version": "repo-lines-v1:sha256:01f79acc3855636197f16ec4c212711875dddf625f852149dc0e11ed52e4403c:eyJzZWxlY3RlZExpbmVDb3VudCI6MTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImE4N2Q5MWQ3NmQ0N2YwN2U4NWE5Y2Q1NmI0NTljY2M4MGE5NmUzOTIwNzZhYmU0ZTBiMjM2YjQ2ZjM4YmYxODUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjVmNDc5ODA4Nzc2NzNjMjMwODBhZjRlZWY4NTg1ZjZiNmVhNGJjMzQzM2ZlZDgyYjM2MTNhMjUyMjE5YTVmYTMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        },
+        {
+          "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/player/PlayerFactory.kt#L29-L72",
+          "version": "repo-lines-v1:sha256:92d6f30a821b4d2247a80adc57263fde5157d922d07e245c92df0c7ce4328b95:eyJzZWxlY3RlZExpbmVDb3VudCI6NDQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjE1ZWU2MjdiNjc1YmEyMWZmZjdlOGZjNTk5ODY0ZjY4OTY5MDdiZDg4ODdjZjJjMWI4ZTgzZTkzM2RkNjIxNzIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjgyMjA2MjYxYzBmNDdmYmI1ODAxODE5ZjU3M2ZlZWMyNjU3ODNiZGExZWIzODdhNWU5ZmNiZTFmNTMxNDc2M2IiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjIxMjJiOTQ5YzIxODIzMDg5NGU1NDJmNDIwYmVkZDY1OGI4YTdhMmEwYTM5NzBmNjcxMmNkNmUzODVhY2U5NTgifQ"
         }
       ]
     },
@@ -271,8 +271,8 @@
       "statement": ":player also hosts the TFLite emotion pipeline — EmotionAnalyzer (@Singleton, 5s window / 2.5s hop, YAMNet embedding via LiteRT assets emotion_yamnet.tflite + emotion_va_head.tflite, PCM kept in primitive arrays after a real-device OOM) and FfmpegPcmDecoder (drives the media3-ffmpeg-decoder extension via reflection without creating an ExoPlayer instance so analysis never contends with playback threads or audio focus) — consumed by :app's EmotionScanWorker through EmotionScanEntryPoint; these live in :player rather than :data because they require Android media APIs, and features cannot depend on :player directly.",
       "evidence": [
         {
-          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/emotion/EmotionScanWorker.kt#L11-L41",
-          "version": "repo-lines-v1:sha256:645141a0d2ef19a984b2d31c741d6b80b92ee80429159a8e61493929a3b5232b:eyJzZWxlY3RlZExpbmVDb3VudCI6MzEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImRhZjVjY2Y3YzU2YzA0NGY2OTUzZWNkN2ZiODMzZmJmNWUwYjliN2EzOTA5MmZjNzZlODFkODI3MzYyMzg4NDQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVjNjYzMTRlYWU3NDc5YWNiZGI2ODNmZGM5MmFjODZhM2M4MDExM2I2NTI2MDdjODNjZTMxYTdhNzFlMzI4M2UiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjBlMWViOGM4OWQ5NmExNjI1MjljODY5NThkMDI0YjFmYzhjZDU1OTY4Yzg4ZDg5NmU3MWRmMTMzZDZlMjZkM2QiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImI3ZGY4MTM4MjE1MGE4NDY2NjI1YWY1OGZlMDI3YjgzYzMzMjA5NWZiYzllZDZlM2JiODdlNWMxYzhiYjM0OTYifQ"
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/emotion/EmotionScanWorker.kt#L29-L45",
+          "version": "repo-lines-v1:sha256:d5252896e63f965772bdd99dcd336cee6745401043ee2f5df51594691f6e651b:eyJzZWxlY3RlZExpbmVDb3VudCI6MTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImMzYjI0YWY1MDZjMTk3MmYwYWEyMDIyMGQ5Y2YzZmJkNTUxOTc2YjgzYTE1NGQ4OWMxZGJkMjhhNTI0MDUzYjAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImEzOTBjMGViODI1NjNmNmZmOWI5OTI0MjdhOGNkNTU4ZjZlYWUwYzRlZDhkMWI1YzA5YTIzNTY0MWM4YTFmM2UiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjBiZjViMmIyOTlmYmIwYzQ0NDJmMjEzZTc3MmM1MmY1YmNkOWEyYzA0YTRmMmU5ZTQzZWQyMzk3MTBjYjNiMDAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjdjZjMyNzY5MjdmYzFjNDkyY2Q4OGY1NTM2MTRhYzdjYTMyYjU3MDQzN2RkMTZmYmE5ODY5Nzc4NTg3MTdhMWQifQ"
         },
         {
           "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/player/EmotionAnalyzer.kt#L19-L42",
@@ -361,10 +361,46 @@
           "version": "repo-lines-v1:sha256:62651a95060259ace3a004dc7b62c65a0f8f5f4db06fbae0d17f4e8a29105610:eyJzZWxlY3RlZExpbmVDb3VudCI6NzUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjEwODhlZTRjN2NjNDhmMjMxMDIzOWU3YTFjYTljZTIyMTY0YTFkMTkwY2QzNmMxMjdkMWFiMjdmMjliOThlYWQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImRmZmNjYTNhZWU4NDQxYjRhNmY1Yjg2NjM3ZTBhNjYwZTA0ZTliMDhhYzAzODE1OWE5MDZiZmRlZjQ4NGIzY2QiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjIyMzBhMjRiODlhMjVjMGE2MGNlZDMxNjY5N2U4NWRhMWQwNGMyNWJmZTZiNmE0OWZmZTUxMzFmMTE2NWYxMDcifQ"
         }
       ]
+    },
+    {
+      "id": "claim_2faaf06e31ad4ed3a67e58bc57fdd5db",
+      "statement": "Album-art URIs are FileProvider content:// URIs produced by :data's AlbumArtProvider; cross-process consumers (SystemUI media control card, platform media notification in system_server, car head unit, Android Auto) get a SecurityException unless the app grants read access, so core/common's ArtworkUriAccess grants FLAG_GRANT_READ_URI_PERMISSION to com.android.systemui and android (both uid 1000 on AOSP). The grant is exercised from two mandatory points: mint time (:data AlbumArtProvider.toProviderUri, off the playback path) and publish time (:player PlaybackController.grantArtworkRead, called by playQueue/prepareQueue/syncQueue right before setMediaItems for legacy URIs never minted this process). The publish-time grant must precede the metadata push because a consumer reads the cover as soon as it receives metadata, and grants are de-duplicated per URI per run (a runtime grant survives the process).",
+      "evidence": [
+        {
+          "resource": "repo://core/common/src/main/java/cn/com/dcsgo/mihx/core/common/ArtworkUriAccess.kt#L36-L97",
+          "version": "repo-lines-v1:sha256:a279ce119c59f787f45d4ab2b076cae1778c39bad257ca55182fde2c3c6f6925:eyJzZWxlY3RlZExpbmVDb3VudCI6NjIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImRmZWU0ODcwNzY2NTgzZTQ2YWZkN2YyZjliYjJmZmExN2RkMTI1ZDM3MTkxYTdhNDUwZThhYmFiMjIyNTMyNTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjEyNjIxZTdmNGQzMTYzMDdhY2NiMjcyOGMxMWIyYzUzYmRkZjQzNzM0ZDNiY2U4Y2VlMzVhZmY2YmIxNjExZjkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImI3ZDA0ZmExNWMyN2RiMzU1NTgyOTgzYjU2Y2I4YzU1MTc2Mzc4MTMyMDljMWI5NDVkZmI1YjY1MTc0MGNkNTMifQ"
+        },
+        {
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/util/AlbumArtProvider.kt#L44-L66",
+          "version": "repo-lines-v1:sha256:af4b66db1469f57a867e102f70ae1c243aefdafe9d82966d7376d5197c0da05a:eyJzZWxlY3RlZExpbmVDb3VudCI6MjMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM5Y2JiYzY1NDY5ZGIxY2EyODQyZWZkOTdkZjdlZTJjZTZjYzE1NzE0ODJkMDFhMThiNzkwYTEwYzdjNTEwZjMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjBjNzM1NjU1MjliNjBmMGE5M2RkYzI4NzI2MzgwN2M0NjFiMmZmMWRjZTg2NjQxYTZiZmQ1YjY5YTc1ZGQ2OWYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjkwOGE4ZTFiMjZjYzg2MGJkMTJmNjZhYzcwOGFkM2RjZTJhYzUxYTcxMDUyNWIwYjYxMTUxODI3OGViYWM5MjcifQ"
+        },
+        {
+          "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/player/PlaybackController.kt#L320-L340",
+          "version": "repo-lines-v1:sha256:c640349ef8429af52eae3b6b426c151bc5637aae42fe19da4c176ff767ee383f:eyJzZWxlY3RlZExpbmVDb3VudCI6MjEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjAyMjc5NjRkNmQ4OGIwNWViMGZiZDZjMzY3MTYzYTdmNzY5MjljNmVlN2E5Y2UxZDRkZjRmN2Y0MWIzNGUxNGUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImJjZGZmMzkwN2M5ZWJmNDQxMTAxN2NmM2RiMzIzNDAzMGM4YmUxYjFmNjE0NjQzYmM0MTBmZTBhMDU1NzgwYzEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_8066f326ecf14885bc8e461ebfd73e99",
+      "statement": "PlaybackController.syncQueue can apply an incremental queue sync (planIncrementalQueueSync) instead of a full setMediaItems rebuild: when the controller's current media items and the plan share an aligned common segment, the current item still points at the plan's startIndex song, and no queue mutation is pending, it trims the window head and adjusts the tail via removeMediaItems/addMediaItems without touching the currently-playing item (so no position reset, rebuffer, or playWhenReady change), falling back to a full rebuild that restores position and wasPlaying otherwise. Incremental decisions are gated by the pendingQueueMutation flag, set by queue-mutation commands (playQueue/clearPlaylist/playSingle/mutating syncQueue) and cleared by the onTimelineChanged callback, the server acknowledgment that the media-item list has refreshed.",
+      "evidence": [
+        {
+          "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/player/PlaybackController.kt#L138-L141",
+          "version": "repo-lines-v1:sha256:cd850552dd5f288db246815f0c0f967b70b8868539a523ca1a11ca59f654e059:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZmMzZTYxYjZjZDU3OWRlY2M4YjIxZTUzMGI2MzM4MGU0ZjBkYTBkZWU4ZWQzMTFkOGJlNDZiOGRlYmY4YTMyNCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZTZiMDQ0OTE0Njk3MjJlODM2M2E5NGU0MDQ0NTM4ZTAxM2EyYTIxN2UzNmIxZTU2OGJhNjBhY2I3YjRjOGYyZSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZDQyNzFmMjBkMzM2ZDZjNjg5YzY0YWUyNWQzNWQwOGE4YWE5Yjk4ODgwYTNjNjBiMDllMjcwZTQzNzhhZGRiYSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYmM2NGUwMjJmZTQ3ODFhNjJhMTBjMWJhYzAyODJkNWVkMWZhZmIxNWIwZDQwN2MxNzUxNTVhNjZkZDJiY2NmZCJ9"
+        },
+        {
+          "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/player/PlaybackController.kt#L385-L443",
+          "version": "repo-lines-v1:sha256:31b1eb1206288ddd1ca9289483f0befc18433a4a79453a3c87a64717410b7251:eyJzZWxlY3RlZExpbmVDb3VudCI6NTksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijc2NGE0Mzk4ZmJkMzg3NmFjMjUzZWY4NzIyNzlkMGYzMGNkZDE4ODc1NGI3ZTFiYTI2ZWU3Zjk5OTExODMwNGMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU1MjJjNDJjZDE5YzZkMDNkODA4YzQ1MjcyMDU1MjgyNWI3ZWExYzViNDkxYjIxODUxMWNhYzc0MTVjZjlkOWIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImM4MDU1NTIyN2IxNGM1ZmEwYTQ0NTA1NjhmM2U0N2RmNzAxMDg1NjFlZDU4NjM3ZTZiODlkZDc5ZmVhOGE3NzgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImQzOWY4NmU5MGFmZGUzMTNhZGM5MWEwNTk5MjdkM2M2OTUxOTExNDUxOTJiNmIzODNkZmZlOTA5NThlMmEzNDgifQ"
+        },
+        {
+          "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/player/PlaybackController.kt#L54-L60",
+          "version": "repo-lines-v1:sha256:415e51cc79b5f0a4b1d561d7e8fb90a5c68b8ba6c20b6fda11b276c720cecb3e:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMzljYmJjNjU0NjlkYjFjYTI4NDJlZmQ5N2RmN2VlMmNlNmNjMTU3MTQ4MmQwMWExOGI3OTBhMTBjN2M1MTBmMyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMDFiYTQ3MTljODBiNmZlOTExYjA5MWE3YzA1MTI0YjY0ZWVlY2U5NjRlMDljMDU4ZWY4Zjk4MDVkYWNhNTQ2YiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNjBkNmU3MmFjMDc2ZjcwMjg5MzE2NWRhN2YxYWU3OTVkMTczMGMyMTFlMjRhNDkzMjQ5NzNkZTE4ZmNmZDMzMCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMDUzZjk2NmU2MDZiMDc0MGI3MDAwYzFmNWExYzNiZDk4OTk2MDMzMmNmMDdjN2VhNWM5ZjQzZmZiYTg4OTgwZiJ9"
+        }
+      ]
     }
   ],
   "verification": {
     "by": "openwiki/0.5.0",
-    "at": "2026-10-21T03:20:08.093Z"
+    "at": "2026-10-27T08:49:20.803Z"
   }
 }

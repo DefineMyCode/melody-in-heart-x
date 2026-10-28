@@ -1,11 +1,8 @@
 ---
 type: Operations
 title: Build, Verification & Release Operations
-description: Aggregates the debug/release/benchmark build variants and command matrix, the full verifyProductArchitecture rule checklist (now a buildSrc rule object), the Room schema export flow (v11 incl. word_preferences), Baseline Profile & Macrobenchmark operations, release signing/ABI/R8/largeHeap constraints, and key version-compatibility rules — the pre-commit and pre-release runbook for melody-in-heart.
+description: Aggregates the debug/release/benchmark build variants and command matrix, the full verifyProductArchitecture rule checklist (now a buildSrc rule object), the Room schema export flow (v17 incl. word_preferences and the M-5/M-6 index migrations), Baseline Profile & Macrobenchmark operations, release signing/ABI/R8/largeHeap constraints, the M3.1 performance remediation, and key version-compatibility rules — the pre-commit and pre-release runbook for melody-in-heart.
 tags: [android, gradle, build, verification, release, baseline-profile, architecture-gate, room, macrobenchmark]
-verified:
-  - by: openwiki/0.5.0
-    at: 2026-10-21T03:20:08.093Z
 sources:
   - id: openwiki-source-12c927e8bd03798dd5dd4315
     resource: repo://.github/workflows/pr-check.yml
@@ -79,12 +76,15 @@ sources:
     resource: repo://player/src/test/java/cn/com/dcsgo/mihx/player/window/PlaybackWindowPerformanceShapeTest.kt
   - id: openwiki-source-e620d7484b72a53c7fa812cd
     resource: repo://settings.gradle.kts
-generated: { by: "openwiki/0.5.0", at: "2026-10-21T03:20:08.093Z" }
+generated: { by: "openwiki/0.5.0", at: "2026-10-27T08:49:20.803Z" }
+verified:
+  - by: openwiki/0.5.0
+    at: 2026-10-27T08:49:20.803Z
 ---
 
 # Build, Verification & Release Operations
 
-This page is the pre-commit and pre-release runbook for `melody-in-heart` (applicationId `cn.com.dcsgo.mihx`, current `versionName 3.11.0` / `versionCode 46`). Every quality gate is carried by two mechanisms: the **command matrix** (Gradle lifecycle tasks) and **`verifyProductArchitecture`** — a custom verification task whose rule body is the `buildSrc` object `cn.com.dcsgo.mihx.verify.ProductArchitectureVerification`, statically asserting the whole source tree on every `check`. The design rationale for the module boundaries lives in `/openwiki/architecture/module-graph.md`; Room/DataStore details live in `/openwiki/architecture/data-persistence.md`.
+This page is the pre-commit and pre-release runbook for `melody-in-heart` (applicationId `cn.com.dcsgo.mihx`, current `versionName 3.12.2` / `versionCode 50`). Every quality gate is carried by two mechanisms: the **command matrix** (Gradle lifecycle tasks) and **`verifyProductArchitecture`** — a custom verification task whose rule body is the `buildSrc` object `cn.com.dcsgo.mihx.verify.ProductArchitectureVerification`, statically asserting the whole source tree on every `check`. The design rationale for the module boundaries lives in `/openwiki/architecture/module-graph.md`; Room/DataStore details live in `/openwiki/architecture/data-persistence.md`.
 
 ## 1. Pre-commit command matrix
 
@@ -170,6 +170,8 @@ The task lives in the root `build.gradle.kts` (`tasks.register("verifyProductArc
 | 12 | Permission & settings policy | `PlayerStartupFacade` must not contain `Bluetooth`; `SettingsScreen` must expose「蓝牙播放监听」/「申请蓝牙权限」entries; Bluetooth playback listening / playback notification must be persisted `PlayerSettingsRepository` (`bluetoothPlaybackMonitoringEnabled`/`playbackNotificationEnabled`) → DataStore (`BLUETOOTH_PLAYBACK_MONITORING_ENABLED`/`PLAYBACK_NOTIFICATION_ENABLED`) → `PlayerUiState` settings; `AppNavHost`/`AppRoot` must not hold either state in local `remember { }`; `PermissionCoordinator` must offer a notification permission request with an `onGranted` callback; the four startup-path files (`MainActivity`/`AppRoot`/`PlayerRuntime`/`PlayerStartupFacade`) must not contain `requestNotificationPermission(`/`requestBluetoothConnectPermission(`/`POST_NOTIFICATIONS`/`BLUETOOTH_CONNECT` (permissions may only be triggered by the user in Settings) |
 | 13 | LazyColumn stable keys | `app/core/feature` Kotlin files must declare `key =` within 160 chars of an `items`/`itemsIndexed` call; bare `item { }` is forbidden |
 | 14 | Logging channel | apart from `AppLogger.kt` itself, direct `Log.(d|i|w|e|v|wtf)(` calls are forbidden — all logging goes through `AppLog`/`AppLogger` |
+| 15 | `runBlocking` ban | `src/main` sources (any module) must not contain `runBlocking` — main-source "zero `runBlocking`" is machine-enforced (added 2026-10-27, M-3.1) |
+| 16 | `:core:model`/`:domain` purity ratchet | `import android.*` in `core/model/src/main` and `domain/src/main` is banned on **new** violations via a baseline whitelist (ratchet); the pre-existing ~5 violations are grandfathered until the `Uri → String` mechanical migration clears them (added 2026-10-27, M-21); `androidx.compose.runtime.{Stable,Immutable}` are out of scope |
 | 15 | Manifest placement | the `:app` manifest must not declare `AppMediaSessionService` (the `:player` manifest must — it declares `cn.com.dcsgo.mihx.player.AppMediaSessionService`); it must not declare `READ_EXTERNAL_STORAGE` (forbidden for SAF folder import); **`READ_MEDIA_AUDIO` IS permitted** — it is declared in the `:app` manifest so an already-granted device can fast-scan via `java.io.File`, with SAF document tree remaining the primary path and fallback |
 | 16 | release/benchmark build config | the `release` block must contain `isMinifyEnabled = true` and `isShrinkResources = true`; `create("benchmark")` must exist with `initWith(getByName("release"))` |
 | 17 | Privacy/backup exclusions | `backup_rules.xml` and `data_extraction_rules.xml` must each contain all required exclusions (see §3.3) |
@@ -185,6 +187,19 @@ The `verifyProductArchitecture` gate does **not** scan `:core:skin` internals; t
 - **`UserSectionsTest`** (`:feature:user`, 10 cases) asserts `UserSections` keys/`DEFAULT_ORDER` line up with the pre-refactor hardcoded order, that `UserSections.SKIN_SWITCHER == "skinSwitcher"` equals `SkinPartCatalog.SKIN_SWITCHER` literally, and that `parse` is tolerant of unknown/blank input (filtering to known keys).
 - **`SkinSwitcherCatalogConsistencyTest`** (`:app`) keeps `UserSections.SKIN_SWITCHER` and `SkinPartCatalog.SKIN_SWITCHER` from drifting apart, since `SkinShellResolver` maps both the `skinSwitcher` and legacy `customSkin` part names to the same `UserSections.SKIN_SWITCHER` partition.
 
+### 2.2 The M3.1 performance remediation (2026-10-27 review)
+
+The M3.1 Flash review (`docs/refactor/review-m-3-1-flash-2026-10-27.md`, tracked in `docs/refactor/fix-log-2026-10-27.md`) fixed the emotion-analysis performance debt. 1 Critical / 23 Major / 8 Minor were closed that day; selected remediation items:
+
+- **M-1** — `SongEmotionsRepository` gained a **parsed-curve cache** keyed by `songId + analyzedAt`: an unchanged row reuses the cached parse, so a batch re-emission of the emotion table re-parses only the newly written row (≈300 parses instead of 300,000).
+- **M-2** — the batch-scan Worker no longer snapshots the whole library per song nor reads DataStore per song to check pause: it subscribes once and reads an in-memory pause flag in the loop (`SongRepository.containsSong(songId)` gives a no-allocation `O(n)` exists-check).
+- **M-11** — `core/model/EmotionDisplay.kt` votes on each emotion curve **once**, and the three conclusions (tags / ratios / confidence tiers) all derive from that single vote (previously the same curve was voted on 3–4×).
+- **M-5 / M-6** — schema v16→17 added `index_songs_albumId` and `index_playback_events_songId` (see §5), plus a 12-month retention policy on `playback_events`.
+- **M-8 / M-10 / M-21** — accepted debt: the `Uri → String` mechanical migration (61 files / 115 sites) was **not** performed; instead a ratchet gate (rule 16 above) blocks new violations. M-8/M-10 and the 46-parameter refactors were likewise deferred with rationale in the fix-log.
+- **Observability** — M-20 rewired `PerformanceTrace` onto the independent `AppLog.performance` channel (see §4.3), which the review had found produced nothing in release.
+
+Also added during this wave: renderer interplay for Dolby Atmos (platform `MediaCodec` preferred, FFmpeg extension as fallback via `EXTENSION_RENDERER_MODE_ON`; ALAC excluded back to FFmpeg via `MimeExcludingMediaCodecSelector` because of the real-device SIGSEGV history), and cross-process album-art `content://` via `AlbumArtProvider`.
+
 ## 3. Release constraints
 
 ### 3.1 ABI, `largeHeap`, & resource trimming
@@ -198,7 +213,7 @@ Release enables R8 minification + resource shrinking. `app/proguard-rules.pro` m
 - manifest/session entry points: `MelodyApplication`, `MainActivity`, `AppMediaSessionService`;
 - Hilt/Room/Media3 reflection-required attributes (`Signature`, `RuntimeVisibleAnnotations`, etc.);
 - `MelodyDatabase` and all entity classes (so release crashes stay diagnosable);
-- `FfmpegAudioDecoder`/`FfmpegLibrary` — `:player`'s `FfmpegPcmDecoder` (at `cn.com.dcsgo.mihx.player`) reflectively drives the Jellyfin FFmpeg extension's package-private decoders (`FfmpegLibraryProbe` probes with `Class.forName`); R8 renaming/trimming would break the decode path. (Note: the keep rule for `AppMediaSessionService` still cites the legacy `cn.com.dcsgo.mihx.data.player.AppMediaSessionService` name while the class now lives at `cn.com.dcsgo.mihx.player` — the Media3 decoder keep rules, which are what matter for the decode path, address the actual `androidx.media3.decoder.ffmpeg` classes.)
+- `FfmpegAudioDecoder`/`FfmpegLibrary` — `:player`'s `FfmpegPcmDecoder` (at `cn.com.dcsgo.mihx.player`) reflectively drives the Jellyfin FFmpeg extension's package-private decoders (`FfmpegLibraryProbe` probes with `Class.forName`); R8 renaming/trimming would break the decode path. The keep rules target the actual `androidx.media3.decoder.ffmpeg.FfmpegAudioDecoder` constructor + `getSampleRate`/`getChannelCount`/`growOutputBuffer` and `FfmpegLibrary.isAvailable`. (Note: the manifest/session keep rule for `AppMediaSessionService` still cites the legacy `cn.com.dcsgo.mihx.data.player.AppMediaSessionService` name while the class now lives at `cn.com.dcsgo.mihx.player` — but the Media3 decoder keep rules, which are what matter for the decode path, use the correct `androidx.media3.decoder.ffmpeg.*` classes.)
 
 ### 3.3 Signing strategy & privacy exclusions
 
@@ -239,24 +254,25 @@ Module shape: `com.android.test` plugin, `targetProjectPath = ":app"`, `android.
 
 - `isEnabled` initial value = `BuildConfig.DEBUG`: **debug defaults to on, release stays silent** (privacy + volume decision);
 - `allow(operation)`/`disallow(operation)` provide a release whitelist so key playback paths can keep emitting in production;
-- `measure { }`/`log { }` output through `AppLog.info`, with metadata going through `redactSensitiveValuesForLog()` first;
+- **As of M-20 (2026-10-27 review), traces no longer flow through `AppLog.info`** — they use the dedicated `AppLog.performance` channel, wired to `AndroidAppLogger`'s independent `performanceLoggingEnabled` flag that is **not** gated by `BuildConfig.DEBUG`. This fixes the earlier finding that "the release whitelist produced nothing" (release silenced `info` before the trace ever emitted, so `allow()` only decided whether to compute, not whether to output). `MelodyApplication` opens it with `AppLog.install(AndroidAppLogger(BuildConfig.DEBUG, performanceLoggingEnabled = true))`, so release builds now actually emit allowlisted operations.
+- `measure { }`/`log { }`/`logLazy { }` output through `AppLog.performance`, with metadata going through `redactSensitiveValuesForLog()` first; `logLazy`/`measure(operation) { metadata }` only construct metadata when the trace will actually be emitted (M-20 N-22);
 - `core/common` explicitly turns on `buildFeatures { buildConfig = true }` for this.
 
 Anchors (locked by the architecture gate): `MusicRepository`'s `music_import_scan`/`music_import_folder`, and `PlaybackController`'s `play_next_command`/`controller_play_queue`/`controller_prepare_queue`/`controller_sync_queue`. Deleting or renaming these string literals fails `verifyProductArchitecture`. The companion `PlaybackWindowPerformanceShapeTest` locks the window shape (51–71 items) of 100/500/1000-song queues at the JVM layer.
 
 ## 5. Room schema flow
 
-`:data` exports schemas via KSP: `ksp { arg("room.schemaLocation", "$projectDir/schemas") }`, with `MelodyDatabase` declaring `version = 11, exportSchema = true`; historical snapshots live in `data/schemas/cn.com.dcsgo.mihx.data.local.MelodyDatabase/1.json…11.json`. Version 11 (2026-10-20) added the `word_preferences` emotion-word listening-preference voting table (`WordPreferenceEntity`, `tableName = "word_preferences"`) via `MIGRATION_10_11`. Workflow for any entity/DAO change:
+`:data` exports schemas via KSP: `ksp { arg("room.schemaLocation", "$projectDir/schemas") }`, with `MelodyDatabase` declaring `version = 17, exportSchema = true`; historical snapshots live in `data/schemas/cn.com.dcsgo.mihx.data.local.MelodyDatabase/1.json…17.json`. Recent versions: v11 (2026-10-20) added the `word_preferences` emotion-word listening-preference voting table (`WordPreferenceEntity`, `tableName = "word_preferences"`) via `MIGRATION_10_11`; v15/v16 handled emotion coordinate & voice-score columns; **v17 (2026-10-27, M-5/M-6) added two indexes** — `index_songs_albumId` (album-catalog query & orphan-album cleanup) and `index_playback_events_songId` (retention cleanup uses songId equality, previously a full-table scan) via `MIGRATION_16_17`. Workflow for any entity/DAO change:
 
 1. Modify the entity/DAO under `data/src/main/java/cn/com/dcsgo/mihx/data/local/{entity,dao}`.
-2. Bump `MelodyDatabase` version by 1 (currently 11).
-3. Build `:data` once — KSP auto-generates the new-version JSON in `data/schemas/.../` (don't hand-write).
+2. Bump `MelodyDatabase` version by 1 (currently 17).
+3. Build `:data` once — KSP auto-generates the new-version JSON in `data/schemas/.../` (don't hand-write). Note the `merge*UnitTestAssets` tasks must run after `ksp*variant*Kotlin` so `MigrationTestHelper` reads the freshly generated JSON (see `data/build.gradle.kts`).
 4. Add `Migration(N, N+1)` in `data/.../local/migration/MelodyMigrations.kt`, appending it to the trailing `ALL: Array<Migration>` array (declared last so object properties initialize in order). The migrations were extracted from `DatabaseModule` (m-4) into the public `MelodyMigrations` object so the migration regression test (`MelodyDatabaseMigrationTest`) references the exact same instances as production — no "test migrations" vs "live migrations" drift.
 5. `DatabaseModule` registers them with `addMigrations(*MelodyMigrations.ALL)`.
 6. Add a focused unit test for complex data-migration migrations.
 7. **Never modify an existing schema JSON** — they are immutable snapshots, and rule 18 detects tampering by the v1/v2/v3 content deltas.
 
-The full migration history (1→2 adds `quick_skip_short_play_counts`, 2→3 adds `lrcUri`, …10→11 adds the `word_preferences` table) is in `/openwiki/architecture/data-persistence.md`.
+The full migration history (1→2 adds `quick_skip_short_play_counts`, 2→3 adds `lrcUri`, …10→11 adds the `word_preferences` table, 16→17 adds the two M-5/M-6 indexes) is in `/openwiki/architecture/data-persistence.md`.
 
 ## 6. Key versions & compatibility constraints
 
@@ -267,9 +283,9 @@ The full migration history (1→2 adds `quick_skip_short_play_counts`, 2→3 add
 | AGP | 8.13.2 | `compileSdk 36`; `:benchmark` uses `com.android.test` at the same version |
 | Compose BOM | 2025.09.01 | Compose versions are centralized via the BOM |
 | Media3 | 1.9.0 + Jellyfin FFmpeg `1.9.0+1` | FFmpeg decoding is reflective (see §3.2 keep rules); after a Media3 upgrade, verify `FfmpegLibraryProbe` still hits |
-| Room / Hilt / DataStore | 2.6.1 / 2.52 / 1.1.1 | Room schema export per §5 (currently v11) |
+| Room / Hilt / DataStore | 2.6.1 / 2.52 / 1.1.1 | Room schema export per §5 (currently v17) |
 | minSdk / targetSdk | 33 / 36 | Java 11 bytecode (`compileOptions`/`jvmTarget` set to `VERSION_11` repo-wide) |
-| versionName / versionCode | 3.11.0 / 46 | Authoritative in `app/build.gradle.kts` |
+| versionName / versionCode | 3.12.2 / 50 | Authoritative in `app/build.gradle.kts` |
 | LiteRT / WorkManager | 1.4.1 / 2.9.1 | Emotion-analysis model runtime + background work |
 
 ### 6.1 Deterministic Windows build config
@@ -280,7 +296,7 @@ The full migration history (1→2 adds `quick_skip_short_play_counts`, 2→3 add
 - `org.gradle.parallel=true` + `org.gradle.caching=true`: multi-module parallel build + build cache.
 - `android.nonTransitiveRClass=true`: each module's R class holds only its own declared resources, so **r classes must not be used to reference resources across modules** (complementing rule 10's `:core:model` purity check).
 
-**Doc-drift note**: `CLAUDE.md`'s Key Versions table now agrees with the real config (Compose BOM 2025.09.01, versionName 3.11.0 / versionCode 46, Kotlin 2.0.21, AGP 8.13.2, KSP 2.0.21-1.0.28, Room 2.6.1); its "当前 v10" Room line is behind the actual v11 but `app/build.gradle.kts`'s `versionCode` and the `MelodyDatabase.version` field are authoritative.
+**Doc-drift note**: `CLAUDE.md`'s Key Versions table now agrees with the real config (Compose BOM 2025.09.01, versionName 3.12.2 / versionCode 50, Kotlin 2.0.21, AGP 8.13.2, KSP 2.0.21-1.0.28, Room 2.6.1); its Room line still reads "当前 v10", which lags the actual v17, but `app/build.gradle.kts`'s `versionCode` and the `MelodyDatabase.version` field are authoritative.
 
 ### 6.2 Skin module boundaries
 
@@ -292,7 +308,7 @@ The full migration history (1→2 adds `quick_skip_short_play_counts`, 2→3 add
   - `pr-check.yml` runs on pull requests and pushes to `main` (skipped for `docs/**`, `openwiki/**`, `**.md`): `./gradlew check :app:assembleDebugAndroidTest :buildSrc:test` on `ubuntu-24.04` with JDK 17, uploading test/lint reports on failure.
   - `release.yml` responds to `v*` tags or `workflow_dispatch`: first runs the same `check :app:assembleDebugAndroidTest :buildSrc:test` gate; then, in `build-release` (needs `check`), restores the keystore from `RELEASE_KEYSTORE_B64`, builds `:app:assembleRelease` with `-PrequireReleaseSigning` semantics (key presence implied by the written `keystore.properties`), verifies the APK signature with `apksigner` (build-tools 36.0.0), renames it `melody-heart-<tag>-arm64.apk`, uploads it, and creates/updates a GitHub Release. The tag is validated (`vX.Y.Z` / `vX.Y.Z-alpha`) and injected via an env var to avoid shell interpolation, and the `tag` input for `workflow_dispatch` avoids `${{ }}` injection.
 - **Prefer changing source and `docs/`, don't hand-edit generated pages.** `openwiki/` is generated from source via `openwiki code --update` (see `/openwiki/.run.json`/`.last-update.json` for the current/last runs); AGENTS.md instructs treating source and tests as authoritative and letting OpenWiki regenerate. Hand-edits to generated pages will be overwritten on the next run; architecture facts belong in `docs/architecture/*.md` (some of which rule 5 locks), then get re-ingested by OpenWiki.
-- **New logging must go through `AppLog`/`AppLogger`** (hard rule 14). `AndroidAppLogger` behavior: `debug/info/warning` only emit when `BuildConfig.DEBUG`, `error` always emits; all channels redact messages and stacks through `redactSensitiveValuesForLog()` (`content://`, `file://`, Bluetooth MACs, device names, Windows/POSIX paths replaced with placeholders). So **in release only the error channel actually emits, and it is redacted** — don't bypass `AppLog` for raw `android.util.Log` just to see logs in release. `AppLog.install(AndroidAppLogger(BuildConfig.DEBUG))` is wired in `MelodyApplication.onCreate`; before install the no-op default is used.
+- **New logging must go through `AppLog`/`AppLogger`** (hard rule 14). `AndroidAppLogger.debug|info|warning` only emit when `BuildConfig.DEBUG`, `error` always emits; all channels redact messages and stacks through `redactSensitiveValuesForLog()` (`content://`, `file://`, Bluetooth MACs, device names, Windows/POSIX paths replaced with placeholders). It additionally carries a `performance` channel with an independent `performanceLoggingEnabled` flag (default **false**, so the no-op default delegate stays JVM-unit-test-safe, but opened `true` in `MelodyApplication`/`LoggerModule`) — this is what makes release allowlisted `PerformanceTrace` ops reach the platform log. So **in release only the error channel plus allowlisted performance traces actually emit, and both are redacted** — don't bypass `AppLog` for raw `android.util.Log` just to see logs in release. `AppLog.install(AndroidAppLogger(BuildConfig.DEBUG, performanceLoggingEnabled = true))` is wired in `MelodyApplication.onCreate`; before install a no-op default is used.
 - **Prefer the narrowest quiet validation** (AGENTS.md): compile/test only the module you changed — e.g. `:core:skin:test` — and leave the full `check` for pre-commit; preserve complete failure output without truncation.
 
 ## Related pages

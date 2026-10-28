@@ -40,10 +40,10 @@ sources:
     resource: repo://feature/user/src/main/java/cn/com/dcsgo/mihx/feature/user/MoodTimeSlotScreen.kt
   - id: openwiki-source-f7b36b0f9afca730906e7b3e
     resource: repo://feature/user/src/main/java/cn/com/dcsgo/mihx/feature/user/UserScreen.kt
+generated: { by: "openwiki/0.5.0", at: "2026-10-27T08:49:20.803Z" }
 verified:
   - by: openwiki/0.5.0
-    at: 2026-10-21T03:20:08.093Z
-generated: { by: "openwiki/0.5.0", at: "2026-10-21T03:20:08.093Z" }
+    at: 2026-10-27T08:49:20.803Z
 ---
 
 # Mood Time-Slot Anything-Play (Time-of-Day × Emotion Tags)
@@ -54,10 +54,11 @@ three-state `RandomEnhanceMode` enum — **OFF / TIME_SLOT / EXPLORE** — and t
 are mutually exclusive: exactly one can be active. This page covers TIME_SLOT; EXPLORE is
 its own behavior (see `/openwiki/player/random-and-infinite.md`). When the master switch is
 in TIME_SLOT mode and the current minute of day falls inside a configured time slot, the
-random candidate pool is narrowed to songs carrying one of that slot's emotion tags.
-Everything else — tiered uniform-random preemption, recent-play eviction, infinite refill —
-is reused unchanged, because the filtering happens **at the planner entry**, never inside
-the planners. The feature is the one-phase ("一期") subset of the product proposal in
+random candidate pool is narrowed to songs whose emotion-tag match ratio clears
+`MoodSlotPolicy.MATCH_MIN_RATIO` (0.35) for one of that slot's tags. Everything else —
+tiered uniform-random preemption, recent-play eviction, infinite refill — is reused
+unchanged, because the filtering happens **at the planner entry**, never inside the
+planners. The feature is the one-phase ("一期") subset of the product proposal in
 `docs/architecture/MOOD_TIME_SLOT_PLAYBACK.md`: time slots × emotion tags only, no scene
 abstraction.
 
@@ -65,8 +66,8 @@ The whole loop is: config UI saves a `TimeSlotConfig` → `TimeSlotConfigStore` 
 and rewrites a JSON key in the `mood_time_slot` DataStore → two independent observers
 (the config page's `StateFlow`s and `PlayerRuntime`'s `@Volatile` caches) receive the
 same emission → each random draw re-evaluates the active slot via `MoodSlotResolver.hitSlot`
-→ `PlayerRandomQueueFacade.filterByMoodTags` narrows the pool → the app shell toasts the
-winning slot name for attribution.
+→ `PlayerRandomQueueFacade.filterByMoodTags` narrows the pool by ratio threshold
+→ the app shell toasts the winning slot name for attribution.
 
 ```mermaid
 flowchart TD
@@ -112,7 +113,12 @@ enum class RandomEnhanceMode { OFF, TIME_SLOT, EXPLORE }
 - The enhance mode is observed in three places that all converge on the single persisted
   enum: `PlayerRuntime.observeMoodSlotCaches` (drives `isExploreModeActive`, and exits an
   explore session when the mode leaves `EXPLORE`), `MoodTimeSlotViewModel.randomEnhanceMode`,
-  and the random facade's per-draw lambdas.
+  and the random facade's per-draw lambdas. Since 2026-10-27 (review N-3) the per-draw
+  lambdas no longer re-read the DataStore on each draw: `observeMoodSlotCaches` caches the
+  observed mode into `@Volatile randomEnhanceModeCache` (also seeded once at startup in
+  `start()` to close the race between user tapping "随心播放" and the subscription finishing),
+  and the facade's `moodSlotEnabled`/`exploreModeEnabled` read that cache, giving zero-IO
+  per-draw evaluation that stays consistent with the UI's `isExploreModeActive`.
 
 ### Mutual exclusion in the runtime facade
 
@@ -161,6 +167,7 @@ unit-testable) plus the `MoodSlotPolicy` constants object:
 | Constant | Value | Used by |
 | --- | --- | --- |
 | `POOL_WARN_THRESHOLD` | 10 | `filterByMoodTags` "will loop" log; mirrored by the config UI's own `MOOD_POOL_WARN_THRESHOLD = 10` |
+| `MATCH_MIN_RATIO` | 0.35f | `filterByMoodTags` and the config UI's `matchCount` — a slot tag only counts a song as a hit when the word's fraction of the whole song is ≥ this; manual-tag songs are always 1.0, so they always match |
 | `NAME_MAX_LENGTH` | 20 | `validate` (`NAME_TOO_LONG`); edit dialog marks the name field in error |
 | `MAX_SLOTS` | 10 | Declared as a soft per-user limit; no code path currently enforces it |
 
@@ -247,17 +254,28 @@ which is what makes saves/deletes effective immediately with no refresh step:
   - `timeSlotConfigRepository.observeConfigs()` → `@Volatile moodSlotConfigsCache`
     (exceptions logged, cache keeps the last value);
   - `songEmotionRepository.observeAll()` — a Room invalidation stream — mapped per song
-    through `emotionTagsOf` with `flowOn(dispatchers.default)` → `@Volatile
-    moodEmotionTagsCache`. Because `emotionTagsOf` prefers user-calibrated tags, a
-    calibration write also reaches the next random draw without any player-side action;
+    in a single pass to **two ratio maps** on `flowOn(dispatchers.default)`:
+    `moodEmotionRatiosCache` via `emotionMatchRatiosOf` (full distribution, for slot
+    matching and refill filtering) and `exploreVoteRatiosCache` via `emotionVoteRatiosOf`
+    (threshold-gated, for explore vote tallying). The two caches are deliberately separate
+    from each other (`emotionMatchRatiosOf` gives a full per-word distribution — the target
+    word at rank 5 must still be matchable — while tallying votes should only credit the
+    dominant emotions, else a 97%-not-「治愈」 song would still accrue a dislike vote for
+    「治愈」). Because both come off `emotionMatchRatiosOf`/`emotionVoteRatiosOf` on the
+    compensated curve with the model-version matching anchor set, a user calibration write
+    also reaches the next random draw without any player-side action;
   - `wordPreferenceRepository.observeAll()` → `@Volatile wordPreferenceCache`
     (explore refill's like/dislike ledger);
-  - `playerSettingsRepository.randomEnhanceMode` → updates `isExploreModeActive`, and when
-    the mode leaves `EXPLORE` while an explore session is running, calls
-    `randomQueueFacade.stopExplorePlay()`.
-- `PlayerRandomQueueFacade` is constructed with `moodSlotConfigs = { moodSlotConfigsCache }`
-  and `moodEmotionTagsOf = { song -> moodEmotionTagsCache[song.id].orEmpty() }`, so the
-  facade reads `@Volatile` snapshots that are at most one emission behind the store.
+  - `playerSettingsRepository.randomEnhanceMode` → updates `isExploreModeActive` and
+    `@Volatile randomEnhanceModeCache`, and when the mode leaves `EXPLORE` while an explore
+    session is running, calls `randomQueueFacade.stopExplorePlay()`.
+- `PlayerRandomQueueFacade` is constructed with `moodSlotConfigs = { moodSlotConfigsCache }`,
+  `moodEmotionTagsOf = { song -> moodEmotionRatiosCache[song.id]?.keys ?: emptySet() }`
+  (zero-allocation `Set` key view), `moodEmotionTagRatiosOf = { song -> moodEmotionRatiosCache[song.id].orEmpty() }`
+  (the ratio map the threshold-gated filter actually reads), and
+  `moodSlotEnabled = { randomEnhanceModeCache == TIME_SLOT }` /
+  `exploreModeEnabled = { randomEnhanceModeCache == EXPLORE }`, so every draw reads the
+  `@Volatile` snapshots that are at most one emission behind the store with zero DataStore IO.
 - `MoodTimeSlotViewModel` exposes `configs`, `randomEnhanceMode`, `moodTimeSlotEnabled`, and
   `wordPreferences` as `stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), …)`
   `StateFlow`s over the same repository flows (initial values cover only the first frame).
@@ -265,10 +283,12 @@ which is what makes saves/deletes effective immediately with no refresh step:
   re-emits from the DataStore and updates both within one emission.
 
 The one deliberate non-stream is `tagCounts`/`librarySize` on the ViewModel: `loadStats()`
-is a one-shot snapshot computed on `Dispatchers.IO` (full `getAll()` +
-`emotionTagsOf` counting + `countSongs()`), invoked by `LaunchedEffect(Unit)` on entering
-the config route — the M-7 pattern (no composition-time computation). On failure it degrades
-tag counts to an empty list (badges show 0) without blocking the configuration features.
+is a one-shot snapshot computed on `Dispatchers.IO` (full `getAll()` + `emotionTagsOf`
+counting, plus a per-song `emotionMatchRatiosOf` pass into a private `emotionRatios` map +
+`countSongs()`), invoked by `LaunchedEffect(Unit)` on entering the config route — the M-7
+pattern (no composition-time computation) combined with the M-15 rule (no full-library
+scan in composition). On failure it degrades tag counts to an empty list (badges show 0)
+without blocking the configuration features.
 
 ## Random-play consumption: filter at the planner entry
 
@@ -280,8 +300,15 @@ contracts it sits on) owns the consumption semantics:
   injectable lambda (default `Calendar`) so tests run off the real clock. The result is a
   `MoodSlotState(slotName, tags)` or `null`. `currentMoodSlot()` exposes the same
   evaluation for attribution.
-- `filterByMoodTags(songs, mood)` keeps a song when any of `moodEmotionTagsOf(song)` is in
-  `mood.tags` (same `emotionTagsOf` display tags the emotion pages use), then:
+- `filterByMoodTags(songs, mood)` keeps a song when any `(word, ratio)` in
+  `moodEmotionTagRatiosOf(song)` has `word in mood.tags && ratio >= MatchMinRatio`
+  (`MoodSlotPolicy.MATCH_MIN_RATIO = 0.35`) — the ratio is the word's fraction of the
+  whole song, derived from `emotionMatchRatiosOf` (full distribution, no display topN
+  truncation). Songs whose tags come from the user's manual marking carry `1.0` for every
+  tag (a manual tag is a strong match by definition), so they always clear the threshold;
+  the default `moodEmotionTagRatiosOf` implementation derives from `moodEmotionTagsOf`
+  (each word = 1.0), so callers that don't inject ratios keep the pre-ratio plain-OR
+  behavior bit-for-bit. Then:
   - empty result → returns `null` and logs
     `"moodSlot: no songs for tags=…, fall back to full library"` — the caller falls back to
     the **full library** rather than failing to start (design doc §4.3 degradation);
@@ -304,7 +331,9 @@ contracts it sits on) owns the consumption semantics:
   doc §4.2 aspired to filter the infinite start too; the implementation filters refills only.)
 
 Runtime-visible small-pool and empty-pool feedback is log-based; the user-facing warnings
-for those conditions live in the configuration UI (below), and the only runtime attribution
+for those conditions live in the configuration UI (below), where the pool size is computed
+with the **same** `MATCH_MIN_RATIO`-gated judgment (via `MoodTimeSlotViewModel.matchCount`),
+so the number shown equals the songs that will actually play. The only runtime attribution
 surface is the slot-name toast.
 
 ## Attribution toasts (anti-"why this song?" opacity)
@@ -348,21 +377,27 @@ The `:feature:user` + `:app` side (design doc §4.6 / UI screens):
   - in `TIME_SLOT` with no configs: an empty state; with configs: a "时段模式生效中" hint, a
     24h timeline (cross-midnight slots drawn as two segments, the currently covered one
     highlighted), and per-slot cards with tag-count badges and a combined "合计 N 首可随机"
-    estimate (`configs2Items` sums per-tag counts — single-tag takes the direct count, a song
-    carrying two chosen tags is counted twice — accepted as a preview estimate). A card shows
-    `歌曲较少，将循环播放` when its total is below the UI-local
-    `MOOD_POOL_WARN_THRESHOLD = 10` (mirroring `MoodSlotPolicy.POOL_WARN_THRESHOLD`). Only in
-    `TIME_SLOT` mode is the "添加时段" FAB shown. Save success toasts `已保存时段配置`, failure
-    toasts the repository/validation message, and delete toasts `已删除时段配置`.
+    estimate. The per-card estimate comes from `configs2Items` → `state.poolCountOf(tags)`,
+    which is `MoodTimeSlotViewModel.matchCount(tags)` — a **real** count of songs whose
+    ratio distribution clears `MATCH_MIN_RATIO` for at least one chosen tag, cached by tag
+    set in the ViewModel (`matchCountCache`) so recomposition (and keyboard typing in the
+    edit dialog) never redoes a full-library scan. A card shows `歌曲较少，将循环播放` when its
+    total is below the UI-local `MOOD_POOL_WARN_THRESHOLD = 10` (mirroring
+    `MoodSlotPolicy.POOL_WARN_THRESHOLD`). Only in `TIME_SLOT` mode is the "添加时段" FAB
+    shown. Save success toasts `已保存时段配置`, failure toasts the repository/validation
+    message, and delete toasts `已删除时段配置`.
 - **Edit dialog** (`MoodSlotEditDialog`): validates locally while typing (blank name, no
   tags, `start == end`) and runs the **same** `MoodSlotResolver.validate` on save, mapping
   each `SlotError`/`Conflict` to its user-facing message (`时间段与「name」重叠，请调整`,
   `开始与结束时间不能相同`, …) — validation feedback happens before the repository would throw.
-  Times use the system `TimePicker` (forced 24-hour; storage stays minutes-of-day), the
-  explainer switches to a cross-midnight description when `end <= start`, manual-only tags
-  (鬼畜/沙雕/戏谑/荒诞 — the `auto=false` group) are listed separately with a warn explainer,
-  and a combined-pool explainer warns below `MOOD_POOL_WARN_THRESHOLD` songs or at zero
-  ("随心播放将回退为全部歌曲随机").
+  Times use the system `TimePicker` (forced to 24-hour in the picker dialog; storage stays
+  minutes-of-day), the explainer switches to a cross-midnight description when `end <= start`,
+  manual-only tags (鬼畜/沙雕/戏谑/荒诞 — the `auto=false` group, listed from the AppNavHost
+  call site) are shown separately with a warn explainer, and a combined-pool explainer uses
+  `poolCountOf(tags)` (the same `matchCount` as the card estimate) — below
+  `MOOD_POOL_WARN_THRESHOLD` songs it warns `歌曲较少，将循环播放这批歌曲`, and at zero it warns
+  `随心播放将回退为全部歌曲随机`. The combined-pool count is memoized on the tag set
+  (`remember(tags)`) so typing the name doesn't recompute it.
 
 ## Tests that lock the semantics
 
@@ -376,10 +411,12 @@ The `:feature:user` + `:app` side (design doc §4.6 / UI screens):
   pool narrowing to tagged songs, empty-pool fallback to the full library (log contains
   "fall back to full library"), inactivity outside the slot and with the switch off
   (bit-identical legacy behavior), uniform-random compatibility under the mood filter
-  (`listOf(4, 3)` — the 0-play song first), and explore-mode exclusivity: explore generates
-  10 songs (`explore=true` log), blocks infinite while an explore session runs, allows
-  infinite after the session ends, prefers liked-and-no-disliked refill pools before
-  degrading to no-dislike then full library.
+  (`listOf(4, 3)` — the 0-play song first), explore-mode exclusivity (explore generates
+  10 songs, blocks infinite while an explore session runs, allows infinite after the
+  session ends, and prefers liked-and-no-disliked refill pools before degrading to
+  no-dislike then full library), threshold gating (`moodFilterRequiresTheWordToDominateEnoughOfTheSong`
+  — a 0.70 ratio hits while a 0.16 ratio misses), and the pure-OR fallback when no ratios
+  are injected (`moodFilterFallsBackToPlainTagMatchWhenNoRatiosAreInjected`).
 
 ## Related pages
 

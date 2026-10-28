@@ -44,6 +44,10 @@ sources:
     resource: repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerErrorFacade.kt
   - id: openwiki-source-0a840abe5bf9183316c47b4e
     resource: repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerMediaEventFacade.kt
+  - id: openwiki-source-77273795d3d3691caff7ecb8
+    resource: repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerPersistenceFacade.kt
+  - id: openwiki-source-ec996dfca8a06fd74702893d
+    resource: repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerPersistenceGraph.kt
   - id: openwiki-source-b86e2b97e4f71e5af8b2924c
     resource: repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerQueueFacade.kt
   - id: openwiki-source-8e3d8a1f18f53d37da8744f1
@@ -52,6 +56,8 @@ sources:
     resource: repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRuntime.kt
   - id: openwiki-source-4712a58a73a521c17f95b5f0
     resource: repo://feature/player/src/test/java/cn/com/dcsgo/mihx/feature/player/PlayerMediaEventFacadeTest.kt
+  - id: openwiki-source-ca2d7e504c1ad19cbaff9046
+    resource: repo://feature/player/src/test/java/cn/com/dcsgo/mihx/feature/player/PlayerPersistenceFacadeTest.kt
   - id: openwiki-source-b5318c575454b025c4e1b854
     resource: repo://feature/player/src/test/java/cn/com/dcsgo/mihx/feature/player/PlayerQueueFacadeTest.kt
   - id: openwiki-source-2406bafab2e742d99aa82d73
@@ -78,10 +84,10 @@ sources:
     resource: repo://player/src/test/java/cn/com/dcsgo/mihx/player/window/PlaybackWindowPerformanceShapeTest.kt
   - id: openwiki-source-9d7c39bdfe272c3574ef83bb
     resource: repo://player/src/test/java/cn/com/dcsgo/mihx/player/window/PlaybackWindowPlannerTest.kt
-generated: { by: "openwiki/0.5.0", at: "2026-10-21T03:20:08.093Z" }
+generated: { by: "openwiki/0.5.0", at: "2026-10-27T08:49:20.803Z" }
 verified:
   - by: openwiki/0.5.0
-    at: 2026-10-21T03:20:08.093Z
+    at: 2026-10-27T08:49:20.803Z
 ---
 
 # Playback Queue and Windowed Synchronization
@@ -133,6 +139,8 @@ Windowing is layered, and the boundaries must stay inside `player/window` — wi
 2. **`PlaybackWindowPlanner`** (`player/window`). Slices the full playable order into a window: `DEFAULT_PREVIOUS_COUNT = 20` items before the current item and `DEFAULT_NEXT_COUNT = 50` after it (clamped at queue boundaries). Produces `PlaybackWindowState(songs, controllerStartIndex, fullQueueStartIndex, fullQueueCurrentIndex)` — the bridge between window-local indices and full-queue indices.
 3. **`ControllerWindowSynchronizer`** (`player/window`). Caches the most recent window. `planIfNeeded` skips replanning while the current song id is still inside the cached window; `planControllerQueue(force = true)` invalidates and recomputes. It maps the window into a `ControllerQueuePlan` whose `startIndex` points at the current song's position inside the window.
 4. **`WindowedControllerQueuePlanner`** implements `ControllerQueuePlannerPort`: `plan(queue, requestedIndex)` moves the queue cursor with `queue.withCurrentIndex(requestedIndex)` and **forces** a fresh window. Hilt (`PlayerModule.provideControllerQueuePlanner`) binds it as the singleton port consumed by `PlayerRuntime` — `PlayerControllerQueueFacade.syncPlayerQueue` for resyncs and `PlaybackSessionCoordinator.startQueuePlayback/prepareQueue` for (re)starts.
+
+`PlaybackController.syncQueue` runs every controller-queue write and optimizes most of them into an **incremental sync** (`planIncrementalQueueSync`): when the current controller item still matches the plan's `startIndex` and the controller is `READY`/`BUFFERING`, it trims the window's trimmed head and appends only the new tail via `removeMediaItems`/`addMediaItems`, leaving the current item untouched — no position reset, no re-buffer, and no `playWhenReady` change. This is what lets refill-driven window-scroll syncing happen at track-change time without yanking the freshly started song back to a stale position. Only when no incremental alignment exists (fingerprint changed, current item not aligned, playback not ready) does it fall back to a full `setMediaItems` rebuild that preserves the current position and, when it was playing, resumes `play()`.
 
 ```mermaid
 flowchart TD
@@ -224,6 +232,8 @@ When a song finishes, its actual listen time is settled (`onExploreSongSettled`)
 
 `PlaybackStateStore` + `PlaybackStateSnapshotSerializer` persist `songIds`, `currentIndex`, `playMode`, and `playOrderIds` as JSON arrays **by occurrence** — encoding calls `currentPlayOrderIds()`, and restoration filters the persisted order to ids still present and does *not* deduplicate it. Restore prefers the persisted `currentSongId` to fix `currentIndex`; if the current song is missing from the restored queue, it is kept only if the library still contains it. Save/restore of duplicate-heavy queues therefore round-trips without losing queue items.
 
+The restore is applied through the same windowed pipeline: `PlayerPersistenceGraph`/`PlayerPersistenceFacade.applyRestoreResult` rehydrates the full business `PlayQueue` (plus `isInfinitePlay`/`isExplorePlay`/played-song sets) and, when there is **no live session**, pushes it into the controller via `prepareQueue` (a windowed `ControllerQueuePlan` prepared to the snapshot position, not autoplayed). When a live MediaSession session already holds media items, the restore deliberately skips rebuilding the controller queue and only fills the UI-side `songs`/`currentSong` — the real position and playing state are taken from the controller snapshot sync, so the running session is never overwritten or rewound to the snapshot position. `PlayerPersistenceFacadeTest` locks the live-session-restores-UI-only branch.
+
 ## Invariants to keep
 
 - `PlayQueue.currentIndex` is a business index into `PlayQueue.songs`; `MediaController.currentMediaItemIndex` is a controller-window index. Never use one as the other.
@@ -245,7 +255,7 @@ Window semantics are locked by tests; changing the pipeline without updating the
 
 `ControllerQueuePlannerTest` (domain) additionally locks order expansion, stable shuffle, and unplayable-song skipping.
 
-The v3.11 augmented paths are locked by facade tests: `PlayerMediaEventFacadeTest` anchors the explore refill thresholds (second-to-last refills, third-to-last does not, enough-remaining does not) and the `startedSongId` correction; `PlayerRandomQueueFacadeTest` anchors the 10-song explore batch, explore blocking infinite play, the liked/no-dislike → no-dislike → full-library refill pool fallback, wrap advancement, and `setPlayQueue` exiting an explore session.
+The v3.11 augmented paths are locked by facade tests: `PlayerMediaEventFacadeTest` anchors the explore refill thresholds (second-to-last refills, third-to-last does not, enough-remaining does not), the `startedSongId` correction, and the settle-skip when no tracked song; `PlayerRandomQueueFacadeTest` anchors the 10-song explore batch, explore blocking infinite play, the liked/no-dislike → no-dislike → full-library refill pool fallback (degrading only when the preferred pool can't fill `REFILL_COUNT`), wrap advancement, `setPlayQueue` exiting an explore session, and keeping the started song current after a stale-index sync; `PlayerPersistenceFacadeTest` locks the live-session (restore-UI-only) branch of restore.
 
 ## Related pages
 

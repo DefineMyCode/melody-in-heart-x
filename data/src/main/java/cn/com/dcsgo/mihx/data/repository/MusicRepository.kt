@@ -390,9 +390,14 @@ class MusicRepository(
 
         if (updates.isNotEmpty()) {
             lock.write {
+                // 评审 2026-10-27 · M-8：原实现在写锁内对每条 update 做一次 O(n) 的
+                // indexOfFirst —— 1000 首 × 1000 首 = 100 万次比较，且全程持有写锁，
+                // 读路径（getSongs，供 Compose 重组）会被整段阻塞。
+                // 改为循环前一次性建 id→下标索引，循环内 O(1) 查表。
+                val indexById = songs.withIndex().associate { (i, s) -> s.id to i }
                 for (update in updates) {
-                    val idx = songs.indexOfFirst { it.id == update.songId }
-                    if (idx >= 0) {
+                    val idx = indexById[update.songId]
+                    if (idx != null) {
                         songs[idx] = songs[idx].copy(albumArtUri = update.newUri)
                     }
                 }
@@ -943,11 +948,25 @@ class MusicRepository(
      */
     private suspend fun refreshMetadata(candidates: List<Song>): Int = withContext(Dispatchers.IO) {
         val ctx = context ?: return@withContext 0
-        var updated = 0
-        kotlinx.coroutines.coroutineScope {
+        // 评审 2026-10-27 · M-8：原实现在每首候选歌的 async 内各自抢一次写锁，
+        // 锁内做 O(n) 的 indexOfFirst —— 并发度 8 下每首歌都线性扫一遍整库，
+        // 且写锁被频繁抢占，读路径（getSongs）会被反复阻塞。
+        // 改为：async 内只做**无锁**的元数据/封面/指纹提取，收集结果后
+        // **一次性**加写锁批量落库（循环前建 id→下标索引，O(1) 查表）。
+        data class RefreshResult(
+            val songId: Int,
+            val title: String,
+            val artist: String,
+            val album: String,
+            val sampleRate: Int,
+            val durationMs: Long,
+            val albumArtUri: android.net.Uri?,
+            val fileFingerprint: String?,
+        )
+        val results = kotlinx.coroutines.coroutineScope {
             candidates.map { song ->
                 async(Dispatchers.IO) {
-                    val uri = song.uri ?: return@async false
+                    val uri = song.uri ?: return@async null
                     val displayName = try {
                         DocumentFile.fromSingleUri(ctx, uri)?.name
                     } catch (_: Exception) {
@@ -961,7 +980,7 @@ class MusicRepository(
                         meta.album != song.album ||
                         (meta.sampleRate != 0 && meta.sampleRate != song.sampleRate) ||
                         (meta.durationMs > 0L && meta.durationMs != song.durationMs)
-                    if (!changed) return@async false
+                    if (!changed) return@async null
 
                     // 封面：仅当专辑/歌手变化时重取（同一首歌换封面极少见）。
                     // 缓存按内容哈希命名：封面内容没变会自动复用旧文件，变了会落新哈希文件，无需手动清缓存
@@ -974,47 +993,61 @@ class MusicRepository(
                         }
                     }
 
-                    lock.write {
-                        val idx = songs.indexOfFirst { it.id == song.id }
-                        if (idx >= 0) {
-                            // 顺手把本次打开时的文件指纹写回, 下次 Quick 预筛即以此为准
-                            val newFingerprint = try {
-                                ctx.contentResolver.openFileDescriptor(uri, "r")?.use { pfd ->
-                                    val size = pfd.statSize
-                                    val mtime = try {
-                                        ctx.contentResolver.query(
-                                            uri,
-                                            arrayOf(android.provider.DocumentsContract.Document.COLUMN_LAST_MODIFIED),
-                                            null, null, null,
-                                        )?.use { c ->
-                                            if (c.moveToFirst()) c.getLong(0) else 0L
-                                        } ?: 0L
-                                    } catch (_: Exception) {
-                                        0L
-                                    }
-                                    "$size:$mtime"
-                                }
+                    // 顺手把本次打开时的文件指纹写回, 下次 Quick 预筛即以此为准
+                    val newFingerprint = try {
+                        ctx.contentResolver.openFileDescriptor(uri, "r")?.use { pfd ->
+                            val size = pfd.statSize
+                            val mtime = try {
+                                ctx.contentResolver.query(
+                                    uri,
+                                    arrayOf(android.provider.DocumentsContract.Document.COLUMN_LAST_MODIFIED),
+                                    null, null, null,
+                                )?.use { c ->
+                                    if (c.moveToFirst()) c.getLong(0) else 0L
+                                } ?: 0L
                             } catch (_: Exception) {
-                                null
+                                0L
                             }
-                            songs[idx] = songs[idx].copy(
-                                title = meta.title,
-                                artist = meta.artist,
-                                album = meta.album,
-                                sampleRate = if (meta.sampleRate != 0) meta.sampleRate else songs[idx].sampleRate,
-                                durationMs = if (meta.durationMs > 0L) meta.durationMs else songs[idx].durationMs,
-                                albumArtUri = newArtUri,
-                                fileFingerprint = newFingerprint ?: songs[idx].fileFingerprint,
-                            )
+                            "$size:$mtime"
                         }
+                    } catch (_: Exception) {
+                        null
                     }
+
                     AppLog.info(TAG, "metadata refreshed: id=${song.id} '${song.title}' -> '${meta.title}'")
-                    true
+                    RefreshResult(
+                        songId = song.id,
+                        title = meta.title,
+                        artist = meta.artist,
+                        album = meta.album,
+                        sampleRate = meta.sampleRate,
+                        durationMs = meta.durationMs,
+                        albumArtUri = newArtUri,
+                        fileFingerprint = newFingerprint,
+                    )
                 }
-            }.awaitAll().count { it }
-        }.also { updated = it }
+            }.awaitAll().filterNotNull()
+        }
+        if (results.isEmpty()) return@withContext 0
+        lock.write {
+            val indexById = songs.withIndex().associate { (i, s) -> s.id to i }
+            for (r in results) {
+                val idx = indexById[r.songId]
+                if (idx != null) {
+                    songs[idx] = songs[idx].copy(
+                        title = r.title,
+                        artist = r.artist,
+                        album = r.album,
+                        sampleRate = if (r.sampleRate != 0) r.sampleRate else songs[idx].sampleRate,
+                        durationMs = if (r.durationMs > 0L) r.durationMs else songs[idx].durationMs,
+                        albumArtUri = r.albumArtUri,
+                        fileFingerprint = r.fileFingerprint ?: songs[idx].fileFingerprint,
+                    )
+                }
+            }
+        }
         persistSongs { notifySongsChanged() }
-        updated
+        results.size
     }
 
     /** 清理文件缺失歌曲在播放统计 / 秒切 / 播放事件等表中的关联数据 */

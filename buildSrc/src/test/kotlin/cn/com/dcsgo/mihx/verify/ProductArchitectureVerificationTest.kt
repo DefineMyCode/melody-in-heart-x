@@ -65,6 +65,68 @@ class ProductArchitectureVerificationTest {
     }
 
     @Test
+    fun `bare loadSongInfo outside the safe loader is flagged`() {
+        // C-1（评审 2026-10-27）：裸调 loadSongInfo 会把 Room 异常抛到组合协程 → 进程崩溃。
+        // 修复后所有调用点都走 loadSongInfoSafely；本规则把裸调作为回潮拦下。
+        write(
+            "feature/anything/src/main/java/x/Bad.kt",
+            "package x\n\nsuspend fun p(song: Song) { songInfo = loadSongInfo(song) }\n",
+        )
+
+        val violations = verify()
+
+        assertTrue(
+            "bare loadSongInfo should be flagged: $violations",
+            violations.any { it.contains("loadSongInfo must be invoked via loadSongInfoSafely") },
+        )
+    }
+
+    @Test
+    fun `bare loadSongInfo inside the safe loader implementation is allowed`() {
+        // SongInfoLoader.kt 是 loadSongInfoSafely 的实现本体，裸调是它自己的工作，应豁免。
+        write(
+            "core/ui/src/main/java/cn/com/dcsgo/mihx/ui/components/SongInfoLoader.kt",
+            "package x\n\nsuspend fun f(loadSongInfo: suspend (Song) -> SongInfo?) { loadSongInfo(song) }\n",
+        )
+
+        val violations = verify()
+
+        assertTrue(
+            "safe-loader implementation must be exempt: $violations",
+            violations.none { it.contains("loadSongInfo must be invoked via loadSongInfoSafely") },
+        )
+    }
+
+    @Test
+    fun `PerformanceTrace allow without a call site is flagged`() {
+        // 门禁建议 4（评审 2026-10-27）：release 白名单 API 没有生产调用点就是死代码。
+        val violations = verify()
+
+        assertTrue(
+            "missing PerformanceTrace.allow call site should be flagged: $violations",
+            violations.any { it.contains("PerformanceTrace.allow(...) must have at least one real call site") },
+        )
+    }
+
+    @Test
+    fun `PerformanceTrace allow with a real call site passes`() {
+        // 在 src/main 里登记白名单调用点后，该规则应放行。
+        write(
+            "app/src/main/java/cn/com/dcsgo/mihx/MelodyApplication.kt",
+            "package x\n\nclass MelodyApplication {\n" +
+                "    fun onCreate() { PerformanceTrace.allow(\"controller_sync_queue\") }\n" +
+                "}\n",
+        )
+
+        val violations = verify()
+
+        assertTrue(
+            "allow call site should satisfy the rule: $violations",
+            violations.none { it.contains("PerformanceTrace.allow(...) must have at least one real call site") },
+        )
+    }
+
+    @Test
     fun `feature module depending on data or player is flagged`() {
         write(
             "feature/leaky/build.gradle.kts",

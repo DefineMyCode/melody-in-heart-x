@@ -17,10 +17,17 @@ object ControllerQueuePlanner {
     ): ControllerQueuePlan? {
         if (queue.isEmpty) return null
 
-        val orderedSongs = orderedSongs(queue)
+        // 评审 2026-10-27 · M-10：原实现把 `currentPlayOrderIndices()` 算了两遍
+        // （orderedSongs 一遍 + orderedStartIndex 一遍），而它在 SHUFFLE 模式下
+        // 本身就是 O(n²) —— 每次窗口规划（队列同步 / 切歌）都要付 2 × O(n²)。
+        // 这里**算一次**，两个下游共用同一份结果。
+        val orderIndices = queue.currentPlayOrderIndices()
+        val orderedSongs = orderIndices
+            .mapNotNull { queue.songs.getOrNull(it) }
+            .ifEmpty { queue.songs }
         if (orderedSongs.isEmpty()) return null
 
-        val orderedStartIndex = orderedStartIndex(queue, requestedIndex)
+        val orderedStartIndex = orderedStartIndex(orderIndices, requestedIndex, queue)
         val playable = orderedSongs.withIndex()
             .filter { (_, song) -> isPlayable(song) }
         if (playable.isEmpty()) return null
@@ -36,18 +43,13 @@ object ControllerQueuePlanner {
         )
     }
 
-    private fun orderedSongs(queue: PlayQueue): List<Song> {
-        return queue.currentPlayOrderIndices()
-            .mapNotNull { queue.songs.getOrNull(it) }
-            .ifEmpty { queue.songs }
-    }
-
     private fun orderedStartIndex(
-        queue: PlayQueue,
+        orderIndices: List<Int>,
         requestedIndex: Int,
+        queue: PlayQueue,
     ): Int {
         val safeRequestedIndex = requestedIndex.coerceIn(0, queue.songs.lastIndex)
-        return queue.currentPlayOrderIndices()
+        return orderIndices
             .indexOf(safeRequestedIndex)
             .takeIf { it >= 0 }
             ?: 0

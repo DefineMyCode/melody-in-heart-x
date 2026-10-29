@@ -313,6 +313,11 @@ data class PlayQueue(
             PlayMode.SHUFFLE -> {
                 val used = BooleanArray(songs.size)
                 val indices = mutableListOf<Int>()
+                // 评审 2026-10-27 · M-10：原实现每处理一个 playOrderIds 条目都线性扫一遍
+                // songs（`songs.indices.firstOrNull { !used[it] && songs[it].id == songId }`），
+                // 整体 O(n²)。改为预建 songId → 下标队列，摊还后 O(n)。
+                val indicesBySongId = HashMap<Int, ArrayDeque<Int>>()
+                songs.forEachIndexed { i, s -> indicesBySongId.getOrPut(s.id) { ArrayDeque() }.add(i) }
                 currentPlayOrderIds().forEachIndexed { orderIndex, songId ->
                     val preferredIndex = if (
                         orderIndex == 0 &&
@@ -322,7 +327,18 @@ data class PlayQueue(
                     ) {
                         currentIndex
                     } else {
-                        songs.indices.firstOrNull { !used[it] && songs[it].id == songId }
+                        val queue = indicesBySongId[songId]
+                        var candidate: Int? = null
+                        if (queue != null) {
+                            while (queue.isNotEmpty()) {
+                                val idx = queue.removeFirst()
+                                if (!used[idx]) {
+                                    candidate = idx
+                                    break
+                                }
+                            }
+                        }
+                        candidate
                     }
                     if (preferredIndex != null) {
                         used[preferredIndex] = true

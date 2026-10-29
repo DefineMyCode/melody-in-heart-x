@@ -8,6 +8,7 @@ import coil.memory.MemoryCache
 import cn.com.dcsgo.mihx.app.emotion.EmotionScanScheduler
 import cn.com.dcsgo.mihx.core.common.AndroidAppLogger
 import cn.com.dcsgo.mihx.core.common.AppLog
+import cn.com.dcsgo.mihx.core.common.PerformanceTrace
 import dagger.hilt.android.HiltAndroidApp
 
 @HiltAndroidApp
@@ -17,6 +18,13 @@ class MelodyApplication : Application(), ImageLoaderFactory {
         // performanceLoggingEnabled = true：release 下普通日志全关，但
         // `PerformanceTrace` 白名单登记的操作仍要输出（评审 2026-10-27 · M-20）。
         AppLog.install(AndroidAppLogger(BuildConfig.DEBUG, performanceLoggingEnabled = true))
+        // 评审 2026-10-27 · M-20 / 门禁建议 4：`allow()` 必须有真实调用点，否则白名单
+        // API 是死代码。这里在启动时登记**核心播放链路**的操作 —— release 下这些
+        // 关键路径仍会产出性能痕迹（用于线上问题定位），其余操作保持静默。
+        PerformanceTrace.allow("play_next_command")
+        PerformanceTrace.allow("controller_play_queue")
+        PerformanceTrace.allow("controller_prepare_queue")
+        PerformanceTrace.allow("controller_sync_queue")
         installUncaughtExceptionHandler()
         EmotionScanScheduler.schedule(this)
     }

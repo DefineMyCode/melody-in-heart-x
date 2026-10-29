@@ -11,7 +11,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 | KSP | 2.0.21-1.0.28 | Must match Kotlin version exactly |
 | Compose BOM | 2025.09.01 | |
 | Media3 | 1.9.0 | + Jellyfin FFmpeg decoder extension |
-| Room | 2.6.1 | Schema export in `data/schemas/` (当前 v10) |
+| Room | 2.6.1 | Schema export in `data/schemas/` (当前 v17) |
 | Hilt | 2.52 | |
 | Lifecycle | 2.8.7 | |
 | LiteRT | 1.4.1 | 情绪分析模型运行时 |
@@ -173,7 +173,7 @@ Canonical states: `idle → preparing → ready → playing ↔ paused/buffering
 
 ### Data Persistence
 
-- **Room** (`MelodyDatabase`, v10): songs, playlists, playlist-song refs, play stats, quick-skip songs, short-play counts, song group overrides, migration state, artists, albums, song-artist refs, song emotions. Schema exports in `data/schemas/`.
+- **Room** (`MelodyDatabase`, v17): songs, playlists, playlist-song refs, play stats, quick-skip songs, short-play counts, song group overrides, migration state, artists, albums, song-artist refs, song emotions. Schema exports in `data/schemas/`.
 - **DataStore Preferences**: player settings (theme, random mode, Bluetooth, notifications) and playback state snapshots.
 - **Legacy migration**: `SharedPreferencesLegacyJsonMigration` handles v1 JSON → Room migration on first launch. Legacy SharedPreferences readers remain only for that path.
 

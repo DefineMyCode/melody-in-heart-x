@@ -579,6 +579,49 @@ object ProductArchitectureVerification {
             )
         }
 
+        // ── 不变量：loadSongInfo 必须经 loadSongInfoSafely 调用 ──
+        //
+        // 评审 2026-10-27 · C-1 + 门禁建议 3：`loadSongInfo` 的实现末端有一次未受保护的
+        // Room 读（`emotionRepository.get`），裸调时 Room 异常会从 LaunchedEffect /
+        // produceState 的协程里一路抛到主线程默认 handler → **进程崩溃**。修复把全部
+        // 调用点收敛到 `:core:ui` 的 `loadSongInfoSafely`（内部 runCatching + 取消异常
+        // 原样上抛）。本规则**直接固化该修复**：src/main 中只允许 SongInfoLoader.kt
+        // （loadSongInfoSafely 的实现本体）出现裸 `loadSongInfo(` 调用，其余任何裸调
+        // 都是回潮 —— 防止新增调用点再次把协程带崩。
+        val bareLoadSongInfoRegex = Regex("""\bloadSongInfo\s*\(""")
+        val bareLoadSongInfoFiles = textFiles.filter { file ->
+            val relativePath = file.relativeTo(rootDir).path.replace(File.separatorChar, '/')
+            if (!relativePath.contains("/src/main/")) return@filter false
+            if (relativePath.contains("SongInfoLoader.kt")) return@filter false
+            bareLoadSongInfoRegex.containsMatchIn(file.readText())
+        }
+        if (bareLoadSongInfoFiles.isNotEmpty()) {
+            fail(
+                "loadSongInfo must be invoked via loadSongInfoSafely (:core:ui), not called bare " +
+                    "(C-1: an uncaught Room exception in a LaunchedEffect/produceState coroutine crashes the process):\n" +
+                    bareLoadSongInfoFiles.joinToString("\n") { it.relativeTo(rootDir).path }
+            )
+        }
+
+        // ── 不变量：PerformanceTrace.allow() 必须有真实调用点 ──
+        //
+        // 评审 2026-10-27 · M-20 + 门禁建议 4：`allow()` 只决定"是否计算"，输出已改走
+        // 独立的 `performance` 通道（不受 `debugLoggingEnabled` 约束）。若生产代码里
+        // 没有 `allow()` 调用点，白名单 API 就是死代码 —— 规则要求 src/main 里至少
+        // 出现一处 `PerformanceTrace.allow(`（核心播放链路在 MelodyApplication 启动时登记）。
+        val performanceAllowHasCallSite = textFiles.any { file ->
+            val relativePath = file.relativeTo(rootDir).path.replace(File.separatorChar, '/')
+            relativePath.contains("/src/main/") &&
+                file.readText().contains("PerformanceTrace.allow(")
+        }
+        if (!performanceAllowHasCallSite) {
+            fail(
+                "PerformanceTrace.allow(...) must have at least one real call site in src/main " +
+                    "(register the core playback path in MelodyApplication.onCreate); otherwise the " +
+                    "release whitelist API is dead code."
+            )
+        }
+
         val appManifest = file("app/src/main/AndroidManifest.xml")
         if (appManifest.exists() && appManifest.readText().contains("AppMediaSessionService")) {
             fail("AppMediaSessionService must be declared by the :player manifest, not the :app manifest.")

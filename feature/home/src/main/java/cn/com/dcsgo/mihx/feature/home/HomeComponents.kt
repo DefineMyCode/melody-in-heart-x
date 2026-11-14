@@ -243,4 +243,3 @@ fun HiResBadge(
         tint = androidx.compose.ui.graphics.Color.Unspecified  // 保留原始颜色
     )
 }
-

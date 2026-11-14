@@ -443,6 +443,36 @@ class MelodyDatabaseMigrationTest {
     }
 
 
+    /**
+     * 2026-11：v19 → v20 清空老的手动分组数据。
+     *
+     * 分组键改为「歌名 + 歌手 + 专辑」后，老库里的纯标题关联 / `标题#id` 移出无法映射，
+     * 经用户确认一次性清空（关联与移出都清），升级后重新关联。
+     */
+    @Test
+    fun migration19To20ClearsLegacyGroupOverrides() {
+        val name = dbName("19-20")
+        helper.createDatabase(name, 19).apply {
+            execSQL(
+                "INSERT INTO song_group_overrides (songId, titleOverride, updatedAt) " +
+                    "VALUES (1, '旧的分组标题', 100)"
+            )
+            execSQL(
+                "INSERT INTO song_group_overrides (songId, titleOverride, updatedAt) " +
+                    "VALUES (2, '晴天#2', 100)"
+            )
+            close()
+        }
+
+        val db = helper.runMigrationsAndValidate(name, 20, true, MelodyMigrations.MIGRATION_19_20)
+
+        db.query("SELECT COUNT(*) FROM song_group_overrides").use { cursor ->
+            assertTrue(cursor.moveToFirst())
+            assertEquals(0, cursor.getInt(0))
+        }
+        db.close()
+    }
+
     /** 表上是否存在指定索引。 */
     private fun indexExists(
         db: androidx.sqlite.db.SupportSQLiteDatabase,

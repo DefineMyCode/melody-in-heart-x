@@ -52,7 +52,9 @@ enum class AudioQualityTier(val label: String) {
         fun isSpatial(audioCodec: String, channelCount: Int): Boolean {
             val codec = audioCodec.lowercase()
             return when (codec) {
-                "audio/eac3-joc", "audio/ec+3" -> true
+                // 只有带 JOC 扩展的 E-AC-3（Atmos）才是空间音频。普通 E-AC-3 / 杜比数字+
+                // （audio/eac3、audio/ec+3）只展示多声道，不标空间音频 —— 与「我的」页说明一致。
+                "audio/eac3-joc" -> true
                 "audio/ac4" -> channelCount > 2
                 else -> false
             }

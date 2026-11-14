@@ -302,11 +302,28 @@ object MelodyMigrations {
         }
     }
 
+    /**
+     * v19 → v20：清空「多版本管理」的老手动分组数据（关联其他分组 / 移出分组）。
+     *
+     * 2026-11 分组键语义变更：`Song.groupKey` 由 `titleOverride ?: title` 改为
+     * `titleOverride ?: 歌名 + 歌手 + 专辑`，新流程写的是**目标组的完整 groupKey**。
+     * 老库里存的是纯标题（关联）或 `标题#id`（移出），在新语义下无法可靠映射到目标组，
+     * 会让歌曲静默散成单首组。经用户确认：**一次性清空，升级后重新关联**。
+     *
+     * 单独占一版（而不是折进未发布的 18→19），是因为开发者设备上可能已经是 v19，
+     * 折进去的话那条 DELETE 不会再执行。
+     */
+    val MIGRATION_19_20 = object : Migration(19, 20) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL("DELETE FROM `song_group_overrides`")
+        }
+    }
+
     /** 声明于末尾：object 属性按声明顺序初始化，需引用上方全部迁移 */
     val ALL: Array<Migration> = arrayOf(
         MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6,
         MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11,
         MIGRATION_11_12, MIGRATION_12_13, MIGRATION_13_14, MIGRATION_14_15, MIGRATION_15_16,
-        MIGRATION_16_17, MIGRATION_17_18, MIGRATION_18_19,
+        MIGRATION_16_17, MIGRATION_17_18, MIGRATION_18_19, MIGRATION_19_20,
     )
 }

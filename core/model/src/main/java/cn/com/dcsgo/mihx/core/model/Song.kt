@@ -107,7 +107,8 @@ data class Song(
      * - 未手动调整：使用 [defaultGroupKey]（歌名 + 歌手 + 专辑全同）
      * - 手动关联：titleOverride 存目标组的 groupKey，直接沿用，从而并入目标组
      * - 手动移出：titleOverride 为 "标题#id"，与默认键不同，自成一类（组内仅 1 首）
-     * - 旧版手动关联（titleOverride 只存纯标题）：沿用旧值作为键，保留原手动分组关系
+     * - 旧版手动关联（titleOverride 只存纯标题）：键仍是旧值，但**不会**再与默认组
+     *   （歌名 + 歌手 + 专辑）合并。这类老数据由 DB v19→v20 迁移一次性清空，升级后需重新关联。
      */
     val groupKey: String
         get() = titleOverride ?: defaultGroupKey

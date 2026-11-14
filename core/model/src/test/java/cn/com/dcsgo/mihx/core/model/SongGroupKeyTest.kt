@@ -62,12 +62,15 @@ class SongGroupKeyTest {
     }
 
     @Test
-    fun `legacy override keeps original manual grouping`() {
-        // 旧版手动关联只存纯标题：直接沿用，避免升级后旧关联丢失
+    fun `legacy pure-title override does not merge into the default group`() {
+        // 旧版手动关联只存纯标题。新语义下这条键不等于任何默认键（歌名+歌手+专辑），
+        // 所以既不会崩、也不会再合组 —— 老数据由 DB v19→v20 迁移一次性清空，
+        // 本测试只锁住「不崩、不误合并」这两点，不代表旧关联仍然有效。
         val legacy = song(1, titleOverride = "旧分组")
 
         assertFalse(legacy.isDetachedFromGroup)
         assertEquals("旧分组", legacy.groupKey)
         assertEquals("旧分组", legacy.groupKeyLabel)
+        assertNotEquals(legacy.groupKey, song(2, title = "旧分组").groupKey)
     }
 }

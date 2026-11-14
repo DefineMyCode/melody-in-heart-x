@@ -36,7 +36,8 @@ class AudioQualityTierTest {
     @Test
     fun `spatial codecs are recognized`() {
         assertTrue(AudioQualityTier.isSpatial("audio/eac3-joc", 2))
-        assertTrue(AudioQualityTier.isSpatial("audio/ec+3", 6))
+        // 普通 E-AC-3 / DD+ 不等于 Atmos JOC：只展示多声道（2026-11 以说明页为准）
+        assertFalse(AudioQualityTier.isSpatial("audio/ec+3", 6))
         assertTrue(AudioQualityTier.isSpatial("audio/ac4", 6))
         assertTrue(AudioQualityTier.isSpatial("audio/ac4", 10))
         // 2.0 AC-4 只是普通立体声编码，不算空间音频

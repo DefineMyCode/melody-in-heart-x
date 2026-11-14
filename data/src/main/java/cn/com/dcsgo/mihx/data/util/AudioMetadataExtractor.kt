@@ -24,6 +24,8 @@ object AudioMetadataExtractor {
         val album: String,
         val sampleRate: Int,
         val durationMs: Long = 0L,
+        /** 原始位深（bit）；0 = 未知、有损格式或平台未提供 */
+        val bitDepth: Int = 0,
     )
 
     /** 单次 MMR 打开同时拿到的结果：基础元数据 + 内嵌封面原始字节（超限视为无封面，为 null） */
@@ -69,11 +71,20 @@ object AudioMetadataExtractor {
             val durationMs = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
                 ?.toLongOrNull() ?: 0L
 
+            val bitDepth = readBitDepth(retriever, uri)
+
             AppLog.debug(
                 TAG,
-                "extractMetadata: title=$title, artist=$artist, album=$album, sampleRate=$sampleRate, durationMs=$durationMs"
+                "extractMetadata: title=$title, artist=$artist, album=$album, sampleRate=$sampleRate, durationMs=$durationMs, bitDepth=$bitDepth"
             )
-            return ExtractedMetadata(title = title, artist = artist, album = album, sampleRate = sampleRate, durationMs = durationMs)
+            return ExtractedMetadata(
+                title = title,
+                artist = artist,
+                album = album,
+                sampleRate = sampleRate,
+                durationMs = durationMs,
+                bitDepth = bitDepth,
+            )
         } catch (e: Exception) {
             AppLog.warning(TAG, "extractMetadata failed for $uri: ${e.message}")
             return ExtractedMetadata(title = fallbackTitle, artist = "未知艺术家", album = "", sampleRate = 0)
@@ -148,12 +159,21 @@ object AudioMetadataExtractor {
             val artBytes = retriever.embeddedPicture
                 ?.takeIf { it.isNotEmpty() && it.size <= MAX_ART_BYTES }
 
+            val bitDepth = readBitDepth(retriever, uri)
+
             AppLog.debug(
                 TAG,
-                "extractMetadataWithEmbeddedArt: title=$title, artist=$artist, album=$album, sampleRate=$sampleRate, durationMs=$durationMs"
+                "extractMetadataWithEmbeddedArt: title=$title, artist=$artist, album=$album, sampleRate=$sampleRate, durationMs=$durationMs, bitDepth=$bitDepth"
             )
             return ExtractedMetadataWithArt(
-                metadata = ExtractedMetadata(title = title, artist = artist, album = album, sampleRate = sampleRate, durationMs = durationMs),
+                metadata = ExtractedMetadata(
+                    title = title,
+                    artist = artist,
+                    album = album,
+                    sampleRate = sampleRate,
+                    durationMs = durationMs,
+                    bitDepth = bitDepth,
+                ),
                 embeddedArtBytes = artBytes,
             )
         } catch (e: Exception) {
@@ -197,6 +217,8 @@ object AudioMetadataExtractor {
             val sampleRate = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_SAMPLERATE)
                 ?.toIntOrNull() ?: 0
 
+            val bitDepth = readBitDepth(retriever, uri)
+
             return SongInfo(
                 title = title,
                 artist = artist,
@@ -204,6 +226,7 @@ object AudioMetadataExtractor {
                 duration = formatDuration(durationMs),
                 bitRate = if (bitRate > 0) "${bitRate / 1000} kbps" else "未知",
                 sampleRate = if (sampleRate > 0) "$sampleRate Hz" else "未知",
+                bitDepth = if (bitDepth > 0) "${bitDepth}bit" else "未知",
                 format = extractFormat(uri),
                 fileSize = getFileSize(ctx, uri),
                 filePath = getRealPathFromUri(ctx, uri)
@@ -215,6 +238,26 @@ object AudioMetadataExtractor {
             try { retriever?.release() } catch (_: Exception) {}
         }
     }
+
+    /**
+     * 位深（bit）：只对无损/未压缩格式有意义。
+     *
+     * MMR 的 METADATA_KEY_BITS_PER_SAMPLE 在部分有损格式也会返回解码位深（如 16），
+     * 不代表音质，因此先按扩展名过滤；未知/有损/读取失败统一返回 0。
+     */
+    private fun readBitDepth(retriever: MediaMetadataRetriever, uri: Uri): Int {
+        if (!isLosslessFormat(extractFormat(uri))) return 0
+        return retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_BITS_PER_SAMPLE)
+            ?.toIntOrNull()
+            ?.takeIf { it in 1..64 }
+            ?: 0
+    }
+
+    private fun isLosslessFormat(format: String): Boolean =
+        format.lowercase() in setOf(
+            "flac", "alac", "wav", "wave", "aif", "aiff", "aifc",
+            "ape", "dsf", "dff", "tta", "wv",
+        )
 
     /** 格式化时长：毫秒 → mm:ss */
     private fun formatDuration(ms: Long): String {

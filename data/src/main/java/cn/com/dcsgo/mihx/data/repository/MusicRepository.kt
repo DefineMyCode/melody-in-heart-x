@@ -545,6 +545,7 @@ class MusicRepository(
                         artist = extracted.metadata.artist,
                         album = extracted.metadata.album,
                         sampleRate = extracted.metadata.sampleRate,
+                        bitDepth = extracted.metadata.bitDepth,
                         durationMs = extracted.metadata.durationMs,
                         uri = fileUri,
                         albumArtUri = albumArtUri,
@@ -959,6 +960,7 @@ class MusicRepository(
             val artist: String,
             val album: String,
             val sampleRate: Int,
+            val bitDepth: Int,
             val durationMs: Long,
             val albumArtUri: android.net.Uri?,
             val fileFingerprint: String?,
@@ -979,6 +981,8 @@ class MusicRepository(
                         meta.artist != song.artist ||
                         meta.album != song.album ||
                         (meta.sampleRate != 0 && meta.sampleRate != song.sampleRate) ||
+                        // 位深参与变化判定：老库 bitDepth=0，深度校验首次读到 24bit 时才会回写
+                        (meta.bitDepth != 0 && meta.bitDepth != song.bitDepth) ||
                         (meta.durationMs > 0L && meta.durationMs != song.durationMs)
                     if (!changed) return@async null
 
@@ -1021,6 +1025,7 @@ class MusicRepository(
                         artist = meta.artist,
                         album = meta.album,
                         sampleRate = meta.sampleRate,
+                        bitDepth = meta.bitDepth,
                         durationMs = meta.durationMs,
                         albumArtUri = newArtUri,
                         fileFingerprint = newFingerprint,
@@ -1039,6 +1044,7 @@ class MusicRepository(
                         artist = r.artist,
                         album = r.album,
                         sampleRate = if (r.sampleRate != 0) r.sampleRate else songs[idx].sampleRate,
+                        bitDepth = if (r.bitDepth != 0) r.bitDepth else songs[idx].bitDepth,
                         durationMs = if (r.durationMs > 0L) r.durationMs else songs[idx].durationMs,
                         albumArtUri = r.albumArtUri,
                         fileFingerprint = r.fileFingerprint ?: songs[idx].fileFingerprint,

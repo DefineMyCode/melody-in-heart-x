@@ -195,6 +195,29 @@ class SongVersionComparerTest {
         assertEquals(listOf("98.6 MB", "未知"), sizeRow.cells.map { it.display })
     }
 
+    @Test
+    fun bitDepthRowAppearsOnlyWhenAtLeastOneVersionHasIt() {
+        val songs = listOf(
+            version(1, sampleRate = 96_000, ext = "flac", bitDepth = 24),
+            version(2, sampleRate = 44_100, ext = "wav", bitDepth = 16),
+        )
+
+        val result = SongVersionComparer.compare(songs, fileNameOf = { fileNameOf(it) })
+        val bitDepthRow = result.rows.first { it.label == "位深" }
+        assertEquals(listOf("24bit", "16bit"), bitDepthRow.cells.map { it.display })
+    }
+
+    @Test
+    fun bitDepthRowAbsentWhenNoVersionHasBitDepth() {
+        val result = compare(
+            version(1, sampleRate = 96_000, ext = "flac"),
+            version(2, sampleRate = 44_100, ext = "wav"),
+        )
+
+        assertFalse(result.rows.any { it.label == "位深" })
+        assertFalse(result.commonFields.any { it.first == "位深" })
+    }
+
     private fun fileNameOf(song: Song): String =
         exts[song.id]?.let { "audio/file.$it" } ?: ""
 
@@ -207,6 +230,7 @@ class SongVersionComparerTest {
         ext: String = "flac",
         artist: String = "Artist",
         album: String = "",
+        bitDepth: Int = 0,
     ): Song {
         exts[id] = ext
         return Song(
@@ -215,6 +239,7 @@ class SongVersionComparerTest {
             artist = artist,
             album = album,
             sampleRate = sampleRate,
+            bitDepth = bitDepth,
         )
     }
 }

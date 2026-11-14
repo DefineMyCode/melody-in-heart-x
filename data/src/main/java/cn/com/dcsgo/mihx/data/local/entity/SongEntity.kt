@@ -33,4 +33,6 @@ data class SongEntity(
     val importedAt: Long,
     /** 歌曲总时长（毫秒），导入时从元数据提取；未知时为 0 */
     val durationMs: Long = 0L,
+    /** 原始位深（bit）；0 = 未知、有损格式或平台未提供 */
+    val bitDepth: Int = 0,
 )

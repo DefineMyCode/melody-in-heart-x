@@ -270,11 +270,24 @@ object MelodyMigrations {
         }
     }
 
+    /**
+     * v17 → v18：songs 增加原始位深（bit depth）。
+     *
+     * 2026-11：用 MediaMetadataRetriever.METADATA_KEY_BITS_PER_SAMPLE（API 31+）读取，
+     * 只对无损/未压缩格式有意义；0 = 未知/有损格式。
+     * 老数据在用户手动「深度校验」时由 refreshMetadata 重新读取并回填。
+     */
+    val MIGRATION_17_18 = object : Migration(17, 18) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL("ALTER TABLE `songs` ADD COLUMN `bitDepth` INTEGER NOT NULL DEFAULT 0")
+        }
+    }
+
     /** 声明于末尾：object 属性按声明顺序初始化，需引用上方全部迁移 */
     val ALL: Array<Migration> = arrayOf(
         MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6,
         MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11,
         MIGRATION_11_12, MIGRATION_12_13, MIGRATION_13_14, MIGRATION_14_15, MIGRATION_15_16,
-        MIGRATION_16_17,
+        MIGRATION_16_17, MIGRATION_17_18,
     )
 }

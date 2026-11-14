@@ -25,6 +25,8 @@ data class Song(
     val artist: String,
     val album: String = "",
     val sampleRate: Int = 0,
+    /** 原始位深（bit）；0 = 未知、有损格式或平台未提供 */
+    val bitDepth: Int = 0,
     val uri: Uri? = null,
     val albumArtUri: Uri? = null,
     val lrcUri: Uri? = null,
@@ -41,6 +43,10 @@ data class Song(
     /** 采样率格式化字符串，用于 UI 展示（如 "44kHz"） */
     val sampleRateDisplay: String
         get() = if (sampleRate > 0) "${sampleRate / 1000}kHz" else ""
+
+    /** 位深展示，如 "24bit"；未知时为空串 */
+    val bitDepthDisplay: String
+        get() = if (bitDepth > 0) "${bitDepth}bit" else ""
 
     /**
      * 拆分后的歌手列表。

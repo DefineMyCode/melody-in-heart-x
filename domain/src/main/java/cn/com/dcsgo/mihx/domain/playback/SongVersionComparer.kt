@@ -80,6 +80,7 @@ object SongVersionComparer {
         val formats = sorted.associateWith { song -> formatOfName(fileNameOf(song)).uppercase() }
         val hasBitRate = sorted.any { bitRateOf(it).isNotBlank() }
         val hasFileSize = sorted.any { fileSizeOf(it).isNotBlank() }
+        val hasBitDepth = sorted.any { it.bitDepth > 0 }
         val maxSampleRate = sorted.maxOfOrNull { it.sampleRate } ?: 0
         val maxScore = sorted.maxOfOrNull { song -> qualityOf(song.sampleRate, formats[song] ?: "") } ?: 0f
         val versions = sorted.map { song ->
@@ -122,6 +123,16 @@ object SongVersionComparer {
                     },
                 ),
             )
+            if (hasBitDepth) {
+                add(
+                    SpecRow(
+                        "位深",
+                        finalVersions.map {
+                            SpecCell(it.song.bitDepthDisplay.ifEmpty { "未知" })
+                        },
+                    ),
+                )
+            }
             if (hasBitRate) {
                 add(SpecRow("比特率", finalVersions.map { SpecCell(bitRateOf(it.song).ifEmpty { "未知" }) }))
             }
@@ -189,5 +200,5 @@ object SongVersionComparer {
         bitRate.trim().substringBefore(" ").toFloatOrNull() ?: 0f
 
     /** 参与比对的字段顺序（用于稳定排序输出） */
-    private val FIELD_ORDER = listOf("格式", "采样率", "比特率", "文件大小", "时长", "艺术家", "专辑", "歌词", "封面")
+    private val FIELD_ORDER = listOf("格式", "采样率", "位深", "比特率", "文件大小", "时长", "艺术家", "专辑", "歌词", "封面")
 }

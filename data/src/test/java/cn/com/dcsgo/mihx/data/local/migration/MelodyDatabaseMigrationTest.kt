@@ -389,6 +389,31 @@ class MelodyDatabaseMigrationTest {
         db.close()
     }
 
+    /**
+     * 2026-11：v17 → v18 增加 songs.bitDepth（原始位深）。
+     *
+     * 老行默认 0（未知）；用户手动「深度校验」时由 refreshMetadata 重新读取并回填。
+     */
+    @Test
+    fun migration17To18AddsBitDepthColumn() {
+        val name = dbName("17-18")
+        helper.createDatabase(name, 17).apply {
+            execSQL(
+                "INSERT INTO songs (id, title, artist, album, sampleRate, uri, importedAt, durationMs) " +
+                    "VALUES (1, 'Song', 'Artist', '', 44100, 'file:///song.flac', 100, 1000)"
+            )
+            close()
+        }
+
+        val db = helper.runMigrationsAndValidate(name, 18, true, MelodyMigrations.MIGRATION_17_18)
+
+        db.query("SELECT bitDepth FROM songs WHERE id = 1").use { cursor ->
+            assertTrue(cursor.moveToFirst())
+            assertEquals(0, cursor.getInt(0))
+        }
+        db.close()
+    }
+
 
     /** 表上是否存在指定索引。 */
     private fun indexExists(

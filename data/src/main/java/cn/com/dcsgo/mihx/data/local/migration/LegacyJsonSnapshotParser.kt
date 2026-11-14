@@ -56,6 +56,7 @@ class LegacyJsonSnapshotParser {
                 artist = obj.optString("artist", "未知艺术家"),
                 album = obj.optString("album"),
                 sampleRate = obj.optInt("sampleRate", 0),
+                bitDepth = obj.optInt("bitDepth", 0),
                 uri = uri,
                 displayName = null,
                 mimeType = null,

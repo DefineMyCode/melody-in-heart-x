@@ -125,6 +125,10 @@ fun SongInfoDialog(
                 InfoRow(label = "格式", value = songInfo.format)
                 InfoRow(label = "比特率", value = songInfo.bitRate)
                 InfoRow(label = "采样率", value = songInfo.sampleRate)
+                // 有损格式/未知时不显示，避免每首歌多一行「位深：未知」
+                if (songInfo.bitDepth.isNotBlank() && songInfo.bitDepth != "未知") {
+                    InfoRow(label = "位深", value = songInfo.bitDepth)
+                }
                 InfoRow(label = "文件大小", value = songInfo.fileSize)
                 InfoRow(label = "文件路径", value = songInfo.filePath, isPath = true)
 

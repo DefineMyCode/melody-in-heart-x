@@ -13,6 +13,8 @@ data class SongInfo(
     val duration: String = "",
     val bitRate: String = "",
     val sampleRate: String = "",
+    /** 位深（如 "24bit"）；未知/有损格式时为空或 "未知" */
+    val bitDepth: String = "",
     val format: String = "",
     val fileSize: String = "",
     val filePath: String = "",

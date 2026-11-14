@@ -72,7 +72,7 @@ fun QuickSkipSongsScreen(
     val canLocate = currentSongIndex >= 0
 
     Scaffold(
-        floatingActionButtonPosition = FabPosition.Start,
+        floatingActionButtonPosition = FabPosition.End,
         floatingActionButton = {
             if (canLocate) {
                 SmallFloatingActionButton(
@@ -153,7 +153,7 @@ fun QuickSkipSongsScreen(
         LazyColumn(
             state = listState,
             modifier = Modifier.fillMaxSize().padding(it),
-            contentPadding = PaddingValues(vertical = 8.dp)
+            contentPadding = PaddingValues(top = 8.dp, bottom = 72.dp)
         ) {
             item(key = "quick_skip_header") {
                 Text(

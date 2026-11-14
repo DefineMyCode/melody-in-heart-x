@@ -199,7 +199,13 @@ fun LocalMusicManagementView(
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(
                 start = 16.dp, end = 16.dp, top = 8.dp,
-                bottom = if (selection.isSelectMode) 80.dp else 24.dp
+                // 右下角有两个 FAB（回到顶部 + 定位）：非多选时留 116dp，
+                // 多选时 FAB 上移 88dp，再叠加多选栏高度
+                bottom = when {
+                    selection.isSelectMode -> 196.dp
+                    canLocate -> 116.dp
+                    else -> 72.dp
+                }
             ),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
@@ -345,9 +351,9 @@ fun LocalMusicManagementView(
         // ── 底部悬浮按钮（回到顶部 + 快速定位） ──
         Column(
             modifier = Modifier
-                .align(Alignment.BottomStart)
+                .align(Alignment.BottomEnd)
                 .padding(
-                    start = 16.dp,
+                    end = 16.dp,
                     bottom = if (selection.isSelectMode && selection.selectedIds.isNotEmpty()) 88.dp else 16.dp
                 ),
             verticalArrangement = Arrangement.spacedBy(12.dp)

@@ -216,7 +216,12 @@ fun AlbumDetailScreen(
                             .padding(horizontal = 16.dp),
                         contentPadding = PaddingValues(
                             top = 8.dp,
-                            bottom = if (selection.isSelectMode && selection.selectedIds.isNotEmpty()) 88.dp else 24.dp
+                            bottom = when {
+                                selection.isSelectMode && selection.selectedIds.isNotEmpty() -> 88.dp
+                                // FAB 在右下，给最后一项留出「时长 + ⋯」的可见空间
+                                canLocate -> 80.dp
+                                else -> 24.dp
+                            }
                         ),
                         verticalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
@@ -331,8 +336,8 @@ fun AlbumDetailScreen(
             enter = slideInVertically(initialOffsetY = { it }),
             exit = slideOutVertically(targetOffsetY = { it }),
             modifier = Modifier
-                .align(Alignment.BottomStart)
-                .padding(start = 16.dp, bottom = 16.dp),
+                .align(Alignment.BottomEnd)
+                .padding(end = 16.dp, bottom = 16.dp),
         ) {
             SmallFloatingActionButton(
                 onClick = {

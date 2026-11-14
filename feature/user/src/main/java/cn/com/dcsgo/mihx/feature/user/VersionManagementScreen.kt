@@ -245,7 +245,7 @@ fun VersionManagementScreen(
                 )
             )
         },
-        floatingActionButtonPosition = FabPosition.Start,
+        floatingActionButtonPosition = FabPosition.End,
         // ── 快速定位 FAB（当前播放所在分组存在时显示）
         floatingActionButton = {
             if (currentGroupIndex >= 0 && displayGroups.isNotEmpty()) {

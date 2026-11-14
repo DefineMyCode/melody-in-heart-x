@@ -414,6 +414,34 @@ class MelodyDatabaseMigrationTest {
         db.close()
     }
 
+    /**
+     * 2026-11：v18 → v19 增加音质分级/空间音频字段。
+     *
+     * 老行默认：bitRateKbps=0、channelCount=0、audioCodec=null、spatialAudio=false。
+     */
+    @Test
+    fun migration18To19AddsAudioQualityColumns() {
+        val name = dbName("18-19")
+        helper.createDatabase(name, 18).apply {
+            execSQL(
+                "INSERT INTO songs (id, title, artist, album, sampleRate, bitDepth, uri, importedAt, durationMs) " +
+                    "VALUES (1, 'Song', 'Artist', '', 44100, 24, 'file:///song.flac', 100, 1000)"
+            )
+            close()
+        }
+
+        val db = helper.runMigrationsAndValidate(name, 19, true, MelodyMigrations.MIGRATION_18_19)
+
+        db.query("SELECT bitRateKbps, channelCount, audioCodec, spatialAudio FROM songs WHERE id = 1").use { cursor ->
+            assertTrue(cursor.moveToFirst())
+            assertEquals(0, cursor.getInt(0))
+            assertEquals(0, cursor.getInt(1))
+            assertTrue(cursor.isNull(2))
+            assertEquals(0, cursor.getInt(3))
+        }
+        db.close()
+    }
+
 
     /** 表上是否存在指定索引。 */
     private fun indexExists(

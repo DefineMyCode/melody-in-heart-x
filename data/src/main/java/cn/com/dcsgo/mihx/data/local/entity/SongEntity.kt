@@ -35,4 +35,12 @@ data class SongEntity(
     val durationMs: Long = 0L,
     /** 原始位深（bit）；0 = 未知、有损格式或平台未提供 */
     val bitDepth: Int = 0,
+    /** 比特率（kbps）；0 = 未知 */
+    val bitRateKbps: Int = 0,
+    /** 声道数；0 = 未知 */
+    val channelCount: Int = 0,
+    /** 音频编码 MIME；null = 未知 */
+    val audioCodec: String? = null,
+    /** 是否识别为空间音频/Atmos（E-AC-3 JOC / AC-4） */
+    val spatialAudio: Boolean = false,
 )

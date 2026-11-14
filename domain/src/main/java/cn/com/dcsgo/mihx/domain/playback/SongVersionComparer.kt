@@ -81,6 +81,9 @@ object SongVersionComparer {
         val hasBitRate = sorted.any { bitRateOf(it).isNotBlank() }
         val hasFileSize = sorted.any { fileSizeOf(it).isNotBlank() }
         val hasBitDepth = sorted.any { it.bitDepth > 0 }
+        val hasQuality = sorted.any { it.qualityTier != cn.com.dcsgo.mihx.core.model.AudioQualityTier.UNKNOWN }
+        val hasChannel = sorted.any { it.channelCount > 0 }
+        val hasSpatial = sorted.any { it.spatialAudio }
         val maxSampleRate = sorted.maxOfOrNull { it.sampleRate } ?: 0
         val maxScore = sorted.maxOfOrNull { song -> qualityOf(song.sampleRate, formats[song] ?: "") } ?: 0f
         val versions = sorted.map { song ->
@@ -129,6 +132,36 @@ object SongVersionComparer {
                         "位深",
                         finalVersions.map {
                             SpecCell(it.song.bitDepthDisplay.ifEmpty { "未知" })
+                        },
+                    ),
+                )
+            }
+            if (hasQuality) {
+                add(
+                    SpecRow(
+                        "音质",
+                        finalVersions.map {
+                            SpecCell(it.song.qualityLabel.ifEmpty { "未知" })
+                        },
+                    ),
+                )
+            }
+            if (hasChannel) {
+                add(
+                    SpecRow(
+                        "声道",
+                        finalVersions.map {
+                            SpecCell(it.song.channelDisplay.ifEmpty { "未知" })
+                        },
+                    ),
+                )
+            }
+            if (hasSpatial) {
+                add(
+                    SpecRow(
+                        "空间音频",
+                        finalVersions.map {
+                            SpecCell(if (it.song.spatialAudio) "支持" else "—")
                         },
                     ),
                 )
@@ -200,5 +233,8 @@ object SongVersionComparer {
         bitRate.trim().substringBefore(" ").toFloatOrNull() ?: 0f
 
     /** 参与比对的字段顺序（用于稳定排序输出） */
-    private val FIELD_ORDER = listOf("格式", "采样率", "位深", "比特率", "文件大小", "时长", "艺术家", "专辑", "歌词", "封面")
+    private val FIELD_ORDER = listOf(
+        "格式", "采样率", "位深", "音质", "声道", "空间音频", "比特率", "文件大小",
+        "时长", "艺术家", "专辑", "歌词", "封面",
+    )
 }

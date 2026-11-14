@@ -27,6 +27,14 @@ data class Song(
     val sampleRate: Int = 0,
     /** 原始位深（bit）；0 = 未知、有损格式或平台未提供 */
     val bitDepth: Int = 0,
+    /** 比特率（kbps）；0 = 未知（主要给有损格式分级用） */
+    val bitRateKbps: Int = 0,
+    /** 声道数；0 = 未知 */
+    val channelCount: Int = 0,
+    /** 音频编码 MIME（如 audio/flac）；空 = 未知 */
+    val audioCodec: String = "",
+    /** 是否识别为空间音频/Atmos（仅 MIME 明确为 E-AC-3 JOC / AC-4 时置 true） */
+    val spatialAudio: Boolean = false,
     val uri: Uri? = null,
     val albumArtUri: Uri? = null,
     val lrcUri: Uri? = null,
@@ -47,6 +55,23 @@ data class Song(
     /** 位深展示，如 "24bit"；未知时为空串 */
     val bitDepthDisplay: String
         get() = if (bitDepth > 0) "${bitDepth}bit" else ""
+
+    /** 按文件实际规格计算的音质档位 */
+    val qualityTier: AudioQualityTier
+        get() = AudioQualityTier.classify(
+            audioCodec = audioCodec,
+            bitRateKbps = bitRateKbps,
+            bitDepth = bitDepth,
+            sampleRate = sampleRate,
+        )
+
+    /** 档位文案；数据不足（未知）时为空串，UI 不展示 */
+    val qualityLabel: String
+        get() = qualityTier.label.takeIf { qualityTier != AudioQualityTier.UNKNOWN } ?: ""
+
+    /** 声道展示，如 "6 声道"；未知时为空串 */
+    val channelDisplay: String
+        get() = if (channelCount > 0) "$channelCount 声道" else ""
 
     /**
      * 拆分后的歌手列表。

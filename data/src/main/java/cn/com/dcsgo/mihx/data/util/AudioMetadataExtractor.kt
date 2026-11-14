@@ -6,6 +6,7 @@ import android.net.Uri
 import android.os.Environment
 import android.provider.DocumentsContract
 import cn.com.dcsgo.mihx.core.common.AppLog
+import cn.com.dcsgo.mihx.core.model.AudioQualityTier
 import cn.com.dcsgo.mihx.core.model.SongInfo
 import java.io.File
 
@@ -26,6 +27,14 @@ object AudioMetadataExtractor {
         val durationMs: Long = 0L,
         /** 原始位深（bit）；0 = 未知、有损格式或平台未提供 */
         val bitDepth: Int = 0,
+        /** 比特率（kbps）；0 = 未知 */
+        val bitRateKbps: Int = 0,
+        /** 声道数；0 = 未知 */
+        val channelCount: Int = 0,
+        /** 音频编码 MIME；空 = 未知 */
+        val audioCodec: String = "",
+        /** 是否识别为空间音频/Atmos */
+        val spatialAudio: Boolean = false,
     )
 
     /** 单次 MMR 打开同时拿到的结果：基础元数据 + 内嵌封面原始字节（超限视为无封面，为 null） */
@@ -72,10 +81,11 @@ object AudioMetadataExtractor {
                 ?.toLongOrNull() ?: 0L
 
             val bitDepth = readBitDepth(retriever, uri)
+            val track = readTrack(ctx, uri, retriever)
 
             AppLog.debug(
                 TAG,
-                "extractMetadata: title=$title, artist=$artist, album=$album, sampleRate=$sampleRate, durationMs=$durationMs, bitDepth=$bitDepth"
+                "extractMetadata: title=$title, artist=$artist, album=$album, sampleRate=$sampleRate, durationMs=$durationMs, bitDepth=$bitDepth, bitRateKbps=${track.bitRateKbps}, channels=${track.channelCount}, codec=${track.audioCodec}, spatial=${track.spatialAudio}"
             )
             return ExtractedMetadata(
                 title = title,
@@ -84,6 +94,10 @@ object AudioMetadataExtractor {
                 sampleRate = sampleRate,
                 durationMs = durationMs,
                 bitDepth = bitDepth,
+                bitRateKbps = track.bitRateKbps,
+                channelCount = track.channelCount,
+                audioCodec = track.audioCodec,
+                spatialAudio = track.spatialAudio,
             )
         } catch (e: Exception) {
             AppLog.warning(TAG, "extractMetadata failed for $uri: ${e.message}")
@@ -160,10 +174,11 @@ object AudioMetadataExtractor {
                 ?.takeIf { it.isNotEmpty() && it.size <= MAX_ART_BYTES }
 
             val bitDepth = readBitDepth(retriever, uri)
+            val track = readTrack(ctx, uri, retriever)
 
             AppLog.debug(
                 TAG,
-                "extractMetadataWithEmbeddedArt: title=$title, artist=$artist, album=$album, sampleRate=$sampleRate, durationMs=$durationMs, bitDepth=$bitDepth"
+                "extractMetadataWithEmbeddedArt: title=$title, artist=$artist, album=$album, sampleRate=$sampleRate, durationMs=$durationMs, bitDepth=$bitDepth, bitRateKbps=${track.bitRateKbps}, channels=${track.channelCount}, codec=${track.audioCodec}, spatial=${track.spatialAudio}"
             )
             return ExtractedMetadataWithArt(
                 metadata = ExtractedMetadata(
@@ -173,6 +188,10 @@ object AudioMetadataExtractor {
                     sampleRate = sampleRate,
                     durationMs = durationMs,
                     bitDepth = bitDepth,
+                    bitRateKbps = track.bitRateKbps,
+                    channelCount = track.channelCount,
+                    audioCodec = track.audioCodec,
+                    spatialAudio = track.spatialAudio,
                 ),
                 embeddedArtBytes = artBytes,
             )
@@ -211,22 +230,30 @@ object AudioMetadataExtractor {
             val durationMs = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
                 ?.toLongOrNull() ?: 0L
 
-            val bitRate = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_BITRATE)
-                ?.toLongOrNull() ?: 0L
-
             val sampleRate = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_SAMPLERATE)
                 ?.toIntOrNull() ?: 0
 
             val bitDepth = readBitDepth(retriever, uri)
+            val track = readTrack(ctx, uri, retriever)
+            val quality = AudioQualityTier.classify(
+                audioCodec = track.audioCodec,
+                bitRateKbps = track.bitRateKbps,
+                bitDepth = bitDepth,
+                sampleRate = sampleRate,
+            )
 
             return SongInfo(
                 title = title,
                 artist = artist,
                 album = album,
                 duration = formatDuration(durationMs),
-                bitRate = if (bitRate > 0) "${bitRate / 1000} kbps" else "未知",
+                bitRate = if (track.bitRateKbps > 0) "${track.bitRateKbps} kbps" else "未知",
                 sampleRate = if (sampleRate > 0) "$sampleRate Hz" else "未知",
                 bitDepth = if (bitDepth > 0) "${bitDepth}bit" else "未知",
+                quality = quality.label.takeIf { quality != AudioQualityTier.UNKNOWN } ?: "",
+                codec = track.audioCodec,
+                channelCount = if (track.channelCount > 0) "${track.channelCount} 声道" else "",
+                spatialAudio = track.spatialAudio,
                 format = extractFormat(uri),
                 fileSize = getFileSize(ctx, uri),
                 filePath = getRealPathFromUri(ctx, uri)
@@ -237,6 +264,44 @@ object AudioMetadataExtractor {
         } finally {
             try { retriever?.release() } catch (_: Exception) {}
         }
+    }
+
+    /** 轨道轻量规格：比特率 / 声道 / MIME / 空间音频识别 */
+    private data class TrackRead(
+        val bitRateKbps: Int,
+        val channelCount: Int,
+        val audioCodec: String,
+        val spatialAudio: Boolean,
+    )
+
+    /**
+     * MMR 读比特率与 MIME，MediaExtractor 补声道数。
+     *
+     * 位深不走 MediaFormat（没有该 key），由 [readBitDepth] 单独读。
+     */
+    private fun readTrack(
+        ctx: Context,
+        uri: Uri,
+        retriever: MediaMetadataRetriever,
+    ): TrackRead {
+        val bitRateKbps = (retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_BITRATE)
+            ?.toLongOrNull() ?: 0L)
+            .takeIf { it > 0 }
+            ?.let { (it / 1000).toInt() }
+            ?: 0
+
+        val spec = AudioTrackSpecExtractor.read(ctx, uri)
+        val mmrMime = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_MIMETYPE)
+            ?.takeIf { it.startsWith("audio/") }
+            ?: ""
+        val codec = spec?.codec?.takeIf { it.isNotEmpty() } ?: mmrMime
+
+        return TrackRead(
+            bitRateKbps = bitRateKbps,
+            channelCount = spec?.channelCount ?: 0,
+            audioCodec = codec,
+            spatialAudio = AudioQualityTier.isSpatial(codec, spec?.channelCount ?: 0),
+        )
     }
 
     /**

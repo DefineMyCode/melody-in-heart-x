@@ -15,6 +15,14 @@ data class SongInfo(
     val sampleRate: String = "",
     /** 位深（如 "24bit"）；未知/有损格式时为空或 "未知" */
     val bitDepth: String = "",
+    /** 音质档位（标准/较高/极高/无损/高解析）；数据不足时为空 */
+    val quality: String = "",
+    /** 音频编码 MIME，如 "audio/flac"；未知时为空 */
+    val codec: String = "",
+    /** 声道展示，如 "6 声道"；未知时为空 */
+    val channelCount: String = "",
+    /** 是否识别为空间音频/Atmos */
+    val spatialAudio: Boolean = false,
     val format: String = "",
     val fileSize: String = "",
     val filePath: String = "",

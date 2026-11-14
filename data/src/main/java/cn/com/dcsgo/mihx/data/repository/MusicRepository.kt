@@ -546,6 +546,10 @@ class MusicRepository(
                         album = extracted.metadata.album,
                         sampleRate = extracted.metadata.sampleRate,
                         bitDepth = extracted.metadata.bitDepth,
+                        bitRateKbps = extracted.metadata.bitRateKbps,
+                        channelCount = extracted.metadata.channelCount,
+                        audioCodec = extracted.metadata.audioCodec,
+                        spatialAudio = extracted.metadata.spatialAudio,
                         durationMs = extracted.metadata.durationMs,
                         uri = fileUri,
                         albumArtUri = albumArtUri,
@@ -961,6 +965,10 @@ class MusicRepository(
             val album: String,
             val sampleRate: Int,
             val bitDepth: Int,
+            val bitRateKbps: Int,
+            val channelCount: Int,
+            val audioCodec: String,
+            val spatialAudio: Boolean,
             val durationMs: Long,
             val albumArtUri: android.net.Uri?,
             val fileFingerprint: String?,
@@ -983,6 +991,11 @@ class MusicRepository(
                         (meta.sampleRate != 0 && meta.sampleRate != song.sampleRate) ||
                         // 位深参与变化判定：老库 bitDepth=0，深度校验首次读到 24bit 时才会回写
                         (meta.bitDepth != 0 && meta.bitDepth != song.bitDepth) ||
+                        (meta.bitRateKbps != 0 && meta.bitRateKbps != song.bitRateKbps) ||
+                        (meta.channelCount != 0 && meta.channelCount != song.channelCount) ||
+                        (meta.audioCodec.isNotBlank() && meta.audioCodec != song.audioCodec) ||
+                        // codec 读取失败时不动 spatialAudio，避免把已识别的 true 清掉
+                        (meta.audioCodec.isNotBlank() && meta.spatialAudio != song.spatialAudio) ||
                         (meta.durationMs > 0L && meta.durationMs != song.durationMs)
                     if (!changed) return@async null
 
@@ -1026,6 +1039,10 @@ class MusicRepository(
                         album = meta.album,
                         sampleRate = meta.sampleRate,
                         bitDepth = meta.bitDepth,
+                        bitRateKbps = meta.bitRateKbps,
+                        channelCount = meta.channelCount,
+                        audioCodec = meta.audioCodec,
+                        spatialAudio = meta.spatialAudio,
                         durationMs = meta.durationMs,
                         albumArtUri = newArtUri,
                         fileFingerprint = newFingerprint,
@@ -1045,6 +1062,10 @@ class MusicRepository(
                         album = r.album,
                         sampleRate = if (r.sampleRate != 0) r.sampleRate else songs[idx].sampleRate,
                         bitDepth = if (r.bitDepth != 0) r.bitDepth else songs[idx].bitDepth,
+                        bitRateKbps = if (r.bitRateKbps != 0) r.bitRateKbps else songs[idx].bitRateKbps,
+                        channelCount = if (r.channelCount != 0) r.channelCount else songs[idx].channelCount,
+                        audioCodec = if (r.audioCodec.isNotBlank()) r.audioCodec else songs[idx].audioCodec,
+                        spatialAudio = if (r.audioCodec.isNotBlank()) r.spatialAudio else songs[idx].spatialAudio,
                         durationMs = if (r.durationMs > 0L) r.durationMs else songs[idx].durationMs,
                         albumArtUri = r.albumArtUri,
                         fileFingerprint = r.fileFingerprint ?: songs[idx].fileFingerprint,

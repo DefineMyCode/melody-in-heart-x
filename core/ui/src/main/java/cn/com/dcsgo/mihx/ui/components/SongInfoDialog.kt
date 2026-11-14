@@ -129,6 +129,18 @@ fun SongInfoDialog(
                 if (songInfo.bitDepth.isNotBlank() && songInfo.bitDepth != "未知") {
                     InfoRow(label = "位深", value = songInfo.bitDepth)
                 }
+                if (songInfo.quality.isNotBlank()) {
+                    InfoRow(label = "音质", value = songInfo.quality)
+                }
+                if (songInfo.channelCount.isNotBlank()) {
+                    InfoRow(label = "声道", value = songInfo.channelCount)
+                }
+                if (songInfo.spatialAudio) {
+                    InfoRow(label = "空间音频", value = "支持（Atmos）")
+                }
+                if (songInfo.codec.isNotBlank()) {
+                    InfoRow(label = "编码", value = songInfo.codec)
+                }
                 InfoRow(label = "文件大小", value = songInfo.fileSize)
                 InfoRow(label = "文件路径", value = songInfo.filePath, isPath = true)
 

@@ -218,6 +218,36 @@ class SongVersionComparerTest {
         assertFalse(result.commonFields.any { it.first == "位深" })
     }
 
+    @Test
+    fun qualityAndSpatialRowsAppearWhenDataExists() {
+        val songs = listOf(
+            version(
+                1,
+                sampleRate = 96_000,
+                ext = "flac",
+                bitDepth = 24,
+                audioCodec = "audio/flac",
+                bitRateKbps = 2_300,
+                channelCount = 2,
+            ),
+            version(
+                2,
+                sampleRate = 48_000,
+                ext = "m4a",
+                audioCodec = "audio/eac3-joc",
+                bitRateKbps = 640,
+                channelCount = 6,
+                spatialAudio = true,
+            ),
+        )
+
+        val result = SongVersionComparer.compare(songs, fileNameOf = { fileNameOf(it) })
+        val qualityRow = result.rows.first { it.label == "音质" }
+        assertEquals(listOf("高解析", "极高"), qualityRow.cells.map { it.display })
+        assertEquals("6 声道", result.rows.first { it.label == "声道" }.cells[1].display)
+        assertEquals("支持", result.rows.first { it.label == "空间音频" }.cells[1].display)
+    }
+
     private fun fileNameOf(song: Song): String =
         exts[song.id]?.let { "audio/file.$it" } ?: ""
 
@@ -231,6 +261,10 @@ class SongVersionComparerTest {
         artist: String = "Artist",
         album: String = "",
         bitDepth: Int = 0,
+        bitRateKbps: Int = 0,
+        audioCodec: String = "",
+        channelCount: Int = 0,
+        spatialAudio: Boolean = false,
     ): Song {
         exts[id] = ext
         return Song(
@@ -240,6 +274,10 @@ class SongVersionComparerTest {
             album = album,
             sampleRate = sampleRate,
             bitDepth = bitDepth,
+            bitRateKbps = bitRateKbps,
+            audioCodec = audioCodec,
+            channelCount = channelCount,
+            spatialAudio = spatialAudio,
         )
     }
 }

@@ -283,11 +283,30 @@ object MelodyMigrations {
         }
     }
 
+    /**
+     * v18 → v19：songs 增加音质分级与空间音频识别字段。
+     *
+     * - bitRateKbps：比特率（kbps），有损格式分档用；0 = 未知
+     * - channelCount：声道数；0 = 未知
+     * - audioCodec：轨道 MIME（如 audio/flac）；null = 未知
+     * - spatialAudio：E-AC-3 JOC / AC-4 的轻量识别结果
+     *
+     * 老数据在用户手动「深度校验」时由 refreshMetadata 重新读取并回填。
+     */
+    val MIGRATION_18_19 = object : Migration(18, 19) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL("ALTER TABLE `songs` ADD COLUMN `bitRateKbps` INTEGER NOT NULL DEFAULT 0")
+            db.execSQL("ALTER TABLE `songs` ADD COLUMN `channelCount` INTEGER NOT NULL DEFAULT 0")
+            db.execSQL("ALTER TABLE `songs` ADD COLUMN `audioCodec` TEXT")
+            db.execSQL("ALTER TABLE `songs` ADD COLUMN `spatialAudio` INTEGER NOT NULL DEFAULT 0")
+        }
+    }
+
     /** 声明于末尾：object 属性按声明顺序初始化，需引用上方全部迁移 */
     val ALL: Array<Migration> = arrayOf(
         MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6,
         MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11,
         MIGRATION_11_12, MIGRATION_12_13, MIGRATION_13_14, MIGRATION_14_15, MIGRATION_15_16,
-        MIGRATION_16_17, MIGRATION_17_18,
+        MIGRATION_16_17, MIGRATION_17_18, MIGRATION_18_19,
     )
 }

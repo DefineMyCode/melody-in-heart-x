@@ -424,6 +424,25 @@ fun VersionItemRow(
                         Spacer(modifier = Modifier.width(6.dp))
                     }
 
+                    // 音质档位标签（标准/较高/极高/无损/高解析；未知不显示）
+                    if (song.qualityLabel.isNotEmpty()) {
+                        Text(
+                            text = song.qualityLabel,
+                            style = MaterialTheme.typography.labelMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = if (isCurrentPlaying) MaterialTheme.colorScheme.primary
+                                    else MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(4.dp))
+                                .background(
+                                    if (isCurrentPlaying) MaterialTheme.colorScheme.primaryContainer
+                                    else MaterialTheme.colorScheme.surfaceVariant
+                                )
+                                .padding(horizontal = 6.dp, vertical = 2.dp)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                    }
+
                     // 播放中标记
                     if (isCurrentPlaying) {
                         Text(

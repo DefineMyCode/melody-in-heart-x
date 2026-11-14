@@ -27,6 +27,10 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -66,6 +70,9 @@ fun UserScreen(
     /** 进入样式切换页（替代 2026-09-30 之前的「自定义皮肤」入口）。 */
     onOpenSkinSwitcher: () -> Unit = {},
 ) {
+    // 点击「我的」页 Logo 打开音质与空间音频说明
+    var showAudioQualityGuide by remember { mutableStateOf(false) }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -83,7 +90,10 @@ fun UserScreen(
             sectionOrder.forEach { key ->
                 when (key) {
                     UserSections.USER_INFO -> item(key = "user_info", contentType = "header") {
-                        UserInfoSection(onSettingsClick = onShowSettings)
+                        UserInfoSection(
+                            onSettingsClick = onShowSettings,
+                            onLogoTap = { showAudioQualityGuide = true },
+                        )
                     }
 
                     UserSections.PLAY_STATS -> item(key = "play_stats", contentType = "header") {
@@ -127,6 +137,10 @@ fun UserScreen(
                     }
                 }
             }
+        }
+
+        if (showAudioQualityGuide) {
+            AudioQualityGuideSheet(onDismiss = { showAudioQualityGuide = false })
         }
     }
 }

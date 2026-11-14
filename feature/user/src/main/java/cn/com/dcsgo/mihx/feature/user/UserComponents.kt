@@ -50,6 +50,7 @@ import cn.com.dcsgo.mihx.domain.model.LocalFileValidationResult
 @Composable
 fun UserInfoSection(
     onSettingsClick: () -> Unit = {},
+    onLogoTap: () -> Unit = {},
 ) {
     Box(modifier = Modifier.fillMaxWidth()) {
         IconButton(
@@ -71,10 +72,11 @@ fun UserInfoSection(
                 modifier = Modifier
                     .size(100.dp)
                     .clip(CircleShape)
+                    .clickable(onClick = onLogoTap)
             ) {
                 Image(
                     painter = painterResource(R.drawable.dcsgo_logo),
-                    contentDescription = "个人中心",
+                    contentDescription = "应用图标，点击查看音质分级与空间音频说明",
                     modifier = Modifier
                         .size(100.dp)
                         .align(Alignment.Center)

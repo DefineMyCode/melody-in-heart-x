@@ -1,6 +1,6 @@
 # 项目文档索引
 
-Melody in Heart（心有乐章）的文档按主题归入 `docs/` 子目录。仓库根目录的 `CLAUDE.md` 是给 Claude Code 的编码指引；本文件是全部文档的入口。
+Melody in Heart（心有乐章）的文档按主题归入 `docs/` 子目录。本文件是全部文档的入口；机器可读的项目知识库见仓库根目录的 `openwiki/`。
 
 ## 架构（`docs/architecture/`）
 
@@ -20,6 +20,7 @@ Melody in Heart（心有乐章）的文档按主题归入 `docs/` 子目录。�
 - [播放统计页设计稿](ui-design/playback-statistics.html)。
 - [情境化随心播放设计稿](ui-design/mood-time-slot.html)：时段 × 情绪词条增强的六屏手机稿（设计依据 [功能设计文档](architecture/MOOD_TIME_SLOT_PLAYBACK.md)）。
 
-## 编码指引（仓库根目录）
+## 编码指引
 
-- [CLAUDE.md](../CLAUDE.md)：Claude Code 与后续维护者的构建 / 测试 / 架构约定，含 `verifyProductArchitecture` 强制规则。
+- 构建 / 测试 / 架构约定：见 `openwiki/operations/build-and-verification.md` 与 `openwiki/testing/test-map.md`。
+- 架构强制规则由 `buildSrc` 的 `verifyProductArchitecture` 门禁执行，规则本体见 `buildSrc/src/main/kotlin/cn/com/dcsgo/mihx/verify/ProductArchitectureVerification.kt`。

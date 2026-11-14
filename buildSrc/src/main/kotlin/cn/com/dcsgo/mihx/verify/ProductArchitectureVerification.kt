@@ -499,8 +499,8 @@ object ProductArchitectureVerification {
         // ── 分层不变量：:core:model 与 :domain 不得依赖 Android 框架 ──
         //
         // 评审 2026-10-27 · M-21：此前门禁只查「资源 / R id」，**没有**查源码里的
-        // `import android.*` —— 于是 CLAUDE.md 声明的「:domain 与 :core:model 不得有
-        // Android 框架依赖」既没被强制、也已被违反（android.net.Uri 泄漏进域边界）。
+        // `import android.*` —— 于是「:domain 与 :core:model 不得有 Android 框架依赖」
+        // 这条分层约定既没被强制、也已被违反（android.net.Uri 泄漏进域边界）。
         //
         // 本规则按**棘轮（ratchet）**方式落地：现存违规列入基线白名单（不会立刻把
         // 构建打红），但**新增**任何一处 `import android.*` 都会让构建失败。

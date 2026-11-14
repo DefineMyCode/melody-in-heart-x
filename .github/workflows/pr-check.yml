@@ -3,6 +3,7 @@ name: PR Check
 # M-6（评审 2026-10-15）：PR / push 到 main 必须先过完整校验（单测 + spotless + 架构校验），
 # 与 CLAUDE.md「提交前跑 ./gradlew check」的约定保持一致；发版流水线（release.yml）也依赖同一校验。
 # 纯文档改动（docs/openwiki/markdown）不触发（2026-10-15 用户定）。
+# 版本号专用提交走快路径跳过全量校验（2026-10-29 用户定）——见下方 detect 步骤说明。
 on:
   pull_request:
     paths-ignore:
@@ -30,19 +31,95 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # 快路径要 diff `github.event.before..github.event.after`，需要两个提交都在本地
+          fetch-depth: 0
+
+      # 快路径（2026-10-29 用户定）：发版时「升版本号」的那次 push（只动
+      # app/build.gradle.kts 的 versionCode/versionName 与 CLAUDE.md 版本表）**跳过全量校验**。
+      # 理由：它相对父提交只差几行版本号，全量校验的结论与父提交那次完全相同；
+      # 真正出厂的门禁在 release.yml 的 check 作业上（跑在要发布的那个 commit 上）。
+      # 判断一律**保守**：非 push 事件、force push / 新分支（before 全 0）、多提交混合、
+      # 或任何一行改动超出版本号范围 —— 一律照常跑全量，绝不误跳。
+      - name: Detect version-only push (fast path)
+        id: detect
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BEFORE_SHA: ${{ github.event.before }}
+          AFTER_SHA: ${{ github.event.after }}
+        run: |
+          set -euo pipefail
+          echo "skip=false" >> "$GITHUB_OUTPUT"
+
+          if [ "${EVENT_NAME}" != "push" ]; then
+            echo "event=${EVENT_NAME} -> full check"
+            exit 0
+          fi
+          if [ -z "${BEFORE_SHA:-}" ] || [[ "${BEFORE_SHA}" =~ ^0+$ ]]; then
+            echo "no usable before commit (new branch / force push) -> full check"
+            exit 0
+          fi
+          HEAD_SHA="${AFTER_SHA:-}"
+          if [ -z "${HEAD_SHA}" ] || [[ "${HEAD_SHA}" =~ ^0+$ ]]; then
+            HEAD_SHA="$(git rev-parse HEAD)"
+          fi
+          if ! git cat-file -e "${BEFORE_SHA}^{commit}" 2>/dev/null; then
+            echo "before commit ${BEFORE_SHA} unavailable locally -> full check"
+            exit 0
+          fi
+          if ! git cat-file -e "${HEAD_SHA}^{commit}" 2>/dev/null; then
+            echo "after commit ${HEAD_SHA} unavailable locally -> full check"
+            exit 0
+          fi
+
+          CHANGED="$(git diff --name-only "${BEFORE_SHA}" "${HEAD_SHA}")"
+          echo "changed files:"; echo "${CHANGED}"
+
+          # 1) 只允许这两条路径（允许子集；空集不算版本号提交）
+          OTHER="$(echo "${CHANGED}" | grep -vE '^(app/build\.gradle\.kts|CLAUDE\.md)$' || true)"
+          if [ -n "${OTHER}" ]; then
+            echo "files outside the version-bump allowlist changed -> full check"
+            exit 0
+          fi
+
+          # 2) 必须真的改了 app/build.gradle.kts，且每一行都只是 versionCode/versionName
+          BUILD_LINES="$(git diff --unified=0 "${BEFORE_SHA}" "${HEAD_SHA}" -- app/build.gradle.kts | grep -E '^[+-][^+-]' || true)"
+          if [ -z "${BUILD_LINES}" ]; then
+            echo "app/build.gradle.kts unchanged -> full check"
+            exit 0
+          fi
+          if echo "${BUILD_LINES}" | grep -vqE '^[+-][[:space:]]*version(Code|Name)[[:space:]]*='; then
+            echo "app/build.gradle.kts changed beyond versionCode/versionName -> full check"
+            echo "${BUILD_LINES}"
+            exit 0
+          fi
+
+          # 3) CLAUDE.md 若改动，只允许版本表那一行
+          CLAUDE_LINES="$(git diff --unified=0 "${BEFORE_SHA}" "${HEAD_SHA}" -- CLAUDE.md | grep -E '^[+-][^+-]' || true)"
+          if [ -n "${CLAUDE_LINES}" ] && echo "${CLAUDE_LINES}" | grep -vqE '^[+-][^+-]*versionName'; then
+            echo "CLAUDE.md changed beyond the version row -> full check"
+            echo "${CLAUDE_LINES}"
+            exit 0
+          fi
+
+          echo "version-only push detected (${BEFORE_SHA:0:8}..${HEAD_SHA:0:8}) -> skipping heavy check"
+          echo "skip=true" >> "$GITHUB_OUTPUT"
 
       - name: Set up JDK 17
+        if: steps.detect.outputs.skip != 'true'
         uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
         with:
           distribution: temurin
           java-version: "17"
 
       - name: Set up Gradle cache
+        if: steps.detect.outputs.skip != 'true'
         uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
 
       - name: Run check (test + spotlessCheck + verifyProductArchitecture + androidTest compile)
         # assembleDebugAndroidTest：仅编译仪器测试源集（无需设备），防止 UI 签名漂移漏检（2026-10-15）
         # :buildSrc:test：verifyProductArchitecture 规则本体的单测（m-10）
+        if: steps.detect.outputs.skip != 'true'
         run: ./gradlew check :app:assembleDebugAndroidTest :buildSrc:test --no-daemon --stacktrace
 
       - name: Upload test & lint reports on failure

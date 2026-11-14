@@ -78,18 +78,7 @@ fun smoothCurve(curve: List<Pair<Float, Float>>): List<Pair<Float, Float>> {
 }
 
 /**
- * 高潮是否显著: A 最大值显著高于 A 均值.
- *
- * 阈值与 [SongEmotion.PEAK_MARGIN] 单源(20 首实测分布定标: 平缓/全程高能歌 ≤0.49, 真高潮歌 ≥0.52),
- * 播放页进度条的高潮圆点复用同一判定, 避免两处口径漂移。
- */
-fun hasSignificantPeak(curve: List<Pair<Float, Float>>): Boolean {
-    if (curve.size < 4) return false
-    val a = curve.map { it.second }
-    return a.max() > a.average().toFloat() + SongEmotion.PEAK_MARGIN
-}
 
-/**
  * 基准线虚线效果：**文件级常量**，只建一次。
  *
  * 评审 2026-10-27 · M-11：原先在 Canvas 的 draw lambda 里每帧新建
@@ -141,11 +130,10 @@ fun SongEmotionSection(
         return
     }
     val scheme = MaterialTheme.colorScheme
-    // m-11（评审 2026-10-15）：曲线配色改由主题派生（V=primary, A=tertiary, 峰值=error），
+    // m-11（评审 2026-10-15）：曲线配色改由主题派生（V=primary, A=tertiary），
     // 不再硬编码绕开主题——换肤/换主题色时曲线保持一致的可辨识度
     val vColor = scheme.primary
     val aColor = scheme.tertiary
-    val peakColor = scheme.error
     // 保存走 suspend 控制器(仓库桥在 Default 线程执行), 用组合作用域拉起
     val scope = rememberCoroutineScope()
     var showCalibrate by remember { mutableStateOf(false) }
@@ -159,10 +147,7 @@ fun SongEmotionSection(
     // 3~4 遍），每次访问 compensatedCurve 还会重建整条补偿曲线。
     // 现在一次投票派生出三样结论（见 core/model 的 emotionDisplayOf）。
     val display = remember(shown) { emotionDisplayOf(shown) }
-    // 「高潮是否显著」提到组合期并 remember（评审 2026-10-27 · M-11）：
-    // 原先它直接跑在 **Canvas 的绘制阶段**（每帧一次全曲线扫描 + List 分配），
-    // 而且同一份计算在画峰值圆点与图例文字处各算了一遍。
-    val hasPeak = remember(emotion.curve) { hasSignificantPeak(emotion.curve) }
+
     // 词条行(主展示) — 弹窗"原有"排也复用
     val tags = display.tags
     // 词条 + 各自占比(模型投票时就算出来了, 这里只是不再丢掉)
@@ -289,48 +274,17 @@ fun SongEmotionSection(
                 }
                 drawSeries({ it.first }, vColor)
                 drawSeries({ it.second }, aColor)
-                // A 峰标记: 峰值显著高于均值才画(平缓歌的噪声尖不标)
-                if (
-                    emotion.durationSec > 0f && emotion.windowsAnalyzed > 0 &&
-                    hasPeak
-                ) {
-                    val peakX = (emotion.peakSec / emotion.durationSec)
-                        .coerceIn(0f, 1f) * w
-                    val peakIdx = (emotion.peakSec / 2.5f).toInt()
-                        .coerceIn(0, smoothed.lastIndex)
-                    val peakY = mid - smoothed[peakIdx].second.coerceIn(-1f, 1f) * (mid - 4f)
-                    drawCircle(peakColor, radius = 5.dp.toPx(), center = Offset(peakX, peakY))
-                }
             }
         }
         Spacer(modifier = Modifier.height(4.dp))
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
+        // 图例色标直接画曲线用的实际颜色(V=primary / A=tertiary),
+        // 不写死"蓝/橙"字样——换主题(墨色等)后图例仍与曲线一致
+        FlowRow(
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
+            verticalArrangement = Arrangement.spacedBy(2.dp),
         ) {
-            // 图例色标直接画曲线用的实际颜色(V=primary / A=tertiary / 高潮=error),
-            // 不写死"蓝/橙/红"字样——换主题(墨色等)后图例仍与曲线一致
-            FlowRow(
-                modifier = Modifier.weight(1f, fill = false),
-                horizontalArrangement = Arrangement.spacedBy(10.dp),
-                verticalArrangement = Arrangement.spacedBy(2.dp),
-            ) {
-                EmotionLegendItem(color = vColor, asDot = false, label = "冷暖（参考）")
-                EmotionLegendItem(color = aColor, asDot = false, label = "能量")
-                EmotionLegendItem(color = peakColor, asDot = true, label = "高潮")
-            }
-            Spacer(modifier = Modifier.width(8.dp))
-            val m = emotion.peakSec.toInt()
-            Text(
-                text = if (hasPeak) {
-                    "高潮 %02d:%02d".format(m / 60, m % 60)
-                } else {
-                    "高潮：不明显"
-                },
-                style = MaterialTheme.typography.labelSmall,
-                color = scheme.onSurfaceVariant,
-            )
+            EmotionLegendItem(color = vColor, label = "冷暖（参考）")
+            EmotionLegendItem(color = aColor, label = "能量")
         }
     }
 
@@ -367,12 +321,10 @@ fun SongEmotionSection(
 
 /**
  * 图例项: 色标 + 名称.
- * 色标形状与曲线上实际笔迹一致——V/A 是折线(短线段), 高潮是圆点.
  */
 @Composable
 private fun EmotionLegendItem(
     color: Color,
-    asDot: Boolean,
     label: String,
 ) {
     Row(
@@ -380,17 +332,13 @@ private fun EmotionLegendItem(
         horizontalArrangement = Arrangement.spacedBy(4.dp),
     ) {
         Canvas(modifier = Modifier.size(width = 14.dp, height = 8.dp)) {
-            if (asDot) {
-                drawCircle(color = color, radius = 3.dp.toPx(), center = center)
-            } else {
-                drawLine(
-                    color = color,
-                    start = Offset(0f, size.height / 2f),
-                    end = Offset(size.width, size.height / 2f),
-                    strokeWidth = 2.dp.toPx(),
-                    cap = StrokeCap.Round,
-                )
-            }
+            drawLine(
+                color = color,
+                start = Offset(0f, size.height / 2f),
+                end = Offset(size.width, size.height / 2f),
+                strokeWidth = 2.dp.toPx(),
+                cap = StrokeCap.Round,
+            )
         }
         Text(
             text = label,

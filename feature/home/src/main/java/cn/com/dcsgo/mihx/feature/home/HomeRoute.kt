@@ -34,8 +34,7 @@ data class HomeRouteState(
     val sleepTimerRemainingMs: Long = 0L,
     val sleepTimerPlayLastSong: Boolean = false,
     val sleepTimerPausePending: Boolean = false,
-    /** 当前歌曲高潮位置（0..1）；null = 无显著高潮，进度条不画标记 */
-    val climaxFraction: Float? = null,
+
 )
 
 /**
@@ -114,7 +113,7 @@ fun HomeRoute(
         sleepTimerRemainingMs = state.sleepTimerRemainingMs,
         sleepTimerPlayLastSong = state.sleepTimerPlayLastSong,
         sleepTimerPausePending = state.sleepTimerPausePending,
-        climaxFraction = state.climaxFraction,
+
         onSleepTimerStart = actions.onSleepTimerStart,
         onSleepTimerCancel = actions.onSleepTimerCancel,
         onShowSongInfo = actions.onShowSongInfo,

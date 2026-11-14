@@ -512,6 +512,7 @@ interface MelodyDao {
     @Query("SELECT songId FROM song_emotions WHERE vocalScore IS NULL AND windowsAnalyzed > 0")
     suspend fun songIdsMissingVocalScore(): List<Int>
 
+
     /** 已用户校准的歌曲数（以**词条**为准 —— 坐标不再落库） */
     @Query(
         "SELECT COUNT(*) FROM song_emotions " +
@@ -601,6 +602,7 @@ interface MelodyDao {
         userTags: String?,
         userTagsEdited: Boolean?,
         vocalScore: Float?,
+
     ): Int
 
     /**

@@ -7,7 +7,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
-/** 情绪区纯函数: 平滑 / 高潮显著性 / 40 词表映射. */
+/** 情绪区纯函数: 平滑 / 40 词表映射. */
 class SongEmotionSectionTest {
 
     private fun emotion(
@@ -50,15 +50,7 @@ class SongEmotionSectionTest {
     }
 
     @Test
-    fun `significant peak only when A spike stands out`() {
-        val flat = List(20) { (it % 3) * 0.05f to ((it % 5) - 2) * 0.05f }
-        assertTrue(!hasSignificantPeak(flat))
-        val withSpike = List(20) { -0.2f to -0.3f } + listOf(0.5f to 0.6f) + List(20) { -0.2f to -0.3f }
-        assertTrue(hasSignificantPeak(withSpike))
-        assertTrue(!hasSignificantPeak(listOf(0f to 0.9f, 0f to 0.9f)))
-    }
 
-    @Test
     fun `word table covers 10 groups with unique index`() {
         val all = EmotionGroup.entries.flatMap { it.words }
         assertEquals(10, EmotionGroup.entries.size)

@@ -358,6 +358,7 @@ class PlayStatsRepositoryRoomTest {
         ).filterNotNull().maxOrNull()
 
         override suspend fun songIdsMissingVocalScore(): List<Int> = emptyList()
+
         override suspend fun songEmotionVersions(): List<SongEmotionVersion> =
             songEmotions.map { SongEmotionVersion(it.songId, it.modelVersion) }
 
@@ -380,6 +381,7 @@ class PlayStatsRepositoryRoomTest {
             windowsAnalyzed: Int, durationSec: Float, modelVersion: String, analyzedAt: Long,
             embeddingB64: String?, userValence: Float?, userArousal: Float?,
             userTags: String?, userTagsEdited: Boolean?, vocalScore: Float?,
+
         ): Int = 0
 
         override suspend fun deleteSongEmotion(songId: Int) {

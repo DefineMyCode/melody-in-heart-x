@@ -389,6 +389,7 @@ class MelodyDatabaseMigrationTest {
         db.close()
     }
 
+
     /** 表上是否存在指定索引。 */
     private fun indexExists(
         db: androidx.sqlite.db.SupportSQLiteDatabase,

@@ -40,6 +40,7 @@ data class SongEmotionEntity(
      * 可空：2026-10-25 之前分析的行没有这个值。
      */
     val vocalScore: Float? = null,
+
 )
 
 /**
@@ -70,6 +71,7 @@ data class SongEmotionLite(
     val userTagsEdited: Boolean? = null,
     /** 人声分数（见 [SongEmotionEntity.vocalScore]） */
     val vocalScore: Float? = null,
+
 )
 
 /** 实体 → 轻量投影（丢弃 embeddingB64，不解码 base64） */
@@ -88,4 +90,5 @@ fun SongEmotionEntity.toLite(): SongEmotionLite = SongEmotionLite(
     userTags = userTags,
     userTagsEdited = userTagsEdited,
     vocalScore = vocalScore,
+
 )

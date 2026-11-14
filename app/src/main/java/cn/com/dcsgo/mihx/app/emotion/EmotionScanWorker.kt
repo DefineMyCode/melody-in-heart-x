@@ -48,7 +48,7 @@ class EmotionScanWorker(
         // 用户看到的永远是"差几首没分析"却永远扫不完（2026-09-04 失败标记）。
         val retryableFailures = failures.filterValues { it.attempts < MAX_ATTEMPTS }
         // 待扫 = 模型版本对不上 **或** 已分析但缺人声分数（2026-10-25 引入 vocalScore
-        // 之前的数据需要补扫一次, 补上条件标定要用的变量; 补完后自然不再命中）。
+        // 之前的数据需要补扫一次; 补完后自然不再命中）。
         val missingVocal = ep.emotionRepository().songIdsMissingVocalScore()
         val pending = songs.filter {
             (analyzed[it.id] != EmotionAnalyzer.MODEL_VERSION || it.id in missingVocal) &&

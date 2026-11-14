@@ -94,6 +94,7 @@ class EmotionAnalyzer @Inject constructor(
             val otherIdx = if (embIdx == 0) 1 else 0
             val yamOut = mapOf(embIdx to embArr, otherIdx to scoreArr)
             val songEmb = DoubleArray(1024) // 整曲 embedding 累加器(kNN 锚点用)
+
             // M-7（评审 2026-10-15）：进度逐窗上报。原实现在整个推理循环结束后只调一次，
             // 进度条 0→100 一跳等于没有。回调在持锁的推理线程内执行，调用方必须保持轻量
             // （仅写进度状态）；批扫 Worker 的现有回调满足此约定。
@@ -130,6 +131,7 @@ class EmotionAnalyzer @Inject constructor(
                     check(nf > 0)
                     for (j in 0 until 1024) acc[j] /= nf
                     for (j in 0 until 1024) songEmb[j] += acc[j]
+
                     headIn.rewind()
                     headIn.asFloatBuffer().put(acc)
                     headIn.rewind()
@@ -149,8 +151,9 @@ class EmotionAnalyzer @Inject constructor(
                     s += HOP_SAMPLES
                 }
             }
+
             var peak = 0
-            // 高潮 = A(能量)正向峰值
+            // 能量峰值 = A(能量)正向峰值所在窗口
             for (i in series.indices) if (series[i].second > series[peak].second) peak = i
             val nWin = series.size.coerceAtLeast(1)
             // 人声分数: 人声类 sigmoid 分数在整曲所有帧上的平均(0~数, 越大越有人声)。
@@ -170,6 +173,7 @@ class EmotionAnalyzer @Inject constructor(
                     analyzedAt = System.currentTimeMillis(),
                     embedding = FloatArray(1024) { j -> (songEmb[j] / nWin).toFloat() },
                     vocalScore = vocalScore,
+
                 ),
             )
         } catch (oom: OutOfMemoryError) {
@@ -508,6 +512,7 @@ class EmotionAnalyzer @Inject constructor(
             val rms = windowRms(pcm, start, length)
             return dbToArousal(20.0 * kotlin.math.log10(rms + 1e-6))
         }
+
 
         /** valence 零点/斜率标定（方案 B） */
         fun calibrateValence(v: Float): Float =

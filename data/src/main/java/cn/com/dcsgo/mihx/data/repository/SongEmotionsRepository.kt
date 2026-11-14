@@ -46,6 +46,7 @@ class SongEmotionsRepository(
     )
 
     /**
+
      * 曲线解析缓存（评审 2026-10-27 · M-1）。
      *
      * 行未变（`analyzedAt` 相同）→ 直接复用已解析曲线；变了才重新 `JSONArray` 解析。
@@ -59,6 +60,7 @@ class SongEmotionsRepository(
         parsedCurveCache[songId] = ParsedCurve(analyzedAt, parsed)
         return parsed
     }
+
 
     /**
      * 轻量投影 → 域模型（**不含 embedding**，P0 2026-10-24）。
@@ -81,9 +83,10 @@ class SongEmotionsRepository(
         embedding = null,
         userValence = userValence,
         userArousal = userArousal,
-        userTags = parseTags(userTags),
+userTags = parseTags(userTags),
         userTagsEdited = userTagsEdited,
         vocalScore = vocalScore,
+
     )
 
     override suspend fun get(songId: Int): SongEmotion? = withContext(Dispatchers.IO) {
@@ -102,6 +105,7 @@ class SongEmotionsRepository(
         melodyDao.songIdsMissingVocalScore().toSet()
     }
 
+
     override fun observeAll(): Flow<Map<Int, SongEmotion>> =
         melodyDao.observeAllSongEmotions().map { rows ->
             val result = rows.associate { it.songId to it.liteToDomain() }
@@ -109,6 +113,7 @@ class SongEmotionsRepository(
             if (parsedCurveCache.size > result.size) {
                 parsedCurveCache.keys.retainAll(result.keys)
             }
+
             result
         }
 
@@ -150,6 +155,7 @@ class SongEmotionsRepository(
             userTags = entity.userTags,
             userTagsEdited = entity.userTagsEdited,
             vocalScore = entity.vocalScore,
+
         )
         if (updated == 0) {
             // 该 songId 尚无行 → 直接插入（此时没有用户校准可继承）
@@ -239,6 +245,7 @@ private fun parseCurve(curveJson: String): List<Pair<Float, Float>> = try {
 private fun parseTags(userTags: String?): List<String> =
     userTags?.split(",")?.filter { it.isNotBlank() } ?: emptyList()
 
+
 /** 整行读（含 embedding）：仅单条查询用 */
 private fun SongEmotionEntity.toDomain(): SongEmotion = SongEmotion(
     songId = songId,
@@ -250,12 +257,13 @@ private fun SongEmotionEntity.toDomain(): SongEmotion = SongEmotion(
     durationSec = durationSec,
     modelVersion = modelVersion,
     analyzedAt = analyzedAt,
-    embedding = decodeEmbedding(embeddingB64),
+embedding = decodeEmbedding(embeddingB64),
     userValence = userValence,
     userArousal = userArousal,
     userTags = parseTags(userTags),
     userTagsEdited = userTagsEdited,
     vocalScore = vocalScore,
+
 )
 
 private fun SongEmotion.toEntity(): SongEmotionEntity {
@@ -280,5 +288,6 @@ private fun SongEmotion.toEntity(): SongEmotionEntity {
         userTags = userTags.joinToString(",").ifEmpty { null },
         userTagsEdited = userTagsEdited,
         vocalScore = vocalScore,
+
     )
 }

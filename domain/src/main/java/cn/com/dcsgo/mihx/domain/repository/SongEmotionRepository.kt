@@ -66,6 +66,7 @@ interface SongEmotionRepository {
      */
     suspend fun songIdsMissingVocalScore(): Set<Int>
 
+
     suspend fun upsert(emotion: SongEmotion)
 
     /**

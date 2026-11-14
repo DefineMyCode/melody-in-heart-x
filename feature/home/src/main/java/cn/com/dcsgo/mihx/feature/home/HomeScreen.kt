@@ -47,7 +47,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.CornerRadius
-import androidx.compose.ui.geometry.Offset
+
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -83,8 +83,7 @@ fun HomeScreen(
     /** 播放位置窄流（M-14）：只在进度条叶子内部订阅，不驱动整屏重组 */
     positionMs: StateFlow<Long>,
     durationMs: Long,
-    /** 当前歌曲高潮位置（0..1）；null = 无显著高潮，进度条不画标记 */
-    climaxFraction: Float? = null,
+
     playMode: PlayMode,
     isInfinitePlay: Boolean = false,
     isExplorePlay: Boolean = false,
@@ -153,7 +152,7 @@ fun HomeScreen(
                         isPlaying = isPlaying,
                         positionMs = positionMs,
                         durationMs = durationMs,
-                        climaxFraction = climaxFraction,
+
                         playMode = playMode,
                         isInfinitePlay = isInfinitePlay,
                         isExplorePlay = isExplorePlay,
@@ -376,8 +375,7 @@ private fun PlaybackProgressBar(
     positionMs: StateFlow<Long>,
     durationMs: Long,
     songId: Int,
-    /** 高潮位置（0..1）；null = 无有效分析或高潮不显著 */
-    climaxFraction: Float?,
+
     onStartSeeking: () -> Unit,
     onEndSeeking: (Long) -> Unit,
 ) {
@@ -397,8 +395,7 @@ private fun PlaybackProgressBar(
         // 细轨道 + 无 thumb：不显示 M3 Slider 默认 4×44dp 的进度竖条
         val trackColor = MaterialTheme.colorScheme.outlineVariant
         val activeTrackColor = MaterialTheme.colorScheme.primary
-        // 高潮标记用 tertiary（与情绪曲线 A 轴同色系），与进度色区分但不喧宾夺主
-        val climaxColor = MaterialTheme.colorScheme.tertiary
+
 
         Slider(
             value = sliderValue,
@@ -423,33 +420,15 @@ private fun PlaybackProgressBar(
                 Canvas(
                     modifier = Modifier
                         .fillMaxWidth()
-                        // 比轨道高：给高潮圆点留出上下空间，视觉上仍是 3dp 细线
-                        .height(12.dp)
+                        .height(3.dp)
                 ) {
-                    val trackHeight = 3.dp.toPx()
-                    val trackTop = (size.height - trackHeight) / 2f
-                    val corner = CornerRadius(trackHeight / 2f)
-                    drawRoundRect(
-                        color = trackColor,
-                        topLeft = Offset(0f, trackTop),
-                        size = Size(size.width, trackHeight),
-                        cornerRadius = corner
-                    )
+                    val corner = CornerRadius(size.height / 2f)
+                    drawRoundRect(color = trackColor, size = size, cornerRadius = corner)
                     if (fraction > 0f) {
                         drawRoundRect(
                             color = activeTrackColor,
-                            topLeft = Offset(0f, trackTop),
-                            size = Size(size.width * fraction, trackHeight),
+                            size = Size(size.width * fraction, size.height),
                             cornerRadius = corner
-                        )
-                    }
-                    if (climaxFraction != null) {
-                        val radius = 3.dp.toPx()
-                        val cx = (size.width * climaxFraction).coerceIn(radius, size.width - radius)
-                        drawCircle(
-                            color = climaxColor,
-                            radius = radius,
-                            center = Offset(cx, size.height / 2f)
                         )
                     }
                 }
@@ -479,7 +458,7 @@ private fun SongInfoSection(
     isPlaying: Boolean,
     positionMs: StateFlow<Long>,
     durationMs: Long,
-    climaxFraction: Float?,
+
     playMode: PlayMode,
     isInfinitePlay: Boolean,
     isExplorePlay: Boolean,
@@ -578,7 +557,7 @@ private fun SongInfoSection(
             positionMs = positionMs,
             durationMs = durationMs,
             songId = currentSong.id,
-            climaxFraction = climaxFraction,
+
             onStartSeeking = onStartSeeking,
             onEndSeeking = onEndSeeking,
         )

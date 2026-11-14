@@ -18,7 +18,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.combine
+
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.sync.withLock
 
@@ -44,21 +44,6 @@ class PlayerViewModel @Inject constructor(
     /** 播放位置（毫秒）窄流：播放中每 ~500ms 更新，仅供进度条/歌词等局部订阅，避免整壳重组。 */
     val positionMs: StateFlow<Long> = runtime.positionMs
 
-    /**
-     * 当前歌曲高潮位置窄流（0..1）；null = 无有效分析或高潮不显著。
-     *
-     * 仅供播放页进度条局部订阅，不把整条情绪曲线带进 Compose 参数。
-     */
-    val climaxFraction: StateFlow<Float?> = combine(
-        runtime.uiState,
-        runtime.climaxFractions,
-    ) { state, peaks ->
-        state.currentSong?.id?.let(peaks::get)
-    }.stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.Eagerly,
-        initialValue = null,
-    )
 
     /** 定时关闭剩余毫秒窄流：倒计时每秒更新，仅供定时关闭 Chip 局部订阅，避免整壳重组（M-6）。 */
     val sleepTimerRemainingMs: StateFlow<Long> = runtime.sleepTimerRemainingMs

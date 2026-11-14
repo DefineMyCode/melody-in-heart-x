@@ -1,5 +1,6 @@
 package cn.com.dcsgo.mihx.feature.user
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -30,6 +31,7 @@ import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -44,6 +46,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
 import cn.com.dcsgo.mihx.core.model.Song
+import kotlinx.coroutines.delay
 
 // ─────────────────────────────────────────────────────────────────
 // 版本重新关联对话框
@@ -63,7 +66,7 @@ import cn.com.dcsgo.mihx.core.model.Song
  * @param allSongs      所有可选的歌曲列表（用于搜索选择目标）
  * @param onDismiss     关闭对话框
  * @param onConfirm     确认关联——传入选定的目标歌曲
- * @param onCopied      复制歌曲名后的回调（用于显示 Toast）
+
  */
 @Composable
 fun ReassignVersionDialog(
@@ -71,9 +74,20 @@ fun ReassignVersionDialog(
     allSongs: List<Song>,
     onDismiss: () -> Unit,
     onConfirm: (targetSong: Song) -> Unit,
-    onCopied: (text: String) -> Unit = {},
+
 ) {
     val context = LocalContext.current
+
+    // 复制歌曲名后的内联提示（1.5s）：Dialog 是独立窗口，主窗口的 ToastHost 会被遮住
+    var copiedHintVisible by remember { mutableStateOf(false) }
+    var copiedHintTick by remember { mutableStateOf(0) }
+    LaunchedEffect(copiedHintTick) {
+        if (copiedHintTick > 0) {
+            copiedHintVisible = true
+            delay(1500)
+            copiedHintVisible = false
+        }
+    }
 
     // 搜索文本
     var searchQuery by remember { mutableStateOf("") }
@@ -81,13 +95,18 @@ fun ReassignVersionDialog(
     // 当前选中的目标歌曲
     var selectedSong: Song? by remember { mutableStateOf(null) }
 
-    // 过滤：排除自身，并根据搜索词过滤
+    // 过滤：排除自身与当前分组（关联回原组等于没操作），再按搜索词过滤
     val filteredSongs by remember(allSongs, searchQuery, song) {
         derivedStateOf {
             val excludeId = song.id
+            val currentGroupKey = song.groupKey
             val query = searchQuery.trim()
             allSongs
-                .filter { it.id != excludeId && it.uri != null }
+                .filter {
+                    it.id != excludeId &&
+                        it.uri != null &&
+                        it.groupKey != currentGroupKey
+                }
                 .let { list ->
                     if (query.isEmpty()) list
                     else list.filter {
@@ -135,7 +154,7 @@ fun ReassignVersionDialog(
                     IconButton(
                         onClick = {
                             copyToClipboard(context, song.title)
-                            onCopied(song.title)
+                            copiedHintTick++
                         },
                         modifier = Modifier.size(28.dp)
                     ) {
@@ -146,6 +165,15 @@ fun ReassignVersionDialog(
                             tint = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
+                }
+                // 复制反馈留在对话框内：主窗口的 Toast 会被 Dialog window 遮住，
+                // 关闭后才补弹既延迟又容易与后续操作混淆
+                AnimatedVisibility(visible = copiedHintVisible) {
+                    Text(
+                        text = "已复制歌曲名",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.primary
+                    )
                 }
                 Text(
                     text = "将关联到以下选中的歌曲分组中",

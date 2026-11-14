@@ -62,10 +62,12 @@ import cn.com.dcsgo.mihx.core.model.Song
 /**
  * 多版本歌曲分组。
  *
- * 将同名歌曲（groupKey 相同）归为一组，用于在多版本管理界面展示。
+ * 将分组键（groupKey）相同的歌曲归为一组：
+ * 默认要求歌名、歌手、专辑完全相同；手动关联/移出由 [Song.groupKey] 处理。
+ * 用于在多版本管理界面展示。
  *
  * @property groupKey      分组键（来自 song.groupKey）
- * @property displayTitle  展示标题（取自组内任意一首歌曲的原始 title）
+ * @property displayTitle  展示标题（默认组为歌曲名，手动关联组为目标歌曲名）
  * @property albumArtUri   封面 URI（取自组内第一首有封面的歌曲）
  * @property versions      该组下所有版本的歌曲列表（按采样率降序排列）
  * @property diffHint      版本间差异提示（如「采样率、歌词 不同」），由 [SongVersionComparer.diffHint] 计算
@@ -442,11 +444,11 @@ fun VersionItemRow(
                     overflow = TextOverflow.Ellipsis
                 )
 
-                // 如果有 titleOverride 且与 title 不同（说明已重新归组），展示提示
-                if (song.titleOverride != null && song.titleOverride != song.title) {
-                    val isDetached = song.titleOverride == "${song.title}#${song.id}"
+                // 手动调整过分组：显示关联目标或移出状态
+                if (song.titleOverride != null) {
                     Text(
-                        text = if (isDetached) "已移出分组" else "已关联到: ${song.titleOverride}",
+                        text = if (song.isDetachedFromGroup) "已移出分组"
+                        else "已关联到: ${song.groupKeyLabel}",
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.outline,
                         maxLines = 1,

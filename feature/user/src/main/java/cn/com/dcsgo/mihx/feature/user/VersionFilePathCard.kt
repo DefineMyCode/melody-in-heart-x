@@ -16,7 +16,11 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.CallSplit
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -24,10 +28,15 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import cn.com.dcsgo.mihx.core.model.Song
@@ -46,6 +55,8 @@ internal fun FilePathCard(
     referenceIndex: Int,
     onSelectReference: (Int) -> Unit,
     onDelete: (Song) -> Unit,
+    onDetach: (Song) -> Unit,
+    onReassign: (Song) -> Unit,
 ) {
     Surface(
         modifier = Modifier
@@ -138,17 +149,74 @@ internal fun FilePathCard(
                             maxLines = Int.MAX_VALUE,
                         )
                     }
-                    // 删除本地文件
-                    IconButton(
-                        onClick = { onDelete(card.song) },
-                        modifier = Modifier.size(34.dp),
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Delete,
-                            contentDescription = "删除此版本",
-                            modifier = Modifier.size(18.dp),
-                            tint = MaterialTheme.colorScheme.error,
-                        )
+                    // 版本操作菜单（移出分组 / 关联其他歌曲 / 删除）
+                    Box {
+                        var showMore by remember(card.song.id) { mutableStateOf(false) }
+                        IconButton(
+                            onClick = { showMore = true },
+                            modifier = Modifier.size(34.dp),
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.MoreVert,
+                                contentDescription = "更多操作",
+                                modifier = Modifier.size(18.dp),
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                        DropdownMenu(
+                            expanded = showMore,
+                            onDismissRequest = { showMore = false },
+                        ) {
+                            DropdownMenuItem(
+                                text = { Text("移出当前分组") },
+                                onClick = {
+                                    showMore = false
+                                    onDetach(card.song)
+                                },
+                                leadingIcon = {
+                                    Icon(
+                                        imageVector = Icons.AutoMirrored.Filled.CallSplit,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(18.dp),
+                                    )
+                                },
+                            )
+                            DropdownMenuItem(
+                                text = { Text("关联到其他歌曲") },
+                                onClick = {
+                                    showMore = false
+                                    onReassign(card.song)
+                                },
+                                leadingIcon = {
+                                    Icon(
+                                        painter = painterResource(R.drawable.swap_vert_24),
+                                        contentDescription = null,
+                                        modifier = Modifier.size(18.dp),
+                                    )
+                                },
+                            )
+                            HorizontalDivider()
+                            DropdownMenuItem(
+                                text = {
+                                    Text(
+                                        "删除此版本",
+                                        color = MaterialTheme.colorScheme.error,
+                                    )
+                                },
+                                onClick = {
+                                    showMore = false
+                                    onDelete(card.song)
+                                },
+                                leadingIcon = {
+                                    Icon(
+                                        imageVector = Icons.Default.Delete,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(18.dp),
+                                        tint = MaterialTheme.colorScheme.error,
+                                    )
+                                },
+                            )
+                        }
                     }
                 }
                 if (index != versions.lastIndex) {

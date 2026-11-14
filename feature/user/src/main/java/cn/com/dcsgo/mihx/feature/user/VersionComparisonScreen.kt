@@ -57,6 +57,9 @@ fun VersionComparisonScreen(
     onPlayVersion: (Song) -> Unit,
     onSeekTo: (Long) -> Unit,
     onDeleteSong: (Song) -> Unit,
+    onDetachVersion: (Song) -> Unit,
+    onReassignVersion: (song: Song, targetSong: Song) -> Unit,
+
     loadSongInfo: suspend (Song) -> SongInfo? = { null },
 ) {
     // ── 各版本完整元数据（文件路径 + 比特率，与「查看歌曲详情」同源） ──
@@ -100,6 +103,21 @@ fun VersionComparisonScreen(
                 onDeleteSong(song)
                 songToDelete = null
             },
+        )
+    }
+
+    // ── 关联选择 ──
+    var songToReassign: Song? by remember { mutableStateOf(null) }
+    songToReassign?.let { song ->
+        ReassignVersionDialog(
+            song = song,
+            allSongs = allSongs,
+            onDismiss = { songToReassign = null },
+            onConfirm = { targetSong ->
+                onReassignVersion(song, targetSong)
+                songToReassign = null
+            },
+
         )
     }
 
@@ -202,6 +220,8 @@ fun VersionComparisonScreen(
                 referenceIndex = referenceIndex,
                 onSelectReference = { referenceIndex = it },
                 onDelete = { songToDelete = it },
+                onDetach = { onDetachVersion(it) },
+                onReassign = { songToReassign = it },
             )
         }
     }

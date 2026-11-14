@@ -123,7 +123,7 @@ fun VersionManagementScreen(
                     val sorted = songList.sortedByDescending { it.sampleRate }
                     SongVersionGroup(
                         groupKey = songList.first().groupKey,
-                        displayTitle = songList.first().title,
+                        displayTitle = songList.first().groupKeyLabel,
                         albumArtUri = sorted.firstOrNull { it.albumArtUri != null }?.albumArtUri,
                         versions = sorted,
                         diffHint = SongVersionComparer.diffHint(sorted)
@@ -197,8 +197,7 @@ fun VersionManagementScreen(
             onConfirm = { targetSong ->
                 onReassignVersion(song, targetSong)
                 songToReassign = null
-            },
-            onCopied = onCopied
+            }
         )
     }
 

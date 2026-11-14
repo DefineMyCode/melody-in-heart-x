@@ -14,7 +14,8 @@ import androidx.compose.runtime.Stable
  * @property uri           音频文件的 SAF URI（非本地导入的歌曲为 null）
  * @property albumArtUri   专辑封面 URI（缓存文件，null 表示无封面）
  * @property lrcUri        导入文件夹时匹配到的同目录 LRC 歌词 URI，null 表示未找到。
- * @property titleOverride 用户自定义的分组键覆盖值，null 时回退到 title。
+ * @property titleOverride 手动分组覆盖值：存目标组的 groupKey（关联其他分组），
+ *                         或 "标题#id"（移出分组）；null 时按 title + artist + album 自动分组。
  *                         用于"多版本管理"中将歌曲从某分组移出或关联到其他歌曲。
  */
 @Stable
@@ -62,10 +63,37 @@ data class Song(
         .ifEmpty { listOf(artist.trim()) }
 
     /**
-     * 分组键：同名歌曲共享同一个 groupKey。
-     * 优先使用用户设置的 titleOverride（允许手动调整归属分组），
-     * 否则回退到原始标题。
+     * 默认分组键：歌曲名、歌手、专辑**完全相同**才视为同一组。
+     *
+     * 用不可见分隔符拼接，避免三字段直接相连造成误判（如 "AB"+"C" 与 "A"+"BC"）。
+     */
+    val defaultGroupKey: String
+        get() = "$title$GROUP_KEY_SEPARATOR$artist$GROUP_KEY_SEPARATOR$album"
+
+    /**
+     * 实际分组键。
+     *
+     * - 未手动调整：使用 [defaultGroupKey]（歌名 + 歌手 + 专辑全同）
+     * - 手动关联：titleOverride 存目标组的 groupKey，直接沿用，从而并入目标组
+     * - 手动移出：titleOverride 为 "标题#id"，与默认键不同，自成一类（组内仅 1 首）
+     * - 旧版手动关联（titleOverride 只存纯标题）：沿用旧值作为键，保留原手动分组关系
      */
     val groupKey: String
-        get() = titleOverride ?: title
+        get() = titleOverride ?: defaultGroupKey
+
+    /** 是否被手动移出分组（移出键形如 "标题#id"）。 */
+    val isDetachedFromGroup: Boolean
+        get() = titleOverride == "$title#$id"
+
+    /** 手动关联目标的显示名；移出或未关联时回退为当前标题。 */
+    val groupKeyLabel: String
+        get() = titleOverride
+            ?.takeUnless { isDetachedFromGroup }
+            ?.substringBefore(GROUP_KEY_SEPARATOR)
+            ?: title
+
+    companion object {
+        /** 分组键字段分隔符（U+0001，正常标题/歌手/专辑中不会出现）。 */
+        const val GROUP_KEY_SEPARATOR = '\u0001'
+    }
 }

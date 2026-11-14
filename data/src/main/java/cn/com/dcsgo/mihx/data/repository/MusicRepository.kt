@@ -1081,8 +1081,9 @@ class MusicRepository(
     /**
      * 更新歌曲的 titleOverride（版本归组键覆盖）。
      *
-     * - 传入非 null 值：将该歌曲的 groupKey 覆盖为指定值，使其归属到对应分组。
-     * - 传入 null：清除覆盖，恢复使用原始 title 作为 groupKey。
+     * - 传入目标组的 groupKey：关联到该分组（可跨歌名/歌手/专辑）。
+     * - 传入 "标题#id"：移出分组，独立成组。
+     * - 传入 null：清除覆盖，恢复默认分组键（歌名 + 歌手 + 专辑完全一致才同组）。
      *
      * @param songId        目标歌曲的 ID
      * @param titleOverride 新的分组键（null 表示清除覆盖）

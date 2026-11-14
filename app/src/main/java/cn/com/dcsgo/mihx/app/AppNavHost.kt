@@ -768,6 +768,11 @@ fun AppNavHost(
                     },
                     onSeekTo = playerViewModel::seekTo,
                     onDeleteSong = { song -> deleteSongWithToast(song.id) },
+                    onDetachVersion = { song -> playerViewModel.detachSongFromGroup(song) },
+                    onReassignVersion = { song, targetSong ->
+                        playerViewModel.reassignSongToGroup(song, targetSong)
+                    },
+
                 ),
                 showToast = showToast,
                 loadSongInfo = loadSongInfo,

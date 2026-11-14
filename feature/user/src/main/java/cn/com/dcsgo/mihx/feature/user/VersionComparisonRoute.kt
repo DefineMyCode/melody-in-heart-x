@@ -25,6 +25,11 @@ data class VersionComparisonRouteActions(
     val onPlayVersion: (Song) -> Unit,
     val onSeekTo: (Long) -> Unit,
     val onDeleteSong: (Song) -> Unit,
+    /** 将某版本移出当前分组（独立成单曲） */
+    val onDetachVersion: (Song) -> Unit,
+    /** 将某版本关联到其他歌曲分组 */
+    val onReassignVersion: (song: Song, targetSong: Song) -> Unit,
+
 )
 
 @Composable
@@ -48,6 +53,15 @@ fun VersionComparisonRoute(
         },
         onSeekTo = actions.onSeekTo,
         onDeleteSong = { song -> actions.onDeleteSong(song) },
+        onDetachVersion = { song ->
+            actions.onDetachVersion(song)
+            showToast("已将「${song.title}」移出分组")
+        },
+        onReassignVersion = { song, targetSong ->
+            actions.onReassignVersion(song, targetSong)
+            showToast("已将「${song.title}」关联到「${targetSong.title}」分组")
+        },
+
         loadSongInfo = loadSongInfo,
     )
 }

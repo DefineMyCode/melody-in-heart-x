@@ -43,3 +43,6 @@ build_output.txt
 # Python 工具的字节码缓存
 __pycache__/
 *.pyc
+
+# 华为码道 CodeArts
+/.arts/

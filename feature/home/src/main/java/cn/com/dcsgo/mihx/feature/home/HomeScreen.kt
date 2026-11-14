@@ -184,15 +184,13 @@ fun HomeScreen(
                 }
             }
 
-            // 左上角 Hi-Res 徽章
-            if (currentSong.sampleRate >= 88200) {
-                HiResBadge(
-                    sampleRate = currentSong.sampleRate,
-                    modifier = Modifier
-                        .align(Alignment.TopStart)
-                        .padding(start = 16.dp, top = 16.dp)
-                )
-            }
+            // 左上角 Hi-Res 徽章（按音质档位统一口径）
+            HiResBadge(
+                song = currentSong,
+                modifier = Modifier
+                    .align(Alignment.TopStart)
+                    .padding(start = 16.dp, top = 16.dp)
+            )
 
             HomeFabs(
                 onLuckyPlayClick = onLuckyPlayClick

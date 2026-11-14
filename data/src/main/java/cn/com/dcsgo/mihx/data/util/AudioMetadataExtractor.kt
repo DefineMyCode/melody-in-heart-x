@@ -80,8 +80,8 @@ object AudioMetadataExtractor {
             val durationMs = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
                 ?.toLongOrNull() ?: 0L
 
-            val bitDepth = readBitDepth(retriever, uri)
             val track = readTrack(ctx, uri, retriever)
+            val bitDepth = readBitDepth(retriever, track.audioCodec)
 
             AppLog.debug(
                 TAG,
@@ -173,8 +173,8 @@ object AudioMetadataExtractor {
             val artBytes = retriever.embeddedPicture
                 ?.takeIf { it.isNotEmpty() && it.size <= MAX_ART_BYTES }
 
-            val bitDepth = readBitDepth(retriever, uri)
             val track = readTrack(ctx, uri, retriever)
+            val bitDepth = readBitDepth(retriever, track.audioCodec)
 
             AppLog.debug(
                 TAG,
@@ -233,8 +233,8 @@ object AudioMetadataExtractor {
             val sampleRate = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_SAMPLERATE)
                 ?.toIntOrNull() ?: 0
 
-            val bitDepth = readBitDepth(retriever, uri)
             val track = readTrack(ctx, uri, retriever)
+            val bitDepth = readBitDepth(retriever, track.audioCodec)
             val quality = AudioQualityTier.classify(
                 audioCodec = track.audioCodec,
                 bitRateKbps = track.bitRateKbps,
@@ -305,24 +305,22 @@ object AudioMetadataExtractor {
     }
 
     /**
-     * 位深（bit）：只对无损/未压缩格式有意义。
+     * 位深（bit）：只对无损/未压缩编码有意义。
      *
-     * MMR 的 METADATA_KEY_BITS_PER_SAMPLE 在部分有损格式也会返回解码位深（如 16），
-     * 不代表音质，因此先按扩展名过滤；未知/有损/读取失败统一返回 0。
+     * 不能用扩展名判断：`.m4a` 既可能是 ALAC 无损，也可能是 AAC 有损。
+     * 这里按实际轨道 MIME 过滤，ALAC 的 `.m4a` 才能读到 24/32bit；
+     * 有损格式即使 MMR 返回解码位深（如 16）也不采用。
      */
-    private fun readBitDepth(retriever: MediaMetadataRetriever, uri: Uri): Int {
-        if (!isLosslessFormat(extractFormat(uri))) return 0
+    private fun readBitDepth(
+        retriever: MediaMetadataRetriever,
+        audioCodec: String,
+    ): Int {
+        if (!AudioQualityTier.isLossless(audioCodec)) return 0
         return retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_BITS_PER_SAMPLE)
             ?.toIntOrNull()
             ?.takeIf { it in 1..64 }
             ?: 0
     }
-
-    private fun isLosslessFormat(format: String): Boolean =
-        format.lowercase() in setOf(
-            "flac", "alac", "wav", "wave", "aif", "aiff", "aifc",
-            "ape", "dsf", "dff", "tta", "wv",
-        )
 
     /** 格式化时长：毫秒 → mm:ss */
     private fun formatDuration(ms: Long): String {

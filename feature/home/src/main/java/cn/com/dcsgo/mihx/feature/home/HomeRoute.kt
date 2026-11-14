@@ -138,7 +138,10 @@ fun HomeRoute(
         onSwitchVersion = remember(actions, showToast) {
             { song ->
                 actions.onSwitchVersion(song)
-                showToast("已切换到 ${song.sampleRateDisplay} 版本")
+                // 版本切换菜单已改为展示音质档位，toast 同步，不再显示采样率
+                val quality = song.qualityLabel.ifEmpty { "未知" }
+                val spatial = if (song.spatialAudio) " · 空间音频" else ""
+                showToast("已切换到「$quality」版本$spatial")
             }
         },
         onTextCopied = remember(showToast) {

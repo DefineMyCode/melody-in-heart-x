@@ -55,6 +55,8 @@ class HomeScreenComposeTest {
                         artist = "周杰伦",
                         album = "十一月的萧邦",
                         sampleRate = 96_000,
+                        bitDepth = 24,
+                        audioCodec = "audio/flac",
                     ),
                     isPlaying = true,
                     positionMs = MutableStateFlow(12_000L),
@@ -76,7 +78,7 @@ class HomeScreenComposeTest {
         composeRule.onNodeWithText("夜曲").assertIsDisplayed()
         composeRule.onNodeWithText("周杰伦").assertIsDisplayed()
         composeRule.onNodeWithText("十一月的萧邦").assertIsDisplayed()
-        composeRule.onNodeWithText("Hi-Res").assertIsDisplayed()
+        composeRule.onNodeWithContentDescription("Hi-Res 音频（96kHz / 24bit）").assertIsDisplayed()
         composeRule.onNodeWithContentDescription("播放队列").assertIsDisplayed()
         composeRule.onNodeWithContentDescription("上一首").assertIsDisplayed()
         composeRule.onNodeWithContentDescription("暂停").assertIsDisplayed()

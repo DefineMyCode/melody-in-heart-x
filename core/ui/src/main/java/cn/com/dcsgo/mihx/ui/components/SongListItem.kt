@@ -119,6 +119,7 @@ fun SongListItem(
                 overflow = TextOverflow.Ellipsis,
             )
             subline?.invoke()
+            AudioSpecBadges(song)
         }
         // 播放中 EQ 动画指示器（内部强制 16dp，各变体视觉一致）
         if (isCurrentPlaying) {

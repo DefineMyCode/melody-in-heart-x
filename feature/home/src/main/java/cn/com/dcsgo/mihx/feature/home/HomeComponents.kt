@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -29,11 +30,11 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import cn.com.dcsgo.mihx.core.model.AudioQualityTier
 import cn.com.dcsgo.mihx.core.model.Song
+import cn.com.dcsgo.mihx.ui.components.SpatialAudioIcon
 import kotlinx.coroutines.delay
 
-/** Hi-Res 判定阈值：采样率 ≥ 88200 Hz */
-private const val HI_RES_THRESHOLD_HZ = 88200
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 一键复制按钮（歌曲名 / 艺术家名）
@@ -122,7 +123,8 @@ private fun copyToClipboard(context: Context, text: String) {
  * 同名歌曲版本选择器
  *
  * 当当前播放的歌曲存在同名版本时，显示版本数量和一个下拉选择器，
- * 列出所有同名版本及其采样率，用户可点击切换到不同版本。
+ * 列出所有同名版本的音质档位，并在支持时附带空间音频图标，
+ * 用户可点击切换到不同版本。
  * 只有一首同名歌曲时不显示版本切换部分（无需切换）。
  *
  * @param sameNameSongs    同名歌曲列表（按采样率降序排列，包含当前歌曲）
@@ -172,11 +174,10 @@ fun VersionSelector(
             ) {
                 sameNameSongs.forEach { song ->
                     val isCurrent = song.id == currentSongId
-                    val label = buildVersionLabel(song)
                     DropdownMenuItem(
                         text = {
                             Text(
-                                text = label,
+                                text = song.qualityLabel.ifEmpty { "未知" },
                                 fontWeight = if (isCurrent) FontWeight.Bold else FontWeight.Normal,
                                 color = if (isCurrent) MaterialTheme.colorScheme.primary
                                         else MaterialTheme.colorScheme.onSurface
@@ -187,13 +188,21 @@ fun VersionSelector(
                             if (!isCurrent) onVersionSelect(song)
                         },
                         trailingIcon = {
-                            if (isCurrent) {
-                                Text(
-                                    text = "当前",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = MaterialTheme.colorScheme.primary,
-                                    fontWeight = FontWeight.Bold
-                                )
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                if (song.spatialAudio) {
+                                    SpatialAudioIcon(modifier = Modifier.size(14.dp))
+                                }
+                                if (isCurrent) {
+                                    if (song.spatialAudio) {
+                                        Spacer(modifier = Modifier.width(4.dp))
+                                    }
+                                    Text(
+                                        text = "当前",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.primary,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
                             }
                         }
                     )
@@ -206,31 +215,32 @@ fun VersionSelector(
 /**
  * Hi-Res 徽章
  *
- * 当采样率 ≥ 88200 Hz 时显示 Hi-Res 音频徽章。
- *
- * @param sampleRate 采样率（Hz）
- * @param modifier 修饰符
+ * 与音质档位统一口径：只有 [AudioQualityTier.HI_RES]（无损 + 24bit + ≥48kHz，或 DSD）
+ * 才显示，避免 24bit/48kHz 在列表里是「高解析」、这里却不显示。
  */
 @Composable
 fun HiResBadge(
-    sampleRate: Int,
+    song: Song,
     modifier: Modifier = Modifier
 ) {
-    if (sampleRate < HI_RES_THRESHOLD_HZ) return
+    if (song.qualityTier != AudioQualityTier.HI_RES) return
 
+    val detail = buildString {
+        append("Hi-Res 音频（")
+        append(song.sampleRate / 1000)
+        append("kHz")
+        if (song.bitDepth > 0) {
+            append(" / ")
+            append(song.bitDepth)
+            append("bit")
+        }
+        append("）")
+    }
     Icon(
         painter = painterResource(id = R.drawable.hi_res),
-        contentDescription = "Hi-Res 音频（${sampleRate / 1000}kHz）",
+        contentDescription = detail,
         modifier = modifier.size(40.dp),
         tint = androidx.compose.ui.graphics.Color.Unspecified  // 保留原始颜色
     )
 }
 
-/**
- * 构建版本标签文字
- *
- * 格式：采样率（如 "48kHz"）
- */
-private fun buildVersionLabel(song: Song): String {
-    return if (song.sampleRate > 0) "${song.sampleRate / 1000}kHz" else "未知采样率"
-}

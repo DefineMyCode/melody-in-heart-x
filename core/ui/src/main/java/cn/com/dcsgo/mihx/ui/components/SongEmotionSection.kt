@@ -77,14 +77,16 @@ fun smoothCurve(curve: List<Pair<Float, Float>>): List<Pair<Float, Float>> {
     }
 }
 
-/** A 曲线峰值须高出均值这么多才算"真高潮"(20 首实测分布定标: 平缓/全程高能歌 ≤0.49, 真高潮歌 ≥0.52). */
-private const val PEAK_MARGIN = 0.5f
-
-/** 高潮是否显著: A 最大值显著高于 A 均值. */
+/**
+ * 高潮是否显著: A 最大值显著高于 A 均值.
+ *
+ * 阈值与 [SongEmotion.PEAK_MARGIN] 单源(20 首实测分布定标: 平缓/全程高能歌 ≤0.49, 真高潮歌 ≥0.52),
+ * 播放页进度条的高潮圆点复用同一判定, 避免两处口径漂移。
+ */
 fun hasSignificantPeak(curve: List<Pair<Float, Float>>): Boolean {
     if (curve.size < 4) return false
     val a = curve.map { it.second }
-    return a.max() > a.average().toFloat() + PEAK_MARGIN
+    return a.max() > a.average().toFloat() + SongEmotion.PEAK_MARGIN
 }
 
 /**

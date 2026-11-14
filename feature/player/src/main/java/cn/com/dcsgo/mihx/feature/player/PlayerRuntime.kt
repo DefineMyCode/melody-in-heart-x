@@ -163,6 +163,15 @@ internal class PlayerRuntime(
     private val _uiState = MutableStateFlow(PlayerUiState())
     val uiState: StateFlow<PlayerUiState> = _uiState.asStateFlow()
 
+    /**
+     * 每首歌的高潮归一化位置（0..1），只含有显著高潮的歌。
+     *
+     * 与情绪词条同一订阅源（[observeMoodSlotCaches] 的 `observeAll`），切歌零额外 IO。
+     * 无有效分析（user-only 行）或高潮不显著的歌不在 Map 中。
+     */
+    private val _climaxFractions = MutableStateFlow<Map<Int, Float>>(emptyMap())
+    val climaxFractions: StateFlow<Map<Int, Float>> = _climaxFractions.asStateFlow()
+
     /** 本地歌曲文件校验结果（未确认前保留，供结果页重复进入） */
     private val _validationResult = MutableStateFlow<LocalFileValidationResult?>(null)
     val validationResult: StateFlow<LocalFileValidationResult?> = _validationResult.asStateFlow()
@@ -458,20 +467,26 @@ internal class PlayerRuntime(
             songEmotionRepository.observeAll()
                 .map { emotions ->
                     emotions.mapValues { (_, emotion) ->
-                        // 一次订阅算两份分布（匹配用完整 / 计票用卡门槛），不重复查库
-                        cn.com.dcsgo.mihx.core.model.emotionMatchRatiosOf(emotion) to
+                        // 一次订阅算两份分布（匹配用完整 / 计票用卡门槛）+ 进度条高潮点，不重复查库
+                        Triple(
+                            cn.com.dcsgo.mihx.core.model.emotionMatchRatiosOf(emotion),
                             cn.com.dcsgo.mihx.core.model.emotionVoteRatiosOf(
                                 emotion = emotion,
                                 minRatio = ExplorePlaybackPolicy.VOTE_MIN_RATIO,
                                 topN = ExplorePlaybackPolicy.VOTE_MAX_TAGS,
-                            )
+                            ),
+                            emotion.climaxFraction,
+                        )
                     }
                 }
                 .flowOn(dispatchers.default)
                 .catch { AppLog.warning(TAG, "observe mood emotion tags failed: ${it.message}") }
-                .collect { pairs ->
-                    moodEmotionRatiosCache = pairs.mapValues { it.value.first }
-                    exploreVoteRatiosCache = pairs.mapValues { it.value.second }
+                .collect { triples ->
+                    moodEmotionRatiosCache = triples.mapValues { it.value.first }
+                    exploreVoteRatiosCache = triples.mapValues { it.value.second }
+                    _climaxFractions.value = triples.mapNotNull { (songId, triple) ->
+                        triple.third?.let { songId to it }
+                    }.toMap()
                 }
         }
         // 探索播放（2026-10-20）：情绪词条收听偏好（计票制）持续订阅

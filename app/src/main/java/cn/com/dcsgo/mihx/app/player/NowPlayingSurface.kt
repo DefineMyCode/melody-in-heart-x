@@ -55,6 +55,8 @@ fun NowPlayingSurface(
     // SongInfoSection → 整棵 Home 子树每秒重组 5 次。现在把窄流本身传下去，
     // 由进度条叶子节点自己订阅 —— 重组范围收缩到那一小块。
     val sleepTimerRemainingMs by playerViewModel.sleepTimerRemainingMs.collectAsStateWithLifecycle()
+    // 当前歌曲高潮位置（0..1）：低频窄流（切歌/分析完成才变），仅供进度条画一个标记圆点
+    val climaxFraction by playerViewModel.climaxFraction.collectAsStateWithLifecycle()
     // 播放页"更多"功能对话框状态
     var songForInfo by remember { mutableStateOf<Song?>(null) }
     var songInfo by remember { mutableStateOf<SongInfo?>(null) }
@@ -86,6 +88,7 @@ fun NowPlayingSurface(
         sleepTimerRemainingMs,
         uiState.sleepTimerPlayLastSong,
         uiState.sleepTimerPausePending,
+        climaxFraction,
     ) {
         HomeRouteState(
             currentSong = uiState.currentSong,
@@ -100,6 +103,7 @@ fun NowPlayingSurface(
             sleepTimerRemainingMs = sleepTimerRemainingMs,
             sleepTimerPlayLastSong = uiState.sleepTimerPlayLastSong,
             sleepTimerPausePending = uiState.sleepTimerPausePending,
+            climaxFraction = climaxFraction,
         )
     }
     val homeActions = remember(

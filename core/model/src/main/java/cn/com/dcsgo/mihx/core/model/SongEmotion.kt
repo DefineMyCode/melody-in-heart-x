@@ -102,7 +102,33 @@ data class SongEmotion(
     /** 是否已由用户校准(以**词条**为准, 坐标已不再落库) */
     val userCorrected: Boolean get() = userTags.isNotEmpty()
 
+    /**
+     * 高潮是否显著: A(能量)曲线最大值需显著高于均值。
+     *
+     * 与歌曲信息弹窗里的 `hasSignificantPeak(curve)` 同一口径, 阈值单源在 [PEAK_MARGIN]。
+     * 全程高能的歌也有 [peakSec], 只有这里为 true 才值得在进度条上标点。
+     */
+    val hasSignificantPeak: Boolean
+        get() {
+            if (curve.size < 4) return false
+            val a = curve.map { it.second }
+            return a.max() > a.average().toFloat() + PEAK_MARGIN
+        }
+
+    /**
+     * 高潮在整曲中的归一化位置 (0..1), 供播放页进度条标识。
+     *
+     * null = 无有效分析(user-only 行)或高潮不显著。
+     */
+    val climaxFraction: Float?
+        get() {
+            if (windowsAnalyzed <= 0 || durationSec <= 0f || !hasSignificantPeak) return null
+            return (peakSec / durationSec).coerceIn(0f, 1f)
+        }
+
     companion object {
         const val LOW_CONF = 0.15f
+        /** A 曲线峰值须高出均值这么多才算"真高潮"(20 首实测分布定标), 与 UI 共用。 */
+        const val PEAK_MARGIN = 0.5f
     }
 }

@@ -1,6 +1,8 @@
 package cn.com.dcsgo.mihx.feature.playlist
 
+
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -15,9 +17,11 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -28,6 +32,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
+import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -35,6 +40,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -52,6 +58,9 @@ import cn.com.dcsgo.mihx.ui.components.SingleSongAddToPlaylistDialog
 import cn.com.dcsgo.mihx.ui.components.SongInfoDialog
 import cn.com.dcsgo.mihx.ui.components.SongItemAction
 import cn.com.dcsgo.mihx.ui.components.loadSongInfoSafely
+import cn.com.dcsgo.mihx.ui.components.locateHighlightFlash
+import cn.com.dcsgo.mihx.ui.components.rememberLocateHighlightState
+import kotlinx.coroutines.launch
 
 /**
  * 曲库「情绪」Tab: 已分析歌曲列表.
@@ -98,6 +107,13 @@ fun EmotionLibraryView(
     val tagOptions = remember(rows) { rows.flatMap { it.tags }.distinct().sorted() }
     val filteredSongs = filtered.map { it.song }
     val selectedSongs = selection.selectedSongs(filteredSongs)
+
+    // 定位当前播放：滚动由按钮触发，命中行做一次高亮闪现
+    val listState = rememberLazyListState()
+    val locateHighlight = rememberLocateHighlightState()
+    val coroutineScope = rememberCoroutineScope()
+    val currentSongIndex = filtered.indexOfFirst { it.song.id == currentSong?.id }
+    val canLocate = !selection.isSelectMode && currentSongIndex >= 0
 
     Column(modifier = Modifier.fillMaxSize()) {
         // 已选词条: 置顶固定行(仿校准弹窗"已选"), 点按移除, 尾部可整体清空
@@ -189,17 +205,20 @@ fun EmotionLibraryView(
                 }
             }
         } else {
-            LazyColumn(
-                modifier = Modifier.weight(1f),
-                contentPadding = PaddingValues(
-                    start = 16.dp,
-                    end = 16.dp,
-                    bottom = 16.dp,
-                ),
-                verticalArrangement = Arrangement.spacedBy(4.dp),
-            ) {
+            Box(modifier = Modifier.weight(1f)) {
+                LazyColumn(
+                    state = listState,
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(
+                        start = 16.dp,
+                        end = 16.dp,
+                        bottom = if (canLocate) 72.dp else 16.dp,
+                    ),
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                ) {
                 items(filtered, key = { it.song.id }, contentType = { "emotion_song" }) { row ->
                     EmotionLibrarySongItem(
+                        modifier = Modifier.locateHighlightFlash(row.song.id, locateHighlight),
                         row = row,
                         isCurrentPlaying = isPlaying && currentSong?.id == row.song.id,
                         isSelectMode = selection.isSelectMode,
@@ -236,6 +255,29 @@ fun EmotionLibraryView(
                             ),
                         ),
                     )
+                }
+                }
+                if (canLocate) {
+                    SmallFloatingActionButton(
+                        onClick = {
+                            val index = filtered.indexOfFirst { it.song.id == currentSong?.id }
+                            if (index >= 0) {
+                                locateHighlight.trigger(currentSong?.id)
+                                coroutineScope.launch { listState.animateScrollToItem(index) }
+                            }
+                        },
+                        modifier = Modifier
+                            .align(Alignment.BottomStart)
+                            .padding(start = 16.dp, bottom = 16.dp),
+                        containerColor = MaterialTheme.colorScheme.primaryContainer,
+                        contentColor = MaterialTheme.colorScheme.primary,
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.MyLocation,
+                            contentDescription = "定位到当前播放",
+                            modifier = Modifier.size(20.dp),
+                        )
+                    }
                 }
             }
         }
@@ -340,6 +382,7 @@ fun EmotionLibraryView(
 /** 情绪 Tab 行: 本地音乐同款 SongItem, 词条挂在歌手下一行. */
 @Composable
 private fun EmotionLibrarySongItem(
+    modifier: Modifier = Modifier,
     row: EmotionSongUiRow,
     isCurrentPlaying: Boolean,
     isSelectMode: Boolean,
@@ -348,6 +391,7 @@ private fun EmotionLibrarySongItem(
     menuActions: List<SongItemAction>,
 ) {
     SongItem(
+        modifier = modifier,
         song = row.song,
         isCurrentPlaying = isCurrentPlaying,
         showDuration = true,

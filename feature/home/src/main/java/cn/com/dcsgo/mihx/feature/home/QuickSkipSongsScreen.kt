@@ -14,17 +14,21 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FabPosition
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -32,6 +36,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -42,6 +47,9 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import cn.com.dcsgo.mihx.core.model.Song
 import cn.com.dcsgo.mihx.ui.components.SongListItem
+import cn.com.dcsgo.mihx.ui.components.locateHighlightFlash
+import cn.com.dcsgo.mihx.ui.components.rememberLocateHighlightState
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -56,7 +64,39 @@ fun QuickSkipSongsScreen(
     var showDeleteDialog by remember { mutableStateOf(false) }
     var songToDelete by remember { mutableStateOf<Song?>(null) }
 
+    // 定位当前播放：列表有 1 个 header item（统计文案），滚动下标 = 歌曲下标 + 1
+    val listState = rememberLazyListState()
+    val locateHighlight = rememberLocateHighlightState()
+    val coroutineScope = rememberCoroutineScope()
+    val currentSongIndex = songs.indexOfFirst { it.id == currentSong?.id }
+    val canLocate = currentSongIndex >= 0
+
     Scaffold(
+        floatingActionButtonPosition = FabPosition.Start,
+        floatingActionButton = {
+            if (canLocate) {
+                SmallFloatingActionButton(
+                    onClick = {
+                        // 点击瞬间列表可能变化，重新取一次下标
+                        val index = songs.indexOfFirst { it.id == currentSong?.id }
+                        if (index >= 0) {
+                            locateHighlight.trigger(currentSong?.id)
+                            coroutineScope.launch {
+                                listState.animateScrollToItem(index + 1)
+                            }
+                        }
+                    },
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    contentColor = MaterialTheme.colorScheme.primary,
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.MyLocation,
+                        contentDescription = "定位到当前播放",
+                        modifier = Modifier.size(20.dp),
+                    )
+                }
+            }
+        },
         topBar = {
             TopAppBar(
                 title = { Text("秒切歌曲") },
@@ -111,6 +151,7 @@ fun QuickSkipSongsScreen(
         }
 
         LazyColumn(
+            state = listState,
             modifier = Modifier.fillMaxSize().padding(it),
             contentPadding = PaddingValues(vertical = 8.dp)
         ) {
@@ -125,6 +166,7 @@ fun QuickSkipSongsScreen(
 
             itemsIndexed(songs, key = { _, song -> song.id }) { index, song ->
                 QuickSkipSongItem(
+                    modifier = Modifier.locateHighlightFlash(song.id, locateHighlight),
                     index = index + 1,
                     song = song,
                     isPlaying = song.id == currentSong?.id,
@@ -178,6 +220,7 @@ fun QuickSkipSongsScreen(
 
 @Composable
 private fun QuickSkipSongItem(
+    modifier: Modifier = Modifier,
     index: Int,
     song: Song,
     isPlaying: Boolean,
@@ -187,7 +230,7 @@ private fun QuickSkipSongItem(
     SongListItem(
         song = song,
         isCurrentPlaying = isPlaying,
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth(),
         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 10.dp),
         onClick = onClick,
         leading = {

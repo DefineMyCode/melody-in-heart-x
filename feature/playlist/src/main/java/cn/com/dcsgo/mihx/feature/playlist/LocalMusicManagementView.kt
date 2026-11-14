@@ -19,7 +19,8 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.MyLocation
-import androidx.compose.material3.FloatingActionButton
+
+import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -357,18 +358,20 @@ fun LocalMusicManagementView(
                 enter = slideInVertically(initialOffsetY = { it }),
                 exit = slideOutVertically(targetOffsetY = { it }),
             ) {
-                FloatingActionButton(
+                SmallFloatingActionButton(
                     onClick = {
                         coroutineScope.launch {
                             listState.animateScrollToItem(0)
                         }
                     },
+                    // 与「定位到当前播放」按钮同规格：40dp + primaryContainer + 20dp 图标
                     containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                    contentColor = MaterialTheme.colorScheme.primary
                 ) {
                     Icon(
                         imageVector = Icons.Default.KeyboardArrowUp,
-                        contentDescription = "回到顶部"
+                        contentDescription = "回到顶部",
+                        modifier = Modifier.size(20.dp)
                     )
                 }
             }
@@ -379,19 +382,21 @@ fun LocalMusicManagementView(
                 enter = slideInVertically(initialOffsetY = { it }),
                 exit = slideOutVertically(targetOffsetY = { it }),
             ) {
-                FloatingActionButton(
+                SmallFloatingActionButton(
                     onClick = {
                         locateHighlight.trigger(currentSong?.id)
                         coroutineScope.launch {
                             listState.animateScrollToItem(currentSongIndexInList)
                         }
                     },
+                    // 与多版本管理页的定位按钮统一：40dp + primaryContainer 底 + 20dp 图标
                     containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                    contentColor = MaterialTheme.colorScheme.primary
                 ) {
                     Icon(
                         imageVector = Icons.Default.MyLocation,
-                        contentDescription = "定位到当前播放"
+                        contentDescription = "定位到当前播放",
+                        modifier = Modifier.size(20.dp)
                     )
                 }
             }

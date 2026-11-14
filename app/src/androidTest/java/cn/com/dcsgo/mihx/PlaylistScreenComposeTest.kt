@@ -175,10 +175,10 @@ class PlaylistScreenComposeTest {
         composeRule.onNodeWithText("倒带").assertIsDisplayed()
         composeRule.onNodeWithContentDescription("正在播放").assertIsDisplayed()
 
-        composeRule.onNodeWithText("从头播放 (2)").performClick()
-        composeRule.onNodeWithText("从尾播放 (2)").performClick()
-        composeRule.onNodeWithText("加入队尾 (2)").performClick()
-        composeRule.onNodeWithText("下一首播放 (2)").performClick()
+        composeRule.onNodeWithContentDescription("从头播放").performClick()
+        composeRule.onNodeWithContentDescription("从尾播放").performClick()
+        composeRule.onNodeWithContentDescription("加入队尾").performClick()
+        composeRule.onNodeWithContentDescription("下一首播放").performClick()
 
         assertEquals(1, playAllCount)
         assertEquals(1, playAllFromEndCount)

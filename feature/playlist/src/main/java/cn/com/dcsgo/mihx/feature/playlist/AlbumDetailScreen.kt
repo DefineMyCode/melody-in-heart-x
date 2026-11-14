@@ -19,14 +19,17 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -34,6 +37,7 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -52,6 +56,9 @@ import cn.com.dcsgo.mihx.ui.components.BatchAddToPlaylistDialog
 import cn.com.dcsgo.mihx.ui.components.SingleSongAddToPlaylistDialog
 import cn.com.dcsgo.mihx.ui.components.SongInfoDialog
 import cn.com.dcsgo.mihx.ui.components.loadSongInfoSafely
+import cn.com.dcsgo.mihx.ui.components.locateHighlightFlash
+import cn.com.dcsgo.mihx.ui.components.rememberLocateHighlightState
+import kotlinx.coroutines.launch
 
 /**
  * 专辑详情页
@@ -120,6 +127,13 @@ fun AlbumDetailScreen(
     BackHandler(enabled = selection.isSelectMode) {
         selection.exitSelectMode()
     }
+
+    // 定位当前播放：滚动由按钮触发，命中行做一次高亮闪现
+    val listState = rememberLazyListState()
+    val locateHighlight = rememberLocateHighlightState()
+    val coroutineScope = rememberCoroutineScope()
+    val currentSongIndex = displaySongs.indexOfFirst { it.id == currentSong?.id }
+    val canLocate = selectedSection == 0 && !selection.isSelectMode && currentSongIndex >= 0
 
     // 根容器必须不透明：返回过渡期间退出页绘制在目标页之上，透明会让目标页透出造成两页叠加
     Box(
@@ -196,6 +210,7 @@ fun AlbumDetailScreen(
                     }
 
                     LazyColumn(
+                        state = listState,
                         modifier = Modifier
                             .fillMaxSize()
                             .padding(horizontal = 16.dp),
@@ -218,6 +233,7 @@ fun AlbumDetailScreen(
                                 SongItem(
                                     song = song,
                                     isCurrentPlaying = isPlaying && currentSong?.id == song.id,
+                                    modifier = Modifier.locateHighlightFlash(song.id, locateHighlight),
                                     showDuration = true,
                                     isSelectMode = selection.isSelectMode,
                                     isSelected = selection.isSelected(song.id),
@@ -306,6 +322,35 @@ fun AlbumDetailScreen(
                         }
                     }
                 }
+            }
+        }
+
+        // ── 定位当前播放 FAB（与多版本管理页同尺寸）──
+        AnimatedVisibility(
+            visible = canLocate,
+            enter = slideInVertically(initialOffsetY = { it }),
+            exit = slideOutVertically(targetOffsetY = { it }),
+            modifier = Modifier
+                .align(Alignment.BottomStart)
+                .padding(start = 16.dp, bottom = 16.dp),
+        ) {
+            SmallFloatingActionButton(
+                onClick = {
+                    // 点击瞬间列表可能被搜索过滤/重排，重新取一次下标
+                    val index = displaySongs.indexOfFirst { it.id == currentSong?.id }
+                    if (index >= 0) {
+                        locateHighlight.trigger(currentSong?.id)
+                        coroutineScope.launch { listState.animateScrollToItem(index) }
+                    }
+                },
+                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                contentColor = MaterialTheme.colorScheme.primary,
+            ) {
+                Icon(
+                    imageVector = Icons.Default.MyLocation,
+                    contentDescription = "定位到当前播放",
+                    modifier = Modifier.size(20.dp),
+                )
             }
         }
 

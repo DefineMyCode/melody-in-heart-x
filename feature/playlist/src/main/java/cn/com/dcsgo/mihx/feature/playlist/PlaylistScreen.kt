@@ -31,6 +31,7 @@ import androidx.compose.material.icons.filled.QueueMusic
 import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -572,76 +573,46 @@ private fun PlaylistDetailView(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // ── 播放按钮区 ──
+            // ── 播放按钮区（紧凑：仅图标 + 歌曲数量）──
             if (songs.isNotEmpty()) {
-                Column(
+                Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        FilledTonalButton(
-                            onClick = onPlayAll,
-                            modifier = Modifier.weight(1f),
-                        ) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.vertical_align_bottom_24),
-                                contentDescription = null,
-                                modifier = Modifier.size(18.dp)
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(text = "从头播放 (${songs.size})")
-                        }
-                        FilledTonalButton(
-                            onClick = onPlayAllFromEnd,
-                            modifier = Modifier.weight(1f),
-                        ) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.vertical_align_top_24),
-                                contentDescription = null,
-                                modifier = Modifier.size(18.dp)
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(text = "从尾播放 (${songs.size})")
-                        }
-                    }
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        FilledTonalButton(
-                            onClick = onAddAllToQueue,
-                            modifier = Modifier.weight(1f),
-                        ) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.music_note_add_24),
-                                contentDescription = null,
-                                modifier = Modifier.size(18.dp)
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(text = "加入队尾 (${songs.size})")
-                        }
-                        FilledTonalButton(
-                            onClick = onAddAllToNextPlay,
-                            modifier = Modifier.weight(1f),
-                        ) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.skip_next_24),
-                                contentDescription = null,
-                                modifier = Modifier.size(18.dp)
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(text = "下一首播放 (${songs.size})")
-                        }
-                    }
+                    PlaylistCountButton(
+                        iconRes = R.drawable.vertical_align_bottom_24,
+                        contentDescription = "从头播放",
+                        count = songs.size,
+                        onClick = onPlayAll,
+                        modifier = Modifier.weight(1f),
+                    )
+                    PlaylistCountButton(
+                        iconRes = R.drawable.vertical_align_top_24,
+                        contentDescription = "从尾播放",
+                        count = songs.size,
+                        onClick = onPlayAllFromEnd,
+                        modifier = Modifier.weight(1f),
+                    )
+                    PlaylistCountButton(
+                        iconRes = R.drawable.music_note_add_24,
+                        contentDescription = "加入队尾",
+                        count = songs.size,
+                        onClick = onAddAllToQueue,
+                        modifier = Modifier.weight(1f),
+                    )
+                    PlaylistCountButton(
+                        iconRes = R.drawable.skip_next_24,
+                        contentDescription = "下一首播放",
+                        count = songs.size,
+                        onClick = onAddAllToNextPlay,
+                        modifier = Modifier.weight(1f),
+                    )
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
             if (songs.isEmpty()) {
                 EmptyPlaylistDetailHint()
@@ -796,7 +767,7 @@ private fun PlaylistDetailView(
                 .align(Alignment.BottomStart)
                 .padding(start = 16.dp, bottom = 16.dp)
         ) {
-            FloatingActionButton(
+            SmallFloatingActionButton(
                 onClick = {
                     currentSong?.let { cs ->
                         // M-9（评审 2026-09-03）：点击瞬间 displaySongs 可能已被搜索过滤/重排，
@@ -810,13 +781,14 @@ private fun PlaylistDetailView(
                         }
                     }
                 },
-                // 对齐设计系统 §5.11：FAB 用 accent 底
-                containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = MaterialTheme.colorScheme.onPrimary
+                // 与多版本管理页的定位按钮统一：40dp + primaryContainer 底 + 20dp 图标
+                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                contentColor = MaterialTheme.colorScheme.primary
             ) {
                 Icon(
                     imageVector = Icons.Default.MyLocation,
-                    contentDescription = "定位到当前播放"
+                    contentDescription = "定位到当前播放",
+                    modifier = Modifier.size(20.dp)
                 )
             }
         }
@@ -895,5 +867,36 @@ private fun PlaylistListView(
                 }
             }
         }
+    }
+}
+/**
+ * 歌单批量播放动作的紧凑按钮：仅图标 + 歌曲数量。
+ *
+ * 文字标签由 [contentDescription] 提供给无障碍与测试；视觉上四颗按钮均分一行，
+ * 比原先两行「图标 + 完整标签」矮一半，歌单头部更紧凑。
+ */
+@Composable
+private fun PlaylistCountButton(
+    iconRes: Int,
+    contentDescription: String,
+    count: Int,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    FilledTonalButton(
+        onClick = onClick,
+        modifier = modifier,
+        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp),
+    ) {
+        Icon(
+            painter = painterResource(id = iconRes),
+            contentDescription = contentDescription,
+            modifier = Modifier.size(16.dp)
+        )
+        Spacer(modifier = Modifier.width(4.dp))
+        Text(
+            text = count.toString(),
+            style = MaterialTheme.typography.labelSmall
+        )
     }
 }

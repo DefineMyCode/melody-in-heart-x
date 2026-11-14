@@ -24,6 +24,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
@@ -150,11 +151,16 @@ fun PlayQueueSheet(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     // 一键定位到当前播放歌曲（队列非空且有播放索引时显示）
                     if (!playQueue.isEmpty && currentIndex >= 0) {
-                        IconButton(onClick = { scrollToCurrentSong() }) {
+                        SmallFloatingActionButton(
+                            onClick = { scrollToCurrentSong() },
+                            // 与多版本管理页的定位按钮统一：40dp + primaryContainer 底 + 20dp 图标
+                            containerColor = MaterialTheme.colorScheme.primaryContainer,
+                            contentColor = MaterialTheme.colorScheme.primary
+                        ) {
                             Icon(
                                 imageVector = Icons.Default.MyLocation,
                                 contentDescription = "定位到当前播放",
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                modifier = Modifier.size(20.dp)
                             )
                         }
                     }

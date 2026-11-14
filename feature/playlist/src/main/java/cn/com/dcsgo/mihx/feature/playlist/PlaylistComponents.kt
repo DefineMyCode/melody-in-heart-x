@@ -517,20 +517,20 @@ fun PlaylistResumeBanner(
             modifier = Modifier
                 .fillMaxWidth()
                 .clickable(onClick = onResumePlaylist)
-                .padding(start = 12.dp, end = 4.dp, top = 8.dp, bottom = 8.dp),
+                .padding(start = 10.dp, end = 2.dp, top = 4.dp, bottom = 4.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Icon(
                 imageVector = Icons.Default.PlayArrow,
                 contentDescription = null,
-                modifier = Modifier.size(28.dp),
+                modifier = Modifier.size(20.dp),
                 tint = MaterialTheme.colorScheme.primary,
             )
-            Spacer(modifier = Modifier.width(12.dp))
+            Spacer(modifier = Modifier.width(8.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = "继续播放 · 从《${resumeSong.title}》开始",
-                    style = MaterialTheme.typography.bodyLarge,
+                    style = MaterialTheme.typography.labelLarge,
                     fontWeight = FontWeight.Medium,
                     color = MaterialTheme.colorScheme.onPrimaryContainer,
                     maxLines = 1,
@@ -539,17 +539,23 @@ fun PlaylistResumeBanner(
                 if (resumeSong.artist.isNotBlank()) {
                     Text(
                         text = resumeSong.artist,
-                        style = MaterialTheme.typography.bodySmall,
+                        style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f),
                         maxLines = 1,
                         overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
                     )
                 }
             }
-            IconButton(onClick = onDismiss) {
+            Box(
+                modifier = Modifier
+                    .size(36.dp)
+                    .clickable(onClick = onDismiss),
+                contentAlignment = Alignment.Center,
+            ) {
                 Icon(
                     imageVector = Icons.Default.Close,
                     contentDescription = "关闭续播横幅",
+                    modifier = Modifier.size(18.dp),
                     tint = MaterialTheme.colorScheme.onPrimaryContainer,
                 )
             }

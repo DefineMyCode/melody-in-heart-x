@@ -745,6 +745,21 @@ fun AppNavHost(
             val groupSongs = remember(groupId, allSongs) {
                 allSongs.filter { it.groupKey == groupId }
             }
+            // 版本组导航：与多版本管理页同序（groupKeyLabel 升序，组内 ≥2 首）
+            val versionGroupKeys = remember(allSongs) {
+                allSongs
+                    .filter { it.uri != null }
+                    .groupBy { it.groupKey }
+                    .filterValues { it.size >= 2 }
+                    .values
+                    .sortedBy { it.first().groupKeyLabel }
+                    .map { it.first().groupKey }
+            }
+            val currentGroupIndex = versionGroupKeys.indexOf(groupId)
+            val previousGroupKey =
+                if (currentGroupIndex > 0) versionGroupKeys[currentGroupIndex - 1] else null
+            val nextGroupKey =
+                if (currentGroupIndex >= 0) versionGroupKeys.getOrNull(currentGroupIndex + 1) else null
             // 播放位置窄流：只在对比页订阅，供底部进度条拖拽
             val positionMs by playerViewModel.positionMs.collectAsStateWithLifecycle()
             VersionComparisonRoute(
@@ -755,6 +770,8 @@ fun AppNavHost(
                     isPlaying = uiState.isPlaying,
                     currentPositionMs = positionMs,
                     durationMs = uiState.durationMs,
+                    previousGroupKey = previousGroupKey,
+                    nextGroupKey = nextGroupKey,
                 ),
                 actions = VersionComparisonRouteActions(
                     onBack = navController::navigateUp,
@@ -769,10 +786,16 @@ fun AppNavHost(
                     onSeekTo = playerViewModel::seekTo,
                     onDeleteSong = { song -> deleteSongWithToast(song.id) },
                     onDetachVersion = { song -> playerViewModel.detachSongFromGroup(song) },
-                    onReassignVersion = { song, targetSong ->
+onReassignVersion = { song, targetSong ->
                         playerViewModel.reassignSongToGroup(song, targetSong)
                     },
-
+                    onNavigateGroup = { targetGroupKey ->
+                        // 用相邻组替换当前页，返回时仍回到进入对比页之前的界面
+                        navController.navigate(AppRoutes.versionComparison(targetGroupKey)) {
+                            popUpTo(AppRoutes.VERSION_COMPARISON) { inclusive = true }
+                            launchSingleTop = true
+                        }
+                    },
                 ),
                 showToast = showToast,
                 loadSongInfo = loadSongInfo,

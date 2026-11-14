@@ -17,6 +17,9 @@ data class VersionComparisonRouteState(
     val currentPositionMs: Long,
     /** 当前播放歌曲时长（毫秒） */
     val durationMs: Long,
+    /** 上一组/下一组的 groupKey；null = 已在开头/末尾 */
+    val previousGroupKey: String? = null,
+    val nextGroupKey: String? = null,
 )
 
 @Stable
@@ -29,7 +32,8 @@ data class VersionComparisonRouteActions(
     val onDetachVersion: (Song) -> Unit,
     /** 将某版本关联到其他歌曲分组 */
     val onReassignVersion: (song: Song, targetSong: Song) -> Unit,
-
+    /** 切换到相邻版本组（上一组/下一组） */
+    val onNavigateGroup: (groupKey: String) -> Unit = {},
 )
 
 @Composable
@@ -46,6 +50,8 @@ fun VersionComparisonRoute(
         isPlaying = state.isPlaying,
         currentPositionMs = state.currentPositionMs,
         durationMs = state.durationMs,
+        previousGroupKey = state.previousGroupKey,
+        nextGroupKey = state.nextGroupKey,
         onBack = actions.onBack,
         onPlayVersion = { song ->
             actions.onPlayVersion(song)
@@ -61,7 +67,7 @@ fun VersionComparisonRoute(
             actions.onReassignVersion(song, targetSong)
             showToast("已将「${song.title}」关联到「${targetSong.title}」分组")
         },
-
+        onNavigateGroup = actions.onNavigateGroup,
         loadSongInfo = loadSongInfo,
     )
 }

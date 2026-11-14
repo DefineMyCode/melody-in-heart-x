@@ -5,13 +5,18 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -25,6 +30,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -59,7 +65,10 @@ fun VersionComparisonScreen(
     onDeleteSong: (Song) -> Unit,
     onDetachVersion: (Song) -> Unit,
     onReassignVersion: (song: Song, targetSong: Song) -> Unit,
-
+    /** 上一组/下一组 groupKey；null = 已在开头/末尾 */
+    previousGroupKey: String? = null,
+    nextGroupKey: String? = null,
+    onNavigateGroup: (groupKey: String) -> Unit = {},
     loadSongInfo: suspend (Song) -> SongInfo? = { null },
 ) {
     // ── 各版本完整元数据（文件路径 + 比特率，与「查看歌曲详情」同源） ──
@@ -181,48 +190,103 @@ fun VersionComparisonScreen(
             )
         },
     ) { innerPadding ->
-        Column(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding)
-                .verticalScroll(rememberScrollState())
-                .padding(bottom = 16.dp),
+                .padding(innerPadding),
         ) {
-            ReferenceStripSection(
-                comparison = comparison,
-                referenceIndex = referenceIndex,
-                currentSong = currentSong,
-                isPlaying = isPlaying,
-                onSelectReference = { referenceIndex = it },
-                onDelete = { songToDelete = it },
-            )
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+                    .padding(bottom = 16.dp),
+            ) {
+                ReferenceStripSection(
+                    comparison = comparison,
+                    referenceIndex = referenceIndex,
+                    currentSong = currentSong,
+                    isPlaying = isPlaying,
+                    onSelectReference = { referenceIndex = it },
+                    onDelete = { songToDelete = it },
+                )
 
-            DiffSummaryCard(
-                comparison = comparison,
-                referenceIndex = referenceIndex,
-            )
+                DiffSummaryCard(
+                    comparison = comparison,
+                    referenceIndex = referenceIndex,
+                )
 
-            CommonInfoCard(
-                commonFields = comparison.commonFields,
-                expanded = showCommon,
-                onToggle = { showCommon = !showCommon },
-            )
+                CommonInfoCard(
+                    commonFields = comparison.commonFields,
+                    expanded = showCommon,
+                    onToggle = { showCommon = !showCommon },
+                )
 
-            ComparisonTableCard(
-                comparison = comparison,
-                referenceIndex = referenceIndex,
-                onSelectReference = { referenceIndex = it },
-            )
+                ComparisonTableCard(
+                    comparison = comparison,
+                    referenceIndex = referenceIndex,
+                    onSelectReference = { referenceIndex = it },
+                )
 
-            FilePathCard(
-                versions = comparison.versions,
-                songInfos = versionInfos,
-                referenceIndex = referenceIndex,
-                onSelectReference = { referenceIndex = it },
-                onDelete = { songToDelete = it },
-                onDetach = { onDetachVersion(it) },
-                onReassign = { songToReassign = it },
+                FilePathCard(
+                    versions = comparison.versions,
+                    songInfos = versionInfos,
+                    referenceIndex = referenceIndex,
+                    onSelectReference = { referenceIndex = it },
+                    onDelete = { songToDelete = it },
+                    onDetach = { onDetachVersion(it) },
+                    onReassign = { songToReassign = it },
+                )
+            }
+
+            // 上一组 / 下一组：两侧垂直居中；到开头/末尾置灰不可点
+            GroupNavigationButton(
+                enabled = previousGroupKey != null,
+                description = "上一组",
+                icon = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
+                modifier = Modifier
+                    .align(Alignment.CenterStart)
+                    .padding(start = 8.dp),
+                onClick = { previousGroupKey?.let(onNavigateGroup) },
+            )
+            GroupNavigationButton(
+                enabled = nextGroupKey != null,
+                description = "下一组",
+                icon = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                modifier = Modifier
+                    .align(Alignment.CenterEnd)
+                    .padding(end = 8.dp),
+                onClick = { nextGroupKey?.let(onNavigateGroup) },
             )
         }
+    }
+}
+
+/**
+ * 版本组切换按钮：40dp 圆形 tonal 按钮，禁用时自动置灰。
+ */
+@Composable
+private fun GroupNavigationButton(
+    enabled: Boolean,
+    description: String,
+    icon: ImageVector,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit,
+) {
+    FilledTonalIconButton(
+        onClick = onClick,
+        enabled = enabled,
+        modifier = modifier,
+        colors = IconButtonDefaults.filledTonalIconButtonColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer,
+            contentColor = MaterialTheme.colorScheme.primary,
+            disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
+            disabledContentColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+        ),
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = description,
+            modifier = Modifier.size(20.dp),
+        )
     }
 }

@@ -200,7 +200,6 @@ fun FileManagementSection(
 private fun FileManagementButton(
     icon: Int,
     label: String,
-
     onClick: () -> Unit,
     enabled: Boolean = true,
     modifier: Modifier = Modifier,

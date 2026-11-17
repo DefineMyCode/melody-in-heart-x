@@ -6,6 +6,7 @@ import android.net.Uri
 import android.os.Environment
 import android.provider.DocumentsContract
 import cn.com.dcsgo.mihx.core.common.AppLog
+import cn.com.dcsgo.mihx.core.common.format.formatFileSize
 import cn.com.dcsgo.mihx.core.model.AudioQualityTier
 import cn.com.dcsgo.mihx.core.model.SongInfo
 import java.io.File
@@ -351,17 +352,8 @@ object AudioMetadataExtractor {
         }
     }
 
-    /** 格式化文件大小 */
-    private fun formatFileSize(bytes: Long): String {
-        return when {
-            bytes < 1024 -> "$bytes B"
-            bytes < 1024 * 1024 -> String.format("%.1f KB", bytes / 1024.0)
-            bytes < 1024 * 1024 * 1024 -> String.format("%.1f MB", bytes / (1024.0 * 1024))
-            else -> String.format("%.2f GB", bytes / (1024.0 * 1024 * 1024))
-        }
-    }
-
     /**
+
      * 尝试从 URI 获取真实文件路径。
      * 支持 SAF content URI、MediaStore URI、file:// URI。
      * 如果无法解析，则返回原始 URI 字符串。

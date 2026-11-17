@@ -66,6 +66,12 @@ data class SongAlbumIdRow(
     val albumId: Int?,
 )
 
+/** 歌曲 id → 文件字节数（存储统计只需这两列，不做 SELECT *） */
+data class SongSizeRow(
+    val id: Int,
+    val size: Long?,
+)
+
 @Dao
 interface MelodyDao {
     @Query("SELECT * FROM songs ORDER BY id")
@@ -78,6 +84,14 @@ interface MelodyDao {
      *  会把每首歌的 uri / albumArtCacheUri / lrcUri 等全部列物化进内存。 */
     @Query("SELECT id FROM songs")
     suspend fun songIds(): List<Int>
+
+    /**
+     * 只取 id 与 size 两列，供「存储与音质统计」汇总占用空间。
+     *
+     * 导入时 size 可能为空，缺失项由仓库层按 URI 实时补测。
+     */
+    @Query("SELECT id, size FROM songs")
+    suspend fun songSizes(): List<SongSizeRow>
 
     /**
      * 只取 id 与 albumId 两列（评审 2026-10-27 · M-7）。

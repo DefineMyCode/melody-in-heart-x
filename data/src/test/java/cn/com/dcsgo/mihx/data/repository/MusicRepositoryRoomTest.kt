@@ -5,6 +5,7 @@ import cn.com.dcsgo.mihx.data.local.dao.AlbumCatalogRow
 import cn.com.dcsgo.mihx.data.local.dao.ArtistCatalogRow
 import cn.com.dcsgo.mihx.data.local.dao.MelodyDao
 import cn.com.dcsgo.mihx.data.local.dao.SongEmotionVersion
+import cn.com.dcsgo.mihx.data.local.dao.SongSizeRow
 import cn.com.dcsgo.mihx.data.local.entity.SongEmotionEntity
 import cn.com.dcsgo.mihx.data.local.entity.SongEmotionLite
 import cn.com.dcsgo.mihx.data.local.entity.toLite
@@ -223,6 +224,7 @@ class MusicRepositoryRoomTest {
     }
 
     private class FakeMelodyDao : MelodyDao {
+        override suspend fun songSizes(): List<SongSizeRow> = emptyList()
         val songs = mutableListOf<SongEntity>()
         /** 测试钩子：首次 songs() 查询放慢，用于复现「恢复进行中并发 loadSongs」竞态 */
         var songsDelayMs: Long = 0L

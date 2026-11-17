@@ -16,8 +16,10 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Storage
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilledTonalButton
@@ -48,6 +50,7 @@ fun FileManagementSection(
     onAddFolderClick: () -> Unit,
     onVersionManagementClick: () -> Unit = {},
     onQuickSkipSongsClick: () -> Unit = {},
+    onStorageStatsClick: () -> Unit = {},
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -107,7 +110,6 @@ fun FileManagementSection(
                 FileManagementButton(
                     icon = R.drawable.music_note_add_24,
                     label = "添加文件夹",
-                    description = "批量导入",
                     onClick = onAddFolderClick,
                     enabled = !isImporting,
                     modifier = Modifier.weight(1f)
@@ -116,7 +118,6 @@ fun FileManagementSection(
                 FileManagementButton(
                     icon = R.drawable.text_compare_24,
                     label = "多版本管理",
-                    description = "查看与修复",
                     onClick = onVersionManagementClick,
                     enabled = !isImporting,
                     modifier = Modifier.weight(1f)
@@ -125,10 +126,70 @@ fun FileManagementSection(
                 FileManagementButton(
                     icon = R.drawable.skip_next_24,
                     label = "秒切歌曲",
-                    description = "记录秒切的歌曲",
                     onClick = onQuickSkipSongsClick,
                     enabled = !isImporting,
                     modifier = Modifier.weight(1f)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(2.dp))
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(0.5.dp)
+                    .background(MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f))
+            )
+
+            // 存储与音质统计入口：单行紧凑条，避免把卡片撑高
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(12.dp))
+                    .clickable(enabled = !isImporting) {
+                        if (!isImporting) onStorageStatsClick()
+                    }
+                    .padding(horizontal = 4.dp, vertical = 4.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(32.dp)
+                        .clip(CircleShape)
+                        .background(
+                            if (isImporting) MaterialTheme.colorScheme.surfaceVariant
+                            else MaterialTheme.colorScheme.primaryContainer
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Storage,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp),
+                        tint = if (isImporting) {
+                            MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                        } else {
+                            MaterialTheme.colorScheme.primary
+                        }
+                    )
+                }
+                Spacer(modifier = Modifier.width(10.dp))
+                Text(
+                    text = "存储与音质统计",
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.Medium,
+                    color = if (isImporting) {
+                        MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                    } else {
+                        MaterialTheme.colorScheme.onSurface
+                    },
+                    modifier = Modifier.weight(1f)
+                )
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                    contentDescription = null,
+                    modifier = Modifier.size(16.dp),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }
@@ -139,7 +200,7 @@ fun FileManagementSection(
 private fun FileManagementButton(
     icon: Int,
     label: String,
-    description: String,
+
     onClick: () -> Unit,
     enabled: Boolean = true,
     modifier: Modifier = Modifier,
@@ -177,12 +238,7 @@ private fun FileManagementButton(
             color = if (enabled) MaterialTheme.colorScheme.onSurface
                     else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
         )
-        Text(
-            text = description,
-            style = MaterialTheme.typography.labelSmall,
-            color = if (enabled) MaterialTheme.colorScheme.onSurfaceVariant
-                    else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
-        )
+
     }
 }
 

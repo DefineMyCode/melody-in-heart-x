@@ -13,6 +13,7 @@ import cn.com.dcsgo.mihx.domain.model.DuplicateSongGroup
 import cn.com.dcsgo.mihx.domain.model.FileCheckMode
 import cn.com.dcsgo.mihx.domain.model.LocalFileValidationResult
 import cn.com.dcsgo.mihx.domain.model.SongSortMode
+import cn.com.dcsgo.mihx.domain.repository.MediaStorageStatsRepository
 import cn.com.dcsgo.mihx.domain.repository.PlaybackStatsSnapshot
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -34,6 +35,7 @@ import kotlinx.coroutines.sync.withLock
 @HiltViewModel
 class PlayerViewModel @Inject constructor(
     runtimeFactory: PlayerRuntimeFactory,
+    private val mediaStorageStatsRepository: MediaStorageStatsRepository,
 ) : ViewModel() {
 
     private val runtime = runtimeFactory.create(viewModelScope)
@@ -200,6 +202,15 @@ class PlayerViewModel @Inject constructor(
     fun validateLocalFiles(mode: FileCheckMode = FileCheckMode.QUICK) {
         runtime.validateLocalFiles(mode)
     }
+
+    /**
+     * 统计本地歌曲的文件大小。
+     *
+     * 优先使用库内已持久化的 size，缺失项再按 SAF URI 实时补测；
+     * 音质分档与占比由 `LocalMusicStorageStats.from` 统一计算。
+     */
+    suspend fun measureLocalSongFileSizes(songs: List<Song>): Map<Int, Long> =
+        mediaStorageStatsRepository.measureFileSizes(songs)
 
     // ── 重复文件去重 ──
     /** 重复歌曲分组（真实路径相同）。 */

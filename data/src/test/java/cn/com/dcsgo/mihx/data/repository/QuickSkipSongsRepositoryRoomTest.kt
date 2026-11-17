@@ -5,6 +5,7 @@ import cn.com.dcsgo.mihx.data.local.dao.AlbumCatalogRow
 import cn.com.dcsgo.mihx.data.local.dao.ArtistCatalogRow
 import cn.com.dcsgo.mihx.data.local.dao.MelodyDao
 import cn.com.dcsgo.mihx.data.local.dao.SongEmotionVersion
+import cn.com.dcsgo.mihx.data.local.dao.SongSizeRow
 import cn.com.dcsgo.mihx.data.local.entity.SongEmotionEntity
 import cn.com.dcsgo.mihx.data.local.entity.SongEmotionLite
 import cn.com.dcsgo.mihx.data.local.entity.toLite
@@ -78,6 +79,7 @@ class QuickSkipSongsRepositoryRoomTest {
     }
 
     private class FakeMelodyDao : MelodyDao {
+        override suspend fun songSizes(): List<SongSizeRow> = emptyList()
         val songs = mutableListOf<SongEntity>()
         val playlists = mutableListOf<PlaylistEntity>()
         val playlistSongRefs = mutableListOf<PlaylistSongCrossRef>()

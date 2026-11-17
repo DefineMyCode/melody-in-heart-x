@@ -234,7 +234,9 @@ class PlayerSettingsRepository(
 
     override val songSortMode: Flow<SongSortMode> = settingsStore.data.map { preferences ->
         val stored = preferences[PlayerSettingsKeys.SONG_SORT_MODE]
-        SongSortMode.entries.firstOrNull { it.name == stored } ?: SongSortMode.IMPORT_ORDER
+        // 旧版本把该排序项持久化为 SAMPLE_RATE，现改为比特率排序，读取时平滑迁移
+        val normalized = if (stored == "SAMPLE_RATE") SongSortMode.BIT_RATE.name else stored
+        SongSortMode.entries.firstOrNull { it.name == normalized } ?: SongSortMode.IMPORT_ORDER
     }
 
     override suspend fun setSongSortMode(mode: SongSortMode) {

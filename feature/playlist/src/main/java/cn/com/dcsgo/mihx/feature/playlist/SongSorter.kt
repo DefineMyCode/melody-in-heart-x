@@ -31,7 +31,7 @@ object SongSorter {
             SongSortMode.ALBUM -> compareBy<Song, String>(collator) { it.album }
                 .thenBy(collator) { it.groupKey }
             SongSortMode.DURATION -> compareBy { it.durationMs }
-            SongSortMode.SAMPLE_RATE -> compareBy { it.sampleRate }
+            SongSortMode.BIT_RATE -> compareBy { it.bitRateKbps }
             SongSortMode.PLAY_COUNT -> compareBy<Song> { playCounts[it.id] ?: 0 }
                 .thenBy { it.id }
             SongSortMode.LAST_PLAYED -> compareBy<Song> { lastPlayedAt[it.id] ?: 0L }

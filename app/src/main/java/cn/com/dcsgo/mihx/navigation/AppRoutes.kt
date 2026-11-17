@@ -27,6 +27,7 @@ object AppRoutes {
     const val RAW_PLAY_STATS = "play-stats/raw"
     const val EFFECTIVE_PLAY_STATS = "play-stats/effective"
     const val QUICK_SKIP_SONGS = "quick-skip-songs"
+    const val STORAGE_STATS = "storage-stats"
     const val EMOTION_ANALYSIS = "emotion-analysis"
     const val MOOD_TIME_SLOT = "mood-time-slot"
     const val SETTINGS = "settings"

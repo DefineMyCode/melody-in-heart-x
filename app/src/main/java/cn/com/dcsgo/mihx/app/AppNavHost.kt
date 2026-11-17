@@ -33,6 +33,7 @@ import cn.com.dcsgo.mihx.app.shell.SkinSwitcherRoute
 import cn.com.dcsgo.mihx.app.shell.indexOfRoute
 import cn.com.dcsgo.mihx.app.playlist.PlaylistResumeViewModel
 import cn.com.dcsgo.mihx.core.model.Lyrics
+import cn.com.dcsgo.mihx.core.model.LocalMusicStorageStats
 import cn.com.dcsgo.mihx.core.model.Song
 import cn.com.dcsgo.mihx.core.model.SongInfo
 import cn.com.dcsgo.mihx.core.model.ThemeMode
@@ -59,6 +60,7 @@ import cn.com.dcsgo.mihx.feature.playlist.ArtistDetailRouteActions
 import cn.com.dcsgo.mihx.feature.playlist.ArtistDetailRouteState
 import cn.com.dcsgo.mihx.feature.playlist.DeleteSongConfirmDialog
 import cn.com.dcsgo.mihx.feature.playlist.PlaylistRoute
+import cn.com.dcsgo.mihx.feature.playlist.StorageStatsScreen
 import cn.com.dcsgo.mihx.ui.components.SingleSongAddToPlaylistDialog
 import cn.com.dcsgo.mihx.feature.settings.SettingsRoute
 import cn.com.dcsgo.mihx.feature.settings.SettingsRouteActions
@@ -619,6 +621,33 @@ fun AppNavHost(
                     },
                 )
             }
+        }
+
+        composable(AppRoutes.STORAGE_STATS) {
+            // 与「本地音乐」列表同口径：只统计有本地 URI 的歌曲
+            val localSongs = remember(uiState.songs) { uiState.songs.filter { it.uri != null } }
+            val fileSizes by produceState<Map<Int, Long>?>(
+                initialValue = null,
+                key1 = localSongs,
+            ) {
+                value = runCatching { playerViewModel.measureLocalSongFileSizes(localSongs) }
+                    .onFailure {
+                        AppLog.error(
+                            "AppNavHost",
+                            "measureLocalSongFileSizes failed: ${it.message}",
+                            it,
+                        )
+                    }
+                    .getOrDefault(emptyMap())
+            }
+            val stats = remember(localSongs, fileSizes) {
+                fileSizes?.let { LocalMusicStorageStats.from(localSongs, it) }
+            }
+            StorageStatsScreen(
+                stats = stats,
+                isLoading = fileSizes == null && localSongs.isNotEmpty(),
+                onBack = navController::navigateUp,
+            )
         }
 
         composable(AppRoutes.FILE_CHECK) {

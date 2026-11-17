@@ -113,6 +113,7 @@ fun PlaylistScreen(
     onCreatePlaylistWithResult: (String) -> Playlist? = { null },
     onShowVersionManagement: () -> Unit = {},
     onShowQuickSkipSongs: () -> Unit = {},
+    onShowStorageStats: () -> Unit = {},
     loadSongInfo: suspend (Song) -> SongInfo? = { null },
     // 播放队列相关回调
     onPlayAllInPlaylist: (Playlist, List<Song>) -> Unit = { _, _ -> },
@@ -336,6 +337,7 @@ fun PlaylistScreen(
                     onCreatePlaylist = onCreatePlaylistWithResult,
                     onShowVersionManagement = onShowVersionManagement,
                     onShowQuickSkipSongs = onShowQuickSkipSongs,
+                    onShowStorageStats = onShowStorageStats,
                     loadSongInfo = loadSongInfo,
                 )
             } else {

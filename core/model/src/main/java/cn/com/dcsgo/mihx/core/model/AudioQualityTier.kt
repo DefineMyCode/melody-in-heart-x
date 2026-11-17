@@ -9,13 +9,13 @@ package cn.com.dcsgo.mihx.core.model
  *
  * 「母带」「沉浸环绕声」不在这套分级里：前者是源文件来源、后者是空间音频渲染维度。
  */
-enum class AudioQualityTier(val label: String) {
-    STANDARD("标准"),
-    HIGH("较高"),
-    VERY_HIGH("极高"),
-    LOSSLESS("无损"),
-    HI_RES("高解析"),
-    UNKNOWN("未知"),
+enum class AudioQualityTier(val label: String, val rule: String) {
+    STANDARD("标准", "有损，码率低于 192kbps"),
+    HIGH("较高", "有损，192–319kbps"),
+    VERY_HIGH("极高", "有损，320kbps 及以上"),
+    LOSSLESS("无损", "无损编码，16bit / 44.1kHz 起"),
+    HI_RES("高解析", "无损编码，24bit 且 48kHz 及以上；DSD 直接归入"),
+    UNKNOWN("未知", "规格数据不足，建议执行深度校验"),
     ;
 
     companion object {

@@ -2,6 +2,7 @@ package cn.com.dcsgo.mihx.data.repository
 
 import cn.com.dcsgo.mihx.core.model.WordPreferenceKind
 import cn.com.dcsgo.mihx.data.local.dao.MelodyDao
+import cn.com.dcsgo.mihx.data.local.dao.SongSizeRow
 import cn.com.dcsgo.mihx.data.local.entity.WordPreferenceEntity
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -120,6 +121,7 @@ class WordPreferencesRepositoryTest {
     }
 
     private class FakeMelodyDao : MelodyDao {
+        override suspend fun songSizes(): List<SongSizeRow> = emptyList()
         private val words = MutableStateFlow<List<WordPreferenceEntity>>(emptyList())
 
         override fun observeAllWordPreferences(): Flow<List<WordPreferenceEntity>> = words.asStateFlow()

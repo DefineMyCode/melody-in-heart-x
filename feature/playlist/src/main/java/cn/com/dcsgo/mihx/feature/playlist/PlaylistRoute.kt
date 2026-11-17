@@ -56,6 +56,7 @@ data class PlaylistRouteActions(
     val onCreatePlaylistWithResult: (String) -> Playlist?,
     val onShowVersionManagement: () -> Unit,
     val onShowQuickSkipSongs: () -> Unit,
+    val onShowStorageStats: () -> Unit = {},
     /** 本地音乐排序（持久化） */
     val onSortModeSelected: (SongSortMode) -> Unit = {},
     val onSortDirectionToggled: () -> Unit = {},
@@ -127,6 +128,7 @@ fun PlaylistRoute(
         onCreatePlaylistWithResult = actions.onCreatePlaylistWithResult,
         onShowVersionManagement = actions.onShowVersionManagement,
         onShowQuickSkipSongs = actions.onShowQuickSkipSongs,
+        onShowStorageStats = actions.onShowStorageStats,
         loadSongInfo = loadSongInfo,
         onPlayAllInPlaylist = { _, playlistSongs ->
             actions.onPlayAllInPlaylist(playlistSongs)

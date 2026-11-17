@@ -78,6 +78,7 @@ fun LocalMusicManagementView(
     onCreatePlaylist: (String) -> Playlist? = { _ -> null },
     onShowVersionManagement: () -> Unit = {},
     onShowQuickSkipSongs: () -> Unit = {},
+    onShowStorageStats: () -> Unit = {},
     loadSongInfo: suspend (Song) -> SongInfo? = { null },
 ) {
     // 只显示有本地 URI 的歌曲（用户真正导入的文件）
@@ -217,7 +218,8 @@ fun LocalMusicManagementView(
                     importTotal = importTotal,
                     onAddFolderClick = onAddFolderClick,
                     onVersionManagementClick = onShowVersionManagement,
-                    onQuickSkipSongsClick = onShowQuickSkipSongs
+                    onQuickSkipSongsClick = onShowQuickSkipSongs,
+                    onStorageStatsClick = onShowStorageStats
                 )
             }
 

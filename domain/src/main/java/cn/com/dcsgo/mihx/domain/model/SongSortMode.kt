@@ -12,7 +12,7 @@ enum class SongSortMode(val label: String) {
     ARTIST("歌手"),
     ALBUM("专辑"),
     DURATION("时长"),
-    SAMPLE_RATE("采样率"),
+    BIT_RATE("比特率"),
     PLAY_COUNT("播放次数"),
     LAST_PLAYED("最近播放"),
 }

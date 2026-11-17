@@ -8,6 +8,7 @@ import cn.com.dcsgo.mihx.data.local.migration.LegacyJsonMigration
 import cn.com.dcsgo.mihx.data.repository.AlbumArtRepositoryAdapter
 import cn.com.dcsgo.mihx.data.repository.EmotionFailureStore
 import cn.com.dcsgo.mihx.data.repository.MediaMetadataRepository
+import cn.com.dcsgo.mihx.data.repository.MediaStorageStatsRepositoryImpl
 import cn.com.dcsgo.mihx.data.repository.MusicImportRepositoryAdapter
 import cn.com.dcsgo.mihx.data.repository.MusicRepository
 import cn.com.dcsgo.mihx.data.repository.PlayStatsRepository
@@ -20,6 +21,7 @@ import cn.com.dcsgo.mihx.data.repository.TimeSlotConfigStore
 import cn.com.dcsgo.mihx.domain.repository.EmotionFailureRepository
 import cn.com.dcsgo.mihx.domain.repository.AlbumArtRepository
 import cn.com.dcsgo.mihx.domain.repository.LyricsRepository
+import cn.com.dcsgo.mihx.domain.repository.MediaStorageStatsRepository
 import cn.com.dcsgo.mihx.domain.repository.MusicImportRepository
 import cn.com.dcsgo.mihx.domain.repository.PlayStatsRepository as DomainPlayStatsRepository
 import cn.com.dcsgo.mihx.domain.repository.PlayerSettingsRepository as DomainPlayerSettingsRepository
@@ -79,6 +81,13 @@ object RepositoryModule {
         @PlayerSettingsStore settingsStore: DataStore<Preferences>,
         @LegacyMusicPlayerPreferences legacyPrefs: android.content.SharedPreferences,
     ): PlayerSettingsRepository = PlayerSettingsRepository(settingsStore, legacyPrefs)
+
+    @Provides
+    @Singleton
+    fun provideMediaStorageStatsRepository(
+        @ApplicationContext context: Context,
+        melodyDao: MelodyDao,
+    ): MediaStorageStatsRepository = MediaStorageStatsRepositoryImpl(melodyDao, context)
 
     @Provides
     @Singleton

@@ -1,18 +1,18 @@
 {
   "schemaVersion": 1,
-  "pageVersion": "sha256:fa63814521a3b3d050010d35da7f5f925abf42436977052a3d3e6fa0e934c7df",
+  "pageVersion": "sha256:72114b97b8da207b39c70e11e0724c854ca93e2c95ce0b440b6bbb3d2972869b",
   "claims": [
     {
       "id": "claim_a8e760f3958f40b7a9b91303d295d952",
-      "statement": "playRandomQueue filters playable songs, applies mood-slot candidate filtering when active, delegates to RandomQueuePlanner.planRandomQueue, and on success exits infinite mode, replaces the in-memory recent-played set with the plan's, and starts the batch via setPlayQueue(plan.songs, 0, PlayMode.SEQUENTIAL); it returns false and starts nothing when no songs are playable.",
+      "statement": "playRandomQueue resolves `explore = exploreModeEnabled()` and `mood = if (explore) null else activeMoodSlot()`, builds candidates as full library → `filterOutExcludedMoodTags` → `filterByMoodTags` (a null include result falls back to the exclusion-filtered base), delegates to `RandomQueuePlanner.planRandomQueue` with the candidate ids' raw play counts and a 10-song `batchSize` override only when exploring, and on success calls `setPlayQueue(plan.songs, 0, PlayMode.SEQUENTIAL)` then writes `isInfinitePlay=false`, `infinitePlayedSongIds=emptySet()`, `isExplorePlay=explore` and replaces the in-memory recent set with the plan's; a null plan returns false and starts nothing.",
       "evidence": [
         {
           "resource": "repo://domain/src/main/java/cn/com/dcsgo/mihx/domain/playback/RandomQueuePlanner.kt#L59-L98",
           "version": "repo-lines-v1:sha256:510741aecc8b9b928ba019db696baf0d7aa7b1569361220359e1a31a987f89f8:eyJzZWxlY3RlZExpbmVDb3VudCI6NDAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImRmNTgyYmYxYTU0NjA4NGMyYjViZDk0MDMxYzljODJkYTk0MzVkZDgwMDI3ZDM0ZDliZjQxOTcxYmQzZmJhY2MiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImZmMGQ3NTk1MGRmMGZmOWEzZWU5NjYzOWRjYzhmZjVlYWVkYjQwZDY4MmJlYTkyNjIyYjUyMGRkODg3ZDkzZTkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImZmOGUxYzYzYjVmOTczMDM2Y2JmMjlhM2EyZDc4N2E4OWVlODUwMTc0ZDk2MjE1NDdhM2U4ZGZmODYxZWEwOGEifQ"
         },
         {
-          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRandomQueueFacade.kt#L95-L137",
-          "version": "repo-lines-v1:sha256:08ff0cbbb6aa62875b84394c7d5190c11fcf1ea6d3f100be40848f0fb374a80c:eyJzZWxlY3RlZExpbmVDb3VudCI6NDMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQ3NDM4YzMxNjUyOTFlOTc2ODk4YTczYTU2MDdmMzZhYjg0NTU1ZjUxNWMxZjE1ZTMwZTRlZTFlZjE1OTNjZjAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQwN2Y0MjViMzgxOGVkZmQ5NmRhMjUxZmI4MTI2ZjJkODljMWJjZDkwYjRjZTg5MWRjMTRjNzA3YWU5ODk1MTAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjNhZDUxZTE0OGNmZGJmMDU2NTA2NGZhODNlMDU1NjQwMzA2NGZlOWZmZjQyZDFjNWU2MzNjYWMyMzcwNzM3ZTIifQ"
+          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRandomQueueFacade.kt#L155-L198",
+          "version": "repo-lines-v1:sha256:87aabca9df03bc6242f31a35d8650a393e77baf6397b93092b06a6c86c1524f8:eyJzZWxlY3RlZExpbmVDb3VudCI6NDQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQ3NDM4YzMxNjUyOTFlOTc2ODk4YTczYTU2MDdmMzZhYjg0NTU1ZjUxNWMxZjE1ZTMwZTRlZTFlZjE1OTNjZjAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQwN2Y0MjViMzgxOGVkZmQ5NmRhMjUxZmI4MTI2ZjJkODljMWJjZDkwYjRjZTg5MWRjMTRjNzA3YWU5ODk1MTAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjNhZDUxZTE0OGNmZGJmMDU2NTA2NGZhODNlMDU1NjQwMzA2NGZlOWZmZjQyZDFjNWU2MzNjYWMyMzcwNzM3ZTIifQ"
         }
       ]
     },
@@ -82,19 +82,27 @@
     },
     {
       "id": "claim_0b58b38a618f494ca5f12d4081135dde",
-      "statement": "PlayerRandomQueueFacade receives play counts through an injected rawPlayCounts callable (default empty); PlayerRuntime wires it to PlayStatsRepository.getRawPlayCounts (Room-backed raw play count, distinct from the effective count used for sorting), and playRandomQueue queries it per candidate pool at call time for both lucky and explore batches.",
+      "statement": "PlayerRandomQueueFacade receives play counts through an injected suspend rawPlayCounts callable (default empty); PlayerRuntime wires it to PlayStatsRepository.getRawPlayCounts (Room-backed raw play count, distinct from the effective count used for sorting), and the facade queries it per candidate pool at call time — for the lucky/explore batch candidates, for the strict mood refill pool, and again for the non-excluded fallback pool.",
       "evidence": [
         {
           "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/repository/PlayStatsRepository.kt#L98-L106",
           "version": "repo-lines-v1:sha256:8034ad91a16c99e52d68863dd279eb452f7dc58690d5d8f66ac4dcf6d4ca2da0:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMzljYmJjNjU0NjlkYjFjYTI4NDJlZmQ5N2RmN2VlMmNlNmNjMTU3MTQ4MmQwMWExOGI3OTBhMTBjN2M1MTBmMyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDg5M2Y0MGUzNzgxZWI4OTZjODJkMDQ2YTA4MDY3YTExZTM1Y2RmMmYxZGZhZjI2ZmVhOTBiOGRiNjY3NjQxMyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNDFmMGE3YWQ1ODJkYWUxODc0ZTUwNDRjOTYwYjZjMTBhZWZjZTQ2MDA3ZmIyYTRjNTEyMDdjYTg1YmIyNzkyYSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNDY5OTA5YmZiYjU5ZWFhMzNjMzM5YWI4MTE0MTE4MTExMzJlM2Q5MzdmMzlmYzQ4MzlhZDVjN2UyYzAwOGUwMiJ9"
         },
         {
-          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRandomQueueFacade.kt#L95-L137",
-          "version": "repo-lines-v1:sha256:08ff0cbbb6aa62875b84394c7d5190c11fcf1ea6d3f100be40848f0fb374a80c:eyJzZWxlY3RlZExpbmVDb3VudCI6NDMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQ3NDM4YzMxNjUyOTFlOTc2ODk4YTczYTU2MDdmMzZhYjg0NTU1ZjUxNWMxZjE1ZTMwZTRlZTFlZjE1OTNjZjAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQwN2Y0MjViMzgxOGVkZmQ5NmRhMjUxZmI4MTI2ZjJkODljMWJjZDkwYjRjZTg5MWRjMTRjNzA3YWU5ODk1MTAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjNhZDUxZTE0OGNmZGJmMDU2NTA2NGZhODNlMDU1NjQwMzA2NGZlOWZmZjQyZDFjNWU2MzNjYWMyMzcwNzM3ZTIifQ"
+          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRandomQueueFacade.kt#L162-L177",
+          "version": "repo-lines-v1:sha256:cf874018bd6e61869b0e4d1c52ab647b7dedce611496b29cc27d195b4adb7b5d:eyJzZWxlY3RlZExpbmVDb3VudCI6MTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQzZDIyZWExM2ZhNDkzM2QzZDYxMmExMTRjYjM5NDMwMmIwY2QzMjAzMzcyMWI3OGFhNjg3NmI3YjEzYTNiMGUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImE4ZGU3NTQwODVlNzYzZjYwZGMxOGVkZDJiYjhlOGU4ODFlMmU0NjVkODRmOTlhYWI4MzZhZTUwMTUzY2E1M2QiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjJlOTE3N2JmODJjYWQ4ZTc4OTc2ZDMwMDMwYzI3MmQyNDNjNDYxZTNiOGE3ODg3NWMwOTg2ZjZiYTczYmI3ZWMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxOGUzNzY4YzdmMDY5OTZjYWUzMmE4NDYxYjBjMjRhM2E5NGZmNzM1MjMxNzQ0NjM2YWRiZTUxODg4YTJjZGIifQ"
         },
         {
-          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRuntime.kt#L474-L474",
-          "version": "repo-lines-v1:sha256:20f15ddf1206d3bce874a8ec36545cb249cd403cfc01e3f19a4362c95d4c3d5b:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMjBmMTVkZGYxMjA2ZDNiY2U4NzRhOGVjMzY1NDVjYjI0OWNkNDAzY2ZjMDFlM2YxOWE0MzYyYzk1ZDRjM2Q1YiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMjBmMTVkZGYxMjA2ZDNiY2U4NzRhOGVjMzY1NDVjYjI0OWNkNDAzY2ZjMDFlM2YxOWE0MzYyYzk1ZDRjM2Q1YiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYzI5NDlkOGMxMjMyY2I5YzZiZjdlYmQyNzUxYzk3ZTBmMGY0OGM3MGM3YmQ4NDlmOWFmYWQxNDQ5OTg2ZWIyNiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYjNiMjNlOWJmNGNlMTRkODAzODJjNDAxYzgzMWJmMDNhNWI0YWE4YTY1MjlmMzE0NGFjMjI2ZjhmYjI5ZTFmMCJ9"
+          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRandomQueueFacade.kt#L259-L290",
+          "version": "repo-lines-v1:sha256:1b37cb1b0be6d047f7e44f57d5f208fcc5d71b993f18a3834b7fba395dbe9b4e:eyJzZWxlY3RlZExpbmVDb3VudCI6MzIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjE3YjZiOWRjZmQ2Y2IwMzhmNDc3ZTllZjllNGJkMGIwNTA3ZDJjY2Q1MjZlZmY0MGJlNjNiYjAxMGI0ODAzNTUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjQyOWYzOTBhNTAzNGEwZThlM2Y5ODAyOTA3OTkzZWRlNGY5NWZmMTQxMmVmY2UxYWZhZTg1MGI4ODljMWY2ZjUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjI2ZjRjZDEzNjYxZDIwOGFhYzkxMDAxMTExMmJlN2YxY2I2NWNiNDIyNzVlNjkzODhlMTA4MmI3MDc1YTk3MjgifQ"
+        },
+        {
+          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRandomQueueFacade.kt#L34-L34",
+          "version": "repo-lines-v1:sha256:f4d85be0bac2d2e869c341e704a78d1f2759139f3e76c95a821bdaa31ab2e167:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZjRkODViZTBiYWMyZDJlODY5YzM0MWU3MDRhNzhkMWYyNzU5MTM5ZjNlNzZjOTVhODIxYmRhYTMxYWIyZTE2NyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZjRkODViZTBiYWMyZDJlODY5YzM0MWU3MDRhNzhkMWYyNzU5MTM5ZjNlNzZjOTVhODIxYmRhYTMxYWIyZTE2NyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYzUwZWM2Mjc0ODgwMGVlNTYzOTE5ZjkxNjYyNjUzMzg2MmNiODRiYzYxNjI4YTJjMjgwMDBiMTkwNWM5N2JiMSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMjRkMzgwODI0ZjAyNzlkNzJhMDA5NjUzYTk4ZThiODU0NDJiOGRmOTAxMTIxYThkOWUxZTQ5NTRjMDRiNzVlMiJ9"
+        },
+        {
+          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRuntime.kt#L511-L532",
+          "version": "repo-lines-v1:sha256:a3b264baee7ceb23ea58ebde0673cc1846b7b42462bcc9cfdfa7d22ab2b7c888:eyJzZWxlY3RlZExpbmVDb3VudCI6MjIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjliNmMxOGZmMDhmZjcxMGMzYTUzYmVkMzQ1MTNjYzIwMDJkODM3MzAzOGJhZGE3MTJjYmNmN2ZlZTRmNzNiYjIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjMwYzFmMTg4ZjE0MmVkN2E4MjQ2ODBiMjA3MTcyYzU1MTliYzYxNGE0OGZkYTdjZjE2N2VkYjhkZGY3OTk1NmMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk5OWJkZWZlZWFjYTYzNDBlMDI5MGRjODZlODg5Yzg5ZDVlMTg5YWE1YmE0NGI1ODViM2I3MDczNGY0YTYyZDgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjgwMjgyZjU2ODQ1YjdjMTk5NGZiMjU2NzM3NDRlZThhYzU2NGJjOWM3NzQ2ZTJjMDlmNTUxNmZkNzUzNWMyZWIifQ"
         }
       ]
     },
@@ -132,19 +140,19 @@
     },
     {
       "id": "claim_14b4e4bbfb844cfaa6ba72853d8cf35e",
-      "statement": "planInfiniteRefill sizes the batch like lucky play, excludes both the coverage set (playedSongIds) and songs already in the queue, clears the coverage set with resetHistory=true when the unplayed remainder is below the batch, and always selects through UniformRandomPlanner (the flag decides tiered vs plain shuffle); empty selection leaves the queue untouched, otherwise songs are appended via PlayQueue.withSongs which preserves the current item's index.",
+      "statement": "planInfiniteRefill sizes the batch like lucky play (minOf(20, playable pool)), excludes both the coverage set (playedSongIds) and songs already in the queue, clears the coverage set with resetHistory=true only when allowHistoryReset is true and the unplayed remainder is below the batch, and always selects through UniformRandomPlanner (the flag decides tiered vs plain shuffle); an empty selection returns the queue untouched with empty addedSongs, otherwise songs are appended via PlayQueue.withSongs, which preserves the current item's index.",
       "evidence": [
         {
           "resource": "repo://core/model/src/main/java/cn/com/dcsgo/mihx/core/model/PlayQueue.kt#L268-L280",
           "version": "repo-lines-v1:sha256:5eb85ac0dfa2e7285198959280ea03f847e1bf2079a5bcb33b061218f460ab5c:eyJzZWxlY3RlZExpbmVDb3VudCI6MTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjgzYjc4YTc3Yzg5ODQ4NjI5NGEyODk5NWRlZTYxMTNmODk3YjA4MjA5MzI1ZmI2YWJiNWZjNDczYmJiZGUzM2MiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk5OWJkZWZlZWFjYTYzNDBlMDI5MGRjODZlODg5Yzg5ZDVlMTg5YWE1YmE0NGI1ODViM2I3MDczNGY0YTYyZDgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImRkMWQxNzU0NjdiOGY3MDkxOTBiMGJiMDE3NGFkMjVjMjJhMzc0M2M0MmJmNTE2YmMwOGFjOTdhZDgzMWRiMGEifQ"
         },
         {
-          "resource": "repo://domain/src/main/java/cn/com/dcsgo/mihx/domain/playback/RandomQueuePlanner.kt#L118-L162",
-          "version": "repo-lines-v1:sha256:4ee6d6105708ad9bf79b37e814baa326fb6637cfe8ade22ab9a30fc2ffcd69a7:eyJzZWxlY3RlZExpbmVDb3VudCI6NDUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijg1YzFjZjQ4ZTNiMjMwY2E3ZjYyYWU2OWYxNGJhY2ZlZTQ5YWQwNTVjMGFmZmUxZmJjNzcwMjM1YjFmYWI0YWYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImZmMGQ3NTk1MGRmMGZmOWEzZWU5NjYzOWRjYzhmZjVlYWVkYjQwZDY4MmJlYTkyNjIyYjUyMGRkODg3ZDkzZTkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImZmZjkzYjYzMDI3NTUxODAxNzgzNTJhMjc3MzIyZjYzMDJmNWQxNzFlOGJhNjdjOTU5YmVhNWJjNTY3NmUxOTYifQ"
+          "resource": "repo://domain/src/main/java/cn/com/dcsgo/mihx/domain/playback/RandomQueuePlanner.kt#L118-L169",
+          "version": "repo-lines-v1:sha256:995e38db515b5d32b5567eb1ce371dac2ff25892a1625c4c370051c26b61ed45:eyJzZWxlY3RlZExpbmVDb3VudCI6NTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijg1YzFjZjQ4ZTNiMjMwY2E3ZjYyYWU2OWYxNGJhY2ZlZTQ5YWQwNTVjMGFmZmUxZmJjNzcwMjM1YjFmYWI0YWYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImZmMGQ3NTk1MGRmMGZmOWEzZWU5NjYzOWRjYzhmZjVlYWVkYjQwZDY4MmJlYTkyNjIyYjUyMGRkODg3ZDkzZTkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImZmZjkzYjYzMDI3NTUxODAxNzgzNTJhMjc3MzIyZjYzMDJmNWQxNzFlOGJhNjdjOTU5YmVhNWJjNTY3NmUxOTYifQ"
         },
         {
-          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRandomQueueFacade.kt#L187-L228",
-          "version": "repo-lines-v1:sha256:6b6d98c8cfc6a256024fe498d89e4fc841fd342253e96199f05b735f05c14de6:eyJzZWxlY3RlZExpbmVDb3VudCI6NDIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM4ZmE5NjlkYWYyZTEyMGZiYmY5OGI1NjNiMWRkZGMyNzk5ZDc5NDdlNGE0ODEzYjM2ZjVjYzI3ZTllZjViMWIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjhlYTdlMThiYTBlMzM4ZjJiODJkNzExYzRmNjZkZjE2N2JhMjg2MmQ0ZTNmMzIzMDFmOTdkM2NlOGQ4OTgzYjkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImY4MmYxM2MyMmQyNzk2YWQ2ODA2OGY4M2U2MTc1ZWFjYjE0M2IxZjdlMDA4OGFlMGExMjk2ZWQwYzIwZWM5MzEifQ"
+          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRandomQueueFacade.kt#L259-L290",
+          "version": "repo-lines-v1:sha256:1b37cb1b0be6d047f7e44f57d5f208fcc5d71b993f18a3834b7fba395dbe9b4e:eyJzZWxlY3RlZExpbmVDb3VudCI6MzIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjE3YjZiOWRjZmQ2Y2IwMzhmNDc3ZTllZjllNGJkMGIwNTA3ZDJjY2Q1MjZlZmY0MGJlNjNiYjAxMGI0ODAzNTUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjQyOWYzOTBhNTAzNGEwZThlM2Y5ODAyOTA3OTkzZWRlNGY5NWZmMTQxMmVmY2UxYWZhZTg1MGI4ODljMWY2ZjUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjI2ZjRjZDEzNjYxZDIwOGFhYzkxMDAxMTExMmJlN2YxY2I2NWNiNDIyNzVlNjkzODhlMTA4MmI3MDc1YTk3MjgifQ"
         }
       ]
     },
@@ -168,41 +176,41 @@
     },
     {
       "id": "claim_05bf1521cad24653b6a42bcfa7771ebd",
-      "statement": "On refill after a wrap (advanceAfterWrap=true), the facade sets the business queue's current index to the pre-append queue length — the first newly appended song — and starts it through playFromQueue (error-checked queue start) instead of syncPlayerQueue, so the user hears new songs rather than the replayed old window; when no new songs were added it keeps the current song and neither plays nor syncs.",
+      "statement": "On refill after a wrap (advanceAfterWrap=true), the facade sets the business queue's current index to the pre-append queue length — the first newly appended song — writes queue plus coverage into state, and starts it through playFromQueue (error-checked queue start) instead of syncPlayerQueue; when no new songs were added it instead sets currentIndex=0 and plays from the business queue head, and without a wrap and nothing appended it only logs and leaves state untouched.",
       "evidence": [
         {
           "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerErrorFacade.kt#L15-L22",
           "version": "repo-lines-v1:sha256:d15cdba5c54892502ebfb04021babd66e4d6db203e09734501bbd63a66b9c37b:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMjBhYzQyODRmNDhlNjM0YTRkNmRhNWUyOGZlYjg4MGYzMmEyYWY0ODI1NGJiZWJiN2ZkZmNiYjYwZjBlYjRhOCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDg5M2Y0MGUzNzgxZWI4OTZjODJkMDQ2YTA4MDY3YTExZTM1Y2RmMmYxZGZhZjI2ZmVhOTBiOGRiNjY3NjQxMyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNmYyZWM2OWQ2Yzk1ZDE4ZGMzZGUwMDc1ODBmMzU3NDQyMzI5YWVmZGU0NzcyYzZjZDU0ZDMyYzEyOTUwZTcxOCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjEsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNDEyY2EzNDVjY2Y3NWJmOWMwODA2YmNlNjk1YmU4ZGU4MDhiNzk5ODQyNTFhN2E1NGQyMDJjZjYxMDFkZDQ1MSJ9"
         },
         {
-          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRandomQueueFacade.kt#L187-L228",
-          "version": "repo-lines-v1:sha256:6b6d98c8cfc6a256024fe498d89e4fc841fd342253e96199f05b735f05c14de6:eyJzZWxlY3RlZExpbmVDb3VudCI6NDIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM4ZmE5NjlkYWYyZTEyMGZiYmY5OGI1NjNiMWRkZGMyNzk5ZDc5NDdlNGE0ODEzYjM2ZjVjYzI3ZTllZjViMWIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjhlYTdlMThiYTBlMzM4ZjJiODJkNzExYzRmNjZkZjE2N2JhMjg2MmQ0ZTNmMzIzMDFmOTdkM2NlOGQ4OTgzYjkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImY4MmYxM2MyMmQyNzk2YWQ2ODA2OGY4M2U2MTc1ZWFjYjE0M2IxZjdlMDA4OGFlMGExMjk2ZWQwYzIwZWM5MzEifQ"
+          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRandomQueueFacade.kt#L292-L330",
+          "version": "repo-lines-v1:sha256:e3179990c337e6e197805f2a91e4f6ac62b51ab7448d5ea2e697c39515f2b780:eyJzZWxlY3RlZExpbmVDb3VudCI6MzksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY5YTM1NTU2OGIwM2ViYWQzMWYwNGUzNzQxOTFkYWQ5MGRhOTZmOWRmYWU3OTk1OWU4ZDE2MmYyMGRkOGE2OTkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjZiY2IyOGEwNGY2MDA1YTBjNDMyNzA1Mzg4ZjRlYjJkYjkwOTY3MzQ3YTI2NWY4YmY5YTA4ZDA4OTg5MTQ2ODEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImY4MmYxM2MyMmQyNzk2YWQ2ODA2OGY4M2U2MTc1ZWFjYjE0M2IxZjdlMDA4OGFlMGExMjk2ZWQwYzIwZWM5MzEifQ"
         },
         {
-          "resource": "repo://feature/player/src/test/java/cn/com/dcsgo/mihx/feature/player/PlayerRandomQueueFacadeTest.kt#L225-L262",
-          "version": "repo-lines-v1:sha256:57fab795ca42875f73258a526ba61b47e0271755893a9cf0a00644f18b14fbb1:eyJzZWxlY3RlZExpbmVDb3VudCI6MzgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRjZjA5ZWIwYzU3NDRmYjk3MzMxYjk4ZmYzZmJmMDVhNjAyYmEzZjdmNjdlNWRhNWJlOTA5NTAzM2Y2MjU4MjUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjQyODc3YWY1ZWIyMzljMjIwOWMwOTFlNGEwZGE0Mzc3ZjU4MjUwMTBjMGRlZjQzMWQ4N2FlOTE1NTA5YTU3MjgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjA3ZjMwOGNlMzhiZDg4MmRkZWY3OGNmMTg1ZDRlNjFhYTJmOGJkOGQzZWQwNTE5NDJjZmM5NTgzZjNjMDJjNGEifQ"
+          "resource": "repo://feature/player/src/test/java/cn/com/dcsgo/mihx/feature/player/PlayerRandomQueueFacadeTest.kt#L225-L264",
+          "version": "repo-lines-v1:sha256:e1e9c6d3f37e3ca7ad895019cb6abd68ca9cf7bbc520154ccb0c5374879f4b33:eyJzZWxlY3RlZExpbmVDb3VudCI6NDAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRjZjA5ZWIwYzU3NDRmYjk3MzMxYjk4ZmYzZmJmMDVhNjAyYmEzZjdmNjdlNWRhNWJlOTA5NTAzM2Y2MjU4MjUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjQyODc3YWY1ZWIyMzljMjIwOWMwOTFlNGEwZGE0Mzc3ZjU4MjUwMTBjMGRlZjQzMWQ4N2FlOTE1NTA5YTU3MjgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjA3ZjMwOGNlMzhiZDg4MmRkZWY3OGNmMTg1ZDRlNjFhYTJmOGJkOGQzZWQwNTE5NDJjZmM5NTgzZjNjMDJjNGEifQ"
         }
       ]
     },
     {
       "id": "claim_5de11798fcfc471baf4b987ea640eb08",
-      "statement": "Mood time-slot filtering happens at the planner entry, not inside the planners: when the slot is active, filterByMoodTags narrows the candidate pool to songs whose emotion tags intersect the slot's tags AT OR ABOVE MoodSlotPolicy.MATCH_MIN_RATIO (0.35), so a tag the model isn't confident about no longer qualifies the song; tiered selection plus recent eviction are reused unchanged on that pool (uniform random composes). An empty filtered pool logs 'fall back to full library' and returns null so playback falls back to full-library random, and pools below MoodSlotPolicy.POOL_WARN_THRESHOLD=10 log a loop warning. The ratio match uses the injected moodEmotionTagRatiosOf (user-manual tags match at 1.0; the default derives 1.0 per tag so nothing changes without injection). Slot configs and emotion-tag ratio maps are Volatile snapshots on PlayerRuntime fed by a continuous Room/DataStore stream subscription (match vs vote distributions computed separately), with an injectable nowMinuteOfDay. Mood filtering is bypassed when explore mode is active.",
+      "statement": "Mood-slot exclusion is applied first over the full ratio distribution and inclusion second: filterOutExcludedMoodTags drops any song whose excluded-word ratio is ≥ MoodSlotPolicy.EXCLUDE_MIN_RATIO (0.15, EmotionGroup.MIN_RATIO, the detail-page display gate) and logs the removed count ('moodSlot: excluded N songs by tags=…'), then filterByMoodTags keeps songs whose included-word ratio is ≥ MATCH_MIN_RATIO (0.35); an empty include pool logs 'fall back to full library after exclusions' and returns null so the caller uses the exclusion-filtered base (excluded songs are never reintroduced), and a pool below POOL_WARN_THRESHOLD=10 logs a loop warning. User-manual tags match at 1.0, and without injected ratios the default derives 1.0 per tag so plain tag matching is preserved.",
       "evidence": [
         {
-          "resource": "repo://domain/src/main/java/cn/com/dcsgo/mihx/domain/playback/MoodSlotResolver.kt#L10-L34",
-          "version": "repo-lines-v1:sha256:69c3d5e4f9faec637a600293017523229ad8d64c7e3f803c19e3b00da9c118d7:eyJzZWxlY3RlZExpbmVDb3VudCI6MjUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImViMWFkNzk4YTJlZWQwNDYzOWRhZjdkY2Q1MThhZGY3ZDNkMDJlN2Y2Y2IxNzAyOWNhYmRjNGI5YmM0MWRkZGMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjliODI5ZTc5NDVjOWQwMmQyYzFhOTMwN2JhMGM4ZWQyMjhmN2FkMWFhNzM3MTRjYTRmM2M4ZTk1NTgwN2ZkOTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQ5OTI4OGQ4MzQ2MmFkNGEwNDA5MDM0NmY4M2U0ZTRiMTIwYzkyNmE1NjUxMzZlMzM2ZjBhYmE3OWQ5MmIxOTkifQ"
+          "resource": "repo://domain/src/main/java/cn/com/dcsgo/mihx/domain/playback/MoodSlotResolver.kt#L59-L92",
+          "version": "repo-lines-v1:sha256:69636364337c5a7dcbafc52b094fc96130cf0b6bba88e9b6672c45465f1e179a:eyJzZWxlY3RlZExpbmVDb3VudCI6MzQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImViMWFkNzk4YTJlZWQwNDYzOWRhZjdkY2Q1MThhZGY3ZDNkMDJlN2Y2Y2IxNzAyOWNhYmRjNGI5YmM0MWRkZGMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjliODI5ZTc5NDVjOWQwMmQyYzFhOTMwN2JhMGM4ZWQyMjhmN2FkMWFhNzM3MTRjYTRmM2M4ZTk1NTgwN2ZkOTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQ5OTI4OGQ4MzQ2MmFkNGEwNDA5MDM0NmY4M2U0ZTRiMTIwYzkyNmE1NjUxMzZlMzM2ZjBhYmE3OWQ5MmIxOTkifQ"
         },
         {
-          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRandomQueueFacade.kt#L97-L114",
-          "version": "repo-lines-v1:sha256:fd9c3c3e29c9a9091b38b632095b6832bb2a14fb9f1e15400042823ec6de43ce:eyJzZWxlY3RlZExpbmVDb3VudCI6MTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImI5ODAyNzQxN2Q3OTU5YzRmZWNjYWY2MWZhN2IyMGMxMzZlZmVmZjNhYmM5MjMyY2UzNzliYzQ2OGNhYTkwOWUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjdlOGYyMmNhOGY1MDU4M2RkYjA2ZDFjYmMwMWIxYjMzYzk3ZjYyZjA2ZGNiMTM5ZDA5YjZmZGJmMDI5YTI1MjEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjEyZTIwNzQ1ODAwMGE1NTIxZGUyYWJlYjg4Yzg3ODIwZjQxODlmZmFlNTUyNjM3NjE2ZTQ4YjlkZGI2NTlhODUifQ"
+          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRandomQueueFacade.kt#L158-L160",
+          "version": "repo-lines-v1:sha256:20417f53c3428b1edae34f74703006fd8fd2021bf26338a1c3fba4d589c2806d:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMjgyNTNjZGZlNWZiOWY4NTJkZDk4ZDM3YmE3Y2NlOTk0M2I1MWRjZWRlYTY5YjhjY2ZkNTgyMGRmOTBmMmY0MCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYzY1MzQ3N2M4YThiZGM4NWZkMTBiNjAwODQyNmY1OGVjMWQ0ODk5Y2I5MzBmYmNhMjFjNWFhNDA3ZWEzYWJhZCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZjg4YzA3ZDZjM2E2YTE0OWJmODljZjQ0NTllZmM3NWUyZmQwMjkwYjk2MmQzOWIwZGE2YTU5ZmI2MDQyMTE4MSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNDRjZmYwYTAyYzM2NTIwMDhiNTU4OTFjZTZkZWU0YmI3N2JjYTc0OTFiNDdhNDA2YTE2YzBmY2UyMzU3ZDNmZiJ9"
         },
         {
-          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRuntime.kt#L451-L475",
-          "version": "repo-lines-v1:sha256:8cc8e358093c0673f2f865a2ed255769c460166871464f46eea8e2113bd9424c:eyJzZWxlY3RlZExpbmVDb3VudCI6MjUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImJkMmE1ODkyOTFhMjJjZjc4NWIwZjI5MmYxZWZhYTU2Y2EzNmNhY2E0MmJiOTc4OTU4NzYwNTU0Njg2YTRlZDYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBjNjQ3OWNjMjMwNDQwZmQ0MWU4MjI0MjE4Njc5Njk4NTU5ZDI4OTNiZDY3YjQzODBhZmFiODExYjM4YTU1YWEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjRmYzhmOWRmNGM0Zjc4MGI4YWQ3OTM5OTJiMjg5YmY2OTk5OTA4MGRkMmViYzQ0MDRlNWI2NjA0NDdhM2ZjZjIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImNhZDE0ZDIzNjExNmM1NWY4NDE0ZWVhYWZlMzdiYWEwYjc2OTZmMTllNmVmMmYwNzY0ZGJiMGFlZDU5ODJjZjQifQ"
+          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRandomQueueFacade.kt#L85-L147",
+          "version": "repo-lines-v1:sha256:6d1c66b62cd5b8603542385799a7e1e0732fd7a97f50013dd16c512ae1b60aff:eyJzZWxlY3RlZExpbmVDb3VudCI6NjMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNkYTk4ZDVjMWU2MGU1NDk5MWE0NWEwZTBlYmUwZDU0ZTIyNWUxZmY0NTlhOThiZjk5MGU0MjE3M2I1NjM3MTUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjFjOTVlYmMyMGUxZjQ2ODhjZWJjYmE0ZjdiNjY0MTZkZmIwZTkzYWI3NDZkMWIyZDFhMjI1MzkyNGYzNTlkNzgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjEyZTIwNzQ1ODAwMGE1NTIxZGUyYWJlYjg4Yzg3ODIwZjQxODlmZmFlNTUyNjM3NjE2ZTQ4YjlkZGI2NTlhODUifQ"
         },
         {
-          "resource": "repo://feature/player/src/test/java/cn/com/dcsgo/mihx/feature/player/PlayerRandomQueueFacadeTest.kt#L429-L472",
-          "version": "repo-lines-v1:sha256:9633b99437fb40228e56f503f1042254defcca79bd8c07eb9879ea7460bb2fa8:eyJzZWxlY3RlZExpbmVDb3VudCI6NDQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRjZjA5ZWIwYzU3NDRmYjk3MzMxYjk4ZmYzZmJmMDVhNjAyYmEzZjdmNjdlNWRhNWJlOTA5NTAzM2Y2MjU4MjUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk1MTk4MjUwMjliZjk3ZDg2MjU1ZGY4OTM3NDg3MDY1NjEzYTA3YTU1YzkwNTQzY2JjMGYyNzc5ZDRiN2E2MTkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjhmYTk5ZDg0NzBiZTUxYzhmMjE2OGU3M2Q0OGIzNTlmMTA2MTZiNDZmNzFhY2Q0NGQyNGE5YjY0MTNkMjM5YTUifQ"
+          "resource": "repo://feature/player/src/test/java/cn/com/dcsgo/mihx/feature/player/PlayerRandomQueueFacadeTest.kt#L391-L510",
+          "version": "repo-lines-v1:sha256:cd64ab77d6af0f07bd697188310c8d603021faffec185f359ae709d50e8bccb8:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIwLCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiI0Y2YwOWViMGM1NzQ0ZmI5NzMzMWI5OGZmM2ZiZjA1YTYwMmJhM2Y3ZjY3ZTVkYTViZTkwOTUwMzNmNjI1ODI1IiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI0ODkzZjQwZTM3ODFlYjg5NmM4MmQwNDZhMDgwNjdhMTFlMzVjZGYyZjFkZmFmMjZmZWE5MGI4ZGI2Njc2NDEzIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiJiOTA4ZTkyMWY5MjBlNWU4ZjZhYWVjZGIwYmEwYzNjMjgzZGJkM2M5NjVmMjkwY2I5ZTlhODJkM2QyZGI0NzEzIiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiJiOTMyMGJiNDMwMDNiMjg1NGIwYzdlNzVhMzkxMDliZDQ4ZWM2MjBjNmY2ZTkwNzA3N2I0Mzc2ZTMzN2EwMmRhIn0"
         }
       ]
     },
@@ -252,23 +260,23 @@
     },
     {
       "id": "claim_1aa28403da284c78ae839b0250608c61",
-      "statement": "The random chain is locked by tests that must stay green before changing it: RandomQueuePlannerTest (eviction, resetHistory, uniform selection after filtering, infinite start/refill exclusions, explore refill), UniformRandomPlannerTest (tier preemption, dynamic tiering beyond fixed thresholds, equal-count degeneration, orderSongs grouping), PlayerRandomQueueFacadeTest (start/refill/wrap semantics, the mood-filter scenarios including uniform compatibility, and the explore generation/session/refill-tiering cases), PlayerMediaEventFacadeTest (tail and wrap refill triggers plus the explore settle/refill triggers), and MediaItemWrapDetectionTest (index-based wrap rule edge cases).",
+      "statement": "The random chain is locked by tests that must stay green before changing it: RandomQueuePlannerTest (eviction, resetHistory, uniform selection after filtering, infinite start/refill exclusions, explicit batchSize, explore refill exclusions), UniformRandomPlannerTest (tier preemption, dynamic tiering, equal-count degeneration, orderSongs grouping), PlayerRandomQueueFacadeTest (start/refill/wrap semantics including the jump to the business queue head, mood exclusion/inclusion ratio gates and fallback logs, uniform compatibility, and the explore generation/session/refill-tiering cases), PlayerMediaEventFacadeTest (tail and wrap refill triggers plus the explore settle/refill triggers), and MediaItemWrapDetectionTest (index-based wrap edge cases).",
       "evidence": [
         {
-          "resource": "repo://domain/src/test/java/cn/com/dcsgo/mihx/domain/playback/RandomQueuePlannerTest.kt",
-          "version": "repo-file-v1:sha256:8bfb14a11263340fb02854563ed55e526c415bf2785f427cffcc21c006707f79"
+          "resource": "repo://domain/src/test/java/cn/com/dcsgo/mihx/domain/playback/RandomQueuePlannerTest.kt#L17-L177",
+          "version": "repo-lines-v1:sha256:7b57fd040bf03dfff408cfab6a151333255a570bb0702a8ef287725aff83c5c3:eyJzZWxlY3RlZExpbmVDb3VudCI6MTYxLCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiI0Y2YwOWViMGM1NzQ0ZmI5NzMzMWI5OGZmM2ZiZjA1YTYwMmJhM2Y3ZjY3ZTVkYTViZTkwOTUwMzNmNjI1ODI1IiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI0ODkzZjQwZTM3ODFlYjg5NmM4MmQwNDZhMDgwNjdhMTFlMzVjZGYyZjFkZmFmMjZmZWE5MGI4ZGI2Njc2NDEzIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiJiOTVmYTIxYTc0MTlkOWFmMGJhZWNhNDIzZDZkMzExODQzZTczNWJhYmM3ZjA4ZDRjZWIwZGZmM2YxNjU2ZTI3IiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MSwiZm9sbG93aW5nQ29udGV4dEhhc2giOiI0MTJjYTM0NWNjZjc1YmY5YzA4MDZiY2U2OTViZThkZTgwOGI3OTk4NDI1MWE3YTU0ZDIwMmNmNjEwMWRkNDUxIn0"
         },
         {
           "resource": "repo://domain/src/test/java/cn/com/dcsgo/mihx/domain/playback/UniformRandomPlannerTest.kt",
           "version": "repo-file-v1:sha256:0328f89b4dc55a919aa3679ca3669a97e2953776dc3faefdf573a7f598c23962"
         },
         {
-          "resource": "repo://feature/player/src/test/java/cn/com/dcsgo/mihx/feature/player/PlayerMediaEventFacadeTest.kt",
-          "version": "repo-file-v1:sha256:46305bb6c67ebdfb6d7cf58849eb43cfe1fa12b738200c3a6900a304f56240ce"
+          "resource": "repo://feature/player/src/test/java/cn/com/dcsgo/mihx/feature/player/PlayerMediaEventFacadeTest.kt#L111-L200",
+          "version": "repo-lines-v1:sha256:2abb6f691a67a5b1f3ee6fdf909cb303063522cb5eaac8c0910a65addc3e773f:eyJzZWxlY3RlZExpbmVDb3VudCI6OTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRmOTY4Y2NjMmM1MTdiZDUyNWQ3NWFiNDYxNWYzNDc3ZDdlNWNkZDZlZDQ1ZDM0YmZiOTdhMjA0YmIxZmU3MzgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjkwNmU1MzMwYThkYjZjMWQxZDdmMGU3NTg5MzAwZGRkZWI5ZGRiOGRhNDkxZDg2ZDExZmNlMmUwZTA3OTkyZDUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjVhYWUzZDJkMDZiYzRmZWIzMDk4ZWQwMjI5NmM0NDVmMTIxZWYzYmU2ODYxMzEwMDQ0MDJjNjE0NTM5OTIzMTciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImY1NjdlZDc2NmE0ZDFjNTY2NTA0MzY2MDkwYzViNGJmZDViMjNlODA2OWFhMTgyMzNjNDk4ZjUwNmViMjMzMGQifQ"
         },
         {
-          "resource": "repo://feature/player/src/test/java/cn/com/dcsgo/mihx/feature/player/PlayerRandomQueueFacadeTest.kt",
-          "version": "repo-file-v1:sha256:a473cb6f4b7a4e73430f551ffa9c9003531df4e5236da5be9c35eff1ffcd96a4"
+          "resource": "repo://feature/player/src/test/java/cn/com/dcsgo/mihx/feature/player/PlayerRandomQueueFacadeTest.kt#L46-L961",
+          "version": "repo-lines-v1:sha256:47faf552f1b5964a5c57a7d440be1643c0deeaf2cb00f52cd81b64169572fdbe:eyJzZWxlY3RlZExpbmVDb3VudCI6OTE2LCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiI0Y2YwOWViMGM1NzQ0ZmI5NzMzMWI5OGZmM2ZiZjA1YTYwMmJhM2Y3ZjY3ZTVkYTViZTkwOTUwMzNmNjI1ODI1IiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI0ODkzZjQwZTM3ODFlYjg5NmM4MmQwNDZhMDgwNjdhMTFlMzVjZGYyZjFkZmFmMjZmZWE5MGI4ZGI2Njc2NDEzIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiI0MmVjZWVhZmRiNjI3ODk1YmQwZWQ2MDRjOWZjZWRiNjg2OTc4NjU2MThjYmQyNDQ5YTA2NmMwMDNlOTQ4YmYzIiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MSwiZm9sbG93aW5nQ29udGV4dEhhc2giOiI0MTJjYTM0NWNjZjc1YmY5YzA4MDZiY2U2OTViZThkZTgwOGI3OTk4NDI1MWE3YTU0ZDIwMmNmNjEwMWRkNDUxIn0"
         },
         {
           "resource": "repo://player/src/test/java/cn/com/dcsgo/mihx/player/MediaItemWrapDetectionTest.kt",
@@ -296,15 +304,15 @@
     },
     {
       "id": "claim_7b6ad799c81d424aae7964b6e2c09028",
-      "statement": "In explore mode, playRandomQueue bypasses mood-slot filtering entirely (mood = if (explore) null else activeMoodSlot()), plans a fixed 10-song batch (ExplorePlaybackPolicy.INITIAL_BATCH_SIZE via planner.batchSize override, default stays 20 otherwise), still applies recent-skip eviction and the uniform-random flag within that batch, and on success writes isExplorePlay = explore to PlayerUiState while exiting infinite mode.",
+      "statement": "In explore mode, playRandomQueue bypasses mood-slot filtering entirely (mood = if (explore) null else activeMoodSlot()), plans a fixed 10-song batch (ExplorePlaybackPolicy.INITIAL_BATCH_SIZE via a planner.batchSize override, default 20 otherwise), still applies recent-skip eviction and the uniform-random flag within that batch, and on success writes isExplorePlay=explore to PlayerUiState while exiting infinite mode.",
       "evidence": [
         {
-          "resource": "repo://domain/src/main/java/cn/com/dcsgo/mihx/domain/playback/ExplorePlaybackPolicy.kt#L7-L11",
-          "version": "repo-lines-v1:sha256:43c0a7e01b0adc52b3013a21893170aa633ee1beb06aec01074332712bd618ab:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNDMyMTQxOTNjZmRmOGMyYzMwNTRlMzY2OTdmYjczNGU1MzQzZmJkNjliYjA0YmZhYWQ5YWU5MGU0ZGM5NzUwMSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNzZmNjE3MDA0MjhhZjYwMGJhZTVhZGI5NGZiYzllMjc5ODBjMGI5YjM1ZGE1NTQyZTllNTk0MmY3ZTk5ZTAwZiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZDhmMjg4NTM0YjZiZmMxMWZiZTg4YmI4MzEzYTNjYTI0MWU2YmM5MTJmNzY5MmUyMzcxNTM2OTIzOTc3NmY4MSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiOGEyOGE0ZTczMmY2N2RlMjk2NWQzMTMxNWIzZGFkYWE4ZTBjZGM3NDdjMDZkOWMzYTZhMTlmMmVlNDRhZTM0NiJ9"
+          "resource": "repo://domain/src/main/java/cn/com/dcsgo/mihx/domain/playback/ExplorePlaybackPolicy.kt#L9-L14",
+          "version": "repo-lines-v1:sha256:02eb9c161c9122f6a4e85ff311ff1cfae4e75508ab2fc0a317286ff52ab0d033:eyJzZWxlY3RlZExpbmVDb3VudCI6NiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNDMyMTQxOTNjZmRmOGMyYzMwNTRlMzY2OTdmYjczNGU1MzQzZmJkNjliYjA0YmZhYWQ5YWU5MGU0ZGM5NzUwMSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZjFhMDU1NmNlNmZiZGM5ZjM3YzViNWJjZjFkNDQyNmY5MDA4NGUwY2NjN2I1ZDdmNzBiZTFhYjI0YjQ1ZDYyNiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZDhmMjg4NTM0YjZiZmMxMWZiZTg4YmI4MzEzYTNjYTI0MWU2YmM5MTJmNzY5MmUyMzcxNTM2OTIzOTc3NmY4MSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNDJhOTMzNmE2MTQ5NjEyMmFmM2M2MGE4YWNkMDk3NzgxZjhmYTUxOTE2YThhNTAyODM3ZDM2NmMxNDlhNTM3YiJ9"
         },
         {
-          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRandomQueueFacade.kt#L95-L137",
-          "version": "repo-lines-v1:sha256:08ff0cbbb6aa62875b84394c7d5190c11fcf1ea6d3f100be40848f0fb374a80c:eyJzZWxlY3RlZExpbmVDb3VudCI6NDMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQ3NDM4YzMxNjUyOTFlOTc2ODk4YTczYTU2MDdmMzZhYjg0NTU1ZjUxNWMxZjE1ZTMwZTRlZTFlZjE1OTNjZjAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQwN2Y0MjViMzgxOGVkZmQ5NmRhMjUxZmI4MTI2ZjJkODljMWJjZDkwYjRjZTg5MWRjMTRjNzA3YWU5ODk1MTAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjNhZDUxZTE0OGNmZGJmMDU2NTA2NGZhODNlMDU1NjQwMzA2NGZlOWZmZjQyZDFjNWU2MzNjYWMyMzcwNzM3ZTIifQ"
+          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRandomQueueFacade.kt#L155-L198",
+          "version": "repo-lines-v1:sha256:87aabca9df03bc6242f31a35d8650a393e77baf6397b93092b06a6c86c1524f8:eyJzZWxlY3RlZExpbmVDb3VudCI6NDQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQ3NDM4YzMxNjUyOTFlOTc2ODk4YTczYTU2MDdmMzZhYjg0NTU1ZjUxNWMxZjE1ZTMwZTRlZTFlZjE1OTNjZjAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQwN2Y0MjViMzgxOGVkZmQ5NmRhMjUxZmI4MTI2ZjJkODljMWJjZDkwYjRjZTg5MWRjMTRjNzA3YWU5ODk1MTAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjNhZDUxZTE0OGNmZGJmMDU2NTA2NGZhODNlMDU1NjQwMzA2NGZlOWZmZjQyZDFjNWU2MzNjYWMyMzcwNzM3ZTIifQ"
         }
       ]
     },
@@ -429,10 +437,154 @@
           "version": "repo-lines-v1:sha256:0ece22633c418bbdc86617e912576920388261bdaa1960cba51700a6af0ef9a5:eyJzZWxlY3RlZExpbmVDb3VudCI6MjAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjdhMWE5NWJiZjNlNmFlNTRkNTI2OWM5NmIxYzkyYzljY2EyNWU3Njg4NDc1NzA1MmJjN2RkZmEwMjVhMzM4ZmYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBjNjQ3OWNjMjMwNDQwZmQ0MWU4MjI0MjE4Njc5Njk4NTU5ZDI4OTNiZDY3YjQzODBhZmFiODExYjM4YTU1YWEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjUxMDVjMWViZWI3OTNkNTBmOGQ5OTkyYmUyZDk0MDA1NzNhOTBjMDdhOTUxMzdmMDhhNGJmYWIxZGY1MWY5ODAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijk5OWJkZWZlZWFjYTYzNDBlMDI5MGRjODZlODg5Yzg5ZDVlMTg5YWE1YmE0NGI1ODViM2I3MDczNGY0YTYyZDgifQ"
         }
       ]
+    },
+    {
+      "id": "claim_a82b4feac2f7477a82d720e34a9248ab",
+      "statement": "Time-slot filtering is a facade-level pre-planning step: playRandomQueue hands the filtered candidate list and its raw play counts to planRandomQueue, and refillInfinitePlayQueue plans on the strict mood pool first and only then on the non-excluded library, so recent-play eviction and uniform-random tiering remain pool-agnostic and can never reach outside the surviving pool.",
+      "evidence": [
+        {
+          "resource": "repo://domain/src/main/java/cn/com/dcsgo/mihx/domain/playback/RandomQueuePlanner.kt#L59-L98",
+          "version": "repo-lines-v1:sha256:510741aecc8b9b928ba019db696baf0d7aa7b1569361220359e1a31a987f89f8:eyJzZWxlY3RlZExpbmVDb3VudCI6NDAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImRmNTgyYmYxYTU0NjA4NGMyYjViZDk0MDMxYzljODJkYTk0MzVkZDgwMDI3ZDM0ZDliZjQxOTcxYmQzZmJhY2MiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImZmMGQ3NTk1MGRmMGZmOWEzZWU5NjYzOWRjYzhmZjVlYWVkYjQwZDY4MmJlYTkyNjIyYjUyMGRkODg3ZDkzZTkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImZmOGUxYzYzYjVmOTczMDM2Y2JmMjlhM2EyZDc4N2E4OWVlODUwMTc0ZDk2MjE1NDdhM2U4ZGZmODYxZWEwOGEifQ"
+        },
+        {
+          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRandomQueueFacade.kt#L158-L177",
+          "version": "repo-lines-v1:sha256:d6ca2b80e335fc0ec81cee0da8d5eea2187f0ec2e430be676079dd7a63f1c7e4:eyJzZWxlY3RlZExpbmVDb3VudCI6MjAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI4MjUzY2RmZTVmYjlmODUyZGQ5OGQzN2JhN2NjZTk5NDNiNTFkY2VkZWE2OWI4Y2NmZDU4MjBkZjkwZjJmNDAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImE4ZGU3NTQwODVlNzYzZjYwZGMxOGVkZDJiYjhlOGU4ODFlMmU0NjVkODRmOTlhYWI4MzZhZTUwMTUzY2E1M2QiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImY4OGMwN2Q2YzNhNmExNDliZjg5Y2Y0NDU5ZWZjNzVlMmZkMDI5MGI5NjJkMzliMGRhNmE1OWZiNjA0MjExODEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxOGUzNzY4YzdmMDY5OTZjYWUzMmE4NDYxYjBjMjRhM2E5NGZmNzM1MjMxNzQ0NjM2YWRiZTUxODg4YTJjZGIifQ"
+        },
+        {
+          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRandomQueueFacade.kt#L252-L290",
+          "version": "repo-lines-v1:sha256:6b00085ac16e3b9359559e044f78147e934794dceef4e5e9c958b94268c4cf4a:eyJzZWxlY3RlZExpbmVDb3VudCI6MzksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY5MzBmN2ZlYTU1Y2RkMjc2NzFlNDcxYmMwMTQzYzc4M2Y0ZjI4ZTAwMWQ2NDBmZjBkMDcwZDM5ZThkNTM0OTMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjVjYmYzNzE3OGVlODYzNWJiODM2MjcxZDQ2NjdkNWFiMjlmN2QxYmU2NTg2ZDY3MjcwMzY0YWExZTdkZmU1YzkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjI2ZjRjZDEzNjYxZDIwOGFhYzkxMDAxMTExMmJlN2YxY2I2NWNiNDIyNzVlNjkzODhlMTA4MmI3MDc1YTk3MjgifQ"
+        },
+        {
+          "resource": "repo://feature/player/src/test/java/cn/com/dcsgo/mihx/feature/player/PlayerRandomQueueFacadeTest.kt#L632-L672",
+          "version": "repo-lines-v1:sha256:07d744f09cb7c228ab1c813af60c6bda0e578e5b9f9f11c14841df6720e3cc3d:eyJzZWxlY3RlZExpbmVDb3VudCI6NDEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRjZjA5ZWIwYzU3NDRmYjk3MzMxYjk4ZmYzZmJmMDVhNjAyYmEzZjdmNjdlNWRhNWJlOTA5NTAzM2Y2MjU4MjUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjliZTA0OWNmNjAzNDQxOTRlYzg0MzBhNWM2MTE4ODJkYTMwNTEzYWMxM2FlNDczY2ZlNTJkYTUwYzkzZDRmMGUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjJlNjM2ODg2ZWRlYTU5MTFlOWUxNGFlOGJkNDE0ZDZkZWQ1MDRlYmE0YWMwMTIwYTY1NjA2NWIyZmFlOTQ3MTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_d87f4c36ee6f49a5b7f921a724aa97e3",
+      "statement": "Exclusion and inclusion ratio boundaries are pinned by facade tests: an excluded-word share of 0.10 keeps the song while 0.274 removes it (logging 'excluded 1 songs by tags'), an included-word share of 0.16 no longer matches while 0.70 does, exclusions stay applied when the include pool falls back, and without injected ratios matching degrades to plain tag presence.",
+      "evidence": [
+        {
+          "resource": "repo://feature/player/src/test/java/cn/com/dcsgo/mihx/feature/player/PlayerRandomQueueFacadeTest.kt#L424-L510",
+          "version": "repo-lines-v1:sha256:c01ead7bf96c41b534c87ac4d8d24a57d1e965d8e4d777af34560977759101b4:eyJzZWxlY3RlZExpbmVDb3VudCI6ODcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRjZjA5ZWIwYzU3NDRmYjk3MzMxYjk4ZmYzZmJmMDVhNjAyYmEzZjdmNjdlNWRhNWJlOTA5NTAzM2Y2MjU4MjUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImM0OTdkZmEzYzgyNTNlYzg0NDZkYjdjMzUzMmZiZDM1MzI5ZjEwNDc1MTkwYjJkODU4MTU5NWIyYzdkN2NiY2IiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImI5MzIwYmI0MzAwM2IyODU0YjBjN2U3NWEzOTEwOWJkNDhlYzYyMGM2ZjZlOTA3MDc3YjQzNzZlMzM3YTAyZGEifQ"
+        },
+        {
+          "resource": "repo://feature/player/src/test/java/cn/com/dcsgo/mihx/feature/player/PlayerRandomQueueFacadeTest.kt#L674-L717",
+          "version": "repo-lines-v1:sha256:9633b99437fb40228e56f503f1042254defcca79bd8c07eb9879ea7460bb2fa8:eyJzZWxlY3RlZExpbmVDb3VudCI6NDQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRjZjA5ZWIwYzU3NDRmYjk3MzMxYjk4ZmYzZmJmMDVhNjAyYmEzZjdmNjdlNWRhNWJlOTA5NTAzM2Y2MjU4MjUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk1MTk4MjUwMjliZjk3ZDg2MjU1ZGY4OTM3NDg3MDY1NjEzYTA3YTU1YzkwNTQzY2JjMGYyNzc5ZDRiN2E2MTkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjhmYTk5ZDg0NzBiZTUxYzhmMjE2OGU3M2Q0OGIzNTlmMTA2MTZiNDZmNzFhY2Q0NGQyNGE5YjY0MTNkMjM5YTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_6121abdbdcd34bb9a32fcb33e1866edd",
+      "statement": "Explore learning is double-gated and votes from the vote distribution: PlayerMediaEventFacade.handleMediaItemEnded reads the ended song's tracked id and played-ms before clearing tracking and calls onExploreSongSettled only when isExplorePlay and isExploreModeActive are both true; PlayerRuntime.handleExploreSongSettled then uses exploreVoteRatiosCache (emotionVoteRatiosOf thresholded at VOTE_MIN_RATIO and capped at VOTE_MAX_TAGS) rather than the untruncated match map, converts ratios to integer weights with ExplorePlaybackPolicy.votesOf, and calls recordSongOutcome(votes, liked = !skipped).",
+      "evidence": [
+        {
+          "resource": "repo://domain/src/main/java/cn/com/dcsgo/mihx/domain/playback/ExplorePlaybackPolicy.kt#L61-L88",
+          "version": "repo-lines-v1:sha256:fc1b1b927a29ce79d88a24191239141356454c5f20a2da85126c6cf92e9104cf:eyJzZWxlY3RlZExpbmVDb3VudCI6MjgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM5Y2JiYzY1NDY5ZGIxY2EyODQyZWZkOTdkZjdlZTJjZTZjYzE1NzE0ODJkMDFhMThiNzkwYTEwYzdjNTEwZjMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjUxYjIxNjE1YjcyMGZkYjQzNDE5OGJhNTA5Yjk3YTBlN2E0MmQ0ODI2ZjRhMTFlMzNkZWVlOTM2OWQ4MDkxMzEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        },
+        {
+          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerMediaEventFacade.kt#L34-L56",
+          "version": "repo-lines-v1:sha256:bbe467efcfa2171b9cbbf1bef320135fa73843af012fc7b5678eeb88ac14ea63:eyJzZWxlY3RlZExpbmVDb3VudCI6MjMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImNlMjc3NmY1M2MxN2Q0YmMwMDU3OTAzMWYwZjEyN2NjMmM3MWIxODdjOGRkMjk1ZDA1ZGFjMmZmYjgyNzQ2ZGMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImYzYzBkMjE4M2EwNDVmNTFkNGNlNjg0MGFkODk1MjRlNTc1YWM2MWQ1ZWRiOTUwNTI5ODExOWY1NDUxNzNhY2UiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjU5MjJiMjBjZmU3ZmYzNjU4YjIzMTBlZmZhZmM0ODFiOTFmNWFlMTUwYzJlMTczYjM5MDk5MjQxZDQ2YWZjOGMifQ"
+        },
+        {
+          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRuntime.kt#L454-L480",
+          "version": "repo-lines-v1:sha256:5b634122b9a59903215983162a7da01cf93b726498ca1ae9a7048fc7df6cd7f2:eyJzZWxlY3RlZExpbmVDb3VudCI6MjcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImJkMmE1ODkyOTFhMjJjZjc4NWIwZjI5MmYxZWZhYTU2Y2EzNmNhY2E0MmJiOTc4OTU4NzYwNTU0Njg2YTRlZDYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjRmYzhmOWRmNGM0Zjc4MGI4YWQ3OTM5OTJiMjg5YmY2OTk5OTA4MGRkMmViYzQ0MDRlNWI2NjA0NDdhM2ZjZjIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjY3MDcxMmM1MzBlNmU2MTY0NGEwMjg2OGFiOTk0MjBkNGUwYjdlOGNlZTJmY2E5YzEwMjBiMGM1M2NjYmI4MjMifQ"
+        },
+        {
+          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRuntime.kt#L960-L1002",
+          "version": "repo-lines-v1:sha256:bba956100e41eee9b2177e50d6d39c607fb906c1c9a92d6a6455bbfd7ad15726:eyJzZWxlY3RlZExpbmVDb3VudCI6NDMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImRlZTA1ZjU1ODZhYjA3YjBiMDAwNjdjOWY2ZDgxY2ZiZmU3MGIyYWY1NDk2MDRhMmYwNTRlYjA1ZTMwMmU0NDIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjJiMzAxNjU5OWQ1OTgzYmNhZmVlN2EwNjQ2N2Q1ZWUxMGI1NmRkYWE5MDU4OTEzNDg0MDkxYTIwNTllMDgzNDgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImRmZGZjMmIyZmVjYTcxODIzMDA5ZjViNjY4Nzc1N2ExMWZkZGIwZTI3OWVmZGRmNmMzZTdkMDA1YWE2MDY0ZGYifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_879f12c8f6314cd4ae3e17d51b654f7b",
+      "statement": "Explore refill triggers only when the just-ended song was second-to-last: handleMediaItemEnded calls refillExplorePlayQueue(startedSongId) when remainingMediaItems() <= exploreRefillThreshold, an injection separate from the infinite refillThreshold that defaults to ExplorePlaybackPolicy.REFILL_THRESHOLD = 0, so a remaining count of 1 (or more) does not refill.",
+      "evidence": [
+        {
+          "resource": "repo://domain/src/main/java/cn/com/dcsgo/mihx/domain/playback/ExplorePlaybackPolicy.kt#L34-L36",
+          "version": "repo-lines-v1:sha256:3daf8c3849d73fa89dcc402c1f95a71367ac1a7893325b3a2ed49eb337893f78:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNzBhYWUyNmIxNGE0OTEwOWFhYzBhZDY3N2I4MmYwYzg5MGMzYTAwYjVlZWNkNzJkYjg1OGJkNzExMjY0YzIzNCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiOWFiNGY2ZjMxZDkwMTY5ZTYwZTA1YjE3Yzk4YjFhYmQwOWMyYzBlMTExYjQ5ZjkyNmViZGZkMzMxMDMxMTcwYSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMzRiZDUwMzFlNWNhMTM2MjQ3YWYyNDNhODZiMDMwM2MwMWMwZjE2YzgwOTYyYzBiYzc4Y2IwNmE0MmJhM2EyMSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMDAxYjNlNmYxNGU4YjIxODJmN2VmZDAyMmQ4NGIzZjVmZTcxYzcwNzdkOTRmNmY2Yzg3OGJiNjQ3NGVhNzRjOSJ9"
+        },
+        {
+          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerMediaEventFacade.kt#L16-L22",
+          "version": "repo-lines-v1:sha256:fe8f816b343c20fd4db7bcbbdc60301df989f09989aa53e0c6a76694ebddf87e:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZjk5ZGJmZTBkMWNkZDQ4MjA5MDg3NzYxZTQ4Y2M0ODY5MjA3MTc1MDJmYThjZmU0ZTljNjRkM2EwN2E3MDk4NiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNjNlMGIzMGEwZDJjMDkwNTg4MmYxZTAwMDczM2IwNmQ3NmFiODliZDhjMjAzZDg3MzdiMTZiODdmY2EyYTNlYyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiM2EwYjliMjkwZWMxODhhYjU1MGI3ZDY1YmIzMmM4OTlhNmUyNTFhZDlkNDU3ZTEyNWJkYTQzODFmYTMyNjdlMiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZmMyMTE0MzUzNmY1MmI3YzQ0YWRmZmM3ODk3NjU5ODgwZGEzOTAxMWFkNWM4M2MyYWM4ZDkxZTg1ZTE0OGQyNiJ9"
+        },
+        {
+          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerMediaEventFacade.kt#L44-L56",
+          "version": "repo-lines-v1:sha256:be2ce9555c737779eb17a9d442a3765a002835d537f0074a0c9489a7f9870603:eyJzZWxlY3RlZExpbmVDb3VudCI6MTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImMyMjU5N2ZkNDQzMzZiMDRhZWUzMzFlMTY5MmVhMThjMzUzNTZlZWZlMmJjOTAwZTZmYzkxZmI3ZTgzYmY0MDIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjJlMDdlYmU2N2VjNzk5MTRhYzllYjgxOGNmOWIyMzc3NDU3NzFlYTgyMmVkMWNhMjdhYjYzZmQ5Nzc4ZjRhNTMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjU5MjJiMjBjZmU3ZmYzNjU4YjIzMTBlZmZhZmM0ODFiOTFmNWFlMTUwYzJlMTczYjM5MDk5MjQxZDQ2YWZjOGMifQ"
+        },
+        {
+          "resource": "repo://feature/player/src/test/java/cn/com/dcsgo/mihx/feature/player/PlayerMediaEventFacadeTest.kt#L111-L200",
+          "version": "repo-lines-v1:sha256:2abb6f691a67a5b1f3ee6fdf909cb303063522cb5eaac8c0910a65addc3e773f:eyJzZWxlY3RlZExpbmVDb3VudCI6OTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRmOTY4Y2NjMmM1MTdiZDUyNWQ3NWFiNDYxNWYzNDc3ZDdlNWNkZDZlZDQ1ZDM0YmZiOTdhMjA0YmIxZmU3MzgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjkwNmU1MzMwYThkYjZjMWQxZDdmMGU3NTg5MzAwZGRkZWI5ZGRiOGRhNDkxZDg2ZDExZmNlMmUwZTA3OTkyZDUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjVhYWUzZDJkMDZiYzRmZWIzMDk4ZWQwMjI5NmM0NDVmMTIxZWYzYmU2ODYxMzEwMDQ0MDJjNjE0NTM5OTIzMTciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImY1NjdlZDc2NmE0ZDFjNTY2NTA0MzY2MDkwYzViNGJmZDViMjNlODA2OWFhMTgyMzNjNDk4ZjUwNmViMjMzMGQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_cb062a33819d457bae321a48a4831c2e",
+      "statement": "buildExploreRefillPool excludes already-queued ids, classifies each distinct emotion word via wordPreferenceOf(...).kind, and degrades strictly from 'at least one liked word and no disliked word' to 'no disliked word' to the full library, using a tier only when it can supply REFILL_COUNT songs — a sufficiency test that replaced a non-empty test to stop refills stalling once every word had become disliked.",
+      "evidence": [
+        {
+          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRandomQueueFacade.kt#L390-L442",
+          "version": "repo-lines-v1:sha256:cb1a49f34db08ba7c5bc745206c571c2d340b534879165900d3da14c2b642c7d:eyJzZWxlY3RlZExpbmVDb3VudCI6NTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjhmNTBiZDAxODAxODZjMDg0NzI0Y2RiYjliMGE3NGZhYzk4MGM5ZjlkNTE5MWMzODkwYjViOTc5Y2YzYzFlZWMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImU0NzI1MjcxMGFjZDMyODBiZmU4NjQ1OTBhNjhjMTBlZTM2MTZjODZhZDU1MDYwNGRiYWFlYjZkZWE0OWM2YzkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImI1ZGEyNDc2MTQ0ZjcyYTc2YjhlNjU4M2VhYjdiZmE5NjVmY2Q2YzI0MWY1MTNlYzgzYTg1YTQ2ZjM5ZDFjOWIifQ"
+        },
+        {
+          "resource": "repo://feature/player/src/test/java/cn/com/dcsgo/mihx/feature/player/PlayerRandomQueueFacadeTest.kt#L842-L904",
+          "version": "repo-lines-v1:sha256:dea0e20ba68d9e21a138e1b6281eac041081470a1e2e954d561c6d5c84fb64e6:eyJzZWxlY3RlZExpbmVDb3VudCI6NjMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRjZjA5ZWIwYzU3NDRmYjk3MzMxYjk4ZmYzZmJmMDVhNjAyYmEzZjdmNjdlNWRhNWJlOTA5NTAzM2Y2MjU4MjUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjRhNTE2NWJhODBmNzU3YjI4OThlNzg2M2RiNDIwOTBlNTdhNzllYTk0NWJiNjQwODRkODM2MTU3YjExODI1NjciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImFmZjJkMDk1MzM0NGI5Y2I0ZGZlZjM5M2QwMzU1NzU2MTIyYzdlM2VhMTAzNWNiZjA5MzUxZjEzYzUzOTc4YTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_abcffcddf8554e418ed43689fbaf27cd",
+      "statement": "PlayerRuntime's randomEnhanceMode collector publishes isExploreModeActive = (mode == EXPLORE) and calls randomQueueFacade.stopExplorePlay() when the mode leaves EXPLORE while isExplorePlay is still set, so switching to TIME_SLOT or OFF ends the session and re-enables infinite random, which keys on the session flag rather than the settings mode.",
+      "evidence": [
+        {
+          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRandomQueueFacade.kt#L204-L211",
+          "version": "repo-lines-v1:sha256:3086e7365e775679c1156a2144a1e930944e02af6d73882682b4861e66a3cd72:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMzQzMTNkOTQwZTNkNWM3ZmZjYmRiZDI4YTRhZjg3MTAyMTU2MTdiMmFhYWNlYTgwZWVjNzE5NmNiZmE0ZWY2YyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZTZiMDQ0OTE0Njk3MjJlODM2M2E5NGU0MDQ0NTM4ZTAxM2EyYTIxN2UzNmIxZTU2OGJhNjBhY2I3YjRjOGYyZSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNGE3ZmU0MTYzNjA2YmIzZGUwNDY0Mzc2NzM0YTZjMTY5NTRlMTdlYWNhODAwZDQwNDdjNTJlNGEwYTgxM2E0YSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZDZhODJlMmNjZTY3MTcyMzgwYTc0MWZiMWUyMTc0ZDhmMDIyYWQwNmU5NDI4ZDM0NzRiNmMwNDFlZjFhZDJhMiJ9"
+        },
+        {
+          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRandomQueueFacade.kt#L365-L368",
+          "version": "repo-lines-v1:sha256:fe5da3fcf9f3d2d2b0d630bee9abf311d89d77306836a73efc59918af7fcb8d2:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNDgwYTQxY2Y4MzE2MGFiMDhjOWNkOTk1MjhlMjFiMzAxYWZiZTU1NGM0NDMxZGZkOGE4MjhkZWExZTBkNjEyOCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDg5M2Y0MGUzNzgxZWI4OTZjODJkMDQ2YTA4MDY3YTExZTM1Y2RmMmYxZGZhZjI2ZmVhOTBiOGRiNjY3NjQxMyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMzNkNGQwOTQ2MGI1ZDk0M2EwNmRmOTcxMzg4MzNhYjAyOGQzN2FhZGE0YzBkZWFkOGRiZGZkMjY1MWUxMTVlNiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZjBhZmQ3MjU5ZjdlNjI4NTIzOTdiYTE2MTRmOTFmMDFiMWQyNDlkODM0MGRkZGQ1Mjg4ZTkzODAxZmJlNzEyOSJ9"
+        },
+        {
+          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRuntime.kt#L487-L509",
+          "version": "repo-lines-v1:sha256:2fcabff47ef388cde5ed46d8604ffb9ec69859645d9070d1953b0c73a7e959f6:eyJzZWxlY3RlZExpbmVDb3VudCI6MjMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImNlNDEwMGJmNzM0ZGYwN2EzYWRlMzNhY2E0MTlhY2NiYmM3Y2E2Y2M1OTZhMDllNDIxNWM3ZTQ1NzRlODE3M2YiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjI3MWY0YmI5OGIzYmYyMWRmMmE2NDBlZmEzYjQ3ZGY3MGVlZjA0Mjc3NTk0MDM0MjRiMmI5ZmE3M2E1NDQ1ODEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjBiOGEzMzM5ZDA4MWUzM2Y4ZmQyZDViZGI5ZGQyNmUwNGY5YjE5YTM1NDE0NjBlZTEyNmYzOWQzNzBiZTFjYmMifQ"
+        },
+        {
+          "resource": "repo://feature/player/src/test/java/cn/com/dcsgo/mihx/feature/player/PlayerRandomQueueFacadeTest.kt#L788-L802",
+          "version": "repo-lines-v1:sha256:6245b17816a40e2a618544f6e176bd32db78aa273465e9a0b7c586d9c0b3e319:eyJzZWxlY3RlZExpbmVDb3VudCI6MTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRjZjA5ZWIwYzU3NDRmYjk3MzMxYjk4ZmYzZmJmMDVhNjAyYmEzZjdmNjdlNWRhNWJlOTA5NTAzM2Y2MjU4MjUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImU0MzZhNmRkNDIwNWRiNTc0MGMzODRhZjZmMjRhMjBlOGZiYmM4NDAxNTI3N2YwYjQyNTY2YTg4YTE1MTc0MTIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjYzZTQzNzU5OGM3ZmMxNDJlODBkOTRmNzljNmJkNTBmNTlmODVhNjdhMzRlNmZhMThiOGE3MzE1ZjM1YmVkODMifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_6e31f79d473245d9a709cc68ee19b1cc",
+      "statement": "PlayerRuntime keeps the random-enhance inputs in @Volatile snapshots fed by continuous flows: the mode cache makes moodSlotEnabled/exploreModeEnabled zero-IO, and a single songEmotionRepository subscription derives two maps per song — emotionMatchRatiosOf (untruncated, for mood matching) and emotionVoteRatiosOf(VOTE_MIN_RATIO, VOTE_MAX_TAGS) (for explore votes).",
+      "evidence": [
+        {
+          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRuntime.kt#L438-L480",
+          "version": "repo-lines-v1:sha256:286ee0d8e4460051a8af8d971bb5e4ca58c0c26a807949b08355f424a9a1cad0:eyJzZWxlY3RlZExpbmVDb3VudCI6NDMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQwMDVlZDJiMWEwYjAxMjEyYzY2NmFhMzFlZmM2NmZjODMwYTA5YzFhZTk3ZTE3NmVkMmQ3NjVlZDVmMmNhYTAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijg5MTdjNDQxODM5Y2NmOTg1M2FjNGRhMmU4OTRmNDYzMDE3Y2MxNTkxZWExYTUzMDYzODU3NDdiYThmNWU5MzQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjY3MDcxMmM1MzBlNmU2MTY0NGEwMjg2OGFiOTk0MjBkNGUwYjdlOGNlZTJmY2E5YzEwMjBiMGM1M2NjYmI4MjMifQ"
+        },
+        {
+          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRuntime.kt#L511-L532",
+          "version": "repo-lines-v1:sha256:a3b264baee7ceb23ea58ebde0673cc1846b7b42462bcc9cfdfa7d22ab2b7c888:eyJzZWxlY3RlZExpbmVDb3VudCI6MjIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjliNmMxOGZmMDhmZjcxMGMzYTUzYmVkMzQ1MTNjYzIwMDJkODM3MzAzOGJhZGE3MTJjYmNmN2ZlZTRmNzNiYjIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjMwYzFmMTg4ZjE0MmVkN2E4MjQ2ODBiMjA3MTcyYzU1MTliYzYxNGE0OGZkYTdjZjE2N2VkYjhkZGY3OTk1NmMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk5OWJkZWZlZWFjYTYzNDBlMDI5MGRjODZlODg5Yzg5ZDVlMTg5YWE1YmE0NGI1ODViM2I3MDczNGY0YTYyZDgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjgwMjgyZjU2ODQ1YjdjMTk5NGZiMjU2NzM3NDRlZThhYzU2NGJjOWM3NzQ2ZTJjMDlmNTUxNmZkNzUzNWMyZWIifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_fcd777743c9c4999a5e4c9709fb2be7b",
+      "statement": "Because refillInfinitePlayQueue passes allowHistoryReset = (moodPool == null), a strict mood-pool refill appends only the songs remaining in that pool instead of clearing coverage and recycling played mood songs; when the strict pool yields nothing appendable and is smaller than the non-excluded library, it degrades to the non-excluded library with allowHistoryReset = true, so unanalyzed (tagless) songs stay eligible and infinite play never stalls.",
+      "evidence": [
+        {
+          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRandomQueueFacade.kt#L252-L290",
+          "version": "repo-lines-v1:sha256:6b00085ac16e3b9359559e044f78147e934794dceef4e5e9c958b94268c4cf4a:eyJzZWxlY3RlZExpbmVDb3VudCI6MzksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY5MzBmN2ZlYTU1Y2RkMjc2NzFlNDcxYmMwMTQzYzc4M2Y0ZjI4ZTAwMWQ2NDBmZjBkMDcwZDM5ZThkNTM0OTMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjVjYmYzNzE3OGVlODYzNWJiODM2MjcxZDQ2NjdkNWFiMjlmN2QxYmU2NTg2ZDY3MjcwMzY0YWExZTdkZmU1YzkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjI2ZjRjZDEzNjYxZDIwOGFhYzkxMDAxMTExMmJlN2YxY2I2NWNiNDIyNzVlNjkzODhlMTA4MmI3MDc1YTk3MjgifQ"
+        },
+        {
+          "resource": "repo://feature/player/src/test/java/cn/com/dcsgo/mihx/feature/player/PlayerRandomQueueFacadeTest.kt#L550-L630",
+          "version": "repo-lines-v1:sha256:6ed97cee2f49d14b237f9c97c3d12afdca72a3e3e0bf50b49eb74e18ff0d58c4:eyJzZWxlY3RlZExpbmVDb3VudCI6ODEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRjZjA5ZWIwYzU3NDRmYjk3MzMxYjk4ZmYzZmJmMDVhNjAyYmEzZjdmNjdlNWRhNWJlOTA5NTAzM2Y2MjU4MjUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImY3ODkwMjAwNmMxMDc4MmRlZTE0ZGIxNTg2Yzg4MWRlYjU0MGJlMDVlMGVkNTIyYTMzZWMzZTFiM2RjMmUxYWIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImY3YjUzNGEzNTIyNGVmNjVhMzZhNWIzYzYzYzY2MTdkMDg1MzIyOTMxNTJmMzIwYTcyZWYyYjFjMDg4ODA5MjcifQ"
+        }
+      ]
     }
   ],
   "verification": {
     "by": "openwiki/0.5.0",
-    "at": "2026-10-27T08:49:20.803Z"
+    "at": "2026-11-20T09:49:41.934Z"
   }
 }

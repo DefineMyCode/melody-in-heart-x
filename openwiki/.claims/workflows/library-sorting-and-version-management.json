@@ -1,0 +1,286 @@
+{
+  "schemaVersion": 1,
+  "pageVersion": "sha256:bb9649a783af005555a40319ed13081d6dfae7554c108cce449f3613fa02b557",
+  "claims": [
+    {
+      "id": "claim_c01257f430474bcf937e812665d3fbc4",
+      "statement": "The local-music sort setting is persisted in the player_settings DataStore as two orthogonal keys: song_sort_mode stores SongSortMode.name and song_sort_ascending is a separate boolean defaulting to true. Reading normalizes the retired value \"SAMPLE_RATE\" to BIT_RATE and otherwise matches SongSortMode.entries, falling back to IMPORT_ORDER, while writes only ever store mode.name — so the SAMPLE_RATE→BIT_RATE replacement needs no Room migration and no new preference key.",
+      "evidence": [
+        {
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/repository/PlayerSettingsDataStore.kt#L53-L53",
+          "version": "repo-lines-v1:sha256:850ab869bc3b19c9d240e93aa7c4f5f2bf5ccf1a76ebe4dbed735f253e0338c6:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiODUwYWI4NjliYzNiMTljOWQyNDBlOTNhYTdjNGY1ZjJiZjVjY2YxYTc2ZWJlNGRiZWQ3MzVmMjUzZTAzMzhjNiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiODUwYWI4NjliYzNiMTljOWQyNDBlOTNhYTdjNGY1ZjJiZjVjY2YxYTc2ZWJlNGRiZWQ3MzVmMjUzZTAzMzhjNiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYzVkZmVmMTg2M2M5NjliMWYxNTA2OWYwNTUwOTgwNjI1MTM2MDdmNGU5NTM1YTJiMjZiN2ZiNDc0NzAyZGYxNSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjIsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiODRkOGRjZmU4YjZiZWU4NzBlZGI1ODJmYjdlMWIwYThlMTQ1ODI1MzQ5MzIyYmUxOWUxMGI0ZGI2ZTEyNmM0ZSJ9"
+        },
+        {
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/repository/PlayerSettingsRepository.kt#L233-L256",
+          "version": "repo-lines-v1:sha256:1edf80a72779d32e400a8dfde6cb8acadcc535d6a1714e2913476c7fe8ba5527:eyJzZWxlY3RlZExpbmVDb3VudCI6MjQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFiMmNmY2Q2ODBiZDAxOTUwMmNiNWJkYjAwMmE1OWEzZTJkODI5ZjZjYmJiNDU4NzY0YWM1YmFlNWQ3NmVmMzIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk5OWJkZWZlZWFjYTYzNDBlMDI5MGRjODZlODg5Yzg5ZDVlMTg5YWE1YmE0NGI1ODViM2I3MDczNGY0YTYyZDgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        },
+        {
+          "resource": "repo://domain/src/main/java/cn/com/dcsgo/mihx/domain/model/SongSortMode.kt#L9-L18",
+          "version": "repo-lines-v1:sha256:6ebf95ba3395bc852ad7f5e9ce5e77f0a1323ea689872c0e702b99b8043e5536:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjYxMWIzZjgwOGVmYjY2NGIyMTg1YjdjMWYwOGNhYmU5NjRlNmMxMWQ3YmYwNTY0MzBkZWNiZGY0MjZjOWM0ZmIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImZkNzA4ZTVlODE3ZjQzMzEzYTMxYzE5ZDRlNTExODA1YmJlZjUwMWM0MjJiYjQ4MTIwNTJkNzFiNTYzMjc1ZTQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_ab2f8947abc542eeb0ff1a5fcb182369",
+      "statement": "SongSorter.sort maps each of the eight SongSortMode values to one comparator: IMPORT_ORDER=id, TITLE=groupKey, ARTIST=first parsed artist then groupKey, ALBUM=album then groupKey, DURATION=durationMs, BIT_RATE=bitRateKbps, PLAY_COUNT=playCounts[id] else 0 then id, LAST_PLAYED=lastPlayedAt[id] else 0 then id; string fields compare through a single Collator.getInstance(Locale.CHINA), and descending direction is produced by reversing the comparator (reversing the id tiebreak too) rather than reversing the output list.",
+      "evidence": [
+        {
+          "resource": "repo://core/model/src/main/java/cn/com/dcsgo/mihx/core/model/Song.kt#L90-L94",
+          "version": "repo-lines-v1:sha256:efbd48c73c5d603c01d972b877532ad92b5282ee98933f7e922f4099ea2b2aa9:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZjJiMTZhZTQxM2UxYzg3Nzg3NWU0YTVmNjk5OWM4NTA5NzgyY2Y4ZWZmYWJiZTgxMzgxOGMzM2ZhZWQ5NTAzMiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNjVmYTVmNGJiNzgxYzFhODgxYmM0ZDQ3NzJhMDY0Zjc4YmFmYWZjN2EzZjMwZWZkZTY5OTgzNmQ0NDMwNjZlMiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiOTZkOGQ1NDNmYzI5M2UxZWQ5NDM4ZDI1MmU1YjFiYWE5YjkzOWNjMzM2MmI5OGM1MmNlNDFhMjYyNjkyZDJhZSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiY2U1YjllNzUyNzkyYzhjZTJmZTg2MzhlZmVlMTE2Y2QyYzY4ZTM5MGU2OTJlYmFlNjEzN2RlOWVkMjYzMDdmMCJ9"
+        },
+        {
+          "resource": "repo://feature/playlist/src/main/java/cn/com/dcsgo/mihx/feature/playlist/SongSorter.kt#L16-L46",
+          "version": "repo-lines-v1:sha256:7b20c9066f647dfd98d9732e33f70dd9e1db73020faf7c2634748a03abdd53b8:eyJzZWxlY3RlZExpbmVDb3VudCI6MzEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNjM2U5Y2ZjMWMzYWY0NDJhNjNiOWE3YzI2OWE3YzI0OGNhZGU2YmVlYmQ0MTFiNzA1YWI5MjYwNjlkNmU4MzgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjkzZWQ2Njg0M2JiNjQ1NDQ5MjJmN2E3OTY2YzBiMzZhZDg2YzJjZjM2NTRlNGIxM2QzYjhhNWE4YWI0YmUwOWQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_6e4be9ee7539458fb3b6607252390c48",
+      "statement": "The sort setting flows from PlayerSettingsRepository through PlayerRuntime and PlayerViewModel StateFlows (stateIn with IMPORT_ORDER/true initial values) into AppNavHost, PlaylistRouteState and PlaylistScreen, and is finally applied in LocalMusicManagementView over songs filtered to uri != null, memoized on content hashes of the playCounts/lastPlayedAt maps so fresh Map instances do not force a re-sort; the library list arriving there is already grouped by groupKey, so equal-key versions stay adjacent only when the sort is stable.",
+      "evidence": [
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/AppNavHost.kt#L254-L273",
+          "version": "repo-lines-v1:sha256:6e3c78a49861a4d26cafea22dca67aa1514519014d22211f9c22cc2a978b2a65:eyJzZWxlY3RlZExpbmVDb3VudCI6MjAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImRkYThiNGJkMzU5YjY1NDc5NTg4YTZhNzZjNGZmZGRiYjQwMmYzOTgzOWIzNTBjYTFhZDk4ZDMxMzIwYmQ1MGUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImYwZDlmNzM0YmU1YWEwMzkzNWM0OTliNzE0MTEzNTVjZWZhYzJhMmJmNTc5ODllMTI0NmQzNWE3MzUyYzdlOWEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImIyZDUzN2M1ZTQzNTUwZjIxMGVmMTMyZjNjYzViOThkMjUzNDFhZjk4NjE2Zjg2MzJmMDM3M2QzMjg4NzViYTgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImIwMGJiZTljZTgxMmY5NmE1NjQzYjk2MzlhMDkwYzdhNDJhZjUwYmNiZDk5NjdlOTZjZDQwNmY2YjVlNGEzYjUifQ"
+        },
+        {
+          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerViewModel.kt#L255-L279",
+          "version": "repo-lines-v1:sha256:5dee046d3c0828f0b6bc984e747e25dbc15b8234f3b714d6d14b94b30941143a:eyJzZWxlY3RlZExpbmVDb3VudCI6MjUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFiMmNmY2Q2ODBiZDAxOTUwMmNiNWJkYjAwMmE1OWEzZTJkODI5ZjZjYmJiNDU4NzY0YWM1YmFlNWQ3NmVmMzIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjNiNjM5MDc3MGI3N2I1YjYzOTUyYzk3MTljNDE0NWEyMDZjZTdiNmJhM2EzY2ViMzYyNDQ3ZWUzODhmNWQ5NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImQxYTRiMjYwZDUyNzA2Y2FkY2EwZWNkNWQ1ZDE1YzZhY2NmMjI5ZDNjMTQ4OGUzNDBmNzgyNGVkN2UzN2Q3ODAifQ"
+        },
+        {
+          "resource": "repo://feature/playlist/src/main/java/cn/com/dcsgo/mihx/feature/playlist/LocalMusicManagementView.kt#L84-L94",
+          "version": "repo-lines-v1:sha256:c08ce9b2db3a0705d139acc1ac6c57c7798138a50eed9bb7183392df17864a4b:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFmNmVhYWM5YWZlNGU4MzRjNWRmMjE2NzEyODUzNTc4ZmQzY2YyMWUxMjUwMTdhYzEwZDEyYWQ3NjBhMzg4NWMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQxMTE2ZWIwMGFhZWZhM2RkM2QxNTdlZDc0YmUxMWM5NDkzYjBmODg0M2MxNmJkMTk1OTFmOTIyNmMyMGY0OTEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImEyNzIzNTkzMjUwMWQ2M2Q1YjdmOTM3NGQzZmU5ODFhOTNhNjNjYmU0ZWJkODU5ZmFlZGY1YmQ3OTA4ZTU3NGYifQ"
+        },
+        {
+          "resource": "repo://feature/playlist/src/main/java/cn/com/dcsgo/mihx/feature/playlist/PlaylistRoute.kt#L80-L90",
+          "version": "repo-lines-v1:sha256:8f5ace202f75bb81c7b25c6cc733610cc891d5fb617ca83ac43d6162f43553d6:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU3ODYzNzhlZjRjNGZmZmJjNzdkOTRkNjZkYTY3Yjk3MzUxMDIxYzhjNjUwYjBlZmNhZjRmMGE5ZTBlODg0YjEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijg2OWM5OGZjNzZlMDljMmEzMGJkMzkxMzgxZTdkNmFlOTBmMzg2ZDc1YzRhODE4ZWQyMTExY2Q3ZmVlMTIxN2UiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjRjZjdmNzZjZWZjYWY0MGViOGRiMWU3NmZiMzRkNjk3M2FlODdkNjEyM2VlN2MzZTk2MmEzNWM0MWVmZDljYjYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImMxZWYwYzQwMzM3MjY4ZTE2MDVhODU1OTVmZTNhZGZkOWJjYWFlMzNlOWFlMjlkZWVjMTZkM2U1YmI2Y2YyYjMifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_d6c6e30ff9f147cc93dbb079957bd8a8",
+      "statement": "The data behind PLAY_COUNT and LAST_PLAYED sorting is loaded with the library snapshot into PlayerUiState.playCounts/lastPlayedAt from getPlayCountsForSort (the effective play_count column) and getLastPlayedAtForSort (only rows with a non-null timestamp), so the sort never queries Room at render time.",
+      "evidence": [
+        {
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/repository/PlayStatsRepository.kt#L197-L207",
+          "version": "repo-lines-v1:sha256:53a75d6e2f8e97232e759de6acee14466d11d0be8031ab09e77fcefba9bbfd50:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZkMzMzMzhjNGYwMWUwODk2OWE1NjJlZDc3OTkxNTA0YjJhOGNjMDkzODZjOGY5ZTBmYjU4ODgxODdkMGQ5NDUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjI2Mjg3ZTRlMDJmMWIyMjZjNDkzMDMwNzQzYThkMWI0YmE5MjgyZDk5NWNmYTQ3MzE3YzJiZWE4NDk2MDk1ZjEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjZjYzEwY2NiYTdjNDhlMzE2ZGQ4ZjZiZTZjMzVmZDc3NmNkMGZlMDM0NzIwM2FkN2RiOGNlOGYzNmVmZDYwNWIifQ"
+        },
+        {
+          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerLibraryFacade.kt#L74-L84",
+          "version": "repo-lines-v1:sha256:defee32cbb2c8d0f0fe0df08f6752341a399924242e52b8ab1fc22d031e0677b:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU4MWIzYzI1NGMzMDkzODE3MjQ1Njk0NWI0MjU4Y2FkMjU5YWUzMjk0Njk2MmEzZjM2MzE0ZTAxMzBmMWI1OWUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjAwZjcxMjliZjZlOTFkNGY3YzI2ZDcyMGMxZDdhZTg0YjE2OWJmOTY1MjZkZDY0MzcyOWVmY2JiMzNiMzI5OGIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjgyMTc0NmJlMDlkMTExZmNkY2RjMWM0MGEyNmM2NDczOGJjZTk5NTU4NDJiYjI0MTY1MzQyNDI2ZTZiZDVkZjkifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_64db4702ed3f486eb218eddf97965b76",
+      "statement": "Song.groupKey is derived, never stored: the default key is title + U+0001 + artist + U+0001 + album (Song.GROUP_KEY_SEPARATOR), a non-null titleOverride replaces it entirely — a manual reassign stores the target group's full groupKey so the song joins that group, and a detach stores \"title#id\" via SongVersionManager.detachedGroupKey so the song forms a one-song group. groupKeyLabel renders the target's title for a reassigned song, the song's own title for a detached or unmodified song, and isDetachedFromGroup is true only for the \"title#id\" form; grouping never renames Song.title or any other metadata.",
+      "evidence": [
+        {
+          "resource": "repo://core/model/src/main/java/cn/com/dcsgo/mihx/core/model/Song.kt#L96-L130",
+          "version": "repo-lines-v1:sha256:0731122276c2196a28420f809b0bf6c255905e6cb633eeee0962b840310f6cf5:eyJzZWxlY3RlZExpbmVDb3VudCI6MzUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM5Y2JiYzY1NDY5ZGIxY2EyODQyZWZkOTdkZjdlZTJjZTZjYzE1NzE0ODJkMDFhMThiNzkwYTEwYzdjNTEwZjMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjJmMjg1OTc4MGE1NDYyYWI3M2M0YmFmY2Y1NWI0OGExNWY4MDVhN2UxZDBkOTE1MGFhNDE0Y2ViOTQwOGU2YzkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        },
+        {
+          "resource": "repo://domain/src/main/java/cn/com/dcsgo/mihx/domain/playback/SongVersionManager.kt#L71-L71",
+          "version": "repo-lines-v1:sha256:90ee73ee6b39583af960a492f04fd6a0517c118c366c6be82003b45ef99a21ba:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiOTBlZTczZWU2YjM5NTgzYWY5NjBhNDkyZjA0ZmQ2YTA1MTdjMTE4YzM2NmM2YmU4MjAwM2I0NWVmOTlhMjFiYSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiOTBlZTczZWU2YjM5NTgzYWY5NjBhNDkyZjA0ZmQ2YTA1MTdjMTE4YzM2NmM2YmU4MjAwM2I0NWVmOTlhMjFiYSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZWRjZGI4ZTE3MjVmZTE5YTc0NzUzMDFmZGZlNWQ3NDQ1NTNkZmUyYWI5Y2RhMDM2ZTZkMDljZDcyNzI3NjgyYyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjEsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNDEyY2EzNDVjY2Y3NWJmOWMwODA2YmNlNjk1YmU4ZGU4MDhiNzk5ODQyNTFhN2E1NGQyMDJjZjYxMDFkZDQ1MSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_64ae2cd0a091431280a4e081b33c6917",
+      "statement": "Detach, reassign and reset all funnel through SongGroupCoordinator.updateGroupKey: it calls the injected updateSongTitleOverride(songId, override) first and returns SongGroupUpdate(updated = false) without reading the repository snapshot when that write fails; on success it re-reads the song list and only recomputes currentSong and sameNameSongs when the edited song is the currently playing one. isPlayable defaults to uri != null and is injectable for tests.",
+      "evidence": [
+        {
+          "resource": "repo://domain/src/main/java/cn/com/dcsgo/mihx/domain/playback/SongGroupCoordinator.kt#L17-L63",
+          "version": "repo-lines-v1:sha256:b70d09c5f2cd95b0221b00dfbcf8e5ad97d95710d3bc8d312636f73f7e11ccde:eyJzZWxlY3RlZExpbmVDb3VudCI6NDcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZhZmNkZGEyYjM0ODJhNjEzMjQxNTM1YWNjZGUzNTRlMGExMDI0ZmIzOGIyN2FhMDZhOTliNjFlNzcwNjQ3OWYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjkxMGY5NDMwOTZhYmZkNzM1ZmU3OWM4YTZlOGRkMmY1MGZjY2QwMWY1NWExYjUzMTU4YWUwZWY5NWJiY2VlZTYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_5f78119ffba64ba2b3438ec142272fe6",
+      "statement": "Group overrides persist in the song_group_overrides table (songId primary key, nullable titleOverride, updatedAt): every whole-library persist rewrites the table — replaceSongs deletes all rows and re-upserts only songs whose titleOverride is non-null, so clearing an override removes its row — and RoomMusicLibraryDataSource.restore reads the table once at startup and maps each row back onto its song.",
+      "evidence": [
+        {
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/local/dao/MelodyDao.kt#L382-L391",
+          "version": "repo-lines-v1:sha256:1dfbfb2a9ad977e98c33917b5ab078e1dd1681ab42c0dab0ab63147f8440938e:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImNmZjg1ZmY3NmFhNTM2ZTNjMjFmYzQ2OWM3NjZiOTFjZjhhODgxZDcwOTBhNzNlOWUxODhiNzI4MDAzN2QzNzQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjFmMGZmMTk1ZTkzZTFhYTkwYjJlNjZkMDJhM2QzMmI5YmZjMjJmY2VmN2E1YjE3MWNmYzJmYjc1MTBmNWZjNzYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImZmMGQzZjBkMWJmODM5Zjg0MDBjZjQxNzE0OGMzYjFkZTI1MjhiMWQyNTA3NTg4M2Q5ODQxODJlNDljMjZhMzgifQ"
+        },
+        {
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/repository/MusicRepository.kt#L1119-L1126",
+          "version": "repo-lines-v1:sha256:1ee68462d79e9508f68f11d634a6d4206958a0b0f52c92f0facab487f5975193:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNjJlY2VkYjhhOTAyNTQ3Y2VjNzU1ODRjYzBiYTIwZTgyZjU3Njk0MTZkZTFkNjM4MmUzNDQ5YzJiMzRlOGFkOSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDg5M2Y0MGUzNzgxZWI4OTZjODJkMDQ2YTA4MDY3YTExZTM1Y2RmMmYxZGZhZjI2ZmVhOTBiOGRiNjY3NjQxMyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZmE4NzhkOTRlOWUyMjE1ODJmNzQ5M2U0MDEyNmUxZGEzOGFiZjJmYTE1NGRjMmI4YTVhOGYyYWRhYjUyZjAzZCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjEsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNDEyY2EzNDVjY2Y3NWJmOWMwODA2YmNlNjk1YmU4ZGU4MDhiNzk5ODQyNTFhN2E1NGQyMDJjZjYxMDFkZDQ1MSJ9"
+        },
+        {
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/repository/RoomMusicLibraryDataSource.kt#L152-L153",
+          "version": "repo-lines-v1:sha256:200ebe8d21a1d1676ca1321b16eacec7c958d881367d947dbe5ecf4ab1484fd3:eyJzZWxlY3RlZExpbmVDb3VudCI6MiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYWM5NjZmYWYwMzI5YmExODIwMzdkZTFiZWQ2YmE3OGIxNzE0MTljOGZjYjc0MjMwMzI0NGU3OTMyOWRmYzFmYSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYTYxMjIzZTRlYjkxMzg2MGM2M2VlYTlmMjUzMzc5Y2Y0MTgwZDcxOThiODBhZDFmNWQxZmY3OTE3NmViMmM5NSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMGExMjYxZWNkNmYwZGVlMjEwYmE2NzkwOWM2N2NiMzIwMDhkZDljNzY2YWYyYTY4NmJjY2RjMjlhMDNlMjgxZSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMjYwNjU4Njk5NWM4NzlmNGRlZjI4NGUxNDljZWFlYzQ3Njc2NzUwYmVjMzdmYmMxYjZhMDJhYjEzZDk5MzkwMCJ9"
+        },
+        {
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/repository/RoomMusicLibraryDataSource.kt#L32-L41",
+          "version": "repo-lines-v1:sha256:b59f168262031019f8041f0542bb3443b9fa2a3894e8b041cae5c26770318bba:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY4MGZlMTU3MzU1ZWQ1YjJhN2QyZDhhMTg0NzE0MjFkZmI4Mjg4ZmZjNzE5ZmMxNWRhY2EyMDc2ZjM1M2FjNjUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImRjY2NjMmY0ZTJmNTQ5ZGFjZGRlOTBmMzk5YWZiZjNhMDgyYmYyNTYxNDNlMjQzYjAzYmJhZWQ2NTkwMzNhYjAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjM0MTEzMmQ5ZDZlNGU1NTA0ZWFiZjhmYmUwNmJiNDU1YzdlMmE0YTMwMjk3YjgxNjJkM2Q4M2Y3YThhNWE2MDQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_bed1d4530eaa45a7845ac498c3a01f74",
+      "statement": "DB migration v19→v20 executes a single DELETE FROM song_group_overrides because legacy overrides stored pure titles that cannot be mapped onto the new title+artist+album group key; the reset deliberately occupies its own version (so devices already at 19 still run it), MelodyDatabase is at version 20, users must re-associate manually afterwards, and the legacy pure-title case is pinned to neither crash nor merge into a default group.",
+      "evidence": [
+        {
+          "resource": "repo://core/model/src/test/java/cn/com/dcsgo/mihx/core/model/SongGroupKeyTest.kt#L64-L75",
+          "version": "repo-lines-v1:sha256:e1e06845966f880b172d2f4e60af8d9d9474c2f7da8236dc61c7ef8ad19e8547:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRjZjA5ZWIwYzU3NDRmYjk3MzMxYjk4ZmYzZmJmMDVhNjAyYmEzZjdmNjdlNWRhNWJlOTA5NTAzM2Y2MjU4MjUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQ3NGZmOWVhZTJhYzFlNzZiMWIwZjFjY2I5NTMyYmMwMDYyZDBmNjQ2OGQ2MWUyZTgxY2RlNzNjZmNhMDAxMjAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        },
+        {
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/local/MelodyDatabase.kt#L38-L38",
+          "version": "repo-lines-v1:sha256:0f237e4ff2a5225b53f01b1f3bc8361ab6c181424fb60af80ec7212f1fcb1476:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMGYyMzdlNGZmMmE1MjI1YjUzZjAxYjFmM2JjODM2MWFiNmMxODE0MjRmYjYwYWY4MGVjNzIxMmYxZmNiMTQ3NiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMGYyMzdlNGZmMmE1MjI1YjUzZjAxYjFmM2JjODM2MWFiNmMxODE0MjRmYjYwYWY4MGVjNzIxMmYxZmNiMTQ3NiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiODU4ZmFkYjQ4YTAzZWY3YzhiMThiMWM5ZmRlM2U2MzQ0NzQxZWJiZTMwODI3YmQxY2IyNzM0ODUzODEzY2Q2ZiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYjRlYjk3M2FlYWNmMTQ5OTA1ZTE3NDAyYTQ5MDY1NzM2OGY2NjkyMzRhNzgzMTMyYmQ5NTFlZWViNzNkZjI1NiJ9"
+        },
+        {
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/local/migration/MelodyMigrations.kt#L305-L320",
+          "version": "repo-lines-v1:sha256:0b005a2444fbaecaa90d5c29eafec360c50524288e8933f14625d36f5b7203b6:eyJzZWxlY3RlZExpbmVDb3VudCI6MTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM5Y2JiYzY1NDY5ZGIxY2EyODQyZWZkOTdkZjdlZTJjZTZjYzE1NzE0ODJkMDFhMThiNzkwYTEwYzdjNTEwZjMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk5OWJkZWZlZWFjYTYzNDBlMDI5MGRjODZlODg5Yzg5ZDVlMTg5YWE1YmE0NGI1ODViM2I3MDczNGY0YTYyZDgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijk5M2VmYTJiZTAxMmNhZDU3OWYyZWM1Y2RkZjliOTMxZWVlMmRjZDZlNzlkMjRkYzdmOWVjYTQ3N2YzZjc2NzUifQ"
+        },
+        {
+          "resource": "repo://data/src/test/java/cn/com/dcsgo/mihx/data/local/migration/MelodyDatabaseMigrationTest.kt#L446-L474",
+          "version": "repo-lines-v1:sha256:aab2542a988aab33fd2b8e102ff7b66594eac9c57e2da1d9421932060632dd51:eyJzZWxlY3RlZExpbmVDb3VudCI6MjksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM5Y2JiYzY1NDY5ZGIxY2EyODQyZWZkOTdkZjdlZTJjZTZjYzE1NzE0ODJkMDFhMThiNzkwYTEwYzdjNTEwZjMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjRmYmQwMDkzMTRiYzI3MDg0MTY3MzRhMDJhZTVmZjM5YTFlNDhhMDUwYmU5MWY0M2IyZmFhOTIwMDJjNjJiZmMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImYwMWM0ZjYyZWZlZjk1YWE0ZDBkZGU2ZjcwY2FkMWJjNmVmYWU3NmI5ODM5MGU5YWRkNjg0ZjVkM2RmNjYwMjUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_af77860522c14f0da5a028af95b34ab8",
+      "statement": "Version groups are consumed as follows: SongVersionManager.groupedSongs keeps playable songs grouped by groupKey in encounter order, sortedSameNameSongs orders a group's playable members by sampleRate descending and feeds the playback panel's version switcher, the version-management screen shows only groups with at least two songs that have a uri (versions sorted by sampleRate descending), playing a version scopes the queue to all songs sharing its groupKey, and the group list itself (both screens, plus comparison prev/next) is ordered by plain String comparison of the group label rather than by the pinyin collator used for the local music list.",
+      "evidence": [
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/AppNavHost.kt#L750-L796",
+          "version": "repo-lines-v1:sha256:ebd029b370050e0296d51779eec21e00994f472551acac7e569eb64f4f68ed2e:eyJzZWxlY3RlZExpbmVDb3VudCI6NDcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImMzOTQwZDNlMGMzNjI2MzY3MmEzMGQ4ZTAyNGVjMTcwNTZhYTVhMTY3YzFhOWZiYzA1ZDllOWY1ODNkNjhkMDMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImNkMGVjNWM1OTM1YzhhNzhmNGE1ZDFjOTE3N2U4NWJhMTM4OTlkNzAxYmI0ZGJmNzNhMTI2MDc3OGYxMmM1ZjUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImE1YTY4MGE1NzIzYWVjZDQyYmQ0NjQ5ZjM0Zjk0NWFmNzc0N2FjMDE5NGU0MTRhNWI2OGY5MTIyMTNiNTgwYmQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImRjYzUwZmNmMTRjNWYxNDg3MDYzYmI1ZThhMmZlNDFlZjIxZmJjZjBlYTZkNmQzZjEyY2JiZmJlNjEwZWM0NDAifQ"
+        },
+        {
+          "resource": "repo://domain/src/main/java/cn/com/dcsgo/mihx/domain/playback/SongVersionManager.kt#L12-L33",
+          "version": "repo-lines-v1:sha256:899fd3a7bc653fcfc30f5ad05b072270320731d255a912a8a6e7566c8a07145a:eyJzZWxlY3RlZExpbmVDb3VudCI6MjIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI1Y2RlZDAyYjFiN2UxMWRhOGNkMmY3N2QwN2VhNzg2NDY2OTczYmQzMzJkZDcwMDhhOWJiOWFlY2NiMzhiZTEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImVlNTZhNjRkMWE1ZDc2ZWVmZDJhNDQ4ZWU0Y2EwMTVjNDIyOGNhOWViYzJlYTg0NjJjMDgzMjMwZjFjYzgwMDYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijg2YThlZmYzODU4YTQ5MmEyYzkzNzRkZDE1Y2VkZjIwYjVkZGQ4MTVjMjQ0YjVlZjAzMjA5Mjk1NmUwZjQxMWIifQ"
+        },
+        {
+          "resource": "repo://feature/user/src/main/java/cn/com/dcsgo/mihx/feature/user/VersionManagementScreen.kt#L115-L133",
+          "version": "repo-lines-v1:sha256:3e2cdeb53f8bef2e3d44329f0cee5fa086e942d933da60f3dceac9f667ac40dd:eyJzZWxlY3RlZExpbmVDb3VudCI6MTksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijc3ODQxNGJhODViODI3ZDRjZGIyOWQ2ZGY4ZGRjZGVmZGZkZGNkMWU3NTU3ZWM5OTA4M2VhYWRjYWQzYWM1ZTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImI1ZjEzM2U1ODg1M2QyZTVjZTVjNzVjODI3N2IwMDM1ZGViYjg4ZmFiNzJkMDdkN2JkYTA1YTI0NWI1NTkwN2YiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImMyN2FmN2VlM2Q2MTIyOWMzOWNiMjQzZTViYTk4YmEyYWQ5YTIxMDE4MWRmZTdjZTY0YzgxNjk4MzkxM2E0ODgifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_bc25c4493b4542d58998c0fb4e391242",
+      "statement": "SongVersionComparer.compare sorts versions by sampleRate descending, always emits the 格式 and 采样率 rows, gates 位深 / 音质 / 声道 / 空间音频 / 比特率 / 文件大小 on at least one version carrying that data, then always appends 时长 / 艺术家 / 专辑 / 歌词 / 封面; rows whose cells have more than one distinct display string become the diff table (rows) while identical rows collapse into commonFields as label-to-value pairs ordered by FIELD_ORDER with unknown labels last.",
+      "evidence": [
+        {
+          "resource": "repo://domain/src/main/java/cn/com/dcsgo/mihx/domain/playback/SongVersionComparer.kt#L235-L239",
+          "version": "repo-lines-v1:sha256:0df623590fe37cd8880bfd83a8df7108335178a2173ef4afca5f51633438d7b7:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiOGM1NjYxMTA3OTk5NmZiOWJkMzdlMjNjYjU5MjU0YjdiYjkxN2E5N2ViMDIzNjE0ODNlYmU5NDEzNDk3NjhjMyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMzBjMWYxODhmMTQyZWQ3YTgyNDY4MGIyMDcxNzJjNTUxOWJjNjE0YTQ4ZmRhN2NmMTY3ZWRiOGRkZjc5OTU2YyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNzljNzVmNjJlMDg3Y2Y1N2EyYTg2MTZiYWFmNjQxYWQxMTQ2MjMwMDNkMThhYzYxNDBkNGQ4N2FhYmI5OTQ0ZiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjEsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNDEyY2EzNDVjY2Y3NWJmOWMwODA2YmNlNjk1YmU4ZGU4MDhiNzk5ODQyNTFhN2E1NGQyMDJjZjYxMDFkZDQ1MSJ9"
+        },
+        {
+          "resource": "repo://domain/src/main/java/cn/com/dcsgo/mihx/domain/playback/SongVersionComparer.kt#L69-L200",
+          "version": "repo-lines-v1:sha256:7e75339ee56ac83b1ee13e0704e853c388325a59cd38c88162b193e6ab8700d9:eyJzZWxlY3RlZExpbmVDb3VudCI6MTMyLCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiJkM2RjNjZlOGRmYTgwMWI3MDQxZTM4NWRmMGQ5YTFkMzk4MjhjYmM1ZjQ1YjM5ZjhkMGQ5OTEwMzYxNWRiMmZhIiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI0ODkzZjQwZTM3ODFlYjg5NmM4MmQwNDZhMDgwNjdhMTFlMzVjZGYyZjFkZmFmMjZmZWE5MGI4ZGI2Njc2NDEzIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiIwYjVkODExMDBiZWU4ZTk0MDk1ZWFhZjFlYjNhMWIyYmVjMzZhMzZiZWI3OTM3ZDRhNGZhNTBlYmY4MWI5M2JjIiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiJhNzMyYTUxMjZlNTI2MDA0Y2M0ZDEwNzYzMzk2ZTQ0MzU0Mjg0M2VjYTk2YmRiZDdiNTE0MDNmMGYxZDFkZjI3In0"
+        }
+      ]
+    },
+    {
+      "id": "claim_a92a5ecf9f794c458ac5bef318bc9022",
+      "statement": "The recommended version is the maximum qualityScore — sampleRate multiplied by 1.0 for extensions in LOSSLESS_EXTENSIONS and 0.6 otherwise, normalized by the group's maximum score — with the higher bitrate string (parsed as the number before the first space) as tiebreak, so a 44.1 kHz FLAC outranks a 48 kHz MP3; diffHint reuses the same comparison without bitrate/file-size injection and reports the first two differing labels, \"… 等 N 项不同\" beyond two, or \"规格一致\" when nothing differs.",
+      "evidence": [
+        {
+          "resource": "repo://domain/src/main/java/cn/com/dcsgo/mihx/domain/playback/SongVersionComparer.kt#L103-L107",
+          "version": "repo-lines-v1:sha256:7b14583ff4fa4afa062427629ea8cd70a3f8a781c1147a5971210470022f00d1:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMGE0ZGQ5YzI4YmEwNDg5MDY2N2U3YzI2MzM4NDdkY2UyOGQ1NzY3YTNjZmRkMjA3NDlmZWEwMzExOGYwZTUwZiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNGNhZmQwMzNiNTNiZjkzZTU4M2NiNDdmODk5ZDI2MjQ5ZDkzMGRmZWFlYzY0ZDE3YjBiODM3MTgwMTFjM2U3NCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYzgyYjI5YzNhMjdlMjkyMzJhZjEwN2UzMDVmYzYxNDY2MGJhZGU1OWRlOTg4OTgwMjRiNmZhYjJkYWUzYWJkZiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMGMwN2NhYmZkNThmNzUxOTBmY2Q5Yzc0NmE3MzE3ZjNkMWRkOThlNThhYjdkNzc4YmMyZmZiNDY1NTI5YWNkZSJ9"
+        },
+        {
+          "resource": "repo://domain/src/main/java/cn/com/dcsgo/mihx/domain/playback/SongVersionComparer.kt#L206-L233",
+          "version": "repo-lines-v1:sha256:4ac352f3d705134cd363bfa9593eb73becbf4013ecbfd417a82905d431ceb7a0:eyJzZWxlY3RlZExpbmVDb3VudCI6MjgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZiMTBiN2JhOGY3Njc2Y2M1NTcxYjI3NGZiOWZjMTAzMThlNDE3NTRiZGRhM2Y1NjNjOTU0NDJiNjk0NjViYzEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjMyMWI2ZjdlZjNmMDEyYTNlODg5ODk4YTZhNDA0YmQyMmRjM2UyODI4Nzc2ZWZhZmMzYTU5NTcwYTk1NDQyNjEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjM0ZjdmYTczYmZmNzhkNTQxMTkzZjE3N2Q3ZWVhNTEzNGM3MTIzMDlhODRkY2QwZmQ4NmI4YzI2ODhkM2U0YjciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjUyNGY4MWU2YmNiYjgyZWZlNDFkMzE2YTBmNTQxOWE1ZGNiOTAxNWY5OTAxYzA0MTQ0OGExMGNhMTY4MWU2Y2IifQ"
+        },
+        {
+          "resource": "repo://domain/src/test/java/cn/com/dcsgo/mihx/domain/playback/SongVersionComparerTest.kt#L144-L175",
+          "version": "repo-lines-v1:sha256:59d7f2b50a4758428e28fe7cd0b37186cada6b3ab5a2b8afebc2517eb2d5116d:eyJzZWxlY3RlZExpbmVDb3VudCI6MzIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRjZjA5ZWIwYzU3NDRmYjk3MzMxYjk4ZmYzZmJmMDVhNjAyYmEzZjdmNjdlNWRhNWJlOTA5NTAzM2Y2MjU4MjUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjcyM2EwOTI4NDZhMjdjZDlhZDM0Yjg1NmYzMjAwMDA0YjVmMzQyMmVkY2M3N2Y4M2RiZTBiNDVlZjNiZWIzMDQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjRhZjRlZjNhMjRiZjE4N2NlMGE3NGE3YzA5NzIxMzBhMzJhMjY1MjEwYzhhZTk0MjFjZjBlNzAwYTM5OWY4YTIifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_378ecb76cf08477fa432c7f4451004d7",
+      "statement": "File-derived comparison data crosses into the Android-free :domain layer by injection: VersionComparisonScreen loads each version's SongInfo through loadSongInfoSafely and passes bitRateOf/fileSizeOf lambdas into SongVersionComparer.compare, recomputing when the metadata map arrives. loadSongInfoSafely rethrows CancellationException and swallows other throwables, the build forbids bare loadSongInfo calls, and :core:model/:domain may not import android.* beyond a named baseline that currently includes core/model/.../Song.kt for android.net.Uri.",
+      "evidence": [
+        {
+          "resource": "repo://buildSrc/src/main/kotlin/cn/com/dcsgo/mihx/verify/ProductArchitectureVerification.kt#L499-L538",
+          "version": "repo-lines-v1:sha256:0b87ae88222855b4278961a9ed6a4c6abb7a332f19748643ca9dbf69e192af89:eyJzZWxlY3RlZExpbmVDb3VudCI6NDAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZhZDc3MDNkNGQzMmIzMTc3M2ZlMjlmYjM1MTgxMDM5YTU2ODMwM2ZlYmY0YmUwOGI3ZDk4MzEyNTI5ZGM5MmEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjQyMTBkOTJkYTBiZDk3Mjg4ODI5MjYxZDBmOGJkMzJlMGNlMTAzZGE4ZGQwMmQxNTZjNDA4Y2U1ZWI5YjJkYTIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjJhMjM5NDExZTI0ODkyZWRmYmY4ZmIyZDYwMTYwYjk1OTVkY2JhYjNmNzg2ZDg2Mzc3OWQzYTE2ZDY4YjVkYmIifQ"
+        },
+        {
+          "resource": "repo://core/ui/src/main/java/cn/com/dcsgo/mihx/ui/components/SongInfoLoader.kt#L25-L38",
+          "version": "repo-lines-v1:sha256:bf25e7d134dce3ee2299627f58410f73ff2f8fd7e7b009d61db3d75201ff1727:eyJzZWxlY3RlZExpbmVDb3VudCI6MTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImNhNWM2YTYyNzgzMTljODM0MmI1MzUyNjY2MGMzYmQzNzg1MjBkZGI0OWM1MjViMzFjM2I0ODgxZjJjMmIyZmMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjI4MmY2ZWYxNWJjY2Q0Y2UyNmUxMWZlODA3NDk5M2IyOGI4YzJhMTNkMzJhYmU4M2E0MmI3OGY1NGU1MGUzOTAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://feature/user/src/main/java/cn/com/dcsgo/mihx/feature/user/VersionComparisonScreen.kt#L74-L102",
+          "version": "repo-lines-v1:sha256:022326a7200213a9b593183e515afef1e2a887a229abdb865acca9080e9b98f3:eyJzZWxlY3RlZExpbmVDb3VudCI6MjksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjIzZTdhOGU4ODg2MWE2MmM1NmI2ODVjYTg5YWMyN2ExNzE5OTM2MWY0ODlkNjBkM2Y1YTFhNDk1MTBkOWM1MzgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ3OTIzOTc4MmZjYzY2MGNiMWI5ZWQ4N2IzODU3M2RhZjY2NjUwM2Y0MTI3OWY2MjVhNTI2MTI3NTJmZGQ4NjMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjRmNWNkN2ZlNDRmYmFjM2IxYzAyZWM1NmRkZDFlNTE1NzgyZDMyMGE5YTI0MzkzYjM1NDcyMjgyMWM5YmExN2YiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjVjYjgwYjQxNDZmMGFlMDIwNDFkYTVjYjg5ZDEzOTFlNjU5NTc5YmEwMzUwMDJhOTAzYzAyNzhjMGY1YjI5MjUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_b25f8953a74f4bbabbbbfca9b867c5ad",
+      "statement": "Version management and version comparison are feature-owned routes in AppNavHost — \"version-management\" and \"version-comparison/{groupId}\" where groupId is the URL-encoded groupKey — entered from the 文件管理 card on the library screen and mapped by RouteAffinity to the 曲库 (PLAYLIST) top-level tab rather than to the 我的 (USER) children; comparison prev/next navigation computes sibling groups with at least two playable songs ordered by groupKeyLabel and navigates with popUpTo(VERSION_COMPARISON, inclusive) so the neighbour replaces the current comparison page.",
+      "evidence": [
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/AppNavHost.kt#L782-L832",
+          "version": "repo-lines-v1:sha256:581a9663bc150c6cbf7ee7c1a57b998ab3c6fe660d3484878d5de74af6c06087:eyJzZWxlY3RlZExpbmVDb3VudCI6NTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU0MzYxZTg0YTEwYThlYWYxZDVhZjBiYzMwNGQ1MDYzNTg2ZjAwZjEzNGIzODhiMDgxM2I4ZmViZmEwMWRkMmIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZlNGNlZmUxOGM2MDRlY2ZjNjNlYzE5NjkxNTU2ZGVkZTNiYTFkY2NiNzhhYmNhYmQyMDI4MjM0YjI3MjE0MTAiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjNlM2M4ODRkMmVlNTdjNmNjZjMxMTFkOTNkNjBmMWEwMmQ2ZmY2ZDBlOTZjMTE2OWY2N2NlYTFjYjY3YjI5YTAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjcxYjQ0MDk1ZDBkMDNjYjFiNzg1NjYyZDk2YmExYTI0MDE0ZTUyYTQxMzkwZjAyMWFkOWM4MDg1Y2IxM2RhYWQifQ"
+        },
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/shell/AppShell.kt#L113-L126",
+          "version": "repo-lines-v1:sha256:272917eed69fe1baef87f1977e87e9871337dbb2db430a8e0d780e00bf8054fb:eyJzZWxlY3RlZExpbmVDb3VudCI6MTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU1YTI5OWYzOWFjMTkxZWE3OGFhODFiYjMyOWRhNWRlMzZmNzZhNWU5OGY3NDgwOTNkNDI3ZDE1NTVlYWYwMzQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjMwYzFmMTg4ZjE0MmVkN2E4MjQ2ODBiMjA3MTcyYzU1MTliYzYxNGE0OGZkYTdjZjE2N2VkYjhkZGY3OTk1NmMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQxNWQ1MmYyYzA3MTIyMDc3NDMyYmZmOTIwNTYxZGQzMzdhNjNkYmIyN2E3ZDU1NDU5ZmY1Mjk0YWY5ODI3M2EiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjdiZGNmYzY3YTE0ZjdhYmJmYWFmMzVhMTZhNDQzNGNiNTgwMTE3ZjQ0OGJjNDBjZTdlMmQ0OWE2NWM3YWY4NGIifQ"
+        },
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/navigation/AppRoutes.kt#L15-L17",
+          "version": "repo-lines-v1:sha256:7d7d6b1a5a8b317fce5138de6167e5bb2a03a25ff35dad773bbe69e2ece93460:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMjQxYjA3NTc5ZmZlNzU1ZjY2NmQyNWI5YTFkYjM3Y2I4MDg1NDA0YTYzYmE4MGUxODcyY2MzNDExMTI1ZTY0NSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiOWI3ZTA0ZDUyYjQ1Mjk0OTViNjcyNzY4OTI5ODgzNWRjOWRlMWI2ZjcxZGQyMmI5YjQyOTU4N2JlMzFiYjc5MyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMmYzOThiZjY5ZTJjNmQzN2QwYWU4NzhkZDQzYzgxYTE0NjBiMzIzMjY3YjRlMDFiMzJkMzg3MjM3M2NlOTExNSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNjlmOTZlMDRlNGYyMmVlZGYwOGJiOGMwZDZkNGU3NDdkOGY3Zjc3YjllMDFmNmQxNTM4YWE5Mjg1OTM0ZjM4MCJ9"
+        },
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/navigation/AppRoutes.kt#L45-L45",
+          "version": "repo-lines-v1:sha256:503d2a5529a3c0bb83b3c751b37959b7ac1e4a16d27b667799ca4b5fccb41c52:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNTAzZDJhNTUyOWEzYzBiYjgzYjNjNzUxYjM3OTU5YjdhYzFlNGExNmQyN2I2Njc3OTljYTRiNWZjY2I0MWM1MiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNTAzZDJhNTUyOWEzYzBiYjgzYjNjNzUxYjM3OTU5YjdhYzFlNGExNmQyN2I2Njc3OTljYTRiNWZjY2I0MWM1MiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYzY4Yzk5ZjVjZjIyMGIwMGJlZTUzNThhOTY0Nzk1ZWY0ZDY2MjEyZjRlZTcyODlmMmUyNDExMjFjOGFjZjgwNCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjEsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNDEyY2EzNDVjY2Y3NWJmOWMwODA2YmNlNjk1YmU4ZGU4MDhiNzk5ODQyNTFhN2E1NGQyMDJjZjYxMDFkZDQ1MSJ9"
+        },
+        {
+          "resource": "repo://feature/playlist/src/main/java/cn/com/dcsgo/mihx/feature/playlist/LocalMusicComponents.kt#L118-L124",
+          "version": "repo-lines-v1:sha256:04ba0ee2e1e0049194fcf0dcbfe08db163449f1f4d5fe542bcafa2136c149670:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZjA5MzQ0NWRhZTE3M2MyNDFlYmY4YjNmN2E0NTlmMzIxNDJkZThhM2MwYTc4MTlkMzExNzVlZDg0MDc2YjY3YiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNTEwMzQ4MWM1N2QwZjBkYzBmNzZjZDJjYzhiMzYwNGM0ZTgyOTZkYTQxMjJhZGQxOWU4MTc0NWRjN2UzMzFhNiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiOTZkZjBhM2EyNDU2YTVkOTBlZWEwOGU2MTUzMGQ2OTIyNTYzYWEwOGY1M2EyMGJkNmZhMDQ1ZDAwMDZhOThkOCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiY2YyM2IzODhhMDI3MjE4NjhhYWZlY2NjYWIxN2E0NGYwZDA0OTM1MDBiODdjMTViMzdkZjRlOGU1NmQzMmI2MiJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_720c5c16835a4686a1fcb901d4a9e932",
+      "statement": "The shared ReassignVersionDialog excludes the song itself, songs without a uri, and songs already sharing the current groupKey, filters by title/artist search, keeps one representative per target group via distinctBy { groupKey } and sorts by title; confirming writes the representative's groupKey (never its label), which is what allows merging two differently named songs into one version group.",
+      "evidence": [
+        {
+          "resource": "repo://feature/user/src/main/java/cn/com/dcsgo/mihx/feature/user/ReassignVersionDialog.kt#L98-L121",
+          "version": "repo-lines-v1:sha256:d3e568b5b106882f92363bf5d0ad08d6f1d5456c53f87d03aac77ab932ad94b7:eyJzZWxlY3RlZExpbmVDb3VudCI6MjQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVmODkwZDM4YmViOGQyNDBmNWY2ZWI4OTRmZDgxNWU1YmEyNGEzMWI5OWQ1MjAyZmE1Zjg2YWNkMzA0Y2U5ZjUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQxMTgyNTljYzJmYjRhZGFjNGVhYTZmZjk5YTliZGZlN2ZlNzJmZTEzNjgwYTcyNTQ0MzhiN2I0NDEyNTljMWEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjYyOGEyYjBhYWNhM2EzMWExOTZmMjc0ZDQzM2JkNGY1YWNjYjgxNDlkYmQ4MzU0MjZmNGU3NTAzZDk0ODE3YTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_64d66f2b65ad4f568cd03f0b2a99d3bd",
+      "statement": "PlayerVersionFacade.applySongGroupUpdate is the single projector of coordinator results into PlayerUiState — copying songs, currentSong and sameNameSongs and returning false when the update did not happen — and resetSongGroupKey (writing a null override to restore the default key) is exposed through the facade, PlayerRuntime and PlayerViewModel even though no screen currently offers it, the UI exposing only detach and reassign.",
+      "evidence": [
+        {
+          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerVersionFacade.kt#L56-L80",
+          "version": "repo-lines-v1:sha256:de84444c2304f1d4d2b8781ca2503a566c00250d181c5958bd1d8cf241c7199b:eyJzZWxlY3RlZExpbmVDb3VudCI6MjUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZiNzBhNzFjNDFjOTdjM2NmYzE1ZTJjODExYWYyMjAxOTU4YzlhNGVhMGFjNjI0NGViNTY3NjlhYTg0OTk0YmYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjJlOGYxNmFlZWEyY2Q4MDQ0NDQxNzg0ZDI5YjQwMDg5Njc4ODMyYjExZjRjZmVlNTBlMGI2YTY4YmE1MWUwMmUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        },
+        {
+          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerViewModel.kt#L364-L372",
+          "version": "repo-lines-v1:sha256:55466cce4e91ad0c4c9ad5f08a43287ff8313315a97183dba181ad77c8022d79:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMWNlMmZiOWUwMzZmMWRmYjg3NDA3ZDRhMDE0ODA4NTdhYTYwOTBjOGNiN2Q1MTJhMmY3YTI0NWEzOTAzNzZkZCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZTgyNDFkNmNhOTY1MmUwZGFlYjI4NTlmNzRiNTk4OWVmZDY1NWU4YWM0MmI0ZmQyZTcyYTdlYmM0OWQyMzNiOSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNjA5Zjg4NGJjMjYzYWM0YWRlOTYxMmNjZTExZjE1ZjY5MWU2MDJjYjFlOGE5NmJiNDI4OTc4NTI2NmZhOWI5YSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZjBlZmQ0YmUyNGE1OGRjNTE2Mjg0ODY5Y2FmZGQxZDE3MTYwZWY0MDZkYWJjNTVhOWU0NzUzNTJkYTAzMzI4YSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_c2b07dc0d49542dfa374d73359e6150b",
+      "statement": "Focused test coverage of the sorting/grouping area is uneven: SongSorterTest pins only BIT_RATE ordering in both directions plus unknown (0 kbps) staying low while ascending, leaving the collator and id-tiebreak comparators unasserted; SongGroupKeyTest pins the group-key shapes (including the non-merging legacy override), SongVersionComparerTest pins ordering, common/diff partitioning, conditional rows and the recommendation rules, SongGroupCoordinatorTest pins the detach/reassign/reset writes and the failed-write short-circuit, and MelodyDatabaseMigrationTest pins the v20 override wipe.",
+      "evidence": [
+        {
+          "resource": "repo://data/src/test/java/cn/com/dcsgo/mihx/data/local/migration/MelodyDatabaseMigrationTest.kt#L446-L474",
+          "version": "repo-lines-v1:sha256:aab2542a988aab33fd2b8e102ff7b66594eac9c57e2da1d9421932060632dd51:eyJzZWxlY3RlZExpbmVDb3VudCI6MjksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM5Y2JiYzY1NDY5ZGIxY2EyODQyZWZkOTdkZjdlZTJjZTZjYzE1NzE0ODJkMDFhMThiNzkwYTEwYzdjNTEwZjMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjRmYmQwMDkzMTRiYzI3MDg0MTY3MzRhMDJhZTVmZjM5YTFlNDhhMDUwYmU5MWY0M2IyZmFhOTIwMDJjNjJiZmMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImYwMWM0ZjYyZWZlZjk1YWE0ZDBkZGU2ZjcwY2FkMWJjNmVmYWU3NmI5ODM5MGU5YWRkNjg0ZjVkM2RmNjYwMjUifQ"
+        },
+        {
+          "resource": "repo://domain/src/test/java/cn/com/dcsgo/mihx/domain/playback/SongGroupCoordinatorTest.kt#L24-L79",
+          "version": "repo-lines-v1:sha256:8d12bd4c66326b5a4ac3d5b9ce85fa7324ca7a618eb32375a62d545e2a9a9711:eyJzZWxlY3RlZExpbmVDb3VudCI6NTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRjZjA5ZWIwYzU3NDRmYjk3MzMxYjk4ZmYzZmJmMDVhNjAyYmEzZjdmNjdlNWRhNWJlOTA5NTAzM2Y2MjU4MjUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjhkOTM2NGEzMzMwZTViYzk4NzU3NDQzNTE3ZGU0ZTcyY2NjNjI4ZDk5MmJlM2QyMjY2OTRiNWE2ODJiNDYwYTAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjhmOTI4ZmUxMTAxYzM2ZDk5ZTJmYjJjYTg2ODRlZTc0YTgyYjk2YWY3YzBjOTIzMTNhOTBkNTQ4ZTdiMGU1ZDEifQ"
+        },
+        {
+          "resource": "repo://domain/src/test/java/cn/com/dcsgo/mihx/domain/playback/SongVersionComparerTest.kt#L13-L196",
+          "version": "repo-lines-v1:sha256:bdd26211744b0a71b1287451b83588185bae96bd70586b333a3001a755d4662b:eyJzZWxlY3RlZExpbmVDb3VudCI6MTg0LCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiI0Y2YwOWViMGM1NzQ0ZmI5NzMzMWI5OGZmM2ZiZjA1YTYwMmJhM2Y3ZjY3ZTVkYTViZTkwOTUwMzNmNjI1ODI1IiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI0ODkzZjQwZTM3ODFlYjg5NmM4MmQwNDZhMDgwNjdhMTFlMzVjZGYyZjFkZmFmMjZmZWE5MGI4ZGI2Njc2NDEzIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiIyNjlhZWJhODhiMTk5N2JmMmFkYzZlODdkYzBmYzU3NDcxOTQzMjI3ZjkwOWMyYWM3OTdjZDM3YjZmNDAxYzRmIiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiI2YzJhNTFkZjJkNTVlYTQ3Yzc1NTQ4MTdjNTU5OWM0OTBhNDFkMjBiODk3NWQyYTU2ZjU2NTFkZjhjN2I4NWY3In0"
+        },
+        {
+          "resource": "repo://feature/playlist/src/test/java/cn/com/dcsgo/mihx/feature/playlist/SongSorterTest.kt#L17-L39",
+          "version": "repo-lines-v1:sha256:cf72ecb534cdc32fd40f343467ea777c65a301864ed8fe19b0d6bfff61085f27:eyJzZWxlY3RlZExpbmVDb3VudCI6MjMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRjZjA5ZWIwYzU3NDRmYjk3MzMxYjk4ZmYzZmJmMDVhNjAyYmEzZjdmNjdlNWRhNWJlOTA5NTAzM2Y2MjU4MjUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImEyODBiZTU0ZGMzOTY0ZWRkYzZiMWEwNTdkZTRiNWYxOGJiNzYwNjVlYTBlN2QzZWU2ODYyOWI3YTFmZmZmNjkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "by": "openwiki/0.5.0",
+    "at": "2026-11-20T09:49:41.934Z"
+  }
+}

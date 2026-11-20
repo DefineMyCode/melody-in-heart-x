@@ -1,0 +1,362 @@
+{
+  "schemaVersion": 1,
+  "pageVersion": "sha256:f34d6249e8964973627e68af771a68a69071cc4dd504b6e3869cb9a3d48aaa52",
+  "claims": [
+    {
+      "id": "claim_29b00e1742eb4cffa2e89b8e699f05e1",
+      "statement": "存储与音质统计 is reached only from the compact row at the bottom of the 文件管理 card on the 本地音乐 page: the row is clickable only while no import is running and calls onStorageStatsClick, which playlistRouteActions binds to navController.navigate(AppRoutes.STORAGE_STATS) (\"storage-stats\").",
+      "evidence": [
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/AppRouteActionMappers.kt#L62-L62",
+          "version": "repo-lines-v1:sha256:0e800cfc8f1719f613bf961037a4b44c1ba07c81e694ff2c27dbcdbfa750068a:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMGU4MDBjZmM4ZjE3MTlmNjEzYmY5NjEwMzdhNGI0NGMxYmEwN2M4MWU2OTRmZjJjMjdkYmNkYmZhNzUwMDY4YSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMGU4MDBjZmM4ZjE3MTlmNjEzYmY5NjEwMzdhNGI0NGMxYmEwN2M4MWU2OTRmZjJjMjdkYmNkYmZhNzUwMDY4YSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiM2YyYzVlMDBjN2MwNmNhMDMyMWY0YjJkMTYwNmM3ZTU5NzJmZDdjYzc5OTZiZmQ4ZjlhNmZiNTIzOTZlOTZlOCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiY2JjZTIzN2E0NTA2Y2Q5N2I3ODAwZDI2NjljZTdmZjA2Njk3ZDY0YzU2ODUwNDljMDA0NDI1ZjlkNTJlNzZlZiJ9"
+        },
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/navigation/AppRoutes.kt#L30-L30",
+          "version": "repo-lines-v1:sha256:05821831eb48ba6e62d6a23d36637c7924f5b33c5cc191917d5d9329ea382471:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMDU4MjE4MzFlYjQ4YmE2ZTYyZDZhMjNkMzY2MzdjNzkyNGY1YjMzYzVjYzE5MTkxN2Q1ZDkzMjllYTM4MjQ3MSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMDU4MjE4MzFlYjQ4YmE2ZTYyZDZhMjNkMzY2MzdjNzkyNGY1YjMzYzVjYzE5MTkxN2Q1ZDkzMjllYTM4MjQ3MSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNWE2ZDc1OGRhMTQ3Y2Q4NjhjNmM0OTYyNjRjOWU2OTFjY2FmNzUyOTY1NzYwNTVhZDczZTJjMmU4MzNiMzI2YiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYmVlN2VmMWRjZjUyMGZjN2IzNzFmMmU1YjMwNzdmYjBhM2U3ZDg5MzBlNmE2MjliOGIwYjYwNDBiMmY1OTZiNCJ9"
+        },
+        {
+          "resource": "repo://feature/playlist/src/main/java/cn/com/dcsgo/mihx/feature/playlist/LocalMusicComponents.kt#L144-L194",
+          "version": "repo-lines-v1:sha256:1882775a091e25e6a364c3c866a057fc7c7a1af9e489dffbbc91babe1d9aed72:eyJzZWxlY3RlZExpbmVDb3VudCI6NTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjhkYTE4NDRlY2FlZThhYjliMmRmYTdhNTdjNzYyMzY4YjFkNzI4Y2U2N2U2OWMyNWNkMmY1OWUzOWFkMTVkZWMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU1MjJjNDJjZDE5YzZkMDNkODA4YzQ1MjcyMDU1MjgyNWI3ZWExYzViNDkxYjIxODUxMWNhYzc0MTVjZjlkOWIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQ5NWU1NmJhZDdjZWVmNmM1OTEzNTU4MDI3NDYzNDZlMDM4MGJmYjFkMzQwN2IwZWY0YTI3ZmRhYWJjZTE0NjciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImI0YTM2NWE5MGVjMTFlOTA0MzI3NTJjZjkzNzZlYzVlZDM2YjgwYmE1ZThlNjg1NGZjZjk4OTcwZDMwNDQ0NjkifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_941589cfbc484429b2820c0032c9880f",
+      "statement": "The STORAGE_STATS destination has no ViewModel, Route/State/Actions pair or cache: the AppNavHost composable block filters uiState.songs to uri != null, runs the measurement in a produceState keyed on that list, builds stats with LocalMusicStorageStats.from, and passes stats/isLoading/onBack to the pure StorageStatsScreen.",
+      "evidence": [
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/AppNavHost.kt#L631-L656",
+          "version": "repo-lines-v1:sha256:891ad3fd4253677096f918ab2424a170a640a3cbdfb58aa9e1802676fd0f551f:eyJzZWxlY3RlZExpbmVDb3VudCI6MjYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQwY2YxZWEwNmMxYzhhMGYzY2MyMjJhMThjZDcwNTFhZGRmMGVhOGUyNjNiZWIwMDBkYjllYjFmMzEzNDdlMjEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImRhOWY4NmQyOGU3ODRmOWZkMzFmYjcyZDE1ZjYwY2JjZWFhZmRkNjY5Y2JkNWI2ZGE3ODg4YTAyMzMyMWViYjkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijg2MWVhMDdhNWY4YzA1ZWNhZGEwOThlNDA5MjgzOTAyMDEwZGI3YjViNGM5YTM3ZmI4Mzg4ZmZjNmM0ZTA0N2MifQ"
+        },
+        {
+          "resource": "repo://feature/playlist/src/main/java/cn/com/dcsgo/mihx/feature/playlist/StorageStatsScreen.kt#L58-L96",
+          "version": "repo-lines-v1:sha256:fce0b116588572717f62c332b117f7421b1cdc2513fe07566cd7d7b0b72dbbde:eyJzZWxlY3RlZExpbmVDb3VudCI6MzksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijg4YTc1ODM2NjIzNjY5MTJlM2RiMzBmN2YzNDFlYTk3YmMwYjBhNTU4YTMxNGE5ZTNjMTJjYjM0OGEzNzE3ODIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImMxYWQxNWRiNThhYThiYjhjNjI1MjgxZTQyYzMxOWViZWE0OWRlM2NiZmQxYzU5YzhhZjQ4ZmRmMDE5ZDg2N2IiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImQxZDQwYTZkYTIyYjdlNWE0MGZmZDE4YjNhNmZhYjFmOTI3NzQ4NzMyNDIxOTI5ZDA0N2MyMTAyZGIwNjk4NmMifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_810c6401a1f949cea6c30619ba1d18ff",
+      "statement": "produceState starts at null so that null means \"still measuring\" while a non-null map means \"measured\"; combined with isLoading = fileSizes == null && localSongs.isNotEmpty() this yields the screen's three-way branch (null+loading spinner, null or !hasSongs empty state, otherwise content), and an empty library shows the empty state without a spinner flash.",
+      "evidence": [
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/AppNavHost.kt#L634-L653",
+          "version": "repo-lines-v1:sha256:090d4f9f8675f519c8a820591bc51156741ad5557527de04bb76708b08a29fc6:eyJzZWxlY3RlZExpbmVDb3VudCI6MjAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQwZTQ5YmVlY2M2MTdiMDVmNWRhMDU2N2Y2MDNiYzUwOGUyOTQyOGFhMzMwOWJlNDM1NDk4NDc1NmMzMjgxODYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU5MzE0YWIxNGIyNWYwZWQ1NzE0MDlhMzBiOTBkNTAwZDgwNDJjYmQ5YWVkNzE0YmIyYjJlN2Y1YTI1ZTk0OWEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijc5Y2M2NzRmMzU4YWRhY2I2ODRjNWYxM2FhOTg4MjY5MmMwY2QyNmRiNzEyYTU4OGFiYTAyNjMxYzU3NWY4NGYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjU5ODQ2YWVkODUwYWM5OGM5YzI4OWE1Yjk5ZGZhYmEzOWQ0NmVkOTQwMTVlOTM0OTA5NTQxYjU3MThlYzI2ZGQifQ"
+        },
+        {
+          "resource": "repo://feature/playlist/src/main/java/cn/com/dcsgo/mihx/feature/playlist/StorageStatsScreen.kt#L409-L460",
+          "version": "repo-lines-v1:sha256:82f67080a361a7d6a6835eb5a2483d608b897d688344b5b7476e321d9866c61f:eyJzZWxlY3RlZExpbmVDb3VudCI6NTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjJlOGQ5NzlhM2JiNjU4M2YyOWJhYmZlZmJlNGM4YjUwMGMxMDcxOWJjOTc4ODgwNzYyMTlhYWY3NTUzZDAzOGIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImU5NmY4Y2IwODNmYTgwMGE0ZGNkMjk2OTcyMmQ3YjkyNjg2YWRkOWViZTM2NTU0OTJmYTY3MmIxYTdjZWQyNDIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImVjYTUzYTBkOTBiNDgyZWMzNWUzNDIxYWNkZjc3NzNmMzMzNzAxNTlkYjE0YzNjZWZkOTZkNzk3M2U0ZWJkNWMifQ"
+        },
+        {
+          "resource": "repo://feature/playlist/src/main/java/cn/com/dcsgo/mihx/feature/playlist/StorageStatsScreen.kt#L89-L93",
+          "version": "repo-lines-v1:sha256:dab41c850db61e0cd26d525109cd917c8ef15cb31fd3d336959fd238fe7173a3:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZDk1NzU1MDkzMzY3MDM4YWIwMjIzYThmMjg3NWZkODAxNzFhNmE0NjkxMjQ4ZThkNWNmM2Y5MDcxODFjM2M1NCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNTUyMmM0MmNkMTljNmQwM2Q4MDhjNDUyNzIwNTUyODI1YjdlYTFjNWI0OTFiMjE4NTExY2FjNzQxNWNmOWQ5YiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMGU5YTA1ODc0MGJlMmRjN2Y3NGRhYTgwOTc3YzRlNjg5M2M1YTE3MjQ5YzA3OGQyZmQ1NzMwOTMwNDFiZThhNiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYjRhMzY1YTkwZWMxMWU5MDQzMjc1MmNmOTM3NmVjNWVkMzZiODBiYTVlOGU2ODU0ZmNmOTg5NzBkMzA0NDQ2OSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_d967ed42c5de4d60bdae9c87fcc658d5",
+      "statement": "A wholesale measurement failure is logged via AppLog.error and degraded to an emptyMap, so the page still renders with every song counted as size-unknown instead of showing an error state.",
+      "evidence": [
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/AppNavHost.kt#L638-L646",
+          "version": "repo-lines-v1:sha256:9f7bc12b6601826f3360baf92bb8ce9a1a71a16bb3faaa6259a3b1b53941ff7c:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZDVlY2YzNGFlOWY5ZDdkYzlmZmY5MGVhOTEwNTg0MjlkYzEwYTJjZjExZjcxMzhkMmRmODM0MTNjZTJhMGM4OSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNjFjNGJjM2Q5MDdjMzU3YmM4ZGJjMGZjMDIzOGU5MjI4NGVhNzJjYmQ4Njk5ZjA3Yjg2NGVmNDFjMjZiOTI0YSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNDA2ODZiODhlNDc2NDYzYTk2NmRjODQ0YzZhMGFmMmZiMDIxZWZiZWZlMmJkYTEyYmJjYTJhMjg3YWVmZTI1MSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMjIzZWE0ZjZjZGI5ZTE1ZTY2MjU3ZTBhOWE3MjhmZTZjYjFlNWY0MWU2ZDk4MWM2NWE0Y2VjNjYyYzI4M2Q0ZCJ9"
+        },
+        {
+          "resource": "repo://core/model/src/main/java/cn/com/dcsgo/mihx/core/model/LocalMusicStorageStats.kt#L67-L75",
+          "version": "repo-lines-v1:sha256:19936792e9a0545f14fb393cb4c28a31cb65df6b2de2ebb41fe4f44ce45f0699:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMjIzZTkwZjE4NjE4NjVmNzA0M2VmOWM2YmU2ODU1ZjQ5ODFiNGJmZDM0YjNmZTU4ZWJhMjJkMjUzZWRmZDVlZSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNTUyMmM0MmNkMTljNmQwM2Q4MDhjNDUyNzIwNTUyODI1YjdlYTFjNWI0OTFiMjE4NTExY2FjNzQxNWNmOWQ5YiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNDBhZjI4MjUyNGI1ODY4NDkxNTkwOTFlNDhkODFkYTQzZWQxMTIxNDJlOWVlYjkzZTBkZjBjNTIxYjc4OThmMyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMGE1Y2M4YmRiYmZmNWU3ZTIzZmE4ZjIxYTM3NmUzNTk3YjljZTRlNTgyNDcxZTA2MDg2MDI4NTg4MmZiOTBhMiJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_e57a57fe430143a49144314b92ab5f38",
+      "statement": "The page is read-only: StorageStatsScreen's only callback is onBack, sizes live solely in route-local produceState state, measurement re-runs on every entry or library-list change, and nothing is written back to Room or DataStore (songs.size is never updated by this flow).",
+      "evidence": [
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/AppNavHost.kt#L631-L656",
+          "version": "repo-lines-v1:sha256:891ad3fd4253677096f918ab2424a170a640a3cbdfb58aa9e1802676fd0f551f:eyJzZWxlY3RlZExpbmVDb3VudCI6MjYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQwY2YxZWEwNmMxYzhhMGYzY2MyMjJhMThjZDcwNTFhZGRmMGVhOGUyNjNiZWIwMDBkYjllYjFmMzEzNDdlMjEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImRhOWY4NmQyOGU3ODRmOWZkMzFmYjcyZDE1ZjYwY2JjZWFhZmRkNjY5Y2JkNWI2ZGE3ODg4YTAyMzMyMWViYjkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijg2MWVhMDdhNWY4YzA1ZWNhZGEwOThlNDA5MjgzOTAyMDEwZGI3YjViNGM5YTM3ZmI4Mzg4ZmZjNmM0ZTA0N2MifQ"
+        },
+        {
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/repository/MediaStorageStatsRepositoryImpl.kt#L35-L64",
+          "version": "repo-lines-v1:sha256:797151a866b586f889d09e95a41772a75cd1411b2362c8ec064e2077e570186b:eyJzZWxlY3RlZExpbmVDb3VudCI6MzAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZkNjU3NjIxZDNkMDAzOWFiMTY5YjUwNjc5ZTkzNDZkNzlmZWE4NTgzODUxZGFjMmYwYWMwMzUzODg4NThmMWUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImFhMjg5YWJlOTdiNDUwYTQyZTM1ODM1ZTE5MWJlYTYyNDNlNGEzOGRhYzEzOGNjNGRlYjc4OTQ3ZjE3Mjg1MWEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjZiMzc1NDc3MTUxMzc5NzM4NzI1NzhlY2Q4OTVkOWNjYWNkNThiNTI0ZDBjOGU0NzFlNmExMjAxNGJmMDA5ZjcifQ"
+        },
+        {
+          "resource": "repo://feature/playlist/src/main/java/cn/com/dcsgo/mihx/feature/playlist/StorageStatsScreen.kt#L58-L64",
+          "version": "repo-lines-v1:sha256:d7400ce65b6d72ae3a080d227078488579e8dd1351590bab6719b2e143659300:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiODhhNzU4MzY2MjM2NjkxMmUzZGIzMGY3ZjM0MWVhOTdiYzBiMGE1NThhMzE0YTllM2MxMmNiMzQ4YTM3MTc4MiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiM2YxNjNmNzc4NmM0MmNhODg5MjcwZjc1M2E3ODA2MjY0MjZjMDNmOTczYTA1YWRlYWVkZDRmYTRkMjcwZjBkNSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYzFhZDE1ZGI1OGFhOGJiOGM2MjUyODFlNDJjMzE5ZWJlYTQ5ZGUzY2JmZDFjNTljOGFmNDhmZGYwMTlkODY3YiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZmM4NWE2MzhhZWI4NjZhNDIwMTM2MDY3N2RmNTUxMjdjNjc0Y2I0OGI3OGU1ZGNhMjZkNGM5MWNlNzc4YmI3NiJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_e15a28c3f68a40ca8027fb317319b561",
+      "statement": "The statistics denominator is exactly the caller-provided song list: AppNavHost passes uiState.songs.filter { it.uri != null }, and the 本地音乐 list uses the same uri != null predicate (its own filter plus SongVersionManager.groupedSongs' isPlayable filter), so the page's song count matches the local-music list header.",
+      "evidence": [
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/AppNavHost.kt#L633-L633",
+          "version": "repo-lines-v1:sha256:acb0cd64c03a8a5e117d5bb7fd662b78a0f6a3f34f3df96d7b2e972b9ecac1ef:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYWNiMGNkNjRjMDNhOGE1ZTExN2Q1YmI3ZmQ2NjJiNzhhMGY2YTNmMzRmM2RmOTZkN2IyZTk3MmI5ZWNhYzFlZiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYWNiMGNkNjRjMDNhOGE1ZTExN2Q1YmI3ZmQ2NjJiNzhhMGY2YTNmMzRmM2RmOTZkN2IyZTk3MmI5ZWNhYzFlZiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYWJjZDE2YjE5ODI3MDNhN2VjYzgzYzE1NGE2MGQxZDlmMzE5MDE0ZGE0ZDRhY2Y2MjEwYmU3MWRiMjRjZTNkNiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiY2VhZjJlMjM2ZDE0MTQxMDgyMjk2MDBiZTZiMzEyMmYwMjRmOTY5YzBjMTNiYWQ0Y2Q4YzU1YmUxYzFmMTFjNiJ9"
+        },
+        {
+          "resource": "repo://core/model/src/main/java/cn/com/dcsgo/mihx/core/model/LocalMusicStorageStats.kt#L45-L56",
+          "version": "repo-lines-v1:sha256:12d7d87c5d477355a0073fe6afab56e4453d075342bb03679223a8105944b87c:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImJmMzMwMjdiYzIwYjViY2M0YjEzOTBiNjM2YjJhY2E4YjA4NTNiZjUwMjA0YjAyMDlhMTdiOGY0ODQwN2M3OGIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjA3NjlmZmQ0NDExMGE2Y2FiMjYyOGE3Y2UyMGVkY2JmNjBmZjkxMWIwYThkMWJmMWE4YzIzOGM2ZGViNmU4ZWMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjRiMWViNTcwMzYyNWZkMWFjNmQ4MGQ2MTkzNzM5NDNhMjczYjgxYmIyM2EyOTNiZWY0MDhmZDE0ZGQ5Yjk1NTkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImFhNTQyNjAwMGE0ZjJjM2M0MTI5MDQwZTNiZTYxNWU0MGExMmE2M2ExMzE0MWIwYWVhMzdmNTRkNWE5ZWRiNTkifQ"
+        },
+        {
+          "resource": "repo://domain/src/main/java/cn/com/dcsgo/mihx/domain/playback/SongVersionManager.kt#L12-L17",
+          "version": "repo-lines-v1:sha256:b84b61dc9df7dfcccf1cffa7e762fe4de03d211da36316c0b0da7bef0d38da2c:eyJzZWxlY3RlZExpbmVDb3VudCI6NiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMjVjZGVkMDJiMWI3ZTExZGE4Y2QyZjc3ZDA3ZWE3ODY0NjY5NzNiZDMzMmRkNzAwOGE5YmI5YWVjY2IzOGJlMSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDg5M2Y0MGUzNzgxZWI4OTZjODJkMDQ2YTA4MDY3YTExZTM1Y2RmMmYxZGZhZjI2ZmVhOTBiOGRiNjY3NjQxMyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZWU1NmE2NGQxYTVkNzZlZWZkMmE0NDhlZTRjYTAxNWM0MjI4Y2E5ZWJjMmVhODQ2MmMwODMyMzBmMWNjODAwNiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNmQyODM5MjU4N2Y5NWVlZWMyNmU4ODI4NDZjNTU5OGVhM2M2NjY4ODE2MjgyZGQxZjA3YTg2MjFiOTU3MGEwZiJ9"
+        },
+        {
+          "resource": "repo://feature/playlist/src/main/java/cn/com/dcsgo/mihx/feature/playlist/LocalMusicManagementView.kt#L85-L85",
+          "version": "repo-lines-v1:sha256:1d444feb073e39ab0f2b39910fabd36f7965eaeab6b54ec2dc9340be7fe65fa7:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMWQ0NDRmZWIwNzNlMzlhYjBmMmIzOTkxMGZhYmQzNmY3OTY1ZWFlYWI2YjU0ZWMyZGM5MzQwYmU3ZmU2NWZhNyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMWQ0NDRmZWIwNzNlMzlhYjBmMmIzOTkxMGZhYmQzNmY3OTY1ZWFlYWI2YjU0ZWMyZGM5MzQwYmU3ZmU2NWZhNyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZDQ0MDRiYTRjOGVlMmI4ODBmNzE5NTI5OTA3NWI1NzMxMDIxNGM0MDMwZGE3ZjkxMjNiMzNkNDNjZDJiNDcyNyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMDVkZDBlYTRkY2I4NjA5MWIwYjNiZjU0ODQwNTdmODRiZmM0ZWRiZjMzZmVmNTJhNjM2MDU4ZWJjOTdhNzdjOSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_4165bf4e57634468aa0a0d955cdde782",
+      "statement": "Per song, MediaStorageStatsRepositoryImpl resolves the byte count in a fixed order: a stored songs.size value greater than 0 wins first (and does not take a semaphore permit), then contentResolver.query(uri, OpenableColumns.SIZE) requiring a value greater than 0, then openFileDescriptor(uri, \"r\")?.statSize; anything else yields no entry, which later counts as unknownSizeSongs.",
+      "evidence": [
+        {
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/repository/MediaStorageStatsRepositoryImpl.kt#L35-L88",
+          "version": "repo-lines-v1:sha256:fb88d800ffb9e014e6a17fba62ce17471d91446499b0d7795ea3169f08748543:eyJzZWxlY3RlZExpbmVDb3VudCI6NTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZkNjU3NjIxZDNkMDAzOWFiMTY5YjUwNjc5ZTkzNDZkNzlmZWE4NTgzODUxZGFjMmYwYWMwMzUzODg4NThmMWUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImFhMjg5YWJlOTdiNDUwYTQyZTM1ODM1ZTE5MWJlYTYyNDNlNGEzOGRhYzEzOGNjNGRlYjc4OTQ3ZjE3Mjg1MWEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_3f66613f871a4f1cbcda3e320792b9d1",
+      "statement": "The stored-size lookup is a dedicated narrow projection, MelodyDao.songSizes() = SELECT id, size FROM songs returning SongSizeRow(id, size: Long?), read once inside a runCatching that logs AppLog.warning and degrades to \"nothing stored\" rather than throwing.",
+      "evidence": [
+        {
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/local/dao/MelodyDao.kt#L69-L94",
+          "version": "repo-lines-v1:sha256:9561d72a63dda2bd3d3a1bb5ad2c093d4da444f7bb04c19aa3f96c7d8efd4a1d:eyJzZWxlY3RlZExpbmVDb3VudCI6MjYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU0Mjg5YTU0YzgwYmVkMWY2OTE1NTA3YTkyNzNjMmM1MTBkMDUwYjA5OTQwOWJmOTBlMDQ3ZTc0MTUyY2I4YmEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRlNzQzOGJjODUwMTZlOWZhOWE1ZTMyOGZlZTBmZGNmMDQ4YzI1ODc2ZTYxNmRhMTk5YWM4NzNhODJjZjY1ZDkiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImM5ZTA1NjlhZWJlZWE5M2YwYjkxM2YxNTMxNGM0MWQwZTliMTcyODkyYzE5Y2YxMWU2MWZhZGFmNmQxMGFjMzkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImMxNDJhNDI3ZTMzMzk1NjNmZmRlZDRlMWRmYjBlMzU0ZTAwYzNhZDkxYjY1NjYzYTUxY2ZkZjQ2YmJiNzM3OGQifQ"
+        },
+        {
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/repository/MediaStorageStatsRepositoryImpl.kt#L39-L42",
+          "version": "repo-lines-v1:sha256:bebe556983c3f03659653c7427ba0e229640f35cc5e1d006641f92f46abd3fd8:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMmZlMWJhZjMwZmY1NDZhMTJjNGY0YTE3YzEzMjdhZmM2MmQ2NDVjNmFhZWMzYzZkZDEzOTg1YzM0YTU4ZDY2ZSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiM2JhNWQ3ZmEwMzU3OWM4MzkzNTY0MzAyZDEzOTNhMjU0MWI5MTdlZDQzZmYyYjIxMjgwYTU2YjM1ZDYzMjAyMCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZDM2OWU2MzMxYzQzMDY4OWQxNGZlY2ViYWNhMGM1YjMxMmUxNjJlYjdhNmJkM2Y3MWE2MTI2NzhjYjljNDdmNyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNzRhMTM4YTE1Y2MyNjdhODQyMmY0ZWMxZmM1MWVkZjNjZDBjZmE0ZDBlZjU0NWEzMmI0ZmM3ODQ1M2U5ZDQ5OSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_dde079281835405386aac6b09a5edee4",
+      "statement": "measureFileSizes runs entirely inside withContext(Dispatchers.IO), returns emptyMap() for empty input, fans out one async per song but wraps only the SAF fallback lookups in semaphore.withPermit with 8 permits, and each SAF attempt is individually runCatching-guarded so a missing, moved or ungranted file omits just that song.",
+      "evidence": [
+        {
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/repository/MediaStorageStatsRepositoryImpl.kt#L35-L88",
+          "version": "repo-lines-v1:sha256:fb88d800ffb9e014e6a17fba62ce17471d91446499b0d7795ea3169f08748543:eyJzZWxlY3RlZExpbmVDb3VudCI6NTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZkNjU3NjIxZDNkMDAzOWFiMTY5YjUwNjc5ZTkzNDZkNzlmZWE4NTgzODUxZGFjMmYwYWMwMzUzODg4NThmMWUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImFhMjg5YWJlOTdiNDUwYTQyZTM1ODM1ZTE5MWJlYTYyNDNlNGEzOGRhYzEzOGNjNGRlYjc4OTQ3ZjE3Mjg1MWEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_e68e646f71fd4ea4845c56fad327c706",
+      "statement": "songs.size is not written by the import path: it is derived on persistence from Song.fileFingerprint's \"size:mtime\" prefix, the fingerprint is only produced by MusicRepository.refreshMetadata (file check) via descriptor statSize plus COLUMN_LAST_MODIFIED, addFolder constructs songs without a fingerprint, and the legacy JSON migration writes size = null — so a fresh library falls through to the SAF pass entirely and stored values are snapshots from the last metadata refresh.",
+      "evidence": [
+        {
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/local/migration/LegacyJsonSnapshotParser.kt#L68-L68",
+          "version": "repo-lines-v1:sha256:49280fd1039bedd6853cf22a0634e0ee6a9a2afe702a4c92e89fb0d840c5dd66:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNDkyODBmZDEwMzliZWRkNjg1M2NmMjJhMDYzNGUwZWU2YTlhMmFmZTcwMmE0YzkyZTg5ZmIwZDg0MGM1ZGQ2NiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDkyODBmZDEwMzliZWRkNjg1M2NmMjJhMDYzNGUwZWU2YTlhMmFmZTcwMmE0YzkyZTg5ZmIwZDg0MGM1ZGQ2NiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMGE3NmE4ZDJiNDJjN2FiM2I3NWQ2ZjJiNDUyZDVkOTM1MDY0YmRkZDQ0MmFjYTIyMmVkYWQzN2RhMDBkMDJhYiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiOGFhN2IxODEwNDUxYjg5NWI4ODNlMTIyNTFiOGVkN2ZmYzg4MTQyYzEwNjczNWM1MDQ0YzhkYWYwYjVhOGI2MyJ9"
+        },
+        {
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/repository/MusicRepository.kt#L1013-L1048",
+          "version": "repo-lines-v1:sha256:7accacb63d1e33840c15c557b25ec4f4aad0c13a71fcaf96ea3d0ae78c93179b:eyJzZWxlY3RlZExpbmVDb3VudCI6MzYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImYyNjA4NzBkMjhiNWJiOWU5MDAwZjYyOTI4ZTQ3NTY4MTYzNjBmOTgxYjI1OTgxYjg1ZTUzZGU4YTk2Mjg3MTgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFmYmU0ODVkZGVhMzUyYWJkNmU1NWQxYWFmYmY2ZTVkMTc1NGQ2MjllOTUxNzM5ZWM3M2Q1NTMxNTQ3NjY3MzEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImI3NmU3ZDkwMDQ1YTIwYzY3M2ZhNDkyZjlkMzE0YjRkMGYyY2IyZDZkYzU0ZTU4MWY1M2EyMjQ4MzQ5MWY4OTYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjM0ZTAyNDUyNjJlNjkyNDVhYTgxMDZiMDI5MmY0ODU3NjE1MzI1ODEzMGRmNDQ2Njk4NGU3YjRmNjZhODFjMjgifQ"
+        },
+        {
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/repository/MusicRepository.kt#L542-L557",
+          "version": "repo-lines-v1:sha256:1ae998579cd2ab455118bbe5dc362a88870c4d8741502132c60638a64f6ead2d:eyJzZWxlY3RlZExpbmVDb3VudCI6MTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQ0YzlmNDk3MDIxM2U3MzZhZDVmYzdmYzhmM2Q5MTY1NzE1OTgxYTE4MjFmYTYwZjMzOTM0ZDM0NDAyY2E4ZjQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQwMDEwNWUwYTY4NTIxYzNkMzMyNjE1MzkwZTg1OWUzOWNmMjQxMjc0YTdkNzgxZDE5NmEzYWRhMDdiMTBmZDciLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImRmZjZlYjI3MzIwYzhkNTAzMjlmNDA0MWU1YmRhN2Y0NmVlZjhkZThjOWRhMjQzYjZmNzg3YmFiMjI3ZDQ4OTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImNiNzdjMzlhMjY3OGI0MjFiMjY1NjA4NzhmOGIxYjMzMDMwMDJjZGU5MWQxYjAyZGIzOTI2ZDNiZTJmZTAyOWYifQ"
+        },
+        {
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/repository/RoomMusicLibraryDataSource.kt#L125-L150",
+          "version": "repo-lines-v1:sha256:9fb5779bd5818cc801e55a28ad646017b295ca27da5f686f1f31bbbcd13187a5:eyJzZWxlY3RlZExpbmVDb3VudCI6MjYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijc1ZDc4ODNiOGEwZTkwNzAwMzdmMjNlNTNhZTRhMWM4YzdmYTY2MjkyZjIxZjg2YTVjMjVkNDdiY2NkM2YzYTIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZhZmJhMDUyN2MzOTUzYzRiNmUwZTViNTczOWJhODM2MTJmODA1M2JjZGM5NDY2NzMwMTkzY2QxZDU5MGI0MDgiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjVlZWNhODQ4MjAxYjUwYmY3ZTBkMGU4ZTZmYmEyODI5MjZlYzUwNWUxOTNjYjA0ZGM1YmQ3M2M1NGNmNzY2YmQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImU0YTcyN2M5MTM3ZGUyMmU0MmYzODQ5YTQ3ZmQwMjFkYWYyNDFjMzVlN2YzYjE1YTkwNzlmNjNhYzI2ZmE1MWMifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_8b1c9f60edb847d38d616be866eebabe",
+      "statement": "The :domain MediaStorageStatsRepository contract only measures bytes (songId to byte count, failures omitted) and explicitly decides no tiers or ratios, so all threshold/tier policy stays in :core:model; PlayerViewModel.measureLocalSongFileSizes is a pure pass-through to that contract.",
+      "evidence": [
+        {
+          "resource": "repo://domain/src/main/java/cn/com/dcsgo/mihx/domain/repository/MediaStorageStatsRepository.kt#L5-L18",
+          "version": "repo-lines-v1:sha256:0739a2173455f51fd457180505b05eab0ecee530b1ebd1fe0ab50b8b8653249a:eyJzZWxlY3RlZExpbmVDb3VudCI6MTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVhZjIyY2YwNzMyNTkyYzI0NzE0MWNiZTYxZWZhMTEwMTI2MTJmNWEzMTIyYjlhZjliYmFmNTJmNTcyNGQxOTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQ0NWZiOGEzZDRiODIxN2M0NDUzOWJiYTY3MDRmNDc0NGEzODkxZDRjNDUyOTVmYTEzZGE1MmFkZDcxNjYwMDEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerViewModel.kt#L226-L233",
+          "version": "repo-lines-v1:sha256:a2c519e342dcb7b6dd46a29dbb1cb7ee5cdc8cec75a0e16fc511a32cd688b592:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMzljYmJjNjU0NjlkYjFjYTI4NDJlZmQ5N2RmN2VlMmNlNmNjMTU3MTQ4MmQwMWExOGI3OTBhMTBjN2M1MTBmMyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNjM0YzY5ODJjZjlhYmNlMzZhODk1NTQ3ZjMwNTQyMTE0YjcyZGJiY2RkNWUwZmFlNDZhYmJmZTIyNWY2NDg0MSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYzQ1MjhmZGU5NmE2MDQwZGU2N2Q5ZjQ4MGY3MTI2NGQ5YmFjNWVlNzBlNTE4ODUxMWY0ZmFjYjA2YTJlZmY2NCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZWRiZjE3YjQ2YzMxMmE0ZDkyZjg5MTZhMTViODVmMjgwZTk4NGJjMjM0NzA3M2RkODkwM2E3YTk1ZTJlZjY4NiJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_f35ea33ce6844db6a36b4f285ef19adf",
+      "statement": "Quality-tier shares are counted from each song's derived Song.qualityTier (AudioQualityTier.classify over codec/bitrate/bit depth/sample rate); no tier is stored, and no threshold is re-implemented by the statistics page.",
+      "evidence": [
+        {
+          "resource": "repo://core/model/src/main/java/cn/com/dcsgo/mihx/core/model/AudioQualityTier.kt#L69-L93",
+          "version": "repo-lines-v1:sha256:2fdf908ee017dd74056bc925dbff6e7afde15f0f1aadf22945a899075422fd6a:eyJzZWxlY3RlZExpbmVDb3VudCI6MjUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI3MWVhNTcwMGQ0ZDlhZTk3NDYxNjk4MzAzYjZiMjQ2MmFhNDc0OTQ0NDUwZmU0ODU2ZTc5YmM0ODVmMmZmYWMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImEwNjhmY2FlNDk0ZjI1MTRlOTM4ODBhMDRlNTU2YWEwZjlhYTI5OWM3NWUyYTQyZDc0YzA1NDBjODNkMTU4NDkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoyLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjM3OTRkMDJhODEyMTk0NGQxNzZkMjY1ZTliYjljYzU5ZjZhYjg5MGJjYWRmOGFlZmRlYmRiYmI0ZjJlYTg0NDQifQ"
+        },
+        {
+          "resource": "repo://core/model/src/main/java/cn/com/dcsgo/mihx/core/model/LocalMusicStorageStats.kt#L52-L56",
+          "version": "repo-lines-v1:sha256:74d7a0d5c96674112ad27152d3b6c25177b0c4c9396662945759c187e797fee3:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZTY5ZDliZmE4YmQ3MDQ1NWY1YzVlZDUzMDZkNzE1ODM2YTIyMmY5MGI2MGIyZGM0ZjM1ZDNhZjlhM2JhOWYwOCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMDc2OWZmZDQ0MTEwYTZjYWIyNjI4YTdjZTIwZWRjYmY2MGZmOTExYjBhOGQxYmYxYThjMjM4YzZkZWI2ZThlYyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiODIyZmZkNzQzZmM5Mzg2OWU5ZTIwZDMzYThkNjFiN2M1ZWI4MzViNTY3MDk1ODcyNWRhZjgwZjEwOTNmODEzYyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYWE1NDI2MDAwYTRmMmMzYzQxMjkwNDBlM2JlNjE1ZTQwYTEyYTYzYTEzMTQxYjBhZWEzN2Y1NGQ1YTllZGI1OSJ9"
+        },
+        {
+          "resource": "repo://core/model/src/main/java/cn/com/dcsgo/mihx/core/model/Song.kt#L59-L66",
+          "version": "repo-lines-v1:sha256:378e925a4c10635b2d1fa171d78bbf9f94a0f52df3ab4c0ff6ba462c240b0b57:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMDA1ZWEwYTQ0NzlhMGQxNzgxNDZlNjM1ZDFkOTdhMTFkNTRmYTRkMjdjMDI2NWJjNDdhZWE4MWI0Zjg4MDAzNCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNTkwOWE1M2E2MThkMDI4ZTFkMzAwMGMwYTdhYmNlZWNiZTVmYjM3ZjRlNTExZWZlNDY2NDNmYWQ2ZTY2ODcyZiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNzRmZmNkNTAyZmM2ZThlMGI4MDFmYjkwZjFkZjI5MDMzM2FjNTY4MmRhNDg1YTFjZTkxOGU2OTgzNjI2Yjk3MiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNjZmNGUyMjIwMjQ3ODQ5MjI3ZThlZDdlZTg4N2Q0ODBkN2M1NmE2OTRmNDJhMmY5YTMxOGFmNDBlMjBhYjg3NyJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_08f986e65f474676ac5453a881fb4b92",
+      "statement": "qualityShares is built by mapping AudioQualityTier.entries, so it always contains all six tiers in enum order including zero-count buckets, with ratio = count/total and 0f for an empty library; adding an enum constant therefore adds a bucket automatically.",
+      "evidence": [
+        {
+          "resource": "repo://core/model/src/main/java/cn/com/dcsgo/mihx/core/model/LocalMusicStorageStats.kt#L56-L65",
+          "version": "repo-lines-v1:sha256:66e905a954f9a8557f440aead370ce9a0d7b027eee57aa622acd2d0f4bfc2e6b:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjA3NjlmZmQ0NDExMGE2Y2FiMjYyOGE3Y2UyMGVkY2JmNjBmZjkxMWIwYThkMWJmMWE4YzIzOGM2ZGViNmU4ZWMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU1MjJjNDJjZDE5YzZkMDNkODA4YzQ1MjcyMDU1MjgyNWI3ZWExYzViNDkxYjIxODUxMWNhYzc0MTVjZjlkOWIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImJkZGI4ZTM1NDFjMWUzYzI4ZTRmNTkxNTM2NDczM2Y4ZmQ3N2NhZjU0NWZjZjg0ZjFiNmM1MjIzNjk3NDMzOGYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImY4MjlhMzg0YjEyNjA4ODg5NDI5OTJiMjNiYWMwNWMyM2IxNGQyNWQ4YWFiZDJiNzEyYjRkMjVmZTNkMzE2MjcifQ"
+        },
+        {
+          "resource": "repo://core/model/src/test/java/cn/com/dcsgo/mihx/core/model/LocalMusicStorageStatsTest.kt#L65-L73",
+          "version": "repo-lines-v1:sha256:f7278c6c3e408f93bc65357952f0fbe887e360a3fa5a62e94c4569be5aeb24a6:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNGNmMDllYjBjNTc0NGZiOTczMzFiOThmZjNmYmYwNWE2MDJiYTNmN2Y2N2U1ZGE1YmU5MDk1MDMzZjYyNTgyNSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDg5M2Y0MGUzNzgxZWI4OTZjODJkMDQ2YTA4MDY3YTExZTM1Y2RmMmYxZGZhZjI2ZmVhOTBiOGRiNjY3NjQxMyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiODMwMjJjYTYzMmZkZDNmNDdkNDIzNzE5YWRhM2VkZjkwMGRkNjdiNDUxZjBmMmI5NjFjYzFhMGE4MjQwODU2OCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNDExMTE2YzRkM2ViZWY0NWMzMWViYzk1YWEwYzI1NzcyNDc5ZmU0OTFhOWE2NTQwNzhlNWY5YjdhODVmNzAzYSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_1be74a4a4b474d14a0a854243847c100",
+      "statement": "The spatial-audio count is recomputed live with AudioQualityTier.isSpatial(song.audioCodec, song.channelCount) instead of counting the persisted Song.spatialAudio flag, so a stale flag (e.g. true on an audio/ec+3 row) cannot inflate the total; the test pins 2 of 6 with JOC and multichannel AC-4 counting.",
+      "evidence": [
+        {
+          "resource": "repo://core/model/src/main/java/cn/com/dcsgo/mihx/core/model/AudioQualityTier.kt#L52-L61",
+          "version": "repo-lines-v1:sha256:04c3744755a7c0b370b167ad0aa202c00287c29e3d3962ab6700a3687aeac09e:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijc4MzVhZmNiZWRiOTNkYWNlZTg2NzU2ZGM0NzU1M2IzNTM3YzM2MzRjZTNhMGYxNTUxYjljM2I4MTY3NTZiN2EiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjllMjJkZWY3ZmZjMWUwMzY2Mzk3MDJlYTQ1YmViNGI3MjkyZjI4MjI4NjExYTgyZjA1ZWQxM2Q0ODhiNDA5MDAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUyNDE2OGFkY2RhNWRiMTUzN2I1MzE2MTMyNzRmMDlmMzJhMmMyZGM3ZDBmMzljY2ZiY2U0NTQwYWIyYzM0MGMifQ"
+        },
+        {
+          "resource": "repo://core/model/src/main/java/cn/com/dcsgo/mihx/core/model/LocalMusicStorageStats.kt#L82-L84",
+          "version": "repo-lines-v1:sha256:b3cfdd97ab6d15faf58a1def7306df94bccb39fc61a5b2e780906ce8413adbf7:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNmNiODY1NjQ4YWYxN2U5Y2E2Nzc5Zjk2MGIxNTM0ZTNlYWFjOWZhNzg0ODY4MWMyODZiN2I2NzUxMzJhYTUxZSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiOTFjYTdhYmI3ODczNzY1NjU4NDE3NGU2NzIwYjBiOTUwZTc2ZTRkOWQ2MmUyN2E4MmJhY2RjYjg0ZWI1NmRhNCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiOWIxMDIxYzg1Y2JjMjAwYzgwNzljMGExNTIwNDVlMWQ5ODY4ODdjMWRiMmI0YzRlYjg1OWVhN2NiY2NmZWU2OCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNjg3NDEwNjE1MTBiMjE2ZDJkMjhlNDExNmY3ODFkYTI2Yjc5OWRhMWJmZTJmZjdiMWZiZTQ2ZWMxZTRhY2RmYSJ9"
+        },
+        {
+          "resource": "repo://core/model/src/test/java/cn/com/dcsgo/mihx/core/model/LocalMusicStorageStatsTest.kt#L75-L92",
+          "version": "repo-lines-v1:sha256:2e101e255391fa8feabfcbaab24314d15094042e5b24f679fab9b2dbc7c60684:eyJzZWxlY3RlZExpbmVDb3VudCI6MTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRjZjA5ZWIwYzU3NDRmYjk3MzMxYjk4ZmYzZmJmMDVhNjAyYmEzZjdmNjdlNWRhNWJlOTA5NTAzM2Y2MjU4MjUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjEyOWI0MTIyOGNlMmVlZThjYzRkYzc5YTNkMmY5MTE0ZDIzNGIzZDE2YzdjYzgxYzQyZTNhZTgzZWUyNmJhNDAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjljOGEzM2ViYzMwN2FiNTViYTcyNDNiNzdmYTE1MWUxZTMyODM5Y2ZmZDJiMzE0MWYyMDQ4ZjgyOTVlOGVmMGEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_b34d5249aea24ea0b45c8634a5f4a4bf",
+      "statement": "totalBytes accumulates only entries greater than 0 from the size map, the same pass sets measuredSizeSongs, unknownSizeSongs = totalSongs - measured, and sizeCoverageRatio / spatialAudioRatio are derived from those totals with a totalSongs <= 0 guard returning 0f.",
+      "evidence": [
+        {
+          "resource": "repo://core/model/src/main/java/cn/com/dcsgo/mihx/core/model/LocalMusicStorageStats.kt#L33-L39",
+          "version": "repo-lines-v1:sha256:b33062c094ce9ff6c5960f6ab6ae4c7aa6797f038e163947c4a06c4268003d67:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYjI1MjQ2MDZlN2Y2ZjM1YTNkYzU2MjhlNGE1NGE4NWQ5ZTU4ZWRkMmE0ZWM1ZWJhN2YyOTQ5MTQzOGZlYmFkMyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDBlMWIwNDA1ZWFjZTljMGExYzMwMDkyODk2NmVkYTk5MjUzMmIxNmMyN2Q4NjE1NDRjY2E5NjZlNWIwMGMyMyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMGE1NGIwYjk4MjQ3MmFkNDZhZGM3YjAwMWQ4YmUxMGFlMDU1MzUyYWNiY2ZhN2E3MWU5ZmFkOWQwNTA0NGVlYSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiN2Q2N2RiNTljMDhiMjFlNzVhMTZlOWViMjRkMWM2YzY0YjIzM2YzOTM1Y2FjYTk1NGE1NWJjN2JhY2ViYzQwNiJ9"
+        },
+        {
+          "resource": "repo://core/model/src/main/java/cn/com/dcsgo/mihx/core/model/LocalMusicStorageStats.kt#L67-L86",
+          "version": "repo-lines-v1:sha256:7dc3a6c86fe5925abc3a419843483f650c8c4acef97027839da424a8fa6f5047:eyJzZWxlY3RlZExpbmVDb3VudCI6MjAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjIyM2U5MGYxODYxODY1ZjcwNDNlZjljNmJlNjg1NWY0OTgxYjRiZmQzNGIzZmU1OGViYTIyZDI1M2VkZmQ1ZWUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU1MDMyZTk2NGQwOTMyMzUxZTVkMTg1MjY5MjgxYjE3MWEzYTA5YjA4YjI4NmU2NjFlYTQ3MDMyM2M4MmViNGQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjQwYWYyODI1MjRiNTg2ODQ5MTU5MDkxZTQ4ZDgxZGE0M2VkMTEyMTQyZTllZWI5M2UwZGYwYzUyMWI3ODk4ZjMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImI0YTM2NWE5MGVjMTFlOTA0MzI3NTJjZjkzNzZlYzVlZDM2YjgwYmE1ZThlNjg1NGZjZjk4OTcwZDMwNDQ0NjkifQ"
+        },
+        {
+          "resource": "repo://core/model/src/test/java/cn/com/dcsgo/mihx/core/model/LocalMusicStorageStatsTest.kt#L52-L63",
+          "version": "repo-lines-v1:sha256:f41dccd84bd9e71506a4a28e14efc8c0ff078c9f5afd8a4d7e2ffa79383a303e:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRjZjA5ZWIwYzU3NDRmYjk3MzMxYjk4ZmYzZmJmMDVhNjAyYmEzZjdmNjdlNWRhNWJlOTA5NTAzM2Y2MjU4MjUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImY0MTlkOWJhMjhjOGQxN2I3NGIwZTU2MTkyZGE1MGFmMzc4MzllYTMxNzgyNzc3MDAzNmEzNTI0NDNmYzlmMzkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjE0ZjIxNGRlYzgzNTcyOTU0OTgzZWQwMWQxMDk5NDgyODk1Y2U2MGFiMDkxOWNlNmM3ZjRjNTZlZWNhZjBkNWMifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_59922ad483de402aa0a85429f85e58c4",
+      "statement": "The overview card renders formatFileSize(totalBytes) only when measuredSizeSongs > 0 and an em dash otherwise, and the coverage line uses measured/unknown counts rather than the precomputed sizeCoverageRatio; formatFileSize is the shared 1024-based formatter that AudioMetadataExtractor.getFileSize also uses for SongInfo.fileSize, keeping the page total and the song-detail dialog on one convention.",
+      "evidence": [
+        {
+          "resource": "repo://core/common/src/main/java/cn/com/dcsgo/mihx/core/common/format/FileSizeFormatters.kt#L11-L17",
+          "version": "repo-lines-v1:sha256:3ace92beb7117abc74ceaa93a6982d3e43d5bceb514e31942c1227d8ef51b334:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNjEzMDE5NzkxNjk2MDEzN2Y2YzdkNjBlYzQ4OTc5NDUwOGUzNWViZTQ0MTdhZDAzYjZlYzRkMjhiYWM5M2ZiMCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDEyY2EzNDVjY2Y3NWJmOWMwODA2YmNlNjk1YmU4ZGU4MDhiNzk5ODQyNTFhN2E1NGQyMDJjZjYxMDFkZDQ1MSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMzQyZGI2NjAwOTUxMjlkNDFlZGJkZjU3MWU5NTQ2OThiZGRiNTBiZDhmZmFmMjkyNDNmZmUzNmMxYmNlNzBhMSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjAsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSJ9"
+        },
+        {
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/util/AudioMetadataExtractor.kt#L342-L353",
+          "version": "repo-lines-v1:sha256:665ad17433f54941dfa4c0ef23982cef2f4ed068aed5abf868646a506a4d1dd6:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk1ZjA4MjIwMDI3NmU0MGZkODdlNDUyYmRhMDI1ZDIwZDljMGVlZGY2OGI3MjhhOWVmODA2YzViODA5NTJmYzIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjhiYjE0NDRlMTIyY2MwNjMzODA3YWEwNGI5MmQxYmYyZTQ1YjM3YzZjNmY3YTdmMDczYTkxOWI5MTRiOTI1MWIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjAwNGZmOTk4ZDIwMGRhNTQxYWIzYTNhYzFmYmZjYjE3NmQxMjdmMjM0MmJmNmQxZGYzOWVjMWVhMGM5N2UyZmMifQ"
+        },
+        {
+          "resource": "repo://feature/playlist/src/main/java/cn/com/dcsgo/mihx/feature/playlist/StorageStatsScreen.kt#L123-L197",
+          "version": "repo-lines-v1:sha256:8a56241714dbc92489171e65931a37a7ff406e667cab571959625a56c65661b1:eyJzZWxlY3RlZExpbmVDb3VudCI6NzUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjJlOGQ5NzlhM2JiNjU4M2YyOWJhYmZlZmJlNGM4YjUwMGMxMDcxOWJjOTc4ODgwNzYyMTlhYWY3NTUzZDAzOGIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjE5ZTc2MzU1Y2YxMTk5NDgwYzNmOTk4MzZiMTQ4NmM4NDFkODkxZmFhZDkwNGM2MDhlMDkzMDIyZDM3NTdhZWUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjA2YTdjYTgyMDU4ZDgxMTUyOWJiMGVlYTM3MTEwODI3MmQzM2MxZWNiMDc1NTM2NjMxNjFhOGY1ZDBhMjczNGEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_58b0e515b80c42a791ffac8a6aa4b531",
+      "statement": "The 音质分布 card draws a stacked bar that skips zero-count segments while the row list renders every share (zero buckets dimmed) with tier.label, tier.rule, count and ratio, and tier colors come from theme roles through an exhaustive per-tier when with no hardcoded colors.",
+      "evidence": [
+        {
+          "resource": "repo://feature/playlist/src/main/java/cn/com/dcsgo/mihx/feature/playlist/StorageStatsScreen.kt#L199-L235",
+          "version": "repo-lines-v1:sha256:7b1b94d0384f49e86f8fd88e4b6cb05b534d044e61a1ee6a868c284d2ecf5fbd:eyJzZWxlY3RlZExpbmVDb3VudCI6MzcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjJlOGQ5NzlhM2JiNjU4M2YyOWJhYmZlZmJlNGM4YjUwMGMxMDcxOWJjOTc4ODgwNzYyMTlhYWY3NTUzZDAzOGIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjE5ZTc2MzU1Y2YxMTk5NDgwYzNmOTk4MzZiMTQ4NmM4NDFkODkxZmFhZDkwNGM2MDhlMDkzMDIyZDM3NTdhZWUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijc4MTIxYzI4MmYwYTE5MjQxYWU4ZjQzMTc2YzhkNzc4NzIzZDM4ZDJiMWQ5OGU3NjRhNjhiNzNmMzhhNTcxM2MifQ"
+        },
+        {
+          "resource": "repo://feature/playlist/src/main/java/cn/com/dcsgo/mihx/feature/playlist/StorageStatsScreen.kt#L294-L381",
+          "version": "repo-lines-v1:sha256:daaf0391b64a154cbbfa4aa6c441687f0fcb6b3e32e069ef23b2c0f5b45e0a6e:eyJzZWxlY3RlZExpbmVDb3VudCI6ODgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjJlOGQ5NzlhM2JiNjU4M2YyOWJhYmZlZmJlNGM4YjUwMGMxMDcxOWJjOTc4ODgwNzYyMTlhYWY3NTUzZDAzOGIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjE5ZTc2MzU1Y2YxMTk5NDgwYzNmOTk4MzZiMTQ4NmM4NDFkODkxZmFhZDkwNGM2MDhlMDkzMDIyZDM3NTdhZWUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQ1NGIzMmU2YTgzYWU2MDU2NTU5ODVhMjMyMjM3YzM4ZTQ4MTQ2ZDUwZjk1NGE5MzlmYWM0YzZiMzlhN2ZhZGQifQ"
+        },
+        {
+          "resource": "repo://feature/playlist/src/main/java/cn/com/dcsgo/mihx/feature/playlist/StorageStatsScreen.kt#L462-L476",
+          "version": "repo-lines-v1:sha256:b3af0216976b6eef8924521a346b66e71402fb1cfd324d2c816bef222b1fa7d4:eyJzZWxlY3RlZExpbmVDb3VudCI6MTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVhZjIyY2YwNzMyNTkyYzI0NzE0MWNiZTYxZWZhMTEwMTI2MTJmNWEzMTIyYjlhZjliYmFmNTJmNTcyNGQxOTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjE5ZTc2MzU1Y2YxMTk5NDgwYzNmOTk4MzZiMTQ4NmM4NDFkODkxZmFhZDkwNGM2MDhlMDkzMDIyZDM3NTdhZWUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjM3YjBmZjg3Y2RkMmM3OWUxY2UwZjFkYzc0MzMwMWMzYTczMjI2MDc4OTc2ZmFkNDkwYTBmNDhhNTQzMzdjNGMifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_2f94590641a642f3a333eb49653b8cfa",
+      "statement": "The unknown-size hint card is rendered only when unknownSizeSongs > 0; it states the count and points users to 「我的 → 文件校验」 deep verification to backfill fingerprints and sizes, after which re-entering the page (which re-measures) shows stored sizes.",
+      "evidence": [
+        {
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/repository/MusicRepository.kt#L1013-L1048",
+          "version": "repo-lines-v1:sha256:7accacb63d1e33840c15c557b25ec4f4aad0c13a71fcaf96ea3d0ae78c93179b:eyJzZWxlY3RlZExpbmVDb3VudCI6MzYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImYyNjA4NzBkMjhiNWJiOWU5MDAwZjYyOTI4ZTQ3NTY4MTYzNjBmOTgxYjI1OTgxYjg1ZTUzZGU4YTk2Mjg3MTgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFmYmU0ODVkZGVhMzUyYWJkNmU1NWQxYWFmYmY2ZTVkMTc1NGQ2MjllOTUxNzM5ZWM3M2Q1NTMxNTQ3NjY3MzEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImI3NmU3ZDkwMDQ1YTIwYzY3M2ZhNDkyZjlkMzE0YjRkMGYyY2IyZDZkYzU0ZTU4MWY1M2EyMjQ4MzQ5MWY4OTYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjM0ZTAyNDUyNjJlNjkyNDVhYTgxMDZiMDI5MmY0ODU3NjE1MzI1ODEzMGRmNDQ2Njk4NGU3YjRmNjZhODFjMjgifQ"
+        },
+        {
+          "resource": "repo://feature/playlist/src/main/java/cn/com/dcsgo/mihx/feature/playlist/StorageStatsScreen.kt#L108-L120",
+          "version": "repo-lines-v1:sha256:b23d9704421d8910285e52c358ac6d61addf5f2e0b8fbe7da0a60c99254f8a1c:eyJzZWxlY3RlZExpbmVDb3VudCI6MTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjQ4YThiM2Q1ZDA3NGU2NGNkNzg2MDk2ZDI0MDRiMzgzNWY5ZGE2YWEzYmVjNTlkOTA2OTZjYmZkMTA2ZGM1NjAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjBiZTg1ODRkMTMyYThmOGQ2M2FlMDk4OGIyM2VlOGFkMTk4NWY4MjZiYjkzMWJjOTY4YTJlODMzZTFkYTI2ZjEifQ"
+        },
+        {
+          "resource": "repo://feature/playlist/src/main/java/cn/com/dcsgo/mihx/feature/playlist/StorageStatsScreen.kt#L237-L253",
+          "version": "repo-lines-v1:sha256:5c00fc77d94f57a13e3666ae791a0e4c86d7df0eade22ba1194ca83bd3228632:eyJzZWxlY3RlZExpbmVDb3VudCI6MTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjJlOGQ5NzlhM2JiNjU4M2YyOWJhYmZlZmJlNGM4YjUwMGMxMDcxOWJjOTc4ODgwNzYyMTlhYWY3NTUzZDAzOGIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjE5ZTc2MzU1Y2YxMTk5NDgwYzNmOTk4MzZiMTQ4NmM4NDFkODkxZmFhZDkwNGM2MDhlMDkzMDIyZDM3NTdhZWUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijg3OTkzNGEyMTRlYmQ4Y2E2N2NhNWQwYWU3OWI2NmNlNWNhNmE5ZDVjOTAyNDQwMjAzMjIzNWViZTMyZGUwZTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_33856d8aa17d4dd9b8e6ab5e25adc0c6",
+      "statement": "A 统计口径 card is always rendered and is the page's user-facing contract: seven bullets state the counting basis (imported songs with existing files, tiers from real file parameters, lossless/hi-res requiring depth and rate, DSD as hi-res, missing depth tolerated at 44.1kHz, live spatial rules, old data needing one deep verification) plus the stored-record-first, system-query-second size order.",
+      "evidence": [
+        {
+          "resource": "repo://feature/playlist/src/main/java/cn/com/dcsgo/mihx/feature/playlist/StorageStatsScreen.kt#L255-L292",
+          "version": "repo-lines-v1:sha256:fcde31c6e3d14b8a570e39d5d536f72936f56c5ba0b02c8bf1c13f15af5ffc75:eyJzZWxlY3RlZExpbmVDb3VudCI6MzgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjJlOGQ5NzlhM2JiNjU4M2YyOWJhYmZlZmJlNGM4YjUwMGMxMDcxOWJjOTc4ODgwNzYyMTlhYWY3NTUzZDAzOGIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjE5ZTc2MzU1Y2YxMTk5NDgwYzNmOTk4MzZiMTQ4NmM4NDFkODkxZmFhZDkwNGM2MDhlMDkzMDIyZDM3NTdhZWUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjViZDYyOWViNTE2Njk2ZTIzZWYxODU3MzFmMWNjZjJhYTdlOTJiNTI3YWY3ZDg3NjdmYmM2YWI2YTAxMzNiMjUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_b068a8de961343c4bf353ecdcc4c39ae",
+      "statement": "Ratio text on the page is produced by a local formatRatio that returns 0% at zero, \"<0.1%\" below 0.001 and otherwise one decimal with Locale.CHINA, used for both the spatial ratio and per-tier ratios.",
+      "evidence": [
+        {
+          "resource": "repo://feature/playlist/src/main/java/cn/com/dcsgo/mihx/feature/playlist/StorageStatsScreen.kt#L186-L195",
+          "version": "repo-lines-v1:sha256:24dc2341bac613062fa1888fa33f1705966bb595edf2402b49174fe2622357c6:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImRkYzFjNDgwOTY1OGU4NmQ3OTdhNmJlYmUxZGJiYTExYmEwYWJjYzVlMGVjZjI5M2M4NDdmZDRmMGNhY2M4OWIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImVmYTk1Y2Y2ZGFiMTc2YTNlMjk2NzBkYTA0M2I1YWUyMmNkN2VmNGQ2YTZlMWQxNTNjMGVkZTc3YmVjNjg4N2QiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjE5ZTc2MzU1Y2YxMTk5NDgwYzNmOTk4MzZiMTQ4NmM4NDFkODkxZmFhZDkwNGM2MDhlMDkzMDIyZDM3NTdhZWUifQ"
+        },
+        {
+          "resource": "repo://feature/playlist/src/main/java/cn/com/dcsgo/mihx/feature/playlist/StorageStatsScreen.kt#L478-L482",
+          "version": "repo-lines-v1:sha256:79ca44256ce5d910d238928b77aae8ad9ff7d0804f6dbd3b7878f018a999ad05:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiY2M2MGRmYmM4MWMyMWFjYzI4MTYwYTYxMGZhYTNmMjI2YTc2MzY5MzI2MTBlNTVhN2E0YTczYjY3ZDJlZmVmNiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDEyY2EzNDVjY2Y3NWJmOWMwODA2YmNlNjk1YmU4ZGU4MDhiNzk5ODQyNTFhN2E1NGQyMDJjZjYxMDFkZDQ1MSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMTllNzYzNTVjZjExOTk0ODBjM2Y5OTgzNmIxNDg2Yzg0MWQ4OTFmYWFkOTA0YzYwOGUwOTMwMjJkMzc1N2FlZSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjAsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_490b497eaced418a8e4683e0e959194b",
+      "statement": "Libraries created before MelodyDatabase v18/v19 carry default spec columns (bitDepth 0, bitRateKbps 0, channelCount 0, audioCodec null, spatialAudio false) that the migrations deliberately leave blank and refreshMetadata backfills on a manual deep verification; until then Song.qualityTier resolves to UNKNOWN for those rows and the spatial count is 0, which must not be \"fixed\" by reading the persisted spatialAudio flag or by adding thresholds in the screen.",
+      "evidence": [
+        {
+          "resource": "repo://core/model/src/main/java/cn/com/dcsgo/mihx/core/model/AudioQualityTier.kt#L87-L92",
+          "version": "repo-lines-v1:sha256:2d3e2c20d862c7c571522ed75716d8944c3e251e0e51fcd1ea3abae21e37711d:eyJzZWxlY3RlZExpbmVDb3VudCI6NiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYmJiZmI3OGU1YTMzOTZjZTM4NTM4MWQ1MmRlZWNiZjU4ZWIxNmVjMDUyNDQzNzgxOTE3MTViMzIzYmY5YzdkZSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNTUyMmM0MmNkMTljNmQwM2Q4MDhjNDUyNzIwNTUyODI1YjdlYTFjNWI0OTFiMjE4NTExY2FjNzQxNWNmOWQ5YiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNDY5Mzg4NGJmNjU5ZGZmZDRmZGU0ZTViZTYxNTFiZmFjODczZTU5M2IzZTk0MzE0MDFiZWM5ZDNlM2NkY2IzNCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYjRhMzY1YTkwZWMxMWU5MDQzMjc1MmNmOTM3NmVjNWVkMzZiODBiYTVlOGU2ODU0ZmNmOTg5NzBkMzA0NDQ2OSJ9"
+        },
+        {
+          "resource": "repo://core/model/src/main/java/cn/com/dcsgo/mihx/core/model/LocalMusicStorageStats.kt#L11-L19",
+          "version": "repo-lines-v1:sha256:d3e150746bc24752d8ecbaf97d05e1f43238a355d5248d24a4293b53bbff95fe:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZWFmMjJjZjA3MzI1OTJjMjQ3MTQxY2JlNjFlZmExMTAxMjYxMmY1YTMxMjJiOWFmOWJiYWY1MmY1NzI0ZDE5NCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiOTcyYTQyOTM4MmIyZTE0NzE4ZTBlMzdiMDU3MGE4YTE3MDI5OTFmY2Q4NDk4Y2Q4NDA2MGE4YmY0ZjA1MDE3YiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYTNiYzIyMzY3Y2ViZDIzOGIyMjk2NGUwNzIzMDc0NTUxODg5NDg4NDViYWMzYjFjN2FlMzYwOGYwNzgzYjBlOSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiODk1MTQxY2U4MzI0YWE0ZDYwMDMxMDYwMjE2NGRmMzM3MTBmYjZjOTg3NjJkY2Y3MThhZjY2ZjUzNGFhODg0YyJ9"
+        },
+        {
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/local/migration/MelodyMigrations.kt#L273-L303",
+          "version": "repo-lines-v1:sha256:62ff64b3e8671b748055c73472ac883eeeed1efa4a7b2e2865c5f7789218affc:eyJzZWxlY3RlZExpbmVDb3VudCI6MzEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM5Y2JiYzY1NDY5ZGIxY2EyODQyZWZkOTdkZjdlZTJjZTZjYzE1NzE0ODJkMDFhMThiNzkwYTEwYzdjNTEwZjMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk5OWJkZWZlZWFjYTYzNDBlMDI5MGRjODZlODg5Yzg5ZDVlMTg5YWE1YmE0NGI1ODViM2I3MDczNGY0YTYyZDgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImVlNTE3MGI3N2UxNGNmNjdhN2QzN2Y5NWZkM2ZjNWZjNTkyYjY2YTU4YmNjNzcwNWViNDc1ZTg2OWExZDVmMmMifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_60144d68674243cebbe048b996e23565",
+      "statement": "LocalMusicStorageStatsTest pins the aggregation contract (one song per tier gives six count-1 buckets at ratio 1/6, 3500 total bytes with 2 of 3 measured and sizeCoverageRatio 2/3, all tiers present at zero for an empty library, the live spatial recount, and FLAC at 44.1kHz with unknown bit depth staying LOSSLESS), while FileSizeFormattersTest pins formatFileSize's thresholds and precision.",
+      "evidence": [
+        {
+          "resource": "repo://core/common/src/test/java/cn/com/dcsgo/mihx/core/common/format/FileSizeFormattersTest.kt#L8-L24",
+          "version": "repo-lines-v1:sha256:0b0d9b1a9d119589f38a5152a840a6b8269fcb52889792b3dece6977e26c983a:eyJzZWxlY3RlZExpbmVDb3VudCI6MTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRjZjA5ZWIwYzU3NDRmYjk3MzMxYjk4ZmYzZmJmMDVhNjAyYmEzZjdmNjdlNWRhNWJlOTA5NTAzM2Y2MjU4MjUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImFmYTliNWViMzM0NzdhZDY2YTgxZmZmMDY4OTBmMmI2ZTE1NDVjYWNkMjU4ODNlMmU5MjAwZGI1NGI0N2IxNzUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        },
+        {
+          "resource": "repo://core/model/src/test/java/cn/com/dcsgo/mihx/core/model/LocalMusicStorageStatsTest.kt#L29-L102",
+          "version": "repo-lines-v1:sha256:a6aa333373483e44cb9817e7da312987af40c18547e527b7c2d59763659bba7c:eyJzZWxlY3RlZExpbmVDb3VudCI6NzQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRjZjA5ZWIwYzU3NDRmYjk3MzMxYjk4ZmYzZmJmMDVhNjAyYmEzZjdmNjdlNWRhNWJlOTA5NTAzM2Y2MjU4MjUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQ5ZDQxOTU5MzFlYWZjYjQ2NGNkNTRmMTYxN2E3NDVmYThiYjBmY2I5ZWFjZWQxNzk2NjIwMzUwYmFmZTE1NTEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "by": "openwiki/0.5.0",
+    "at": "2026-11-20T09:49:41.934Z"
+  }
+}

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "pageVersion": "sha256:faf52c9f81a6e7a2c1d3b4b80f0df9a90f112f88dca22281135145aa5234137e",
+  "pageVersion": "sha256:c352840b79def9483e8ff09099a7023b294026e91576bd0340c4fc02cf3d3b62",
   "claims": [
     {
       "id": "claim_466622531e04474fbe41f37e24ac9842",
@@ -46,8 +46,12 @@
     },
     {
       "id": "claim_8805c86b568d45509fa294c784a8a419",
-      "statement": ":domain contains no Android or Compose dependencies at all (no file under domain/src/main/java imports android.* or androidx.*); it api-exposes :core:model and implementation-depends on :core:common, making it a pure interface/policy layer.",
+      "statement": ":domain's build file declares only api(project(\":core:model\")) and implementation(project(\":core:common\")) — no Android, Compose or UI libraries — and its sources are repository interfaces plus pure policy over :core:model types; the only Android-framework imports are the two M-21 baselined files FolderImporter.kt and MusicImportRepository.kt (android.net.Uri), so any new android.* import there now fails the build.",
       "evidence": [
+        {
+          "resource": "repo://buildSrc/src/main/kotlin/cn/com/dcsgo/mihx/verify/ProductArchitectureVerification.kt#L499-L538",
+          "version": "repo-lines-v1:sha256:0b87ae88222855b4278961a9ed6a4c6abb7a332f19748643ca9dbf69e192af89:eyJzZWxlY3RlZExpbmVDb3VudCI6NDAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZhZDc3MDNkNGQzMmIzMTc3M2ZlMjlmYjM1MTgxMDM5YTU2ODMwM2ZlYmY0YmUwOGI3ZDk4MzEyNTI5ZGM5MmEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjQyMTBkOTJkYTBiZDk3Mjg4ODI5MjYxZDBmOGJkMzJlMGNlMTAzZGE4ZGQwMmQxNTZjNDA4Y2U1ZWI5YjJkYTIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjJhMjM5NDExZTI0ODkyZWRmYmY4ZmIyZDYwMTYwYjk1OTVkY2JhYjNmNzg2ZDg2Mzc3OWQzYTE2ZDY4YjVkYmIifQ"
+        },
         {
           "resource": "repo://domain/build.gradle.kts#L23-L27",
           "version": "repo-lines-v1:sha256:a7a659511065efecc7f42792482d910156aeca86739928d6b7e067c18acd2a48:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiY2JhMzE0NWFlZTBkYTA1OTI0ZDNhZDBiMWVlYjRhZGU3NzYxYjY2N2Q4YTk2MTQ2ZGVlZjM5YWJkMWNlNDhjYiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDEyY2EzNDVjY2Y3NWJmOWMwODA2YmNlNjk1YmU4ZGU4MDhiNzk5ODQyNTFhN2E1NGQyMDJjZjYxMDFkZDQ1MSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMTllNzYzNTVjZjExOTk0ODBjM2Y5OTgzNmIxNDg2Yzg0MWQ4OTFmYWFkOTA0YzYwOGUwOTMwMjJkMzc1N2FlZSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjAsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSJ9"
@@ -95,20 +99,20 @@
           "version": "repo-lines-v1:sha256:d92b7a2bd01556c0dbc367de063c9bbfe7cc03f1ad0631ee3263127ad4e7ee47:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMzY3N2JhNzJhZDEyM2M2MGI1NjhkN2FmZGZiNWUwOTc5MmFiMDMxMTgxZmJlOGI1OWZhMTM5ZWUyMTYyZDczNCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZTZiMDQ0OTE0Njk3MjJlODM2M2E5NGU0MDQ0NTM4ZTAxM2EyYTIxN2UzNmIxZTU2OGJhNjBhY2I3YjRjOGYyZSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNGJkMDUzMzc0MzE2YjBhZDY4ZjRhY2UzMzY5YTA5MTIzZGQ4MzI2ZjNiZjc1NTZhMTQ3ZTAxMzgwMzJmZTMwMyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjIsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMzc5NGQwMmE4MTIxOTQ0ZDE3NmQyNjVlOWJiOWNjNTlmNmFiODkwYmNhZGY4YWVmZGViZGJiYjRmMmVhODQ0NCJ9"
         },
         {
-          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/MelodyApplication.kt#L13-L20",
-          "version": "repo-lines-v1:sha256:9375577afef66052e954db9d9875ec49a904c1ecad04f308179387a228fc60d0:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBlNjg2OWE5YWRmNTY5OTAwN2IyMzE3YWFhNjIzNmU2NjI0ZWUwYjI5ZjQ0YTkzZDQ5ODQyOGRiOTU3ZTFhNGIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk5NDg4MmFhMDY1M2IxNDdkYTJlNGRjMGQ2MWNlNzU1OTA0NDdiMTg5YWFhMDk1NzA4NzhmOWNiNjJiYjgxMTQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijk1NDJjZTFiMTViZWI0YTVmMDUzYzU0NTEzN2NiY2JjMmZjODgzODg4YzY2MGUyMGEyMzJiM2Q5YmY3YzEwOGUifQ"
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/MelodyApplication.kt#L12-L30",
+          "version": "repo-lines-v1:sha256:0fd9d6faef18a5167090c3152a7d084c482f8fd526b4cf177635c3884f6a2ede:eyJzZWxlY3RlZExpbmVDb3VudCI6MTksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBkYThkNmM2N2I0NWJlOWI3MjA5ZmM3Nzg3YzE2M2M2YTZlMTczOWFjNjM5ZmRjZmVkNjBiODVjNTYxYWNiYzIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjcyNjU2ZTVjZDVjMDVhYTI2NjVjMjk1NGQ4MjhhZGEwYjAzNTQyNjYxNjdlMjg4MGFlMTExMzVjZThmZjRmMDAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijk1NDJjZTFiMTViZWI0YTVmMDUzYzU0NTEzN2NiY2JjMmZjODgzODg4YzY2MGUyMGEyMzJiM2Q5YmY3YzEwOGUifQ"
         },
         {
           "resource": "repo://buildSrc/src/main/kotlin/cn/com/dcsgo/mihx/verify/ProductArchitectureVerification.kt#L112-L123",
           "version": "repo-lines-v1:sha256:4830c9ee1d200a9551f5c4e167f41ac2ef6b037a5216d4a19533d643f331ac7f:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImI2OTk0NGE0NjVlMTZjM2M4ZGZjMmU0OTYyMWZkNDUxY2I2ZTA4MmY4OWIzYjhjY2Q3YTNhMGMwNjRiMjRmYzYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjE3NjFiZjRiZTFiMWZjOTM5NDEyZDdiNjhhY2VkZmUyNjNjMWNiYzIyMjMxMjEyZGYzOTA5YzcyMjljZDE2ZWMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjJjYzhlOWQ2OTA2MWIxNDVlNjNlN2U0OGUyOTdjZGE3ZWNlOWVjOTk4YjkxZDkyZTFiYTc0NzE5OTJiZWQyNDkifQ"
         },
         {
-          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerViewModel.kt#L32-L35",
-          "version": "repo-lines-v1:sha256:b15b63b5bebc6d17eeb444cb82cae04ff37e057c7531294e1d2cc63061b972ac:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiOTcyYTQyOTM4MmIyZTE0NzE4ZTBlMzdiMDU3MGE4YTE3MDI5OTFmY2Q4NDk4Y2Q4NDA2MGE4YmY0ZjA1MDE3YiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiOGZjYTlmZmI5YjZkMWUxYmFlOTRiMTQyZTFjMDU0NzM2Mjc4Y2NlMDRiNzk4YmRkODVhN2Y5OTI3MWRiZDQyMCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMjBkOTFmMTllNWVhNTgwNzJjNmM3ZTkzMDE1NjdjNmEyYTg5NjdmMjJiYmJlM2U5YzlhNGRhZTA0NjY5YmQ0ZiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYmYxNzE0ZjhiMzIyNGJkZTlhMGMxNWEwYjY5ZWU0N2Q5Y2VjNmMxOGE3YzRmOTRhY2UwYjgwMWY1ZGU0OWU0OCJ9"
+          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerViewModel.kt#L36-L44",
+          "version": "repo-lines-v1:sha256:1592f59f740d581e06ad7f815ffd9011fd84be5735932c6ae85a340126158ba2:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNDQ4NjM4MDk3Y2M3NDAyODZkZTBlM2RlZTcxMWE3MDFjZjBkY2U3YzdhODRjODlkZDY5ODZiMDBjMmI0OTgyMiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZDlhMDllZTM3ODQzYzQ1NTdiZDgxYTkwNWFmNWNhZmY1ZDhhMDJmOWJiNDhmMDcwNDYyZjA5MGI3ZjMxMTMwZiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiN2U0ZGIwNmI2OTRjOWNlYTc1NGIxMTQ5NmI3MWM2YTg5Y2ViZmU5MmRjYzQ3ZDhlOTRjMGU1NTE4MmYxMzZjZiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNWNmMDZjZjA0Y2U5MTJlMDI5MzYyM2Y3MTVkODVlODRjMzNiNTNiMTAxZTI5NDU5NjhjOTFkMjZlYmEyNDYxYiJ9"
         },
         {
-          "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/player/AppMediaSessionService.kt",
-          "version": "repo-file-v1:sha256:2581354024fc0f317cc66081c5c7d7f74fe47cd82e55e74f5031f41a36fb53c1"
+          "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/player/AppMediaSessionService.kt#L22-L28",
+          "version": "repo-lines-v1:sha256:961e7bb2a5f85d473cbd105799cccbb932a89466a89d49a353802f0b930c1d7a:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiOGM4YmI3MDAzZTEwMzVmOTQyZjM1NjY0MzlhYWI2Y2EwYzQyMzk5YzZkMTA2NmIwZGRhYmNmZWYyNDIzNzFhNyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYmYzMzAyN2JjMjBiNWJjYzRiMTM5MGI2MzZiMmFjYThiMDg1M2JmNTAyMDRiMDIwOWExN2I4ZjQ4NDA3Yzc4YiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNThmMzc3YTRmYTlkYmU1NGZjOTk5MjNiNzZkOGZkOTQ4NTgzOTFmOWM3ZjA1MDA0YWYyMjcxMTI4ZjFlMmRlOCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZjA0MmFmOGVmY2JkYTdlNGYxMDllMTU3M2M1MjIzNDk5NDE4YjkyYzU3MzRiYzQwNDU4ZmU1ZTIwNTAyMTMyYyJ9"
         }
       ]
     },
@@ -257,7 +261,7 @@
       "statement": "Room schema history is immutability-checked: 1.json must not contain quick_skip_short_play_counts, 2.json must contain it but not lrcUri, 3.json must contain lrcUri; MelodyMigrations must keep Migration(1,2) and Migration(2,3), and DatabaseModule must register them via addMigrations(*MelodyMigrations.ALL).",
       "evidence": [
         {
-          "resource": "repo://buildSrc/src/main/kotlin/cn/com/dcsgo/mihx/verify/ProductArchitectureVerification.kt#L577-L610",
+          "resource": "repo://buildSrc/src/main/kotlin/cn/com/dcsgo/mihx/verify/ProductArchitectureVerification.kt#L693-L726",
           "version": "repo-lines-v1:sha256:fdb134dba308457ba8398d7fc1387734cb06a9fa65da7c329d26855217a8dc94:eyJzZWxlY3RlZExpbmVDb3VudCI6MzQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImUyNTA5OTQ3ZmY2ZmZlNTg4ZDVhZmU5ZmU4ZmYyOTVkODkzMzIwYTY5MWZkNGJhYzFlOTQyZjUyOTE2NzlhM2UiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImRhOWY4NmQyOGU3ODRmOWZkMzFmYjcyZDE1ZjYwY2JjZWFhZmRkNjY5Y2JkNWI2ZGE3ODg4YTAyMzMyMWViYjkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjVlMmI5ZTIxZmRjODZmYzJjMmVlNDQ3MjE4NWQ2NzY0NjdiZGQxY2JmMmUyNGI0ZGM2NDRhYjFhYmIzMzI1NDcifQ"
         },
         {
@@ -265,30 +269,38 @@
           "version": "repo-lines-v1:sha256:c6fe5f055a37e9019ec46eaecca3f2b3fe9e2daacf8ce64a8186253fec5f7c1e:eyJzZWxlY3RlZExpbmVDb3VudCI6MTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImEwMDNjZDk4OWM2YjgzOTZiZGFhMTNjNTMxNDA3NDFiZjQ3NDcxMmRjZDI4ZThlM2IxNmI4ODQyNmRjMDk4MTkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImU4NjMyYjViMGMyNGVmZWEwNzdiYWY2NWQ5ZjY2ZTkxMTE5NmQ0MDk5YmUwODQwNjBjMWZjNTRlMmJiNjQ3YzgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjZkMDUyMDIwNGRkOWU3M2QzNTM4OTE5YmZjYmI0YzhlZTQ2Y2Q3MTUwYzhiOGJiYWRiYzRiNjFlYzU1ZjcwODYifQ"
         },
         {
-          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/local/migration/MelodyMigrations.kt",
-          "version": "repo-file-v1:sha256:1218e71f300f4d56bd7b61ff0a0d1821922942188583b3622d49e1231f599b18"
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/local/migration/MelodyMigrations.kt#L15-L34",
+          "version": "repo-lines-v1:sha256:af5de6e05fb282640ce1ad8428988b80f7145b48efaf24f223231cb24c9c220f:eyJzZWxlY3RlZExpbmVDb3VudCI6MjAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVkYmUxYjMyYTcxYTg2YTk1YjBhMTg2ZDRmNDNiMDMyMGExMTc1NjU4YmQwOWZjNTM1OWQxNzBhNGQ1MmQ0N2EiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImFkMThhOGY5YzMzMjlhYWNlN2Q5NDMyYzk3ZTNkNDk3NTZhZTRiMDk5M2U3NWY0ZThjMjdmYmZmZjU4NzdjYzQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjNiMWRkMDE1ODI3YTBmNDA0NjA0YjY4OGFjYzU5NDIyNDFhNGE2YzdkYTc5N2ZjZTk3ZDZiMjcxODAyZjc4OWIifQ"
+        },
+        {
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/local/migration/MelodyMigrations.kt#L322-L328",
+          "version": "repo-lines-v1:sha256:876d09eebf23c0f59996af5e3fe349692ba6a2349f0f63157c68cb29180e322f:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMmU0NzM2ODhjYmM0YzE1YzA0MzgwNTc4ZjkzZTU5ODAwMTMyNDYzMGY4NmFjOTM3NzQxZDFjOWIyMTI3MDg5YyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMzBjMWYxODhmMTQyZWQ3YTgyNDY4MGIyMDcxNzJjNTUxOWJjNjE0YTQ4ZmRhN2NmMTY3ZWRiOGRkZjc5OTU2YyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiOTk5YmRlZmVlYWNhNjM0MGUwMjkwZGM4NmU4ODljODlkNWUxODlhYTViYTQ0YjU4NWIzYjcwNzM0ZjRhNjJkOCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjEsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNDEyY2EzNDVjY2Y3NWJmOWMwODA2YmNlNjk1YmU4ZGU4MDhiNzk5ODQyNTFhN2E1NGQyMDJjZjYxMDFkZDQ1MSJ9"
         }
       ]
     },
     {
       "id": "claim_309caff45e6846c6b5b7b685ee785e30",
-      "statement": "The exported schema history runs through 17.json: MelodyDatabase declares version = 17 with 14 entities (WordPreferenceEntity added in the 10->11 migration that creates the word_preferences table), migrations from 1->2 through 16->17 are registered via the MelodyMigrations.ALL array, and MIGRATION_16_17 adds the missing index_songs_albumId and index_playback_events_songId indexes; the standing rule is to add new snapshots/migrations, never edit existing schema JSON files.",
+      "statement": "The exported Room schema history runs 1.json through 20.json: MelodyDatabase declares version = 20 with 14 entities (WordPreferenceEntity is the newest, created by the 10->11 migration), and MelodyMigrations.ALL registers every step from MIGRATION_1_2 up to MIGRATION_19_20 — MIGRATION_16_17 adds the missing index_songs_albumId/index_playback_events_songId indexes, MIGRATION_17_18 adds songs.bitDepth, MIGRATION_18_19 adds bitRateKbps/channelCount/audioCodec/spatialAudio, and MIGRATION_19_20 wipes song_group_overrides because the groupKey semantics changed; the standing rule is to add a new snapshot plus migration, never edit an existing schema JSON.",
       "evidence": [
         {
-          "resource": "repo://data/schemas/cn.com.dcsgo.mihx.data.local.MelodyDatabase/17.json",
-          "version": "repo-file-v1:sha256:542521ebe902f64972b59e0016acea0ee1abc215bc7f2efa20097b2d3b25a67f"
+          "resource": "repo://data/schemas/cn.com.dcsgo.mihx.data.local.MelodyDatabase/20.json",
+          "version": "repo-file-v1:sha256:05c9d76a421664254f64a19e3c544052996f70366308b023a445b7e90523b48d"
         },
         {
           "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/local/MelodyDatabase.kt#L21-L40",
-          "version": "repo-lines-v1:sha256:649d655bee2b1047ea9a5e86cacf61d09d7da22b3bc733f5ab3e3a4269a166f0:eyJzZWxlY3RlZExpbmVDb3VudCI6MjAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQwNmYxZGI1MWFhM2I3OWY5OWM4ZjlhMTc5ZjQxYTcxNmY3YzU4Y2Y4M2ZlYjY1MjcwOGIwOWYxMzZmNGU2M2MiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZhZmJhMDUyN2MzOTUzYzRiNmUwZTViNTczOWJhODM2MTJmODA1M2JjZGM5NDY2NzMwMTkzY2QxZDU5MGI0MDgiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjEyNWI1ODI2MzQ1ZmM4NzgyZjg0YjIzNjFkZjMyNmQwMmMxZmYwNTE1MGRlMTYwZjg0NjRhY2ViZTNiYjg3MzUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImU0YmYwODllNWQ1OWUwMGZlZGNjZjEyMmJiOTU0YWIyMDVmN2Q2N2RlM2ZmNTYwYmY5YzVhMDMxYmY5YWUzYTAifQ"
+          "version": "repo-lines-v1:sha256:1036623c046194eb0c61ef259a24e9704c8d2b508d87b66b3fdf81275d5fa05f:eyJzZWxlY3RlZExpbmVDb3VudCI6MjAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQwNmYxZGI1MWFhM2I3OWY5OWM4ZjlhMTc5ZjQxYTcxNmY3YzU4Y2Y4M2ZlYjY1MjcwOGIwOWYxMzZmNGU2M2MiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZhZmJhMDUyN2MzOTUzYzRiNmUwZTViNTczOWJhODM2MTJmODA1M2JjZGM5NDY2NzMwMTkzY2QxZDU5MGI0MDgiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjEyNWI1ODI2MzQ1ZmM4NzgyZjg0YjIzNjFkZjMyNmQwMmMxZmYwNTE1MGRlMTYwZjg0NjRhY2ViZTNiYjg3MzUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImU0YmYwODllNWQ1OWUwMGZlZGNjZjEyMmJiOTU0YWIyMDVmN2Q2N2RlM2ZmNTYwYmY5YzVhMDMxYmY5YWUzYTAifQ"
         },
         {
           "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/local/migration/MelodyMigrations.kt#L141-L153",
           "version": "repo-lines-v1:sha256:3ec485f671d646817f62057d8b6fdb18b91094443de36c308ee1bd1bb838262b:eyJzZWxlY3RlZExpbmVDb3VudCI6MTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjJmM2QwNGI4NzhiMjlhNjA3Njc2ZjE4NzQ5MjFhNTdiMTVjZmEyMDlkZGY2YjFkNzEyNTE1OTAxYWY1YzBhZjciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk5OWJkZWZlZWFjYTYzNDBlMDI5MGRjODZlODg5Yzg5ZDVlMTg5YWE1YmE0NGI1ODViM2I3MDczNGY0YTYyZDgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjdjMzgyZjczYmRjZDM2ZGQ3YjY1YTk2ZmM1NDEyNWIyNmYzNTUzNjZlNGQzNTkzMzJkNjJlYmI1MzE5ODFiM2QifQ"
         },
         {
-          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/local/migration/MelodyMigrations.kt#L260-L279",
-          "version": "repo-lines-v1:sha256:7db138ef9c4271a615c27859a16f4c6e71b45536758e0def8c54f5a3f707bf97:eyJzZWxlY3RlZExpbmVDb3VudCI6MjAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjYyYWNkODJkMzZmOWJmYWZkZmM0YjViYjA2Mjg2ZDg1YjZlNDk2YmJjYWUyYjQzZGE1OWU0MTlhY2M0ZDUwNjIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjMwYzFmMTg4ZjE0MmVkN2E4MjQ2ODBiMjA3MTcyYzU1MTliYzYxNGE0OGZkYTdjZjE2N2VkYjhkZGY3OTk1NmMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjQ5MTJiYWVkNjQ5ZGI1OTllYTE4NmUwZWZkNmU1YjZiOTZhZjY2YjNiNGFjYWJmYjNkNjRlODY4YmQ2YTU2OWIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/local/migration/MelodyMigrations.kt#L258-L320",
+          "version": "repo-lines-v1:sha256:c0711e4b264d16ab6a3b19ced84041b2526b868460a120e18e3cd0c790910aa8:eyJzZWxlY3RlZExpbmVDb3VudCI6NjMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZmMzFhZmEzOWQ3ZGU4Y2FiZTk4Y2Y1ZjNhNmJlY2M1NDYzNWJiNGQ5ZjE4MmQzNmYwYzBmN2I1ZTk1ZDc4ZDciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImIzZDY4ZDRmZDhlYmQ3NDBiYzI3MmY2OTgyNzgyMTE5NWI2YTI5ZWUxYjJjMjk1ZDI4ZjdkZDRmZWYzMTUzYjciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijk5M2VmYTJiZTAxMmNhZDU3OWYyZWM1Y2RkZjliOTMxZWVlMmRjZDZlNzlkMjRkYzdmOWVjYTQ3N2YzZjc2NzUifQ"
+        },
+        {
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/local/migration/MelodyMigrations.kt#L322-L328",
+          "version": "repo-lines-v1:sha256:876d09eebf23c0f59996af5e3fe349692ba6a2349f0f63157c68cb29180e322f:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMmU0NzM2ODhjYmM0YzE1YzA0MzgwNTc4ZjkzZTU5ODAwMTMyNDYzMGY4NmFjOTM3NzQxZDFjOWIyMTI3MDg5YyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMzBjMWYxODhmMTQyZWQ3YTgyNDY4MGIyMDcxNzJjNTUxOWJjNjE0YTQ4ZmRhN2NmMTY3ZWRiOGRkZjc5OTU2YyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiOTk5YmRlZmVlYWNhNjM0MGUwMjkwZGM4NmU4ODljODlkNWUxODlhYTViYTQ0YjU4NWIzYjcwNzM0ZjRhNjJkOCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjEsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNDEyY2EzNDVjY2Y3NWJmOWMwODA2YmNlNjk1YmU4ZGU4MDhiNzk5ODQyNTFhN2E1NGQyMDJjZjYxMDFkZDQ1MSJ9"
         }
       ]
     },
@@ -464,19 +476,19 @@
     },
     {
       "id": "claim_ef208e249d85406c90e51afadf8c51c1",
-      "statement": "Explore playback (v3.11.0) is a domain-policy feature split across the boundaries: :domain owns ExplorePlaybackPolicy (INITIAL_BATCH_SIZE = 10, REFILL_COUNT = 5, REFILL_THRESHOLD = 0, MIN_LISTEN_MS = 30_000L / MIN_LISTEN_RATIO = 0.25f defining a quick skip, plus VOTE_MIN_RATIO/VOTE_MAX_TAGS/VOTE_WEIGHT_SCALE for proportional voting) and RandomQueuePlanner; :feature:player owns PlayerRandomQueueFacade.playRandomQueue/refillExplorePlayQueue/buildExploreRefillPool with a layered candidate pool (liked & no-dislike, then no-dislike, then full library), which applies votes through the WordPreferenceRepository contract; :data persists votes via WordPreferencesRepository (Room word_preferences) using per-word atomic SQL increments (ensureWordPreference + addWordVotesDelta, M-22) so concurrent skip/full-listen settlements never lose a vote, weighted by the word's proportion in the song (x100 scale, historical votes rescaled in MIGRATION_15_16).",
+      "statement": "Explore playback is a domain-policy feature split across the boundaries: :domain owns ExplorePlaybackPolicy (INITIAL_BATCH_SIZE = 10, REFILL_COUNT = 5, REFILL_THRESHOLD = 0, MIN_LISTEN_MS = 30_000L / MIN_LISTEN_RATIO = 0.25f defining a quick skip, VOTE_MIN_RATIO/VOTE_MAX_TAGS borrowed from the display-layer EmotionGroup constants, VOTE_WEIGHT_SCALE = 100, plus the pure helpers voteWeightOf/votesOf/isSkipped) and RandomQueuePlanner.planExploreRefill; :feature:player owns PlayerRandomQueueFacade.playRandomQueue/refillExplorePlayQueue/buildExploreRefillPool with a layered candidate pool (liked & no-dislike, then no-dislike, then full library, degrading only when a pool cannot fill REFILL_COUNT), and PlayerRuntime.handleExploreSongSettled settles the outcome via WordPreferenceRepository.recordSongOutcome(votes, liked = !skipped); :data's WordPreferencesRepository persists votes in the Room word_preferences table with per-word atomic SQL increments (ensureWordPreference + addWordVotesDelta, M-22) weighted by the word's share of the song (x100 scale, historical votes rescaled in MIGRATION_15_16).",
       "evidence": [
         {
           "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/local/migration/MelodyMigrations.kt#L229-L245",
           "version": "repo-lines-v1:sha256:82dc698d98320cac3210cae6114d01acaf2b57ba25c2d41c76c0dfd5451e8bc7:eyJzZWxlY3RlZExpbmVDb3VudCI6MTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImJkM2IxNzg0YjVjZWQ0MzE2MTBhYWE5MDgzMmVhYTIxZGIzMzZmMWYzYmZiZjdiZWVjYTAwODMxMzdlYTZhYzYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk5OWJkZWZlZWFjYTYzNDBlMDI5MGRjODZlODg5Yzg5ZDVlMTg5YWE1YmE0NGI1ODViM2I3MDczNGY0YTYyZDgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjYwZTBmNzI2ODE0ZjllYTA3YzM0NzEwZDhlOTRmYTQxM2M3NmQ3NTQ3MTEzNjNlNzEwMTlkM2Y3YWY0NmI4YjMifQ"
         },
         {
-          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/repository/WordPreferencesRepository.kt#L12-L61",
-          "version": "repo-lines-v1:sha256:77cbd848a664335adae3b08e5be347747ad76124317510c08e300c085a315f76:eyJzZWxlY3RlZExpbmVDb3VudCI6NTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVhZjIyY2YwNzMyNTkyYzI0NzE0MWNiZTYxZWZhMTEwMTI2MTJmNWEzMTIyYjlhZjliYmFmNTJmNTcyNGQxOTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImI1MTc4YTE2ZTMxNzJhNWY3OTk4M2VkY2M3Y2ViYzY1NDdlOTk2YjRlMGYzOWI1NjY1ZjIwZDcyYTVlMjE5YzkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjgwYjNlOGM1YTIzYjk3MTZlOTdkYWEwMDdjZDI1MzM4YmRhOWRiNDQzOGRmNjJjYjdlZjVlZGQyYTZjNjM5YmEifQ"
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/repository/WordPreferencesRepository.kt#L36-L61",
+          "version": "repo-lines-v1:sha256:dae9bfde6daebdb30850d3697edbb453c77bff2a08647056253cca2a91b31963:eyJzZWxlY3RlZExpbmVDb3VudCI6MjYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQ5NWQ5MDMwYWRhYmQwZmZiOTFiYmQ0Y2IzMzA0ODc1Y2FmMWZlZThkZmU0ZmYwZGFiNGIyNTM1MDIxNzA1MTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImY4MjBiYzM1YmJkNTk3NWZhZjI1YjAyYzc2ODUyZTY5NjllZDFmZWI5MGQzMDgxYzdhMzA2NDFlZWFlOTgxYzYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjgwYjNlOGM1YTIzYjk3MTZlOTdkYWEwMDdjZDI1MzM4YmRhOWRiNDQzOGRmNjJjYjdlZjVlZGQyYTZjNjM5YmEifQ"
         },
         {
-          "resource": "repo://domain/src/main/java/cn/com/dcsgo/mihx/domain/playback/ExplorePlaybackPolicy.kt#L7-L59",
-          "version": "repo-lines-v1:sha256:e18071f2036c1ac060b7bed52a74fa95dbb68fd46fff4aa81d209ab8f6d30144:eyJzZWxlY3RlZExpbmVDb3VudCI6NTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjA3OTJhNzIzMTM5ZjBhMmE4ZDdjZDg3NjU5YmMxYTZiMjcwNGVkZmNiNzQ0ZTIyZjNhMTZiMGI0MzQ2MGY5NzgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImI0NDI0MzliZWQ5YWE0ZDA1N2Q4ZTlmZjIwNjZhNGMzMzcyMzZiOWVhODIxMGZmMDVmMTRlYTQwYWVjODIyYmQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImY2MzE0OGU4M2JmNjE4M2YxZjAyZWJhMDFhZDhmNmI4ZTU0ZTIwZTFkYWU4MzY4ZjA4OWIzNmRjNjM0NWQ0NzMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjFiZjk1N2Q1ZDI3YzEyNmY3Mzg5MTI5ZGVlZjhiNzYwYThhODQxMmRjM2E1NzU3MDdmMmRkNDQyODM0MTgyNGIifQ"
+          "resource": "repo://domain/src/main/java/cn/com/dcsgo/mihx/domain/playback/ExplorePlaybackPolicy.kt#L9-L89",
+          "version": "repo-lines-v1:sha256:3971d8d99038177e3cf0f4fe384dc461f9cc8cfa1b19e905c49e8a2f11a63841:eyJzZWxlY3RlZExpbmVDb3VudCI6ODEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQzMjE0MTkzY2ZkZjhjMmMzMDU0ZTM2Njk3ZmI3MzRlNTM0M2ZiZDY5YmIwNGJmYWFkOWFlOTBlNGRjOTc1MDEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQ4ZjI4ODUzNGI2YmZjMTFmYmU4OGJiODMxM2EzY2EyNDFlNmJjOTEyZjc2OTJlMjM3MTUzNjkyMzk3NzZmODEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
         },
         {
           "resource": "repo://domain/src/main/java/cn/com/dcsgo/mihx/domain/playback/RandomQueuePlanner.kt#L34-L57",
@@ -487,8 +499,16 @@
           "version": "repo-lines-v1:sha256:5c90939619cae17cd162eb2cf9be53b1c2b8a3b017f75b3640eecfea1d5495c8:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM5Y2JiYzY1NDY5ZGIxY2EyODQyZWZkOTdkZjdlZTJjZTZjYzE1NzE0ODJkMDFhMThiNzkwYTEwYzdjNTEwZjMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjcxZDI2YzE5ZWM1MDdiNGI4YzdjODFiZDY4YzFkMTA1YmVhNGMzYzUwODA5ODAxZGEzNWI3ZmMwMGUyMmNhNTQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjQ0YzFmODk3MDk5MmE4NzJiNDBiMGRlZjIyNTNlYWM5ODM0NmM5MzA5Y2E1YTNkN2E5N2RjMDgzM2YzYjkxMTkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImI4NjBjYmFmZGE4MjI1YWZkNjhlYzg4ZjI0NjQyODFmMWYzMGMzNzUyMTgyNzUzNTkzYjc1ZjQ4ZDE1NjE0ZjMifQ"
         },
         {
-          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRandomQueueFacade.kt#L85-L164",
-          "version": "repo-lines-v1:sha256:08cd07b79721357bb977ad19af0094103754f6235b0b33c4417d734f37e2050d:eyJzZWxlY3RlZExpbmVDb3VudCI6ODAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjE1ZWM0YWQzZThiYTFiZWUyZTgzNmQ5NjU2YmNkYzE3NzNiYmJhMWU1NWZiYjJjMGQxOGVmZjRhMzI3YTUwN2MiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjNhZDUxZTE0OGNmZGJmMDU2NTA2NGZhODNlMDU1NjQwMzA2NGZlOWZmZjQyZDFjNWU2MzNjYWMyMzcwNzM3ZTIifQ"
+          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRandomQueueFacade.kt#L155-L198",
+          "version": "repo-lines-v1:sha256:87aabca9df03bc6242f31a35d8650a393e77baf6397b93092b06a6c86c1524f8:eyJzZWxlY3RlZExpbmVDb3VudCI6NDQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQ3NDM4YzMxNjUyOTFlOTc2ODk4YTczYTU2MDdmMzZhYjg0NTU1ZjUxNWMxZjE1ZTMwZTRlZTFlZjE1OTNjZjAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQwN2Y0MjViMzgxOGVkZmQ5NmRhMjUxZmI4MTI2ZjJkODljMWJjZDkwYjRjZTg5MWRjMTRjNzA3YWU5ODk1MTAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjNhZDUxZTE0OGNmZGJmMDU2NTA2NGZhODNlMDU1NjQwMzA2NGZlOWZmZjQyZDFjNWU2MzNjYWMyMzcwNzM3ZTIifQ"
+        },
+        {
+          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRandomQueueFacade.kt#L332-L440",
+          "version": "repo-lines-v1:sha256:6916a0028836c05f35f473b008caebe6778ba7f2d0bcd63df49fdaaaf7092526:eyJzZWxlY3RlZExpbmVDb3VudCI6MTA5LCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiIzOWNiYmM2NTQ2OWRiMWNhMjg0MmVmZDk3ZGY3ZWUyY2U2Y2MxNTcxNDgyZDAxYTE4Yjc5MGExMGM3YzUxMGYzIiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI1OTA5YTUzYTYxOGQwMjhlMWQzMDAwYzBhN2FiY2VlY2JlNWZiMzdmNGU1MTFlZmU0NjY0M2ZhZDZlNjY4NzJmIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiJlYzI3NTYyZDMwMDZjMTg1ZGRlMDQ2OGU1NDljYmVjMTUwYmIxMzZiNWJiYTRiZTA2MmVjY2VjNDk3YTkxZWY3IiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiJiNTU5ZGM4ZmE5ZjUyYWM4MTJlOWNjMmU2ZjlkYzBiNWY3Y2NlYmE1NGU2MmQ5YWIzN2E0ZDg1Nzc1ZmE1OGUxIn0"
+        },
+        {
+          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRuntime.kt#L946-L1002",
+          "version": "repo-lines-v1:sha256:24d37668a00413dd38a34e1333a291717e255f5403a6bdb37f858e9fc0eefac2:eyJzZWxlY3RlZExpbmVDb3VudCI6NTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM5Y2JiYzY1NDY5ZGIxY2EyODQyZWZkOTdkZjdlZTJjZTZjYzE1NzE0ODJkMDFhMThiNzkwYTEwYzdjNTEwZjMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImVkYjQxZGQ4MmE0MmI5NWEyM2U2NmQyY2UyODNlNjcxYjIyMjkwNzJhNmU3ZjM2NjFhZTFiNDg4NGJmZjUxNzAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImRmZGZjMmIyZmVjYTcxODIzMDA5ZjViNjY4Nzc1N2ExMWZkZGIwZTI3OWVmZGRmNmMzZTdkMDA1YWE2MDY0ZGYifQ"
         }
       ]
     },
@@ -534,7 +554,7 @@
       "evidence": [
         {
           "resource": "repo://buildSrc/src/main/kotlin/cn/com/dcsgo/mihx/verify/ProductArchitectureVerification.kt#L499-L538",
-          "version": "repo-lines-v1:sha256:d5117f582521f66671350632b96d8bf13103e7eed6a4489988b06cc04a124f6b:eyJzZWxlY3RlZExpbmVDb3VudCI6NDAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZhZDc3MDNkNGQzMmIzMTc3M2ZlMjlmYjM1MTgxMDM5YTU2ODMwM2ZlYmY0YmUwOGI3ZDk4MzEyNTI5ZGM5MmEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjQyMTBkOTJkYTBiZDk3Mjg4ODI5MjYxZDBmOGJkMzJlMGNlMTAzZGE4ZGQwMmQxNTZjNDA4Y2U1ZWI5YjJkYTIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjJhMjM5NDExZTI0ODkyZWRmYmY4ZmIyZDYwMTYwYjk1OTVkY2JhYjNmNzg2ZDg2Mzc3OWQzYTE2ZDY4YjVkYmIifQ"
+          "version": "repo-lines-v1:sha256:0b87ae88222855b4278961a9ed6a4c6abb7a332f19748643ca9dbf69e192af89:eyJzZWxlY3RlZExpbmVDb3VudCI6NDAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZhZDc3MDNkNGQzMmIzMTc3M2ZlMjlmYjM1MTgxMDM5YTU2ODMwM2ZlYmY0YmUwOGI3ZDk4MzEyNTI5ZGM5MmEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjQyMTBkOTJkYTBiZDk3Mjg4ODI5MjYxZDBmOGJkMzJlMGNlMTAzZGE4ZGQwMmQxNTZjNDA4Y2U1ZWI5YjJkYTIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjJhMjM5NDExZTI0ODkyZWRmYmY4ZmIyZDYwMTYwYjk1OTVkY2JhYjNmNzg2ZDg2Mzc3OWQzYTE2ZDY4YjVkYmIifQ"
         }
       ]
     },
@@ -547,10 +567,130 @@
           "version": "repo-lines-v1:sha256:748b3b9202dc61e0976fa42cef5a34494bb8637979aff65169cf3c31fae7552c:eyJzZWxlY3RlZExpbmVDb3VudCI6MjYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjMzMWY2ZjkyZjI5YjNiMDQwZjU1MWNmZjhlOTQ5YjIwNDc5N2ZlOGMyMGM5Y2Y5ZDBmMTQzZjk4MDBhY2UzMWUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImI4NzUxOGJmZWFmOWZjYjBlZmFmMDJlZjcyMTBmODUxOThiZjAwZDc3MjFiNmJmNThjZGVlZjQyYTYwYjhhNmYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjUxYWNlOGRjMzQxODViNmZiY2RkNjA5NTEyMDZlZDVmY2Y4MjY4ZmE4Yjg1MDQ2MjQ1ZTY5NDEzMDI1OWEzYmMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjZlYWU3NTYwODI0YTcyM2ExYzBiZTExNzk0ZmIyOTI0NDE1NDI3NGY1MjZhOWU5NWExYThhNjdlNzg0ZTEyZmUifQ"
         }
       ]
+    },
+    {
+      "id": "claim_6300554150034d169e8cbee003d26c4a",
+      "statement": "Audio-quality and spatial-audio verdicts are pure Kotlin in :core:model (AudioQualityTier.classify/isLossless/isSpatial, Song.qualityTier/qualityLabel, LocalMusicStorageStats.from) and are consumed directly by the pure :domain SongVersionComparer and by :feature:home, :feature:playlist and :feature:user UI, so a tier must always be derivable from persisted Song fields — a platform probe may never be required to render a tier, and missing data degrades to AudioQualityTier.UNKNOWN whose label is empty.",
+      "evidence": [
+        {
+          "resource": "repo://core/model/src/main/java/cn/com/dcsgo/mihx/core/model/AudioQualityTier.kt#L12-L93",
+          "version": "repo-lines-v1:sha256:09735db7d903412ae4d10e82672d5683a74ba90f3f448de8e0c27b424851d3e6:eyJzZWxlY3RlZExpbmVDb3VudCI6ODIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQzMjI3MTgzYmIyYjg4YTY2MmFlZTNkMGMzMGU0MGNlNzQ1MjgyNjk3NzYxODkwZWE3YTM1M2E0NmIxMzMxOWMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjdlN2FlYzNiMTBjNDk3NGVjNjZkOWRiN2FhZGIxMDM0ZDY4NjkxYWE3M2RmOWNmZjEzNmEzNWUyZjkzYzhlNGUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoyLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjM3OTRkMDJhODEyMTk0NGQxNzZkMjY1ZTliYjljYzU5ZjZhYjg5MGJjYWRmOGFlZmRlYmRiYmI0ZjJlYTg0NDQifQ"
+        },
+        {
+          "resource": "repo://core/model/src/main/java/cn/com/dcsgo/mihx/core/model/LocalMusicStorageStats.kt#L45-L88",
+          "version": "repo-lines-v1:sha256:b8454f500cd1189406f279694619baf9fe30d621b7decbfa67e514eb4dbf1943:eyJzZWxlY3RlZExpbmVDb3VudCI6NDQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImJmMzMwMjdiYzIwYjViY2M0YjEzOTBiNjM2YjJhY2E4YjA4NTNiZjUwMjA0YjAyMDlhMTdiOGY0ODQwN2M3OGIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjRiMWViNTcwMzYyNWZkMWFjNmQ4MGQ2MTkzNzM5NDNhMjczYjgxYmIyM2EyOTNiZWY0MDhmZDE0ZGQ5Yjk1NTkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        },
+        {
+          "resource": "repo://core/model/src/main/java/cn/com/dcsgo/mihx/core/model/Song.kt#L28-L74",
+          "version": "repo-lines-v1:sha256:73528764a25663a2e1eccb9d438ad5df3f66706869e4f2c8f9b28611f2f2cfdb:eyJzZWxlY3RlZExpbmVDb3VudCI6NDcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImNjMTA0MTI3MTc1ZmFmNGZmMmE0NDgxY2YzNTJjMTk0ZGViNGY5ZmUwMTZjMDljMmZhYmQwNTZhYTQyZWI2NmMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjhjZGRhZDQxZGEyOGUzNDkyMWRlMmRjODcyZWRjMGFiYTYyM2RmY2NkYjk1NDc2ODBhNjI4Nzk5ZjBjYmI3NzEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjUxMmU2Yzg5ZWQ5NDJiZjJiZDAyZjgxNjA1ZmU2NzNlMjJiNzg4MWNlOGEyOTgzYWRhOTIyMWYzYTY3NTZhZmIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjEwYjdhMDY0YTQ3NzMyZmE4NzQ3MmVkMDk3ZmJmZWVkM2MxOWViNmRiNDVmNzIzZmU4ZjE4Njg1YzFjNzliOWYifQ"
+        },
+        {
+          "resource": "repo://domain/src/main/java/cn/com/dcsgo/mihx/domain/playback/SongVersionComparer.kt#L69-L88",
+          "version": "repo-lines-v1:sha256:8de0b2b6ce0a9d458af9ae74102d5de7b093c46f3126063d693e438054a777a6:eyJzZWxlY3RlZExpbmVDb3VudCI6MjAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQzZGM2NmU4ZGZhODAxYjcwNDFlMzg1ZGYwZDlhMWQzOTgyOGNiYzVmNDViMzlmOGQwZDk5MTAzNjE1ZGIyZmEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImRmNDhlYWNkZjcwZDliZTE3NThkYzY3MGM2MTU1NGY2N2VmNjFjZDlkNWQ2ZDlhNmQ3ZTE4MWY3OTI0ZTc3ZjQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjBiNWQ4MTEwMGJlZThlOTQwOTVlYWFmMWViM2ExYjJiZWMzNmEzNmJlYjc5MzdkNGE0ZmE1MGViZjgxYjkzYmMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjI5MmE4OWM4ZjY2NTU0MTc1NzlmMjY5ODA4M2ZiNGFjM2ExNjdjZmI0Zjc3ZTc2OWY2YmE0NmM4N2U0Y2NiMDcifQ"
+        },
+        {
+          "resource": "repo://feature/home/src/main/java/cn/com/dcsgo/mihx/feature/home/HomeComponents.kt#L215-L226",
+          "version": "repo-lines-v1:sha256:5d10049b33b3e0fc4ac5cf8aa06d48da853ae8956e5ff9081c3ed09be409813e:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVhZjIyY2YwNzMyNTkyYzI0NzE0MWNiZTYxZWZhMTEwMTI2MTJmNWEzMTIyYjlhZjliYmFmNTJmNTcyNGQxOTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQyYWViMTNhYjUwMzU1Y2JlMTIyN2ViZjE4ZTE5ZDkwN2M4MDZjY2ZlNWIzYjM3NjcxMzIyYzU3Mzc2NGRjNTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjE5ZTc2MzU1Y2YxMTk5NDgwYzNmOTk4MzZiMTQ4NmM4NDFkODkxZmFhZDkwNGM2MDhlMDkzMDIyZDM3NTdhZWUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjViNjNmZTliOWE2OGQ2MTg2MzJhYTlhMDAwMDM2ZGQzYjg3MmNlNDBlNGRjZDE0ZWRhODE2MmE3MDUzODRiOTQifQ"
+        },
+        {
+          "resource": "repo://feature/playlist/src/main/java/cn/com/dcsgo/mihx/feature/playlist/StorageStatsScreen.kt#L51-L61",
+          "version": "repo-lines-v1:sha256:c79f7efb066a0cf08f79d58f3291eeefe396141c25283c7f841b4e679c228861:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVhZjIyY2YwNzMyNTkyYzI0NzE0MWNiZTYxZWZhMTEwMTI2MTJmNWEzMTIyYjlhZjliYmFmNTJmNTcyNGQxOTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4MTE4MzU2NWVmYmFkNTMxMjY0NmJlYTdhMjMzNDEzZjEyZGJiZTk0NGQyY2Y4YmRkZTRjMzczNmM5YTM1N2EiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjUxMjEwZDEwY2FkZDdlNDg1OTVhNzM4NzViYzE0MTYxNjFiOTc0OTMwNDVkM2EzZjQ4YjMyM2EzNjQxYWI2ZDkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImFhMTQzYWEyZWZmNDE0MDE1ZjVkYTE4N2EzYzExZTA5NTVkYjBmNDBmMDVjNWY1NzQ4NzU1ZGM3YjFlZTg0M2YifQ"
+        },
+        {
+          "resource": "repo://feature/user/src/main/java/cn/com/dcsgo/mihx/feature/user/VersionComparisonScreen.kt#L37-L40",
+          "version": "repo-lines-v1:sha256:4ecf76b8527da6684addd2bb3bd4db1281444b728c2b8e0b25c238570416c83b:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYTIzZDA1NmI2ZGJhNzUzYzNiYmJkN2VjZDg5NTUxMTJjMWQ1Y2I2ZTg5YzhkMTk2NzNhZTYwNmFjZDgzOGUxYSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZTc5YjNkZTZiMzUwMzRlMDFkZDQ4Mjg2NDZlZWU4MTk1ZTJlYzgwZmE4MjEyMDIyNTM3YTQwMTdjNjMzYzEzMCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiN2M4ZGUzZGJmNjBlY2ZhMzhlNWQzMTU4OTQ1N2U3ODlkOTBiMzYyODAyNmJhMmY0NWQ2NWNjMzlhZjA5NTU1MSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYmRhZDNhZGE5OTg1MzY5ZDUyNzhmOWE0NDk2YzczNmM5ODI2ODE0ZDUwNzY1NmQ1NWRhZDY3MzIxN2Q0ZThkNyJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_4006bbdf7d0944de832efd41b4e0f65a",
+      "statement": "All audio-spec platform probing is confined to :data/util: AudioTrackSpecExtractor uses MediaExtractor to read the track MIME and channel count (SAF URI first, openAssetFileDescriptor fallback, always release(), returns null on failure), and AudioMetadataExtractor.readTrack combines MediaMetadataRetriever bitrate/MIME with that spec and computes the persisted spatialAudio flag via AudioQualityTier.isSpatial, while readBitDepth reads METADATA_KEY_BITS_PER_SAMPLE only for whitelisted lossless codecs — which is why the M-21 rule keeps these imports out of :core:model and :domain.",
+      "evidence": [
+        {
+          "resource": "repo://buildSrc/src/main/kotlin/cn/com/dcsgo/mihx/verify/ProductArchitectureVerification.kt#L499-L538",
+          "version": "repo-lines-v1:sha256:0b87ae88222855b4278961a9ed6a4c6abb7a332f19748643ca9dbf69e192af89:eyJzZWxlY3RlZExpbmVDb3VudCI6NDAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZhZDc3MDNkNGQzMmIzMTc3M2ZlMjlmYjM1MTgxMDM5YTU2ODMwM2ZlYmY0YmUwOGI3ZDk4MzEyNTI5ZGM5MmEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjQyMTBkOTJkYTBiZDk3Mjg4ODI5MjYxZDBmOGJkMzJlMGNlMTAzZGE4ZGQwMmQxNTZjNDA4Y2U1ZWI5YjJkYTIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjJhMjM5NDExZTI0ODkyZWRmYmY4ZmIyZDYwMTYwYjk1OTVkY2JhYjNmNzg2ZDg2Mzc3OWQzYTE2ZDY4YjVkYmIifQ"
+        },
+        {
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/util/AudioMetadataExtractor.kt#L270-L324",
+          "version": "repo-lines-v1:sha256:ac3ffa19eaf2642b4bfc0217d26aa953944ab03e2eb056af28286a76261a90a9:eyJzZWxlY3RlZExpbmVDb3VudCI6NTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ0NmRlOGU1NWU4OWQxODYzZWQxMjMzMjlhMDVjMjA3MWZhZWFiZWEzYzEyZDM5ZjNiZTg4ZDZhNGRkZjc4ZDgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk5OWJkZWZlZWFjYTYzNDBlMDI5MGRjODZlODg5Yzg5ZDVlMTg5YWE1YmE0NGI1ODViM2I3MDczNGY0YTYyZDgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjI1MWY3ZDgyNjY3Mzc2YmVlZTRkNjc0MzhiODFmOTVhNmJlYmFlZThkNWYyYWM4ZDNiNWVmNGFkYTYxYjk5OWUifQ"
+        },
+        {
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/util/AudioTrackSpecExtractor.kt#L11-L78",
+          "version": "repo-lines-v1:sha256:8439111d50cec08c52149fc60d5c14c23b0d22fde2e3b49dc5da57be7305daee:eyJzZWxlY3RlZExpbmVDb3VudCI6NjgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVhZjIyY2YwNzMyNTkyYzI0NzE0MWNiZTYxZWZhMTEwMTI2MTJmNWEzMTIyYjlhZjliYmFmNTJmNTcyNGQxOTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjQ3ZjUxODI5MDhlYjY0YTIwYWUwMWZlMGEzNTkyZjJmNmU5MjBjNmM1MzFhYmYzNWRkMDk4YmE0NzMyYmJkOTciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_75384fae1ede424eb14a62f7915dea97",
+      "statement": "The audio-spec fields are schema-backed and lazily backfilled: MIGRATION_17_18 adds songs.bitDepth and MIGRATION_18_19 adds bitRateKbps/channelCount/audioCodec/spatialAudio, and existing rows are left at 0/null until the user runs a deep file check, where MusicRepository.refreshMetadata re-reads the metadata and treats changed bit depth/bitrate/channel/codec as a write-worthy change.",
+      "evidence": [
+        {
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/local/migration/MelodyMigrations.kt#L273-L303",
+          "version": "repo-lines-v1:sha256:62ff64b3e8671b748055c73472ac883eeeed1efa4a7b2e2865c5f7789218affc:eyJzZWxlY3RlZExpbmVDb3VudCI6MzEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM5Y2JiYzY1NDY5ZGIxY2EyODQyZWZkOTdkZjdlZTJjZTZjYzE1NzE0ODJkMDFhMThiNzkwYTEwYzdjNTEwZjMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk5OWJkZWZlZWFjYTYzNDBlMDI5MGRjODZlODg5Yzg5ZDVlMTg5YWE1YmE0NGI1ODViM2I3MDczNGY0YTYyZDgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImVlNTE3MGI3N2UxNGNmNjdhN2QzN2Y5NWZkM2ZjNWZjNTkyYjY2YTU4YmNjNzcwNWViNDc1ZTg2OWExZDVmMmMifQ"
+        },
+        {
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/repository/MusicRepository.kt#L960-L1000",
+          "version": "repo-lines-v1:sha256:9521676d6fa07bc37ec09e19b1515c1443c1eeec79c705f445af5dceaf9ead8b:eyJzZWxlY3RlZExpbmVDb3VudCI6NDEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZhZmFlZDZmYzE4OTE5OWYxNTdmNzI0Mjc4NDg4MWVhNDMxOTI2NGY3MDk1NzhhZjlmNGE4YzY3ZmJjNjdkNDMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImJjMGE3MTk0NmE4MTM2MDQwYmM2OTYxOTQ1YTQwZWUxMjkzNzY2YzZlNDY3MzJlYTkxYmJkZDIwMTBhOTkyNWYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImU2Yjk3M2ZjN2YxOWFjMzUzMTA3NzU3MWE2ODcwOTlmYWU3YjUxZDZjYzU3YjViMDU2MGMwZTIzMjc1Y2YxOGMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjIwNjA4YmMxYjk0ZGVlYjJhYWJiY2I4YjQ5NDcyMGI4MWNjMTZmYzFjNjU1YzRiNThhNzZiYTJlZTA3ZmYyZTMifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_8f6c0d654fe54f77884e917708dc5bb3",
+      "statement": "Storage statistics split measurement from thresholds at a module boundary: the :domain MediaStorageStatsRepository contract only measures file bytes, the tier/spatial aggregation is the pure :core:model LocalMusicStorageStats.from, and :feature:player PlayerViewModel.measureLocalSongFileSizes plus :app AppNavHost merely wire the two together, so no feature can drift the quality thresholds.",
+      "evidence": [
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/AppNavHost.kt#L631-L655",
+          "version": "repo-lines-v1:sha256:f69d5d991fc6132c71cdaf808c09545af8687783f65c51ca68f2f926cc921329:eyJzZWxlY3RlZExpbmVDb3VudCI6MjUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQwY2YxZWEwNmMxYzhhMGYzY2MyMjJhMThjZDcwNTFhZGRmMGVhOGUyNjNiZWIwMDBkYjllYjFmMzEzNDdlMjEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU1MDMyZTk2NGQwOTMyMzUxZTVkMTg1MjY5MjgxYjE3MWEzYTA5YjA4YjI4NmU2NjFlYTQ3MDMyM2M4MmViNGQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImRhOWY4NmQyOGU3ODRmOWZkMzFmYjcyZDE1ZjYwY2JjZWFhZmRkNjY5Y2JkNWI2ZGE3ODg4YTAyMzMyMWViYjkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjMxZTU2NjQ1M2ZlMzI2NzY0YTQ0N2I3ZjU5ODJmOGJlMDEzZjdhOTFlZTNhNDc0ZjExN2NhYzE1M2I3N2M0NDYifQ"
+        },
+        {
+          "resource": "repo://core/model/src/main/java/cn/com/dcsgo/mihx/core/model/LocalMusicStorageStats.kt#L11-L88",
+          "version": "repo-lines-v1:sha256:a7613ee675c2d2d42b52c7bb0614e07abcdcc918c61e783592dd7684d32c644d:eyJzZWxlY3RlZExpbmVDb3VudCI6NzgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVhZjIyY2YwNzMyNTkyYzI0NzE0MWNiZTYxZWZhMTEwMTI2MTJmNWEzMTIyYjlhZjliYmFmNTJmNTcyNGQxOTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImEzYmMyMjM2N2NlYmQyMzhiMjI5NjRlMDcyMzA3NDU1MTg4OTQ4ODQ1YmFjM2IxYzdhZTM2MDhmMDc4M2IwZTkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        },
+        {
+          "resource": "repo://domain/src/main/java/cn/com/dcsgo/mihx/domain/repository/MediaStorageStatsRepository.kt#L5-L18",
+          "version": "repo-lines-v1:sha256:0739a2173455f51fd457180505b05eab0ecee530b1ebd1fe0ab50b8b8653249a:eyJzZWxlY3RlZExpbmVDb3VudCI6MTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVhZjIyY2YwNzMyNTkyYzI0NzE0MWNiZTYxZWZhMTEwMTI2MTJmNWEzMTIyYjlhZjliYmFmNTJmNTcyNGQxOTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQ0NWZiOGEzZDRiODIxN2M0NDUzOWJiYTY3MDRmNDc0NGEzODkxZDRjNDUyOTVmYTEzZGE1MmFkZDcxNjYwMDEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerViewModel.kt#L226-L233",
+          "version": "repo-lines-v1:sha256:a2c519e342dcb7b6dd46a29dbb1cb7ee5cdc8cec75a0e16fc511a32cd688b592:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMzljYmJjNjU0NjlkYjFjYTI4NDJlZmQ5N2RmN2VlMmNlNmNjMTU3MTQ4MmQwMWExOGI3OTBhMTBjN2M1MTBmMyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNjM0YzY5ODJjZjlhYmNlMzZhODk1NTQ3ZjMwNTQyMTE0YjcyZGJiY2RkNWUwZmFlNDZhYmJmZTIyNWY2NDg0MSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYzQ1MjhmZGU5NmE2MDQwZGU2N2Q5ZjQ4MGY3MTI2NGQ5YmFjNWVlNzBlNTE4ODUxMWY0ZmFjYjA2YTJlZmY2NCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZWRiZjE3YjQ2YzMxMmE0ZDkyZjg5MTZhMTViODVmMjgwZTk4NGJjMjM0NzA3M2RkODkwM2E3YTk1ZTJlZjY4NiJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_1397c66831374ef4b1d4ffc34bf4f14f",
+      "statement": "The gate also enforces three source-level invariants: no runBlocking under any src/main (comment lines exempt, so historical notes do not trip it), no bare loadSongInfo( call in src/main except inside :core:ui's SongInfoLoader.kt (the loadSongInfoSafely implementation, whose uncaught Room exception used to crash the process), and at least one real PerformanceTrace.allow( call site in src/main — registered for the four playback operations in MelodyApplication.onCreate().",
+      "evidence": [
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/MelodyApplication.kt#L18-L30",
+          "version": "repo-lines-v1:sha256:ab80f151dec6b6d0386fc65470ca884b3cd06739a23c58e4b097cc6cc8e8b29b:eyJzZWxlY3RlZExpbmVDb3VudCI6MTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY2YTcxM2FjMjcwNTczNzkxNDdhNDEyZGI4YTRmMGVkNTRjOWJkNTdkZDYyYzE2ZjcyYmYwMGNhNzkyNjJlMzEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImYxZGJmOTQwZDBhMzVlZDY4ZGQwM2NjNDYzODg4Y2IxYzNlODUzMmEwMWU3OGNmODFmYWU2NGUwMjQwMWY5YzciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijk1NDJjZTFiMTViZWI0YTVmMDUzYzU0NTEzN2NiY2JjMmZjODgzODg4YzY2MGUyMGEyMzJiM2Q5YmY3YzEwOGUifQ"
+        },
+        {
+          "resource": "repo://buildSrc/src/main/kotlin/cn/com/dcsgo/mihx/verify/ProductArchitectureVerification.kt#L550-L623",
+          "version": "repo-lines-v1:sha256:d7c13fb503d626125e4a9bf04fbfe933e5a551481739ccf3d5755ad5e447e55e:eyJzZWxlY3RlZExpbmVDb3VudCI6NzQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijc0MmEwMGJhYTk3Yzc3NTZiOWQ2NzVkN2MyZGZlMTEzZWE1NjRmOGI4M2JkN2VjNGQ4YjkzMDU3NzEwZjM0YjQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjAzODVlYWY1NDRhZGUzZTY3M2M0NmMwZmNkMjlhZjFjOTBjNGYxNjc4MjEwYWMxYTViZWEwNjg1NGJjMTkzZjkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjBmMzc0ODdjY2E2NzBhZDc4YzhlYTI4MDc2MjhkYWU1MzQxNDRkMGEyZjgxYjM4MjliYjUyYmVlM2Q4OTM3OGYifQ"
+        },
+        {
+          "resource": "repo://buildSrc/src/test/kotlin/cn/com/dcsgo/mihx/verify/ProductArchitectureVerificationTest.kt#L67-L127",
+          "version": "repo-lines-v1:sha256:2eeac1ff8e3ecddd8c6bca72b92ae82f84ce4671b452e369ddeb2ce0b13566c9:eyJzZWxlY3RlZExpbmVDb3VudCI6NjEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRjZjA5ZWIwYzU3NDRmYjk3MzMxYjk4ZmYzZmJmMDVhNjAyYmEzZjdmNjdlNWRhNWJlOTA5NTAzM2Y2MjU4MjUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImZmMGQ3NTk1MGRmMGZmOWEzZWU5NjYzOWRjYzhmZjVlYWVkYjQwZDY4MmJlYTkyNjIyYjUyMGRkODg3ZDkzZTkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImFiOTY4YzM2NDFjOTZmOTI2ODBmNjkxOTMxYThlMjBiYWRjY2I4NGVmY2ZiZWRmODA0ODkxNGIzNjAzYWI5MzQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_9b0f05d6d0b549d99b282f1f6269473f",
+      "statement": ":core:model must stay resource-free: the gate fails on any XML under core/model/src/main/res and on any R.drawable/R.string/R.color/R.dimen/R.raw or android.R reference in its sources, so icons and drawable mappings stay in :core:ui (for example the AudioSpecBadges/SpatialAudioIcon components) or in the owning feature.",
+      "evidence": [
+        {
+          "resource": "repo://buildSrc/src/main/kotlin/cn/com/dcsgo/mihx/verify/ProductArchitectureVerification.kt#L477-L497",
+          "version": "repo-lines-v1:sha256:ee3253e4157e5cbe6eac57107c5c54935d2f43ff383e2d6e2055a4b1c4d0bdf7:eyJzZWxlY3RlZExpbmVDb3VudCI6MjEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxYmQ2NTcyNTI3OThhNjg3NTlmMzIzYWUxZmIwNjQ5Y2FlOGUyMWQ5NTdjM2ZjYzFiODY4N2RhZTlkYjhmMWEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImNmNWIyOGZmNzFmNDJjNTUxMjQ3YzNiYzhiNWJlNTRjMThiMDk3N2IxNGExNjY4OGRlMjQzMzAwYTQ1NWRjZmUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjFlY2MyN2ZlYjE1NDQ0ODZjNmJmYTAzOTg3YTUxYWE0NjkxNDdjOWE4ODc4NTI4NjI0NWY3YjU5NjNlNTI5MTUifQ"
+        },
+        {
+          "resource": "repo://core/ui/src/main/java/cn/com/dcsgo/mihx/ui/components/AudioSpecBadges.kt#L31-L60",
+          "version": "repo-lines-v1:sha256:e8c2ec145dd35b2541c2cdabaee1f3d534d74849cbe3d4764f6e51f1200cd2d2:eyJzZWxlY3RlZExpbmVDb3VudCI6MzAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjJlOGQ5NzlhM2JiNjU4M2YyOWJhYmZlZmJlNGM4YjUwMGMxMDcxOWJjOTc4ODgwNzYyMTlhYWY3NTUzZDAzOGIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImY4MGE2Y2YzODI3NGNjMGZkY2FiYjRiNDJkOTY4NjczYzE4NDIwYmVhNjM1NWQwZGQ0NjVkMTkxZDkzZjQxMWEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImNhZmZlZWFiOGE0N2E4M2MyYWYxNDdlOWFmMTBhMDUxZjEyM2I3ZTEyMGU3ZDk5NTJlYjZiMTA1YzYxYTJhNzkifQ"
+        }
+      ]
     }
   ],
   "verification": {
     "by": "openwiki/0.5.0",
-    "at": "2026-10-27T08:49:20.803Z"
+    "at": "2026-11-20T09:49:41.934Z"
   }
 }

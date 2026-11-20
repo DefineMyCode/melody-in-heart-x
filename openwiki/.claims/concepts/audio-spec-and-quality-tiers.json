@@ -1,0 +1,274 @@
+{
+  "schemaVersion": 1,
+  "pageVersion": "sha256:3a7eee97e4f0535fafe957c5f7ace1d0b704b96fc8fe84e8e2d27f62e2e76e62",
+  "claims": [
+    {
+      "id": "claim_f8be0afb2fa54ba38395f0c64a23a5b4",
+      "statement": "AudioQualityTier.classify grades lossy codecs by bitrate alone: >=320 kbps is VERY_HIGH, >=192 HIGH, >0 STANDARD, and 0 UNKNOWN; lossless codecs are graded by bit depth and sample rate instead.",
+      "evidence": [
+        {
+          "resource": "repo://core/model/src/main/java/cn/com/dcsgo/mihx/core/model/AudioQualityTier.kt#L69-L93",
+          "version": "repo-lines-v1:sha256:2fdf908ee017dd74056bc925dbff6e7afde15f0f1aadf22945a899075422fd6a:eyJzZWxlY3RlZExpbmVDb3VudCI6MjUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI3MWVhNTcwMGQ0ZDlhZTk3NDYxNjk4MzAzYjZiMjQ2MmFhNDc0OTQ0NDUwZmU0ODU2ZTc5YmM0ODVmMmZmYWMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImEwNjhmY2FlNDk0ZjI1MTRlOTM4ODBhMDRlNTU2YWEwZjlhYTI5OWM3NWUyYTQyZDc0YzA1NDBjODNkMTU4NDkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoyLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjM3OTRkMDJhODEyMTk0NGQxNzZkMjY1ZTliYjljYzU5ZjZhYjg5MGJjYWRmOGFlZmRlYmRiYmI0ZjJlYTg0NDQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_8b71e840982c4adea4f775bce173d6a1",
+      "statement": "For lossless codecs, classify returns HI_RES when bitDepth >= 24 and sampleRate >= 48000, LOSSLESS when bitDepth >= 16 and sampleRate >= 44100 (or when bitDepth is 0 but sampleRate >= 44100), and UNKNOWN otherwise; DSD MIMEs (audio/dsd, audio/x-dsd) short-circuit to HI_RES regardless of depth or sample rate.",
+      "evidence": [
+        {
+          "resource": "repo://core/model/src/main/java/cn/com/dcsgo/mihx/core/model/AudioQualityTier.kt#L69-L93",
+          "version": "repo-lines-v1:sha256:2fdf908ee017dd74056bc925dbff6e7afde15f0f1aadf22945a899075422fd6a:eyJzZWxlY3RlZExpbmVDb3VudCI6MjUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI3MWVhNTcwMGQ0ZDlhZTk3NDYxNjk4MzAzYjZiMjQ2MmFhNDc0OTQ0NDUwZmU0ODU2ZTc5YmM0ODVmMmZmYWMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImEwNjhmY2FlNDk0ZjI1MTRlOTM4ODBhMDRlNTU2YWEwZjlhYTI5OWM3NWUyYTQyZDc0YzA1NDBjODNkMTU4NDkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoyLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjM3OTRkMDJhODEyMTk0NGQxNzZkMjY1ZTliYjljYzU5ZjZhYjg5MGJjYWRmOGFlZmRlYmRiYmI0ZjJlYTg0NDQifQ"
+        },
+        {
+          "resource": "repo://core/model/src/test/java/cn/com/dcsgo/mihx/core/model/AudioQualityTierTest.kt#L21-L34",
+          "version": "repo-lines-v1:sha256:0efcde2ca4c6e699bc04f97e64e99c3a807aceca7d61e6d747b960bcfefcbcff:eyJzZWxlY3RlZExpbmVDb3VudCI6MTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRjZjA5ZWIwYzU3NDRmYjk3MzMxYjk4ZmYzZmJmMDVhNjAyYmEzZjdmNjdlNWRhNWJlOTA5NTAzM2Y2MjU4MjUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjRlZTdlMTIxM2MwMGJiMjc0OTFmYmIyN2JmNjI5OGQ0NDBjZGRhZmNmMjY4N2U5ZTkwYzc0NzAzNTJmNjAxODMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjZlMDg0NzZkNGQyYTkyNDcyZDVmMTRkYjcwMjA3NmYxZmI5NTY0MzJhZjFiZDBlNzM1ZTUyMTQ2YTI2NjUxM2QifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_f6af5d1d8d844e55aec5a2afcb1ac3f1",
+      "statement": "Losslessness is decided by a fixed MIME allow-list (audio/flac, x-flac, alac, x-alac, raw, wav, x-wav, aiff, x-aiff, ape, x-ape, dsd, x-dsd) exposed as AudioQualityTier.isLossless, not by file extension or container.",
+      "evidence": [
+        {
+          "resource": "repo://core/model/src/main/java/cn/com/dcsgo/mihx/core/model/AudioQualityTier.kt#L22-L41",
+          "version": "repo-lines-v1:sha256:f29a80ba8a41bdcc1334ac75a06ba24510d18cbc566a3d0a4a217f567ad9aa59:eyJzZWxlY3RlZExpbmVDb3VudCI6MjAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImUxZmJmZjFiYzRkYTQ0NDY2ZWJjMzM5OGNlNWM2Y2UyNWIxMTk5NzMzNzg0MmM1YmFjY2Q5YjYxZDM0MmQ0YWQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjMyMzc5MzU2M2Q0OGNmZDcwYjI4NmIyOWY2MGM1ODc2MzZhODBhMmIzZTliY2FiZjU4OTljOGI5ZmQ3MTg4YWIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjgwNDdiYzgxMDdmMTE1N2Q0Y2E3NGQ2NTU1YzQ5YTc3MDZhYjc3MzNkOTNiODc0OGM0YTQ1M2RhZGNiNDliNjUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjljZTQzY2U0ZjIyNTM5NjE1NmU3ZDhmZjQwYTU1MjM2NmU3YTYxZmU0MDUwYzBjYTQzNWFmNDdlMThiOWI3YTMifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_cd8284d26ee1438f99876b61785664d6",
+      "statement": "AudioQualityTier.isSpatial treats audio/eac3-joc as spatial at any channel count, audio/ac4 as spatial only when channelCount > 2, and never treats plain audio/eac3 or audio/ec+3 as spatial; the check is recognition/display only and parses no AC-4 object metadata.",
+      "evidence": [
+        {
+          "resource": "repo://core/model/src/main/java/cn/com/dcsgo/mihx/core/model/AudioQualityTier.kt#L43-L61",
+          "version": "repo-lines-v1:sha256:845cd177974368dad49a0950d1ff4d9e4c0e59649876de04663671499811003d:eyJzZWxlY3RlZExpbmVDb3VudCI6MTksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAwNjhlNjlkNmVmODY4ZGRmZGY5ZmY4N2E5NTY2YzdiMTVjMmE0ODhiYzQxNDM2NmE4ZjYwMTJjY2EyNDQ2ZGUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQ1MDQ3ODFiZjE3N2EyNmZlZDEyYjE0MmNhZjM1MjYwZjJjYTdmYjhiYTczZWMyOTc2YWU5NGExOWY1NTA2ZjUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUyNDE2OGFkY2RhNWRiMTUzN2I1MzE2MTMyNzRmMDlmMzJhMmMyZGM3ZDBmMzljY2ZiY2U0NTQwYWIyYzM0MGMifQ"
+        },
+        {
+          "resource": "repo://core/model/src/test/java/cn/com/dcsgo/mihx/core/model/AudioQualityTierTest.kt#L36-L48",
+          "version": "repo-lines-v1:sha256:9fa00a2a84c93814ca867c4587cb1d1d644ecbf11d5be153981f99c00862a715:eyJzZWxlY3RlZExpbmVDb3VudCI6MTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRjZjA5ZWIwYzU3NDRmYjk3MzMxYjk4ZmYzZmJmMDVhNjAyYmEzZjdmNjdlNWRhNWJlOTA5NTAzM2Y2MjU4MjUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImNjNGNkMGQ0ODdhODBhMmQyODBjNWEwZmU0ODgxNjYyZjg2OTcxYzQ3OTMxZmU5Mjg0NDM2ZDIyMzA4M2U5OWEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImU4MWI2ZDQ3NmFlNTE4OTllMjhjN2M3ZDI2NjlhYTIzYTNiYTc3MmVhMTBiODgxMjlmYjlmZTQ0MjQ5YjM3OTgifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_20809bd86f3b4493905460d720e2c759",
+      "statement": "Song persists the raw specs (sampleRate, bitDepth, bitRateKbps, channelCount, audioCodec, spatialAudio) with 0/\"\"/false unknown sentinels, computes qualityTier on demand via AudioQualityTier.classify, and maps UNKNOWN to an empty qualityLabel so UI shows no label rather than guessing.",
+      "evidence": [
+        {
+          "resource": "repo://core/model/src/main/java/cn/com/dcsgo/mihx/core/model/Song.kt#L27-L74",
+          "version": "repo-lines-v1:sha256:eff06f1b6ead08cdeba93eed53e2f333995ca16850f8c8d6930e873596ab29cd:eyJzZWxlY3RlZExpbmVDb3VudCI6NDgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQ3YzM4YzRlZWQ5MDAxNDY1YTdmYjQ4ZDJhOGVmMWY1YzNhYmFhOWE3YmJkOTMxODZlYjc4MzhkNTVkN2JiMTMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjhjZGRhZDQxZGEyOGUzNDkyMWRlMmRjODcyZWRjMGFiYTYyM2RmY2NkYjk1NDc2ODBhNjI4Nzk5ZjBjYmI3NzEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImVkNWE3MmQyYmE5ODQ3MzVkMjBjNmYwYWVkYjQ2MzUwMjQwNDE2MTkzYjM2NDY1NTQzMTgyYjdkZWQzYjY0MTAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjEwYjdhMDY0YTQ3NzMyZmE4NzQ3MmVkMDk3ZmJmZWVkM2MxOWViNmRiNDVmNzIzZmU4ZjE4Njg1YzFjNzliOWYifQ"
+        },
+        {
+          "resource": "repo://core/model/src/test/java/cn/com/dcsgo/mihx/core/model/AudioQualityTierTest.kt#L50-L65",
+          "version": "repo-lines-v1:sha256:ccace125632f444a880c54c772d6c55a9243867b143faedc6e1f615ad97a6060:eyJzZWxlY3RlZExpbmVDb3VudCI6MTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRjZjA5ZWIwYzU3NDRmYjk3MzMxYjk4ZmYzZmJmMDVhNjAyYmEzZjdmNjdlNWRhNWJlOTA5NTAzM2Y2MjU4MjUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjA1YjQxN2I5MzMyOWU1M2FlNjM4MTRiN2YzMjVmMGU0YzVhOGFhODJjNzE2ODI2ZjUyYmRkOWFlNTQ2YmQ2NWYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_268d64bd3924406db5fba89695232e20",
+      "statement": "SongInfo carries the dialog's already-formatted spec strings (bitRate, sampleRate, bitDepth, quality, codec, channelCount) plus the spatialAudio boolean, so an UNKNOWN tier arrives at the dialog as an empty quality string.",
+      "evidence": [
+        {
+          "resource": "repo://core/model/src/main/java/cn/com/dcsgo/mihx/core/model/SongInfo.kt#L8-L31",
+          "version": "repo-lines-v1:sha256:835840c70bf8de74390eb2734fa5ca571265f07c834425127e94a44bfc30e667:eyJzZWxlY3RlZExpbmVDb3VudCI6MjQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjE0OWMyZjJjODlhOTIxMjk0NDEwMTE5ZmM5YjFjZjRkZTZjZGE4ZDc0YTg2OWZjZjZjNjgyYzZlODA2MDY2NzUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZhZmJhMDUyN2MzOTUzYzRiNmUwZTViNTczOWJhODM2MTJmODA1M2JjZGM5NDY2NzMwMTkzY2QxZDU5MGI0MDgiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjRhODk0NGNlOWIxZDA1ZDZjMzAyNzFjNTQzN2YxOWIzN2RmZWI3ZmUyY2Y2Mjg1NTIzMzIzM2E5ZDliZjljNGQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/util/AudioMetadataExtractor.kt#L239-L261",
+          "version": "repo-lines-v1:sha256:2c55c07dbdd9d6cd790e594963cd6b121584559b30a9aa192299f9a1e5c65b67:eyJzZWxlY3RlZExpbmVDb3VudCI6MjMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZlMGE0YTBiNTg3MGEwYTU1OGFhNjMyMmJmMWQ2MDUzZjFlYWE0ODllOTRhNjFhYzFlN2I3ZDIwOGZkZTJiN2EiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU1MDMyZTk2NGQwOTMyMzUxZTVkMTg1MjY5MjgxYjE3MWEzYTA5YjA4YjI4NmU2NjFlYTQ3MDMyM2M4MmViNGQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImE3ODk1NWNkOGEwNzlkNTcxYmE3ZWJiZjQ0ZDQxZGM0NTAxNTNjNjJhZWQ3OTAzNjE0OWRkYjI2ZGVhMTJhOGIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjUzYzM0NGNlMjI2MGRlMGI0NDVjMTQ3ODliMTI0YWIxMmU3ZWMxYjgwNWQ0MWYxNjEwNmYwOTk1MDk2OTAzY2IifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_bdae2cc48a714bdeaac33ce15a0a85ef",
+      "statement": "MediaMetadataRetriever supplies bitrate (bps divided by 1000), MIME as a fallback when it starts with audio/, sample rate and bit depth; bit depth is read only when the MIME is lossless, so a lossy codec's decoded bit depth is never surfaced.",
+      "evidence": [
+        {
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/util/AudioMetadataExtractor.kt#L283-L324",
+          "version": "repo-lines-v1:sha256:7cd7e8d678c41cfa7ccd7b643fb33e6e267c315eb27c7fa447ece9a53e87b5fc:eyJzZWxlY3RlZExpbmVDb3VudCI6NDIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZjZTIyYzRmMDY3NjUwZjM0NDA4NjNhY2FmZjljZjQxNWUyMzY0NGMzYzEyNWJiNWQ0NzEzOWYxMTY2YWJkNTEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjA1NTg4YjlkZDNhM2M4MmUxYzI3NjRiOWM3YTRkZTc5YzVjYjliZjdkYWM1ZDdhZTZlOWQ5NmI0OTA5ZDkwZTYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjI1MWY3ZDgyNjY3Mzc2YmVlZTRkNjc0MzhiODFmOTVhNmJlYmFlZThkNWYyYWM4ZDNiNWVmNGFkYTYxYjk5OWUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_3646b1971621442c86c2c60cf0aa9335",
+      "statement": "AudioTrackSpecExtractor uses MediaExtractor to supply the channel count MMR cannot provide, picking the first audio/ track, clamping channels to 1..64, falling back from URI to file descriptor data sources, and returning null silently on failure.",
+      "evidence": [
+        {
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/util/AudioMetadataExtractor.kt#L270-L306",
+          "version": "repo-lines-v1:sha256:068d8730c597ca6a6220ea213581490a45408cece171ad2d3e241817af0f26d3:eyJzZWxlY3RlZExpbmVDb3VudCI6MzcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ0NmRlOGU1NWU4OWQxODYzZWQxMjMzMjlhMDVjMjA3MWZhZWFiZWEzYzEyZDM5ZjNiZTg4ZDZhNGRkZjc4ZDgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk5OWJkZWZlZWFjYTYzNDBlMDI5MGRjODZlODg5Yzg5ZDVlMTg5YWE1YmE0NGI1ODViM2I3MDczNGY0YTYyZDgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjBlOTMyOTlkMGI5ODgyOWY0NzQ4ZjYxYzVjYTE0MTA1YWI1MDAzODliMTNjMjIzOTIwNzJiNGNkM2U4NjU1MzQifQ"
+        },
+        {
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/util/AudioTrackSpecExtractor.kt#L11-L78",
+          "version": "repo-lines-v1:sha256:8439111d50cec08c52149fc60d5c14c23b0d22fde2e3b49dc5da57be7305daee:eyJzZWxlY3RlZExpbmVDb3VudCI6NjgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVhZjIyY2YwNzMyNTkyYzI0NzE0MWNiZTYxZWZhMTEwMTI2MTJmNWEzMTIyYjlhZjliYmFmNTJmNTcyNGQxOTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjQ3ZjUxODI5MDhlYjY0YTIwYWUwMWZlMGEzNTkyZjJmNmU5MjBjNmM1MzFhYmYzNWRkMDk4YmE0NzMyYmJkOTciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_3689905ee96b4ac99e1195a1d6a13212",
+      "statement": "Folder import persists the full spec set immediately: addFolder builds each Song from ExtractedMetadata including bitDepth, bitRateKbps, channelCount, audioCodec and spatialAudio, with no deferred grading step.",
+      "evidence": [
+        {
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/repository/MusicRepository.kt#L521-L557",
+          "version": "repo-lines-v1:sha256:8ad25fbfaa0750e5177ddf4daa3d21cedfcc53b75bb7570ecf03282ce0498cfb:eyJzZWxlY3RlZExpbmVDb3VudCI6MzcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijc3YjI2NzU0MWRlZTBkMDk2NGMzNTc1YTVjZTc1MThmYjFmYzA1NWYzMmRlZjA1YWVhNzRkYThkMTAxMTkzNzUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQwMDEwNWUwYTY4NTIxYzNkMzMyNjE1MzkwZTg1OWUzOWNmMjQxMjc0YTdkNzgxZDE5NmEzYWRhMDdiMTBmZDciLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjhiMzljMTU5MjNlOWIyNGI0MzYzZDhlMzAxMzcxMjQ1MGY1OTRlMTliZGQyNmU4ODRiMjJkMDMyZWVhOTkyYjMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImNiNzdjMzlhMjY3OGI0MjFiMjY1NjA4NzhmOGIxYjMzMDMwMDJjZGU5MWQxYjAyZGIzOTI2ZDNiZTJmZTAyOWYifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_11c09c3a4bc440ea8fb69e726901ea29",
+      "statement": "Rows imported before v18/v19 migrate to bitDepth=0, bitRateKbps=0, channelCount=0, audioCodec=NULL and spatialAudio=false; the only backfill path is a user-triggered DEEP file check (QUICK only re-reads songs whose size:mtime fingerprint changed), which re-extracts and writes the specs back.",
+      "evidence": [
+        {
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/local/migration/MelodyMigrations.kt#L273-L303",
+          "version": "repo-lines-v1:sha256:62ff64b3e8671b748055c73472ac883eeeed1efa4a7b2e2865c5f7789218affc:eyJzZWxlY3RlZExpbmVDb3VudCI6MzEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM5Y2JiYzY1NDY5ZGIxY2EyODQyZWZkOTdkZjdlZTJjZTZjYzE1NzE0ODJkMDFhMThiNzkwYTEwYzdjNTEwZjMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk5OWJkZWZlZWFjYTYzNDBlMDI5MGRjODZlODg5Yzg5ZDVlMTg5YWE1YmE0NGI1ODViM2I3MDczNGY0YTYyZDgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImVlNTE3MGI3N2UxNGNmNjdhN2QzN2Y5NWZkM2ZjNWZjNTkyYjY2YTU4YmNjNzcwNWViNDc1ZTg2OWExZDVmMmMifQ"
+        },
+        {
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/repository/MusicRepository.kt#L794-L875",
+          "version": "repo-lines-v1:sha256:10b6bd64896b7dedb8280f549cd13f051d2c6e3d8b40f2fe2da69869752033c0:eyJzZWxlY3RlZExpbmVDb3VudCI6ODIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM5Y2JiYzY1NDY5ZGIxY2EyODQyZWZkOTdkZjdlZTJjZTZjYzE1NzE0ODJkMDFhMThiNzkwYTEwYzdjNTEwZjMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImY1ODNiYzRkMDhkZWY3ODBiYzQzMGE3MjIyNDA5MmFmMDY4ZjFhNzI3NjIxZDczZmQ3YTRmOWM3N2U2MGExZTAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjY4YzE5OWIyZjZhN2QxZDNiYjhkMzBjZWM4NGFhYTRhNTQ0MTQ5ZDViYWFkNzYyNjdjNzgwOGQxMjlhNzYwYWEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_07f9cd88f2924c0db3625875305679a2",
+      "statement": "refreshMetadata guards its change detection and its write-back with non-zero/non-blank checks, so an extraction failure cannot erase a known spec, and spatialAudio keeps its previous value whenever the codec could not be read.",
+      "evidence": [
+        {
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/repository/MusicRepository.kt#L986-L1075",
+          "version": "repo-lines-v1:sha256:d5a5981ed7bf3d4c94d0de93d10091353ca4a3b782c06aec97cc0d07fc6d77f1:eyJzZWxlY3RlZExpbmVDb3VudCI6OTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAwODU0NTlhOTNhZDAwMjIxNjI3YzNjMmFmOWIzZjM0NWQ5YWUwNjVjYzE1ZmEyYzliNDk2NmU0YjM1MzYxMTUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjE2NmZjMTY5MDUyODA2Y2I4YjQzODNlMDg5NjJlZDFlN2JjNmI5ODNhODU4MGZjNjUzZjk4M2RhOGQzN2U3NzEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImQwZjRkZjRhZjY0ZTgzYzQ1ZDk4YTAwYmU1OTJmNDg2MjYwY2Q5YzY2ZTAzZDM2YzNhZTA4ZTg1ODc0MjgzZmEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_18958ea74b5e42bcbbcb3405104d1b3c",
+      "statement": "The song information dialog always reads the file live: MediaMetadataRepository.songInfo calls AudioMetadataExtractor.extractFullMetadata on the URI for every open, so persisted stale rows never affect the dialog's displayed specs.",
+      "evidence": [
+        {
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/repository/MediaMetadataRepository.kt#L30-L35",
+          "version": "repo-lines-v1:sha256:b4e3cea7814bb04c8bcef59db87fb288431b8df70094226af042d81f9d307b4f:eyJzZWxlY3RlZExpbmVDb3VudCI6NiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZWY0ZDViMzgxOGJiMDFhZjBkYjcwZGIxZGYyOGNlZjJlYzUyZTdiNzE3MmIzYzUyYWU1MTBiMzBhODJmN2U4MiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDg5M2Y0MGUzNzgxZWI4OTZjODJkMDQ2YTA4MDY3YTExZTM1Y2RmMmYxZGZhZjI2ZmVhOTBiOGRiNjY3NjQxMyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiODFjMGFhMmQ3YWRmYWJmZDk5NWM2OTBhN2UyOGM1ZmI2NDQwY2NiZWE4ZmY3ZTg4YWY1MGMyYjZhOGE0ZThkMiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZDQzYTY4YTE3ZmQ2ZjJhMTEyMDRjNDgwNjUzMjA1NTgzYzFmMWFlN2RiNGM2MjIzZmQwODVhOTdmYjM2MmE0MCJ9"
+        },
+        {
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/util/AudioMetadataExtractor.kt#L210-L268",
+          "version": "repo-lines-v1:sha256:5fbac2c6e4952bd5aaf7fc40c0a61277ed6f7112f6067e8cbdc5cb6ff40121ed:eyJzZWxlY3RlZExpbmVDb3VudCI6NTksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM5Y2JiYzY1NDY5ZGIxY2EyODQyZWZkOTdkZjdlZTJjZTZjYzE1NzE0ODJkMDFhMThiNzkwYTEwYzdjNTEwZjMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk5OWJkZWZlZWFjYTYzNDBlMDI5MGRjODZlODg5Yzg5ZDVlMTg5YWE1YmE0NGI1ODViM2I3MDczNGY0YTYyZDgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjhlOTc5OWY0YTYyZmIxYmZiYzUxMjUxZTM1NGVhNmMwMmUxZThjOGE0OWZhMjJmOGIxN2M3YzExYmI1ZjA0ZjgifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_5884296a5a354ff6a8081adce7f5d8f2",
+      "statement": "AudioSpecBadges renders a compact qualityLabel pill plus a 14dp SpatialAudioIcon in list rows and returns early with no layout when the label is empty and the flag is false, so unsupported songs consume zero space.",
+      "evidence": [
+        {
+          "resource": "repo://core/ui/src/main/java/cn/com/dcsgo/mihx/ui/components/AudioSpecBadges.kt#L23-L79",
+          "version": "repo-lines-v1:sha256:f065a4276d9d7b0cbfaccad7064086e8a3154ff26027a9dab3b048627957217a:eyJzZWxlY3RlZExpbmVDb3VudCI6NTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVhZjIyY2YwNzMyNTkyYzI0NzE0MWNiZTYxZWZhMTEwMTI2MTJmNWEzMTIyYjlhZjliYmFmNTJmNTcyNGQxOTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImVhODA1MTgxZjJkNzYyMTljM2U2ZTJkODRkNTNlNmQ4OTdmNTUxMTJiMGQwM2QxNjJkZWNlMDI1MzdiYWE5NzEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://core/ui/src/main/java/cn/com/dcsgo/mihx/ui/components/SongListItem.kt#L103-L123",
+          "version": "repo-lines-v1:sha256:87f6cd8f582f7714f2933f9da9e0b79fb148c60b34aec8a1ba50e21e764a4095:eyJzZWxlY3RlZExpbmVDb3VudCI6MjEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjJkMDg3MzE5NmQ1ZmQ1Yjk5YzhhNjVjYWZhZGNiNjE4MWQxYTA5YmJhN2NlNzUwZWNhNTljYjRkZDhiZTVlMDkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijg4NzU1NDk5ZDUxOTY2OWM4NjM4ZTBhN2FkNTNjNmVkYmI1ZWQwMTk0MGRkYmNiMWFjYjgwYzY3ZDFkZDdhZDgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjVkY2U5ZDA1NjA4MmUxZTM5ZGQ5ZDk4ODlhZmNkMGM2MmNlODYwNWM1OTQyMmZiODc1NjU2OTUxMWM3ZjgzZjgifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_4043b10f8b2c409bbe386a2d2719d8bb",
+      "statement": "The home Hi-Res badge is gated strictly on song.qualityTier == HI_RES (so it can never disagree with the list pill) and exposes a content description built from sample rate and optional bit depth, pinned by HomeScreenComposeTest as 'Hi-Res 音频（96kHz / 24bit）'.",
+      "evidence": [
+        {
+          "resource": "repo://app/src/androidTest/java/cn/com/dcsgo/mihx/HomeScreenComposeTest.kt#L47-L88",
+          "version": "repo-lines-v1:sha256:dbbe9f4287e7fc7716cd20f0cb9aa06eef9d764d9a8d3e6efbcfa8e15aa0f35d:eyJzZWxlY3RlZExpbmVDb3VudCI6NDIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRjZjA5ZWIwYzU3NDRmYjk3MzMxYjk4ZmYzZmJmMDVhNjAyYmEzZjdmNjdlNWRhNWJlOTA5NTAzM2Y2MjU4MjUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImU2NDk1OWI0M2M5YjE0YTIwMjVmM2ExMWYyYmMyYmFiNDVmZGMzMmRkZTJmMGQ4YmUzMjIxZDdhYmRkYmZlZmQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        },
+        {
+          "resource": "repo://feature/home/src/main/java/cn/com/dcsgo/mihx/feature/home/HomeComponents.kt#L215-L245",
+          "version": "repo-lines-v1:sha256:7aba18310490ed11619130bf31d820f0394934b0ec0609c5f3915f1c380f1499:eyJzZWxlY3RlZExpbmVDb3VudCI6MzEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVhZjIyY2YwNzMyNTkyYzI0NzE0MWNiZTYxZWZhMTEwMTI2MTJmNWEzMTIyYjlhZjliYmFmNTJmNTcyNGQxOTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjE5ZTc2MzU1Y2YxMTk5NDgwYzNmOTk4MzZiMTQ4NmM4NDFkODkxZmFhZDkwNGM2MDhlMDkzMDIyZDM3NTdhZWUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://feature/home/src/main/java/cn/com/dcsgo/mihx/feature/home/HomeScreen.kt#L196-L202",
+          "version": "repo-lines-v1:sha256:8c7eaa75b15812f9d0f3d916cb0bc520bfe33d1657dd69e28708d2e1a96cda3e:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMTBhN2ZhYTk5ZWE2OTIxN2UzZGIzZWViMTVlOGVmYTRhOGYxNDNmNDZiNWU1NmM0MjVjMDE3OWMyYzQ0N2JjMyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNTUwMzJlOTY0ZDA5MzIzNTFlNWQxODUyNjkyODFiMTcxYTNhMDliMDhiMjg2ZTY2MWVhNDcwMzIzYzgyZWI0ZCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMTc2MWJmNGJlMWIxZmM5Mzk0MTJkN2I2OGFjZWRmZTI2M2MxY2JjMjIyMzEyMTJkZjM5MDljNzIyOWNkMTZlYyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNTRiOTdmOTZhMmVkZTk4ODU0YWJhZDkzODhiNzBlNjljMTc3ZTg3YmZlMDU3OWQ0ZTRlM2RjZWQzNGMwMzNiYiJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_2a08361fa5a941cc91f5b53836134eca",
+      "statement": "The home version selector lists each same-name version by qualityLabel with an explicit 未知 fallback, appends the spatial icon only when spatialAudio is set, and the switch toast repeats the quality label plus a 空间音频 suffix.",
+      "evidence": [
+        {
+          "resource": "repo://feature/home/src/main/java/cn/com/dcsgo/mihx/feature/home/HomeComponents.kt#L134-L212",
+          "version": "repo-lines-v1:sha256:2f27a1250d5a027ba141a873d5aa84bf707cf793a20e9adbf4b778b8493f226c:eyJzZWxlY3RlZExpbmVDb3VudCI6NzksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjJlOGQ5NzlhM2JiNjU4M2YyOWJhYmZlZmJlNGM4YjUwMGMxMDcxOWJjOTc4ODgwNzYyMTlhYWY3NTUzZDAzOGIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjFmMzAxNGM2YjU0ZDg2NjMxY2VjMGI3NDg0Zjk4NDZjNzNiYjYyZWEzMGI5NzA2NTk1NWVmODc3NTk5MDBjN2IiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjM3OTI5ZTkxZTBmOTljM2U4MjVkZTY5YjQzNWZiNjQ4NGQxYjBhMWRmMmY0NjU2MWFiZjFhMjlmMDQxODhiODgifQ"
+        },
+        {
+          "resource": "repo://feature/home/src/main/java/cn/com/dcsgo/mihx/feature/home/HomeRoute.kt#L142-L150",
+          "version": "repo-lines-v1:sha256:e65867cf1d79b1030f4379af67cf4263ecfeb2cfa2199a63068ec7aa40754c2c:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZGRkNWMzOTkyZjdkMmU4ZDZkNzZmMzRlODBhM2IzZDllMmY1ZTIxYmI2NGNhYTk1MTg3ZTU0MmI3ODhkNWVjMyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMWU2NzNhYmQ0NTdhOTdlZWExN2E2MDA2MmViMGZhZWE2YmRmMDk0ODY4Y2M2YjhmOGMwZWJkYTJmNjFlZDQyZiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNjRkYzM4YzNiM2ZlZmVlMjZlNmNlMjc0N2MzOWE5ZTg3ZGRjYWY2MGM2NGI3NmI5ZDg5YmY5YjllYTMzMWQ2MSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiM2QwNmY1ZTk2NjE1MjY2YzE2OGZiN2ZmZDBkNjQyYzI3M2VjZGVmZDQzNzkzMGRhY2M0YjMxMWQ1ZmExZTg0MyJ9"
+        },
+        {
+          "resource": "repo://feature/user/src/main/java/cn/com/dcsgo/mihx/feature/user/VersionManagementComponents.kt#L427-L444",
+          "version": "repo-lines-v1:sha256:08fbfd1bc0168da6328d6cc0cc292ebb67c9df9034d8458b689263e9624e399e:eyJzZWxlY3RlZExpbmVDb3VudCI6MTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijc5ZDU2ZmNmYmY3NzYxZTQxZDdlNzg4N2I0NGU0NGZmYzM3OGUxOTk1YWIwYTlmZDg1Mjk3YjA2MmY4NWIyZjgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjhkYjMzOWMxN2Q0Y2M1NGU3MGM0ZmNmZWNiNjExYmI5ZTdkMzYzZjI1YjE4ZTA5MjNhMWQzMDZjYzk1OTI0ZTUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjUwZDM0ZGY2YTg4MTJjNTJiMWExZjcwYzZiY2I1NGM4NTM5MmQ3MjAzMzQ5MmIxNjY5NjViZjYxZDViOWViZTEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImVmMGNlYThmODUyMjg4NWQwMzAwNzk0N2I4ZjBkNGM1NDliM2M0Nzk3MTkxYTQwZmMwMjhmMjZmMGFiZDRhNTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_6c5728b23e0046dbae5ec9bbc8097a4c",
+      "statement": "SongInfoDialog hides the 位深 row when the value is blank or 未知 and hides 音质, 声道 and 编码 when blank, while 比特率 and 采样率 always render; 空间音频 renders as 支持（Atmos） only when true. The dialog is shared by playlist, artist, album, emotion library, local-music management, version management and now-playing.",
+      "evidence": [
+        {
+          "resource": "repo://core/ui/src/main/java/cn/com/dcsgo/mihx/ui/components/SongInfoDialog.kt#L121-L145",
+          "version": "repo-lines-v1:sha256:a3eaf9dacfaf0215efb0d142b42f7e7d1c921878491eaebcca932d29c9ecf0c2:eyJzZWxlY3RlZExpbmVDb3VudCI6MjUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImM4ODY1NzgwNGM3ZmIyYjZkOGZhZjg4Y2QxOWQwODlhMWI3NTdkMTE3OWY0ODcxYjkwOTMyNTY1YmIxMDNjNjYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFiZTRkMGE3YzlkNzQxMWQ1NTUyODdkYWJlYTczNDMyYmQ3Y2IxMDRlMjg2YmUyM2E3YzdiNTExNTk4ZjIzZmYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjU4ZjQ4MDJlY2Y3NmMxMDNhYjYyZmVjMjEzOTkzM2Q1OTZmYzE0ODlhOWRlN2NlZmViMzY0ZTlhZjFmYWUxNjEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImNjYTljMzhhMmI2MjE5N2MwZDgwYzQ3NGI4MGFjZmE3ZTY4ZGY0ZTBlMDBhODg3NjZlNThmZjIyYTA2Y2NjY2YifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_b3673bd7492b4b4881fc17b3f5d4d02b",
+      "statement": "SongVersionComparer adds 位深/音质/声道/空间音频 comparison rows only when at least one version carries that data, and VersionComparisonScreen supplies bitrate and file size per version from the live SongInfo reads.",
+      "evidence": [
+        {
+          "resource": "repo://domain/src/main/java/cn/com/dcsgo/mihx/domain/playback/SongVersionComparer.kt#L112-L180",
+          "version": "repo-lines-v1:sha256:a52a496a020cfb0bed2c1f8531e67e8bc0f6532e882aa4ed0c3766f5b1cc682b:eyJzZWxlY3RlZExpbmVDb3VudCI6NjksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZhMWMzZThlNWVkYzY1ZjVhZWQ2MDk3NDQwNDBmZTZiNmI4MmVjZTQzZWIyMWRiN2UyZmY5MDJjNjBlYTZlNDgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjMzMmQ2NjQwNTIxNTUwYTQwZWY2NDFhNTYxNTYwOTRlNTRjN2EzNzEzOTEzNTY0MGJmZjRlMjEwMTczZjEwNjkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjIxZGIxYjVmZjY1NGM3ODU3YjFlMTcxMDFlNzNiNTkwOWQ2MjRlZjRjNDM4OTlkNjBiMmUxMTFjYTliZmY3MDUifQ"
+        },
+        {
+          "resource": "repo://domain/src/test/java/cn/com/dcsgo/mihx/domain/playback/SongVersionComparerTest.kt#L221-L249",
+          "version": "repo-lines-v1:sha256:7c82d304b7847ceb989f45a14945403e3ac7173e4b2857f84221e9246cba48ad:eyJzZWxlY3RlZExpbmVDb3VudCI6MjksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRjZjA5ZWIwYzU3NDRmYjk3MzMxYjk4ZmYzZmJmMDVhNjAyYmEzZjdmNjdlNWRhNWJlOTA5NTAzM2Y2MjU4MjUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjJiNDhmZTY2YWNiNTY4OWU0NDc3OWQ2YzExOTE4ZGZhMjE3MWEzZGU0MDEwMjJmZGU5ZjU3YmQwMTIzZWQyYzUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjhkNjMxNGQ5MjdhODRmYWZmYjQ0OGQ4MmIxZTA4MTZkY2Q4MzE5YTc1ZmY5ZWRhNjIzM2IyYTJkMjRkZjI3MWQifQ"
+        },
+        {
+          "resource": "repo://feature/user/src/main/java/cn/com/dcsgo/mihx/feature/user/VersionComparisonScreen.kt#L74-L101",
+          "version": "repo-lines-v1:sha256:e49733ca8a0d03cf8540abfea847d5580d27ba67d3496b6c5fb01cf95a3b55fe:eyJzZWxlY3RlZExpbmVDb3VudCI6MjgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjIzZTdhOGU4ODg2MWE2MmM1NmI2ODVjYTg5YWMyN2ExNzE5OTM2MWY0ODlkNjBkM2Y1YTFhNDk1MTBkOWM1MzgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjRmNWNkN2ZlNDRmYmFjM2IxYzAyZWM1NmRkZDFlNTE1NzgyZDMyMGE5YTI0MzkzYjM1NDcyMjgyMWM5YmExN2YiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImZjOWVlNTk1YTRmNzExZDhjYjBkMjE3MzJjOTU3ZTg2NjE3YTk3YzYxYzk2NjY4ODg3Mzk1ZDI4NzU4NTZkMDIifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_11b03911ff61467294791f3906165775",
+      "statement": "The AudioQualityGuideSheet opened by tapping the logo on the '我的' page duplicates the tier and spatial rules as literal copy, and states that recognition is display-only, that old rows need a deep verification, and that the detail dialog always reads the file live — so its copy must stay identical to AudioQualityTier.label/rule and isSpatial.",
+      "evidence": [
+        {
+          "resource": "repo://feature/user/src/main/java/cn/com/dcsgo/mihx/feature/user/AudioQualityGuideSheet.kt#L36-L122",
+          "version": "repo-lines-v1:sha256:1d8e8acbaff415d6c6cbfc6781605fca83a5d4d0ca7afcef5b1600cf1d4dd7d0:eyJzZWxlY3RlZExpbmVDb3VudCI6ODcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVhZjIyY2YwNzMyNTkyYzI0NzE0MWNiZTYxZWZhMTEwMTI2MTJmNWEzMTIyYjlhZjliYmFmNTJmNTcyNGQxOTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjJlNmE0MTdlZGUyYjA1NjYwNWNmOGM4OGMzMjZjYzYyYjBiMTRiNmViYjU3ODkwZTNlNDRiNjljNmExYmI0YjAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjBiZTg1ODRkMTMyYThmOGQ2M2FlMDk4OGIyM2VlOGFkMTk4NWY4MjZiYjkzMWJjOTY4YTJlODMzZTFkYTI2ZjEifQ"
+        },
+        {
+          "resource": "repo://feature/user/src/main/java/cn/com/dcsgo/mihx/feature/user/UserScreen.kt#L73-L95",
+          "version": "repo-lines-v1:sha256:a7055bfc5b730e981e4950c48d8be3a9cf444c64c3b67d7ab856e51b380563a6:eyJzZWxlY3RlZExpbmVDb3VudCI6MjMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU2N2M3OWZiZjQ3YzliOWU2NmE0OGJhOGQzMmU2MjBkMjJiOTZlMmEyMDg4YjRmZmM3ZTRjNjkxYWI0OGEwODQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRiZWZhYTg3Y2U5NmM2ODYxOGU2YTdmYjgzOTdiMzljYjljZDQ5NGFiNjMxMDY4YzQ5ZGU1MWFmZmUyYjRlMDMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImE0YzYxNGViZGZlNjk2MzdlZDRlYTQ5ZTBjOTNiOTk1YTgxOTFhZjMyMzVkN2UyOWU2NjEzODhjNjI3NjhhZWUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjVjMWVjYzgxZTBmYTFjMTQ3YTY5OGFjNzAzNDYxZTU5M2E0ODIzOWFiN2Y4MTU5YWIzZDI1MjQyZDgxMDYzMGYifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_2fba20bb70784b7f988283b09d342a69",
+      "statement": "Storage statistics never count the persisted spatialAudio flag: LocalMusicStorageStats recounts spatial audio live via AudioQualityTier.isSpatial(audioCodec, channelCount) and buckets songs by the computed qualityTier, so a flag written under the old DD+ rule cannot inflate the numbers.",
+      "evidence": [
+        {
+          "resource": "repo://core/model/src/main/java/cn/com/dcsgo/mihx/core/model/LocalMusicStorageStats.kt#L11-L87",
+          "version": "repo-lines-v1:sha256:7ea242172ecf7dc90169ca66cbf01ebec80182cbd1599cb32ff336c111840caa:eyJzZWxlY3RlZExpbmVDb3VudCI6NzcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVhZjIyY2YwNzMyNTkyYzI0NzE0MWNiZTYxZWZhMTEwMTI2MTJmNWEzMTIyYjlhZjliYmFmNTJmNTcyNGQxOTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImEzYmMyMjM2N2NlYmQyMzhiMjI5NjRlMDcyMzA3NDU1MTg4OTQ4ODQ1YmFjM2IxYzdhZTM2MDhmMDc4M2IwZTkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoyLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjM3OTRkMDJhODEyMTk0NGQxNzZkMjY1ZTliYjljYzU5ZjZhYjg5MGJjYWRmOGFlZmRlYmRiYmI0ZjJlYTg0NDQifQ"
+        },
+        {
+          "resource": "repo://core/model/src/test/java/cn/com/dcsgo/mihx/core/model/LocalMusicStorageStatsTest.kt#L75-L102",
+          "version": "repo-lines-v1:sha256:d1065146ee34ba4a4280239e4cd14e640e6ed650053920c76e7d7d05ec5cd7f6:eyJzZWxlY3RlZExpbmVDb3VudCI6MjgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRjZjA5ZWIwYzU3NDRmYjk3MzMxYjk4ZmYzZmJmMDVhNjAyYmEzZjdmNjdlNWRhNWJlOTA5NTAzM2Y2MjU4MjUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjEyOWI0MTIyOGNlMmVlZThjYzRkYzc5YTNkMmY5MTE0ZDIzNGIzZDE2YzdjYzgxYzQyZTNhZTgzZWUyNmJhNDAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_d94c84c2c7cf43dbbe0c1d2543d77a7e",
+      "statement": "Migration tests pin the v17→v18 bitDepth default of 0 and the v18→v19 defaults (bitRateKbps 0, channelCount 0, audioCodec NULL, spatialAudio false) for pre-existing rows.",
+      "evidence": [
+        {
+          "resource": "repo://data/src/test/java/cn/com/dcsgo/mihx/data/local/migration/MelodyDatabaseMigrationTest.kt#L392-L430",
+          "version": "repo-lines-v1:sha256:08fc8e2bfd2bd28ea64ccec9974f52f7893a942c9e3acb11e9ad0c6d887e5694:eyJzZWxlY3RlZExpbmVDb3VudCI6MzksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM5Y2JiYzY1NDY5ZGIxY2EyODQyZWZkOTdkZjdlZTJjZTZjYzE1NzE0ODJkMDFhMThiNzkwYTEwYzdjNTEwZjMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM0NmE5NmJmZGYyNDRiOGVmNTcwNDYyMGE3NDM1YjYxYjk0ZjcxMTU0NzIxYmYwNzBjZThlZjQ4NTQwY2M3YmQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImMxNDgxNzgzYmY2YTRlYmQ5MWU1ZDU2OWQ3MmJjYTBlMmNjNmM1MTYxMzg4YmI5OGUzMjcyMjUyMDU0ZjYzNjAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjE3NjBlMTU5OTEwMjA3ZmU0ZmQxODI4YjhkZWYwNGM2NmEwNjQ5YmU4YjY1OGU3YmFhMjdkYzQ1MjRhZDA4OTAifQ"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "by": "openwiki/0.5.0",
+    "at": "2026-11-20T09:49:41.934Z"
+  }
+}

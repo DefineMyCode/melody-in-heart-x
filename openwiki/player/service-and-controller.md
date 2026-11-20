@@ -1,7 +1,7 @@
 ---
 type: "Architecture"
 title: "Playback Service & Controller"
-description: "The :player Android integration surface: AppMediaSessionService's ExoPlayer/MediaSession lifecycle and snapshot persistence, PlaybackController's connection/pending-actions/event translation/single-item loop-rewind detection and incremental queue sync, SongMediaItemMapper's mediaId contract, the MimeExcludingMediaCodecSelector + FFmpeg extension decode path, cross-process album-art URI granting, the heap-adaptive decode memory budget (v3.11.0, paired with app-level largeHeap), and why Bluetooth auto-pause and emotion/stats components live in :player."
+description: "The Media3 service/controller boundary in :player: AppMediaSessionService's ExoPlayer/MediaSession lifecycle and snapshot persistence, the start and teardown path, PlaybackController's connection/pending-action/release semantics, command surface, event translation and incremental queue sync, how notification, lock-screen, Bluetooth and in-app transport commands stay consistent, and why the module also hosts the decode, emotion, stats and Bluetooth-pause components."
 tags: [player, media3, media-session, media-controller, exoplayer, bluetooth, playback-service, android]
 sources:
   - id: openwiki-source-186e96b8d6739f3745947903
@@ -10,12 +10,14 @@ sources:
     resource: repo://app/src/main/java/cn/com/dcsgo/mihx/app/di/PlayerModule.kt
   - id: openwiki-source-81bdf5bdc16c1ff3afd5bcc8
     resource: repo://app/src/main/java/cn/com/dcsgo/mihx/app/emotion/EmotionScanWorker.kt
-  - id: openwiki-source-a2371d6362e5db4bc834ad03
-    resource: repo://CLAUDE.md
+  - id: openwiki-source-7d322a65ddca1cf4588fa5e3
+    resource: repo://buildSrc/src/main/kotlin/cn/com/dcsgo/mihx/verify/ProductArchitectureVerification.kt
   - id: openwiki-source-11e81a2274454dc7b4a45408
     resource: repo://core/common/src/main/java/cn/com/dcsgo/mihx/core/common/ArtworkUriAccess.kt
   - id: openwiki-source-3f2b9db225caab197ac346d2
     resource: repo://data/src/main/java/cn/com/dcsgo/mihx/data/util/AlbumArtProvider.kt
+  - id: openwiki-source-15c96e6863e07a5342400db5
+    resource: repo://docs/architecture/PLAYBACK_QUEUE_ARCHITECTURE.md
   - id: openwiki-source-daad64f3ba82b5b0ff4a8d94
     resource: repo://domain/src/main/java/cn/com/dcsgo/mihx/domain/playback/ControllerPlaybackStateSynchronizer.kt
   - id: openwiki-source-7947bd28b3f56e3e0375e61b
@@ -24,8 +26,20 @@ sources:
     resource: repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerLifecycleFacade.kt
   - id: openwiki-source-05628432a0c9eb5223697d07
     resource: repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerMediaControllerGraph.kt
+  - id: openwiki-source-0a840abe5bf9183316c47b4e
+    resource: repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerMediaEventFacade.kt
+  - id: openwiki-source-b1e77c238cf7370e278303d7
+    resource: repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerPlaybackFacade.kt
+  - id: openwiki-source-8e3d8a1f18f53d37da8744f1
+    resource: repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRandomQueueFacade.kt
   - id: openwiki-source-ff40146bae9715f1a3860309
     resource: repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRuntime.kt
+  - id: openwiki-source-37ecb8ac896ee055dab0bc51
+    resource: repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerStartupFacade.kt
+  - id: openwiki-source-5f0c9b0e558b53c1f8d6df48
+    resource: repo://feature/player/src/test/java/cn/com/dcsgo/mihx/feature/player/PlayerLifecycleFacadeTest.kt
+  - id: openwiki-source-cbb2a6a6d3f253e3af85f99b
+    resource: repo://feature/player/src/test/java/cn/com/dcsgo/mihx/feature/player/PlayerPlaybackFacadeTest.kt
   - id: openwiki-source-6d69bdf8c32deed5d6af5ba1
     resource: repo://player/src/main/AndroidManifest.xml
   - id: openwiki-source-c804d077edb941261a21dbf9
@@ -56,21 +70,25 @@ sources:
     resource: repo://player/src/main/java/cn/com/dcsgo/mihx/player/SongMediaItemMapper.kt
   - id: openwiki-source-91daceadd8472310d223fb0d
     resource: repo://player/src/test/java/cn/com/dcsgo/mihx/player/EmotionAnalyzerLimitsTest.kt
+  - id: openwiki-source-e5f69cb6802193c3234b69cf
+    resource: repo://player/src/test/java/cn/com/dcsgo/mihx/player/IncrementalQueueSyncPlanTest.kt
   - id: openwiki-source-1335b79015e69d8ed73b7fd8
     resource: repo://player/src/test/java/cn/com/dcsgo/mihx/player/MediaItemWrapDetectionTest.kt
   - id: openwiki-source-ba9ccc172d5e5f490a763733
     resource: repo://player/src/test/java/cn/com/dcsgo/mihx/player/PlaybackStateStoreTest.kt
   - id: openwiki-source-27adc205f45612b85a8b7022
     resource: repo://player/src/test/java/cn/com/dcsgo/mihx/player/SingleItemLoopRewindDetectionTest.kt
+generated: { by: "openwiki/0.5.0", at: "2026-11-20T09:49:41.934Z" }
 verified:
   - by: openwiki/0.5.0
-    at: 2026-10-27T08:49:20.803Z
-generated: { by: "openwiki/0.5.0", at: "2026-10-27T08:49:20.803Z" }
+    at: 2026-11-20T09:49:41.934Z
 ---
 
 # Playback Service & Controller
 
-The `:player` module is the only layer in the chain that directly touches Android media APIs. Inside it is a **two-component architecture**: the server side `AppMediaSessionService` owns the real `ExoPlayer` instance and publishes it through a Media3 `MediaSession`; the client side `PlaybackController` connects asynchronously to a `MediaController` via `SessionToken`, forwards UI playback commands to the service, and translates Media3 callbacks into the `PlaybackControllerCallbacks` defined in `:domain`. The two sides communicate over in-process IPC (the Media3 session binder), so **the MediaController's media-item window is the final authority on the real playback order** — how the business queue stays in sync with it is covered in `/openwiki/player/queue-architecture.md`, and how the facade layer orchestrates these callbacks in `/openwiki/player/runtime-facades.md`.
+The `:player` module is the only layer in the chain that directly touches Android media APIs. Inside it is a **two-component architecture**: the server side `AppMediaSessionService` owns the real `ExoPlayer` instance and publishes it through a Media3 `MediaSession`; the client side `PlaybackController` connects asynchronously to a `MediaController` via `SessionToken`, forwards UI playback commands to the service, and translates Media3 callbacks into the `PlaybackControllerCallbacks` defined in `:domain`. The two sides communicate over in-process IPC (the Media3 session binder), so **the MediaController's media-item window is the final authority on the real playback order** — how the business queue stays in sync with it is covered in `/openwiki/player/queue-architecture.md`, and how the facade layer orchestrates these callbacks in `/openwiki/player/runtime-facades.md`. The playback states those callbacks produce are catalogued in `/openwiki/player/state-machine.md`; this page only covers the Media3→domain translation that feeds them.
+
+Because every transport surface — the in-app play/next/previous buttons, the media notification, the lock-screen controls and Bluetooth/headset media keys — ends up driving the *same* server-side `ExoPlayer`, they cannot drift apart in what they play. How that parity is preserved (and where queue-tail refill ordering differs between in-app and external next) is the subject of [Cross-surface transport consistency](#cross-surface-transport-consistency).
 
 ## Two-component architecture overview
 
@@ -106,9 +124,31 @@ Wiring happens in `app/di/PlayerModule` (Hilt `SingletonComponent`):
 
 1. `PlayerFactory.create(this)` builds the ExoPlayer: `DefaultRenderersFactory` with `EXTENSION_RENDERER_MODE_ON`, float output disabled, decoder fallback, and a `MimeExcludingMediaCodecSelector` routing ALAC to the FFmpeg extension (see the decode-path section below); `DefaultLoadControl` buffers 4000/10000/2000/2500 ms; audio attributes `AUDIO_CONTENT_TYPE_MUSIC` + `USAGE_MEDIA` with audio-focus takeover; `handleAudioBecomingNoisy = true` (headphone-unplug pause); `setPauseAtEndOfMediaItems(false)` (infinite loop does not depend on it).
 2. `createMediaSession()` wraps the player with a `MediaSession.Builder` and sets `sessionActivity` to a `PendingIntent` for the launch intent (`FLAG_ACTIVITY_SINGLE_TOP` + `FLAG_IMMUTABLE`, falling back to `ACTION_MAIN`) — the entry point that returns to the app from the notification.
-3. `setupPlayerListener()` attaches a `Player.Listener` that only logs (`onIsPlayingChanged`/`onMediaItemTransition`/`onPlaybackStateChanged`); business event translation is entirely on the client `PlaybackController`, so the server stays a dumb terminal.
+3. `setupPlayerListener()` attaches a logging-only `Player.Listener` (`onIsPlayingChanged`/`onMediaItemTransition`/`onPlaybackStateChanged`, plus a `position_discontinuity server` line that exists to be compared against the client's `position_discontinuity client` line when diagnosing a start-of-track replay); business event translation is entirely on the client `PlaybackController`, so the server stays a dumb terminal.
 
-`onGetSession` returns that single `MediaSession`. The service is declared in the `:player` manifest (`android:exported="false"`, `foregroundServiceType="mediaPlayback"`, intent-filter `androidx.media3.session.MediaSessionService`), and the architecture gate forbids re-declaring it in the `:app` manifest.
+`onGetSession(controllerInfo)` returns that single `MediaSession`. There is no `MediaSession.Callback` override, no custom command layout and no custom notification provider, so Media3's default transport surface is exactly what a controller (or the platform notification) gets.
+
+### Manifest declaration and the gate that pins it
+
+The service is declared once, in the `:player` module manifest:
+
+```xml
+<service
+    android:name="cn.com.dcsgo.mihx.player.AppMediaSessionService"
+    android:exported="false"
+    android:foregroundServiceType="mediaPlayback">
+    <intent-filter>
+        <action android:name="androidx.media3.session.MediaSessionService" />
+    </intent-filter>
+</service>
+```
+
+`:app` is the manifest-merge root, so the service still lands in the merged application manifest — but its only declaration lives with the module that owns the class. Two `verifyProductArchitecture` rules (buildSrc, run as part of the product verification task) keep this true:
+
+- `player/src/main/java/cn/com/dcsgo/mihx/player/AppMediaSessionService.kt` must keep `@AndroidEntryPoint` (Hilt entry-point check), otherwise the build fails;
+- if `app/src/main/AndroidManifest.xml` so much as contains the string `AppMediaSessionService`, the build fails with "AppMediaSessionService must be declared by the :player manifest, not the :app manifest."
+
+`android:exported="false"` also means no external controller (Android Auto, Wear, third-party media browser) can bind to this session — only components of this app can. That matches the current local-playback scope and is the first thing to change before any projection/Auto integration.
 
 ### Snapshot persistence: synchronous read + process-level async write
 
@@ -124,6 +164,8 @@ Wiring happens in `app/di/PlayerModule` (Hilt `SingletonComponent`):
 ### The startService FGS ANR fix
 
 `PlaybackController.startService()` calls `context.startService(...)` rather than `startForegroundService(...)`. The code comment records the reason (2026-09-03 ANR regression fix): `startForegroundService` forces the service to call `startForeground()` within 5 seconds, but `MediaSessionService` only publishes the notification and calls `startForeground()` when the player has media items or active playback — a cold-start empty session never satisfies the contract, so the system flags an FGS timeout ANR (real-device log "did not then call Service.startForeground()"). The only call chain is a foreground UI cold start, where `startService` is legal and carries no FGS contract; even if a background start path appeared later, `connect()`'s `SessionToken` mechanism can still bind-start the service.
+
+The chain has exactly one entry point: `PlayerViewModel.init` → `PlayerRuntime.start()` → `PlayerStartupFacade.start()`, which calls `startService()` **first**, then `connectMediaController()`, then loads library data and only after the initial snapshot triggers `restorePlaybackState()`. So the service is started before the controller exists and before any restore decision; the controller binding itself (`SessionToken`) would also start the service, which is why a missed `startService()` degrades to "no notification until something plays" rather than an unrecoverable state. `PlayerLifecycleFacade.startService` wraps the call in try/catch and logs `"AppMediaSessionService start requested"` on success or `"Failed to start AppMediaSessionService"` with the throwable — a start failure is recorded but never aborts startup (`PlayerLifecycleFacadeTest` locks both messages).
 
 ## PlaybackController: connection, pending actions, command semantics
 
@@ -161,7 +203,9 @@ The queue operations' guard rules are the easiest way to trip on this API:
 
 `syncQueue` no longer always rebuilds the whole window. After the fingerprint check it compares the controller's current media-item ids against the plan's song ids and, when the two share an aligned common segment and `currentMediaItemIndex` still points at the plan's `startIndex` song, applies `planIncrementalQueueSync` to trim the window head and append/remove the tail via `removeMediaItems`/`addMediaItems` instead of a full `setMediaItems`. The incremental path does not touch the currently-playing item, so it produces no position reset, no rebuffer, and no `playWhenReady` change. The full rebuild path — used when the shapes are incompatible or when a queue mutation is pending — captures `positionMs` and `wasPlaying`, then `setMediaItems(plan, startIndex, positionMs)`, `prepare()`, and `play()` only if `wasPlaying`.
 
-Incremental decisions are gated by the `pendingQueueMutation` flag: set to true whenever a queue-mutation command (`playQueue`, `clearPlaylist`, `playSingle`, or a mutating `syncQueue`) is issued and cleared by the `onTimelineChanged` callback, which is the server acknowledgment that the media-item list has refreshed. While `pendingQueueMutation` is true the local timeline mirror may be stale, so `syncQueue`'s incremental path is unavailable and the sync falls back to a full rebuild — otherwise `remove`/`add` indices would be emitted against an obsolete list.
+`planIncrementalQueueSync` refuses the incremental path (returns null) unless **all** of these hold: both id lists are non-empty, `currentMediaItemIndex` and `plan.startIndex` are in range, the controller's current id equals the plan's `startIndex` song id, and the controller's `playbackState` is `STATE_READY` **or** `STATE_BUFFERING`. That last condition is the one that matters in practice: the moment right after a track change is usually `BUFFERING`, and allowing incremental sync there is exactly what removes the "first 1–2 seconds replay" window; `STATE_IDLE` (not prepared yet) and `STATE_ENDED` (needs `prepare()` to reset) must fall back to a rebuild. The trim candidate loop also refuses any trim that would remove the currently-playing item (e.g. a song deletion pushing the current item out of the tail), falling back to the full path instead of interrupting playback. `IncrementalQueueSyncPlanTest` locks these branches (tail append, window scroll + append, zero-op identical queue, tail shrink, buffering allowed, idle/ended/empty/current-mismatch/middle-removal/reorder/over-trim all rebuilding).
+
+A second, independent gate is the `pendingQueueMutation` flag: it is set to true whenever a queue-mutation command (`playQueue`, `clearPlaylist`, `playSingle`, or a mutating `syncQueue`) is issued and cleared by the `onTimelineChanged` callback, which is the server acknowledgment that the media-item list has refreshed. While `pendingQueueMutation` is true the local timeline mirror may be stale, so `syncQueue`'s incremental path is unavailable and the sync falls back to a full rebuild — otherwise `remove`/`add` indices would be emitted against an obsolete list.
 
 ### Cross-process album-art URI granting (ArtworkUriAccess)
 
@@ -178,7 +222,16 @@ The publish-time grant must happen **before the metadata push**: a cross-process
 
 ### release
 
-`release()` clears in order: removes the listener, nulls the controller, clears `pendingActions`, `MediaController.releaseFuture(controllerFuture)`. The `PlayerLifecycleFacade.onCleared` teardown order (snapshot first, then `releasePlaybackController`) is orchestrated at the facade layer.
+`release()` tears the client down in a fixed order: `controller?.removeListener(listener)`, `controller = null`, `pendingActions.clear()`, then `MediaController.releaseFuture(controllerFuture)` and nulling the future. After it, every command falls back into the bounded pending queue instead of touching a released controller.
+
+The **service** instance is never stopped explicitly: Media3 owns the `MediaSessionService` lifecycle (started on demand, torn down by the system), and the last snapshot is written by `onDestroy`/`onTaskRemoved`. What the app controls is the binding teardown, orchestrated by `PlayerLifecycleFacade.onCleared` (called from `PlayerViewModel.onCleared` → `PlayerRuntime.onCleared`) in this order:
+
+1. `syncControllerPlaybackState()` — pull one final snapshot from the still-live controller into UI state;
+2. `savePlaybackState()` — persist it; `currentPlaybackPositionMs()` prefers the controller position and only falls back to the UI value, so step 1 is what makes the final position real rather than the last progress tick;
+3. `releasePlaybackController()` → `PlaybackController.release()`;
+4. `releaseBluetoothPlayback()`, `releasePlayDurationTracker()`, `stopPlaybackProgressTicker()`.
+
+`PlayerLifecycleFacadeTest` asserts the recorded subset of that order (`sync` → `save` → `releasePlaybackController` → `releaseBluetoothPlayback` → `releasePlayDurationTracker`), so reordering teardown is a test failure, not a silent behavior change.
 
 ## Event translation: Media3 callbacks → PlaybackControllerCallbacks
 
@@ -227,6 +280,40 @@ Plus the structural conditions: `reason == DISCONTINUITY_REASON_AUTO_TRANSITION`
 
 `isMediaItemWrap(previousIndex, newIndex, mediaItemCount)` = `newIndex == 0 && previousIndex != INDEX_UNSET && previousIndex >= mediaItemCount - 1 && previousIndex > newIndex`. It must be judged **by index, not by reason**, because Media3 reports `REPEAT_MODE_ALL` tail wrap from `seekToNextMediaItem()` as `SEEK`, while `MEDIA_ITEM_TRANSITION_REASON_REPEAT` only means `REPEAT_MODE_ONE`. The `wrapped` flag is the trigger for infinite-play refill (window exhausted); the comment notes that after a wrap the remaining count grows back, so a remaining-count heuristic alone would miss the refill and starve infinite play. `MediaItemWrapDetectionTest` locks the boundaries: a 2-item window wrapping 1→0 also counts (harmless, because the refill planner de-duplicates), and empty/single-item windows can never wrap.
 
+## Cross-surface transport consistency
+
+The contract is: **previous/next from the notification, the lock screen, Bluetooth/headset media keys and the in-app buttons must produce the same playback.** It holds by construction, because none of those surfaces owns a queue of its own:
+
+- The notification, lock screen and Bluetooth keys never go through `PlaybackController`. They reach the `MediaSession` that `AppMediaSessionService` publishes, and Media3's default transport handling applies them directly to the service-side `ExoPlayer` (`seekToNextMediaItem`/`seekToPreviousMediaItem`/play-pause). That is why the service deliberately overrides no transport command.
+- The in-app buttons go the other way: `PlayerViewModel.playNext()` → `PlayerPlaybackFacade.playNext()` → `PlaybackController.playNext()` → `controller.seekToNextMediaItem()` — the same player as the target, reached through the controller port (with the no-next/no-previous fallbacks described above).
+- Either way the client sees the same Media3 callback: an external next is reported as `onMediaItemTransition` with reason `SEEK` (or `AUTO` at natural end, `REPEAT` for single-track repeat) and therefore lands in `onMediaItemEnded(songId, wrapped)` — the identical callback the in-app path produces. Because the session's window and the controller's window are the same window, position, repeat mode and the "no next item" behavior are shared, not reimplemented per surface.
+
+What *does* differ is **ordering around the queue tail**, and this is the part that breaks if you touch it:
+
+- The in-app next button refills *before* it advances. `PlayerPlaybackFacade.playNext()` asks `PlaybackCommandPlanner.planNext` with the current remaining count and, in infinite play with the window near its tail (threshold `PlayerMediaEventFacade.DEFAULT_REFILL_THRESHOLD = 5`, skipped when `skipNextRefill` is set after an "add next"), calls `refillInfinitePlayQueue()` and only then calls the controller — so the next song already exists in the window when Media3 moves.
+- An external next cannot refill beforehand, so it relies on observation: `PlayerMediaEventFacade.handleMediaItemEnded` refills when infinite play is on **and** (`wrapped || remainingSongs <= refillThreshold`). Reaching the last item this way makes Media3 wrap the `REPEAT_MODE_ALL` window back to index 0, which is exactly the `wrapped` case.
+- After a wrap the refill must not leave the user replaying the old window head. `refillInfinitePlayQueue(startedSongId, advanceAfterWrap = true)` therefore sets the business queue's current index to the first newly appended song and calls `playFromQueue` from 0 (and, if there is genuinely nothing new, jumps to business queue index 0 rather than staying on the controller window's first item). The non-wrap path only extends the queue with `syncPlayerQueue` and keeps the current song.
+
+That asymmetry is also why enabling infinite play at the tail refills immediately instead of waiting for a transition: if the current song is still the window's last item, the next external key press would wrap to the old first song while the new songs sit after it.
+
+```mermaid
+sequenceDiagram
+    participant Sys as Notification or headset
+    participant Sess as AppMediaSessionService
+    participant Player as ExoPlayer
+    participant Ctrl as PlaybackController
+    participant Refill as PlayerRandomQueueFacade
+    Sys->>Sess: next command
+    Sess->>Player: seekToNextMediaItem
+    Player-->>Ctrl: onMediaItemTransition reason SEEK
+    Ctrl->>Refill: onMediaItemEnded with wrapped flag
+    Refill->>Sess: syncQueue append, or playQueue at first new song after wrap
+```
+
+*External transport commands drive the service-side player directly; the client observes the resulting transition and performs the same queue maintenance the in-app button does, only after the fact.*
+
+**Disconnected Bluetooth pauses playback** on the same "external surface" principle: `BluetoothPlaybackCoordinator` watches the A2DP connection state and pauses only when playback was going through Bluetooth and is still active (see the Bluetooth section below). Everything else on that path (audio quality, route changes) only logs.
+
 ## SongMediaItemMapper contract: mediaId is the join key
 
 `SongMediaItemMapper.toMediaItem(song)` rules:
@@ -235,7 +322,7 @@ Plus the structural conditions: `reason == DISCONTINUITY_REASON_AUTO_TRANSITION`
 - **`mediaId = song.id.toString()`**. This is the hard contract: the only join key mapping Media3 state back to the business queue. Three consumers rely on it — `PlaybackController.toPlaybackSnapshot` carries `currentMediaItem?.mediaId` verbatim; `ControllerPlaybackStateSynchronizer.resolveControllerSong` does `toIntOrNull()` on the mediaId and looks the Song up by id; the server-side snapshot persistence also parses the mediaId back to a songId;
 - `MediaMetadata` fills title, artist, non-empty album (albumTitle), and albumArtUri (artworkUri).
 
-**Duplicate queue items share one mediaId** (the same song twice is two `MediaItem`s with the same id). So writing back `currentIndex` must not cross-contaminate: `ControllerPlaybackStateSynchronizer.syncQueueCurrentIndex` first checks `queue.currentSong?.id == controllerSong.id` — when the current index already points at a song with the same id it keeps the current index and returns, never `indexOfFirst` re-searching (which would jump to the first occurrence and break duplicate-item semantics). CLAUDE.md's queue invariant lists it as a hard rule: "MediaItem.mediaId must equal Song.id.toString() — this is how Media3 state maps back to business queue".
+**Duplicate queue items share one mediaId** (the same song twice is two `MediaItem`s with the same id). So writing back `currentIndex` must not cross-contaminate: `ControllerPlaybackStateSynchronizer.syncQueueCurrentIndex` first checks `queue.currentSong?.id == controllerSong.id` — when the current index already points at a song with the same id it keeps the current index and returns, never `indexOfFirst` re-searching (which would jump to the first occurrence and break duplicate-item semantics). The queue-architecture doc states the same invariant (`MediaItem.mediaId` must be the decimal `Song.id`, used to write player state back into the business queue, with duplicate items sharing one id), and the state-machine doc adds that non-numeric ids are simply ignored by `ControllerPlaybackStateSynchronizer`.
 
 ## :player's other occupants: the emotion pipeline and stats coordinators
 
@@ -269,7 +356,7 @@ The Bluetooth side consists of three `:player` classes:
 
 ### Settings-gated initialization
 
-Initialization is deliberately narrowed (architecture gate: "Bluetooth playback monitoring must be user-triggered from Settings, not initialized at startup", and `PlayerStartupFacade` must not mention Bluetooth):
+Initialization is deliberately narrowed by two `verifyProductArchitecture` rules: `PlayerStartupFacade` must not contain the string `Bluetooth` ("Bluetooth playback monitoring must be user-triggered from settings, not initialized during app startup"), and the startup-path files (`MainActivity`, `AppRoot`, `PlayerRuntime`, `PlayerStartupFacade`) must not contain `requestNotificationPermission(`, `requestBluetoothConnectPermission(`, `POST_NOTIFICATIONS` or `BLUETOOTH_CONNECT` ("Notification and Bluetooth permissions must be requested from user-triggered settings, not startup paths"). Concretely:
 
 - `PlayerModule.provideBluetoothPlaybackMonitorFactory` news up a `BluetoothStateManager`/`BluetoothAudioQualityManager` pair and a coordinator per call;
 - `:feature:player`'s `PlayerBluetoothGraph` (internal) wraps it as a lazy graph exposing only `initialize()`/`release()`;
@@ -282,7 +369,10 @@ Initialization is deliberately narrowed (architecture gate: "Bluetooth playback 
 - `SingleItemLoopRewindDetectionTest` (`:player`) — every boundary of single-item loop-rewind: natural rewind hits, short songs precision-judged by duration, mid-track jumps rejected, multi-song queues never take this path, index-change/manual SEEK/non-zero new position all excluded, threshold edges still hit.
 - `MediaItemWrapDetectionTest` (`:player`) — `isMediaItemWrap` index criterion: tail→0 hits, sequential forward/single-step-back/unknown-previous-index/non-zero new index excluded, 2-item window counted as a wrap (refill de-dupe fallback), empty/single-item windows can never wrap.
 - `PlaybackStateStoreTest` (`:player`) — snapshot storage semantics: `saveCurrentPlaybackSnapshot` corrects restored currentIndex/position, single-song fallback when the snapshot song is not in the saved queue, empty-session save does not clear an existing snapshot, legacy SharedPreferences migration.
+- `IncrementalQueueSyncPlanTest` (`:player`) — the `planIncrementalQueueSync` branch table: tail append, window scroll + append, identical queue as a zero-op, tail shrink, `BUFFERING` allowed, and `IDLE`/`ENDED`/empty/current-id-mismatch/middle removal/reorder/over-trim all forcing a full rebuild.
+- `ControllerPlaybackStateSynchronizerTest` (`:domain`) — mediaId→Song resolution and queue index write-back, unknown mediaId keeps the current song, no duplicate playback start for an already-tracked song, and `isPlayingTransition` ignoring a buffering "pause" while counting a real pause.
 - `PlayDurationTrackerTest` (`:player`) — the timing-loop leak regression probe (`activeTrackingLoops` stays 0/1; >1 means the `trackingJob` was not explicitly cancelled), `initialPlayedMs` counted into the total, short-play/effective-play/quick-skip list maintenance boundaries.
-- `PlayerLifecycleFacadeTest` (`:feature:player`) — ViewModel teardown order (including `releaseBluetoothPlayback`).
+- `PlayerPlaybackFacadeTest` (`:feature:player`) — the in-app next ordering: refill happens before the controller advance when infinite play is near the tail, and `skipNextRefill` is consumed instead of refilling again.
+- `PlayerLifecycleFacadeTest` (`:feature:player`) — ViewModel teardown order (including `releaseBluetoothPlayback`) and the start-success/start-failure log messages.
 
-Anchors to preserve operationally: `PerformanceTrace` operations `controller_play_queue`/`controller_prepare_queue`/`controller_sync_queue`/`play_next_command` (the architecture-gate list names `PlaybackController`'s queue/prepare/sync/next); server-side log TAG `AppMediaSessionService`, client-side `PlaybackController`, Bluetooth-side `BluetoothStateManager`/`BtAudioQualityManager`/`BluetoothPlaybackCoordinator`. Run this module's tests with `.\gradlew.bat :player:test` (or `--tests` to filter a single class).
+Anchors to preserve operationally: `PerformanceTrace` operations `controller_play_queue`/`controller_prepare_queue`/`controller_sync_queue`/`play_next_command` (the architecture-gate list in `buildSrc/src/main/kotlin/cn/com/dcsgo/mihx/verify/ProductArchitectureVerification.kt` names `PlaybackController`'s queue/prepare/sync/next); server-side log TAG `AppMediaSessionService`, client-side `PlaybackController`, Bluetooth-side `BluetoothStateManager`/`BtAudioQualityManager`/`BluetoothPlaybackCoordinator`. Client and server each log their own `position_discontinuity` line (`client:`/`server:`) with old/new index, position and reason — the pair is the diagnostic for start-of-track replay regressions. Run this module's tests with `.\gradlew.bat :player:test` (or `--tests` to filter a single class).

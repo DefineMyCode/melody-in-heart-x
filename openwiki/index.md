@@ -4,7 +4,7 @@ okf_version: "0.2"
 
 # Files
 
-- [快速上手](quickstart.md) - Onboarding entry: project identity and current version (v3.12.2 / versionCode 50, MelodyDatabase v17, emotion model yamnet-va-v5-vocal), module layering, build/test/verify commands, and a refreshed task-routing map into every wiki page.
+- [Quick start and task routing](quickstart.md) - Onboarding entry for melody-in-heart at v3.15.0 / versionCode 54 (MelodyDatabase v20): project identity, module layout, build and verification commands, the hard constraints per task area, and a task→page routing map covering audio-spec tiers, storage statistics, bitrate sorting and time-slot exclusions.
 
 # Directories
 

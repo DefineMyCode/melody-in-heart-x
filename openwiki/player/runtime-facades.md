@@ -1,11 +1,15 @@
 ---
 type: "Architecture"
-title: "PlayerRuntime and the Facade Catalog"
-description: "How PlayerViewModel stays a thin delegator, how PlayerRuntime composes ~18 facades through five graph objects wired by lambda injection, and the narrow-flow, startup, restore, teardown, and extension rules that govern any change to the player feature."
-tags: [player, facade, runtime, composition-root, hilt, narrow-flow, state-sync, testing]
+title: "PlayerRuntime facade graph"
+description: "How PlayerViewModel stays policy-free, how PlayerRuntime composes its facades and graphs through lambda injection, and which caches and subscriptions (mood configs, emotion ratio maps, word preferences, enhance mode) back random and explore playback."
+tags: [player, facade, runtime, composition-root, hilt, narrow-flow, state-sync, caches, testing]
 sources:
+  - id: openwiki-source-c997f8c2a81730fe7eb841ae
+    resource: repo://app/src/main/java/cn/com/dcsgo/mihx/app/AppNavHost.kt
   - id: openwiki-source-5610fe170bf45c0b63fb5ac9
     resource: repo://app/src/main/java/cn/com/dcsgo/mihx/app/di/PlayerModule.kt
+  - id: openwiki-source-c5e9b6973b445a58e095b661
+    resource: repo://app/src/main/java/cn/com/dcsgo/mihx/app/player/NowPlayingSurface.kt
   - id: openwiki-source-2a9daaac1604f238ef4c63fb
     resource: repo://build.gradle.kts
   - id: openwiki-source-7d322a65ddca1cf4588fa5e3
@@ -14,6 +18,8 @@ sources:
     resource: repo://domain/src/main/java/cn/com/dcsgo/mihx/domain/playback/ExplorePlaybackPolicy.kt
   - id: openwiki-source-d2dec7047247a16d7d9623df
     resource: repo://domain/src/main/java/cn/com/dcsgo/mihx/domain/playback/PlayerQueueServices.kt
+  - id: openwiki-source-99658f7832f40c1d2ebc700e
+    resource: repo://domain/src/main/java/cn/com/dcsgo/mihx/domain/repository/MediaStorageStatsRepository.kt
   - id: openwiki-source-15370df42a01365d6f089c6e
     resource: repo://domain/src/main/java/cn/com/dcsgo/mihx/domain/repository/WordPreferenceRepository.kt
   - id: openwiki-source-7947bd28b3f56e3e0375e61b
@@ -80,61 +86,74 @@ sources:
     resource: repo://feature/player/src/test/java/cn/com/dcsgo/mihx/feature/player/PlayerRandomQueueFacadeTest.kt
   - id: openwiki-source-e0c3384d9aa25ad5cfc535e4
     resource: repo://feature/player/src/test/java/cn/com/dcsgo/mihx/feature/player/PlayerStartupFacadeTest.kt
-generated: { by: "openwiki/0.5.0", at: "2026-10-27T08:49:20.803Z" }
+generated: { by: "openwiki/0.5.0", at: "2026-11-20T09:49:41.934Z" }
 verified:
   - by: openwiki/0.5.0
-    at: 2026-10-27T08:49:20.803Z
+    at: 2026-11-20T09:49:41.934Z
 ---
 
-# PlayerRuntime and the Facade Catalog
+# PlayerRuntime facade graph
 
-The player UI never talks to Media3, repositories, or storage directly. `PlayerViewModel` (`:feature:player`) is a **delegation-only facade** whose single job is to expose state and forward calls; the real logic lives in ~18 facade objects assembled by `PlayerRuntime`, the composition root of the feature. Facades are grouped by concern and share collaborators through five graph objects. This page is the structural map to read before touching any player code; the behavior behind the facades is detailed in `/openwiki/player/queue-architecture.md` (queues/windows), `/openwiki/player/random-and-infinite.md` (random/infinite), and `/openwiki/player/state-machine.md` (state mapping/restore).
+The player UI never talks to Media3, repositories, or storage directly. `PlayerViewModel` (`:feature:player`) is a facade whose job is to expose state and forward calls; the logic lives in ~18 facade objects assembled by `PlayerRuntime`, the composition root of the feature. Facades are grouped by concern and share collaborators through five graph objects. This page is the structural map to read before touching any player code; the behavior behind the facades is detailed in `/openwiki/player/queue-architecture.md` (queues/windows), `/openwiki/player/random-and-infinite.md` (random/infinite), and `/openwiki/player/state-machine.md` (state mapping/restore).
 
 ## Composition at a glance
 
 ```mermaid
 flowchart TD
     subgraph HILT["Hilt SingletonComponent graph"]
-        PLAYERMODULE["app/di/PlayerModule and RepositoryModule bind ports to :player/:data"]
-        REPOS["Repositories: SongRepository, AlbumArtRepository, PlayStatsRepository, PlayerSettingsRepository, TimeSlotConfigRepository, SongEmotionRepository"]
+        MODULES["app/di PlayerModule and data/di RepositoryModule bind ports and repositories"]
+        REPOS["Repositories: Song, AlbumArt, PlayStats, PlayerSettings, TimeSlotConfig, SongEmotion, WordPreference, MediaStorageStats"]
         PORTS["Ports: PlaybackControllerPortFactory, ControllerQueuePlannerPort, PlaybackStateStorageFactory, BluetoothPlaybackMonitorFactory, PlaybackDurationMonitorFactory, PlayerQueueServicesFactory, CoroutineDispatchers"]
     end
-    VM["PlayerViewModel, @HiltViewModel, delegation only"]
-    FACTORY["PlayerRuntimeFactory.create(viewModelScope)"]
-    RT["PlayerRuntime, composition root, owns PlayerUiState MutableStateFlow + narrow flows + trackedSongId"]
-    VM --> FACTORY
+    VM["PlayerViewModel, @HiltViewModel, no policy"]
+    FACTORY["PlayerRuntimeFactory.create with viewModelScope"]
+    RT["PlayerRuntime, composition root, owns PlayerUiState, narrow flows and volatile caches"]
+    VM -->|"runtime"| FACTORY
+    VM -->|"currentEmotion and file sizes"| REPOS
     REPOS --> FACTORY
     PORTS --> FACTORY
-    PLAYERMODULE -.-> PORTS
+    MODULES -.-> PORTS
+    MODULES -.-> REPOS
     FACTORY --> RT
-    RT --> MG["PlayerMediaControllerGraph (lazy): creates playbackController, translates callbacks"]
-    RT --> QG["PlayerQueueGraph (eager): unwraps PlayerQueueServices coordinators"]
-    RT --> PG["PlayerPersistenceGraph (lazy): storage port + restore coordinator + facade + autosaver"]
-    RT --> BG["PlayerBluetoothGraph (lazy): monitor initialize and release"]
-    RT --> PSG["PlayerPlaybackSessionGraph (lazy): session + seek coordinators + PlayerSessionFacade"]
-    RT --> FCD["~18 facades wired by constructor lambdas"]
+    RT --> MG["PlayerMediaControllerGraph, lazy"]
+    RT --> QG["PlayerQueueGraph, eager"]
+    RT --> PG["PlayerPersistenceGraph, lazy, FIFO persist channel"]
+    RT --> BG["PlayerBluetoothGraph, lazy"]
+    RT --> PSG["PlayerPlaybackSessionGraph, lazy"]
+    RT --> CAC["Volatile caches: mood configs, match ratios, vote ratios, word preferences, enhance mode"]
+    RT --> FCD["18 facades wired by constructor lambdas"]
+    CAC -->|"lambda accessors"| FCD
     MG --> CTRL["PlaybackController via PlaybackControllerPortFactory, drives AppMediaSessionService in :player"]
 ```
 
-*The composition chain: Hilt supplies repositories and Port factories to `PlayerRuntimeFactory`, which builds `PlayerRuntime`; the runtime wires five graphs and the facade set through lambda injection, and only `PlayerMediaControllerGraph` ever reaches the Media3-backed controller in `:player`.*
+*The composition chain: Hilt supplies repositories and Port factories to `PlayerRuntimeFactory`, which builds `PlayerRuntime`; the runtime wires five graphs, the facade set, and its settings caches, and only `PlayerMediaControllerGraph` ever reaches the Media3-backed controller in `:player`.*
 
-## PlayerViewModel: a delegator by design
+## PlayerViewModel: a policy-free facade
 
-`PlayerViewModel` is `@HiltViewModel` and takes exactly one constructor parameter, `PlayerRuntimeFactory`. Its constructor calls `runtimeFactory.create(viewModelScope)`, `init { runtime.start() }` boots the runtime, every public method is a one-line forward, and `onCleared()` forwards to `runtime.onCleared()`. It re-exposes `runtime.uiState`, the two narrow flows, `validationResult`/`isValidating`, and the persisted sort-mode flows. The only ViewModel-local behavior is the playback-stats snapshot cache (stale-while-revalidate over `playStatsRepository`, which the runtime re-exposes for it) — anything beyond that belongs in a facade.
+`PlayerViewModel` is `@HiltViewModel` with three constructor parameters: `PlayerRuntimeFactory`, `MediaStorageStatsRepository`, and `SongEmotionRepository`. Its constructor calls `runtimeFactory.create(viewModelScope)`, `init { runtime.start() }` boots the runtime, every command method is a one-line forward, and `onCleared()` forwards to `runtime.onCleared()`. It re-exposes `runtime.uiState`, the two narrow flows, `validationResult`/`isValidating`, the duplicate/quick-skip flows, the `playQueue`/`currentSong`/`currentPlayMode` getters, and the sort-mode flows. Its doc contract is unchanged and load-bearing: UI code must never hold `Repository` or Media3 controller instances directly.
 
-Two consequences follow from the thinness:
+The members that are *not* literal forwards are all derived reads or pass-throughs, and they are the complete list of what the ViewModel may do on its own:
 
-- UI code must never hold `Repository` or Media3 controller instances; the ViewModel doc comment states this contract explicitly.
-- New player capabilities must **not** be implemented as new ViewModel methods with bodies. The ViewModel gains a forwarding method (if UI needs one); the behavior lives in a facade.
+- `currentEmotion` — `combine(uiState, songEmotionRepository.observeAll())` maps the current song id into the emotion map, then `distinctUntilChanged().stateIn(WhileSubscribed(5_000), null)`. It deliberately uses the lightweight full-table flow instead of `SongEmotionRepository.get`: a single-row read carries the embedding, while the now-playing header only needs `curve`/`userTags`, and collection stops 5 s after the surface leaves. Consumed by `NowPlayingSurface`.
+- `measureLocalSongFileSizes(songs)` — a `suspend` pass-through to `mediaStorageStatsRepository.measureFileSizes(songs)`; the ViewModel decides no thresholds, quality tiering stays in the pure `LocalMusicStorageStats.from`, which the storage-stats route calls on the returned map.
+- `songSortMode` / `songSortAscending` — `stateIn(viewModelScope, SharingStarted.Eagerly, …)` wrappers over the runtime's repository flows, with placeholder initial values (`IMPORT_ORDER`, `true`) so the local-music list composes before the persisted value arrives.
+- The playback-stats snapshot cache (stale-while-revalidate over `playStatsRepository`, mutex-guarded) — the only stateful ViewModel-local cache; the 8-table snapshot query is too slow to re-run on every stats-page entry.
+
+Two consequences follow:
+
+- New player capabilities must **not** be implemented as new ViewModel methods with bodies. The ViewModel gains a forwarding method (if UI needs one), or at most a derived read like `currentEmotion`; the behavior lives in a facade.
+- Repositories injected here are read-only data sources for shell widgets (emotion tags, storage stats). They are not a licence to add policy: a decision that touches playback state belongs in a facade or a `:domain` planner.
+
+Minor doc drift worth knowing: the `positionMs` KDoc still says "~500 ms", while `PlayerPlaybackProgressTicker` is the source of truth at 200 ms.
 
 ## PlayerRuntimeFactory: the Hilt seam
 
-`PlayerRuntimeFactory` is `@Inject`-constructed by Hilt and passes everything into `PlayerRuntime.create()`-style construction. Its injected set is the exact boundary of what the feature may know about the world:
+`PlayerRuntimeFactory` is `@Inject`-constructed by Hilt and passes everything into `PlayerRuntime`. Its injected set is the exact boundary of what the feature's playback machinery may know about the world:
 
 - **Repositories** — `SongRepository`, `AlbumArtRepository`, `PlayStatsRepository`, `PlayerSettingsRepository`, `TimeSlotConfigRepository`, `SongEmotionRepository`, `WordPreferenceRepository`.
 - **Playback Ports / factories** (interfaces and `fun interface`s in `domain/playback`) — `ControllerQueuePlannerPort`, `PlaybackControllerPortFactory`, `PlaybackDurationMonitorFactory`, `PlaybackStateStorageFactory`, `BluetoothPlaybackMonitorFactory`, `PlayerQueueServicesFactory`, plus `CoroutineDispatchers`.
 
-`app/di/PlayerModule` binds each Port to its `:player` implementation (`WindowedControllerQueuePlanner`, `PlaybackController` → `AppMediaSessionService`, `PlaybackStateStore`, `BluetoothPlaybackCoordinator`, `PlayDurationTracker`, and the `PlayerQueueServices` bundle of coordinators). The feature therefore compiles against `:domain` interfaces only — no `:data`/`:player` imports, enforced by the architecture gate (see `/openwiki/architecture/module-graph.md`).
+`app/di/PlayerModule` binds each Port to its `:player` implementation (`WindowedControllerQueuePlanner`, `PlaybackController` → `AppMediaSessionService`, `PlaybackStateStore`, `BluetoothPlaybackCoordinator`, `PlayDurationTracker`, and the `PlayerQueueServices` bundle of coordinators), and `data/di/RepositoryModule` provides the repository implementations. The feature therefore compiles against `:domain` interfaces only — no `:data`/`:player` imports, enforced by the architecture gate (see `/openwiki/architecture/module-graph.md`).
 
 ## The five graphs
 
@@ -158,9 +177,15 @@ Eighteen facades, grouped by concern. Each row is the facade's single reason to 
 
 **Queue**
 
-- `PlayerQueueFacade` — routes every business-queue mutation (replace, add tail, add-next, remove, remove-at, clear, play-item, play-mode) through the injected `PlaybackQueueActionPlanner`; `applyPlan` copies the planned queue into state (plus `nextPlayState`, infinite-play exit, current-song/duration clearing), then executes the plan's playback action (`PlayQueueIndex` / `SyncQueue` / `ClearController` / `None`) and the persistence flags.
+- `PlayerQueueFacade` — routes every business-queue mutation (replace, add tail, add-next, remove, remove-at, clear, play-item, play-mode) through the injected `PlaybackQueueActionPlanner`; `applyPlan` copies the planned queue into state (plus `nextPlayState`, infinite-play exit, explore-session exit via `isExplorePlay = false`, current-song/duration clearing), then executes the plan's playback action (`PlayQueueIndex` / `SyncQueue` / `ClearController` / `None`) and the persistence flags.
 - `PlayerControllerQueueFacade` — converts a business queue into a controller window via `ControllerQueuePlannerPort.plan`, skips redundant syncs using a fingerprint (`songIds + startIndex`), computes `remainingMediaItems` (controller count minus current index, falling back to the planned window's `remainingAfterStart` when the controller is empty), and clears the controller playlist (resetting the fingerprint).
-- `PlayerRandomQueueFacade` — the stateful side of random/infinite playback: keeps the in-memory `recentPlayedSongIds`, resolves the active mood time slot via `MoodSlotResolver` and filters the candidate pool at the planner entrance by per-word **ratio thresholds** (a word counts only if its share of the song is ≥ `MoodSlotPolicy.MATCH_MIN_RATIO`, and a mood slot with no tag hits falls back to the full library), runs `playRandomQueue` / `startInfinitePlay` / `stopInfinitePlay`, and handles infinite refill including the `advanceAfterWrap` cursor correction. It also owns **explore-play**: `playRandomQueue` generates a fixed `ExplorePlaybackPolicy.INITIAL_BATCH_SIZE = 10` batch when the enhance mode is EXPLORE and sets `isExplorePlay` (`startInfinitePlay` is blocked while an explore session is live; a live queue refills immediately at the tail when remaining items are low), and `refillExplorePlayQueue` appends `REFILL_COUNT = 5` songs from a like/dislike-word tiered pool (liked & no-dislike → no-dislike → full library) where the fallback driver is whether a tier holds enough songs to fill the batch (not merely non-empty), using the cached `wordPreferenceOf` votes.
+- `PlayerRandomQueueFacade` — the stateful side of random/explore/infinite playback: keeps the in-memory `recentPlayedSongIds`, resolves the active mood slot, filters the candidate pool at the planner entrance, runs `playRandomQueue` / `startInfinitePlay` / `stopInfinitePlay`, and handles both infinite and explore refill. Details:
+  - **Slot resolution** — `activeMoodSlot()` returns `null` unless `moodSlotEnabled()` (cached `TIME_SLOT` mode) is on; otherwise `MoodSlotResolver.hitSlot(moodSlotConfigs(), nowMinuteOfDay())` picks the slot, and `nowMinuteOfDay` is injectable so tests do not depend on the wall clock. `currentMoodSlot()` exposes the same result for toast attribution.
+  - **Two-stage pool filtering** — exclusion runs first (`filterOutExcludedMoodTags`: drop any song whose excluded tag holds at least `MoodSlotPolicy.EXCLUDE_MIN_RATIO`, the detail-page display threshold), then inclusion (`filterByMoodTags`: keep songs whose tag holds at least `MoodSlotPolicy.MATCH_MIN_RATIO = 0.35`; a warning is logged below `POOL_WARN_THRESHOLD`; no hit at all returns `null`, so the caller falls back to the exclusion-filtered library). Ratio-less manual tags count as `1.0`. Explore mode ignores mood entirely.
+  - **`playRandomQueue()`** — suspend; clears `isInfinitePlay`/`infinitePlayedSongIds`, plays the batch as a `SEQUENTIAL` queue from index 0, and sets `isExplorePlay`; in EXPLORE mode it plans a fixed `ExplorePlaybackPolicy.INITIAL_BATCH_SIZE = 10` batch instead of the planner default.
+  - **`startInfinitePlay()`** — suspend; blocked only when `isExplorePlay` (the session flag, not the mode), so a user who manually picked a song can still turn infinite play on. `planInfiniteStart` keeps the current queue and stores the covered ids, and a live queue refills immediately when `remainingMediaItems() <= PlayerMediaEventFacade.DEFAULT_REFILL_THRESHOLD`.
+  - **`refillInfinitePlayQueue(startedSongId, advanceAfterWrap)`** — refills from the mood pool first with `allowHistoryReset = false`, degrades to the non-excluded library once that pool is exhausted, and with `advanceAfterWrap` moves the current index to the first newly appended song (or jumps to the queue head when there is nothing new).
+  - **Explore refill** — `refillExplorePlayQueue` appends `ExplorePlaybackPolicy.REFILL_COUNT = 5` songs from the `buildExploreRefillPool` tiers (liked & no-dislike → no-dislike → full library), where the fallback driver is whether a tier holds enough songs to fill the batch (not merely non-empty); `stopExplorePlay()` clears `isExplorePlay` when the mode is switched away.
 
 **Playback**
 
@@ -197,7 +222,7 @@ Non-facade helpers in the same package: `PlayerControllerStateAdapter` (Media3 c
 
 ## Startup, restore handshake, and teardown
 
-`PlayerRuntime.start()` deliberately keeps the main thread lean: a single IO-context coroutine reads the five DataStore-backed settings (`globalUniformRandomEnabled`, `bluetoothPlaybackMonitoringEnabled`, `playbackNotificationEnabled`, `dailyListeningGoalMinutes`, plus the initial `randomEnhanceMode` snapshot used to seed the mood/explore caches) and restores the sleep timer before, then calls `startupFacade.start()`, installs the `observeMoodSlotCaches()` subscriptions, loads the quick-skip songs StateFlow, and initializes Bluetooth only when the user setting is enabled. The restore itself is two-branch by construction:
+`PlayerRuntime.start()` deliberately keeps the main thread lean: a single IO-context coroutine reads the five DataStore-backed settings (`globalUniformRandomEnabled`, `bluetoothPlaybackMonitoringEnabled`, `playbackNotificationEnabled`, `dailyListeningGoalMinutes`, plus the initial `randomEnhanceMode` snapshot used to seed the enhance-mode cache) and restores the sleep timer before, then calls `startupFacade.start()`, installs the `observeMoodSlotCaches()` subscriptions, loads the quick-skip songs StateFlow, and initializes Bluetooth only when the user setting is enabled. The restore itself is two-branch by construction:
 
 - The DataStore read runs on IO in parallel with the controller connection; whichever finishes first waits for the other.
 - `persistenceGraph.onControllerReady()` (invoked from the controller's `onConnected`, or from the controller-unavailable fallback) sets `controllerReady` and applies `pendingRestore`.
@@ -209,13 +234,57 @@ When the playback controller is unavailable (connection failure, or pending acti
 
 ### Runtime-level responsibilities beyond the facades
 
-Not every behavior is a facade: a couple of settings, the file-check domain, the mood/explore caches, and the explore-learning write-back are orchestrated directly on `PlayerRuntime`.
+Not every behavior is a facade: a few settings, the file-check domain, the mood/explore caches, and the explore-learning write-back are orchestrated directly on `PlayerRuntime`.
 
-- **Song sort mode** — `songSortMode` and `songSortAscending` are `Flow<SongSortMode>`/`Flow<Boolean>` re-exposed straight from `playerSettingsRepository` (with `currentSongSortMode()`/`currentSongSortAscending()` for on-demand reads), and `setSongSortMode`/`setSongSortAscending` persist through `scope.launch { playerSettingsRepository.setSongSortMode(mode) }`.
+- **Song sort mode** — `songSortMode` and `songSortAscending` are plain `Flow<SongSortMode>`/`Flow<Boolean>` re-exposed straight from `playerSettingsRepository` (no synchronous snapshot helpers remain), and `setSongSortMode`/`setSongSortAscending` persist through `scope.launch { … }`. Turning them into UI `StateFlow`s with placeholder initial values is the ViewModel's job.
 - **File-check domain** — `validateLocalFiles(mode)` runs `songRepository.validateAndCleanupLocalFiles(mode)` on IO and parks the `LocalFileValidationResult` in the `validationResult` StateFlow until the user acknowledges it (`acknowledgeValidationResult`). The duplicate-file scan is orchestrated here too: `scanDuplicateSongs()` calls `songRepository.scanDuplicateSongGroups()` on IO and publishes into a `duplicateGroups` StateFlow (guarded by `isScanningDuplicates`, flagged by `hasScannedDuplicates`), and `deduplicateAll()` calls `songRepository.deduplicateSongs(groups)`, then clears the groups, the scan flag, and the validation badge.
-- **Mood and explore caches (continuous observation)** — `observeMoodSlotCaches()` keeps several `@Volatile` caches fresh from repository **flows** rather than one-shot snapshots: `moodSlotConfigsCache` and `randomEnhanceModeCache` from `playerSettingsRepository.randomEnhanceMode`, `moodEmotionTagsCache`/`moodEmotionRatiosCache`/`exploreVoteRatiosCache` (mapped from emotion entities, computed on the default dispatcher) from `songEmotionRepository.observeAll()`, and `wordPreferenceCache` from `wordPreferenceRepository.observeAll()`. The same `randomEnhanceMode` observation drives `isExploreModeActive`: when the mode leaves EXPLORE, the flag is cleared and, if an explore session is live (`isExplorePlay`), `randomQueueFacade.stopExplorePlay()` exits it. The runtime exposes them to the facade through lambdas — `moodSlotConfigs`, `moodEmotionTagRatiosOf`, `moodEmotionTagsOf`, `exploreModeEnabled`, and `wordPreferenceOf` (all zero-IO reads against the caches). There is no `refreshMoodSlots()` manual hook — saves/deletes/new analyses push through the flows.
+- **Settings caches (continuous observation)** — see the next subsection.
 - **Explore listening learning** — `handleExploreSongSettled(songId, playedMs)`, invoked by the media-event facade at every song boundary, reads the song's vote ratios from `exploreVoteRatiosCache` (words gated by `ExplorePlaybackPolicy.VOTE_MIN_RATIO`/`VOTE_MAX_TAGS`, the same intake as the detail page), decides `ExplorePlaybackPolicy.isSkipped(playedMs, durationMs)` (skipped = `< 30s` or `< 1/4` total), computes **weighted integer votes** via `ExplorePlaybackPolicy.votesOf(ratios)` (ratio × `VOTE_WEIGHT_SCALE = 100`), and calls `wordPreferenceRepository.recordSongOutcome(votes, liked = !skipped)` in a coroutine — a proportionally-weighted `likeVotes`/`dislikeVotes` tally per emotional word, re-read afterward for the visible like/dislike/neutral snapshot. The re-emitted `observeAll()` keeps `wordPreferenceCache` current for the refill pool.
-- **Async random leaders** — `playRandomQueue(onResult)` and `startInfinitePlay(onResult)` are now async: each runs `randomQueueFacade` on the view-model scope and reports `started` plus the hit mood slot name (`currentMoodSlot()?.slotName`) through the `onResult` callback instead of returning synchronously (the old synchronous Boolean return had to `runBlocking` the play-count query on the main thread).
+- **Async random leaders** — `playRandomQueue(onResult)` and `startInfinitePlay(onResult)` are async: each runs the suspend `randomQueueFacade` call on the view-model scope and reports `started` plus the hit mood slot name (`randomQueueFacade.currentMoodSlot()?.slotName`) through `onResult` instead of returning synchronously (the old synchronous Boolean return had to `runBlocking` the play-count query on the main thread).
+
+#### Caches and subscription rules for mood and explore
+
+Five `@Volatile` fields on `PlayerRuntime` cold-start empty and are refreshed only by `observeMoodSlotCaches()`, which launches one collector per repository flow on the view-model scope:
+
+- `moodSlotConfigsCache` ← `timeSlotConfigRepository.observeConfigs()`.
+- `moodEmotionRatiosCache` and `exploreVoteRatiosCache` ← a single `songEmotionRepository.observeAll()` pipeline that computes **both** distributions per song in one pass, on `dispatchers.default`: the full `emotionMatchRatiosOf(emotion)` and the thresholded `emotionVoteRatiosOf(emotion, minRatio = ExplorePlaybackPolicy.VOTE_MIN_RATIO, topN = VOTE_MAX_TAGS)`.
+- `wordPreferenceCache` ← `wordPreferenceRepository.observeAll()`.
+- `randomEnhanceModeCache` ← `playerSettingsRepository.randomEnhanceMode`; the same collector flips `PlayerUiState.isExploreModeActive` and, when the mode leaves `EXPLORE` while `isExplorePlay` is set, calls `randomQueueFacade.stopExplorePlay()`.
+
+Every collector is wrapped in `catch { … }` that logs a warning, so a failing repository flow degrades to the last cached value instead of cancelling the runtime scope. Tags are **not** a separate cache: `moodEmotionTagsOf` returns `moodEmotionRatiosCache[song.id]?.keys ?: emptySet()` — a `Set` view, so the hot path allocates nothing (M-4).
+
+```mermaid
+flowchart LR
+    PSR["playerSettingsRepository.randomEnhanceMode"] --> OBS["observeMoodSlotCaches, one collector per flow"]
+    TSR["timeSlotConfigRepository.observeConfigs"] --> OBS
+    SER["songEmotionRepository.observeAll, mapped on Default"] --> OBS
+    WPR["wordPreferenceRepository.observeAll"] --> OBS
+    OBS --> C1["moodSlotConfigsCache"]
+    OBS --> C2["moodEmotionRatiosCache, full distribution"]
+    OBS --> C3["exploreVoteRatiosCache, VOTE_MIN_RATIO and VOTE_MAX_TAGS"]
+    OBS --> C4["wordPreferenceCache"]
+    OBS --> C5["randomEnhanceModeCache"]
+    C5 -->|"sets isExploreModeActive, stops live explore session"| UIS["PlayerUiState"]
+    C1 --> L["PlayerRuntime lambda accessors, zero IO"]
+    C2 --> L
+    C3 --> L
+    C4 --> L
+    C5 --> L
+    L --> RQ["PlayerRandomQueueFacade slot match, pool filter and refill tiering"]
+    C3 --> LEARN["handleExploreSongSettled weighted votes"]
+```
+
+*Every cache is fed by a flow subscription and read through a lambda; nothing in the random/explore hot path performs a DataStore or Room read.*
+
+**Why the two ratio maps must stay separate.** `moodEmotionRatiosCache` is the full per-word distribution and is the only correct input for *matching*: a target word may rank fifth in a song and still be the emotion the slot is about. `exploreVoteRatiosCache` applies the detail-page intake (`VOTE_MIN_RATIO`/`VOTE_MAX_TAGS`) and is the only correct input for *voting*: casting dislike on a word that occupied 3% of a song spreads "dislike" far beyond what the user actually saw and rejected. Sharing the full distribution previously made a skip cast votes for six words while the detail page showed two, so dislike propagated roughly 2.7× faster and a few dozen songs could blacken every word.
+
+**Why these are subscriptions instead of `.first()` reads.** The caches exist because of three concrete failures:
+
+- A `.first()` on a DataStore-backed flow is a real disk read on every random decision (mode check, slot match, explore gate). The caches make `moodSlotEnabled`/`exploreModeEnabled` zero-IO.
+- One-shot snapshots went stale: saving or deleting a time-slot config, finishing a new emotion analysis, or recalibrating tags never reached the random path until restart. Flow subscriptions re-emit on save/delete/re-analysis/user calibration, which is why there is no `refreshMoodSlots()` manual hook.
+- Deriving tags and ratios per decision duplicated work across the pool filters and explore refill; computing both distributions once per emission on the default dispatcher moves that cost off the main thread and out of the tap handler.
+
+`start()` still reads `randomEnhanceMode` once into `randomEnhanceModeCache` before installing the subscriptions. That seed is not redundancy: it closes the window where the user taps random play before the collector has delivered its first value.
 
 ## The narrow-flow design
 
@@ -251,13 +320,15 @@ flowchart TD
 
 ## Extension rules
 
-1. **Find the facade first.** A new capability goes into the existing facade for that concern, or becomes a new facade with a single responsibility. `PlayerViewModel` gains at most a forwarding method; it must never grow logic. If a facade needs state, add a `state`/`updateState` lambda parameter, not a reference to `PlayerRuntime`.
+1. **Find the facade first.** A new capability goes into the existing facade for that concern, or becomes a new facade with a single responsibility. `PlayerViewModel` gains at most a forwarding method, or a derived read of the `currentEmotion` kind (`combine`/`map`/`stateIn` with no branch on playback state). It must never grow logic. If a facade needs state, add a `state`/`updateState` lambda parameter, not a reference to `PlayerRuntime`.
 2. **Push decisions into `:domain`.** Facades orchestrate and hold only small caches (`recentPlayedSongIds`, the mood caches, the sync fingerprint). Anything that computes a plan (queue actions, playback commands, random selection, window planning, state transitions) belongs to a `:domain` planner, which keeps it pure and independently tested.
 3. **Never reintroduce the `PlayerViewModelComponents` monolith.** It was deliberately dismantled into `PlayerRuntime` + facades + graphs, and `verifyProductArchitecture` fails any build whose sources contain the name `PlayerViewModelComponents` or `PlayerViewModelComponentFactory`. The refactor audit (`docs/refactor/PRODUCT_REFACTOR_AUDIT.md`) records the split as a verified productization item.
 4. **Every facade has a same-named test class.** `PlayerQueueFacadeTest`, `PlayerControllerQueueFacadeTest`, `PlayerRandomQueueFacadeTest`, `PlayerPlaybackFacadeTest`, `PlayerPlaybackBridgeFacadeTest`, `PlayerControllerStateFacadeTest`, `PlayerMediaEventFacadeTest`, `PlayerPersistenceFacadeTest`, `PlayerLibraryFacadeTest`, `PlayerImportFacadeTest`, `PlayerPlaylistFacadeTest`, `PlayerVersionFacadeTest`, `PlayerQuickSkipFacadeTest`, `PlayerSongDeletionFacadeTest`, `PlayerSessionFacadeTest`, `PlayerStartupFacadeTest`, `PlayerLifecycleFacadeTest`, `PlayerErrorFacadeTest`, plus graph/helper tests (`PlayerPlaybackSessionGraphTest`, `PlayerPlaybackProgressTickerTest`, `PlayerPlaybackStateAutosaverTest`, `PlayerSleepTimerCoordinatorTest`, `PlayerControllerStateAdapterTest`, `NarrowFlowSyncTest`) — 24 classes under `feature/player/src/test`. Lambda injection is what makes them instantiable on the JVM; new logic without a focused test breaks the convention.
 5. **New high-frequency UI state goes through a narrow flow.** Anything ticking faster than user-perceivable discrete events (progress, countdowns, live visualizers) gets its own `StateFlow` fed directly by its source, with a `NarrowFlowSync`-style propagation rule for discrete events, instead of a field on `PlayerUiState`. The 5-second-progress-jump incident is the cautionary tale.
-6. **Respect the startup privacy gates.** `PlayerStartupFacade` must not mention Bluetooth, and `MainActivity`/`AppRoot`/`PlayerRuntime`/`PlayerStartupFacade` must not request notification/Bluetooth permissions — the gate enforces both. User-triggered setup goes through Settings (`initializeBluetoothPlayback`/`releaseBluetoothPlayback` on the runtime).
-7. **Keep the lazy boundaries intact** when adding cross-facade calls in `PlayerRuntime` (see the cycle above), and prefer function references (`facade::method`) so the dependency stays a lambda, matching the established style.
+6. **Read settings from the observed caches, never with `.first()`** in a random/playback path. A new setting the random path needs is added as a field plus a collector inside `observeMoodSlotCaches()` (or a sibling collector) and exposed to the facade as a lambda — the `randomEnhanceModeCache`/`moodSlotEnabled`/`exploreModeEnabled` trio is the template. Keep the split between the full match distribution and the thresholded vote distribution; collapsing them re-introduces the vote-spreading regression.
+7. **Keep the suspend planner boundary off the main thread.** `playRandomQueue`/`startInfinitePlay` are `suspend` because they query play counts; the runtime launches them on its scope and reports `(started, moodSlotName)` to the UI through a callback. Never restore a synchronous Boolean return that needs `runBlocking` on the main thread, and never call a facade planner from a composable.
+8. **Respect the startup privacy gates.** `PlayerStartupFacade` must not mention Bluetooth, and `MainActivity`/`AppRoot`/`PlayerRuntime`/`PlayerStartupFacade` must not request notification/Bluetooth permissions — the gate enforces both. User-triggered setup goes through Settings (`initializeBluetoothPlayback`/`releaseBluetoothPlayback` on the runtime).
+9. **Keep the lazy boundaries intact** when adding cross-facade calls in `PlayerRuntime` (see the cycle above), and prefer function references (`facade::method`) so the dependency stays a lambda, matching the established style.
 
 ## Focused tests that actually matter
 
@@ -265,7 +336,7 @@ flowchart TD
 - `PlayerStartupFacadeTest` — locks the exact startup step order, including "restore after the initial library snapshot".
 - `PlayerPersistenceFacadeTest` — locks "capture position before launching the IO save" and the UI-only vs full restore application.
 - `PlayerPlaybackSessionGraphTest` — locks session start/seek behavior through the composed session + seek coordinators with fakes.
-- `PlayerRandomQueueFacadeTest` — locks lucky-play semantics (sequential queue, infinite exit, batch selection) and the mood-slot filter/fallback behavior.
+- `PlayerRandomQueueFacadeTest` — locks lucky-play semantics (sequential queue, infinite exit, batch selection), the tail-refill-on-infinite-start rule, and the mood-slot filter/fallback behavior.
 - `PlayerControllerStateFacadeTest` / `PlayerMediaEventFacadeTest` — lock snapshot→state mapping, tracking transitions, and the refill/add-next restore effects.
 
 Run them with `.\gradlew.bat :feature:player:test` (or a `--tests` filter for a single class) before committing facade changes; `verifyProductArchitecture` runs as part of `check` for the structural rules above.

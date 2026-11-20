@@ -1,8 +1,8 @@
 ---
 type: "Architecture"
 title: "Module Layering and Dependency Boundaries"
-description: "How the app is layered across :app, :feature:*, :domain, :data, :player and :core:*, which dependency directions are legal, where Hilt binds :data/:player implementations to :domain interfaces and playback Ports, and how the ProductArchitectureVerification rule engine (extracted to buildSrc) turns those boundaries into hard build gates."
-tags: [architecture, gradle, multi-module, hilt, dependency-boundaries, android]
+description: "How the app is layered across :app, :feature:*, :domain, :data, :player and :core:*, which dependency directions are legal, where Hilt binds :data/:player implementations to :domain interfaces and playback Ports, where new audio-spec classification and platform probing may live, and how the ProductArchitectureVerification rule engine (buildSrc) turns those boundaries into hard build gates."
+tags: [architecture, gradle, multi-module, hilt, dependency-boundaries, architecture-gate, android]
 sources:
   - id: openwiki-source-3bfcb28142050978edf94754
     resource: repo://app/build.gradle.kts
@@ -26,8 +26,14 @@ sources:
     resource: repo://build.gradle.kts
   - id: openwiki-source-7d322a65ddca1cf4588fa5e3
     resource: repo://buildSrc/src/main/kotlin/cn/com/dcsgo/mihx/verify/ProductArchitectureVerification.kt
+  - id: openwiki-source-cd02b468507d08514a40cb17
+    resource: repo://buildSrc/src/test/kotlin/cn/com/dcsgo/mihx/verify/ProductArchitectureVerificationTest.kt
   - id: openwiki-source-63f78e185ab10f1283a23093
     resource: repo://core/model/build.gradle.kts
+  - id: openwiki-source-c0c4dca2fa4503cee170d1ca
+    resource: repo://core/model/src/main/java/cn/com/dcsgo/mihx/core/model/AudioQualityTier.kt
+  - id: openwiki-source-41abfc4ea70fa1620e2f08cd
+    resource: repo://core/model/src/main/java/cn/com/dcsgo/mihx/core/model/LocalMusicStorageStats.kt
   - id: openwiki-source-ad278d499a6d617246596b70
     resource: repo://core/model/src/main/java/cn/com/dcsgo/mihx/core/model/Song.kt
   - id: openwiki-source-69570babfa5b1b1809a65b7b
@@ -40,10 +46,12 @@ sources:
     resource: repo://core/skin/src/main/java/cn/com/dcsgo/mihx/core/skin/SkinParser.kt
   - id: openwiki-source-01fdb840a5f4aae417b50bf3
     resource: repo://core/skin/src/main/java/cn/com/dcsgo/mihx/core/skin/SkinPartCatalog.kt
+  - id: openwiki-source-6eb249bc15d44016c76f5e2c
+    resource: repo://core/ui/src/main/java/cn/com/dcsgo/mihx/ui/components/AudioSpecBadges.kt
   - id: openwiki-source-0f1ea52b4adfffa8391b0e81
     resource: repo://data/build.gradle.kts
-  - id: openwiki-source-68cd28d87a169eb3e96aca51
-    resource: repo://data/schemas/cn.com.dcsgo.mihx.data.local.MelodyDatabase/17.json
+  - id: openwiki-source-69a70d6da6eacb0cacab8d31
+    resource: repo://data/schemas/cn.com.dcsgo.mihx.data.local.MelodyDatabase/20.json
   - id: openwiki-source-521a5e594c7876f8c8834b21
     resource: repo://data/src/main/AndroidManifest.xml
   - id: openwiki-source-561e2128ae9736ccc7b9d185
@@ -54,10 +62,16 @@ sources:
     resource: repo://data/src/main/java/cn/com/dcsgo/mihx/data/local/MelodyDatabase.kt
   - id: openwiki-source-51949c79e3bf4e421e7ff171
     resource: repo://data/src/main/java/cn/com/dcsgo/mihx/data/local/migration/MelodyMigrations.kt
+  - id: openwiki-source-b90ad5e1e20562c61d70b296
+    resource: repo://data/src/main/java/cn/com/dcsgo/mihx/data/repository/MusicRepository.kt
   - id: openwiki-source-1314bf2c6ff1d9d527a30d17
     resource: repo://data/src/main/java/cn/com/dcsgo/mihx/data/repository/SongRepositoryAdapter.kt
   - id: openwiki-source-17d3dc7f59fe7e3d0b195222
     resource: repo://data/src/main/java/cn/com/dcsgo/mihx/data/repository/WordPreferencesRepository.kt
+  - id: openwiki-source-ac9236d675980f7838292576
+    resource: repo://data/src/main/java/cn/com/dcsgo/mihx/data/util/AudioMetadataExtractor.kt
+  - id: openwiki-source-85bf040570ed0887ecaf8485
+    resource: repo://data/src/main/java/cn/com/dcsgo/mihx/data/util/AudioTrackSpecExtractor.kt
   - id: openwiki-source-0545d73aca829a981884071a
     resource: repo://domain/build.gradle.kts
   - id: openwiki-source-77f388f4244d1c6740f2029d
@@ -70,12 +84,18 @@ sources:
     resource: repo://domain/src/main/java/cn/com/dcsgo/mihx/domain/playback/PlayerQueueServices.kt
   - id: openwiki-source-8998202b464399afeb1ee79b
     resource: repo://domain/src/main/java/cn/com/dcsgo/mihx/domain/playback/RandomQueuePlanner.kt
+  - id: openwiki-source-fa45d7b04744543aaa64a73e
+    resource: repo://domain/src/main/java/cn/com/dcsgo/mihx/domain/playback/SongVersionComparer.kt
+  - id: openwiki-source-99658f7832f40c1d2ebc700e
+    resource: repo://domain/src/main/java/cn/com/dcsgo/mihx/domain/repository/MediaStorageStatsRepository.kt
   - id: openwiki-source-15370df42a01365d6f089c6e
     resource: repo://domain/src/main/java/cn/com/dcsgo/mihx/domain/repository/WordPreferenceRepository.kt
   - id: openwiki-source-b4a0ad44cdc5e341fdac0b95
     resource: repo://feature/home/.gitignore
   - id: openwiki-source-388251103920721eb6eecaee
     resource: repo://feature/home/build.gradle.kts
+  - id: openwiki-source-a70792ee2ea7b2bf52d8f103
+    resource: repo://feature/home/src/main/java/cn/com/dcsgo/mihx/feature/home/HomeComponents.kt
   - id: openwiki-source-fc4bd56948a4994429dd3d76
     resource: repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerControllerQueueFacade.kt
   - id: openwiki-source-8e3d8a1f18f53d37da8744f1
@@ -90,8 +110,12 @@ sources:
     resource: repo://feature/playlist/src/main/java/cn/com/dcsgo/mihx/feature/playlist/SongSorter.kt
   - id: openwiki-source-f583f3d6775eb16796ec584f
     resource: repo://feature/playlist/src/main/java/cn/com/dcsgo/mihx/feature/playlist/SortModeDropdownMenu.kt
+  - id: openwiki-source-0d750c53444f511fc41601ee
+    resource: repo://feature/playlist/src/main/java/cn/com/dcsgo/mihx/feature/playlist/StorageStatsScreen.kt
   - id: openwiki-source-4d35a723c52a6abeb769fbd2
     resource: repo://feature/user/build.gradle.kts
+  - id: openwiki-source-aa8139b1198651d6e65a46a2
+    resource: repo://feature/user/src/main/java/cn/com/dcsgo/mihx/feature/user/VersionComparisonScreen.kt
   - id: openwiki-source-431155803d48ed8be56e0ba9
     resource: repo://player/build.gradle.kts
   - id: openwiki-source-c804d077edb941261a21dbf9
@@ -112,10 +136,10 @@ sources:
     resource: repo://player/src/test/java/cn/com/dcsgo/mihx/player/EmotionAnalyzerLimitsTest.kt
   - id: openwiki-source-e620d7484b72a53c7fa812cd
     resource: repo://settings.gradle.kts
-generated: { by: "openwiki/0.5.0", at: "2026-10-27T08:49:20.803Z" }
+generated: { by: "openwiki/0.5.0", at: "2026-11-20T09:49:41.934Z" }
 verified:
   - by: openwiki/0.5.0
-    at: 2026-10-27T08:49:20.803Z
+    at: 2026-11-20T09:49:41.934Z
 ---
 
 # Module Layering and Dependency Boundaries
@@ -126,12 +150,12 @@ The product is a 15-module Android Gradle project (`melody-in-heart`, applicatio
 
 | Layer | Module(s) | Owns | Must not touch |
 | --- | --- | --- | --- |
-| App shell | `:app` | `MelodyApplication` (`@HiltAndroidApp`, logger install, Coil `ImageLoaderFactory`, uncaught-exception hook), `MainActivity` (`@AndroidEntryPoint`), `AppRoot`/`AppScaffold`/`AppNavHost`, the runtime `AppShell`/`AppTab` model and `SkinShellResolver`/`SkinSwitcherRoute`/`SkinSwitcherStore` (the shell-skinnning bridge between `:core:skin` descriptions and host routes/drawables), `PermissionCoordinator`, app-level Hilt modules (`CoroutineModule`, `LoggerModule`, `PlayerModule`) | — (depends on every other module) |
-| Feature | `:feature:home`, `:feature:playlist`, `:feature:user`, `:feature:lyrics`, `:feature:player`, `:feature:settings` | Public `XxxRoute` + internal `XxxScreen` composables, `XxxRouteState`/`XxxRouteActions` data classes, feature ViewModels; `:feature:player` additionally hosts the `PlayerRuntime` facade graph (`PlayerRandomQueueFacade`, `PlayerControllerQueueFacade`, `PlayerMediaEventFacade`, …); `:feature:playlist` hosts the library sorting helpers (`SongSorter`, `SortModeDropdownMenu`, `SongListTemplate`); `:feature:user` hosts the partitioned "我的" page (`UserSections` metadata consumed by `:core:skin`) and depends on `:core:skin` to reference the part catalog | `:data`, `:player`, and any other `:feature:*` module |
-| Domain | `:domain` | Repository **interfaces** (`cn.com.dcsgo.mihx.domain.repository.*`), playback policy as pure logic (`QueueManager`, `PlaybackQueueActionPlanner`, `RandomQueuePlanner`, `ExplorePlaybackPolicy`, `ControllerQueuePlanner`, `ControllerPlaybackStateSynchronizer`, `PlaybackRestoreCoordinator`, ...), and the playback **Ports**/factories (see below) | No Android/Compose imports; only `:core:model` (as `api`) + `:core:common` |
-| Data | `:data` | Room `MelodyDatabase` (v17, 14 entities) + `MelodyDao` + the migrations in `MelodyMigrations`, DataStore wrappers (`player_settings`, `mood_time_slot`, legacy prefs), `MusicRepository` storage coordinator, narrow repository adapters, `SharedPreferencesLegacyJsonMigration`; owns the Room `word_preferences` table backing `WordPreferenceRepository`; also declares the album-art `FileProvider` (authority `${applicationId}.artworkprovider`) exposing `cacheDir/album_art` as `content://` URIs | `:feature:*`, `:player` |
+| App shell | `:app` | `MelodyApplication` (`@HiltAndroidApp`, logger install, `PerformanceTrace` whitelist registration, Coil `ImageLoaderFactory`, uncaught-exception hook), `MainActivity` (`@AndroidEntryPoint`), `AppRoot`/`AppScaffold`/`AppNavHost`, the runtime `AppShell`/`AppTab` model and `SkinShellResolver`/`SkinSwitcherRoute`/`SkinSwitcherStore` (the shell-skinnning bridge between `:core:skin` descriptions and host routes/drawables), `PermissionCoordinator`, app-level Hilt modules (`CoroutineModule`, `LoggerModule`, `PlayerModule`) | — (depends on every other module) |
+| Feature | `:feature:home`, `:feature:playlist`, `:feature:user`, `:feature:lyrics`, `:feature:player`, `:feature:settings` | Public `XxxRoute` + internal `XxxScreen` composables, `XxxRouteState`/`XxxRouteActions` data classes, feature ViewModels; `:feature:player` additionally hosts the `PlayerRuntime` facade graph (`PlayerRandomQueueFacade`, `PlayerControllerQueueFacade`, `PlayerMediaEventFacade`, …); `:feature:playlist` hosts the library sorting helpers (`SongSorter`, `SortModeDropdownMenu`, `SongListTemplate`) and the storage/quality stats screen; `:feature:user` hosts the partitioned "我的" page (`UserSections` metadata consumed by `:core:skin`), the audio-quality guide sheet and the multi-version comparison screen, and depends on `:core:skin` to reference the part catalog | `:data`, `:player`, and any other `:feature:*` module |
+| Domain | `:domain` | Repository **interfaces** (`cn.com.dcsgo.mihx.domain.repository.*`), playback policy as pure logic (`QueueManager`, `PlaybackQueueActionPlanner`, `RandomQueuePlanner`, `ExplorePlaybackPolicy`, `ControllerQueuePlanner`, `ControllerPlaybackStateSynchronizer`, `PlaybackRestoreCoordinator`, `SongVersionComparer`, …), and the playback **Ports**/factories (see below) | No Android-framework imports except the M-21 baseline; only `:core:model` (as `api`) + `:core:common` |
+| Data | `:data` | Room `MelodyDatabase` (**version 20, 14 entities**) + `MelodyDao` + the migrations in `MelodyMigrations`, DataStore wrappers (`player_settings`, `mood_time_slot`, legacy prefs), `MusicRepository` storage coordinator, narrow repository adapters, `SharedPreferencesLegacyJsonMigration`, media probing (`AudioMetadataExtractor`, `AudioTrackSpecExtractor`); owns the Room `word_preferences` table backing `WordPreferenceRepository`; also declares the album-art `FileProvider` (authority `${applicationId}.artworkprovider`) exposing `cacheDir/album_art` as `content://` URIs | `:feature:*`, `:player` |
 | Player | `:player` | `AppMediaSessionService` (Media3 `MediaSessionService` owning ExoPlayer), `PlaybackController` (MediaController client), windowed queue planning in `player/window/` (`WindowedControllerQueuePlanner`, `ControllerWindowSynchronizer`, `PlaybackWindowPlanner`), `PlaybackStateStore`, Bluetooth coordinators, `PlayDurationTracker`, FFmpeg (`FfmpegPcmDecoder`) + `EmotionAnalyzer` support, `di/AppCoroutineScopeModule` | `:feature:*`, `:data` |
-| Core | `:core:model`, `:core:common`, `:core:ui`, `:core:skin` | `:core:model`: data types (`Song`, `Playlist`, `PlayQueue`, `PlayMode`, `AlbumEntry`, `ArtistEntry`, `LyricLine`, `SongInfo`, `SongEmotion`, `TimeSlotConfig`, `WordPreference`/`WordPreferenceKind`, `ThemeMode`/`ThemeVariant`) with zero project dependencies (only compose-runtime for `@Stable`/`@Immutable` annotations); `:core:common`: `AppLog`/`AppLogger`, `PerformanceTrace`, `CoroutineDispatchers`, time helpers; `:core:ui`: `MusicplayerTheme` and shared Compose components (song lists, toasts, dialogs, lyrics view, icons); `:core:skin`: skin **description model + parser/validator** (`Skin`, `SkinPartCatalog`, `DefaultSkin`, `SkinParser`, `SkinIssue`) — intentionally UI-free | `:core:model` must carry no Android resources and no `R.*` ids (enforced); `:core:skin` is likewise UI- and Compose-free (no resources, no Compose runtime) |
+| Core | `:core:model`, `:core:common`, `:core:ui`, `:core:skin` | `:core:model`: data types (`Song`, `Playlist`, `PlayQueue`, `PlayMode`, `AlbumEntry`, `ArtistEntry`, `LyricLine`, `SongInfo`, `SongEmotion`, `TimeSlotConfig`, `WordPreference`/`WordPreferenceKind`, `ThemeMode`/`ThemeVariant`) **and the pure audio-spec/quality policy** (`AudioQualityTier`, `Song.qualityTier`, `LocalMusicStorageStats`) with zero project dependencies (only compose-runtime for `@Stable`/`@Immutable` annotations); `:core:common`: `AppLog`/`AppLogger`, `PerformanceTrace`, `CoroutineDispatchers`, time helpers; `:core:ui`: `MusicplayerTheme` and shared Compose components (song lists, audio-spec badges, toasts, dialogs, lyrics view, icons); `:core:skin`: skin **description model + parser/validator** (`Skin`, `SkinPartCatalog`, `DefaultSkin`, `SkinParser`, `SkinIssue`) — intentionally UI-free | `:core:model` must carry no Android resources and no `R.*` ids (enforced); `:core:skin` is likewise UI- and Compose-free (no resources, no Compose runtime) |
 
 `:core:model` sits at the bottom with no project dependencies (it deliberately keeps only compose-runtime annotations, and `Song` stores an `android.net.Uri`); `:core:common` is standalone; `:core:ui` depends on `:core:model` and `:core:common`; `:core:skin` depends only on `:core:model` plus `org.json` (no Compose, no UI, so the whole description is parseable and unit-testable headlessly); `:domain` re-exports `:core:model` (`api(project(":core:model"))`) so every consumer gets the data types transitively.
 
@@ -142,7 +166,7 @@ flowchart TD
     APP[":app shell, AppNavHost, SkinShellResolver, Hilt wiring"] --> FEAT[":feature:* Route and Screen modules"]
     APP --> SKIN[":core:skin skin description model and parser"]
     APP --> PLAYER[":player Media3 service and controller"]
-    APP --> DATA[":data Room and DataStore"]
+    APP --> DATA[":data Room, DataStore and media probing"]
     APP --> DOMAIN[":domain interfaces and playback policy"]
     APP --> CORE[":core:* model, common, ui"]
     FEAT -->|"only :feature:user"| SKIN
@@ -152,7 +176,7 @@ flowchart TD
     PLAYER --> CORE
     DATA --> DOMAIN
     DATA --> CORE
-    DOMAIN --> CMODEL[":core:model pure data types"]
+    DOMAIN --> CMODEL[":core:model pure data types and audio-quality policy"]
     DOMAIN --> CCOMMON[":core:common logging and dispatchers"]
     CORE --> CMODEL
     SKIN --> CMODEL
@@ -162,9 +186,33 @@ flowchart TD
 
 The direction rules are:
 
-- **`feature → core:* + domain` only.** Every `:feature:*` build file declares `implementation(project(":core:model"))`, `:core:common`, `:core:ui` and `:domain` (plus Compose/Coil/Hilt libraries); `:feature:user` additionally declares `implementation(project(":core:skin"))`. No feature declares `project(":data")` or `project(":player")`, and no feature declares another `project(":feature:…")` — cross-feature navigation goes through `:app` (the runtime shell derives the bottom tabs and `AppNavHost` composes `HomeRoute`, `LyricsRoute`, `PlaylistRoute`'s detail routes, `SettingsRoute`, and the `:feature:user` routes together).
+- **`feature → core:* + domain` only.** No `:feature:*` build file declares `project(":data")`, `project(":player")` or another `project(":feature:…")` — the gate fails any that does, so cross-feature navigation goes through `:app` (the runtime shell derives the bottom tabs and `AppNavHost` composes `HomeRoute`, `LyricsRoute`, `PlaylistRoute`'s detail routes, `SettingsRoute`, and the `:feature:user` routes together). The shared dependency set is `:core:model` + `:core:ui` + `:domain` in every feature; `:core:common` is declared by `:feature:home`, `:feature:playlist`, `:feature:user` and `:feature:player` only, and `:feature:user` alone adds `:core:skin`.
 - **`:player` and `:data` depend only on `core:* + domain`.** They reach each other's mechanics only through narrow interfaces/Ports provided by Hilt (see below), never through implementation imports.
-- **`:domain` has no Android dependencies.** Despite being an `com.android.library` module, no file under `domain/src/main/java` imports `android.*`, `androidx.*`, or Compose; its entire source surface is interfaces, data classes, and pure policy functions over `:core:model` types (only `:core:common` time helpers are imported for `SongVersionComparer`). **M-21 caveat:** the gate's Android-framework ban on `:core:model` and `:domain` was introduced (2026-10-27) on a **ratchet** basis — pre-existing `import android.*` sites (notably `android.net.Uri` in `Song`/`AlbumEntry`/`ArtistEntry` and `FolderImporter`/`MusicImportRepository` in `:domain`) are whitelisted in a baseline, so they do not fail the build today, but any **new** `import android.*` in those two layers fails. The intended end state is `String`-based URIs parsed at the `:data`/`:player` boundary; that migration has not happened yet.
+- **`:domain` has no Android dependencies.** Despite being an `com.android.library` module, its source surface is interfaces, data classes, and pure policy functions over `:core:model` types (only `:core:common` time helpers are imported for `SongVersionComparer`). **M-21 caveat:** the gate's Android-framework import ban on `:core:model` and `:domain` is a **ratchet** — five pre-existing `import android.*` files are whitelisted in a baseline (`android.net.Uri` in `Song`/`AlbumEntry`/`ArtistEntry`, plus `FolderImporter` and `MusicImportRepository` in `:domain`), so they compile today, but any **new** `import android.*` in those two layers fails the build. The intended end state is `String`-based URIs parsed at the `:data`/`:player` boundary; that migration has not happened yet.
+
+## Where audio-spec and quality code may live (M-21 boundary)
+
+Audio quality ("音质档位") and spatial-audio detection are split across the layer boundary deliberately: **thresholds and verdicts are pure Kotlin in `:core:model`, platform probing is `:data`-only.**
+
+| Concern | Module | Code |
+| --- | --- | --- |
+| Tier thresholds, codec whitelist, spatial verdict | `:core:model` | `AudioQualityTier` (`STANDARD`/`HIGH`/`VERY_HIGH`/`LOSSLESS`/`HI_RES`/`UNKNOWN`, `classify()`, `isLossless()`, `isSpatial()`), `Song.qualityTier`/`qualityLabel` |
+| Aggregation (counts, shares, spatial ratio) | `:core:model` | `LocalMusicStorageStats.from`, `AudioQualityShare` |
+| Media probing (MIME, channels, bitrate, bit depth) | `:data/util` | `AudioTrackSpecExtractor` (`MediaExtractor`), `AudioMetadataExtractor.readTrack`/`readBitDepth` (`MediaMetadataRetriever`) |
+| Persistence / backfill | `:data` | `songs` columns added by `MIGRATION_17_18` and `MIGRATION_18_19`, refreshed by `MusicRepository.refreshMetadata` |
+| Consumption | `:domain`, `:core:ui`, `:feature:*` | `SongVersionComparer` (`:domain`), `AudioSpecBadges`/`SpatialAudioIcon` (`:core:ui`), `HiResBadge` (`:feature:home`), `StorageStatsScreen` (`:feature:playlist`), `AudioQualityGuideSheet`/`VersionComparisonScreen` (`:feature:user`) |
+
+The rules that make this safe to extend:
+
+- **A tier must be derivable from the persisted `Song` alone.** `Song.qualityTier` is a getter over `audioCodec`, `bitRateKbps`, `bitDepth` and `sampleRate`; missing data yields `AudioQualityTier.UNKNOWN`, whose `qualityLabel` is the empty string so the UI simply renders no badge. Nothing in a render path may call `MediaExtractor`/`MediaMetadataRetriever` — the verdicts are consumed by `:feature:playlist`, `:feature:home`, `:feature:user` and by the pure `:domain` comparator `SongVersionComparer`, none of which can reach `:data` or the platform at all.
+- **Spatial verdicts are recomputed, not trusted from the row.** Probing stores `spatialAudio` (`E-AC-3 JOC` always, `AC-4` only when `channelCount > 2`), but aggregate statistics re-apply `AudioQualityTier.isSpatial(song.audioCodec, song.channelCount)` in `LocalMusicStorageStats.from`, so an old row cannot freeze a superseded rule.
+- **Probing never throws across the boundary.** `AudioTrackSpecExtractor.read` returns `null` on failure (SAF URI first, `openAssetFileDescriptor` fallback, always `release()`), `AudioMetadataExtractor.readBitDepth` returns `0` for lossy codecs or unreadable values, and bit depth is only read for whitelisted lossless MIME types (an ALAC `.m4a` can report 24bit, an AAC `.m4a` must not).
+- **New classification code goes in `:core:model`, new probing code in `:data/util`.** M-21 has no baseline for new files: adding `android.media.*`/`android.net.Uri` to `:core:model` or `:domain`, or adding a `R.drawable.*` id to `:core:model`, fails `verifyProductArchitecture` immediately. Icons stay in `:core:ui` (`AudioSpecBadges`, `SpatialAudioIcon`) and are referenced by name from features.
+- **The measurement side is a `:domain` contract, not a threshold owner.** `MediaStorageStatsRepository.measureFileSizes` only returns `songId → bytes`; tier shares, the spatial count and the coverage ratio come from `LocalMusicStorageStats.from`, called from `PlayerViewModel.measureLocalSongFileSizes` and `AppNavHost`. This keeps a single set of thresholds.
+
+The schema chain follows from those rules: `MIGRATION_17_18` adds `songs.bitDepth`, and `MIGRATION_18_19` adds `bitRateKbps`, `channelCount`, `audioCodec` and `spatialAudio`. Old rows stay at `0`/`null`/`0` by design — they are backfilled only when the user runs a **deep verify** (`refreshMetadata` re-reads metadata and treats a changed bit depth/bitrate/channel/codec as a change worth writing), not by a silent full-library rescan.
+
+Focused tests: `AudioQualityTierTest` and `LocalMusicStorageStatsTest` in `:core:model` pin the tier/spatial boundary cases, and `MelodyDatabaseMigrationTest` in `:data` exercises the migration chain against the exported schemas.
 
 ## Hilt assembly points
 
@@ -179,7 +227,7 @@ Hilt is the mechanism that lets the upper layers depend on `:domain` abstraction
 | `AppMediaSessionService` | `@AndroidEntryPoint` | `player/src/main/java/cn/com/dcsgo/mihx/player/AppMediaSessionService.kt` |
 | `PlayerViewModel` | `@HiltViewModel` | `feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerViewModel.kt` |
 
-Note that `AppMediaSessionService` lives in `:player` but is assembled by the `:app`-rooted Hilt graph; correspondingly the gate forbids declaring it in the `:app` manifest — it must stay in the `:player` manifest, where it is declared. `MelodyApplication` in `:app` schedules `EmotionScanScheduler` from `onCreate()`. The `:player` module's classes live under `cn.com.dcsgo.mihx.player` (migrated from the old `cn.com.dcsgo.mihx.data.player` so the package matches the module namespace); the gate now blocks any stale `data.player` reference from returning.
+Note that `AppMediaSessionService` lives in `:player` but is assembled by the `:app`-rooted Hilt graph; correspondingly the gate forbids declaring it in the `:app` manifest — it must stay in the `:player` manifest, where it is declared. `MelodyApplication.onCreate()` installs the logger, registers the `PerformanceTrace.allow(...)` entries for the playback hot path (`play_next_command`, `controller_play_queue`, `controller_prepare_queue`, `controller_sync_queue`), installs the uncaught-exception hook and schedules `EmotionScanScheduler`. The `:player` module's classes live under `cn.com.dcsgo.mihx.player` (migrated from the old `cn.com.dcsgo.mihx.data.player` so the package matches the module namespace); the gate now blocks any stale `data.player` reference from returning.
 
 **Hilt modules (all required to exist and remain `SingletonComponent`):**
 
@@ -193,13 +241,14 @@ Note that `AppMediaSessionService` lives in `:player` but is assembled by the `:
 
 ## Pattern: interfaces in :domain, narrow adapters in :data
 
-Repository **contracts** live in `:domain` (`SongRepository`, `PlaylistRepository`, `MusicImportRepository`, `AlbumArtRepository`, `LyricsRepository`, `SongMetadataRepository`, `PlayStatsRepository`, `QuickSkipRepository`, `PlayerSettingsRepository`, `PlaybackStateRepository`, `PlaylistResumeRepository`, `SongEmotionRepository`, `EmotionFailureRepository`, `TimeSlotConfigRepository`, `WordPreferenceRepository`). **Implementations** live in `:data`, but `MusicRepository` — the Room/scan/storage coordinator — deliberately does *not* implement any of them. Instead each contract gets a narrow adapter that delegates to it, and `RepositoryModule` binds interface → adapter:
+Repository **contracts** live in `:domain` (`SongRepository`, `PlaylistRepository`, `MusicImportRepository`, `AlbumArtRepository`, `LyricsRepository`, `SongMetadataRepository`, `PlayStatsRepository`, `QuickSkipRepository`, `PlayerSettingsRepository`, `PlaybackStateRepository`, `PlaylistResumeRepository`, `SongEmotionRepository`, `EmotionFailureRepository`, `TimeSlotConfigRepository`, `WordPreferenceRepository`, `MediaStorageStatsRepository`). **Implementations** live in `:data`, but `MusicRepository` — the Room/scan/storage coordinator — deliberately does *not* implement any of them. Instead each contract gets a narrow adapter that delegates to it, and `RepositoryModule` binds interface → adapter:
 
 - `SongRepositoryAdapter` → `SongRepository` (delegates `loadSongs`, `observeSongsSnapshot`, `updateSongTitleOverride`, `deleteSong`, library artists/albums, file validation to `MusicRepository`)
 - `PlaylistRepositoryAdapter` → `PlaylistRepository`
 - `MusicImportRepositoryAdapter` → `MusicImportRepository`
 - `AlbumArtRepositoryAdapter` → `AlbumArtRepository`
 - `MediaMetadataRepository` → both `LyricsRepository` and `SongMetadataRepository`
+- `MediaStorageStatsRepositoryImpl` → `MediaStorageStatsRepository` (file sizes only; the quality math stays in `:core:model`)
 - `PlayerSettingsRepository`, `PlaylistResumeDataStore`, `EmotionFailureStore`, `QuickSkipSongsRepository`, `PlayStatsRepository`, `SongEmotionsRepository`, `TimeSlotConfigStore`, `WordPreferencesRepository` → their respective `:domain` interfaces
 
 The gate enforces both halves of this pattern: no file under `feature/`, `domain/` or `player/` may `import cn.com.dcsgo.mihx.data.repository.*` or `cn.com.dcsgo.mihx.data.local.*` (implementation imports cannot leak), `MusicRepository` must not declare any of the four domain repository types as a supertype, and the four `*RepositoryAdapter.kt` files must exist and implement their named interface.
@@ -229,7 +278,7 @@ The `:feature:player` runtime must not know about Media3 service classes, Blueto
 | `PlaybackDurationMonitorFactory` | creates `PlayDurationTracker` wired to `PlayStatsRepository` + `QuickSkipRepository` | Credits effective play time and short-play counters |
 | `PlayerQueueServicesFactory` | builds `PlayerQueueServices` bundle: `ImportCoordinator`, `PlaylistManager`, `SongGroupCoordinator`, `SongDeletionCoordinator`, `QuickSkipCoordinator`, `QueueManager.defaultPlayOrderBuilder`, `PlaybackQueueActionPlanner` | Supplies the library/queue side-effect bundle used by the domain queue policy |
 
-In addition to the six ports, `PlayerRuntimeFactory` also injects the repository contracts `TimeSlotConfigRepository`, `SongEmotionRepository` and `WordPreferenceRepository` directly into `PlayerRuntime` for the mood-slot/explore playback features (see below).
+In addition to the six ports, `PlayerRuntimeFactory` also injects the repository contracts `TimeSlotConfigRepository`, `SongEmotionRepository`, `WordPreferenceRepository` and `MediaStorageStatsRepository` directly into `PlayerRuntime`/`PlayerViewModel` for the mood-slot, explore-playback and storage-stats features (see below).
 
 Because `PlayerModule` is the single place where these ports meet their implementations, `:feature:player` compiles against interfaces only, and `:player` mechanics remain swappable and unit-testable (e.g. `PlayerControllerQueueFacadeTest` substitutes a fake `ControllerQueuePlannerPort`).
 
@@ -237,22 +286,26 @@ Because `PlayerModule` is the single place where these ports meet their implemen
 
 Explore playback ("随心播放" / exploration mode) added in v3.11.0 is a domain-policy feature split across the two sides of the boundaries:
 
-- **`:domain`** owns the pure policy in `ExplorePlaybackPolicy` (no Android imports, JVM-unit-testable): `INITIAL_BATCH_SIZE = 10` (random queue opens with 10 songs), `REFILL_COUNT = 5` (auto-refill appends 5 songs when the just-ended song is the second-to-last in the queue), `REFILL_THRESHOLD = 0`, and `MIN_LISTEN_MS = 30_000L` / `MIN_LISTEN_RATIO = 0.25f` defining what counts as a "quick skip" (a song heard under 30 s **or** under ¼ of its duration). `RandomQueuePlanner.planExploreRefill(allSongs, queue, count)` picks `count` random playable songs not already in the queue.
-- **`:feature:player`** owns the orchestration in `PlayerRandomQueueFacade` (`refillExplorePlayQueue`, `buildExploreRefillPool`, `stopExplorePlay`), which is injected with `MoodSlotResolver`, mood-slot state, and the `WordPreference` lookups. When explore mode is active, `playRandomQueue` plans a 10-song batch, sets `isExplorePlay = true`, and `isInfinitePlay = false`; the layered refill candidate pool prefers songs carrying ≥1 liked word and no disliked word, then falls back to no-disliked-word songs, then the full library.
-- **`:data`** owns persistence of the word-preference vote table. `WordPreferenceRepository` (`:domain`) reads the `word_preferences` Room table through `WordPreferencesRepository` (`:data`, the sole source), which has been consumed by both `:domain` and `:feature:player` (the `PlayerRandomQueueFacade` applies the vote via the `recordSongOutcome` contract). Playback outcomes accumulate votes only — a song listened fully (`liked = true`, ≥30 s and ≥¼ duration) adds a like vote to all its emotion words, a quick skip adds a dislike vote — with per-word atomic SQL increments (`ensureWordPreference` + `addWordVotesDelta`, M-22) so concurrent skip/full-listen settlements never lose a vote; the domain `WordPreference.kind` (`WordPreferenceKind.LIKE`/`DISLIKE`/`NEUTRAL`, tie = neutral) labels each word by the higher count, so a single skip cannot flip a liked word. Since v15 the vote weight is scaled by the word's proportion in the song (×100); since v15→16 the historical votes were ×100 to keep a single scale.
-- **Room schema** went to **version 17 with 14 entities** (running through `11.json` and beyond); migration `10→11` creates `word_preferences` (`word` primary key, `likeVotes`/`dislikeVotes`/`updatedAt`), and later migrations (`11→12`..`16→17`) add the emotion-coordinate/`vocalScore`/weight-scale changes and the missing `index_songs_albumId` / `index_playback_events_songId` indexes. Migrations now live in `data/.../migration/MelodyMigrations.kt` (registered by `DatabaseModule` via `addMigrations(*MelodyMigrations.ALL)`), split out from `DatabaseModule` so the migration-regression test can reference them directly.
+- **`:domain`** owns the pure policy in `ExplorePlaybackPolicy` (no Android imports, JVM-unit-testable): `INITIAL_BATCH_SIZE = 10` (random queue opens with 10 songs), `REFILL_COUNT = 5` (auto-refill appends 5 songs when the just-ended song was the second-to-last), `REFILL_THRESHOLD = 0`, `MIN_LISTEN_MS = 30_000L` / `MIN_LISTEN_RATIO = 0.25f` defining a "quick skip" (heard under 30 s **or** under ¼ of its duration), and the proportional-vote constants `VOTE_MIN_RATIO`/`VOTE_MAX_TAGS` (taken from the display-layer `EmotionGroup` constants so the two cannot drift) plus `VOTE_WEIGHT_SCALE = 100` with the pure helpers `voteWeightOf`/`votesOf`/`isSkipped`. `RandomQueuePlanner.planExploreRefill(allSongs, queue, count)` picks `count` random playable songs not already in the queue.
+- **`:feature:player`** owns the orchestration. `PlayerRandomQueueFacade.playRandomQueue` plans a 10-song batch when explore mode is on and sets `isExplorePlay = true`, `isInfinitePlay = false`; `refillExplorePlayQueue` builds its candidate pool via `buildExploreRefillPool`, which derives each song's tags once and degrades in layers — liked-and-no-dislike, then no-dislike, then the full library — with the fallback keyed on "can this pool fill `REFILL_COUNT`", not merely "is it non-empty". The vote itself is settled in `PlayerRuntime.handleExploreSongSettled`, which classifies the song with `ExplorePlaybackPolicy.isSkipped`, turns the per-word ratios into integer votes (`votesOf`) and calls `WordPreferenceRepository.recordSongOutcome(votes, liked = !skipped)`.
+- **`:data`** owns persistence of the word-preference vote table. `WordPreferencesRepository` (`:data`) is the sole reader/writer of the Room `word_preferences` table behind the `:domain` `WordPreferenceRepository` contract: outcomes accumulate votes only — full listen adds like votes, quick skip adds dislike votes — with per-word atomic SQL increments (`ensureWordPreference` + `addWordVotesDelta`, M-22, saturating at the `Int` limit) so concurrent skip/full-listen settlements never lose a vote. The domain `WordPreference.kind` (`LIKE`/`DISLIKE`/`NEUTRAL`, tie = neutral) labels each word by the higher count, so a single skip cannot flip a liked word. Vote weight is scaled by the word's share of the song (×100, `MIGRATION_15_16` rescaled historical votes to the same scale).
+- **Room schema** is at **version 20 with 14 entities**; `MIGRATION_10_11` created `word_preferences` (`word` primary key, `likeVotes`/`dislikeVotes`/`updatedAt`) and later migrations add the emotion-coordinate/`vocalScore`/weight-scale changes, the two missing indexes (`16→17`), the audio-spec columns (`17→18`, `18→19`) and the one-time `song_group_overrides` wipe (`19→20`). Migrations live in `data/.../migration/MelodyMigrations.kt` (registered by `DatabaseModule` via `addMigrations(*MelodyMigrations.ALL)`), split out from `DatabaseModule` so the migration-regression test can reference the same instances.
+
+Focused tests: `WordPreferencesRepositoryTest` and `AtomicIncrementRoomTest` in `:data` pin vote accumulation, tie/neutral behaviour, weight handling, saturation and concurrent increments.
 
 ```mermaid
 flowchart LR
-    EV["Media event (song ended / skipped) in :feature:player facade"] -->|"reasons"| POL["ExplorePlaybackPolicy + RandomQueuePlanner in :domain"]
+    EV["Media event (song ended / skipped) in :feature:player"] -->|"reasons"| POL["ExplorePlaybackPolicy + RandomQueuePlanner in :domain"]
     POL -->|"refill plan"| FAC["PlayerRandomQueueFacade in :feature:player"]
     FAC -->|"full listen -> like vote / skip -> dislike vote"| POR["WordPreferenceRepository (domain interface)"]
     POR -.->|"bound by RepositoryModule"| WPR["WordPreferencesRepository in :data (Room word_preferences)"]
 ```
 
+*Explore-playback control flow: policy and thresholds stay in `:domain`, orchestration in `:feature:player`, persistence in `:data`.*
+
 ## `:core:skin`: UI-free skin description model
 
-`:core:skin` (namespace `cn.com.dcsgo.mihx.core.skin`) is the newest core module, added to keep the "plugin shell" (path B: declarative JSON description + host part library) from leaking UI/routing knowledge into `:core`. A skin is **never executable code** — it is a JSON description the host uses to assemble existing parts, so import has zero composition-time crash risk and can be validated field-by-field with precise failure reasons. The module's whole surface is the description **model + parser/validator**:
+`:core:skin` (namespace `cn.com.dcsgo.mihx.core.skin`) is a core module added to keep the "plugin shell" (path B: declarative JSON description + host part library) from leaking UI/routing knowledge into `:core`. A skin is **never executable code** — it is a JSON description the host uses to assemble existing parts, so import has zero composition-time crash risk and can be validated field-by-field with precise failure reasons. The module's whole surface is the description **model + parser/validator**:
 
 - `Skin` / `SkinTokens` / `SkinShell` / `SkinTab` / `SkinPage` / `SkinPageHeader` / `SkinHeaderAction` / `SkinSection` / `NowPlayingConfig` — the data model (bottom `tokens` for visuals, `shell.bottomBar` for tabs, `pages` assembled from `sections`, plus `playerEntry` TAB/SHEET and `nowPlaying`).
 - `SkinPartCatalog` — the **part whitelist** (fail-closed); it also carries the `skinSwitcher` / `customSkin` part names that map to `:feature:user`'s `UserSections.SKIN_SWITCHER`, `songList.template`/`source`/`count` value domains, and the `iconNames` icon table.
@@ -264,7 +317,7 @@ flowchart LR
 
 ## verifyProductArchitecture: boundaries as build gates
 
-The rule engine was extracted (refactor noted 2026-10-15) from the ~530-line root `build.gradle.kts` block into a unit-testable pure function `ProductArchitectureVerification.verify(rootDir)` in `buildSrc`. The root `verifyProductArchitecture` task (group `verification`) now only walks the tree (`kt`/`kts`/`java`/`xml`/`toml`, skipping `build`/`.gradle`/`.git`/`.idea`/`buildSrc`) and hands the file list to that function, which **collects all violations** into a list and reports them together (instead of failing on the first); the task throws `GradleException` when the list is non-empty. Rules are text/regex-based, which is why comments and string literals can trip them; the `:buildSrc:test` suite (`ProductArchitectureVerificationTest`) exercises the rules on synthetic repo trees.
+The rule engine was extracted (refactor noted 2026-10-15) from the ~530-line root `build.gradle.kts` block into a unit-testable pure function `ProductArchitectureVerification.verify(rootDir)` in `buildSrc`. The root `verifyProductArchitecture` task (group `verification`) now only walks the tree (`kt`/`kts`/`java`/`xml`/`toml`, skipping `build`/`.gradle`/`.git`/`.idea`/`buildSrc`) and hands the file list to that function, which **collects all violations** into a list and reports them together (instead of failing on the first); the task throws `GradleException` when the list is non-empty. Rules are text/regex-based, which is why comments and string literals can trip them; the `:buildSrc:test` suite (`ProductArchitectureVerificationTest`) builds synthetic repo trees in `TemporaryFolder` and asserts each rule fires with a locatable message.
 
 Root `check` aggregates `spotlessCheck` + `verifyProductArchitecture` + every subproject's `check`, so a violation fails the standard pre-commit gate.
 
@@ -273,33 +326,39 @@ Key enforced rules (see `/openwiki/operations/build-and-verification.md` for the
 - **Module manifest** — `settings.gradle.kts` must include all 15 required modules (`:app`, `:core:model`, `:core:common`, `:core:ui`, `:core:skin`, `:domain`, `:data`, `:player`, the six `:feature:*`, `:benchmark`); every one of them must keep a local `.gitignore` containing `/build/`, `/.cxx/`, `/.externalNativeBuild/`, `/captures/`.
 - **Spotless/Hilt assembly** — the version catalog must keep the Spotless plugin id, the root build must apply the `spotless` alias, and `check` must run `spotlessCheck`; the four entry points must carry their annotations, and the six Hilt modules must exist and remain `SingletonComponent` modules (`@Module` + `@InstallIn(SingletonComponent::class)`).
 - **Feature isolation** — no `feature/*/build.gradle.kts` may contain `project(":data")`, `project(":player")`, or any `project(":feature:…")`; no source under `feature/`, `domain/`, `player/` may import `cn.com.dcsgo.mihx.data.repository.*` or `cn.com.dcsgo.mihx.data.local.*`.
+- **`:core:model` purity** — no XML under `core/model/src/main/res`, and no `R.drawable|string|color|dimen|raw` or `android.R` id in its sources (icons are mapped in `:core:ui`/the owning feature); additionally the **M-21 ratchet** bans `import android.*` in `:core:model` and `:domain` except the five baselined files (`Song`, `AlbumEntry`, `ArtistEntry`, `FolderImporter`, `MusicImportRepository`). `androidx.compose.runtime.{Stable,Immutable}` stays legal — it is a compile-time annotation with no runtime behaviour.
 - **Route/Screen ownership** — `:feature:lyrics`, `:feature:settings`, `:feature:home`'s play-stats/quick-skip screens and `:feature:user`'s version-management screens must own their `*Route.kt`/`*Screen.kt` files; the retired overlay routing files (`AppOverlay.kt`, `AppOverlayHost.kt`, `OverlayRoute.kt`) must not reappear; `:feature:home` must navigate to `:feature:lyrics` instead of importing `cn.com.dcsgo.mihx.ui.lyrics` directly.
 - **Repository adapter binding** — `MusicRepository` must stay an internal storage coordinator (no `SongRepository`/`PlaylistRepository`/`MusicImportRepository`/`AlbumArtRepository` supertype), and the four adapter files must exist and implement the matching `:domain` interface.
 - **Doc anchors** — the gate also checks documentation presence/content: `docs/architecture/PLAYBACK_STATE_MACHINE.md` must document the requested state/sync terms, and `docs/refactor/PRODUCT_REFACTOR_AUDIT.md` must track the required audit terms (the two non-source triggers of the gate).
-- **Room schema immutability** — schema snapshots `1.json`, `2.json`, `3.json` must exist with pinned content: v1 must *not* contain `quick_skip_short_play_counts`, v2 must contain it but *not* `lrcUri`, v3 must contain `lrcUri`; `MelodyMigrations` must keep `Migration(1, 2)`/`Migration(2, 3)` and `DatabaseModule` must register `addMigrations(*MelodyMigrations.ALL)`. Exported history now runs to `17.json` (`MelodyDatabase` declares `version = 17` with 14 entities), with `MIGRATION_16_17` adding the two missing indexes; the rule is: never edit an existing schema JSON — add a new snapshot and migration instead.
+- **Room schema immutability** — schema snapshots `1.json`, `2.json`, `3.json` must exist with pinned content: v1 must *not* contain `quick_skip_short_play_counts`, v2 must contain it but *not* `lrcUri`, v3 must contain `lrcUri`; `MelodyMigrations` must keep `Migration(1, 2)`/`Migration(2, 3)` and `DatabaseModule` must register `addMigrations(*MelodyMigrations.ALL)`. Exported history now runs `1.json` … `20.json` (`MelodyDatabase` declares `version = 20` with 14 entities, and `MelodyMigrations.ALL` ends at `MIGRATION_19_20`); the rule is: never edit an existing schema JSON — add a new snapshot and migration instead.
 - **LazyColumn keys** — every `items`/`itemsIndexed`/`item {` call in `app`, `core` and `feature` sources must pass a stable `key =` (regex-scanned) so product-scale lists don't drop item state.
 - **Logging** — direct `Log.d/i/w/e/v/wtf(...)` calls are banned everywhere except `AppLogger.kt`; use `AppLog`/`AppLogger` (which redact URIs/paths in release).
+- **No `runBlocking` under `src/main`** — the rule scans code lines only (comment lines are exempt, so historical notes about the old 17 `runBlocking` bridges do not trip it). `runBlocking` in production code blocks the calling thread on disk IO and is banned; suspend functions plus caller-chosen dispatchers are the pattern.
+- **`loadSongInfo` only via `loadSongInfoSafely`** — bare `loadSongInfo(` calls in `src/main` fail the build except inside `SongInfoLoader.kt` (the implementation of `loadSongInfoSafely` in `:core:ui`). The rule freezes the C-1 fix: an uncaught Room exception inside a `LaunchedEffect`/`produceState` coroutine crashes the process.
+- **`PerformanceTrace.allow(...)` must have a real call site** — at least one `src/main` call, otherwise the release-whitelist API is dead code; `MelodyApplication.onCreate()` registers the four playback operations.
 - **Privacy and backup excludes** — `app/src/main/res/xml/backup_rules.xml` and `data_extraction_rules.xml` must each exclude `music_player_prefs.xml`, `play_stats_prefs.xml`, `quick_skip_songs_prefs.xml`, `melody.db` (+`-journal`/`-shm`/`-wal`), `datastore/player_settings.preferences_pb`, `datastore/playback_state.preferences_pb` and `cache/album_art/`.
-- **Release build shape** — the `:app` `release` block must set `isMinifyEnabled = true` and `isShrinkResources = true`; a `benchmark` build type must exist with `initWith(getByName("release"))`; the `:app` manifest must not declare `AppMediaSessionService` nor request `READ_EXTERNAL_STORAGE` (SAF document-tree import). `READ_MEDIA_AUDIO` **is** allowed: it is used to accelerate import scanning via `java.io.File` direct traversal when granted, with SAF still the primary path and fallback. The `release` block is now extracted with a brace-pairing parser (`extractBracedBlock`) that survives nested lambdas/compose closures inside the block — replacing the old "first closing brace" regex, which truncated when nested braces appeared. The album-art `FileProvider` sits in the `:data` manifest with authority `${applicationId}.artworkprovider` (matching the debug variant's `<package>.debug` applicationId) and a `@xml/artwork_file_paths` path mapping, so the `content://` artwork URIs can be shared across processes (notifications/SystemUI/Android Auto).
+- **Release build shape** — the `:app` `release` block must set `isMinifyEnabled = true` and `isShrinkResources = true`; a `benchmark` build type must exist with `initWith(getByName("release"))`; the `:app` manifest must not declare `AppMediaSessionService` nor request `READ_EXTERNAL_STORAGE` (SAF document-tree import). `READ_MEDIA_AUDIO` **is** allowed: it accelerates import scanning via `java.io.File` direct traversal when granted, with SAF still the primary path and fallback. The `release` block is extracted with a brace-pairing parser (`extractBracedBlock`) that survives nested lambdas/compose closures inside the block — replacing the old "first closing brace" regex, which truncated when nested braces appeared. The album-art `FileProvider` sits in the `:data` manifest with authority `${applicationId}.artworkprovider` (matching the debug variant's `<package>.debug` applicationId) and a `@xml/artwork_file_paths` path mapping, so the `content://` artwork URIs can be shared across processes (notifications/SystemUI/Android Auto).
 - **Observability anchors** — `MusicRepository` must keep the `music_import_scan`/`music_import_folder` `PerformanceTrace` operations and `PlaybackController` must keep `controller_play_queue`/`controller_prepare_queue`/`controller_sync_queue`/`play_next_command`; `PlaybackWindowPerformanceShapeTest` must keep covering 100/500/1_000/71-song window sizing; `:benchmark` must remain a real Macrobenchmark module (`targetProjectPath = ":app"`) with a `StartupBenchmark` using `MacrobenchmarkRule`, `StartupTimingMetric`, `StartupMode.COLD`.
-- **Privacy-sensitive startup rules** — Bluetooth playback monitoring must be user-triggered from Settings (`PlayerStartupFacade` must not mention Bluetooth; `SettingsScreen` must expose the 蓝牙播放监听/申请蓝牙权限 controls; the setting must be persisted through `PlayerSettingsRepository`/DataStore and surfaced via `PlayerUiState`, and state must not be held in app-shell `remember`), and no startup-path file (`MainActivity`, `AppRoot`, `PlayerRuntime`, `PlayerStartupFacade`) may request notification/Bluetooth permissions; `PermissionCoordinator` must support a granted callback.
+- **Privacy-sensitive startup rules** — Bluetooth playback monitoring must be user-triggered from Settings (`PlayerStartupFacade` must not mention Bluetooth; `SettingsScreen` must expose the 蓝牙播放监听/申请蓝牙权限 controls; the Bluetooth **and** playback-notification settings must be persisted through `PlayerSettingsRepository`/DataStore and surfaced via `PlayerUiState` — `bluetoothPlaybackMonitoringEnabled`/`playbackNotificationEnabled`, not app-shell `remember`), and no startup-path file (`MainActivity`, `AppRoot`, `PlayerRuntime`, `PlayerStartupFacade`) may request notification/Bluetooth permissions; `PermissionCoordinator` must support a granted callback.
 - **`:player` package/`data.player` ban** — because `:player` classes migrated to `cn.com.dcsgo.mihx.player`, the gate rejects any remaining `cn.com.dcsgo.mihx.data.player` reference in `:player` sources.
-- **Misc bans** — legacy `com.dcsgo.data.model` package references, the old `PlayerViewModelComponents`/`PlayerViewModelComponentFactory` assembly hub, Android Things dependencies (`com.google.android.things`), and `:core:model` resources/`R.*` ids are all rejected.
+- **Misc bans** — legacy `com.dcsgo.data.model` package references, the old `PlayerViewModelComponents`/`PlayerViewModelComponentFactory` assembly hub, and Android Things dependencies (`com.google.android.things`) are all rejected.
 
 Full-module list and the missing-module failure message come straight from the `requiredModules` table in `ProductArchitectureVerification`, so adding a module is a two-file change by design (see below).
 
 ## Adding a new feature module
 
 1. **Register it**: add `include(":feature:xxx")` to `settings.gradle.kts`.
-2. **Build file**: create `feature/xxx/build.gradle.kts` with the `kotlin-android` + `kotlin-compose` library plugins (add `ksp` + `hilt` only if the module declares DI entry points — today only `:feature:player` does) and depend on `implementation(project(":core:model"))`, `:core:common`, `:core:ui`, `:domain` — never `:data`, `:player`, or another feature. Only `:feature:user` additionally declares `implementation(project(":core:skin"))` (it owns the `UserSections` partition metadata and the skin switcher section that the skin descriptions reference).
+2. **Build file**: create `feature/xxx/build.gradle.kts` with the `kotlin-android` + `kotlin-compose` library plugins (add `ksp` + `hilt` only if the module declares DI entry points — today only `:feature:player` does) and depend on `implementation(project(":core:model"))`, `:core:ui` and `:domain` (add `:core:common` when you need `AppLog`/`PerformanceTrace`/dispatchers, as home/playlist/user/player do) — never `:data`, `:player`, or another feature. Only `:feature:user` additionally declares `implementation(project(":core:skin"))` (it owns the `UserSections` partition metadata and the skin switcher section that the skin descriptions reference).
 3. **`.gitignore`**: create `feature/xxx/.gitignore` containing `/build/`, `/.cxx/`, `/.externalNativeBuild/`, `/captures/` — the gate fails if any required module lacks it.
 4. **Route/Screen**: add a public `XxxRoute.kt` (receives `XxxRouteState` + `XxxRouteActions` + callback lambdas) and an internal `XxxScreen.kt`; the route/state/actions types are the module's entire public API.
 5. **Wire navigation**: register the destination in `app/.../AppNavHost.kt` and map it to a bottom tab in `AppDestinations` if it is a top-level page — `:app` is the only place cross-feature routing may happen.
-6. **Verify**: run `./gradlew verifyProductArchitecture` (or `check`). Missing `.gitignore` patterns, leaked dependencies, absent Route/Screen files, or unkeyed `LazyColumn` items will fail the build immediately.
+6. **Verify**: run `./gradlew verifyProductArchitecture` (or `check`). Missing `.gitignore` patterns, leaked dependencies, absent Route/Screen files, unkeyed `LazyColumn` items, a new `import android.*` in a pure layer, or a bare `loadSongInfo(`/`runBlocking(` in `src/main` will fail the build immediately.
 
 ## Related pages
 
 - `/openwiki/operations/build-and-verification.md` — running and tripping the verification gates, build variants, signing.
 - `/openwiki/architecture/app-shell-navigation.md` — `AppRoot`/`AppNavHost` wiring and bottom-tab destinations.
 - `/openwiki/architecture/data-persistence.md` — Room/DataStore internals behind the `:data` layer, incl. the `word_preferences` table and adaptive emotion-analysis memory budgeting.
+- `/openwiki/concepts/audio-spec-and-quality-tiers.md` — the tier model, thresholds and spatial-audio rules in detail.
 - `/openwiki/player/runtime-facades.md` — the `PlayerRuntime` facade graph consuming the ports listed above.
+- `/openwiki/testing/test-map.md` — where the architecture gate, tier and migration tests live.

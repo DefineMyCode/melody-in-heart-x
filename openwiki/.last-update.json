@@ -1,8 +1,8 @@
 {
-  "updatedAt": "2026-10-28T09:43:25.577Z",
+  "updatedAt": "2026-11-20T11:25:50.952Z",
   "command": "update",
-  "gitHead": "d4a6703e24314a264ca81fd9e352302df0f53756",
-  "model": "ark-code-latest",
+  "gitHead": "50ceb3df339acfe5120282198a41cb8acfd23fd7",
+  "model": "deepseek-flash",
   "status": "complete",
   "language": "en"
 }

@@ -1,18 +1,24 @@
 ---
 type: "Domain Model"
-title: "情绪领域模型与词表（SongEmotion / EmotionGroup / VocalCalibration / Confidence）"
-description: "讲解情绪功能的分层双轨领域模型：底层 V/A 连续坐标（arousal=真实 RMS 响度包络、valence 零点/斜率标定、v5 人声成分补偿）、SongEmotion 逐窗曲线与用户校准（userTags 为真值、坐标读时派生）、EmotionGroup 10 组 × V-A 锚定中文词表及坐标系分锚点投票、置信度档位（HIGH/SPREAD/MIXED）、Room song_emotions 与 word_preferences 存储形态（DB v17），以及探索播放的按占比加权计票模型。"
-tags: [emotion, valence-arousal, song-emotion, vocal-calibration, confidence, room, android, word-preference, explore-play]
+title: "Emotion model: windowed V/A curve, Chinese tag vocabulary, and three ratio projections"
+description: "The emotion domain model behind song tags: the v5 valence/arousal coordinates and vocal compensation, SongEmotion and its read-time user correction, the 10-group Chinese vocabulary and anchor voting, confidence levels, the three non-interchangeable ratio projections (display, slot matching, vote learning), and every surface that renders tags including the playback page."
+tags: [emotion, valence-arousal, song-emotion, tag-vocabulary, confidence, ratio-projection, room, android, playback-ui, word-preference]
 verified:
   - by: openwiki/0.5.0
-    at: 2026-10-27T08:49:20.803Z
+    at: 2026-11-20T09:49:41.934Z
 sources:
   - id: openwiki-source-96607d29d5086ea5d14045e9
     resource: repo://app/src/main/java/cn/com/dcsgo/mihx/app/AppMediaMetadataViewModel.kt
+  - id: openwiki-source-c997f8c2a81730fe7eb841ae
+    resource: repo://app/src/main/java/cn/com/dcsgo/mihx/app/AppNavHost.kt
   - id: openwiki-source-81bdf5bdc16c1ff3afd5bcc8
     resource: repo://app/src/main/java/cn/com/dcsgo/mihx/app/emotion/EmotionScanWorker.kt
   - id: openwiki-source-0b357d42d1a4c0a891d0af57
     resource: repo://app/src/main/java/cn/com/dcsgo/mihx/app/emotion/EmotionViewModel.kt
+  - id: openwiki-source-ea74e07321c7cd79b5bf1c80
+    resource: repo://app/src/main/java/cn/com/dcsgo/mihx/app/mood/MoodTimeSlotViewModel.kt
+  - id: openwiki-source-c5e9b6973b445a58e095b661
+    resource: repo://app/src/main/java/cn/com/dcsgo/mihx/app/player/NowPlayingSurface.kt
   - id: openwiki-source-af2fc8f53ed6c2df95c624cd
     resource: repo://core/model/emotion_model_spec.properties
   - id: openwiki-source-a3853bb106d1b0fd6093719a
@@ -35,6 +41,8 @@ sources:
     resource: repo://core/ui/src/main/java/cn/com/dcsgo/mihx/ui/components/EmotionCorrection.kt
   - id: openwiki-source-6c1a934c65ef428191c8ca98
     resource: repo://core/ui/src/main/java/cn/com/dcsgo/mihx/ui/components/SongEmotionSection.kt
+  - id: openwiki-source-c545006ce2a4ed14097a125f
+    resource: repo://core/ui/src/test/java/cn/com/dcsgo/mihx/ui/components/SongEmotionSectionTest.kt
   - id: openwiki-source-6aa5a20cd08decb4d3fe97d0
     resource: repo://data/src/main/java/cn/com/dcsgo/mihx/data/local/dao/MelodyDao.kt
   - id: openwiki-source-8afa2e64020072855e89b8ac
@@ -53,52 +61,100 @@ sources:
     resource: repo://docs/architecture/EMOTION_VA_UPGRADE.md
   - id: openwiki-source-39979cc6e8c7e5b52ecabd5f
     resource: repo://domain/src/main/java/cn/com/dcsgo/mihx/domain/playback/ExplorePlaybackPolicy.kt
+  - id: openwiki-source-ee8d5713acafafdce234f04d
+    resource: repo://domain/src/main/java/cn/com/dcsgo/mihx/domain/playback/MoodSlotResolver.kt
+  - id: openwiki-source-24b821db224fd40a8ef00a39
+    resource: repo://feature/home/src/main/java/cn/com/dcsgo/mihx/feature/home/HomeScreen.kt
+  - id: openwiki-source-8e3d8a1f18f53d37da8744f1
+    resource: repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRandomQueueFacade.kt
   - id: openwiki-source-ff40146bae9715f1a3860309
     resource: repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRuntime.kt
+  - id: openwiki-source-fe80d1b3a38b98c97840e74d
+    resource: repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerViewModel.kt
+  - id: openwiki-source-b2f8c0ac0fee8a3771c8d58e
+    resource: repo://feature/playlist/src/main/java/cn/com/dcsgo/mihx/feature/playlist/EmotionLibraryView.kt
   - id: openwiki-source-1703b70681186dcde3003cfc
     resource: repo://player/src/main/java/cn/com/dcsgo/mihx/player/EmotionAnalyzer.kt
   - id: openwiki-source-74c863e02745069dcfb944dd
     resource: repo://tools/anchor_opt.py
-generated: { by: "openwiki/0.5.0", at: "2026-10-27T08:49:20.803Z" }
+generated: { by: "openwiki/0.5.0", at: "2026-11-20T09:49:41.934Z" }
 ---
 
-# 情绪领域模型与词表
+# Emotion model: curve → Chinese tags → three ratio projections
 
-情绪功能的核心是一个**分层双轨**的领域模型：底层是连续的 valence（愉悦度）/arousal（能量）坐标（均归一到 -1..1），可排序、可插值、可做逐窗曲线；表层是一个封闭的中文词表（10 组 V-A 锚定词），供运算展示与用户交互。两层通过固定函数互相换算：`EmotionGroup.categoriesFor` 把曲线换算成词条投票，`EmotionGroup.avgOfWords` 把用户勾选词换算回坐标。词表**只做"映射展示层"，绝不做分类训练目标**——这一点写在 `EmotionGroup` 的 KDoc 里，是整个设计的边界声明。
+Song emotion is a **layered two-track** domain model. Underneath sits a continuous valence/arousal (V/A) coordinate in `[-1,1]`: sortable, interpolable, and stored as a per-window curve. On top sits a closed Chinese vocabulary (10 groups, anchored V/A points) used for display and user interaction. The two layers convert through fixed functions only: `EmotionGroup.voteRatios` / `categoriesFor` turn a curve into tag votes, `EmotionGroup.avgOfWords` turns user-selected words back into coordinates. The vocabulary is a **mapping/display layer only and never a classification training target** — stated in the `EmotionGroup` KDoc and the design boundary of the whole feature.
 
-模型文件集中在 `core/model`（`SongEmotion` / `EmotionGroup` / `EmotionTags` / `EmotionConfidence` / `EmotionDisplay` / `VocalCalibration` / `WordPreference`）。存储落在 Room `melody.db`（**v17**）的两张相关联但**语义分离**的表中：`song_emotions`（`SongEmotionEntity`，歌曲情绪数据，唯一数据源是 `:data` 的 `SongEmotionsRepository`）与 `word_preferences`（`WordPreferenceEntity`，探索播放的情绪词条收听偏好计票表，唯一数据源是 `:data` 的 `WordPreferencesRepository`）。两条数据通道各自独立持久化；归属判定（`WordPreference.kind`）发生在**域层而非 UI**。
+The model lives in `:core:model` (`SongEmotion`, `EmotionGroup`, `EmotionTags`, `EmotionDisplay`, `EmotionConfidence`, `VocalCalibration`, `WordPreference`), the analyzer in `player/src/main/java/cn/com/dcsgo/mihx/player/EmotionAnalyzer.kt`, persistence in Room `melody.db` (`song_emotions`, `word_preferences`), and the render surfaces in `:core:ui`, `:feature:home`, `:app` and `:feature:playlist`.
 
-## 坐标系定义：arousal 是物理响度、valence 经标定、v5 剥掉人声成分
+## Coordinate system: physical loudness arousal, calibrated valence, compensated vocal component
 
-2026-10-25 全面改造了 `EmotionAnalyzer` 的坐标系语义（`docs/architecture/EMOTION_VA_UPGRADE.md`）：
+`EmotionAnalyzer` produces the curve with three deliberate departures from a naive regression head:
 
-- **A（arousal）→ 真实响度包络**：arousal 改为窗内 PCM 的 RMS → dB（`-30..-5 dBFS → [-1,1]` 映射）的**物理定义**，不再取 VA 头回归出的"曲风代理"。之前的 VA-head arousal 测的是"像不像电子/嘻哈那种曲风"，导致「燃」「静谧」这类**绝对能量**词条几乎不可达；真实响度让它们回到可达区。
-- **B（valence）→ 零点/斜率标定**：模型输出系统性正偏（真机全库歌级均值 +0.264），标定为 `v' = (v - 0.25) / 0.85`，标定后居中。
-- **C（v5）→ 人声成分补偿**：见 `VocalCalibration` 一节——valence 有一部分在测"有没有人唱"，v5 在**读时**剥掉它。
+- **A — arousal is a physical loudness envelope.** Per window it takes the RMS of the already-decoded 16 kHz PCM, converts to dBFS and maps `-30..-5 dBFS` onto `[-1,1]` (`windowArousal` / `dbToArousal`, bounds `DB_FLOOR`/`DB_CEIL`). It is **not** the VA head's arousal output, which behaved as a genre proxy ("does this sound like electronic/hip-hop") and made absolute-energy words like 「燃」/「静谧」 almost unreachable.
+- **B — valence is zero-point/slope calibrated.** Raw output is systematically positive (device-wide 1094-song mean `+0.264`); the analyzer applies `v' = (v - 0.25) / 0.85` (`V_CAL_BIAS` / `V_CAL_SCALE`), which centers the library at `+0.017`.
+- **C — v5 strips the vocal component.** Part of valence was measuring "is somebody singing"; `VocalCalibration` removes that at read time (see below).
 
-窗口参数：**5s 窗 / 2.5s hop**，逐窗 `(v,a)` 存**原始未平滑值**，平滑归渲染端；`windowArousal` 直接从已解码 16k PCM 算，零额外解码、零额外分配。**未定带**：`|v|` 或 `|a| < 0.15` 的曲线单元视为"该轴未定"，UI 不硬判。
+Windows are **5 s with a 2.5 s hop** (`WINDOW_SEC` / `HOP_SEC`); each window's raw `(v,a)` is stored unsmoothed, and smoothing belongs to the renderer. A window with **both** `|v| < 0.15` and `|a| < 0.15` abstains from voting; `|effectiveValence|` or `|effectiveArousal|` below `SongEmotion.LOW_CONF = 0.15` means the mean falls in the undetermined band and the UI must not force a quadrant.
 
-### 版本串：标签 @ 指纹
+### Version string: `<label>@<fingerprint>`
 
-模型版本成为 `"<label>@<content-fingerprint>"`，定义在生成物 `EmotionModelSpec`（源头 `core/model/emotion_model_spec.properties`，全仓唯一真源）：
+`modelVersion` is `"<coordinate label>@<content fingerprint>"`, generated into `EmotionModelSpec` from `core/model/emotion_model_spec.properties` — the single source of truth for the coordinate definition and the two tflite asset hashes:
 
-- `label` = `yamnet-va-v5-vocal` 是坐标系的**语义身份**——锚点表按它选（`anchorsFor`），**指纹不参与投票，只回答"这条曲线是这版权本产出的吗"**；
-- `fingerprint`（完整 = 坐标定义 + 资产哈希）是**内容身份**，重扫判定比它——换模型资产必须同步改属性文件里的 SHA-256，否则**构建直接失败**（`generateEmotionModelSpec` 校验），不会出现"换资产却老数据静默不重扫"。
+- the **label** (`yamnet-va-v5-vocal`) is the coordinate system's semantic identity; it selects the anchor table, and the fingerprint plays no part in voting;
+- the **fingerprint** (`edbf6fe5` today) is the content identity: changing model assets without updating the spec fails the build (`generateEmotionModelSpec` verifies SHA-256), and a changed fingerprint makes `modelVersion` differ, which triggers rescans.
 
-锚点表标定参数指纹 `ANCHORS_CALIBRATED_FOR = "b8a45a93"` 硬编码在 `EmotionGroup`：改了 `emotion_model_spec.properties` 的参数而没重标定锚点表时，`EmotionGroupAnchorTest` 拿它跟当前参数指纹比对并失败——把"改了坐标系却沿用旧锚点"从静默错误变成响亮构建失败。
+`EmotionGroup.ANCHORS_CALIBRATED_FOR = "b8a45a93"` is hardcoded to the parameter fingerprint the anchor table was calibrated against; `EmotionModelSpecTest` compares it with `EmotionModelSpec.PARAMS_FINGERPRINT`, turning "changed coordinates but kept the old anchors" into a red build instead of silently wrong tags.
 
-## 分层双轨设计：连续坐标打底，中文词表做展示
+### Anchor tables are chosen by label
 
-`EmotionGroup` 枚举定义 10 个情绪组，每组锚定一个 `(anchorV, anchorA)` 坐标并携带一组中文词（名义每组 4 词；**例外是 ABYSS 组只有 3 个词**——"窒息/孤独/深渊"，全表共 39 个不重复词，`SongEmotionSectionTest` 用 `assertEquals(39, all.size)` 锁定）。组代表词 `headline = words.first()` 用于自动分析展示；用户手动标记可选组内任意词。
+Because rescanning is gradual, old curves coexist with new ones for days, so `EmotionGroup.anchorsFor(modelVersion)` selects the table from the label before `@`:
 
-下表是当前 v5 坐标系（人声成分补偿后）的锚点表，由 `tools/anchor_opt.py` 在**补偿后的全库 1095 首真值**（81002 窗，优势 0.773）上受约束优化标定，`tools/anchor_fit.py` 复核（见 `EMOTION_VA_UPGRADE.md` §16）：
+```mermaid
+flowchart TD
+    A["Vote entry: voteRatios / categoriesFrom / avgOfWords"] --> B{"label before @ in modelVersion"}
+    B -->|"yamnet-va-v5-vocal"| C["CURRENT_ANCHORS: enum anchorV / anchorA"]
+    B -->|"yamnet-va-v4-rms"| D["V4_ANCHORS archived table, global calibration, no vocal compensation"]
+    B -->|"yamnet-va-v3 or unregistered"| E["LEGACY_ANCHORS pre-upgrade table"]
+    C --> V["Anchors affect voting only, never the stored curve, so recalibration needs no rescan"]
+    D --> V
+    E --> V
+```
 
-| 组 | 词 | anchorV | anchorA | auto |
+Anchor table selection by coordinate label; the fingerprint never participates.
+
+Voting a legacy curve with the current table is a measured failure: legacy valence is positively biased by `+0.264`, so **47.1 % of the 1095-song library would become 「治愈」**. `anchorsForManualPoint(emotion)` picks the table for a user click: a row with a curve (`windowsAnalyzed > 0`) must use its own coordinate system; a row without one (unanalyzed or `user-only`) uses the current anchors, because the future curve will be produced by the current model.
+
+## SongEmotion: analysis output and its read-time derivations
+
+`SongEmotion` is both the analyzer's output and the single shape every reader consumes:
+
+- `valence` / `arousal`: whole-song per-window means; `curve`: the per-window `(v,a)` sequence, 5 s window / 2.5 s hop, raw and unsmoothed;
+- `peakSec`: second of the A-axis maximum (`peak * HOP_SEC`). It is still produced and persisted, but **no current UI draws a peak marker** — the detail chart plots the two curves only;
+- `windowsAnalyzed` / `durationSec`; `modelVersion` / `analyzedAt` (the former drives rescanning *and* anchor selection);
+- `embedding`: whole-song mean YAMNet embedding (1024 dims), nullable for old rows;
+- `vocalScore`: mean YAMNet AudioSet vocal-class score, `null` before 2026-10-25 — the input to vocal compensation;
+- user fields: `userTags` (selected word labels, **the ground truth**), `userTagsEdited`, and the deprecated `userValence` / `userArousal`.
+
+**User calibration: words are truth, coordinates are derived.** The coordinate columns are no longer a source of truth — a stored coordinate goes stale as soon as the curve changes coordinate system; after a rescan, 3 user-calibrated songs had entirely wrong stored coordinates. Instead `userPoint()` computes them at read time as `EmotionGroup.avgOfWords(userTags, anchorsForManualPoint(this))` in the row's own coordinate system, and `effectiveValence` / `effectiveArousal` prefer that point over the model mean. `userCorrected` is simply `userTags.isNotEmpty()`. `userTagsEdited` distinguishes active correction (user words ≠ model words), plain acceptance (`false`), and "nothing to compare against" (`null`); only `true` samples — plus pure manual marks on unanalyzed songs — are independent labels usable as ground truth.
+
+### Vocal compensation (VocalCalibration)
+
+`VocalCalibration.adjustCurve` shifts **valence only**, by `VOCAL_COMP_SHIFT = +0.091`, for instrumental rows (`vocalScore <= VOCAL_COMP_THRESHOLD = 0.010`); arousal is physical loudness and has no vocal component. Rows with `vocalScore == null` are not compensated. `shiftFor` returns `0f` in that case and `adjustedCurve` returns the same list instance, so no allocation happens when there is nothing to shift.
+
+The amount is the residual after matching on arousal: 1095 songs split by `vocalScore` into 376 vocal (`valence +0.120`) and 719 instrumental (`-0.041`) songs, a `-0.162` gap of which roughly half is explained by "vocal songs are also louder". Within arousal bins the residual is `-0.091`, while an independent model (MusicNN + DEAM head) shows `≈ 0` (`+0.026`) on the same split — evidence that this component is specific to the current pipeline rather than a property of music.
+
+Compensation is a constant read-time translation of the curve; the database keeps the raw curve, so changing the amount requires no rescan and no migration. **Voting and confidence must use `compensatedCurve`** (and `compensatedValence` for the song mean), otherwise tags describe a vote that no longer exists. `compensatedCurve` is a computed property: it re-materializes the list on every access, which is why display callers must not re-derive it repeatedly (see the single-vote rule below).
+
+## EmotionGroup: 10 anchored groups, 39 Chinese words
+
+Each enum entry carries `words`, `anchorV`, `anchorA` and `auto`. Nominal size is 4 words per group, with **ABYSS having only 3** (「窒息 孤独 深渊」), for 39 distinct words total — locked by `assertEquals(39, all.size)` in `SongEmotionSectionTest`. `headline = words.first()` is the auto-display word; users may pick any word of a group. `MAX_TAGS = 4` and `MIN_RATIO = 0.15` live on the companion object, `wordIndex` backs `groupOf(word)` (the vocabulary is closed and duplicate-free).
+
+| Group | Words | anchorV | anchorA | auto |
 | --- | --- | --- | --- | --- |
 | BRIGHT | 元气 快乐 轻快 俏皮 | 0.590 | +0.240 | ✓ |
 | RAGE | 燃 热血 战斗 力量 | 0.045 | +0.604 | ✓ |
 | EPIC | 神圣 浩瀚 震撼 史诗 | 0.013 | +0.332 | ✓ |
-| **WITTY** | 鬼畜 沙雕 戏谑 荒诞 | 0.2 | 0.3 | **✗（仅手动）** |
+| **WITTY** | 鬼畜 沙雕 戏谑 荒诞 | 0.2 | 0.3 | **✗ manual only** |
 | LOVE | 治愈 心动 缱绻 深情 | 0.390 | +0.080 | ✓ |
 | STILL | 静谧 空灵 禅 专注 | 0.213 | -0.610 | ✓ |
 | SAD | emo 伤感 遗憾 雨季 | -0.827 | -0.449 | ✓ |
@@ -106,281 +162,187 @@ generated: { by: "openwiki/0.5.0", at: "2026-10-27T08:49:20.803Z" }
 | CHILL | 放松 慵懒 午后 微醺 | 0.279 | -0.302 | ✓ |
 | ABYSS | 窒息 孤独 深渊 | -0.941 | +0.055 | ✓ |
 
-**新坐标系下锚点必须重新标定**（`EmotionGroup` KDoc 注明，2026-10-25）：锚点属于坐标系，坐标系定义一变锚点必须跟着搬。最典型的是「神圣」——旧锚点 (+0.20,+0.50) 恰落在新云最密处退化成万能桶（独占 23.9% 窗口）；优化器给出的表经 `anchor_opt.py` 一次性收敛。有两处**人为语义回退**：元气（优化器给 arousal +0.129 会让它跟治愈一样没能量，回退到 +0.240）；治愈（优化器给 valence +0.697 占比 3.4% 贴下限、"被挤没了"，回退到 +0.390 回到 9.4%）。
+The v5 table was optimized by `tools/anchor_opt.py` on the **compensated** 1095-song ground truth (81002 windows, advantage 0.773) under semantic and share constraints, then reviewed with `tools/anchor_fit.py`. Two values are manual rollbacks: 元气 (the optimizer gave arousal `+0.129`, which would leave it as flat as 治愈 → `+0.240`) and 治愈 (the optimizer gave valence `+0.697` at a 3.4 % share, i.e. squeezed out → `+0.390`, back to 9.4 %).
 
-锚点**只影响投票，不影响已存曲线**——重标定不需要重扫全库。
+### Voting algorithm
 
-双轨的意义：连续坐标层服务所有需要"量"的逻辑（逐窗投票、锚点距离、换算校准值），词表层服务所有需要"名"的逻辑（展示词条、随手播配置词条、探索播放偏好计票、UI 文案）。`companion object` 维护一张懒加载的 `wordIndex` 反查表，`groupOf(word)` 是词 → 组的唯一入口（词表封闭且无重复词）。
+`EmotionGroup.voteRatios(curve, anchors)` is the unfiltered base (review M-11 lifted the loop invariants: `AUTO_GROUPS` and the candidate anchors are resolved once, zero allocation per window):
 
-### 锚点表按曲线坐标系分表
+1. each window whose `|v|` **and** `|a|` are both below `LOW_CONF` abstains; an empty curve or all-abstaining curve returns an empty list;
+2. every valid window votes for the nearest `auto = true` group by squared distance `(v-anchorV)² + (a-anchorA)²`;
+3. results are sorted by ratio descending, **ties broken by enum ordinal** — integer vote counts tie often (92 songs have ratio ties in the displayed set, 17 tie at top-1) and `votes` is a `HashMap` whose iteration order is not contractually stable across processes, so only declaration order keeps tag order stable across restarts.
 
-由于换坐标系后老曲线仍躺在库里（后台渐进重扫要数天），不能用一套锚点一票通吃。`EmotionGroup.anchorsFor(modelVersion)` 按版本串的 **label** 选表：
+`categoriesFrom(votes, topN = MAX_TAGS, minRatio = MIN_RATIO)` filters `ratio >= minRatio` and takes the first `topN`; `categoriesFor` is `voteRatios` + `categoriesFrom`; `confidenceOf` is the top ratio; `headlineTagsFor(curve, modelVersion)` maps the chosen categories to headline words using `anchorsFor`.
 
-- `yamnet-va-v5-vocal`（`CURRENT_MODEL_LABEL`）→ 枚举自带 `anchorV/anchorA`（上面的 v5 表）；
-- `yamnet-va-v4-rms`（留档）→ `V4_ANCHORS`（全局标定、无补偿时的 v4 锚点表）；
-- `yamnet-va-v3` / 未登记 → `LEGACY_ANCHORS`（改造前的旧锚点表）。
+`avgOfWords(words, anchors)` resolves words to groups and returns the mean anchor coordinate (multiple words of one group = that anchor; cross-group = mean; unknown words or empty input → `null`).
 
-用错表的代价是实测的：旧曲线 valence 系统性正偏 +0.264，用新锚点投票会被当"正面"——全库 1095 首里 **47.1% 变成「治愈」**，负面词条几乎消失。`anchorsForManualPoint(emotion)` 决定用户手动点该用哪套表：有曲线（`windowsAnalyzed > 0`）必须与曲线同坐标系；无曲线（未分析/user-only 行）用当前锚点。
+## Three ratio projections — same curve, three different questions
+
+`EmotionTags.kt` deliberately exposes **three different projections of the same vote**. They are not interchangeable, and each one answers a different question:
+
+| Projection | Gate | User-marked tags | Answers | Consumers |
+| --- | --- | --- | --- | --- |
+| `emotionTagRatiosOf(emotion, minRatio = MIN_RATIO, topN = MAX_TAGS)` | 15 % floor, top 4 | `EmotionTagRatio(tag, ratio = null)` — no invented share | "what does this song sound like" | Song detail chips, playback-page pills |
+| `emotionMatchRatiosOf(emotion)` | none — full distribution | `1.0` per word (strong match) | "does this song match my slot words" | Time-slot filtering, pool statistics, refill key set |
+| `emotionVoteRatiosOf(emotion, minRatio = VOTE_MIN_RATIO, topN = VOTE_MAX_TAGS)` | same gate as display | `1.0` per word | "which dominant emotions did I just reject or accept" | Explore-play like/dislike learning |
+
+- **Display.** `emotionTagRatiosOf` returns `List<EmotionTagRatio>` where `ratio` is the share of valid windows near that group's anchor; for user-marked tags `ratio` is **`null`** because "I think this song is emo" has no share and should not be faked. Model tags go through `categoriesFrom`, so at most 4 tags, each ≥ 15 %.
+- **Matching.** `emotionMatchRatiosOf` returns a `word → ratio` map with **no display threshold and no `topN`**. The display layer shows only the top 4, but a slot target sitting at rank 5 must still match, so matching cannot be truncated. `MoodSlotPolicy` re-applies its own thresholds downstream (`MATCH_MIN_RATIO = 0.35` for inclusion, `EXCLUDE_MIN_RATIO = EmotionGroup.MIN_RATIO` for exclusion, so excluded words equal what the detail page showed the user).
+- **Vote learning.** `emotionVoteRatiosOf` gates on the **same** share floor and `topN` as display, and defaults are literally `ExplorePlaybackPolicy.VOTE_MIN_RATIO = EmotionGroup.MIN_RATIO` / `VOTE_MAX_TAGS = EmotionGroup.MAX_TAGS`, so the two can never drift. Skipping a song therefore rejects exactly the labels the user saw.
+
+**Why they must not be collapsed.** Each wrong reuse has a measured cost:
+
+- using the full distribution for display lists ~**6.26** words per song instead of **2.31**, i.e. a wall of tags the user cannot judge;
+- using the full distribution for voting makes one skip reject 6.26 words instead of the 2.31 shown, so "dislike" spreads **2.7× faster** and a few dozen songs turn every tag black (all 9 auto-group headwords ended up `DISLIKE`); with the gated distribution every song still casts at least one vote (every song has at least one group ≥ 15 %);
+- using the gated distribution (or the display list) for matching makes any target word below 15 % or outside the top 4 permanently unmatchable.
+
+`EmotionVoteRatiosTest` pins the contract directly (`vote set equals what the detail page shows`, `gate is the display gate by default`), and `EmotionTagRatioTest` pins the display side (`user tagged words carry no ratio`, `ratios come from the compensated curve`).
+
+`emotionTagsOf(emotion)` is the plain display list: the user's words if present, otherwise `headlineTagsFor(compensatedCurve, modelVersion)`. It is what surfaces that need names only use — library rows and the user-only detail row.
+
+`modelTagsOf(emotion)` is the companion function for "what does the model think": always recomputed from `compensatedCurve`, ignoring the user override, and empty when there is no curve. Comparing a user's words against "model words" must use it — using `emotionTagsOf` on a calibrated song compares the user's own words with themselves (`isUserCorrection`, and the local override inside `SongEmotionSection`).
+
+### Single-vote display derivation
+
+`EmotionDisplay.kt` collapses the display path into one vote. `emotionDisplayOf(emotion)` returns `EmotionDisplay(tags, tagRatios, confidence)`:
+
+- user-marked song → `tags = userTags`, ratios all `null`, confidence `HIGH`;
+- empty curve → empty tags/ratios, confidence `HIGH` (nothing to compare, no hint);
+- otherwise **one** `EmotionGroup.voteRatios(compensatedCurve, anchorsFor(modelVersion))`, then `categoriesFrom(vote)` gives the tags, the tags+ratios list, and the top ratio that drives the confidence level.
+
+**Performance rule:** callers that need tags *and* ratios *and* confidence must call `emotionDisplayOf` once. The pre-M-11 code called `emotionTagsOf` + `emotionTagRatiosOf` + `emotionConfidenceLevelOf` separately, re-voting the same curve 3–4 times per composition and rebuilding `compensatedCurve` on every access. (The library list path still makes two passes — `EmotionViewModel.buildRows` calls `emotionTagsOf` for the tags and `emotionConfidenceLevelOf` for the level of every analyzed song — the single-vote rule is enforced where all three results are needed at once.)
+
+## Confidence: the signal is the top vote share
+
+`EmotionConfidence.kt` defines how sure the model is, with the signal being the **highest group's share of the window vote** — a value that was already computed and then thrown away by the `minRatio` filter. Evidence (1095 songs, v5-vocal): songs with contradictory tags average a top-1 share of `0.398` versus `0.484` for the rest (`Mann-Whitney U p = 1.7e-14`), so top-1 share *is* a ready-made certainty measure.
+
+Three levels (`EmotionConfidenceLevel`):
+
+- **HIGH** — votes concentrated and tags not contradictory; a user-marked song is always HIGH (the model's certainty is irrelevant to words the user chose);
+- **SPREAD** — top-1 share `< LOW_CONFIDENCE_RATIO = 0.35` (the library's p25 is 0.345): votes spread out, the model itself is unsure;
+- **MIXED** — votes concentrated (≥ 0.35) yet cool and warm words co-occur (`isMixedColdWarm` against `COOL_WORDS = {emo, 躁, 窒息}` and `WARM_WORDS = {元气, 燃, 神圣, 治愈, 放松}`; 「静谧」 is neutral and never conflicts) — a *confident but contradictory* verdict, which is why 137 songs (12.5 %) with high top-1 shares (median 0.62) need a separate level.
+
+Evaluation order is spread first, then contradiction: when both hold, "spread" wins because it is the more fundamental cause.
+
+`emotionConfidenceOf` must use `compensatedCurve` (same vote, same signal), returns `null` for an empty curve, and `emotionConfidenceLevelOf` returns HIGH for user-marked or curve-less rows. `needsConfidenceHint` is simply "level ≠ HIGH". `EmotionConfidenceTest` locks the levels, the mixed-word sets, the spread-before-mixed order, the anchor-table-follows-curve rule, and the compensation effect on confidence.
+
+## Every surface where tags render
+
+### Library 「情绪」 tab
+
+`EmotionViewModel.buildRows` flattens `getAll()` with the library into `EmotionSongRow(tags = emotionTagsOf(e), corrected = e.userCorrected, confidence = emotionConfidenceLevelOf(e))`; `AppNavHost` re-flattens those into the `:core:model` `EmotionSongUiRow` (song, tags, corrected, `confidence`), shared by the library tab and the analysis detail page. `EmotionLibraryView` uses the row tags for multi-select chip filtering and sorts "manual marks first, then rows with tags". Each row's one-line subline shows the tags joined with `" · "`, appends `" · 不确定"` in the secondary colour when `confidence != HIGH`, shows 「未定」 for empty tags, and appends 「已校准」 when `corrected`. The row carries only the confidence **level**; the subline cannot fit the detail page's two full hint sentences.
+
+### Song detail (`SongEmotionSection`)
+
+`SongEmotionSection` renders:
+
+- the header 「情绪」 plus an action button labelled 「不像？标记」, or 「修改」 once the song carries user tags;
+- `display.tagRatios` as `AssistChip`s in a `FlowRow`: model tags carry `"${(ratio * 100).toInt()}%"` next to the word, user-marked tags (null ratio) show no percentage; empty tags render 「未定」;
+- for a user-marked song, 「已由你纠正」 when `userTagsEdited == true`, otherwise 「已由你校准」;
+- for levels other than HIGH, the two distinct hint sentences: SPREAD → 「模型把握不大，词条仅供参考」, MIXED → 「词条里有冷有热，这首歌可能不止一种情绪」;
+- the V/A chart from `smoothCurve(shown.compensatedCurve)` (5-point moving average, shrunken at the edges, lists shorter than 3 returned unchanged), V drawn in `colorScheme.primary` and A in `colorScheme.tertiary`, with the legend 「冷暖（参考）」 / 「能量」;
+- a song with no emotion row at all renders 「情绪分析：尚未完成（充电时自动分析曲库）」 instead.
+
+A `user-only` row (fewer than 2 windows) is **not** early-returned: it lists `emotionTagsOf(emotion)` and, if the user marked it, adds 「已由你标记（自动分析失败，词条以你的标记为准）」 — automatic analysis failed, the user's words are authoritative, and the chart is simply omitted. Confirming the calibration dialog (`EmotionCalibrateDialog`: 「这首歌听起来是…」, 「最多选 4 个词，已记录你的标记，这首歌将显示你选择的词条」, 「已选 (点按移除)」 / 「原有 (点按移除/恢复)」 rows, per-group `FilterChip`s, a 「恢复自动」 exit when tags exist) saves through `LocalEmotionCorrectionController` and then applies a local override so the new words show immediately.
+
+### Playback page (now carries the tags)
+
+The now-playing screen shows the current song's tags above the progress bar, from the same display projection as the detail page:
+
+- `PlayerViewModel.currentEmotion` is `combine(uiState, songEmotionRepository.observeAll())` picking `emotions[state.currentSong?.id]`, then `distinctUntilChanged()` and `stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)`. It deliberately uses the whole-library **lite** flow instead of `SongEmotionRepository.get`: a single-row `get` decodes the embedding, while the page only needs curve and user tags, and `WhileSubscribed(5s)` stops the collection shortly after leaving the screen.
+- `NowPlayingSurface` collects `currentEmotion` and passes it into `HomeRouteState.emotion`; `HomeScreen`'s song info section remembers `emotionTagRatiosOf(emotion)` (one derivation per emotion instance) and renders `HomeEmotionRatios`.
 
 ```mermaid
-flowchart TD
-    A["投票入口 voteRatios / categoriesFor / avgOfWords"] --> B{"modelVersion 的 label?"}
-    B -->|"yamnet-va-v5-vocal"| C["CURRENT_ANCHORS 枚举自带 v5 表"]
-    B -->|"yamnet-va-v4-rms"| D["V4_ANCHORS 留档表"]
-    B -->|"yamnet-va-v3 / 未登记"| E["LEGACY_ANCHORS 旧表"]
-    C --> V[锚点只影响投票, 不影响已存曲线 → 换坐标系零重扫]
-    D --> V
-    E --> V
+sequenceDiagram
+    participant VM as PlayerViewModel
+    participant Repo as SongEmotionRepository
+    participant Surface as NowPlayingSurface
+    participant Home as HomeScreen song info
+    VM->>Repo: observeAll, lite projection without embedding
+    VM->>VM: combine with uiState currentSong id
+    VM-->>Surface: currentEmotion StateFlow WhileSubscribed 5s
+    Surface->>Surface: HomeRouteState emotion field
+    Surface->>Home: emotion parameter
+    Home->>Home: emotionTagRatiosOf once per emotion
+    Home-->>Home: centered 22dp pills with percentage
 ```
 
-## SongEmotion：分析结果的域模型
+Playback-page tag plumbing from the repository flow to the pill row.
 
-`SongEmotion` 是端侧分析器的输出，也是所有读侧消费的统一形态：
+Rendering rules: a centered `FlowRow` of 22 dp pills (`RoundedCornerShape(50)`, primary at 10 % fill, 0.5 dp border at 22 %), each pill showing the tag plus `"${(ratio * 100).toInt()}%"`; **the row is hidden entirely when there are no tags** (unanalyzed or untagged songs show nothing), and user-marked tags appear without a percentage because their ratio is `null`.
 
-- `valence` / `arousal`：全曲逐窗均值；`curve`：逐窗 `(v, a)` 序列，**5s 窗 / 2.5s hop**，存原始未平滑值，渲染端做滑动平滑；
-- `peakSec`：A 轴（能量，即 RMS 响度）正向峰值所在秒数（高潮定位）；`windowsAnalyzed` / `durationSec`：窗口数与时长；
-- `modelVersion` / `analyzedAt`：分析时的模型标识（`<label>@<fingerprint>`）与时间戳（前者既驱动重扫判定、又经 `anchorsFor` 决定用哪套锚点表）；
-- `embedding`：整曲平均 YAMNet embedding（1024 维），供将来监督重训 VA 头按需取用；旧数据可为空；
-- `vocalScore`：YAMNet AudioSet 人声类分数整曲平均（2026-10-25 之前分析的行可为 null）——它是 v5 人声成分补偿的输入；
-- **用户校准字段**：`userTags`（勾选词条名，**真值**）+ `userTagsEdited`（是否"不认同"模型结论）+ 已废弃的 `userValence` / `userArousal`。
+### Mood slot configuration
 
-### 用户校准：词条是真值，坐标是读时派生
+`MoodTimeSlotViewModel.loadStats` builds two things from one `getAll()` pass: tag song counts from `emotionTagsOf` (driving the chip list and per-chip counts) and the **full-distribution** ratio table from `emotionMatchRatiosOf`. `MoodPoolStats.from` then counts excluded (any excluded word with `ratio >= 0.15`) and matched (any included word with `ratio >= 0.35`) songs per row-level ratio map; `MoodSlotEditDialog` only offers `availableTags.take(12)` and never recomputes on keystrokes.
 
-`userValence` / `userArousal` 列**已废弃、不再作为真源**（仅保留兼容历史行）。原因记录在 `SongEmotion` KDoc：坐标是**派生值**（词条 → 该坐标系下的锚点均值），存下来的坐标会在曲线换坐标系（重扫/换模型）后过期——实测重扫继承旧坐标后 3 首用户校准的歌坐标全错。改为**读时派生**：
+### Explore-play vote learning
 
-- `userPoint()`：`userTags` 非空 → `EmotionGroup.avgOfWords(userTags, anchorsForManualPoint(this))`（用该行自己的坐标系）；
-- `effectiveValence` / `effectiveArousal`：`userPoint()` 的坐标优于模型值返回；无单击返回模型补偿后的均值；
-- `userCorrected`：`userTags.isNotEmpty()`（以**词条**为准，不再判坐标）；
-- `userTagsEdited`：区分"主动纠正"（手动选词 ≠ 模型自动词）与"直接采纳"（点确认没改），null = 无模型输出可比——只有 `true` 的样本（外加未分析歌的纯人工标记）才可作真值独立标注。
+`PlayerRuntime.observeMoodSlotCaches` subscribes to `SongEmotionRepository.observeAll()` once and computes **both** projections per song on `Dispatchers.Default` — `emotionMatchRatiosOf` into the volatile `moodEmotionRatiosCache` and `emotionVoteRatiosOf(VOTE_MIN_RATIO, VOTE_MAX_TAGS)` into `exploreVoteRatiosCache` — while `wordPreferenceRepository.observeAll()` feeds `wordPreferenceCache`. New analysis, user corrections and vote changes propagate into decisions without polling.
 
-### 人声成分补偿（VocalCalibration）
+## WITTY (鬼畜/沙雕/戏谑/荒诞) is manual-only
 
-`VocalCalibration.adjustCurve` 在**读时**给器乐组（`vocalScore <= VOCAL_COMP_THRESHOLD = 0.010`）的 valence 各窗上移 `VOCAL_COMP_SHIFT = +0.091`，arousal 不动；`vocalScore` 为 null 的行（2026-10-25 之前分析）**不补偿**。
+WITTY is the only `auto = false` group, excluded from curve voting but fully available for manual marking (`groupOf("鬼畜")` still resolves). Two reasons, in the enum KDoc and the test name `WITTY excluded from auto voting (center-vacuum fix)`:
 
-补偿量来源：全库 1095 首按 `vocalScore` 分组，人声组 valence +0.120 / 器乐组 −0.041，在 **arousal 分箱内匹配后残余差只有 −0.091**（独立模型 MusicNN+DEAM 对照同样的匹配差 ≈0，证明这层成分是现网独有、不是"人声歌真的更正向"）。只扣能量效应解释不了的那部分。
+1. **The meme is not acoustically separable** — 鬼畜/沙雕 are cultural jokes (deliberately bad, repeated cuts) indistinguishable from earnest 燃/快乐;
+2. **A centered anchor attracts votes** — WITTY's anchor `(0.2, 0.3)` sits near the centre of the V-A plane, so lukewarm windows get pulled there wholesale; the test votes 20 windows exactly at `(0.2, 0.3)` and asserts the result never contains WITTY.
 
-**补偿是加在曲线上的常量平移，库里存的仍是原始曲线，读时按规格清单平移**——所以改补偿量零重扫、零迁移（规范单 `emotion_model_spec.properties` 是坐标系规格单一真源，改它等于换坐标系，锚点表会跟着重标定）。**投票与绘图都必须用补偿后的曲线**（`compensatedCurve`）：词条是按补偿后曲线投票的，置信度也必须描述同一次投票。
+Downstream, this means WITTY words can only ever appear on songs the user marked by hand. Tag song counts are computed from `emotionTagsOf`, so an unmarked WITTY word has count 0 and never enters the mood-slot chip list (`availableTags` is built from the observed counts); a slot configured only with such words yields an empty pool and falls back to library-wide random.
 
-### 派生语义
+## Embedding: still stored, no longer consumed
 
-- `lowConfidence`：`|effectiveValence|` 或 `|effectiveArousal|` 中任一 < `LOW_CONF = 0.15`，即均值落在未定带——UI 不硬判象限，显示"未定"；
-- `compensatedCurve` / `compensatedValence`：读时补偿后的曲线与歌级均值。
+The analyzer accumulates each window's YAMNet embedding and stores the whole-song mean (1024 dims) as base64 little-endian float32 in `embeddingB64`. Read paths (`getAll` / `observeAll`) use the **lightweight projection** `SongEmotionLite` and never decode it (a full library would materialize roughly 5.3 KB × 16 k ≈ 90 MB); `get(songId)` does the full-row read when the embedding is actually needed.
 
-## EmotionGroup：逐窗投票与词↔坐标换算
+Its former consumer, kNN anchor propagation, was removed on 2026-08-31 (`EmotionKnn`, `EmotionPersonalizer`, `correctedWithEmbedding`): measured contagion accuracy was ~30 %, i.e. no better than guessing among 7 groups, because YAMNet representations are timbre-dominated (43 % same-group neighbour accuracy vs a 42 % baseline) and high-dimensional hubness leaves no usable global distance threshold. Embedding remains the raw material for future supervised retraining of the VA head; current tag decisions use only user words plus curve voting.
 
-`EmotionGroup` 的投票核心在 `voteRatios`（评审 2026-10-27 · M-11 重构，一次投票派生全部结论）：
+## Word-preference votes: weighted by share, gated like display
 
-```kotlin
-voteRatios(曲线, anchors)      // 底座：全量占比，不过滤不截断
-categoriesFrom(votes, topN, minRatio)  // 从已算好的投票派生展示分类
-categoriesFor(curve, anchors, topN, minRatio)  // voteRatios + categoriesFrom
-confidenceOf(curve, anchors)  // 最高票组占比 = 置信度信号
-headlineTagsFor(curve, modelVersion)  // categoriesFor + anchorsFor，取 headline
-```
+A second, independent channel sits on top of the tag model: **per-word listening preference voting** that drives explore play. `song_emotions` decides which words a song carries; `word_preferences` decides whether the user likes those words overall. Two tables, two repositories, no write-back into `song_emotions`.
 
-**`voteRatios` 投票算法**（底座）：
+`WordPreference(word, likeVotes, dislikeVotes)` derives `kind` in the domain layer (`likeVotes > dislikeVotes` → `LIKE`, `<` → `DISLIKE`, tie → `NEUTRAL`), so a word can accumulate evidence on both sides and a single skip never immediately flips a liked word. Voting is share-weighted: `ExplorePlaybackPolicy.voteWeightOf(ratio) = round(ratio * VOTE_WEIGHT_SCALE)` with `VOTE_WEIGHT_SCALE = 100`, and `votesOf` drops zero weights, so a word below 0.5 % share casts no vote at all. Votes stay integers ×100 (no schema change); `MIGRATION_15_16` scaled historical votes by 100 to keep one scale. `WordPreference.likeSharePercent` (0–100) is what the UI shows — raw vote counts live in the 15–1500 range and absolute numbers mean nothing to a user.
 
-1. 逐窗遍历，**近零窗弃权**：|v| 与 |a| 同时小于 `SongEmotion.LOW_CONF`(0.15) 的窗不参与（曲线为空或全部弃权则返回空）；
-2. 每个有效窗按 `(v-anchorV)² + (a-anchorA)²` 找**最近的 `auto = true` 组**投一票（`AUTO_GROUPS` 懒加载过滤一次、候选锚点循环外解析，循环内零分配）；
-3. 按占比降序，**并列按组声明序 `ordinal` 升序兜底**——票数是整数并列很常见（全库 92 首都存在比例并列、17 首 top1 并列），而 `votes` 是 HashMap 迭代序契约上不保证跨进程一致，必须用声明序兜底才能让同一首歌的词条顺序随重启稳定。
+`PlayerRuntime.handleExploreSongSettled(songId, playedMs)` settles when a song ends or is switched away: it reads `exploreVoteRatiosCache[songId]` (the gated projection), classifies the listen with `ExplorePlaybackPolicy.isSkipped` (`playedMs < 30 s` or `< duration/4`; unknown duration falls back to the 30 s rule), converts to weights and calls `WordPreferenceRepository.recordSongOutcome(votes, liked = !skipped)`. That method ignores empty/zero weights, then per word runs `ensureWordPreference` (idempotent insert) followed by `addWordVotesDelta`, a statement-level atomic increment with `MIN(x, 2147483647)` saturation — the saturated add prevents an overflow into negative votes flipping the "majority wins" verdict, and the atomic increment removes the lost-update race of the old read-modify-write loop.
 
-`categoriesFrom(votes, topN = MAX_TAGS, minRatio = MIN_RATIO)`：过滤占比 ≥ `minRatio`(0.15)，取前 `topN`(= `MAX_TAGS` = 4)。
+`buildExploreRefillPool` classifies songs through the **full-distribution** key set (`moodEmotionTagsOf`, i.e. the keys of `emotionMatchRatiosOf`) against `wordPreferenceOf(word).kind`, then layers the pool: ① contains ≥1 liked word and no disliked word, ② no disliked word, ③ the whole library. The fallback criterion is "enough songs to fill 5", not "pool is non-empty" — a non-empty but too-small pool used to self-lock the session. Time-slot (`TIME_SLOT`) and explore (`EXPLORE`) are mutually exclusive enhance modes.
 
-`avgOfWords(words, anchors)` 把用户勾选词解析为组集合后取**组锚点均值坐标**（同组多个词即该组锚点；跨组词取锚点平均；非法词/空列表返回 null）——这是**读时**由 `userPoint()` 派生用户校准坐标的来源。
+## Storage: `song_emotions`, its write paths, and rescanning
 
-## 词条分布函数：展示、匹配、计票口径不同
+Room `melody.db` is at **version 20**, but the emotion tables have been stable since migration 15→16: v8→v9 creates `song_emotions`, v9→v10 adds `embeddingB64` plus the three user columns, v10→v11 creates `word_preferences`, v11→v12 adds `userTagsEdited`, v12→v13 appends fingerprints to `modelVersion` and nulls the coordinate columns, v13→v14 adds `vocalScore`, v14→v15 relabels v4 rows to v5 (no rescan — compensation is read-time), v15→v16 scales votes ×100. v16→v17 only adds indexes on `songs` / `playback_events`, and v17→v18, v18→v19, v19→v20 touch `songs` and `song_group_overrides`. `song_emotions` has primary key `songId` and no foreign key.
 
-`EmotionTags.kt` 按用途分了三套不同口径的词条分布，这是关键设计：
-
-- **`emotionTagsOf(emotion)`**：**展示词条的唯一出口**——`userTags` 非空原样返回（**用户词最高优先**，可覆盖模型结论），否则 `headlineTagsFor(compensatedCurve, modelVersion)` 逐窗投票取 headline。
-- **`modelTagsOf(emotion)`**：模型**自动**词条（忽略用户优先）——判断"用户是否不认同模型"时必须用它，否则已校准的歌会拿用户自己的词当"模型词"比。曲线为空返回空。
-- **`emotionTagRatiosOf(emotion, minRatio=MIN_RATIO, topN=MAX_TAGS)`**：展示用词条 + 各自占比（`EmotionTagRatio(tag, ratio?)`；`ratio` **null = 用户手动标记**，用户选的词没有"占比"这回事）。
-- **`emotionMatchRatiosOf(emotion)`**：时段匹配用**完整分布**（不受展示门槛 15% 与 topN=4 截断，否则目标词排第 5 就永远匹配不上）；用户手动标记词按 **1.0**（强匹配，用户判断比模型更可信）。
-- **`emotionVoteRatiosOf(emotion, minRatio=VOTE_MIN_RATIO, topN=VOTE_MAX_TAGS)`**：探索播放**计票**用——卡上与详情页**同一套**占比门槛，否则完整分布平均每首 6.26 词（详情页只显示 2.31 个），跳过一首同时否定 6 个词、「不喜欢」扩散快 2.7 倍，几十首歌就能把全部词条染黑（实测 9 个 auto 组代表词全变 DISLIKE）。
-
-`EmotionDisplay`（M-11）把这些结论**只投票一次**并包成一份数据结构供展示层派生：`emotionDisplayOf(emotion)` 返回 `tags` / `tagRatios` / `confidence`——原先展示区要分别调 `emotionTagsOf`/`emotionTagRatiosOf`/`emotionConfidenceLevelOf`，每个都从头再投一遍票；现在投票只一次，三样结论从同一份投票派生。
-
-## 置信度：信号 = 最高票占比
-
-`EmotionConfidence.kt` 定义把握程度，**信号 = 逐窗投票里最高票组的占比**（`EmotionGroup.confidenceOf`）——这个量本来就在算，但原先被 minRatio 过滤掉等于白算。实测依据（全库 1095 首，坐标系 v5-vocal）：
-
-- 词条含冷暖矛盾的 228 首 top1 占比均值 0.398，不矛盾的 867 首均值 0.484（Mann-Whitney U p=1.7e-14）——**top1 占比就是"有无把握"的现成测量**；
-- 但单一阈值不够：137 首（12.5%）top1 占比很高（中位 0.62）却冷暖同现——那不是没把握，是"很确定地给出一对矛盾结论"，文案必须不同。
-
-三个档位 `EmotionConfidenceLevel`：
-
-- **HIGH**：票集中且词条不打架（用户已手动标记的一律 HIGH——展示的是用户自己选的词，模型把握成了噪音）；
-- **SPREAD**：`top1 < LOW_CONFIDENCE_RATIO = 0.35`（取全库分位 p25=0.345）——票摊开、模型自己没把握；
-- **MIXED**：票集中（top1 ≥ 0.35，很确定）但**冷暖词同现**（`isMixedColdWarm` 检测 `COOL_WORDS`={"emo","躁","窒息"} 与 `WARM_WORDS`={"元气","燃","神圣","治愈","放松"} 同时出现；「静谧」算中性不冲突）——**"很确定地矛盾"**；
-- 判定顺序先看票型（摊不摊开），再看词条是否自相矛盾，两者都成立时以摊开为准（那才是更根本的原因）。
-
-`emotionConfidenceOf` 必须用**补偿后**的曲线——词条是按补偿后曲线投票的，置信度必须描述同一次投票，否则等于描述一个不存在的投票过程。
-
-## WITTY（鬼畜/沙雕/戏谑/荒诞）为何退出自动投票
-
-WITTY 组是唯一的 `auto = false` 组，退出自动曲线投票、只保留手动标记链路。原因写在枚举 KDoc 与测试名 `WITTY excluded from auto voting (center-vacuum fix)` 中，共两条：
-
-1. **文化梗声学上不可分**：鬼畜/沙雕的本质是"故意做坏/重复剪切"的文化梗，声学特征与正经的燃/快乐无法区分——自动投票不可能把它投对；
-2. **锚点居中导致吸票误标**：WITTY 锚点 (0.2, 0.3) 恰在 V-A 图中心，YAMNet 输出偏暖的"中庸"窗会被整片吸到最近锚点上，造成大面积误标（测试构造 20 个 (0.2, 0.3) 窗断言投票结果不含 WITTY）。
-
-对下游的影响集中在**随手播候选池与配置页**：
-
-- 随心播配置弹窗 `MoodSlotEditDialog` 单独展示 `manualOnlyTags`（`AppNavHost` 硬编码传入 4 个 WITTY 词，见 `AppNavHost` L604），分组标题"仅手动标记计入"，并提示"这组词条不参与自动分析"；歌曲数为 0 的 chip 置灰；
-- 由于词条歌曲数按展示词条（`emotionTagsOf`）统计，而 WITTY 词只会出现在用户手动标记过的歌曲上——选了 WITTY 但从未手动标记时歌曲数为 0，组合候选池为 0 时 `PlayerRandomQueueFacade` 回退全库随机。
-
-## embedding 的现状：仍入库，kNN 已下线
-
-分析器在逐窗推理时累加每窗 YAMNet embedding，最后输出**整曲平均 embedding（1024 维）**随 `SongEmotion` 一起入库（base64 float32 小端存 `embeddingB64`）。读路径（`getAll`/`observeAll`）改走**轻量投影 `SongEmotionLite`**，不再解码 embedding（整库约 5.3KB/首，1.6 万首 ≈ 90MB，读侧消费者只用曲线与校准字段）；需要时用 `get` 单条整行读取。
-
-它曾经的消费者——kNN 锚点传播——已于 2026-08-31 **整体下线**（`EmotionKnn.kt`、`EmotionPersonalizer.kt`、`correctedWithEmbedding` 查询全部删除）。下线依据 `docs/architecture/EMOTION_KNN_ANALYSIS.md` 实测：传染对率 ~30% ≈ 瞎蒙（与从 7 组随机基线相当）；根因是 YAMNet 表征**音色主导**（同情绪组近邻准确率 43% vs 基线 42%，零信号）+ 高维 **hubness**（全库余弦中位 0.439，无有效全局距离阈值）——表征问题，非阈值工程。
-
-**embedding 不是垃圾字段**：它仍是未来"用户标记攒够后离线监督重训 VA 头"的原料，随分析入库的沉没成本为零；当前词条判定只走用户词 + 曲线投票两条路，不读 embedding。
-
-## 探索播放词条偏好：WordPreference 按占比加权计票模型
-
-从 v3.11.0 起，情绪模型在"歌曲情绪词条映射/用户校准"之上新增了一条**独立并列**的通道：**情绪词条的收听偏好计票**，驱动"探索播放"按个人口味补队列。两条通道明确分工：
-
-- **歌曲情绪通道**（`song_emotions` + `emotionTagsOf`）：决定"一首歌被贴了哪些词条"，用户校准优先；
-- **词条偏好通道**（`word_preferences` + `WordPreference`）：决定"用户对这些词条整体喜欢还是不喜欢"，由收听行为累计计票。
-
-两条通道是两张独立的 Room 表、两个独立的 repository；偏好计票**只读**歌曲情绪通道的展示词条，但**不写回** `song_emotions`，也不改变校准/映射语义——并存而非替代。
-
-### 模型与判定
-
-`WordPreference(word, likeVotes, dislikeVotes)` 的 `kind`（`LIKE`/`DISLIKE`/`NEUTRAL`）由 `likeVotes > dislikeVotes` / `dislikeVotes > likeVotes` / 平票判定，发生在**域层属性**。计票**按占比加权**（2026-10-25）：
-
-- **票重 = 词条在整首里占的比例 × `VOTE_WEIGHT_SCALE`（=100）**（`votesOf(ratios)`：`voteWeightOf = round(ratio * 100)`，占比 <0.5% 得 0 票等于不投）——"80% emo"比"20% emo"对「emo」贡献大得多，原来一刀切 1 票主次不分；
-- **计票只投卡住占比门槛的词**（`VOTE_MIN_RATIO == EmotionGroup.MIN_RATIO`、`VOTE_MAX_TAGS == MAX_TAGS`，直接引用展示层常量所以不可能漂移）——**跳过 = 否定详情页里看到的那几个标签**；原来投完整分布，"不喜欢"扩散快 2.7 倍；
-- 整数票 ×100 而不是改 REAL 列：归属是相对比较（喜欢票多 vs 不喜欢票多），绝对尺度不影响；历史票由迁移 `MIGRATION_15_16` 统一 ×100 保持尺度一致。
-
-`UI 用 likeSharePercent`（喜欢票占比 0-100）而非绝对票数：票数是 15~1500 量级，且票重 15 折算"1 首歌当量"会显示 0，占比法才是判定依据。
-
-### 投票写入（PlayerRuntime.handleExploreSongSettled）
-
-`PlayerRuntime.handleExploreSongSettled` 在一首歌结束/切歌时结算收听时长，取该歌**计票口径**的词条占比（`exploreVoteRatiosCache`，即 `observeMoodSlotCaches` 里用 `emotionVoteRatiosOf` 预算的卡门槛分布），按 `ExplorePlaybackPolicy.isSkipped(playedMs, durationMs)` 判定：
-
-- 完整收听：`playedMs ≥ 30s` **且** `≥ durationMs/4` → 全部卡门槛词条 `liked=true`，喜欢票按票重 +1；
-- 快速跳过：`playedMs < 30s` **或** `< durationMs/4` → 按票重给不喜欢票；
-- 时长未知（≤0）时只按 30s 规则判定。
-
-随后 `WordPreferenceRepository.recordSongOutcome(votes: Map<String,Int>, liked)`：空票忽略；逐词 `ensureWordPreference`（幂等建行）→ `addWordVotesDelta`（**语句级原子增量**，`MIN(x, MAX)` 饱和加法停 Int 上限防溢出成负数翻转判定）——评审 M-22 消除"读整表→算→整表 upsert"的并发丢票问题。
-
-### 持久化与读路径
-
-`word_preferences` 表由 `MIGRATION_10_11` 创建（主键 `word`，`likeVotes`/`dislikeVotes`/`updatedAt`），`MIGRATION_15_16` 把历史票 ×100。`WordPreferencesRepository` 是唯一数据源（`:data` 单例绑定 `MelodyDao`，对外暴露 `:domain` 接口）。读路径：
-
-- `observeAll()` → `Map<String, WordPreference>`，`PlayerRuntime.observeMoodSlotCaches()` 持续订阅到 volatile `wordPreferenceCache`；
-- `MoodTimeSlotViewModel.wordPreferences` 按词条名排序成 `StateFlow<List<WordPreference>>` 供配置页展示；
-- `clearAll()`（配置页"重新探索"）清空整表。
-
-### 探索播放候选池消费
-
-`PlayerRandomQueueFacade.playRandomQueue` 在探索模式下（`exploreModeEnabled()`，即 `randomEnhanceMode == EXPLORE`）不套用时段过滤，从全库随机 `INITIAL_BATCH_SIZE = 10` 首，置 `isExplorePlay`；无限随机被禁用。队列降到倒数第二首播完后，`refillExplorePlayQueue` 用 `buildExploreRefillPool` 分层补 `REFILL_COUNT = 5` 首：
-
-1. 含 ≥1 喜欢词 且 不含不喜欢词的歌；
-2. 池空回退"仅不含不喜欢词"；
-3. 再空回退全库。
-
-**降级判据是"池子够不够补满 5 首"而非"池子非空"**（2026-10-25 修复）——"非空即用"会自锁：用户一路点下一首 → 全词条变 DISLIKE → 只剩没情绪分析的那几首 → 池子非空但 <5 首补不满 → 永不补充。词条归属按 `wordPreferenceOf(word).kind`（读 `wordPreferenceCache`，未学到视为 0:0 中立）。时段（`TIME_SLOT`）与探索（`EXPLORE`）是互斥增强模式。
-
-```mermaid
-flowchart TD
-    SETTLE["handleExploreSongSettled 切/播完结算"] --> RAT["取 emotionVoteRatiosOf（卡占比门槛，与详情页同口径）"]
-    RAT --> CHK{"ExplorePlaybackPolicy.isSkipped"}
-    CHK -->|"完整收听 ≥30s 且 ≥1/4"| LIKE["各词按票重(占比×100)喜欢票 +1"]
-    CHK -->|"快速跳过"| DISLIKE["各词按票重不喜欢票 +1"]
-    LIKE --> REPO["recordSongOutcome: 逐词原子增量"]
-    DISLIKE --> REPO
-    REPO --> DB[(Room word_preferences)]
-    DB --> OBS["observeAll: 域层 kind 判定 LIKE/DISLIKE/NEUTRAL"]
-    OBS --> CACHE["PlayerRuntime.wordPreferenceCache volatile 持续订阅"]
-    CACHE --> POOL["buildExploreRefillPool 分层候选池"]
-    POOL --> L1["① 含 ≥1 喜欢词 且 无不喜欢词"]
-    POOL --> L2["② 仅无不喜欢词"]
-    POOL --> L3["③ 回退全库"]
-```
-
-## 存储形态：song_emotions 表与 SongEmotionsRepository
-
-`song_emotions` 是 Room `melody.db`（**v17**）中的一张表，主键 `songId`、无外键。迁移轨迹：v8→v9 建表，v9→v10 增列 `embeddingB64` 与用户坐标/词条三字段，v10→v11 建 `word_preferences`，v11→v12 增列 `userTagsEdited`，v12→v13 版本串补指纹 + 坐标列置 NULL，v13→v14 增列 `vocalScore`，v14→v15 坐标系切 v5（零重扫只改标签），v15→v16 词条票 ×100，v16→v17 补两个索引。
-
-`SongEmotionEntity ↔ SongEmotion` 的映射由 `SongEmotionsRepository` 的私有扩展函数完成：
-
-| Entity 字段 | 领域模型 | 编解码约定 |
+| Entity field | Domain model | Encoding |
 | --- | --- | --- |
-| `curveJson` (TEXT NOT NULL) | `curve` | **扁平 [v,a,v,a,...] JSONArray**（零额外依赖）；解析失败降级为空曲线 |
-| `embeddingB64` (TEXT?) | `embedding` | base64 的 float32 小端字节数组（读路径走 `SongEmotionLite` 轻量投影不物化） |
-| `userTags` (TEXT?) | `userTags` | 逗号拼接；读侧 split 过滤空段；**真值** |
-| `userValence`/`userArousal` (REAL?) | （已废弃） | 保留兼容历史行，读侧不再当真源 |
-| `userTagsEdited` (INTEGER?) | `userTagsEdited` | 是否"不认同"模型（null=无模型输出可比） |
-| `vocalScore` (REAL?) | `vocalScore` | v5 人声成分补偿输入（v13→v14 增列） |
-| `modelVersion` (TEXT NOT NULL) | `modelVersion` | `<label>@<fingerprint>`（v5-vocal@edbf6fe5）或 `"user-only"` |
-| 其余字段 | 同名 | 直通 |
+| `curveJson` (TEXT NOT NULL) | `curve` | flat `[v,a,v,a,...]` JSONArray; parse failure degrades to an empty curve |
+| `embeddingB64` (TEXT?) | `embedding` | base64 of little-endian float32; read paths use `SongEmotionLite` |
+| `userTags` (TEXT?) | `userTags` | comma-joined; read side splits and drops blank segments; **the truth** |
+| `userValence` / `userArousal` (REAL?) | deprecated | historical rows only; coordinates are derived at read time |
+| `userTagsEdited` (INTEGER?) | `userTagsEdited` | nullable on purpose: old data cannot say whether anything was edited |
+| `vocalScore` (REAL?) | `vocalScore` | input to read-time vocal compensation |
+| `modelVersion` (TEXT NOT NULL) | `modelVersion` | `<label>@<fingerprint>` or `"user-only"` |
+| other columns | same name | direct |
 
-### 曲线解析缓存（评审 M-1）
+**`SongEmotionsRepository` is the only data source** for the table (`:data` singleton over `MelodyDao`, exposed as the `:domain` repository; the `:player` analyzer is the main writer). Three write paths, each with an invariant:
 
-Room 的失效跟踪器在 `song_emotions` 任意一行变化时会**重发整表**。批扫是"一首一首写"，于是 300 首 × 1000 首库 = 30 万次曲线 JSON 重解析。仓储层用 `parsedCurveCache`（songId → (analyzedAt, 曲线)）缓存：行没变（`analyzedAt` 相同）直接复用已解析曲线，**每次重发只有新写入的那一行需要解析**。用户校准不改 `analyzedAt` 也不改曲线，因此校准后缓存依然有效。
+- **upsert (rescan)** issues one atomic SQL statement, `updateSongEmotionPreservingUserTags`: when the new row carries no `userTags`, a `CASE` keeps the row's existing `userTags` / `userTagsEdited`, so a rescan can never silently swallow a user's hand-marked words (this replaced "read old row → merge in memory → upsert whole row", which lost corrections to the TOCTOU window). Coordinates are never inherited. Only when the `UPDATE` affects 0 rows does it fall back to `upsertSongEmotion`.
+- **saveCorrection** writes **only** the word columns (`userTags`, `userTagsEdited`) and nulls `userValence` / `userArousal`; on 0 affected rows it calls `insertUserOnlyCorrectionIfAbsent`, a deliberate `INSERT OR IGNORE` with `curveJson = "[]"`, `windowsAnalyzed = 0`, `modelVersion = "user-only"` — `@Upsert` here would replace a whole row and erase an existing analysis.
+- **clearCorrection** nulls the three user columns and, if the row is now an empty `user-only` row (`windowsAnalyzed == 0` and no embedding), deletes it; otherwise "analyzed" checks that treat a non-null emotion row as analyzed would misclassify it.
 
-```mermaid
-flowchart TD
-    SCAN["EmotionScanWorker 重扫 upsert(M-23 原子合并)"] --> CHK{"新记录不带词条且旧行已校准?"}
-    CHK -->|"是"| INH["SQL CASE: 保留旧 userTags/userTagsEdited（不见可丢）"]
-    CHK -->|"否"| UPS["写入新模型数据（userValence/Arousal 置 NULL）"]
-    CAL["saveCorrection 用户校准"] --> EX{"song_emotions 已有行?"}
-    EX -->|"有"| UPD["UPDATE: 只写词条 + userTagsEdited，坐标置 NULL，不动模型列"]
-    EX -->|"无"| INS["INSERT OR IGNORE 建 user-only 行（曲线空）"]
-    CLR["clearCorrection"] --> NUL["清词条 + userTagsEdited 置 NULL"]
-    NUL --> ISP{"该行是全空 user-only 行?"}
-    ISP -->|"是"| DEL["删除该行，避免被误判为已分析"]
-    ISP -->|"否"| KEEP["保留行，展示回落曲线自动词条"]
-    CACHE2["读路径走轻量投影 LITE + parsedCurveCache 只解析新行"]
-    INH --> DB[("Room 表 song_emotions")]
-    UPS --> DB
-    UPD --> DB
-    INS --> DB
-    DEL --> DB
-    KEEP --> DB
-    DB --> LITE["SongEmotionLite（不含 embedding）"]
-```
+Reads are also cached: Room's invalidation tracker re-emits the entire table whenever any row changes, and batch scanning writes row by row, so `parsedCurveCache` (songId → `(analyzedAt, curve)`) reuses a parsed curve when `analyzedAt` is unchanged — only the newly written row is parsed per re-emission. Calibration does not touch `analyzedAt` or the curve, so the cache survives it.
 
-**`SongEmotionsRepository` 是该表的唯一数据源**（`:data` 单例绑定 `MelodyDao`，对外只暴露 `:domain` 的 `SongEmotionRepository`；`:player` 分析器是主要写入方）。三条写路径各有不变式：
+Rescanning is driven by `modelVersion`: `EmotionScanWorker`'s pending set is `analyzed[songId] != EmotionAnalyzer.MODEL_VERSION` **or** the song is missing `vocalScore` (`songIdsMissingVocalScore()`, `windowsAnalyzed > 0` so `user-only` rows are left to the failure-retry path), and songs that already failed `MAX_ATTEMPTS` (3) times are excluded so a broken file cannot spin the scanner forever. `EmotionAnalyzer.MODEL_VERSION` references `EmotionModelSpec.MODEL_VERSION` directly to prevent two hand-written copies. New assets ⇒ new fingerprint ⇒ `modelVersion` mismatch ⇒ automatic rescan; the v5 compensation change only relabeled rows, so it required zero rescan.
 
-- **upsert（重扫路径，M-23 原子合并）**：`updateSongEmotionPreservingUserTags` 一条 SQL `CASE`——新值 `userTags` 为空就保留行上已有的 `userTags`/`userTagsEdited`（**用户亲手标的词条不见可丢**）。消除了原"读旧行→内存合并→整行 upsert"的 TOCTOU：用户恰在扫描读与写之间保存校准会被陈旧词条覆写静默消失。新值带词条（分析产出通常不带）就写入，`userValence`/`userArousal` 一律投 NULL（坐标列废弃）。`UPDATE` 命中 0 行（无行）才 `upsertSongEmotion` 插入。
-- **saveCorrection（校准路径，M-23）**：**只写词条**，不写坐标。`UPDATE ... SET userValence=NULL, userArousal=NULL, userTags=?, userTagsEdited=?`；命中 0 行（分析失败/未分析）→ `insertUserOnlyCorrectionIfAbsent` 用 `INSERT OR IGNORE` 建仅含 user 字段的行（`curveJson="[]"`、`windowsAnalyzed=0`、`modelVersion="user-only"`）——`@Upsert` 在行已存在时会把整行替换成 user-only 空曲线、**把分析结果擦掉**，所以用 `INSERT OR IGNORE`（行已存在时什么都不做，由调用方走 UPDATE 分支）。
-- **clearCorrection（恢复自动路径）**：清词条 + `userTagsEdited` 置 NULL；随后若该行是"全空 user-only 行"（`windowsAnalyzed == 0` 且无 embedding）则**直接删行**——否则全空行会被列表构建（以 emotion 非空判定"已分析"）误判。
+## Behaviour locked by tests
 
-`analyzedVersions()`（`songId → modelVersion` 轻量投影）驱动重扫：`EmotionScanWorker` 的待扫集 = `analyzed[songId] != EmotionAnalyzer.MODEL_VERSION`（当前 `"yamnet-va-v5-vocal@edbf6fe5"`，定义在 `player/EmotionAnalyzer.kt`，直接引用 `EmotionModelSpec.MODEL_VERSION` **避免两处漂移**）**或** 已分析但缺人声分数（`songIdsMissingVocalScore()`——v5 引入 vocalScore 之前的数据补扫一次，补上条件标定要用的变量）。
+- **Vocabulary**: 39 distinct words in 10 groups, `headline = words.first()`, `groupOf` round-trip; `avgOfWords` same-group anchor, cross-group mean, unknown word → null.
+- **Voting**: `voteRatios` keeps groups the display layer drops, `categoriesFor` is its filtered view, confidence equals the top share, all-near-zero and empty curves score 0, tie order follows declaration order (`EmotionGroupVoteOrderTest`), confidence uses the curve's own anchor table for legacy/v4/current, and the same curve changes tags when the coordinate system changes.
+- **Anchors**: bounds and minimum spacing of 0.25, 燃 highest arousal, 窒息 lowest valence, 元气/治愈 the two most positive, 静谧 lowest arousal, the three negative words exactly {emo, 躁, 窒息}, no anchor near the origin, WITTY excluded, legacy curves vote with the legacy table, manual points share the curve's coordinate system (`EmotionGroupAnchorTest`); `ANCHORS_CALIBRATED_FOR` equals the current parameter fingerprint (`EmotionModelSpecTest`).
+- **Projections**: display ratios sum to 1 when all groups clear the floor, the 15 % floor drops minor words (`minRatio = 0f` still returns the full distribution), user tags carry no ratio, ratios follow the compensated curve, the vote set equals the displayed set, and the vote gate is the display gate (`EmotionTagRatioTest`, `EmotionVoteRatiosTest`).
+- **Confidence**: HIGH/SPREAD/MIXED, `isMixedColdWarm`, `needsConfidenceHint`, HIGH for user-marked and curve-less songs, and the compensated-curve computation (`EmotionConfidenceTest`).
+- **Display helpers**: `smoothCurve` keeps length and short lists, `lowConfidence` per axis, `emotionTagsOf` user override and empty result for low confidence, `modelTagsOf` / `isUserCorrection` semantics, `likeSharePercent` (`SongEmotionSectionTest`, `EmotionTagsCorrectionTest`).
+- **Storage and votes**: `SongEmotionsRepositoryTest`, `WordPreferencesRepositoryTest` (weighted votes, skip does not flip a liked word, cross-session accumulation, empty words ignored, clearAll), `AtomicIncrementRoomTest` (concurrent settlement), `MelodyDatabaseMigrationTest`.
 
-## 用户校准链路
+## Related pages
 
-- **入口 UI**：`EmotionCalibrateDialog` 按 10 组分行展示全部词（39 词，`FlowRow` 换行），多选上限 `MAX_TAGS = 4`；已校准歌曲提供"恢复自动"出口（空词保存即清标记）；预勾选当前展示词条。
-- **控制器**：`:core:ui` 定义 `LocalEmotionCorrectionController`（默认 null），`AppRoot` 在最外层 `CompositionLocalProvider` 一次性提供（包住 NavHost 所在的 `AppScaffold`）——任何渲染歌曲详情情绪区的页面自动获得"不像？标记"能力，无需逐层透传回调。保存成功刷新 `EmotionViewModel`；保存失败（词表非法）返回 false。
-- **换算与落库**：`AppMediaMetadataViewModel.saveEmotionCorrection` 中，空词 → `clearCorrection`（要求已有行）；非空词 → 先校验 `words.any { groupOf(it) == null }`（**不能用 `avgOfWords` 当校验器**——它静默丢弃非法词，只剩一个合法词时照样返回坐标），再用 `isUserCorrection(modelTagsOf(current), words)` 判定 `userTagsEdited`，最后 `saveCorrection(songId, words, edited)` **只写词条**。坐标由读侧 `userPoint()` 按该行坐标系现算，永不落库。
-- **user-only 行的呈现**：详情区对曲线不足 2 窗的行（user-only 行典型形态）不 early-return，而是显示词条列表并标注"已由你标记（自动分析失败，词条以你的标记为准）"；失败歌曲也通过同一个 `EmotionCalibrateDialog` 标记。
-
-## 消费端：列表、详情与情境化/探索随心播放
-
-- **曲库「情绪」Tab**：`EmotionViewModel.buildRows` 把 `getAll()` 与曲库拍平为 `EmotionSongRow`（`tags = emotionTagsOf(e)`、`corrected = e.userCorrected`），`AppNavHost` 再二次拍平为 core-model 的 `EmotionSongUiRow`（song/tags/corrected/**confidence**，曲库情绪 Tab 与情绪分析详情页共用）。`EmotionLibraryView` 用行 tags 提供 chips 多选过滤、"手动标记优先 + 有词条优先"排序、"已校准"角标。
-- **歌曲详情**：`SongEmotionSection` 用 `emotionDisplayOf` **只投票一次**派生词条、占比、置信度，渲染平滑后的 V/A 双曲线（`smoothCurve` 窗口 5 滑动平均、边界缩窗、长度 <3 原样返回）与高潮红点——仅当 `hasSignificantPeak`（A 最大值 > A 均值 + `PEAK_MARGIN = 0.5`，20 首实测分布定标：平缓/全程高能歌 ≤0.49，真高潮歌 ≥0.52）时画，`peakSec` 按 2.5s hop 折算窗下标。词条 chip 带占比（"燃 35%、元气 22%"的听感完全不同）。置信度非 HIGH 时在标题下提示：SPREAD →"模型把握不大，词条仅供参考"；MIXED →"词条里有冷有热，这首歌可能不止一种情绪"。
-- **情绪时段随心播放（TIME_SLOT）**：`PlayerRuntime.observeMoodSlotCaches()` 自启动起**持续订阅**四条仓库流：`TimeSlotConfigRepository.observeConfigs()`、`SongEmotionRepository.observeAll()`（`Dispatchers.Default` 上逐首算**匹配用完整分布 `emotionMatchRatiosOf`** 与**计票用卡门槛 `emotionVoteRatiosOf`** → volatile `moodEmotionRatiosCache` / `exploreVoteRatiosCache`）、`WordPreferenceRepository.observeAll()`（→ volatile `wordPreferenceCache`）、随机增强模式流。新分析/用户校准/偏好计票即时反哺判定。`PlayerRandomQueueFacade` 用 `filterByMoodTags` 按命中时段词条过滤候选池（按 `emotionMatchRatiosOf` 完整分布判，不受展示截断），过滤后为空回退全库随机。
-- **探索播放（EXPLORE）**：见计票模型一节；与时段互斥，候选池按词条偏好分层而非按时段词条过滤，计票走 `emotionVoteRatiosOf` 卡门槛口径。
-
-## 行为契约测试
-
-契约测试分几组锁定（评审 M-11 重构后 `SongEmotionSectionTest` + `EmotionConfidenceTest` + `EmotionGroupAnchorTest`）：
-
-- **词表**：39 词封闭词表无重复、`headline = words.first()`、10 组；`avgOfWords` 同组取锚点、跨组取均值、非法词 null。
-- **投票**：`voteRatios` 保留展示层会滤掉的组（10% 的 EPIC 不丢）、`categoriesFor` 是 voteRatios 的过滤视图、置信度 = 最高票占比、全近零/空曲线置信度 0、展得开 vs 集中票的置信度对比、置信度必须用**曲线自己坐标系**的锚点表（legacy/v4/current 都验）、同一曲线换坐标系词的归属必须跟着换、并列按声明序稳定（`EmotionGroupAnchorTest`）。
-- **WITTY**：20 个 (0.2,0.3) 窗投票结果不含 WITTY、`groupOf("鬼畜")` 可达（手动链路不受限）。
-- **confidence 档位**：`emotionConfidenceLevelOf` 的 HIGH/SPREAD/MIXED、`isMixedColdWarm`、`needsConfidenceHint`。
-- **展示纯函数**：`smoothCurve` 保长缩噪与短列表直通、`lowConfidence` 双轴近零判定、`hasSignificantPeak` 尖峰边界、`emotionTagsOf` 用户词覆盖 + 低置信空。
-- **锚点一致性**：`EmotionGroupAnchorTest` 拿 `ANCHORS_CALIBRATED_FOR` 与 `EmotionModelSpec.PARAMS_FINGERPRINT` 比对，改了坐标系参数而没重标定锚点表就红。
-- **计票**：`WordPreferencesRepositoryTest`（按占比加权、跳过只补不喜欢票不翻转已喜欢词、跨会话累计平票中立、空词忽略、clearAll）、`MelodyDatabaseMigrationTest`、`PlayerRandomQueueFacadeTest`（探索补队列的票数判定与分层降级）。
-
-## 相关页面
-
-- `/openwiki/architecture/data-persistence.md` — Room 库与迁移全景（song_emotions 与 word_preferences 建表/增列/注册，DB v17）
-- `/openwiki/concepts/mood-time-slot.md` — 情绪词条驱动时段随心播放与探索播放的配置及判定模型
-- `/openwiki/workflows/emotion-analysis-pipeline.md` — 批扫 Worker、分析器与失败处理的流程细节
-- `/openwiki/player/random-and-infinite.md`、`/openwiki/player/runtime-facades.md` — 探索播放与运行时缓存
-- `/openwiki/testing/test-map.md` — 契约测试分布
+- `/openwiki/concepts/mood-time-slot.md` — slot configuration, matching thresholds and explore-play candidate pools built on these projections
+- `/openwiki/workflows/emotion-analysis-pipeline.md` — analyzer, batch worker, failure handling and progress reporting
+- `/openwiki/player/random-and-infinite.md` — random/explore queue assembly and refill
+- `/openwiki/player/state-machine.md` — playback runtime and UI state feeding the playback page
+- `/openwiki/workflows/storage-and-quality-stats.md` — Room schema, migrations and quality statistics

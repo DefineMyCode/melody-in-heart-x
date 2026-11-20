@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "pageVersion": "sha256:8ba51751eeca8465f9b55da6414077e1f9e78ccadef136d44d4a86c139ee84f0",
+  "pageVersion": "sha256:cfd6d7c9766a2ee5260a2c9ef63f0850a391d8973616b2a064826ce79398017c",
   "claims": [
     {
       "id": "claim_4101d61fcd4e4055bd666ea73c417e7e",
@@ -68,7 +68,7 @@
         },
         {
           "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/player/EmotionAnalyzer.kt",
-          "version": "repo-file-v1:sha256:46e740e436459d88903644df323a606fb51a893a355039975c157aa4ba7a3156"
+          "version": "repo-file-v1:sha256:5fc7e92aad5b50eb4bf10f8bf5e4d631240fffce6624cc0d831dc965bf4a5f6c"
         }
       ]
     },
@@ -82,7 +82,7 @@
         },
         {
           "resource": "repo://core/model/src/main/java/cn/com/dcsgo/mihx/core/model/SongEmotion.kt",
-          "version": "repo-file-v1:sha256:f5002cdbc0ce24b19cdd02ce40c814aec8fe07ab9b7700964bb2712ad71ec86f"
+          "version": "repo-file-v1:sha256:7b26dabfc9d3e8182d9f2739fa08f83b39e06ea0618d7f1c6a77557eff038ea1"
         }
       ]
     },
@@ -96,7 +96,7 @@
         },
         {
           "resource": "repo://core/model/src/main/java/cn/com/dcsgo/mihx/core/model/SongEmotion.kt",
-          "version": "repo-file-v1:sha256:f5002cdbc0ce24b19cdd02ce40c814aec8fe07ab9b7700964bb2712ad71ec86f"
+          "version": "repo-file-v1:sha256:7b26dabfc9d3e8182d9f2739fa08f83b39e06ea0618d7f1c6a77557eff038ea1"
         },
         {
           "resource": "repo://core/model/src/main/java/cn/com/dcsgo/mihx/core/model/VocalCalibration.kt",
@@ -120,37 +120,37 @@
     },
     {
       "id": "claim_ae83ee9665c64a2aad3962c06c2fa1bf",
-      "statement": "EmotionTags 提供多套词条分布口径：emotionTagsOf 是展示词条唯一出口（userTags 非空原样返回，否则 headlineTagsFor(compensatedCurve, modelVersion)）；modelTagsOf 忽略用户优先从曲线重算模型结论（判断用户是否不认同模型必须用它）；emotionTagRatiosOf 展示词条+各自占比（用户手动标记的 ratio=null）；emotionMatchRatiosOf 给时段匹配用完整分布（不受展示 15% 与 topN=4 截断、用户词按 1.0 强匹配）；emotionVoteRatiosOf 给探索计票用卡展示同门槛分布。emotionDisplayOf 一次投票派生 tags/tagRatios/confidence（评审 M-11 把原先 3~4 遍重复投票合并），用户校准/空曲线一律 HIGH。",
+      "statement": "EmotionTags exposes three non-interchangeable projections of the same vote: emotionTagRatiosOf(emotion, minRatio=MIN_RATIO, topN=MAX_TAGS) is the display projection returning EmotionTagRatio(tag, ratio) at most 4 tags each ≥15% with ratio=null for user-marked tags; emotionMatchRatiosOf(emotion) is the full distribution (no floor, no topN) for slot matching with user tags mapped to 1.0; emotionVoteRatiosOf(emotion, minRatio=VOTE_MIN_RATIO, topN=VOTE_MAX_TAGS) is the display-gated distribution for explore-play vote learning with user tags mapped to 1.0. emotionTagsOf gives the plain display list (user tags if present, else headlineTagsFor of the compensated curve), and modelTagsOf always recomputes the model conclusion from the curve ignoring the user override (empty when there is no curve), so user-vs-model comparison must use it.",
       "evidence": [
         {
-          "resource": "repo://core/model/src/main/java/cn/com/dcsgo/mihx/core/model/EmotionDisplay.kt",
-          "version": "repo-file-v1:sha256:2ffbc3693e56397bee54a3ca7fc602dabc07f0742a03380ea39051c1b448f1b5"
+          "resource": "repo://core/model/src/main/java/cn/com/dcsgo/mihx/core/model/EmotionTags.kt#L19-L144",
+          "version": "repo-lines-v1:sha256:9503e43278468a9337cb66024fe4fa3547c7bbe77c41ccd0efdbdd98bdedecfa:eyJzZWxlY3RlZExpbmVDb3VudCI6MTI2LCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiI3ZjVmOTJmOWRiOTU4NGU0ZDQyMWVkY2RkNjg2MzQ5OTczOTNjYzAzMWM5YTk5ZWQ5ZmJiNWIyZmRkYTNlNjMwIiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI0MTJjYTM0NWNjZjc1YmY5YzA4MDZiY2U2OTViZThkZTgwOGI3OTk4NDI1MWE3YTU0ZDIwMmNmNjEwMWRkNDUxIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiI1OTEzYjI3OTgxZGI0ODBkY2RiODA3MTg4YjNmYWQ4MDQxOTQzYTRlY2ZiYjQxNzllMDUwZjg2MGY3NmY3NmU2IiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MCwiZm9sbG93aW5nQ29udGV4dEhhc2giOiJlM2IwYzQ0Mjk4ZmMxYzE0OWFmYmY0Yzg5OTZmYjkyNDI3YWU0MWU0NjQ5YjkzNGNhNDk1OTkxYjc4NTJiODU1In0"
         },
         {
-          "resource": "repo://core/model/src/main/java/cn/com/dcsgo/mihx/core/model/EmotionTags.kt",
-          "version": "repo-file-v1:sha256:3bad7e417e803b57481ecca90d449b4c6e8e335703354b71f38204a97db10662"
+          "resource": "repo://domain/src/main/java/cn/com/dcsgo/mihx/domain/playback/ExplorePlaybackPolicy.kt#L16-L32",
+          "version": "repo-lines-v1:sha256:3a2b7df347bfc1eb65f3a0506e38ad5de8aa05bf5af8620eacdb0617f3b9a671:eyJzZWxlY3RlZExpbmVDb3VudCI6MTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM5Y2JiYzY1NDY5ZGIxY2EyODQyZWZkOTdkZjdlZTJjZTZjYzE1NzE0ODJkMDFhMThiNzkwYTEwYzdjNTEwZjMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjljN2IwOGYzMmJmNjRkNjM1ZDM5NGE2OGFmMTI0ZWQzM2EwMzVmZTIyZDA2YjNiYjRlMDZmY2E3ODFiMGM4Y2IiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImI4ZGMxOTk2NjMyNjQyOWQ1OTU1N2UxN2Q1OTgyNzc3ZjVmZjhlZDkwYmVlYzBlYjg1YTQyYzYwMzBiNDg5NjAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImYwMjQ0N2UxNTAyZTVkMzliNTU4OGNjMzFlM2Y4OTJlMDQyNjZhNGM0YmJlYzE3NGI3YTI5MzgzNTgwODZiY2QifQ"
         }
       ]
     },
     {
       "id": "claim_2356afd84d014da7829d88bf5fa3e63c",
-      "statement": "SongEmotionEntity（song_emotions 表，主键 songId、无外键）↔ SongEmotion 由 SongEmotionsRepository 私有扩展互转：curveJson 扁平 [v,a,v,a,...] JSONArray（解析失败降级空曲线）、embeddingB64 为 base64(float32 小端)、userTags 逗号拼接（读侧去空段）、modelVersion 可为 'user-only'；另有废弃的 userValence/userArousal、userTagsEdited、vocalScore 列。读路径 getAll/observeAll 走轻量投影 SongEmotionLite 不解码 embedding（整库约 90MB 物化），需要时用 get 整行读；parsedCurveCache 按 analyzedAt 判行未变则复用已解析曲线，缓解 Room 失效重发整表导致的曲线 JSON 重解析。迁移轨迹 v8→v17（Room melody.db v17）：v9 建表、v10 增 embedding 与用户三字段、v11 建 word_preferences、v12 增 userTagsEdited、v13 版本串补指纹+坐标置 NULL、v14 增 vocalScore、v15 切 v5 标签（零重扫）、v16 词条票×100、v17 补索引。",
+      "statement": "SongEmotionEntity (song_emotions table, primary key songId, no foreign key) ↔ SongEmotion is converted by private extensions in SongEmotionsRepository: curveJson is a flat [v,a,v,a,...] JSONArray (parse failure degrades to an empty curve), embeddingB64 is base64 little-endian float32, userTags are comma-joined (read side drops blank segments), modelVersion may be 'user-only'; the deprecated userValence/userArousal, userTagsEdited and vocalScore columns live alongside. Read paths getAll/observeAll use the lightweight SongEmotionLite projection and never decode embeddings (a whole library would materialize ~90MB), while get() performs the full-row read; parsedCurveCache reuses a parsed curve when analyzedAt is unchanged, so Room's whole-table re-emission after each batch write only re-parses the newly written row. Room melody.db is at version 20, but the emotion tables have not changed since migration 15→16: v8→v9 creates song_emotions, v9→v10 adds embeddingB64 plus the three user columns, v10→v11 creates word_preferences, v11→v12 adds userTagsEdited, v12→v13 appends fingerprints and nulls the coordinate columns, v13→v14 adds vocalScore, v14→v15 relabels v4 rows to v5 (zero rescan), v15→v16 scales votes ×100; v16→v17 only adds indexes on songs/playback_events, and v17→v18, v18→v19, v19→v20 touch songs and song_group_overrides.",
       "evidence": [
         {
-          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/local/MelodyDatabase.kt",
-          "version": "repo-file-v1:sha256:44435e014b132a8103db6b7eecec6317440d8139d651264ab0f13ad7ab7a7c5b"
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/local/MelodyDatabase.kt#L35-L40",
+          "version": "repo-lines-v1:sha256:98db4e38f725588ef48767bfbb5e5e6e7b4b039c099690279c631083d7a70bbc:eyJzZWxlY3RlZExpbmVDb3VudCI6NiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiY2FkMDQzNWIyNDk4M2JlMzZhNjM1NzA1MzhlZGQ5MjRiNjZkYmQzMWFlYjQwM2FjNGVkNzdmOGM3MjE1NGFhYiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZmFmYmEwNTI3YzM5NTNjNGI2ZTBlNWI1NzM5YmE4MzYxMmY4MDUzYmNkYzk0NjY3MzAxOTNjZDFkNTkwYjQwOCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNzYyNTk3MzVhZmY2Mjg1M2UwNGQ2ODQzNDBmOGY1YWFhMTIwMWJjNzVhMTRmNDBjODE2NmU3MWRlOWEwNDg3YSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTRiZjA4OWU1ZDU5ZTAwZmVkY2NmMTIyYmI5NTRhYjIwNWY3ZDY3ZGUzZmY1NjBiZjljNWEwMzFiZjlhZTNhMCJ9"
         },
         {
-          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/local/entity/SongEmotionEntity.kt",
-          "version": "repo-file-v1:sha256:93c0b2487c70e75fdf2d80a875503d82d202e6a491ab88af31e0f8302236237c"
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/local/entity/SongEmotionEntity.kt#L12-L75",
+          "version": "repo-lines-v1:sha256:cd19cac309cd20f3094f440811b2aee759c95a2e380cddafea3ebc6141c21e92:eyJzZWxlY3RlZExpbmVDb3VudCI6NjQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijc4OTQwYTg4MzI0MDA3NmNhNmYyOWFkMDU1NmExODZhZjE3OWE4ZDBjM2ViNGMwMTk3YWJiYjYwODA3N2RkNzIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZhZmJhMDUyN2MzOTUzYzRiNmUwZTViNTczOWJhODM2MTJmODA1M2JjZGM5NDY2NzMwMTkzY2QxZDU5MGI0MDgiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjM4MjJlZjAyY2U1OTBiYTNiN2IxODc2MDE0Y2MwNzAyNTg5NDNlNGNhYzU4MmZlMTU0YjdjZmYyNzVhMTk2MDUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjU1YzI1ODJiMTAxODUyYTc0ZTY1MjlkMzk1ZWI1OGM3NGE3YWIyMDRiYmY5MWI1ZWVhZTI5OTc4NzViNWZmOWMifQ"
         },
         {
-          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/local/migration/MelodyMigrations.kt",
-          "version": "repo-file-v1:sha256:1218e71f300f4d56bd7b61ff0a0d1821922942188583b3622d49e1231f599b18"
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/local/migration/MelodyMigrations.kt#L112-L320",
+          "version": "repo-lines-v1:sha256:7a86853e3aa35823a554af47e707c2c688dd47e46d552883d9e6784fa99b6920:eyJzZWxlY3RlZExpbmVDb3VudCI6MjA5LCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiJiNjRlOTNlNmVjYmY2MGYyMThiNDVkMmU0MjdhZjc2MzlmOGMxNGZhMzA1MTRmNWQ2ZDEwMTFkNjMxOTcwN2UwIiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI0ODkzZjQwZTM3ODFlYjg5NmM4MmQwNDZhMDgwNjdhMTFlMzVjZGYyZjFkZmFmMjZmZWE5MGI4ZGI2Njc2NDEzIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiI5OTliZGVmZWVhY2E2MzQwZTAyOTBkYzg2ZTg4OWM4OWQ1ZTE4OWFhNWJhNDRiNTg1YjNiNzA3MzRmNGE2MmQ4IiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiI5OTNlZmEyYmUwMTJjYWQ1NzlmMmVjNWNkZGY5YjkzMWVlZTJkY2Q2ZTc5ZDI0ZGM3ZjllY2E0NzdmM2Y3Njc1In0"
         },
         {
-          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/repository/SongEmotionsRepository.kt",
-          "version": "repo-file-v1:sha256:9dc1bcb8e4cef101baf823e2c0b5280d48352568264df27a2aa34b38379c2a91"
+          "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/repository/SongEmotionsRepository.kt#L41-L118",
+          "version": "repo-lines-v1:sha256:a42373fc19643f9acbbbb062431b7ff0fe7708e77eb3102305524207fc15d63c:eyJzZWxlY3RlZExpbmVDb3VudCI6NzgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRlYWU2Y2QyNTg1NzAxYTZjNjAzNzI5MDEyN2YxMmRiZTRmNWE1YTUwMGIyYWYzMDdjM2I2YjM1M2JjZTRiYTIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQzZDZlNTRjMWNiZjNmN2Y1YmFkZjc4NzFjNzgzN2FiYWUxZWFjMjVhZjI2NDcwMjkxYjZmMTcwZjZkOWNjZGEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjgwNDM5YmU3ZTE1OGIzMzg0OWIzMWQwNTg1MmI3NmZkODk2YjUwOTg2ODFmMTYyZmI1ZmJhYTU1MjJlOTlhNjYifQ"
         }
       ]
     },
@@ -160,11 +160,11 @@
       "evidence": [
         {
           "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/local/dao/MelodyDao.kt",
-          "version": "repo-file-v1:sha256:aa7cc91f639a7c59274cf23837642e20dfd778d5ec6c8467d61772cc398c31f6"
+          "version": "repo-file-v1:sha256:248a551f31d89f30f1b080d120a5e5a3751ba62ad053fae406e4fbd2179e458c"
         },
         {
           "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/repository/SongEmotionsRepository.kt",
-          "version": "repo-file-v1:sha256:9dc1bcb8e4cef101baf823e2c0b5280d48352568264df27a2aa34b38379c2a91"
+          "version": "repo-file-v1:sha256:b3abb30d0b48df8463a68918137e2f0cdca8ce547f976583c66de51fed8398aa"
         }
       ]
     },
@@ -174,15 +174,15 @@
       "evidence": [
         {
           "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/emotion/EmotionScanWorker.kt",
-          "version": "repo-file-v1:sha256:71677d3757484645417305e045eca4c1e8311bac11cf9a98790985c0a6b43e17"
+          "version": "repo-file-v1:sha256:b1ecce157d0a6f1054131f3e27565f1948277a77782f1612279d4c156f0c992b"
         },
         {
           "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/local/migration/MelodyMigrations.kt",
-          "version": "repo-file-v1:sha256:1218e71f300f4d56bd7b61ff0a0d1821922942188583b3622d49e1231f599b18"
+          "version": "repo-file-v1:sha256:8f68a580060b2cbdcbb4ce60b3f09836c4e2f60dee1454a4b0253fb4c7040fd7"
         },
         {
           "resource": "repo://player/src/main/java/cn/com/dcsgo/mihx/player/EmotionAnalyzer.kt",
-          "version": "repo-file-v1:sha256:46e740e436459d88903644df323a606fb51a893a355039975c157aa4ba7a3156"
+          "version": "repo-file-v1:sha256:5fc7e92aad5b50eb4bf10f8bf5e4d631240fffce6624cc0d831dc965bf4a5f6c"
         }
       ]
     },
@@ -210,7 +210,7 @@
         },
         {
           "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/local/migration/MelodyMigrations.kt",
-          "version": "repo-file-v1:sha256:1218e71f300f4d56bd7b61ff0a0d1821922942188583b3622d49e1231f599b18"
+          "version": "repo-file-v1:sha256:8f68a580060b2cbdcbb4ce60b3f09836c4e2f60dee1454a4b0253fb4c7040fd7"
         },
         {
           "resource": "repo://domain/src/main/java/cn/com/dcsgo/mihx/domain/playback/ExplorePlaybackPolicy.kt",
@@ -224,7 +224,7 @@
       "evidence": [
         {
           "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/local/migration/MelodyMigrations.kt",
-          "version": "repo-file-v1:sha256:1218e71f300f4d56bd7b61ff0a0d1821922942188583b3622d49e1231f599b18"
+          "version": "repo-file-v1:sha256:8f68a580060b2cbdcbb4ce60b3f09836c4e2f60dee1454a4b0253fb4c7040fd7"
         },
         {
           "resource": "repo://data/src/main/java/cn/com/dcsgo/mihx/data/repository/WordPreferencesRepository.kt",
@@ -232,49 +232,153 @@
         },
         {
           "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRuntime.kt",
-          "version": "repo-file-v1:sha256:580361ae1c1f9443eb5263dfd5f82a5a41b02114953223593a16501be710e1db"
+          "version": "repo-file-v1:sha256:be203ea6a78cbf77754f1d870425dce3a9aa1fec296e730e6e894868fe3be120"
         }
       ]
     },
     {
       "id": "claim_8baf103971544094847be6c18591e956",
-      "statement": "emotionTagsOf 是展示词条唯一出口（用户词最高优先，可覆盖模型结论）；曲库情绪 Tab（buildRows→EmotionSongRow，AppNavHost 二次拍平为 EmotionSongUiRow 含 confidence 字段）与歌曲详情 SongEmotionSection 经它/emotionDisplayOf 取词条。但时段匹配与探索计票不走 emotionTagsOf：PlayerRuntime.observeMoodSlotCaches 逐首预算完整分布 emotionMatchRatiosOf（→volatile moodEmotionRatiosCache，匹配用）与卡门槛 emotionVoteRatiosOf（→volatile exploreVoteRatiosCache，计票用），MoodTimeSlotViewModel 的匹配/统计也按占比分布而非显示词条。",
+      "statement": "Tag consumers split by projection: display surfaces use emotionTagsOf / emotionTagRatiosOf / emotionDisplayOf (library 情绪 tab via EmotionViewModel.buildRows → EmotionSongRow → AppNavHost re-flattening into EmotionSongUiRow with a confidence field, the song-detail SongEmotionSection, and the playback page), while PlayerRuntime.observeMoodSlotCaches computes per song on Dispatchers.Default both emotionMatchRatiosOf (→ volatile moodEmotionRatiosCache, used by slot filtering and the explore refill key set) and gated emotionVoteRatiosOf (→ volatile exploreVoteRatiosCache, used for vote learning); MoodTimeSlotViewModel.loadStats also builds its ratio table from emotionMatchRatiosOf and its tag song counts from emotionTagsOf.",
       "evidence": [
         {
-          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/emotion/EmotionViewModel.kt",
-          "version": "repo-file-v1:sha256:dd4ef9811b4e93053635ae6aac2ebe0c694033f708040b3501b3b88ea6211851"
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/AppNavHost.kt#L255-L320",
+          "version": "repo-lines-v1:sha256:753011800f6ccdf161bcf1d92cb0feafd1905867fc261b6b60c7337327de6c1b:eyJzZWxlY3RlZExpbmVDb3VudCI6NjYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY1Y2U4ZDI3ZGJiY2FiMzA1NTk1M2UxMTk3NDhhNWVhNThjZTk5NGI1MmVhNGMxMDQ1ZmY1MDQzZWJiODE2YTEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImI1NTA4OTZkM2NiYzM0NDRmZmQyMmIzYjY4ZWJlYmUxZGFiZDAxNzJjYTQwYzQxMGJhYjc2YTY2ZWYwODgxMjciLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjU2YjU4NjUyMzQ0ODI5MGM0YmUwZTU5ZWI4NGNhMjg2MGU5N2Q3YjZkOGZmMDA3YjI3MDQzMjRlMjk3ODM1ZWMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImI2ZjQwYWQxNDFiM2M2YTczMGRiYzA1OGUxNzI1Y2E5MzE0NmI1ZDdjZGJmNmEwMDllYzE5MDE5ZjVjZGNkOGMifQ"
         },
         {
-          "resource": "repo://core/model/src/main/java/cn/com/dcsgo/mihx/core/model/EmotionSongUiRow.kt",
-          "version": "repo-file-v1:sha256:54aefaf18afd122e3668cbe56aaf5dc6648262cefb2420828b5f1fc2020a3f40"
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/emotion/EmotionViewModel.kt#L220-L235",
+          "version": "repo-lines-v1:sha256:60fe8beac77835b0168251f0cf946feae7d82771fc0925b1fe5df15ae23ac5b1:eyJzZWxlY3RlZExpbmVDb3VudCI6MTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjYzNWJiN2UzODI1ZDlhMWE2MDIyZGMxMTgwMThmNDJhY2Y4MTY4YWQ5ZTkzYTE2MDYzYmQ3YTljNDU3Mzg5Y2UiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjhlYzFlODAxY2M2Njc0ZjcxNTcyZGFkNmY5NTA2Zjc5Yjg1NDFhOWM0ZjNkMzZkZDE3Njg5ZGExYjZlZTY2YTciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImI2M2FlMGY2MDk5NTM4MzJkZDYwZDIxN2Q4MDdkMTU0NWExYjMxNTQ5YjQzNjcyYjc4ZTdjNjdhNzYzNTgyNmMifQ"
         },
         {
-          "resource": "repo://core/model/src/main/java/cn/com/dcsgo/mihx/core/model/EmotionTags.kt",
-          "version": "repo-file-v1:sha256:3bad7e417e803b57481ecca90d449b4c6e8e335703354b71f38204a97db10662"
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/mood/MoodTimeSlotViewModel.kt#L118-L149",
+          "version": "repo-lines-v1:sha256:27d15fe1c4669a72b467db25a13916c0b81fc4777c5dd3c9a5b714b3f7d62b20:eyJzZWxlY3RlZExpbmVDb3VudCI6MzIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImEzZDhmOGRiOTY3OTk4OGNmNjRiMDRhZTA0MGQ5ZGY5ZmI1OTg2NDZiNThiNDgwYzhhODBmY2EwN2Y3Yzg0YjEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijg5YmJiMWMwZGIxNTZmMDU3YjljMzY3MzRhMWE5ZjM5ZjZlMWI4Zjg5YWE4NGQ5YzE5NjdjYjFiMTdiZWViYjAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImY2YTJhMmUyZjdjZWE3NDE2OGQ1NTY1NTdhMmQ0NmQzZDVjYjc0MzRhODQzNmViNWU3YzlmZjcyZGE3Y2YzMmEifQ"
         },
         {
-          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRuntime.kt",
-          "version": "repo-file-v1:sha256:580361ae1c1f9443eb5263dfd5f82a5a41b02114953223593a16501be710e1db"
+          "resource": "repo://core/model/src/main/java/cn/com/dcsgo/mihx/core/model/EmotionSongUiRow.kt#L1-L17",
+          "version": "repo-lines-v1:sha256:54aefaf18afd122e3668cbe56aaf5dc6648262cefb2420828b5f1fc2020a3f40:eyJzZWxlY3RlZExpbmVDb3VudCI6MTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQxYjBhZjczZDMwN2RiNDYwYTk0YTZhZjk1Y2VlN2JhMzEwNTIxNzhlY2IwNzgwNTFjZGE1ZDY1ZDJjMzA4YWUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZhZmJhMDUyN2MzOTUzYzRiNmUwZTViNTczOWJhODM2MTJmODA1M2JjZGM5NDY2NzMwMTkzY2QxZDU5MGI0MDgiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRuntime.kt#L454-L509",
+          "version": "repo-lines-v1:sha256:b9859f423caf5b5ab378546f56c8d1e39630ea7eb37c33164ab1534fdc9ff400:eyJzZWxlY3RlZExpbmVDb3VudCI6NTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImJkMmE1ODkyOTFhMjJjZjc4NWIwZjI5MmYxZWZhYTU2Y2EzNmNhY2E0MmJiOTc4OTU4NzYwNTU0Njg2YTRlZDYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjRmYzhmOWRmNGM0Zjc4MGI4YWQ3OTM5OTJiMjg5YmY2OTk5OTA4MGRkMmViYzQ0MDRlNWI2NjA0NDdhM2ZjZjIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjBiOGEzMzM5ZDA4MWUzM2Y4ZmQyZDViZGI5ZGQyNmUwNGY5YjE5YTM1NDE0NjBlZTEyNmYzOWQzNzBiZTFjYmMifQ"
         }
       ]
     },
     {
       "id": "claim_9b3ebd0df717450a8e50c52cb7d50e59",
-      "statement": "歌曲详情渲染契约：SongEmotionSection 用 emotionDisplayOf 只投票一次派生词条/占比/置信度；user-only 行（曲线 <2 窗）不 early-return，显示词条列表并标注已由你标记（自动分析失败，词条以你的标记为准）；渲染用 smoothCurve(compensatedCurve)（窗口 5 滑动平均、边界缩窗、长度<3 原样返回），绘的是补偿后曲线（投票与图同一份）；高潮红点仅当 hasSignificantPeak（A 最大值 > A 均值 + PEAK_MARGIN=0.5，非 HIGH 时按档位提示文案）时画，peakSec 按 2.5s hop 折算窗下标。置信度非 HIGH 显示两种文案：SPREAD=模型把握不大词条仅供参考；MIXED=词条里有冷有热这首歌可能不止一种情绪。",
+      "statement": "Song-detail rendering contract: SongEmotionSection calls emotionDisplayOf once to derive tags, tag ratios and the confidence level; the header is 「情绪」 with 「不像？标记」 or 「修改」, model tags carry a percentage while user-marked tags (null ratio) show none and empty tags render 「未定」, a user-marked song shows 「已由你纠正」 when userTagsEdited==true else 「已由你校准」, and non-HIGH levels show SPREAD=「模型把握不大，词条仅供参考」 or MIXED=「词条里有冷有热，这首歌可能不止一种情绪」. The chart plots smoothCurve(compensatedCurve) (5-point moving average, shrunken at the edges, lists shorter than 3 returned unchanged) with legend 「冷暖（参考）」/「能量」 and draws no peak marker — peakSec is persisted but no current UI renders it. A user-only row (fewer than 2 windows) is not early-returned: it lists emotionTagsOf and adds 「已由你标记（自动分析失败，词条以你的标记为准）」, while a song with no row renders 「情绪分析：尚未完成（充电时自动分析曲库）」.",
       "evidence": [
         {
-          "resource": "repo://core/model/src/main/java/cn/com/dcsgo/mihx/core/model/EmotionDisplay.kt",
-          "version": "repo-file-v1:sha256:2ffbc3693e56397bee54a3ca7fc602dabc07f0742a03380ea39051c1b448f1b5"
+          "resource": "repo://core/model/src/main/java/cn/com/dcsgo/mihx/core/model/EmotionDisplay.kt#L1-L69",
+          "version": "repo-lines-v1:sha256:2ffbc3693e56397bee54a3ca7fc602dabc07f0742a03380ea39051c1b448f1b5:eyJzZWxlY3RlZExpbmVDb3VudCI6NjksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQxYjBhZjczZDMwN2RiNDYwYTk0YTZhZjk1Y2VlN2JhMzEwNTIxNzhlY2IwNzgwNTFjZGE1ZDY1ZDJjMzA4YWUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
         },
         {
-          "resource": "repo://core/ui/src/main/java/cn/com/dcsgo/mihx/ui/components/SongEmotionSection.kt",
-          "version": "repo-file-v1:sha256:bf2e32a89e63c9ea76c224b1c3ce6f894af1ae3cbf997f12726d6066c60cfd54"
+          "resource": "repo://core/ui/src/main/java/cn/com/dcsgo/mihx/ui/components/SongEmotionSection.kt#L90-L290",
+          "version": "repo-lines-v1:sha256:c5cf2b66b55cbd30c6ec578784598774f827e4dd3a88046a1c33fa1811f7268d:eyJzZWxlY3RlZExpbmVDb3VudCI6MjAxLCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiIyZThkOTc5YTNiYjY1ODNmMjliYWJmZWZiZTRjOGI1MDBjMTA3MTliYzk3ODg4MDc2MjE5YWFmNzU1M2QwMzhiIiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiIwMWJhNDcxOWM4MGI2ZmU5MTFiMDkxYTdjMDUxMjRiNjRlZWVjZTk2NGUwOWMwNThlZjhmOTgwNWRhY2E1NDZiIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiI0YzcwNzZmYjkyMWZkMzZiZWQ5ZTQ2MzQ0MDYzY2JlZjBhODk4OTA2MjVmZmYzNDE1ZDc2ZDUzYmY2NGNhZDhhIiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiJiMTA5NDM0MWRhZGJmMTAyZmZjNGVjNzdlYTNlYjM1ZGQ5YzgzMWNjZjM5Y2FjM2JiNzdmYTNkZDEyN2Y2OGU3In0"
+        }
+      ]
+    },
+    {
+      "id": "claim_acf1b9e3d4bc4de7bcc66f6d64db0d5c",
+      "statement": "emotionDisplayOf(emotion) is the single-vote display derivation: a user-marked song returns the user's tags with null ratios and HIGH confidence, an empty curve returns empty tags/ratios with HIGH confidence, and otherwise it performs exactly one EmotionGroup.voteRatios over compensatedCurve with anchorsFor(modelVersion) and derives categoriesFrom(vote) tags, the tag-ratio list, and the top ratio that decides SPREAD/MIXED/HIGH. Callers needing tags, ratios and confidence together must call it once, because deriving the three separately re-votes the same curve 3–4 times and re-materializes compensatedCurve on every access; the library list path (EmotionViewModel.buildRows) still makes two passes (emotionTagsOf plus emotionConfidenceLevelOf) since it needs only names and the level.",
+      "evidence": [
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/emotion/EmotionViewModel.kt#L220-L235",
+          "version": "repo-lines-v1:sha256:60fe8beac77835b0168251f0cf946feae7d82771fc0925b1fe5df15ae23ac5b1:eyJzZWxlY3RlZExpbmVDb3VudCI6MTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjYzNWJiN2UzODI1ZDlhMWE2MDIyZGMxMTgwMThmNDJhY2Y4MTY4YWQ5ZTkzYTE2MDYzYmQ3YTljNDU3Mzg5Y2UiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjhlYzFlODAxY2M2Njc0ZjcxNTcyZGFkNmY5NTA2Zjc5Yjg1NDFhOWM0ZjNkMzZkZDE3Njg5ZGExYjZlZTY2YTciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImI2M2FlMGY2MDk5NTM4MzJkZDYwZDIxN2Q4MDdkMTU0NWExYjMxNTQ5YjQzNjcyYjc4ZTdjNjdhNzYzNTgyNmMifQ"
+        },
+        {
+          "resource": "repo://core/model/src/main/java/cn/com/dcsgo/mihx/core/model/EmotionDisplay.kt#L24-L69",
+          "version": "repo-lines-v1:sha256:ca4c140f57c9402526439409bedd851c22bfdb3fddeffad658acfef75f144f8d:eyJzZWxlY3RlZExpbmVDb3VudCI6NDYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVhZjIyY2YwNzMyNTkyYzI0NzE0MWNiZTYxZWZhMTEwMTI2MTJmNWEzMTIyYjlhZjliYmFmNTJmNTcyNGQxOTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjYyZTc2NDZlM2JlMDBmMGM3MzlmOGE1ZWE4MDJjM2M2MGYyMzgzN2NlODgxZGU1MDFiNjAwNWJiY2NhZWJmY2IiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://core/ui/src/main/java/cn/com/dcsgo/mihx/ui/components/SongEmotionSection.kt#L140-L155",
+          "version": "repo-lines-v1:sha256:f0bc864707cb4783e717374e939ca9f179bf5d030e20b920a97959bc5ea37de7:eyJzZWxlY3RlZExpbmVDb3VudCI6MTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ2OGQ0OWFhMTg1ZjVjM2MxMzNjNWFlMGNlMjM1MGY1MTBiZDUyMzM3MDE1OTk2Zjg0YWFlNzBkOWY3MzBmMWUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijc3MzFiMGRmNzJjZmIxZThjZWZhNmQwNTgyZWM5OGUyYzI3ZjEyMDBkMThkNzA0NjFjNjk3ZmVkMzczZWNlZmEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImMzOGJkNWUzZmUwMGQwMTlkYmRkNjNmZTM0ZjVkZTEyMmE3NmZkYjNiNWRjNWYxMzQ1YWE3MGM0ZDRjY2I4N2YiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImZmNTkxYTk3MzlhNjY4ZTQ4ZDAwOTdmZjFmMmUzZmViNjkzZGE2NjU5ZWEyMzhhYmYwYzIwZjQ5M2Y0ZGU3NGEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_7efaf543601c4396ad3b4069915fed99",
+      "statement": "The three projections cannot be collapsed, with a measured cost for each wrong reuse: using the full distribution for display would list ~6.26 words per song instead of 2.31; using it for vote learning makes one skip reject 6.26 words instead of the displayed 2.31, spreading DISLIKE 2.7× faster until all 9 auto-group headwords are black, while the display-gated distribution still lets every song cast at least one vote; using the display gate for slot matching makes any target word below the 15% floor or outside the top 4 permanently unmatchable.",
+      "evidence": [
+        {
+          "resource": "repo://core/model/src/main/java/cn/com/dcsgo/mihx/core/model/EmotionTags.kt#L48-L116",
+          "version": "repo-lines-v1:sha256:ba9ed78fbf8469085def5c9a6c375cbcbb33268eba480e0a2b8aca53d3e8e687:eyJzZWxlY3RlZExpbmVDb3VudCI6NjksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVhZjIyY2YwNzMyNTkyYzI0NzE0MWNiZTYxZWZhMTEwMTI2MTJmNWEzMTIyYjlhZjliYmFmNTJmNTcyNGQxOTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImI1ZDc0N2NlOGM4MmExZmU4OTQ2NTNkYjhiZTY5NzI4YTIxNDRlZTJiYzAwYzMzOWJhOTA5ZWJjZWFjMjAwYWIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjYwODI5YmFmY2M0ZTZlNzgwMzk1ODRlNGYzZWRhNzRlNjQ2YjMxYjg2MDQwYjE0ZTE1ODdjYjM0ODlmMzQ3NjEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImM2MTNmZWViZTEzMWFhMjBmZDUwZGRiMDNjMzJjYTRlN2I3MzcxMTk1ZDJhNGMwZTlmMmI5NTM0YTVlOTcyNDUifQ"
+        },
+        {
+          "resource": "repo://domain/src/main/java/cn/com/dcsgo/mihx/domain/playback/ExplorePlaybackPolicy.kt#L16-L32",
+          "version": "repo-lines-v1:sha256:3a2b7df347bfc1eb65f3a0506e38ad5de8aa05bf5af8620eacdb0617f3b9a671:eyJzZWxlY3RlZExpbmVDb3VudCI6MTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM5Y2JiYzY1NDY5ZGIxY2EyODQyZWZkOTdkZjdlZTJjZTZjYzE1NzE0ODJkMDFhMThiNzkwYTEwYzdjNTEwZjMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjljN2IwOGYzMmJmNjRkNjM1ZDM5NGE2OGFmMTI0ZWQzM2EwMzVmZTIyZDA2YjNiYjRlMDZmY2E3ODFiMGM4Y2IiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImI4ZGMxOTk2NjMyNjQyOWQ1OTU1N2UxN2Q1OTgyNzc3ZjVmZjhlZDkwYmVlYzBlYjg1YTQyYzYwMzBiNDg5NjAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImYwMjQ0N2UxNTAyZTVkMzliNTU4OGNjMzFlM2Y4OTJlMDQyNjZhNGM0YmJlYzE3NGI3YTI5MzgzNTgwODZiY2QifQ"
+        },
+        {
+          "resource": "repo://domain/src/main/java/cn/com/dcsgo/mihx/domain/playback/MoodSlotResolver.kt#L63-L85",
+          "version": "repo-lines-v1:sha256:47057ed94dd21a5149462c3d14304612dfd52b4ee15075ac3af58d2a934bec6f:eyJzZWxlY3RlZExpbmVDb3VudCI6MjMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM5Y2JiYzY1NDY5ZGIxY2EyODQyZWZkOTdkZjdlZTJjZTZjYzE1NzE0ODJkMDFhMThiNzkwYTEwYzdjNTEwZjMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImRmMGNlMjQ5NWExNzk1MmY1ODlmMDZhNDlmZDBjNDE1ODBmYTg3YzRiMDNmYWQwN2Q0MjQ0OTU2ZWU2NTU1YTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjQyY2Q4NjNjMjZmMGQyMDhhNWUwMDI2Yjg3OGVmZTRlMzc1YTA4NjkzMjE3ZjI5YWQ0NGE4OTRlMThjZTc4YmEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImU4MGUyZDVjYTZlYjBmNWVhYmE2NTc2MmVmOTYzNDdmN2IzNDIyYmE5ZjM1YmUzOWFkNGQ0OTMwZDRmOWUzYzcifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_24307b4bf1d24fc3a13508247265f75d",
+      "statement": "The playback page carries tags: PlayerViewModel.currentEmotion combines PlayerUiState with SongEmotionRepository.observeAll(), picks emotions[currentSong.id], applies distinctUntilChanged and stateIn with SharingStarted.WhileSubscribed(5_000) — deliberately the lite library flow rather than the single-row get() that would decode the embedding — and NowPlayingSurface collects it and forwards it into HomeRouteState.emotion.",
+      "evidence": [
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/player/NowPlayingSurface.kt#L53-L108",
+          "version": "repo-lines-v1:sha256:5837a9338c6a21a7ab22368ac69d5e05a57c138953ecba3d165b2bded3f7e127:eyJzZWxlY3RlZExpbmVDb3VudCI6NTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImM0MmUzNGRlMzc2YmFiMGZmZTc3ZGJmOGUxY2YyMzdjZTc3MDM1Nzk2NTljYzNmNjU0ZTE3NGVhMmIwMDU5ZmMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU5MDlhNTNhNjE4ZDAyOGUxZDMwMDBjMGE3YWJjZWVjYmU1ZmIzN2Y0ZTUxMWVmZTQ2NjQzZmFkNmU2Njg3MmYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjFmZmRmNmJhMGJkMjExMjc4ZDJhYTI0ZGU1OWRiZTM3Mzk0NTdkODVhZWUwNzhmNTQ3ZGQwODZiYThkMWE3NWUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjIyMGQxYjc2MzhkYjRhY2RhZGM0ZGEzMGIwYTUwOTI4MTZkMWY5OWU5YTJmMDFjNWU1NWU0NzM2ZTdhODgyNDcifQ"
+        },
+        {
+          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerViewModel.kt#L54-L68",
+          "version": "repo-lines-v1:sha256:75ae15c0224e91d3396ad83bbfafb20d136123e79c3b02a1c1e0075235d2e38a:eyJzZWxlY3RlZExpbmVDb3VudCI6MTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM5Y2JiYzY1NDY5ZGIxY2EyODQyZWZkOTdkZjdlZTJjZTZjYzE1NzE0ODJkMDFhMThiNzkwYTEwYzdjNTEwZjMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjU5NmIwNTg5ZTYwYzJkNDBmYjlhYWRmYjZkYWNhMTU5OWVjMTcwNzcxN2E5N2JkMjQ5OWM2OTNiMTkzOGNjZWUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijk2ZjM1Y2I5ZDVmZGM4OTYyZDg3MzI3MWVkN2NiOWEyOWIzZmZjZjFhZTUxZGQ3MDRkOWY0MzJkMzg2NWNkZDQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_6062a0d7466648f78bbdb5489915c13a",
+      "statement": "The playback page rendering contract: HomeScreen's song info section remembers emotionTagRatiosOf(emotion) (the display projection, one derivation per emotion instance) and renders HomeEmotionRatios — a centered FlowRow of 22dp pill Surfaces with the tag plus its percentage from the ratio; the whole row is hidden when there are no tags, and user-marked tags appear without a percentage because their ratio is null.",
+      "evidence": [
+        {
+          "resource": "repo://feature/home/src/main/java/cn/com/dcsgo/mihx/feature/home/HomeScreen.kt#L462-L507",
+          "version": "repo-lines-v1:sha256:615777161f78b596929d925f86d43cec6f66251799ebcf3febfcce66976e6c9e:eyJzZWxlY3RlZExpbmVDb3VudCI6NDYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVhZjIyY2YwNzMyNTkyYzI0NzE0MWNiZTYxZWZhMTEwMTI2MTJmNWEzMTIyYjlhZjliYmFmNTJmNTcyNGQxOTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjE5ZTc2MzU1Y2YxMTk5NDgwYzNmOTk4MzZiMTQ4NmM4NDFkODkxZmFhZDkwNGM2MDhlMDkzMDIyZDM3NTdhZWUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImNkNDZhNmFkODBjYmJmZWI3N2E0ZmRhZTAxZDYwNjg2ZmU5NjI1YTVhOGRkMTE2ZGJmMzgwMGI4NWZlNGE4MjEifQ"
+        },
+        {
+          "resource": "repo://feature/home/src/main/java/cn/com/dcsgo/mihx/feature/home/HomeScreen.kt#L554-L611",
+          "version": "repo-lines-v1:sha256:5c1b9071ded60c61873ee554b76dafeaeaa97bbb645537fe04c4228b6eb6221f:eyJzZWxlY3RlZExpbmVDb3VudCI6NTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNhMTc5Y2MwMjFmOWJlN2I3YjEwNTJlYzNjYTQwM2ZiNmFkYmJlNWQ4NzQ0MzkyNjE4MTk1MjJiOWRkNTJhZjEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjNiY2IzOWQ0MDUwYTQwZThmMmI2YzQyMzdjMDhlZWM3ZWE1Zjc3MmUwZGY5N2QyNWFlYzliMDAwM2Y4NDQ4YmMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImMzODAwY2VkOThiNDAyOTM3ZjI3MThlM2Y5YWUwMmMyMjI1ZWI0ZmZhODNkZGE4MjExMzM4NzFhZjA1ZjcyN2MifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_ee8e46451f4f4f88aba4b83b07923a4d",
+      "statement": "The library 情绪 tab renders tags plus a confidence badge: EmotionLibraryView shows each row's tags joined with \" · \", appends \" · 不确定\" in the secondary color when confidence != HIGH, renders 「未定」 for empty tags, appends 「已校准」 when corrected, and sorts manual marks first then rows with tags.",
+      "evidence": [
+        {
+          "resource": "repo://feature/playlist/src/main/java/cn/com/dcsgo/mihx/feature/playlist/EmotionLibraryView.kt#L402-L430",
+          "version": "repo-lines-v1:sha256:d91110de2c9903fe05a5b8fefdb898fe7d40d6a621617ed99a9c5510a0bc16c2:eyJzZWxlY3RlZExpbmVDb3VudCI6MjksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAwZWZiOGQwNjI3MjA0OTI0ZjU5NTQ4NjhkM2ExN2M1OWMzMWM3ZDA1ZWJiMWVhNWM3NjhmNzQzODFlNGFhMTciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjMwYzFmMTg4ZjE0MmVkN2E4MjQ2ODBiMjA3MTcyYzU1MTliYzYxNGE0OGZkYTdjZjE2N2VkYjhkZGY3OTk1NmMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjExY2Q3NDliM2VjODBjNGM2YTRlMGQ5YWM5YzI0OGNmODNjZGZlNjlkZDQzMmFjM2IwZDk5M2UxZDY1NDllYjMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        },
+        {
+          "resource": "repo://feature/playlist/src/main/java/cn/com/dcsgo/mihx/feature/playlist/EmotionLibraryView.kt#L94-L107",
+          "version": "repo-lines-v1:sha256:c5cb3876acd33b80f4483829f5c9d3cef4669e22157719d332892add7152665f:eyJzZWxlY3RlZExpbmVDb3VudCI6MTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNhMGQzOTZmODA3YjQ4ZjIwNDNiMTUzOGM1Mjk3MWJlYmM4ZTI3ZTQwYzJkODAyMmE0ZmY1Njc0YzQzZGQ2ZDQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZmYzgwOTBkOTlkZTc5MmRjMDMxMWJhMTk2NTI3MjRmMWYwYjU5NmFkZThjZmY0NDY3ZjQ5Nzg2ODU5ZTc4N2QiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjBlNzUzY2NlODFkYjVhZjU3MGQ4MzQwOGU3OGM2Y2E0MmZjMjg0OTE1MWNmYTI4MDc5MTdmMWI0MjRiZDFiN2UiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjY2NWVjM2UwYjNmOGI2MmQ4ZGRjM2Q1NDdlYjA3MTFhZGEwMWFkMGFkMGE1MjdlMmI4OTQ5ZGY2Y2M2NDJkOTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_4258f19ba3ba402b9c8c57c07378b600",
+      "statement": "WITTY (鬼畜/沙雕/戏谑/荒诞) is the only auto=false group: it is excluded from curve voting because the meme is not acoustically separable from earnest 燃/快乐 and its centered anchor (0.2, 0.3) pulls lukewarm windows wholesale, yet groupOf still resolves its words for manual marking. Because tag song counts are derived from emotionTagsOf, an unmarked WITTY word has count 0 and never enters the mood-slot chip list (availableTags comes from the observed counts), so a slot configured only with such words yields an empty pool and falls back to library-wide random.",
+      "evidence": [
+        {
+          "resource": "repo://app/src/main/java/cn/com/dcsgo/mihx/app/mood/MoodTimeSlotViewModel.kt#L118-L149",
+          "version": "repo-lines-v1:sha256:27d15fe1c4669a72b467db25a13916c0b81fc4777c5dd3c9a5b714b3f7d62b20:eyJzZWxlY3RlZExpbmVDb3VudCI6MzIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImEzZDhmOGRiOTY3OTk4OGNmNjRiMDRhZTA0MGQ5ZGY5ZmI1OTg2NDZiNThiNDgwYzhhODBmY2EwN2Y3Yzg0YjEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijg5YmJiMWMwZGIxNTZmMDU3YjljMzY3MzRhMWE5ZjM5ZjZlMWI4Zjg5YWE4NGQ5YzE5NjdjYjFiMTdiZWViYjAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImY2YTJhMmUyZjdjZWE3NDE2OGQ1NTY1NTdhMmQ0NmQzZDVjYjc0MzRhODQzNmViNWU3YzlmZjcyZGE3Y2YzMmEifQ"
+        },
+        {
+          "resource": "repo://core/model/src/main/java/cn/com/dcsgo/mihx/core/model/EmotionGroup.kt#L10-L72",
+          "version": "repo-lines-v1:sha256:c2ac879c747b7a8c5f8a598e74238aee72bec958412dbfcf67f0da6b7015a02c:eyJzZWxlY3RlZExpbmVDb3VudCI6NjMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImE2ODQyZmEwNjJiMzAxNDYwYTk1NDgzNzg4NmIyMGM0ZTcwMWI2ODhkZTljYzJhYzQyZDA0OWNhZDk2NjM3ODMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImI0ZGE3ODVhOGVmZjVjZTVjNWYzOTc4YzI0MWY4MTJmODBlMjllNTMxYmU5OGU0MTQ2OGY5YjUzZGNkY2EzYTciLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjIyNzc0YWM2ZTY2MGI1OTA4Yjk1YzBlYzU3ZDk2NDBhYzVkMDhkYjY5Yzk1YzUyM2Q5YTZlM2NmMjcyMWI3NDAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjcxOTY1MjExYzc2NGUxZGZkMDg2NmE5MjA0ZTJjOGUzZmM1MjRmYjBhZDgwMjMxM2M2ZDEzNDk4NzM2MmE0MWYifQ"
+        },
+        {
+          "resource": "repo://core/ui/src/test/java/cn/com/dcsgo/mihx/ui/components/SongEmotionSectionTest.kt#L83-L92",
+          "version": "repo-lines-v1:sha256:f60094416820286fe0a850fed425a78465a77a40552d36e30c42c9673610520c:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRjZjA5ZWIwYzU3NDRmYjk3MzMxYjk4ZmYzZmJmMDVhNjAyYmEzZjdmNjdlNWRhNWJlOTA5NTAzM2Y2MjU4MjUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImZmMGQ3NTk1MGRmMGZmOWEzZWU5NjYzOWRjYzhmZjVlYWVkYjQwZDY4MmJlYTkyNjIyYjUyMGRkODg3ZDkzZTkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjBkNGFkYTk0MjQ4MjNkMjY0MzQ2ZTRkNjkwYWZkMjBhOTRlOGZlMTVjYWY1NmI4MThiNmNhNDI0ZmUxZWZhMzYifQ"
+        },
+        {
+          "resource": "repo://feature/player/src/main/java/cn/com/dcsgo/mihx/feature/player/PlayerRandomQueueFacade.kt#L130-L147",
+          "version": "repo-lines-v1:sha256:420da503d3ca934dbdc4b214be95ccf02d5b31ae77a63ee7a785a2a4e46e9365:eyJzZWxlY3RlZExpbmVDb3VudCI6MTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImI5ODAyNzQxN2Q3OTU5YzRmZWNjYWY2MWZhN2IyMGMxMzZlZmVmZjNhYmM5MjMyY2UzNzliYzQ2OGNhYTkwOWUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjdlOGYyMmNhOGY1MDU4M2RkYjA2ZDFjYmMwMWIxYjMzYzk3ZjYyZjA2ZGNiMTM5ZDA5YjZmZGJmMDI5YTI1MjEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjEyZTIwNzQ1ODAwMGE1NTIxZGUyYWJlYjg4Yzg3ODIwZjQxODlmZmFlNTUyNjM3NjE2ZTQ4YjlkZGI2NTlhODUifQ"
         }
       ]
     }
   ],
   "verification": {
     "by": "openwiki/0.5.0",
-    "at": "2026-10-27T08:49:20.803Z"
+    "at": "2026-11-20T09:49:41.934Z"
   }
 }

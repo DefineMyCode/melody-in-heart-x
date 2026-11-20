@@ -2,10 +2,12 @@ package cn.com.dcsgo.mihx.app.mood
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+
 import cn.com.dcsgo.mihx.core.model.RandomEnhanceMode
 import cn.com.dcsgo.mihx.core.model.TimeSlotConfig
 import cn.com.dcsgo.mihx.core.model.WordPreference
 import cn.com.dcsgo.mihx.core.model.emotionTagsOf
+import cn.com.dcsgo.mihx.domain.playback.MoodPoolStats
 import cn.com.dcsgo.mihx.domain.playback.MoodSlotPolicy
 import cn.com.dcsgo.mihx.domain.repository.PlayerSettingsRepository
 import cn.com.dcsgo.mihx.domain.repository.SongEmotionRepository
@@ -47,6 +49,7 @@ class MoodTimeSlotViewModel @Inject constructor(
     val configs: StateFlow<List<TimeSlotConfig>> = timeSlotConfigRepository.observeConfigs()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
+
     /** 随心播放增强运行模式（时段/探索互斥，2026-10-20） */
     val randomEnhanceMode: StateFlow<RandomEnhanceMode> = playerSettingsRepository.randomEnhanceMode
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), RandomEnhanceMode.OFF)
@@ -76,41 +79,41 @@ class MoodTimeSlotViewModel @Inject constructor(
     private var emotionRatios: Map<Int, Map<String, Float>> = emptyMap()
 
     /**
-     * 匹配数缓存：词条集合 → 命中歌曲数。
+     * 池子统计缓存：(包含词条, 排除词条) → 命中 / 排除 / 最终数量。
      *
-     * 评审 2026-10-27 · M-15：`matchCount` 是**全库扫描**（每首歌的词条占比表
-     * 都过一遍），而调用点在组合期：
+     * 评审 2026-10-27 · M-15：池子统计是**全库扫描**，而调用点在组合期：
      *  - 配置页每张时段卡都调一次 → 每次重组重算「时段数 × 全库」；
      *  - 编辑弹窗里 `name` 绑在 `OutlinedTextField` 上，**每敲一个字符**就重组
      *    一次 → 每敲一个字做一次全库扫描。
      *
-     * 缓存以「词条集合」为键：同一个词条组合的结果在数据不变时是恒定的，
-     * 而编辑弹窗的**打字并不改变词条集合** → 缓存直接命中，逐击键的扫描消失。
+     * 缓存以「包含词条 + 排除词条」为键：同一组合在数据不变时结果恒定，
+     * 而编辑弹窗的**打字并不改变词条集合** → 缓存直接命中。
      * 数据变化（[loadStats] 重算占比表）时整体失效。
      */
-    private val matchCountCache = HashMap<Set<String>, Int>()
+    private val poolStatsCache = HashMap<Triple<Set<String>, Set<String>, Int>, MoodPoolStats>()
 
     /**
-     * 按选中的词条算出**实际会进入随机池**的歌曲数。
-     *
-     * 判定与播放时完全一致（同一个 [MoodSlotPolicy.MATCH_MIN_RATIO] 门槛）——
-     * 界面显示的数字必须等于实际会播到的歌数。
+     * 按包含词条与排除词条统计随机池：
+     * - excluded：曲库中命中排除词条（≥15%，详情页口径）的数量
+     * - matched：排除之后仍命中包含词条（≥35%）的数量
+     * - available：合计可随机 = 曲库总数 - excluded（含未分析歌曲）
      */
-    fun matchCount(tags: Set<String>): Int {
-        if (tags.isEmpty()) return 0
-        synchronized(matchCountCache) {
-            matchCountCache[tags]?.let { return it }
+    fun poolStats(tags: Set<String>, excludedTags: Set<String> = emptySet()): MoodPoolStats {
+        val librarySize = _librarySize.value
+        val cacheKey = Triple(tags, excludedTags, librarySize)
+        synchronized(poolStatsCache) {
+            poolStatsCache[cacheKey]?.let { return it }
         }
-        val count = emotionRatios.values.count { ratios ->
-            ratios.any { (word, ratio) ->
-                word in tags && ratio >= MoodSlotPolicy.MATCH_MIN_RATIO
-            }
+        val stats = MoodPoolStats.from(emotionRatios, tags, excludedTags, librarySize)
+        synchronized(poolStatsCache) {
+            poolStatsCache[cacheKey] = stats
         }
-        synchronized(matchCountCache) {
-            matchCountCache[tags] = count
-        }
-        return count
+        return stats
     }
+
+    /** 时段卡入口：返回合计可随机数（曲库总数 - 排除数）。 */
+    fun matchCount(tags: Set<String>, excludedTags: Set<String> = emptySet()): Int =
+        poolStats(tags, excludedTags).available
 
     /** 进入配置页时调用：一次性计算词条歌曲数与曲库规模 */
     fun loadStats() {
@@ -135,7 +138,7 @@ class MoodTimeSlotViewModel @Inject constructor(
                 }
                 emotionRatios = ratios
                 // 占比表换了 → 之前的匹配数全部失效
-                synchronized(matchCountCache) { matchCountCache.clear() }
+                synchronized(poolStatsCache) { poolStatsCache.clear() }
                 _tagCounts.value = counts
                 _librarySize.value = size
             } catch (e: Exception) {
@@ -165,6 +168,7 @@ class MoodTimeSlotViewModel @Inject constructor(
             timeSlotConfigRepository.delete(id)
         }
     }
+
 
     fun setEnabled(enabled: Boolean) {
         viewModelScope.launch {

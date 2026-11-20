@@ -11,6 +11,7 @@ import cn.com.dcsgo.mihx.domain.playback.MoodSlotPolicy
 import cn.com.dcsgo.mihx.domain.playback.MoodSlotResolver
 import cn.com.dcsgo.mihx.domain.playback.RandomQueuePlanner
 
+
 /**
  * 情境化随心播放的判定结果（设计文档 §4.2/§4.3）：
  * [tags] 为 null 表示增强未生效；非 null 时随机只从带这些词条的歌曲中选。
@@ -19,6 +20,8 @@ import cn.com.dcsgo.mihx.domain.playback.RandomQueuePlanner
 data class MoodSlotState(
     val slotName: String,
     val tags: Set<String>,
+    /** 该时段排除的情绪词条：命中这些词条的歌曲不进入随机池 */
+    val excludedTags: Set<String> = emptySet(),
 )
 
 class PlayerRandomQueueFacade(
@@ -37,6 +40,7 @@ class PlayerRandomQueueFacade(
     private val moodSlotConfigs: () -> List<cn.com.dcsgo.mihx.core.model.TimeSlotConfig> = { emptyList() },
     private val moodSlotEnabled: suspend () -> Boolean = { false },
     /**
+
      * 歌曲的情绪词条。
      *
      * 评审 2026-10-27 · M-4：类型从 `List<String>` 改为 `Set<String>`——调用方
@@ -81,7 +85,36 @@ class PlayerRandomQueueFacade(
     private suspend fun activeMoodSlot(): MoodSlotState? {
         if (!moodSlotEnabled()) return null
         val hit = moodSlotResolver.hitSlot(moodSlotConfigs(), nowMinuteOfDay()) ?: return null
-        return MoodSlotState(slotName = hit.name, tags = hit.tags.toSet())
+        return MoodSlotState(
+            slotName = hit.name,
+            tags = hit.tags.toSet(),
+            excludedTags = hit.excludedTags.toSet(),
+        )
+    }
+
+    /**
+     * 先剔除命中该时段排除情绪词条的歌曲。
+     *
+     * 排除判定用**详情页展示门槛**（[MoodSlotPolicy.EXCLUDE_MIN_RATIO] = 15%）：
+     * 用户在详情页看到「躁」，这首歌就不该被随心播放出来。
+     * 包含词条仍用 [MoodSlotPolicy.MATCH_MIN_RATIO] = 35%，两者语义不同：
+     * 包含是“这首歌主要是什么情绪”，排除是“只要带这个情绪就别放”。
+     */
+    private fun filterOutExcludedMoodTags(
+        songs: List<Song>,
+        mood: MoodSlotState,
+    ): List<Song> {
+        if (mood.excludedTags.isEmpty()) return songs
+        val filtered = songs.filterNot { song ->
+            moodEmotionTagRatiosOf(song).any { (word, ratio) ->
+                word in mood.excludedTags && ratio >= MoodSlotPolicy.EXCLUDE_MIN_RATIO
+            }
+        }
+        val removed = songs.size - filtered.size
+        if (removed > 0) {
+            log("moodSlot: excluded $removed songs by tags=${mood.excludedTags}")
+        }
+        return filtered
     }
 
     /**
@@ -104,7 +137,7 @@ class PlayerRandomQueueFacade(
             }
         }
         if (filtered.isEmpty()) {
-            log("moodSlot: no songs for tags=${mood.tags}, fall back to full library")
+            log("moodSlot: no songs for tags=${mood.tags}, fall back to full library after exclusions (${songs.size} songs)")
             return null
         }
         if (filtered.size < MoodSlotPolicy.POOL_WARN_THRESHOLD) {
@@ -123,7 +156,8 @@ class PlayerRandomQueueFacade(
         val current = state()
         val explore = exploreModeEnabled()
         val mood = if (explore) null else activeMoodSlot()
-        val candidates = mood?.let { filterByMoodTags(current.songs, it) } ?: current.songs
+        val baseSongs = mood?.let { filterOutExcludedMoodTags(current.songs, it) } ?: current.songs
+        val candidates = mood?.let { filterByMoodTags(baseSongs, it) } ?: baseSongs
         // 探索播放：固定生成 10 首；非探索沿用 planner 默认批量（生产 20 首）
         val plan = if (explore) {
             planner.planRandomQueue(
@@ -216,17 +250,58 @@ class PlayerRandomQueueFacade(
         if (!current.isInfinitePlay) return
 
         val mood = activeMoodSlot()
-        val candidates = mood?.let { filterByMoodTags(current.songs, it) } ?: current.songs
+        val baseSongs = mood?.let { filterOutExcludedMoodTags(current.songs, it) } ?: current.songs
+        val moodPool = mood?.let { filterByMoodTags(baseSongs, it) }
+        val primaryPool = moodPool ?: baseSongs
         val queue = current.playQueue.withCurrentSongId(startedSongId)
-        val plan = planner.planInfiniteRefill(
-            allSongs = candidates,
+
+        // 先补当前时段的情绪池；剩余不足一批时只补剩余，不提前清空历史重复补歌。
+        var plan = planner.planInfiniteRefill(
+            allSongs = primaryPool,
             queue = queue,
             playedSongIds = current.infinitePlayedSongIds,
             uniformRandomEnabled = current.globalUniformRandomEnabled,
-            playCounts = rawPlayCounts(candidates.map { it.id }),
-        ) ?: return
-        if (plan.addedSongs.isEmpty()) return
+            playCounts = rawPlayCounts(primaryPool.map { it.id }),
+            // 普通无限随机（或情绪池为空已回退全库）保持原有的全库循环；
+            // 仅严格情绪池在剩余不足一批时只补剩余，等它耗尽后再降级。
+            allowHistoryReset = moodPool == null,
+        )
+        var usedFallback = false
 
+        // 情绪池播完后降级到「全库 − 排除情绪词条」：
+        // 未分析歌曲没有词条，不会被排除，可以进入兜底池，保证无限随机不中断。
+        if ((plan == null || plan.addedSongs.isEmpty()) &&
+            moodPool != null &&
+            moodPool.size < baseSongs.size
+        ) {
+            usedFallback = true
+            log(
+                "refillInfinitePlayQueue: mood pool exhausted (${moodPool.size}), " +
+                    "fall back to non-excluded library (${baseSongs.size})"
+            )
+            plan = planner.planInfiniteRefill(
+                allSongs = baseSongs,
+                queue = queue,
+                playedSongIds = current.infinitePlayedSongIds,
+                uniformRandomEnabled = current.globalUniformRandomEnabled,
+                playCounts = rawPlayCounts(baseSongs.map { it.id }),
+                allowHistoryReset = true,
+            )
+        }
+
+        if (plan == null || plan.addedSongs.isEmpty()) {
+            // 确实没有新歌可补：自然回绕时回到业务队列第 1 首，
+            // 而不是停在 Media3 控制器窗口的起点（业务队列第 20 首）。
+            if (advanceAfterWrap) {
+                val headQueue = queue.withCurrentIndex(0)
+                updateState { it.copy(playQueue = headQueue) }
+                playFromQueue(headQueue, 0)
+                log("refillInfinitePlayQueue: no new songs, jump to queue head")
+            } else {
+                log("refillInfinitePlayQueue: no new songs")
+            }
+            return
+        }
         if (plan.resetHistory) {
             log("refillInfinitePlayQueue: reset played history")
         }
@@ -251,7 +326,7 @@ class PlayerRandomQueueFacade(
             }
             syncPlayerQueue(plan.queue)
         }
-        log("refillInfinitePlayQueue: added=${plan.addedSongs.size}")
+        log("refillInfinitePlayQueue: added=${plan.addedSongs.size} fallback=$usedFallback")
     }
 
     /**

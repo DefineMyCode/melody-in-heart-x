@@ -1,6 +1,55 @@
 package cn.com.dcsgo.mihx.domain.playback
 
+import cn.com.dcsgo.mihx.core.model.EmotionGroup
 import cn.com.dcsgo.mihx.core.model.TimeSlotConfig
+
+/**
+ * 时段配置页/编辑弹窗的池子统计。
+ *
+ * @param excluded 曲库中命中排除情绪词条的数量（全库口径；未分析歌曲无词条，不计入）
+ * @param matched  排除之后仍命中包含词条的数量（占比 ≥35%）
+ * @param available 合计可随机 = 曲库总数 - [excluded]（含未分析歌曲）
+ */
+data class MoodPoolStats(
+    val excluded: Int,
+    val matched: Int,
+    val available: Int,
+) {
+    companion object {
+        /**
+         * 从「歌曲 id → 词条占比」统计池子，门槛与播放判定同源。
+         */
+        fun from(
+            ratiosBySong: Map<Int, Map<String, Float>>,
+            tags: Set<String>,
+            excludedTags: Set<String>,
+            librarySize: Int,
+        ): MoodPoolStats {
+            var excluded = 0
+            var matched = 0
+            ratiosBySong.values.forEach { ratios ->
+                val excludedSong = ratios.any { (word, ratio) ->
+                    word in excludedTags && ratio >= MoodSlotPolicy.EXCLUDE_MIN_RATIO
+                }
+                if (excludedSong) {
+                    excluded++
+                    return@forEach
+                }
+                if (ratios.any { (word, ratio) ->
+                        word in tags && ratio >= MoodSlotPolicy.MATCH_MIN_RATIO
+                    }
+                ) {
+                    matched++
+                }
+            }
+            return MoodPoolStats(
+                excluded = excluded,
+                matched = matched,
+                available = (librarySize - excluded).coerceAtLeast(0),
+            )
+        }
+    }
+}
 
 /**
  * 情境化随心播放的策略常量（一期）。
@@ -25,6 +74,15 @@ object MoodSlotPolicy {
      * 0.35 取自全库分位（p25 = 0.345），与置信度阈值同一个值。
      */
     const val MATCH_MIN_RATIO = 0.35f
+
+    /**
+     * 排除词条门槛：与详情页展示口径一致（[EmotionGroup.MIN_RATIO] = 15%）。
+     *
+     * 排除是“我明确不想听这个情绪”，用户的判断依据就是详情页看到的词条。
+     * 若沿用 [MATCH_MIN_RATIO] 的 35%，详情页显示「躁」但占比 27% 的歌仍会被播出来，
+     * 与用户看到的内容矛盾（实测《Solo-Leveling]SymphonicSuite-Lv.10》就是 46% 神圣 + 27.4% 躁）。
+     */
+    const val EXCLUDE_MIN_RATIO = EmotionGroup.MIN_RATIO
 
     /** 时段名最大长度（配置校验） */
     const val NAME_MAX_LENGTH = 20
@@ -63,7 +121,7 @@ class MoodSlotResolver {
         .filter { it.covers(minuteOfDay) }
         .minByOrNull { it.startMinutes }
 
-    /** 配置是否可保存：名称非空不超长、词条非空、时间段非零长度、与已有配置不重叠 */
+    /** 配置是否可保存：名称非空不超长、包含/排除词条至少一个、时间段非零长度、与已有配置不重叠 */
     fun validate(
         candidate: TimeSlotConfig,
         existing: List<TimeSlotConfig>,
@@ -71,7 +129,10 @@ class MoodSlotResolver {
         candidate.name.isBlank() -> SlotValidation.Invalid(SlotError.EMPTY_NAME)
         candidate.name.length > MoodSlotPolicy.NAME_MAX_LENGTH ->
             SlotValidation.Invalid(SlotError.NAME_TOO_LONG)
-        candidate.tags.isEmpty() -> SlotValidation.Invalid(SlotError.NO_TAGS)
+        candidate.tags.isEmpty() && candidate.excludedTags.isEmpty() ->
+            SlotValidation.Invalid(SlotError.NO_TAGS)
+        candidate.tags.any { it in candidate.excludedTags } ->
+            SlotValidation.Invalid(SlotError.EXCLUDED_TAG_OVERLAP)
         candidate.startMinutes == candidate.endMinutes ->
             SlotValidation.Invalid(SlotError.ZERO_LENGTH)
         else -> {
@@ -127,5 +188,6 @@ enum class SlotError {
     EMPTY_NAME,
     NAME_TOO_LONG,
     NO_TAGS,
+    EXCLUDED_TAG_OVERLAP,
     ZERO_LENGTH,
 }

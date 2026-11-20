@@ -12,6 +12,8 @@ package cn.com.dcsgo.mihx.core.model
  * @property startMinutes 开始分钟（当日 0–1439，含）
  * @property endMinutes   结束分钟（当日 0–1439，不含；<= start 表示跨午夜）
  * @property tags        情绪词条（EmotionGroup 词表内的词，多选；至少一个才可保存）
+ * @property excludedTags 排除情绪词条（带这些词条的歌曲不进入该时段随机池；可为空，
+ *                       且不能与 [tags] 重叠）
  */
 data class TimeSlotConfig(
     val id: Long,
@@ -19,6 +21,7 @@ data class TimeSlotConfig(
     val startMinutes: Int,
     val endMinutes: Int,
     val tags: List<String>,
+    val excludedTags: List<String> = emptyList(),
 ) {
     /** 是否跨午夜（end <= start 且非零长度） */
     val crossesMidnight: Boolean get() = endMinutes <= startMinutes

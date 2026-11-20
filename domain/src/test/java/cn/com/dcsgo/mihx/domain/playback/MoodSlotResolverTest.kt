@@ -118,15 +118,44 @@ class MoodSlotResolverTest {
     // ── 校验：词条 / 零长度 ──
 
     @Test
-    fun `validate rejects empty tags and zero length`() {
+    fun `validate allows only included or only excluded tags and rejects both empty`() {
         val base = slot(1, 0, 60, "静谧")
         assertEquals(
             SlotError.NO_TAGS,
-            (resolver.validate(base.copy(tags = emptyList()), emptyList()) as SlotValidation.Invalid).error,
+            (resolver.validate(
+                base.copy(tags = emptyList(), excludedTags = emptyList()),
+                emptyList(),
+            ) as SlotValidation.Invalid).error,
+        )
+        // 仅排除也可保存（排除后全库随机）
+        assertEquals(
+            SlotValidation.Valid,
+            resolver.validate(base.copy(tags = emptyList(), excludedTags = listOf("燃")), emptyList()),
+        )
+        // 仅包含也可保存
+        assertEquals(
+            SlotValidation.Valid,
+            resolver.validate(base.copy(tags = listOf("静谧"), excludedTags = emptyList()), emptyList()),
         )
         assertEquals(
             SlotError.ZERO_LENGTH,
             (resolver.validate(base.copy(endMinutes = 0), emptyList()) as SlotValidation.Invalid).error,
+        )
+    }
+
+    @Test
+    fun `validate rejects overlapping included and excluded tags`() {
+        val base = slot(1, 0, 60, "静谧")
+        assertEquals(
+            SlotError.EXCLUDED_TAG_OVERLAP,
+            (resolver.validate(
+                base.copy(excludedTags = listOf("静谧")),
+                emptyList(),
+            ) as SlotValidation.Invalid).error,
+        )
+        assertEquals(
+            SlotValidation.Valid,
+            resolver.validate(base.copy(excludedTags = listOf("伤感")), emptyList()),
         )
     }
 

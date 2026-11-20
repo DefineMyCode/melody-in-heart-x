@@ -244,8 +244,9 @@ class PlayerRandomQueueFacadeTest {
     }
 
     @Test
-    fun refillInfinitePlayQueueAdvanceAfterWrapKeepsCurrentSongWhenNoNewSongs() {
-        // 库已全部覆盖、无新歌可补时，advance 不能跳到不存在的歌曲
+    fun refillInfinitePlayQueueWrapsToQueueHeadWhenNoNewSongs() {
+        // 库已全部覆盖、无新歌可补时，回绕应回到业务队列第 1 首，
+        // 而不是停在 Media3 控制器窗口的起点（业务队列第 20 首）。
         state = state.copy(
             songs = songs(1, 2, 3, 4),
             playQueue = PlayQueue().setQueue(songs(1, 2, 3, 4), startIndex = 3),
@@ -256,8 +257,9 @@ class PlayerRandomQueueFacadeTest {
         runBlocking { facade.refillInfinitePlayQueue(startedSongId = 4, advanceAfterWrap = true) }
 
         assertEquals(listOf(1, 2, 3, 4), state.playQueue.songs.map { it.id })
-        assertEquals(3, state.playQueue.currentIndex)
-        assertEquals(null, playedFromIndex)
+        assertEquals(0, state.playQueue.currentIndex)
+        assertEquals(0, playedFromIndex)
+        assertEquals(listOf(1, 2, 3, 4), playedFromQueue?.songs?.map { it.id })
         assertEquals(null, syncedQueue)
     }
 
@@ -269,6 +271,7 @@ class PlayerRandomQueueFacadeTest {
         tagsBySong: Map<Int, List<String>>,
         nowMinuteOfDay: Int = 22 * 60, // 默认 22:00，恰好命中深夜时段
         ratiosBySong: Map<Int, Map<String, Float>>? = null,
+
     ): PlayerRandomQueueFacade = PlayerRandomQueueFacade(
         state = { state },
         updateState = { transform -> state = transform(state) },
@@ -298,6 +301,7 @@ class PlayerRandomQueueFacadeTest {
             ratiosBySong?.get(song.id) ?: tagsBySong[song.id].orEmpty().associateWith { 1f }
         },
         nowMinuteOfDay = { nowMinuteOfDay },
+
     )
 
     @Test
@@ -382,6 +386,247 @@ class PlayerRandomQueueFacadeTest {
         runBlocking { mood.playRandomQueue() }
 
         assertEquals(listOf(1, 2), setQueueSongs?.map { it.id })
+    }
+
+    @Test
+    fun moodExcludedTagsRemoveSongsFromPool() {
+        // 包含「静谧」，但带「伤感」的歌 2 被排除
+        val configs = listOf(
+            cn.com.dcsgo.mihx.core.model.TimeSlotConfig(
+                id = 1, name = "深夜静谧",
+                startMinutes = 22 * 60, endMinutes = 6 * 60,
+                tags = listOf("静谧"),
+                excludedTags = listOf("伤感"),
+            ),
+        )
+        val mood = moodFacade(
+            configs = configs,
+            enabled = true,
+            tagsBySong = mapOf(
+                1 to listOf("静谧"),
+                2 to listOf("静谧", "伤感"),
+                3 to listOf("静谧"),
+            ),
+            ratiosBySong = mapOf(
+                1 to mapOf("静谧" to 1f),
+                2 to mapOf("静谧" to 1f, "伤感" to 1f),
+                3 to mapOf("静谧" to 1f),
+            ),
+        )
+        state = state.copy(songs = songs(1, 2, 3))
+
+        runBlocking { mood.playRandomQueue() }
+
+        assertEquals(listOf(1, 3), setQueueSongs?.map { it.id })
+        assertTrue(logs.any { it.contains("excluded 1 songs by tags") })
+    }
+
+    @Test
+    fun moodExcludedTagBelowDisplayThresholdDoesNotExclude() {
+        // 歌 2 的「伤感」只占 10%，低于详情页展示门槛 15%，不排除
+        val configs = listOf(
+            cn.com.dcsgo.mihx.core.model.TimeSlotConfig(
+                id = 1, name = "深夜静谧",
+                startMinutes = 22 * 60, endMinutes = 6 * 60,
+                tags = listOf("静谧"),
+                excludedTags = listOf("伤感"),
+            ),
+        )
+        val mood = moodFacade(
+            configs = configs,
+            enabled = true,
+            tagsBySong = mapOf(1 to listOf("静谧"), 2 to listOf("静谧", "伤感")),
+            ratiosBySong = mapOf(
+                1 to mapOf("静谧" to 1f),
+                2 to mapOf("静谧" to 1f, "伤感" to 0.10f),
+            ),
+        )
+        state = state.copy(songs = songs(1, 2, 3))
+
+        runBlocking { mood.playRandomQueue() }
+
+        assertEquals(listOf(1, 2), setQueueSongs?.map { it.id })
+    }
+
+    @Test
+    fun moodExcludedTagAtDisplayThresholdExcludes() {
+        // 第 53 首实际数据：躁 27.4%，详情页会显示「躁」，因此必须排除
+        val configs = listOf(
+            cn.com.dcsgo.mihx.core.model.TimeSlotConfig(
+                id = 1, name = "深夜静谧",
+                startMinutes = 22 * 60, endMinutes = 6 * 60,
+                tags = listOf("静谧"),
+                excludedTags = listOf("躁"),
+            ),
+        )
+        val mood = moodFacade(
+            configs = configs,
+            enabled = true,
+            tagsBySong = mapOf(1 to listOf("静谧"), 2 to listOf("静谧", "躁")),
+            ratiosBySong = mapOf(
+                1 to mapOf("静谧" to 1f),
+                2 to mapOf("静谧" to 1f, "躁" to 0.274f),
+            ),
+        )
+        state = state.copy(songs = songs(1, 2, 3))
+
+        runBlocking { mood.playRandomQueue() }
+
+        assertEquals(listOf(1), setQueueSongs?.map { it.id })
+        assertTrue(logs.any { it.contains("excluded 1 songs by tags") })
+    }
+
+    @Test
+    fun moodExcludedTagsStayAppliedWhenIncludedPoolFallsBack() {
+        // 包含词条没有可播歌曲时回退到「排除后的全库」，不能把被排除的歌带回来
+        val configs = listOf(
+            cn.com.dcsgo.mihx.core.model.TimeSlotConfig(
+                id = 1, name = "深夜静谧",
+                startMinutes = 22 * 60, endMinutes = 6 * 60,
+                tags = listOf("静谧"),
+                excludedTags = listOf("伤感"),
+            ),
+        )
+        val mood = moodFacade(
+            configs = configs,
+            enabled = true,
+            tagsBySong = mapOf(
+                1 to listOf("伤感"),
+                2 to listOf("其他"),
+                3 to listOf("其他"),
+            ),
+            ratiosBySong = mapOf(
+                1 to mapOf("伤感" to 1f),
+                2 to mapOf("其他" to 1f),
+                3 to mapOf("其他" to 1f),
+            ),
+        )
+        state = state.copy(songs = songs(1, 2, 3))
+
+        runBlocking { mood.playRandomQueue() }
+
+        assertEquals(listOf(2, 3), setQueueSongs?.map { it.id })
+        assertTrue(logs.any { it.contains("fall back to full library after exclusions") })
+    }
+
+    @Test
+    fun infiniteRefillSkipsExcludedMoodTags() {
+        val configs = listOf(
+            cn.com.dcsgo.mihx.core.model.TimeSlotConfig(
+                id = 1, name = "深夜静谧",
+                startMinutes = 22 * 60, endMinutes = 6 * 60,
+                tags = listOf("静谧"),
+                excludedTags = listOf("伤感"),
+            ),
+        )
+        val mood = moodFacade(
+            configs = configs,
+            enabled = true,
+            tagsBySong = mapOf(
+                1 to listOf("静谧"),
+                2 to listOf("静谧"),
+                3 to listOf("静谧", "伤感"),
+                4 to listOf("静谧"),
+            ),
+            ratiosBySong = mapOf(
+                1 to mapOf("静谧" to 1f),
+                2 to mapOf("静谧" to 1f),
+                3 to mapOf("静谧" to 1f, "伤感" to 1f),
+                4 to mapOf("静谧" to 1f),
+            ),
+        )
+        state = state.copy(
+            songs = songs(1, 2, 3, 4),
+            playQueue = PlayQueue().setQueue(songs(1, 2), startIndex = 0),
+            isInfinitePlay = true,
+            infinitePlayedSongIds = setOf(1, 2),
+        )
+
+        runBlocking { mood.refillInfinitePlayQueue() }
+
+        assertEquals(listOf(1, 2, 4), state.playQueue.songs.map { it.id })
+    }
+
+    @Test
+    fun infiniteRefillFallsBackToNonExcludedLibraryWhenMoodPoolIsExhausted() {
+        // 情绪池 {1,2} 已全部在队列；降级池 = 全库 - 燃 = {1,2,4,5,6}，未分析歌 6 也可进入
+        val configs = listOf(
+            cn.com.dcsgo.mihx.core.model.TimeSlotConfig(
+                id = 1, name = "深夜静谧",
+                startMinutes = 22 * 60, endMinutes = 6 * 60,
+                tags = listOf("静谧"),
+                excludedTags = listOf("燃"),
+            ),
+        )
+        val mood = moodFacade(
+            configs = configs,
+            enabled = true,
+            tagsBySong = mapOf(
+                1 to listOf("静谧"),
+                2 to listOf("静谧"),
+                3 to listOf("燃"),
+                4 to listOf("其他"),
+                5 to listOf("其他"),
+                6 to emptyList(),
+            ),
+            ratiosBySong = mapOf(
+                1 to mapOf("静谧" to 1f),
+                2 to mapOf("静谧" to 1f),
+                3 to mapOf("燃" to 1f),
+                4 to mapOf("其他" to 1f),
+                5 to mapOf("其他" to 1f),
+            ),
+        )
+        state = state.copy(
+            songs = songs(1, 2, 3, 4, 5, 6),
+            playQueue = PlayQueue().setQueue(songs(1, 2), startIndex = 0),
+            isInfinitePlay = true,
+            infinitePlayedSongIds = setOf(1, 2),
+        )
+
+        runBlocking { mood.refillInfinitePlayQueue() }
+
+        assertEquals(listOf(1, 2, 4, 5), state.playQueue.songs.map { it.id })
+        assertTrue(logs.any { it.contains("fall back to non-excluded library") })
+    }
+
+    @Test
+    fun infiniteRefillDoesNotRepeatMoodPoolWhenRemainingIsSmallerThanBatch() {
+        // 严格池 {1,2,3} 只剩歌 3 未播：只补 3，不把 1/2 重复补进来
+        val configs = listOf(
+            cn.com.dcsgo.mihx.core.model.TimeSlotConfig(
+                id = 1, name = "深夜静谧",
+                startMinutes = 22 * 60, endMinutes = 6 * 60,
+                tags = listOf("静谧"),
+            ),
+        )
+        val mood = moodFacade(
+            configs = configs,
+            enabled = true,
+            tagsBySong = mapOf(
+                1 to listOf("静谧"),
+                2 to listOf("静谧"),
+                3 to listOf("静谧"),
+                4 to listOf("其他"),
+            ),
+            ratiosBySong = mapOf(
+                1 to mapOf("静谧" to 1f),
+                2 to mapOf("静谧" to 1f),
+                3 to mapOf("静谧" to 1f),
+                4 to mapOf("其他" to 1f),
+            ),
+        )
+        state = state.copy(
+            songs = songs(1, 2, 3, 4),
+            playQueue = PlayQueue().setQueue(songs(1, 2), startIndex = 0),
+            isInfinitePlay = true,
+            infinitePlayedSongIds = setOf(1, 2),
+        )
+
+        runBlocking { mood.refillInfinitePlayQueue() }
+
+        assertEquals(listOf(1, 2, 3), state.playQueue.songs.map { it.id })
+        assertEquals(setOf(1, 2, 3), state.infinitePlayedSongIds)
     }
 
     @Test

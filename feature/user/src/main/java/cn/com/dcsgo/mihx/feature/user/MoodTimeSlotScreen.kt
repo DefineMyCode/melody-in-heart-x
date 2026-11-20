@@ -20,9 +20,11 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
+
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.MusicNote
@@ -39,11 +41,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -51,6 +55,7 @@ import cn.com.dcsgo.mihx.core.model.RandomEnhanceMode
 import cn.com.dcsgo.mihx.core.model.TimeSlotConfig
 import cn.com.dcsgo.mihx.core.model.WordPreference
 import cn.com.dcsgo.mihx.core.model.WordPreferenceKind
+
 
 /** 词条 chip：名称 + 歌曲数角标（选中 = 已加入该时段） */
 @Composable
@@ -189,6 +194,15 @@ private fun SlotCard(
             }
         }
 
+        if (config.excludedTags.isNotEmpty()) {
+            Spacer(Modifier.height(8.dp))
+            Text(
+                text = "不包含：" + config.excludedTags.joinToString(" / "),
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.error.copy(alpha = 0.85f),
+            )
+        }
+
         Spacer(Modifier.height(11.dp))
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -308,6 +322,7 @@ internal fun MoodTimeSlotScreen(
 ) {
     // 探索播放「重新探索」确认弹窗
     var showClearConfirm by remember { mutableStateOf(false) }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -382,6 +397,7 @@ internal fun MoodTimeSlotScreen(
                     )
                 }
             } else if (state.mode == RandomEnhanceMode.TIME_SLOT) {
+
                 if (state.configs.isEmpty()) {
                     // 时段列表空态（模式选择卡已在上方展示）
                     item(key = "empty_state", contentType = "empty") {
@@ -428,7 +444,9 @@ internal fun MoodTimeSlotScreen(
                             )
                             Spacer(Modifier.height(4.dp))
                             Text(
-                                "随心播放与无限随机将优先从当前时段配置的情绪歌曲中随机；未命中任何时段时保持原有随机",
+                                "随心播放与无限随机将优先从当前时段配置的情绪歌曲中随机；未命中任何时段时保持原有随机。" +
+                                    "情绪池播完后，无限随机会自动从全库（排除词条除外）继续补歌。" +
+                                    "每个时段可额外设置不包含的情绪词条，带这些词条的歌曲不会进入该时段随机池。",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
@@ -496,6 +514,7 @@ internal fun MoodTimeSlotScreen(
                 },
             )
         }
+
     }
 }
 
@@ -736,7 +755,7 @@ private data class SlotItem(val config: TimeSlotConfig, val totalSongs: Int)
 /** 每卡合计可随机数：按与播放时一致的判定算（词条占比够高才算命中） */
 private fun configs2Items(state: MoodTimeSlotRouteState): List<SlotItem> =
     state.configs.map { config ->
-        SlotItem(config, state.poolCountOf(config.tags.toSet()))
+        SlotItem(config, state.poolCountOf(config.tags.toSet(), config.excludedTags.toSet()))
     }
 
 internal const val MOOD_POOL_WARN_THRESHOLD = 10

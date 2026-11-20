@@ -38,6 +38,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import cn.com.dcsgo.mihx.core.model.TimeSlotConfig
+import cn.com.dcsgo.mihx.domain.playback.MoodPoolStats
+import cn.com.dcsgo.mihx.domain.playback.MoodSlotPolicy
 
 /**
  * 编辑时段弹层（新增 / 编辑共用）。
@@ -53,16 +55,13 @@ fun MoodSlotEditDialog(
     existingConfigs: List<TimeSlotConfig>,
     tagCounts: Map<String, Int>,
     /**
-     * 按选中的词条算出实际会进入随机池的歌曲数。
+     * 池子三层统计：包含词条匹配数 / 其中被排除数 / 最终可随机数。
      *
-     * 不用「每词计数相加」—— 那样多词时同一首歌被重复计数，
-     * 而且加上占比门槛后「带这个词」与「会匹配上」已经不是一回事。
      * 由调用方用与播放时同一套判定提供，保证界面数字 = 实际会播到的歌数。
      */
-    poolCountOf: (Set<String>) -> Int,
+    poolStatsOf: (Set<String>, Set<String>) -> MoodPoolStats,
     librarySize: Int,
-    availableTags: List<String>,        // 全部可选词条（自动可用 + 仅手动标记两组）
-    manualOnlyTags: List<String>,       // 仅手动标记计入的词条
+    availableTags: List<String>,        // 全部可选词条（自动分析可用）
     onDismiss: () -> Unit,
     onSave: (TimeSlotConfig) -> Unit,
 ) {
@@ -73,6 +72,7 @@ fun MoodSlotEditDialog(
     var start by remember { mutableStateOf(startMinutes) }
     var end by remember { mutableStateOf(endMinutes) }
     var tags by remember { mutableStateOf(editing?.tags?.toSet().orEmpty()) }
+    var excludedTags by remember { mutableStateOf(editing?.excludedTags?.toSet().orEmpty()) }
     var pickingTime by remember { mutableStateOf<String?>(null) } // "start" | "end"
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
@@ -83,11 +83,13 @@ fun MoodSlotEditDialog(
         startMinutes = start,
         endMinutes = end,
         tags = tags.toList(),
+        excludedTags = excludedTags.toList(),
     )
-    // 即时校验（输入时反馈，而非保存后报错）：名称非空 + 词条非空 + 端点合法
+    // 即时校验（输入时反馈，而非保存后报错）：名称非空 + 包含/排除至少一个 + 端点合法
     val localError = when {
         name.isBlank() -> "请填写时段名"
-        tags.isEmpty() -> "请至少选择一个情绪词条"
+        tags.isEmpty() && excludedTags.isEmpty() -> "请至少选择包含或排除词条"
+        tags.any { it in excludedTags } -> "排除词条不能与包含词条相同"
         start == end -> "开始与结束时间不能相同"
         else -> null
     }
@@ -96,14 +98,15 @@ fun MoodSlotEditDialog(
     // 评审 2026-10-27 · M-15：记忆化。
     // 原先每次重组都重算，而 `name` 绑在 OutlinedTextField 上 → **每敲一个字**
     // 就做一次全库匹配扫描。现在只在词条集合变化时重算（打字不改变词条 → 不重算）。
-    val totalSongs = remember(tags) {
-        if (tags.isEmpty()) {
-            0
+    val poolStats = remember(tags, excludedTags) {
+        if (tags.isEmpty() && excludedTags.isEmpty()) {
+            MoodPoolStats(0, 0, 0)
         } else {
-            // 与播放时判定完全一致: 词条在整首里的占比要够高才算命中
-            poolCountOf(tags)
+            // 与播放时判定完全一致: 包含命中再剔除排除词条
+            poolStatsOf(tags, excludedTags)
         }
     }
+
 
     Dialog(
         onDismissRequest = onDismiss,
@@ -156,10 +159,9 @@ fun MoodSlotEditDialog(
                 },
             )
 
-            // ── 情绪词条 ──
+            // ── 包含情绪词条 ──
             Spacer(Modifier.height(14.dp))
-            FieldLabel("情绪词条")
-            Explainer("只有带有这些词条的歌曲会被随机到；词条来自情绪分析与你对歌曲的手动标记")
+            FieldLabel("包含情绪词条")
             Spacer(Modifier.height(8.dp))
             // FlowRow 自动换行：词条数量随曲库增长，Row 不换行会横向溢出屏幕（2026-09-04 布局修复）
             FlowRow(
@@ -174,43 +176,45 @@ fun MoodSlotEditDialog(
                         selected = tag in tags,
                         onClick = {
                             errorMessage = null
-                            tags = if (tag in tags) tags - tag else tags + tag
+                            val willInclude = tag !in tags
+                            tags = if (willInclude) tags + tag else tags - tag
+                            if (willInclude) excludedTags = excludedTags - tag
                         },
                     )
                 }
             }
-            if (manualOnlyTags.isNotEmpty()) {
-                Spacer(Modifier.height(10.dp))
-                Text(
-                    "仅手动标记计入",
-                    style = MaterialTheme.typography.labelSmall,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.tertiary,
-                )
-                Spacer(Modifier.height(6.dp))
+
+            // ── 排除情绪词条 ──
+            val excludedCandidates = availableTags.take(12).filterNot { it in tags }
+            if (excludedCandidates.isNotEmpty()) {
+                Spacer(Modifier.height(14.dp))
+                FieldLabel("排除情绪词条")
+                Spacer(Modifier.height(8.dp))
                 FlowRow(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(7.dp),
                     verticalArrangement = Arrangement.spacedBy(7.dp),
                 ) {
-                    manualOnlyTags.forEach { tag ->
+                    excludedCandidates.forEach { tag ->
                         MoodTagChip(
                             label = tag,
                             songCount = tagCounts[tag] ?: 0,
-                            selected = tag in tags,
-                            dim = (tagCounts[tag] ?: 0) == 0,
+                            selected = tag in excludedTags,
                             onClick = {
                                 errorMessage = null
-                                tags = if (tag in tags) tags - tag else tags + tag
+                                excludedTags = if (tag in excludedTags) {
+                                    excludedTags - tag
+                                } else {
+                                    excludedTags + tag
+                                }
                             },
                         )
                     }
                 }
-                Explainer("这组词条不参与自动分析，只有你手动标记过的歌曲会计入", warn = true)
             }
 
             // ── 随机池合计 ──
-            if (tags.isNotEmpty()) {
+            if (tags.isNotEmpty() || excludedTags.isNotEmpty()) {
                 Spacer(Modifier.height(14.dp))
                 Row(
                     modifier = Modifier
@@ -219,14 +223,20 @@ fun MoodSlotEditDialog(
                         .padding(13.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "排除 ${poolStats.excluded} 首 · 情绪词条满足 ${poolStats.matched} 首",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                        Text(
+                            text = "合计可随机",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
                     Text(
-                        "该组合下可随机的歌曲",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.weight(1f),
-                    )
-                    Text(
-                        "$totalSongs",
+                        "${poolStats.available}",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                     )
@@ -237,13 +247,12 @@ fun MoodSlotEditDialog(
                     )
                 }
                 Explainer(
-                    "只算「${(cn.com.dcsgo.mihx.domain.playback.MoodSlotPolicy.MATCH_MIN_RATIO * 100).toInt()}%」的歌曲：" +
-                        "词条在整首里占的比例够高，才算真的这个情绪",
+                    "包含 = 排除后仍命中包含词条，且词条在整首里的占比不低于" +
+                        "${(MoodSlotPolicy.MATCH_MIN_RATIO * 100).toInt()}%；" +
+                        "合计含未分析歌曲",
                 )
-                if (totalSongs in 1 until MOOD_POOL_WARN_THRESHOLD) {
-                    Explainer("歌曲较少（$totalSongs 首），随心播放将循环播放这批歌曲", warn = true)
-                } else if (totalSongs == 0) {
-                    Explainer("该词条组合下暂无歌曲，随心播放将回退为全部歌曲随机", warn = true)
+                if (tags.isEmpty() && excludedTags.isNotEmpty()) {
+                    Explainer("未选择包含词条：将在排除后的全库随机")
                 }
             }
 
@@ -273,7 +282,9 @@ fun MoodSlotEditDialog(
                                 errorMessage = when (validation.error) {
                                     cn.com.dcsgo.mihx.domain.playback.SlotError.EMPTY_NAME -> "请填写时段名"
                                     cn.com.dcsgo.mihx.domain.playback.SlotError.NAME_TOO_LONG -> "时段名过长"
-                                    cn.com.dcsgo.mihx.domain.playback.SlotError.NO_TAGS -> "请至少选择一个情绪词条"
+                                    cn.com.dcsgo.mihx.domain.playback.SlotError.NO_TAGS -> "请至少选择包含或排除词条"
+                                    cn.com.dcsgo.mihx.domain.playback.SlotError.EXCLUDED_TAG_OVERLAP ->
+                                        "排除词条不能与包含词条相同"
                                     cn.com.dcsgo.mihx.domain.playback.SlotError.ZERO_LENGTH -> "开始与结束时间不能相同"
                                 }
                             is cn.com.dcsgo.mihx.domain.playback.SlotValidation.Conflict ->

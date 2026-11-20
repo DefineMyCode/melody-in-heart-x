@@ -121,6 +121,13 @@ class RandomQueuePlanner(
         playedSongIds: Set<Int>,
         uniformRandomEnabled: Boolean = false,
         playCounts: Map<Int, Int> = emptyMap(),
+        /**
+         * 剩余未播放歌曲不足一个批次时是否清空播放历史、从头循环。
+         *
+         * 时段模式的补队列要「先播完当前情绪池，再降级到全库」：
+         * 这里传 false，剩余几首就补几首，不要把已经播过的情绪池歌曲重复补回来。
+         */
+        allowHistoryReset: Boolean = true,
     ): InfiniteRefillPlan? {
         val playableSongs = allSongs.playable()
         if (playableSongs.isEmpty()) return null
@@ -130,7 +137,7 @@ class RandomQueuePlanner(
         var availableSongs = playableSongs.filter { it.id !in updatedPlayedIds }
         var resetHistory = false
 
-        if (availableSongs.size < neededSize) {
+        if (allowHistoryReset && availableSongs.size < neededSize) {
             updatedPlayedIds.clear()
             availableSongs = playableSongs
             resetHistory = true

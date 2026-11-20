@@ -5,11 +5,13 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
+
 import androidx.datastore.preferences.preferencesDataStore
 import cn.com.dcsgo.mihx.core.model.TimeSlotConfig
 import cn.com.dcsgo.mihx.core.common.AppLog
 import cn.com.dcsgo.mihx.domain.playback.MoodSlotResolver
 import cn.com.dcsgo.mihx.domain.playback.SlotValidation
+
 import cn.com.dcsgo.mihx.domain.repository.TimeSlotConfigRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
@@ -39,6 +41,7 @@ class TimeSlotConfigStore(
     )
 
     private val configsKey = stringPreferencesKey("time_slot_configs")
+
 
     /** 全部时段配置（按开始时间排序） */
     override fun observeConfigs(): Flow<List<TimeSlotConfig>> = store.data.map { preferences ->
@@ -71,6 +74,7 @@ class TimeSlotConfigStore(
         }
     }
 
+
     // ── JSON 序列化 ──
 
     private fun serialize(configs: List<TimeSlotConfig>): String {
@@ -78,13 +82,16 @@ class TimeSlotConfigStore(
         configs.forEach { config ->
             val tags = JSONArray()
             config.tags.forEach { tags.put(it) }
+            val excludedTags = JSONArray()
+            config.excludedTags.forEach { excludedTags.put(it) }
             array.put(
                 JSONObject()
                     .put("id", config.id)
                     .put("name", config.name)
                     .put("start", config.startMinutes)
                     .put("end", config.endMinutes)
-                    .put("tags", tags),
+                    .put("tags", tags)
+                    .put("excludedTags", excludedTags),
             )
         }
         return array.toString()
@@ -103,6 +110,13 @@ class TimeSlotConfigStore(
                         for (j in 0 until tagArray.length()) {
                             tags.add(tagArray.getString(j))
                         }
+                        val excludedTags = mutableListOf<String>()
+                        val excludedTagArray = o.optJSONArray("excludedTags")
+                        if (excludedTagArray != null) {
+                            for (j in 0 until excludedTagArray.length()) {
+                                excludedTags.add(excludedTagArray.getString(j))
+                            }
+                        }
                         add(
                             TimeSlotConfig(
                                 id = o.getLong("id"),
@@ -110,6 +124,7 @@ class TimeSlotConfigStore(
                                 startMinutes = o.getInt("start"),
                                 endMinutes = o.getInt("end"),
                                 tags = tags,
+                                excludedTags = excludedTags,
                             ),
                         )
                     }.onFailure {

@@ -419,6 +419,8 @@ internal class PlayerRuntime(
     // 时段配置来自 DataStore 流；情绪词条来自 Room 表失效流（映射在 Default 线程计算）。
     @Volatile
     private var moodSlotConfigsCache: List<cn.com.dcsgo.mihx.core.model.TimeSlotConfig> = emptyList()
+
+
     @Volatile
     private var moodEmotionRatiosCache: Map<Int, Map<String, Float>> = emptyMap()
 
@@ -456,6 +458,7 @@ internal class PlayerRuntime(
                 .collect { moodSlotConfigsCache = it }
         }
         scope.launch {
+
             songEmotionRepository.observeAll()
                 .map { emotions ->
                     emotions.mapValues { (_, emotion) ->
@@ -517,6 +520,7 @@ internal class PlayerRuntime(
         moodSlotConfigs = { moodSlotConfigsCache },
         // N-3：读缓存，不再每次 `.first()` 读 DataStore
         moodSlotEnabled = { randomEnhanceModeCache == RandomEnhanceMode.TIME_SLOT },
+
         // M-4：直接透传缓存的 key 视图（Set），零分配
         moodEmotionTagsOf = { song -> moodEmotionRatiosCache[song.id]?.keys ?: emptySet() },
         // 时段匹配按占比卡门槛（见 MoodSlotPolicy.MATCH_MIN_RATIO）

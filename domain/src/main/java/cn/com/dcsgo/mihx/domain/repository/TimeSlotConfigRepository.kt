@@ -16,4 +16,5 @@ interface TimeSlotConfigRepository {
     suspend fun save(config: TimeSlotConfig)
 
     suspend fun delete(id: Long)
+
 }

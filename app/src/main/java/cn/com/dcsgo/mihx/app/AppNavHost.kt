@@ -542,6 +542,7 @@ fun AppNavHost(
             val moodConfigs by moodTimeSlotViewModel.configs.collectAsStateWithLifecycle()
             val enhanceMode by moodTimeSlotViewModel.randomEnhanceMode.collectAsStateWithLifecycle()
             val moodWordPrefs by moodTimeSlotViewModel.wordPreferences.collectAsStateWithLifecycle()
+
             val moodTagCounts by moodTimeSlotViewModel.tagCounts.collectAsStateWithLifecycle()
             val moodLibrarySize by moodTimeSlotViewModel.librarySize.collectAsStateWithLifecycle()
             LaunchedEffect(Unit) { moodTimeSlotViewModel.loadStats() }
@@ -561,7 +562,9 @@ fun AppNavHost(
                     tagCounts = moodTagCounts.associate { it.tag to it.songCount },
                     // 池子大小按与播放时一致的判定算（词条占比够高才算命中）,
                     // 界面显示的数字必须等于实际会播到的歌数
-                    poolCountOf = { tags -> moodTimeSlotViewModel.matchCount(tags) },
+                    poolCountOf = { tags, excludedTags ->
+                        moodTimeSlotViewModel.matchCount(tags, excludedTags)
+                    },
                     librarySize = moodLibrarySize,
                     nowMinuteOfDay = moodNowMinute,
                     wordPreferences = moodWordPrefs,
@@ -589,6 +592,7 @@ fun AppNavHost(
                         moodTimeSlotViewModel.clearWordPreferences()
                         showToast("已清空词条统计，重新探索开始~")
                     },
+
                 ),
                 showToast = showToast,
             )
@@ -598,12 +602,13 @@ fun AppNavHost(
                     editing = editing,
                     existingConfigs = moodConfigs,
                     tagCounts = moodTagCounts.associate { it.tag to it.songCount },
-                    // 池子大小按与播放时一致的判定算（词条占比够高才算命中）,
-                    // 界面显示的数字必须等于实际会播到的歌数
-                    poolCountOf = { tags -> moodTimeSlotViewModel.matchCount(tags) },
+                    // 池子按包含命中 / 排除 / 最终三层统计，界面数字必须等于实际会播到的歌数
+                    poolStatsOf = { tags, excludedTags ->
+                        moodTimeSlotViewModel.poolStats(tags, excludedTags)
+                    },
                     librarySize = moodLibrarySize,
                     availableTags = moodTagCounts.map { it.tag },
-                    manualOnlyTags = listOf("鬼畜", "沙雕", "戏谑", "荒诞"),
+
                     onDismiss = {
                         editingSlot = null
                         showAddDialog = false

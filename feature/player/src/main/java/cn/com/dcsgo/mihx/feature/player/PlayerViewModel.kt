@@ -8,6 +8,7 @@ import cn.com.dcsgo.mihx.core.model.PlayMode
 import cn.com.dcsgo.mihx.core.model.PlayQueue
 import cn.com.dcsgo.mihx.core.model.Playlist
 import cn.com.dcsgo.mihx.core.model.Song
+import cn.com.dcsgo.mihx.core.model.SongEmotion
 import cn.com.dcsgo.mihx.domain.model.DeleteSongResult
 import cn.com.dcsgo.mihx.domain.model.DuplicateSongGroup
 import cn.com.dcsgo.mihx.domain.model.FileCheckMode
@@ -15,10 +16,13 @@ import cn.com.dcsgo.mihx.domain.model.LocalFileValidationResult
 import cn.com.dcsgo.mihx.domain.model.SongSortMode
 import cn.com.dcsgo.mihx.domain.repository.MediaStorageStatsRepository
 import cn.com.dcsgo.mihx.domain.repository.PlaybackStatsSnapshot
+import cn.com.dcsgo.mihx.domain.repository.SongEmotionRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.sync.withLock
@@ -36,6 +40,7 @@ import kotlinx.coroutines.sync.withLock
 class PlayerViewModel @Inject constructor(
     runtimeFactory: PlayerRuntimeFactory,
     private val mediaStorageStatsRepository: MediaStorageStatsRepository,
+    private val songEmotionRepository: SongEmotionRepository,
 ) : ViewModel() {
 
     private val runtime = runtimeFactory.create(viewModelScope)
@@ -45,6 +50,21 @@ class PlayerViewModel @Inject constructor(
 
     /** 播放位置（毫秒）窄流：播放中每 ~500ms 更新，仅供进度条/歌词等局部订阅，避免整壳重组。 */
     val positionMs: StateFlow<Long> = runtime.positionMs
+
+    /**
+     * 当前歌曲的情绪数据（播放页进度条上方的只读词条）。
+     *
+     * 使用轻量全量流而不是 [SongEmotionRepository.get]：单条查询会带回 embedding，
+     * 而播放页只需要 curve / userTags。只在页面订阅时收集，离开 5s 后自动停止。
+     */
+    val currentEmotion: StateFlow<SongEmotion?> = combine(
+        uiState,
+        songEmotionRepository.observeAll(),
+    ) { state, emotions ->
+        state.currentSong?.id?.let { emotions[it] }
+    }
+        .distinctUntilChanged()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
 
     /** 定时关闭剩余毫秒窄流：倒计时每秒更新，仅供定时关闭 Chip 局部订阅，避免整壳重组（M-6）。 */

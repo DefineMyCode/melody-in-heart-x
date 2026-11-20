@@ -1,6 +1,7 @@
 package cn.com.dcsgo.mihx.feature.home
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -8,6 +9,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -35,7 +38,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
-
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -59,8 +62,11 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import cn.com.dcsgo.mihx.core.common.time.formatDurationTime
+import cn.com.dcsgo.mihx.core.model.EmotionTagRatio
 import cn.com.dcsgo.mihx.core.model.PlayMode
 import cn.com.dcsgo.mihx.core.model.Song
+import cn.com.dcsgo.mihx.core.model.SongEmotion
+import cn.com.dcsgo.mihx.core.model.emotionTagRatiosOf
 import cn.com.dcsgo.mihx.ui.theme.LocalPlaybackPanelTokens
 import cn.com.dcsgo.mihx.ui.theme.LocalSpacingTokens
 import cn.com.dcsgo.mihx.ui.components.SongItemAction
@@ -79,6 +85,8 @@ fun HomeScreen(
     /** 顶部 padding（默认 16dp）。SHEET 抽屉形态下需要更大值——抽屉顶部 M3 ModalBottomSheet 默认会渲染 drag handle 占据 ~26dp,这里加大 padding 让「状态栏→封面」视觉对齐默认三页（≈71dp）。 */
     topContentPaddingDp: Dp = 16.dp,
     currentSong: Song?,
+    /** 当前歌曲情绪数据；无数据时进度条上方的词条行整行隐藏 */
+    emotion: SongEmotion? = null,
     isPlaying: Boolean,
     /** 播放位置窄流（M-14）：只在进度条叶子内部订阅，不驱动整屏重组 */
     positionMs: StateFlow<Long>,
@@ -149,6 +157,7 @@ fun HomeScreen(
                 item(key = "song_info") {
                     SongInfoSection(
                         currentSong = currentSong,
+                        emotion = emotion,
                         isPlaying = isPlaying,
                         positionMs = positionMs,
                         durationMs = durationMs,
@@ -450,9 +459,57 @@ private fun PlaybackProgressBar(
     }
 }
 
+/**
+ * 播放页只读情绪词条：详情页同款词条 + 占比，缩小成 22dp 药丸并居中。
+ * 无数据（未分析/无手动标记）时由调用方整行隐藏。
+ */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun HomeEmotionRatios(ratios: List<EmotionTagRatio>) {
+    FlowRow(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(6.dp, Alignment.CenterHorizontally),
+        verticalArrangement = Arrangement.spacedBy(5.dp),
+    ) {
+        ratios.forEach { item ->
+            Surface(
+                shape = RoundedCornerShape(50),
+                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.10f),
+                border = BorderStroke(
+                    width = 0.5.dp,
+                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.22f),
+                ),
+                modifier = Modifier.height(22.dp),
+            ) {
+                Row(
+                    modifier = Modifier
+                        .height(22.dp)
+                        .padding(horizontal = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        text = item.tag,
+                        style = MaterialTheme.typography.labelSmall,
+                        fontWeight = FontWeight.Medium,
+                    )
+                    item.ratio?.let { ratio ->
+                        Spacer(Modifier.width(3.dp))
+                        Text(
+                            text = "${(ratio * 100).toInt()}%",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
 @Composable
 private fun SongInfoSection(
     currentSong: Song,
+    emotion: SongEmotion?,
     isPlaying: Boolean,
     positionMs: StateFlow<Long>,
     durationMs: Long,
@@ -494,6 +551,10 @@ private fun SongInfoSection(
     var showMoreMenu by remember { mutableStateOf(false) }
     // 是否弹出定时关闭设置弹窗
     var showSleepTimerDialog by remember { mutableStateOf(false) }
+    // 只读情绪词条 + 占比：与详情页使用同一个 emotionTagRatiosOf 口径
+    val emotionRatios = remember(emotion) {
+        emotion?.let { emotionTagRatiosOf(it) }.orEmpty()
+    }
 
     Column(
         modifier = Modifier.fillMaxWidth(),
@@ -506,7 +567,7 @@ private fun SongInfoSection(
             onCopied = onTextCopied
         )
 
-        Spacer(modifier = Modifier.height(4.dp))
+        Spacer(modifier = Modifier.height(2.dp))
 
         // 艺术家名（带复制按钮，可点击跳转歌手详情；多歌手时先选择）
         CopyableText(
@@ -524,7 +585,7 @@ private fun SongInfoSection(
 
         // 专辑名（带复制按钮，可点击跳转专辑详情）
         if (albumName != null) {
-            Spacer(modifier = Modifier.height(4.dp))
+            Spacer(modifier = Modifier.height(2.dp))
             CopyableText(
                 text = albumName,
                 isTitle = false,
@@ -533,7 +594,7 @@ private fun SongInfoSection(
             )
         }
 
-        Spacer(modifier = Modifier.height(4.dp))
+        Spacer(modifier = Modifier.height(2.dp))
 
         // 同名歌曲版本选择器
         VersionSelector(
@@ -542,7 +603,12 @@ private fun SongInfoSection(
             onVersionSelect = onSwitchVersion
         )
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(12.dp))
+
+        if (emotionRatios.isNotEmpty()) {
+            HomeEmotionRatios(ratios = emotionRatios)
+            Spacer(modifier = Modifier.height(5.dp))
+        }
 
         // 播放进度条
         //
@@ -560,19 +626,19 @@ private fun SongInfoSection(
             onEndSeeking = onEndSeeking,
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(8.dp))
 
-        // 播放控制栏（队列按钮 + 上一首 + 暂停 + 下一首 + 播放模式按钮）
+        // 播放控制栏（播放模式 + 上一首 + 暂停 + 下一首 + 队列入口）
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // 播放队列入口（暂停按钮左侧）
-            IconButton(onClick = onQueueClick) {
+            // 播放模式切换（最左）
+            IconButton(onClick = onTogglePlayMode) {
                 Icon(
-                    painter = painterResource(id = R.drawable.queue_music_24),
-                    contentDescription = "播放队列",
+                    painter = painterResource(id = playMode.iconRes()),
+                    contentDescription = "播放模式: ${playMode.label}",
                     modifier = Modifier.size(24.dp),
                     tint = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -625,11 +691,11 @@ private fun SongInfoSection(
                 )
             }
 
-            // 播放模式切换（暂停按钮右侧）
-            IconButton(onClick = onTogglePlayMode) {
+            // 播放队列入口（最右）
+            IconButton(onClick = onQueueClick) {
                 Icon(
-                    painter = painterResource(id = playMode.iconRes()),
-                    contentDescription = "播放模式: ${playMode.label}",
+                    painter = painterResource(id = R.drawable.queue_music_24),
+                    contentDescription = "播放队列",
                     modifier = Modifier.size(24.dp),
                     tint = MaterialTheme.colorScheme.onSurfaceVariant
                 )

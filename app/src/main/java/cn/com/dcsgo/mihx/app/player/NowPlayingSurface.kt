@@ -55,6 +55,7 @@ fun NowPlayingSurface(
     // SongInfoSection → 整棵 Home 子树每秒重组 5 次。现在把窄流本身传下去，
     // 由进度条叶子节点自己订阅 —— 重组范围收缩到那一小块。
     val sleepTimerRemainingMs by playerViewModel.sleepTimerRemainingMs.collectAsStateWithLifecycle()
+    val currentEmotion by playerViewModel.currentEmotion.collectAsStateWithLifecycle()
 
     // 播放页"更多"功能对话框状态
     var songForInfo by remember { mutableStateOf<Song?>(null) }
@@ -87,10 +88,11 @@ fun NowPlayingSurface(
         sleepTimerRemainingMs,
         uiState.sleepTimerPlayLastSong,
         uiState.sleepTimerPausePending,
-
+        currentEmotion,
     ) {
         HomeRouteState(
             currentSong = uiState.currentSong,
+            emotion = currentEmotion,
             isPlaying = uiState.isPlaying,
             positionMs = playerViewModel.positionMs,
             durationMs = uiState.durationMs,

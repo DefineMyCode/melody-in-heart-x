@@ -10,11 +10,14 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import cn.com.dcsgo.mihx.core.model.PlayMode
 import cn.com.dcsgo.mihx.core.model.Song
+import cn.com.dcsgo.mihx.core.model.SongEmotion
 import kotlinx.coroutines.flow.StateFlow
 
 @Stable
 data class HomeRouteState(
     val currentSong: Song?,
+    /** 当前歌曲情绪数据（进度条上方只读词条）；null 时整行隐藏 */
+    val emotion: SongEmotion? = null,
     val isPlaying: Boolean,
     /**
      * 播放位置（毫秒）**窄流**。
@@ -102,6 +105,7 @@ fun HomeRoute(
     HomeScreen(
         topContentPaddingDp = topContentPaddingDp,
         currentSong = state.currentSong,
+        emotion = state.emotion,
         isPlaying = state.isPlaying,
         positionMs = state.positionMs,
         durationMs = state.durationMs,

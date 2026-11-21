@@ -57,10 +57,6 @@ class PlaybackController(
 
     private var controllerFuture: com.google.common.util.concurrent.ListenableFuture<MediaController>? = null
 
-    /**
-     * M-1：future 上的监听器引用，[release] 据此移除监听器，防止回调在释放后仍被派发。
-     */
-    private var futureListener: Runnable? = null
 
     /**
      * M-1：释放标志。future 回调据此拒绝在控制器已释放后继续执行，避免"复活"已释放的控制器。
@@ -204,33 +200,51 @@ class PlaybackController(
             ComponentName(context, serviceClass)
         )
         val future = MediaController.Builder(context, sessionToken).buildAsync()
-        // M-1：future 回调引用。注意不要命名为 listener——会遮蔽类级别的 Player.Listener
+        // M-1：future 回调。注意不要命名为 listener——会遮蔽类级别的 Player.Listener
         val futureCallback = Runnable {
-            try {
-                val connectedController = future.get()
-                // M-1：在锁内检查释放标志并完成控制器挂载，与 release() 串行化，
-                // 防止 release 清空状态后回调又把 controller 重新"复活"
-                synchronized(stateLock) {
-                    if (released) {
-                        // 控制器已释放：主动清理本 future，避免残留
-                        runCatching { MediaController.releaseFuture(future) }
-                        return@Runnable
-                    }
+            val connectedController = try {
+                future.get()
+            } catch (e: Exception) {
+                // M-1：已释放、或已被新 connect 替换的旧 future，其取消/失败不是「连接失败」，
+                // 不能上报 onControllerUnavailable，更不能清空新连接的 pending 队列。
+                if (isStaleFuture(future)) {
+                    AppLog.debug(TAG, "Ignore stale connection callback: ${e.javaClass.simpleName}")
+                    return@Runnable
+                }
+                AppLog.error(
+                    TAG,
+                    "MediaController connection failed",
+                    (e as? ExecutionException)?.cause ?: e,
+                )
+                abortPendingActions("播放服务连接失败")
+                return@Runnable
+            }
+            // M-1：锁内只做身份校验与挂载；pending 动作在锁外执行，避免 MediaController
+            // 调用阻塞状态锁（runWhenConnected / release 都在等这把锁）。
+            var stale = false
+            synchronized(stateLock) {
+                if (released || controllerFuture !== future) {
+                    stale = true
+                } else {
                     controller = connectedController
                     connectedController.addListener(listener)
-                    drainPendingActions(connectedController)
                 }
-                onConnected(connectedController.toPlaybackSnapshot())
-                AppLog.info(TAG, "MediaController connected")
-            } catch (e: ExecutionException) {
-                AppLog.error(TAG, "MediaController connection failed", e.cause ?: e)
-                abortPendingActions("播放服务连接失败")
-            } catch (e: Exception) {
-                AppLog.error(TAG, "MediaController connection failed", e)
-                abortPendingActions("播放服务连接失败")
             }
+            if (stale) {
+                // 控制器已释放或被更新的连接替换：主动清理本 future，避免残留
+                runCatching { MediaController.releaseFuture(future) }
+                return@Runnable
+            }
+            drainPendingActions(connectedController)
+            onConnected(connectedController.toPlaybackSnapshot())
+            AppLog.info(TAG, "MediaController connected")
         }
         synchronized(stateLock) {
+            // M-1：释放后实例不可复用，直接取消新 future
+            if (released) {
+                runCatching { MediaController.releaseFuture(future) }
+                return
+            }
             // M-1：重复 connect() 守卫——若已有 future，先断开旧 controller、
             // 释放旧 future，避免旧 future 的监听器泄漏、双控制器并存
             controller?.removeListener(listener)
@@ -239,10 +253,17 @@ class PlaybackController(
                 runCatching { MediaController.releaseFuture(oldFuture) }
             }
             controllerFuture = future
-            futureListener = futureCallback
         }
         future.addListener(futureCallback, ContextCompat.getMainExecutor(context))
     }
+
+    /**
+     * M-1：判断回调所属 future 是否已过期（已释放，或被新 [connect] 替换）。
+     * 旧 future 的回调不得再挂载控制器，也不得上报连接失败。
+     */
+    private fun isStaleFuture(
+        future: com.google.common.util.concurrent.ListenableFuture<MediaController>,
+    ): Boolean = synchronized(stateLock) { released || controllerFuture !== future }
 
     fun controllerOrNull(): MediaController? = controller
 
@@ -284,26 +305,36 @@ class PlaybackController(
             return true
         }
         // 慢路径：未连接，入队待 drainPendingActions 消费。加锁保护 pendingActions 的
-        // 读改写，与 drainPendingActions（主线程回调）和 release（任意线程）串行化
-        synchronized(stateLock) {
-            // double-check：等待锁期间控制器可能已就绪
+        // 读改写，与 drainPendingActions（主线程回调）和 release（任意线程）串行化。
+        // 队列溢出回调放到锁外，避免回调链（UI/持久化）在状态锁内执行。
+        var overflowed = false
+        val readyController = synchronized(stateLock) {
             val latestController = controller
-            if (latestController != null) {
-                action(latestController)
-                return true
+            if (latestController == null) {
+                if (pendingActions.size >= MAX_PENDING_ACTIONS) {
+                    // 队列已满说明控制器长时间未就绪：丢弃最早的动作，保证队列有界。
+                    pendingActions.removeFirst()
+                    overflowed = true
+                }
+                pendingActions.addLast(action)
             }
-            if (pendingActions.size >= MAX_PENDING_ACTIONS) {
-                // 队列已满说明控制器长时间未就绪：丢弃最早的动作，保证队列有界。
-                pendingActions.removeFirst()
-                AppLog.warning(
-                    TAG,
-                    "Pending action queue overflow (max=$MAX_PENDING_ACTIONS), dropped the oldest action",
-                )
-                callbacks.onControllerUnavailable(1, "播放服务尚未就绪")
-            }
-            pendingActions.addLast(action)
-            return false
+            latestController
         }
+        if (overflowed) {
+            AppLog.warning(
+                TAG,
+                "Pending action queue overflow (max=$MAX_PENDING_ACTIONS), dropped the oldest action",
+            )
+            callbacks.onControllerUnavailable(1, "播放服务尚未就绪")
+        }
+        if (readyController == null) return false
+        // double-check 命中：等待锁期间控制器已就绪，动作在锁外执行
+        try {
+            action(readyController)
+        } catch (e: Exception) {
+            AppLog.error(TAG, "Controller action failed after connect", e)
+        }
+        return true
     }
 
     override fun pause() {
@@ -546,7 +577,7 @@ class PlaybackController(
                 runCatching { MediaController.releaseFuture(future) }
             }
             controllerFuture = null
-            futureListener = null
+
             lastSyncedQueueFingerprint = null
             lastCurrentMediaItemIndex = C.INDEX_UNSET
             pendingQueueMutation = false

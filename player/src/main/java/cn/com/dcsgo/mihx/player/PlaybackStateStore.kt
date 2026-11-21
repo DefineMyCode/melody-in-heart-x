@@ -91,22 +91,25 @@ class PlaybackStateStore(
                 // 「成功」恢复出空队列，之后每次杀进程重启都拿到空队列、队列与进度丢失。
                 //
                 // 语义：空队列一律不写队列 JSON——
-                // - 已有快照：保留队列，仅更新当前歌曲与位置（restore 端 withCurrentSongId 校正索引）；
+                // - 已有快照：保留队列，仅更新当前歌曲与位置（restore 端 withCurrentSongId 校正索引），
+                //   并**保留**磁盘上的无限/探索播放标记（live-session 重建窗口的 false 只是默认值）；
                 // - 无快照但有当前歌：写空队列 + 歌曲/位置，restore 按 currentSongId 兜底单曲队列；
-                // - 全空且无快照：不写任何键。
+                // - 全空且无快照：不写队列/当前歌曲键，仅清理三个会话标记（阻断 legacy 回退）。
                 // 显式清空（用户清队列/结束播放）走 clearPlaybackState()，语义不受影响。
                 var wroteSomething = false
                 store.edit { preferences ->
-                    // m-15（评审）：空会话分支（queue 空且非无限播放）原仅写 CURRENT_SONG_ID /
-                    // PLAY_POSITION_MS，未处理 IS_INFINITE_PLAY / INFINITE_PLAYED_IDS / IS_EXPLORE_PLAY，
-                    // 残留的旧标记会让 restore 误判（如 allowEmpty=true、探索播放状态错误）。
-                    // 按语义显式清理：非无限播放置 false、清空已播 ID 集合、非探索播放置 false。
-                    // INFINITE_PLAYED_IDS 用 encodeIds(emptySet()) 显式写入空集而非 remove——
-                    // remove 会让 restore 回退到 legacy 读取旧值，显式写入空集才能阻断回退。
-                    preferences[PlaybackStateKeys.IS_INFINITE_PLAY] = false
-                    preferences[PlaybackStateKeys.INFINITE_PLAYED_IDS] = serializer.encodeIds(emptySet())
-                    preferences[PlaybackStateKeys.IS_EXPLORE_PLAY] = false
+                    // m-15 复审（2026-11-21）：仅在「没有任何既有队列快照」时清理三个会话标记。
+                    // 有既有快照时，这一拍通常来自 UI/ViewModel 重建窗口——队列尚未恢复、
+                    // 服务端仍在播放，内存态 isInfinitePlay/isExplorePlay 的 false 只是默认值。
+                    // 若据此覆盖磁盘上正在进行的会话标记，下一次 restore 或杀进程重启会错误
+                    // 退出无限/探索播放。无既有快照才代表真正没有可延续的会话，可安全清理并
+                    // 阻断 legacy 回退（INFINITE_PLAYED_IDS 显式写空集而非 remove）。
                     val existingQueueJson = preferences[PlaybackStateKeys.PLAY_QUEUE_JSON]
+                    if (existingQueueJson == null) {
+                        preferences[PlaybackStateKeys.IS_INFINITE_PLAY] = false
+                        preferences[PlaybackStateKeys.INFINITE_PLAYED_IDS] = serializer.encodeIds(emptySet())
+                        preferences[PlaybackStateKeys.IS_EXPLORE_PLAY] = false
+                    }
                     when {
                             existingQueueJson != null && playbackSongId != null -> {
                                 // 保留既有队列，只更新当前歌曲与位置

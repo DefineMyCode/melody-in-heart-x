@@ -97,8 +97,9 @@ class EmotionAnalyzer @Inject constructor(
 
             // M-7（评审 2026-10-15）：进度逐窗上报。原实现在整个推理循环结束后只调一次，
             // 进度条 0→100 一跳等于没有。
-            // m-11（评审）：回调在持锁的推理线程内执行会拖慢推理——若回调阻塞，整把锁被占。
-            // 改为先在锁内收集进度值，出锁后批量上报，调用方回调不再受锁约束。
+            // m-11 复审（2026-11-21）：曾改为「锁内收集、出锁后批量上报」，但批量上报仍发生在
+            // 推理全部结束之后，进度条依旧是一跳，等于回退了 M-7。这里恢复逐窗回调；
+            // onProgress 必须保持轻量（只更新进度状态），不得阻塞或做 IO，否则会占着推理锁。
             val totalWindows = (pcmData.size - WINDOW_SAMPLES) / HOP_SAMPLES + 1
             var s = 0
             var windowDone = 0
@@ -107,8 +108,7 @@ class EmotionAnalyzer @Inject constructor(
             // 人声类是现成输入 —— 零模型变更、零 APK 体积、零新授权。
             var vocalScoreSum = 0.0
             var vocalFrames = 0
-            // m-11：锁内收集的进度值，出锁后逐一上报
-            val progressUpdates = ArrayList<Float>()
+
             // 解码在锁外(纯 CPU, 无共享状态); 推理全程持锁: 周期/手动是两个不同
             // unique 任务, WorkManager 可并发跑两个 Worker, TFLite Interpreter
             // 非线程安全, 并发 invoke 会 native 崩溃 — 与 close() 同一把 lock 串行化.
@@ -150,13 +150,16 @@ class EmotionAnalyzer @Inject constructor(
                     val valence = calibrateValence(headOut[0][0])
                     series.add(valence to arousal)
                     windowDone++
-                    // m-11：锁内仅收集，不回调
-                    progressUpdates.add((windowDone.toFloat() / totalWindows).coerceIn(0f, 1f))
+                    // 逐窗上报：回调必须轻量；异常不回滚已完成窗口的推理。
+                    try {
+                        onProgress((windowDone.toFloat() / totalWindows).coerceIn(0f, 1f))
+                    } catch (e: Exception) {
+                        AppLog.warning(TAG, "onProgress callback failed: ${e.message}", e)
+                    }
                     s += HOP_SAMPLES
                 }
             }
-            // m-11：出锁后上报进度，回调阻塞不再影响推理
-            progressUpdates.forEach { onProgress(it) }
+
 
             var peak = 0
             // 能量峰值 = A(能量)正向峰值所在窗口
@@ -354,8 +357,10 @@ class EmotionAnalyzer @Inject constructor(
                 }
                 val outIdx = codec.dequeueOutputBuffer(info, 10000)
                 when {
-                    // m-16（评审）：INFO_OUTPUT_FORMAT_CHANGED（-2）表示输出格式已变化，
-                    // 显式读取 codec.getOutputFormat() 更新，而非按"无输出"静默继续循环
+                    // m-16（评审）：INFO_OUTPUT_FORMAT_CHANGED（-2）必须显式消费，否则下一次
+                    // dequeueOutputBuffer 会反复返回 -2。本解码器输出为 16-bit PCM 且声道数与
+                    // 输入一致，因此不改写 srcCh/srcSr；若以后接入输出格式可能变化的解码器，
+                    // 应在此更新后续 PCM 解析参数。
                     outIdx == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED -> {
                         codec.getOutputFormat()
                     }

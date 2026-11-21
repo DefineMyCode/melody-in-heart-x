@@ -214,26 +214,6 @@ class EmbeddedLyricsParserTest {
         assertNull(EmbeddedLyricsParser.parseFlacLyricsFromStream(stream))
     }
 
-    // ── OGG ──
-
-    @Test
-    fun `ogg vorbis comment lyrics with lrc timestamps parse as timed lines`() {
-        // m-7（评审）：OGG 使用 Vorbis Comment（与 FLAC 同构），原实现走 ID3v2 分支
-        // 因无 ID3 头直接返回 null。修复后增加 OGG 分支，复用 Vorbis Comment 解析。
-        val lyricsField = "[00:01.00]hello\n[00:02.50]world"
-        val stream = ByteArrayInputStream(oggTag(mapOf("LYRICS" to lyricsField)))
-
-        val lyrics = EmbeddedLyricsParser.parseOggLyricsFromStream(stream)
-
-        assertNotNull(lyrics)
-        assertEquals(listOf(1_000L to "hello", 2_500L to "world"), lyrics!!.lines.map { it.timeMs to it.text })
-    }
-
-    @Test
-    fun `ogg without lyrics field returns null`() {
-        val stream = ByteArrayInputStream(oggTag(mapOf("TITLE" to "no lyrics")))
-        assertNull(EmbeddedLyricsParser.parseOggLyricsFromStream(stream))
-    }
 
     // ── 构造辅助 ──
 
@@ -309,43 +289,6 @@ class EmbeddedLyricsParserTest {
         (size and 0xFF).toByte(),
     )
 
-    /** 构造 OGG Vorbis 文件字节：页 1（BOS + Vorbis 标识头）+ 页 2（Vorbis Comment 头） */
-    private fun oggTag(fields: Map<String, String>): ByteArray {
-        // 页 1：BOS + Vorbis 标识头包
-        val vorbisId = "vorbis".toByteArray(Charsets.US_ASCII) +
-            le32(0) + // version
-            byteArrayOf(2) + // channels
-            le32(44100) + // sample rate
-            le32(0) + // bitrate max
-            le32(128000) + // bitrate nominal
-            le32(0) + // bitrate min
-            byteArrayOf(0x00, 0x01, 0x01) // block sizes + framing
-
-        // 页 2：Vorbis Comment 头包
-        val vendor = "test".toByteArray(Charsets.UTF_8)
-        val comments = fields.entries.map { (k, v) ->
-            val content = "$k=$v".toByteArray(Charsets.UTF_8)
-            le32(content.size) + content
-        }
-        val commentBody = le32(vendor.size) + vendor + le32(comments.size) +
-            comments.reduce { a, b -> a + b }
-        val vorbisComment = "vorbis".toByteArray(Charsets.US_ASCII) + commentBody + byteArrayOf(0x01)
-
-        return oggPage(vorbisId, sequence = 0, flags = 0x06) +
-            oggPage(vorbisComment, sequence = 1, flags = 0x02)
-    }
-
-    /** 构造一个 OGG 页（页头 + 数据包）。packet ≤ 255 字节时单段即可。 */
-    private fun oggPage(packet: ByteArray, sequence: Int, flags: Int): ByteArray {
-        val header = "OggS".toByteArray(Charsets.US_ASCII) +
-            byteArrayOf(0x00, flags.toByte()) +
-            ByteArray(8) + // granule position = 0
-            le32(1) + // bitstream serial number
-            le32(sequence) +
-            le32(0) + // CRC（测试不校验）
-            byteArrayOf(1, packet.size.toByte()) // segment count = 1 + 段长
-        return header + packet
-    }
 }
 
 /** 模拟真实流行为：read/skip 每次至多处理 [chunk] 字节（FileInputStream/ContentResolver 均允许部分读写） */

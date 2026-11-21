@@ -78,22 +78,30 @@ class PlayDurationTrackerTest {
     /**
      * M-3（评审）回归测试：release() 必须取消 scope，终止所有后台协程。
      *
-     * 旧实现 release() 只调 stopPlayback()（cancel trackingJob），scope 仍存活——
-     * 之后任何延迟调度的协程或新启动的 startPlayback 的协程都会泄漏。
-     * 修复后 scope.cancel() 使后续 launch 无法真正执行，activeTrackingLoops 保持 0。
+     * M-3 复审（2026-11-21）：release() 先 stopPlayback 再立即 cancel 会把刚提交的
+     * settlePlayback 一并取消，退出时丢最后一次统计。修复后 release 会等结算完成，
+     * 这里同时断言最后一次播放会话确实落盘。
      */
     @Test
-    fun releaseCancelsScopeAndNoNewTrackingLoopsStart() = runBlocking {
-        val tracker = PlayDurationTracker(FakePlayStatsRepository(), FakeQuickSkipRepository(), updateIntervalMs = 10)
+    fun releaseFlushesFinalSettlementBeforeCancellingScope() = runBlocking {
+        val stats = FakePlayStatsRepository()
+        val tracker = PlayDurationTracker(stats, FakeQuickSkipRepository(), updateIntervalMs = 10)
 
         tracker.startPlayback(songId = 1, durationMs = 60_000, initialPlayedMs = 0)
-        // 确认计时循环已启动
+        // 确认计时循环已启动并累计到非零时长
         withTimeout(2_000) {
             while (tracker.activeTrackingLoops.get() == 0) delay(10)
         }
+        delay(50)
         assertEquals(1, tracker.activeTrackingLoops.get())
 
         tracker.release()
+
+        // release 必须先把最后一次结算写入仓库
+        withTimeout(2_000) {
+            while (stats.settledSessions.isEmpty()) delay(10)
+        }
+        assertEquals(1, stats.settledSessions.first().first)
 
         // release 后所有计时循环退出
         withTimeout(2_000) {
@@ -115,6 +123,7 @@ class PlayDurationTrackerTest {
 /** 只统计调用、不落盘的假仓库（计时逻辑测试不依赖存储） */
 private class FakePlayStatsRepository : PlayStatsRepository {
     val rawIncrements = mutableMapOf<Int, Int>()
+    val settledSessions = mutableListOf<Triple<Int, Long, Boolean>>()
 
     override suspend fun getCounts(songIds: List<Int>): Map<Int, Int> = emptyMap()
     override suspend fun getRawPlayCounts(songIds: List<Int>): Map<Int, Int> = emptyMap()
@@ -127,7 +136,14 @@ private class FakePlayStatsRepository : PlayStatsRepository {
         return rawIncrements[songId] ?: 0
     }
     override suspend fun recordCompletedPlay(songId: Int) = Unit
-    override suspend fun recordPlaybackSession(songId: Int, startedAtMs: Long, durationMs: Long, isEffectivePlay: Boolean) = Unit
+    override suspend fun recordPlaybackSession(
+        songId: Int,
+        startedAtMs: Long,
+        durationMs: Long,
+        isEffectivePlay: Boolean,
+    ) {
+        settledSessions += Triple(songId, durationMs, isEffectivePlay)
+    }
     override suspend fun playbackStatsSnapshot() = throw UnsupportedOperationException()
 }
 

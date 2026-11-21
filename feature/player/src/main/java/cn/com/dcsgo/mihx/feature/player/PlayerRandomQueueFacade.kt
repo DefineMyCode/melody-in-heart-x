@@ -27,12 +27,14 @@ data class MoodSlotState(
 class PlayerRandomQueueFacade(
     private val state: () -> PlayerUiState,
     private val updateState: ((PlayerUiState) -> PlayerUiState) -> Unit,
-    private val setPlayQueue: (List<Song>, Int, PlayMode) -> Unit,
+    private val setPlayQueue: (List<Song>, Int, PlayMode, Boolean) -> Unit,
     private val syncPlayerQueue: (PlayQueue) -> Unit,
     private val remainingMediaItems: () -> Int,
     private val playFromQueue: (PlayQueue, Int) -> Unit,
     private val rawPlayCounts: suspend (List<Int>) -> Map<Int, Int> = { emptyMap() },
     private val log: (String) -> Unit,
+    /** 会话标记（无限/探索播放）变更后立即排队落盘，避免用户随即杀进程时状态丢失。 */
+    private val savePlaybackState: () -> Unit = {},
     private val planner: RandomQueuePlanner = RandomQueuePlanner(),
     // 情境化随心播放（一期）：每次随机时即时判定当前生效时段。
     // null = 未生效（开关关 / 无配置 / 无命中时段），随机行为与现状完全一致。
@@ -176,7 +178,9 @@ class PlayerRandomQueueFacade(
             )
         } ?: return false
 
-        setPlayQueue(plan.songs, 0, PlayMode.SEQUENTIAL)
+        // 先写会话标记，再替换队列：setPlayQueue 内部（applyPlan）会触发一次持久化保存，
+        // 若此时 isExplorePlay 还没置位，落盘的就是 false——用户随播后立刻杀进程，
+        // 重启会错误显示「无限随机播放」而不是「探索播放中」。
         updateState {
             it.copy(
                 isInfinitePlay = false,
@@ -184,6 +188,8 @@ class PlayerRandomQueueFacade(
                 isExplorePlay = explore,
             )
         }
+        // exitInfinitePlay=false：不要把刚置位的探索会话标记在 applyPlan 里清掉。
+        setPlayQueue(plan.songs, 0, PlayMode.SEQUENTIAL, false)
         recentPlayedSongIds.clear()
         recentPlayedSongIds.addAll(plan.recentSongIds)
         if (plan.resetHistory) {
@@ -220,6 +226,8 @@ class PlayerRandomQueueFacade(
                 infinitePlayedSongIds = plan.playedSongIds,
             )
         }
+        // 会话标记立即落盘：用户开启后随即杀进程也能在重启后恢复「无限随机播放中」。
+        savePlaybackState()
         log("startInfinitePlay: keep current queue, covered=${plan.playedSongIds.size}")
 
         // 开启时若已处于队列尾部（剩余不足补队列阈值），立即补队列。
@@ -235,6 +243,7 @@ class PlayerRandomQueueFacade(
 
     fun stopInfinitePlay() {
         updateState { it.copy(isInfinitePlay = false, infinitePlayedSongIds = emptySet()) }
+        savePlaybackState()
         log("stopInfinitePlay")
     }
 
@@ -364,6 +373,7 @@ class PlayerRandomQueueFacade(
     /** 退出探索播放会话（切换模式 / 关闭探索时由调用方调用） */
     fun stopExplorePlay() {
         updateState { it.copy(isExplorePlay = false) }
+        savePlaybackState()
         log("stopExplorePlay")
     }
 

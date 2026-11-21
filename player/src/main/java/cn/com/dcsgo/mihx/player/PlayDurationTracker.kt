@@ -305,9 +305,20 @@ class PlayDurationTracker(
      */
     override fun release() {
         stopPlayback()
-        // M-3（评审）：取消 scope，终止所有后台协程（settle/increment/tracking 循环）。
-        // 旧实现只 stopPlayback（cancel trackingJob），scope 仍存活——若之后
-        // 有任何遗漏的协程或延迟调度，会泄漏到进程结束
-        scope.cancel()
+        // M-3 复审（2026-11-21）：stopPlayback 只是把 settlePlayback 提交到 scope，
+        // 立即 scope.cancel() 会把尚未执行的结算一并取消，退出时丢掉最后一段播放统计。
+        // 改为等 scope 内已提交的协程（settle/increment）跑完再取消；等待在 IO 线程，
+        // 不阻塞调用方，也不影响 trackingJob（stopPlayback 已显式 cancel）。
+        val scopeJob = scope.coroutineContext[Job]
+        CoroutineScope(Dispatchers.IO).launch {
+            scopeJob?.children?.toList()?.forEach { child ->
+                try {
+                    child.join()
+                } catch (_: CancellationException) {
+                    // tracking 循环等已被主动取消：无需处理
+                }
+            }
+            scope.cancel()
+        }
     }
 }

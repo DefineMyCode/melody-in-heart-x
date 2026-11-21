@@ -107,6 +107,21 @@ class PlayerQueueFacadeTest {
     }
 
     @Test
+    fun setPlayQueueWithExitInfinitePlayDisabledKeepsExploreSession() {
+        // 随心播放先置位探索会话，再用「不退出会话」的替换队列；applyPlan 不得把它清掉。
+        state = PlayerUiState(
+            playQueue = PlayQueue().setQueue(songs(1, 2), startIndex = 0),
+            isExplorePlay = true,
+            isExploreModeActive = true,
+        )
+
+        facade.setPlayQueue(songs(3, 4), startIndex = 0, exitInfinitePlay = false)
+
+        assertTrue(state.isExplorePlay)
+        assertTrue(savedPlaybackState)
+    }
+
+    @Test
     fun addToQueueKeepsExploreSession() {
         // 只是往队列追加歌曲不算手动替换，探索会话保留
         state = PlayerUiState(

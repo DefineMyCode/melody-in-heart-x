@@ -203,12 +203,11 @@ class PlaybackStateStoreTest {
     }
 
     /**
-     * m-15（评审）回归测试：空会话分支（queue 空且非无限播放）必须显式清理
-     * IS_INFINITE_PLAY / INFINITE_PLAYED_IDS / IS_EXPLORE_PLAY，
-     * 否则残留的旧标记会让 restore 误判（如 allowEmpty=true、探索播放状态错误）。
+     * 2.A（复审 2026-11-21）：空会话保存时**已有队列快照**代表 live-session/UI 重建窗口，
+     * 必须保留磁盘上的无限/探索播放标记，不能把内存态默认的 false 覆盖上去。
      */
     @Test
-    fun emptySessionSaveClearsInfinitePlayAndExplorePlayFlags() = runStoreTest { store, _ ->
+    fun emptySessionSaveKeepsInfinitePlayAndExplorePlayFlagsWhenSnapshotExists() = runStoreTest { store, _ ->
         // 先写入带无限播放 + 探索播放 + 已播 ID 的快照
         store.save(
             queue = PlayQueue().setQueue(songs(1, 2), startIndex = 0),
@@ -218,18 +217,18 @@ class PlaybackStateStoreTest {
             isExplorePlay = true,
         )
 
-        // 空会话保存（非无限播放、无 currentSongId）——应清理三个标记
+        // 空会话保存（非无限播放、无 currentSongId）：保留既有队列，也保留三个标记
         store.save(PlayQueue(), positionMs = 200L)
 
         val restored = store.restore(songs(1, 2))
-        // 空会话不写队列 JSON，已有快照被保留，但三个标记必须被清理
-        assertEquals("空会话保存后 IS_INFINITE_PLAY 应为 false", false, restored?.isInfinitePlay)
-        assertEquals("空会话保存后 INFINITE_PLAYED_IDS 应清空", emptySet<Int>(), restored?.infinitePlayedSongIds)
-        assertEquals("空会话保存后 IS_EXPLORE_PLAY 应为 false", false, restored?.isExplorePlay)
+        // 空会话不写队列 JSON，已有快照被保留；标记同样保留，避免重建窗口误退出会话
+        assertEquals("已有快照时空会话保存应保留 IS_INFINITE_PLAY", true, restored?.isInfinitePlay)
+        assertEquals("已有快照时空会话保存应保留 INFINITE_PLAYED_IDS", setOf(1, 2), restored?.infinitePlayedSongIds)
+        assertEquals("已有快照时空会话保存应保留 IS_EXPLORE_PLAY", true, restored?.isExplorePlay)
     }
 
     @Test
-    fun emptySessionSaveWithCurrentSongClearsInfinitePlayAndExplorePlayFlags() = runStoreTest { store, _ ->
+    fun emptySessionSaveWithCurrentSongKeepsInfinitePlayAndExplorePlayFlags() = runStoreTest { store, _ ->
         store.save(
             queue = PlayQueue().setQueue(songs(1, 2), startIndex = 0),
             positionMs = 100L,
@@ -238,15 +237,41 @@ class PlaybackStateStoreTest {
             isExplorePlay = true,
         )
 
-        // 带 currentSongId 的空会话：保留队列，但同样清理三个标记
+        // 带 currentSongId 的空会话：保留队列，也保留三个标记（服务端可能仍在播）
         store.save(PlayQueue(), positionMs = 5_000L, currentSongId = 2)
 
         val restored = store.restore(songs(1, 2))
         assertEquals(listOf(1, 2), restored?.queue?.songs?.map { it.id })
         assertEquals(2, restored?.queue?.currentSong?.id)
-        assertEquals("带 currentSongId 的空会话同样应清理 IS_INFINITE_PLAY", false, restored?.isInfinitePlay)
-        assertEquals("带 currentSongId 的空会话同样应清理 INFINITE_PLAYED_IDS", emptySet<Int>(), restored?.infinitePlayedSongIds)
-        assertEquals("带 currentSongId 的空会话同样应清理 IS_EXPLORE_PLAY", false, restored?.isExplorePlay)
+        assertEquals("带 currentSongId 的空会话应保留 IS_INFINITE_PLAY", true, restored?.isInfinitePlay)
+        assertEquals("带 currentSongId 的空会话应保留 INFINITE_PLAYED_IDS", setOf(1), restored?.infinitePlayedSongIds)
+        assertEquals("带 currentSongId 的空会话应保留 IS_EXPLORE_PLAY", true, restored?.isExplorePlay)
+    }
+
+    /**
+     * 2.A（复审 2026-11-21）：**无既有队列快照**时才清理标记，
+     * 并显式写 false/空集阻断 legacy 回退。
+     */
+    @Test
+    fun emptySessionSaveWithoutExistingSnapshotClearsLegacyInfiniteAndExploreFlags() = runBlocking {
+        val legacyPrefs = FakeSharedPreferences(
+            mapOf(
+                "is_infinite_play" to true,
+                "infinite_played_ids" to "[1]",
+            )
+        )
+        val handle = newDataStoreHandle()
+        val store = PlaybackStateStore(handle.store, legacyPrefs)
+        try {
+            // 无既有队列快照：空会话保存应显式写 false/空集，阻断 legacy 回退
+            store.save(PlayQueue(), positionMs = 0L, currentSongId = 2)
+
+            val restored = store.restore(songs(1, 2))
+            assertEquals("无既有快照时应清理 legacy IS_INFINITE_PLAY", false, restored?.isInfinitePlay)
+            assertEquals("无既有快照时应清空 INFINITE_PLAYED_IDS", emptySet<Int>(), restored?.infinitePlayedSongIds)
+        } finally {
+            handle.close()
+        }
     }
 
     @Test

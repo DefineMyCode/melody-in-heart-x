@@ -524,12 +524,15 @@ internal class PlayerRuntime(
     private val randomQueueFacade = PlayerRandomQueueFacade(
         state = { _uiState.value },
         updateState = ::updateUiState,
-        setPlayQueue = { songs, startIndex, mode -> setPlayQueue(songs, startIndex, mode) },
+        setPlayQueue = { songs, startIndex, mode, exitInfinitePlay ->
+            setPlayQueue(songs, startIndex, mode, exitInfinitePlay)
+        },
         syncPlayerQueue = { queue -> playbackBridgeFacade.syncPlayerQueue(queue) },
         remainingMediaItems = { playbackBridgeFacade.remainingMediaItems() },
         playFromQueue = { queue, index -> playbackBridgeFacade.playFromQueue(queue, index) },
         rawPlayCounts = playStatsRepository::getRawPlayCounts,
         log = { message -> AppLog.debug(TAG, message) },
+        savePlaybackState = ::savePlaybackStateAsync,
         moodSlotConfigs = { moodSlotConfigsCache },
         // N-3：读缓存，不再每次 `.first()` 读 DataStore
         moodSlotEnabled = { randomEnhanceModeCache == RandomEnhanceMode.TIME_SLOT },

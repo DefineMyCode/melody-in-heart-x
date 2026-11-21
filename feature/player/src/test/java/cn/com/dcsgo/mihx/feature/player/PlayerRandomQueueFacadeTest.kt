@@ -15,6 +15,8 @@ class PlayerRandomQueueFacadeTest {
     private var state = PlayerUiState()
     private var setQueueSongs: List<Song>? = null
     private var setQueueMode: PlayMode? = null
+    private var exploreEnabled = false
+    private var exploreFlagWhenSetQueue: Boolean? = null
     private var syncedQueue: PlayQueue? = null
     private var remainingItems = Int.MAX_VALUE
     private var playedFromQueue: PlayQueue? = null
@@ -23,7 +25,10 @@ class PlayerRandomQueueFacadeTest {
     private val facade = PlayerRandomQueueFacade(
         state = { state },
         updateState = { transform -> state = transform(state) },
-        setPlayQueue = { songs, startIndex, mode ->
+        setPlayQueue = { songs, startIndex, mode, _ ->
+            // 记录「替换队列」这一刻的状态：applyPlan 内部会立即触发持久化保存，
+            // 这里的值就是最终会落盘的 isExplorePlay。
+            exploreFlagWhenSetQueue = state.isExplorePlay
             state = state.copy(playQueue = PlayQueue().setQueue(songs, startIndex, mode))
             setQueueSongs = songs
             setQueueMode = mode
@@ -41,6 +46,7 @@ class PlayerRandomQueueFacadeTest {
             shuffle = { it },
             isPlayable = { it.sampleRate > 0 },
         ),
+        exploreModeEnabled = { exploreEnabled },
     )
 
     @Test
@@ -58,6 +64,25 @@ class PlayerRandomQueueFacadeTest {
         assertEquals(PlayMode.SEQUENTIAL, setQueueMode)
         assertFalse(state.isInfinitePlay)
         assertEquals(emptySet<Int>(), state.infinitePlayedSongIds)
+    }
+
+    /**
+     * Bug 回归：探索模式下「随心播放」后立刻杀进程，重启应仍显示「探索播放中」。
+     *
+     * playRandomQueue 必须在调用 setPlayQueue 之前置位 isExplorePlay——setPlayQueue 内部
+     * （applyPlan）会立即触发一次持久化保存；若顺序反过来，落盘的是 explore=false，
+     * 重启后按钮会错误回到「无限随机播放」。
+     */
+    @Test
+    fun playRandomQueueMarksExploreSessionBeforeReplacingQueue() {
+        exploreEnabled = true
+        exploreFlagWhenSetQueue = null
+        state = state.copy(songs = songs(1, 2, 3))
+
+        runBlocking { facade.playRandomQueue() }
+
+        assertEquals("替换队列（内部会触发持久化）时应已置位探索会话", true, exploreFlagWhenSetQueue)
+        assertTrue(state.isExplorePlay)
     }
 
     @Test
@@ -275,7 +300,7 @@ class PlayerRandomQueueFacadeTest {
     ): PlayerRandomQueueFacade = PlayerRandomQueueFacade(
         state = { state },
         updateState = { transform -> state = transform(state) },
-        setPlayQueue = { songs, startIndex, mode ->
+        setPlayQueue = { songs, startIndex, mode, _ ->
             state = state.copy(playQueue = PlayQueue().setQueue(songs, startIndex, mode))
             setQueueSongs = songs
             setQueueMode = mode
@@ -643,7 +668,7 @@ class PlayerRandomQueueFacadeTest {
         val mood = PlayerRandomQueueFacade(
             state = { state },
             updateState = { transform -> state = transform(state) },
-            setPlayQueue = { songs, startIndex, mode ->
+            setPlayQueue = { songs, startIndex, mode, _ ->
                 state = state.copy(playQueue = PlayQueue().setQueue(songs, startIndex, mode))
                 setQueueSongs = songs
                 setQueueMode = mode
@@ -733,7 +758,7 @@ class PlayerRandomQueueFacadeTest {
     ): PlayerRandomQueueFacade = PlayerRandomQueueFacade(
         state = { state },
         updateState = { transform -> state = transform(state) },
-        setPlayQueue = { songs, startIndex, mode ->
+        setPlayQueue = { songs, startIndex, mode, _ ->
             state = state.copy(playQueue = PlayQueue().setQueue(songs, startIndex, mode))
             setQueueSongs = songs
             setQueueMode = mode

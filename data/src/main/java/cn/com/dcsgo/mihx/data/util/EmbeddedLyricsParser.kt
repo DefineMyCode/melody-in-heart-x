@@ -51,9 +51,7 @@ object EmbeddedLyricsParser {
             context.contentResolver.openInputStream(songUri)?.use { inputStream ->
                 when (extension) {
                     "flac" -> parseFlacLyricsFromStream(inputStream)
-                    // m-7（评审）：OGG 使用 Vorbis Comment（与 FLAC 同构），
-                    // 走 parseId3v2 分支会因无 ID3 头直接返回 null，故增加独立分支
-                    "ogg", "oga" -> parseOggLyricsFromStream(inputStream)
+
                     else -> parseId3v2LyricsFromStream(inputStream)
                 }
             }
@@ -206,83 +204,7 @@ object EmbeddedLyricsParser {
     }
 
     /**
-     * 从流中解析 OGG Vorbis Comment 的 LYRICS 字段。
-     *
-     * OGG 容器与 FLAC 不同：以 "OggS" 页头开始，Vorbis Comment 作为独立数据包
-     * 存放在第二页（第一页是 Vorbis 标识头）。但 Vorbis Comment 数据本身的格式
-     * 与 FLAC 完全相同（vendor + comment 列表），故复用 [parseVorbisCommentData]。
-     */
-    internal fun parseOggLyricsFromStream(inputStream: InputStream): Lyrics? {
-        return try {
-            // 第一包：Vorbis 标识头（跳过）
-            skipOggPacket(inputStream) ?: return null
-            // 第二包：Vorbis Comment 头
-            val packet = readOggPacket(inputStream) ?: return null
-            // Vorbis Comment 头包以 "vorbis" 魔术字开头
-            if (packet.size < 7 || !packet.copyOfRange(0, 6).contentEquals("vorbis".toByteArray(Charsets.US_ASCII))) {
-                AppLog.debug(TAG, "OGG: second packet is not Vorbis comment header")
-                return null
-            }
-            // 跳过 "vorbis"(6 字节)，剩余部分即 Vorbis Comment 数据
-            parseVorbisCommentData(packet, 6)
-        } catch (e: Exception) {
-            AppLog.warning(TAG, "Failed to parse OGG file: ${e.message}")
-            null
-        }
-    }
 
-    // OGG 页头辅助（"OggS" + 固定头 22 字节 + 段表）
-
-    private data class OggPageHeader(
-        val packetSize: Int,
-        val isEndOfPacket: Boolean,
-    )
-
-    /** 读取 OGG 页头，返回页内数据包大小与包结束标志 */
-    private fun readOggPageHeader(inputStream: InputStream): OggPageHeader? {
-        val fixedHeader = ByteArray(27)
-        if (!readFully(inputStream, fixedHeader, 27)) return null
-        if (fixedHeader[0] != 'O'.code.toByte() ||
-            fixedHeader[1] != 'g'.code.toByte() ||
-            fixedHeader[2] != 'g'.code.toByte() ||
-            fixedHeader[3] != 'S'.code.toByte()
-        ) {
-            AppLog.debug(TAG, "Not an OGG page")
-            return null
-        }
-        val flags = fixedHeader[5].toInt() and 0xFF
-        val isEndOfPacket = (flags and 0x02) != 0
-        val segmentCount = fixedHeader[26].toInt() and 0xFF
-        var packetSize = 0
-        for (i in 0 until segmentCount) {
-            val segByte = ByteArray(1)
-            if (!readFully(inputStream, segByte, 1)) return null
-            packetSize += (segByte[0].toInt() and 0xFF)
-        }
-        return OggPageHeader(packetSize, isEndOfPacket)
-    }
-
-    /** 跳过一个完整的 OGG 数据包（逐页读取，直到遇到包结束标志） */
-    private fun skipOggPacket(inputStream: InputStream): Boolean {
-        while (true) {
-            val header = readOggPageHeader(inputStream) ?: return false
-            if (!skipFully(inputStream, header.packetSize.toLong())) return false
-            if (header.isEndOfPacket) return true
-        }
-    }
-
-    /** 读取一个完整的 OGG 数据包（逐页读取，直到遇到包结束标志） */
-    private fun readOggPacket(inputStream: InputStream): ByteArray? {
-        val out = java.io.ByteArrayOutputStream()
-        while (true) {
-            val header = readOggPageHeader(inputStream) ?: return null
-            val pageData = readBytes(inputStream, header.packetSize) ?: return null
-            out.write(pageData)
-            if (header.isEndOfPacket) return out.toByteArray()
-        }
-    }
-
-    /**
      * 从流中解析 FLAC Vorbis Comment 的 LYRICS 字段。
      * FLAC 文件结构: "fLaC" + 若干 metadata blocks（type=4 为 Vorbis Comment）。
      */
@@ -329,10 +251,9 @@ object EmbeddedLyricsParser {
     /**
      * 解析 Vorbis Comment 数据
      * 格式: vendor_length(4 LE) + vendor_string + comment_list_length(4 LE) + [comment_length(4 LE) + comment_string]...
-     * @param start 数据起始偏移（OGG 需跳过 6 字节 "vorbis" 魔术字；FLAC 从 0 开始）
      */
-    private fun parseVorbisCommentData(data: ByteArray, start: Int = 0): Lyrics? {
-        var pos = start
+    private fun parseVorbisCommentData(data: ByteArray): Lyrics? {
+        var pos = 0
 
         if (pos + 4 > data.size) return null
         val vendorLen = readUInt32LE(data, pos)

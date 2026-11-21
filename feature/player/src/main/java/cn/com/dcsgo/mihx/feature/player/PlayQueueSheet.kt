@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -27,20 +28,24 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.SheetState
+import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.rememberModalBottomSheetState
+
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.Composable
+
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -90,7 +95,23 @@ fun PlayQueueSheet(
     var showClearConfirm by remember { mutableStateOf(false) }
     val listState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
-    val sheetState = rememberModalBottomSheetState()
+    // 自定义 SheetState：初值必须用 Hidden，让 M3 的 show() 走正常进场动画。
+    // 若初值直接写 Expanded，首帧 sheet 高度还没测出来、偏移量按 0 算，抽屉会先
+    // 贴到屏幕顶部，等测量完成再瞬移到正确位置（表现为"闪一下顶"）。
+    // 同时保留 PartiallyExpanded 在 enabledValues 中——强制两态
+    //（skipPartiallyExpanded=true）会让列表的 nested scroll 手势被 sheet 吞掉。
+    val density = LocalDensity.current
+    val sheetState = remember(density) {
+        @Suppress("DEPRECATION")
+        SheetState(
+            skipPartiallyExpanded = false,
+            positionalThreshold = { with(density) { 56.dp.toPx() } },
+            velocityThreshold = { with(density) { 125.dp.toPx() } },
+            initialValue = SheetValue.Hidden,
+            confirmValueChange = { true },
+            skipHiddenState = false,
+        )
+    }
     val currentIndex = playQueue.currentIndex
     val locateHighlight = rememberLocateHighlightState()
 
@@ -129,10 +150,14 @@ fun PlayQueueSheet(
         containerColor = MaterialTheme.colorScheme.surface
     ) {
         // sheet 内挂 ToastHost(焦点协调只让聚焦窗口画,避免双 toast——见 ToastHost 文档)。
-        Box(modifier = Modifier.fillMaxWidth()) {
+        // 固定内容高度：9~10 首时列表高度恰好接近 sheet 上限，M3 会按内容反复测量
+        // sheet 高度，在临界点表现为列表/面板上下跳动。让内容始终占满可用高度，
+        // 列表在稳定区间内滚动；不足一屏时底部留白，不再触发高度重测。
+        Box(modifier = Modifier.fillMaxWidth().fillMaxHeight()) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
+                .fillMaxHeight()
                 .padding(horizontal = 16.dp)
         ) {
             // 标题栏
@@ -200,7 +225,9 @@ fun PlayQueueSheet(
                 // 队列列表
                 LazyColumn(
                     state = listState,
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f),
                     contentPadding = PaddingValues(vertical = 8.dp),
                     verticalArrangement = Arrangement.spacedBy(0.dp)
                 ) {

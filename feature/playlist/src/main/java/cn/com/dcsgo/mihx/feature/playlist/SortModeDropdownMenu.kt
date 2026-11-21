@@ -39,7 +39,7 @@ fun SortModeDropdownMenu(
                     if (mode == currentMode) {
                         Icon(
                             imageVector = Icons.Default.Check,
-                            contentDescription = null,
+                            contentDescription = "当前排序",
                             modifier = Modifier.size(18.dp),
                             tint = MaterialTheme.colorScheme.primary,
                         )

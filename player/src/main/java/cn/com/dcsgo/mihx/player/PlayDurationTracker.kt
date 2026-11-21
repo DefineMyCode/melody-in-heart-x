@@ -10,6 +10,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
@@ -47,9 +48,14 @@ class PlayDurationTracker(
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     // 当前正在播放的歌曲ID
+    // M-3（评审）：@Volatile —— startPlayback 在主线程（Media3 监听器）写入，
+    // stopPlayback/settlePlayback 在 IO 线程读取/重置，跨线程读写须保证可见性
+    @Volatile
     private var currentSongId: Int? = null
 
     // 当前歌曲的总时长（毫秒）
+    // M-3（评审）：同上，跨线程读写须 @Volatile 保护
+    @Volatile
     private var currentSongDurationMs: Long = 0L
 
     // 当前歌曲的累计播放时长（毫秒）
@@ -299,5 +305,9 @@ class PlayDurationTracker(
      */
     override fun release() {
         stopPlayback()
+        // M-3（评审）：取消 scope，终止所有后台协程（settle/increment/tracking 循环）。
+        // 旧实现只 stopPlayback（cancel trackingJob），scope 仍存活——若之后
+        // 有任何遗漏的协程或延迟调度，会泄漏到进程结束
+        scope.cancel()
     }
 }

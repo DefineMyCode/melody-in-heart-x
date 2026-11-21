@@ -6,7 +6,7 @@ import cn.com.dcsgo.mihx.data.local.dao.MelodyDao
 import cn.com.dcsgo.mihx.data.local.entity.MigrationStateEntity
 
 class SharedPreferencesLegacyJsonMigration(
-    context: Context? = null,
+    private val context: Context? = null,
     private val dao: MelodyDao,
     private val parser: LegacyJsonSnapshotParser = LegacyJsonSnapshotParser(),
     private val clockMs: () -> Long = { System.currentTimeMillis() },
@@ -14,6 +14,9 @@ class SharedPreferencesLegacyJsonMigration(
         requireNotNull(context) {
             "Context is required when sharedPreferencesProvider is not supplied"
         }.getSharedPreferences(name, Context.MODE_PRIVATE)
+    },
+    private val deleteSharedPreferences: (String) -> Boolean = { name ->
+        context?.deleteSharedPreferences(name) ?: false
     },
 ) : LegacyJsonMigration {
     override suspend fun migrateIfNeeded() {
@@ -54,6 +57,11 @@ class SharedPreferencesLegacyJsonMigration(
             dao.upsertQuickSkipShortPlay(count)
         }
         dao.upsertMigrationState(MigrationStateEntity(LEGACY_MIGRATION_NAME, now))
+
+        // m-10（评审）：迁移成功后清理不再使用的旧 SharedPreferences，
+        // 避免残留文件长期占用存储、误导后续调试
+        deleteSharedPreferences(PLAY_STATS_PREFS_NAME)
+        deleteSharedPreferences(QUICK_SKIP_PREFS_NAME)
     }
 
     private companion object {

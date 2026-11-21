@@ -401,7 +401,7 @@ class MusicRepository(
                         songs[idx] = songs[idx].copy(albumArtUri = update.newUri)
                     }
                 }
-                persistSongs { notifySongsChanged() }
+                persistSongs()
             }
             AppLog.info(TAG, "refreshAllAlbumArt: updated ${updates.size} covers")
         }
@@ -576,7 +576,7 @@ class MusicRepository(
 
         updatePlaylistSongCount(playlist.id)
         // 持久化歌曲和歌单数据
-        persistSongs { notifySongsChanged() }
+        persistSongs()
         persistPlaylists()
         // 通知 UI 刷新（歌曲、歌单、曲库歌手/专辑目录）
         notifySongsChanged()
@@ -758,7 +758,7 @@ class MusicRepository(
             }
             songs.removeAt(songIndex)
 
-            persistSongs { notifySongsChanged() }
+            persistSongs()
             persistPlaylists()
             AppLog.info(TAG, "deleteSong: deleted song id=$songId")
             DeleteSongResult.Success(
@@ -832,7 +832,7 @@ class MusicRepository(
                     }
                 }
                 songs.removeAll { it.id in missingIds }
-                persistSongs { notifySongsChanged() }
+                persistSongs()
                 persistPlaylists()
             }
 
@@ -934,7 +934,7 @@ class MusicRepository(
                     }
                 }
                 songs.removeAll { it.id in toRemove }
-                persistSongs { notifySongsChanged() }
+                persistSongs()
                 persistPlaylists()
             }
 
@@ -1025,7 +1025,7 @@ class MusicRepository(
                             } catch (_: Exception) {
                                 0L
                             }
-                            "$size:$mtime"
+                            "$size/$mtime"
                         }
                     } catch (_: Exception) {
                         null
@@ -1073,7 +1073,9 @@ class MusicRepository(
                 }
             }
         }
-        persistSongs { notifySongsChanged() }
+        persistSongs()
+        // m-9（评审）：通知移至写锁外，避免回调在锁内执行阻塞读路径
+        notifySongsChanged()
         results.size
     }
 
@@ -1116,12 +1118,18 @@ class MusicRepository(
      * @param titleOverride 新的分组键（null 表示清除覆盖）
      * @return true 表示修改成功
      */
-    fun updateSongTitleOverride(songId: Int, titleOverride: String?): Boolean = lock.write {
-        val index = songs.indexOfFirst { it.id == songId }
-        if (index < 0) return@write false
-        songs[index] = songs[index].copy(titleOverride = titleOverride)
-        persistSongs()
-        AppLog.info(TAG, "updateSongTitleOverride: song=$songId")
-        true
+    fun updateSongTitleOverride(songId: Int, titleOverride: String?): Boolean {
+        val result = lock.write {
+            val index = songs.indexOfFirst { it.id == songId }
+            if (index < 0) return@write false
+            songs[index] = songs[index].copy(titleOverride = titleOverride)
+            persistSongs()
+            AppLog.info(TAG, "updateSongTitleOverride: song=$songId")
+            true
+        }
+        // M-7（评审）：titleOverride 决定 Song.groupKey，分组变更后必须通知 UI 刷新，
+        // 否则其他变更路径（deleteSong/deduplicateSongs）都有通知，此处遗漏导致 UI 不刷新。
+        if (result) notifySongsChanged()
+        return result
     }
 }

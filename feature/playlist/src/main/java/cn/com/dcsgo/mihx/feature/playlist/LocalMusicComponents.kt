@@ -164,7 +164,7 @@ fun FileManagementSection(
                 ) {
                     Icon(
                         imageVector = Icons.Default.Storage,
-                        contentDescription = null,
+                        contentDescription = "存储与音质统计",
                         modifier = Modifier.size(18.dp),
                         tint = if (isImporting) {
                             MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)

@@ -47,7 +47,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import cn.com.dcsgo.mihx.core.model.Lyrics
+import kotlinx.coroutines.flow.StateFlow
 
 /**
  * 歌词展示组件
@@ -59,7 +61,7 @@ import cn.com.dcsgo.mihx.core.model.Lyrics
  * @param songTitle 歌曲标题
  * @param songArtist 歌曲艺术家
  * @param lyrics 歌词数据
- * @param currentTimeMs 当前播放时间（毫秒）
+ * @param positionMs 当前播放位置（毫秒）窄流，由本组件内部订阅
  * @param isPlaying 当前是否在播放
  * @param onBackClick 点击返回按钮的回调
  * @param onSeekTo 点击歌词行跳转播放位置的回调
@@ -69,7 +71,7 @@ fun LyricsView(
     songTitle: String,
     songArtist: String,
     lyrics: Lyrics,
-    currentTimeMs: Long,
+    positionMs: StateFlow<Long>,
     isPlaying: Boolean,
     onBackClick: () -> Unit,
     onSeekTo: ((Long) -> Unit)? = null,
@@ -78,6 +80,10 @@ fun LyricsView(
     onFontScaleChange: (Float) -> Unit = {},
 ) {
     val listState = rememberLazyListState()
+
+    // 播放位置窄流：在本叶子节点订阅，随位置推进（200ms/次）只重组歌词高亮内容
+    // （评审 2026-11-20 · M-11），而非整个歌词分支整体重组。
+    val currentTimeMs by positionMs.collectAsStateWithLifecycle()
 
     // 系统返回键支持
     BackHandler { onBackClick() }

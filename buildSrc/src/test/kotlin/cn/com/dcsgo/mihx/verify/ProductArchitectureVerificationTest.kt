@@ -25,6 +25,19 @@ class ProductArchitectureVerificationTest {
 
     private fun verify(): List<String> = ProductArchitectureVerification.verify(tmp.root)
 
+    /**
+     * 铺一个含 release 块的最小 app/build.gradle.kts。
+     *
+     * `rules` 中 `extractBracedBlock(appBuildText, "release")` 用 `failNow`（抛异常中断），
+     * 若无此文件，后续规则（中文字面量棘轮、备份排除检查）将无法被执行到。
+     */
+    private fun writeMinimalAppBuild() {
+        write(
+            "app/build.gradle.kts",
+            "release { isMinifyEnabled = true; isShrinkResources = true }",
+        )
+    }
+
     @Test
     fun `empty repo reports the leading required-file violations`() {
         val violations = verify()
@@ -185,5 +198,93 @@ class ProductArchitectureVerificationTest {
         val block = ProductArchitectureVerification.extractBracedBlock("android { }", "release")
 
         assertTrue(block == null)
+    }
+
+    @Test
+    fun `chinese literal count exceeding ratchet baseline is flagged`() {
+        // M-12（评审 2026-11-20）：中文字面量棘轮基线 1500，超过即构建失败。
+        writeMinimalAppBuild()
+        val literals = (1..1501).joinToString("\n") { i -> "val s$i = \"中文测试$i\"" }
+        write(
+            "feature/anything/src/main/java/x/Many.kt",
+            "package x\n\n$literals\n",
+        )
+
+        val violations = verify()
+
+        assertTrue(
+            "chinese literal ratchet should fire: $violations",
+            violations.any { it.contains("中文字面量数量") && it.contains("超过棘轮基线") },
+        )
+    }
+
+    @Test
+    fun `chinese literal count below ratchet baseline passes`() {
+        // 少量中文字面量不应触发棘轮规则。
+        writeMinimalAppBuild()
+        write(
+            "feature/anything/src/main/java/x/Few.kt",
+            "package x\n\nval s = \"少量中文\"\n",
+        )
+
+        val violations = verify()
+
+        assertTrue(
+            "chinese literal ratchet should not fire for small counts: $violations",
+            violations.none { it.contains("中文字面量数量") && it.contains("超过棘轮基线") },
+        )
+    }
+
+    @Test
+    fun `backup rules missing playlist_resume exclude are flagged`() {
+        // m-14（评审 2026-11-20）：playlist_resume 瞬态状态须排除。
+        writeMinimalAppBuild()
+        val backup = """<full-backup-content>
+            <exclude domain="sharedpref" path="music_player_prefs.xml" />
+            <exclude domain="sharedpref" path="play_stats_prefs.xml" />
+            <exclude domain="sharedpref" path="quick_skip_songs_prefs.xml" />
+            <exclude domain="database" path="melody.db" />
+            <exclude domain="database" path="melody.db-journal" />
+            <exclude domain="database" path="melody.db-shm" />
+            <exclude domain="database" path="melody.db-wal" />
+            <exclude domain="file" path="datastore/playback_state.preferences_pb" />
+            <exclude domain="file" path="cache/album_art/" />
+        </full-backup-content>"""
+        write("app/src/main/res/xml/backup_rules.xml", backup)
+        write("app/src/main/res/xml/data_extraction_rules.xml", backup.replace("full-backup-content", "data-extraction-rules"))
+
+        val violations = verify()
+
+        assertTrue(
+            "missing playlist_resume exclude should be flagged: $violations",
+            violations.any { it.contains("missing privacy excludes") && it.contains("playlist_resume.preferences_pb") },
+        )
+    }
+
+    @Test
+    fun `player_settings datastore is no longer required to be excluded`() {
+        // m-14（评审 2026-11-20）：player_settings 用户偏好已纳入备份，不应再要求排除。
+        writeMinimalAppBuild()
+        val backup = """<full-backup-content>
+            <exclude domain="sharedpref" path="music_player_prefs.xml" />
+            <exclude domain="sharedpref" path="play_stats_prefs.xml" />
+            <exclude domain="sharedpref" path="quick_skip_songs_prefs.xml" />
+            <exclude domain="database" path="melody.db" />
+            <exclude domain="database" path="melody.db-journal" />
+            <exclude domain="database" path="melody.db-shm" />
+            <exclude domain="database" path="melody.db-wal" />
+            <exclude domain="file" path="datastore/playback_state.preferences_pb" />
+            <exclude domain="file" path="datastore/playlist_resume.preferences_pb" />
+            <exclude domain="file" path="cache/album_art/" />
+        </full-backup-content>"""
+        write("app/src/main/res/xml/backup_rules.xml", backup)
+        write("app/src/main/res/xml/data_extraction_rules.xml", backup.replace("full-backup-content", "data-extraction-rules"))
+
+        val violations = verify()
+
+        assertTrue(
+            "player_settings should not be required to be excluded: $violations",
+            violations.none { it.contains("missing privacy excludes") && it.contains("player_settings.preferences_pb") },
+        )
     }
 }

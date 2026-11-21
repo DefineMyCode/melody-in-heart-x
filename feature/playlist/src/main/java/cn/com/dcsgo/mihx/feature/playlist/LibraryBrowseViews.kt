@@ -104,7 +104,7 @@ fun LibrarySearchField(
         leadingIcon = {
             Icon(
                 imageVector = Icons.Default.Search,
-                contentDescription = null,
+                contentDescription = "搜索",
             )
         },
         trailingIcon = {

@@ -344,7 +344,7 @@ fun PlaylistItem(
                         onRename()
                     },
                     leadingIcon = {
-                        Icon(imageVector = Icons.Default.Create, contentDescription = null)
+                        Icon(imageVector = Icons.Default.Create, contentDescription = "重命名")
                     }
                 )
                 DropdownMenuItem(
@@ -356,7 +356,7 @@ fun PlaylistItem(
                     leadingIcon = {
                         Icon(
                             imageVector = Icons.Default.Delete,
-                            contentDescription = null,
+                            contentDescription = "删除歌单",
                             tint = MaterialTheme.colorScheme.error
                         )
                     }
@@ -522,7 +522,7 @@ fun PlaylistResumeBanner(
         ) {
             Icon(
                 imageVector = Icons.Default.PlayArrow,
-                contentDescription = null,
+                contentDescription = "继续播放",
                 modifier = Modifier.size(20.dp),
                 tint = MaterialTheme.colorScheme.primary,
             )

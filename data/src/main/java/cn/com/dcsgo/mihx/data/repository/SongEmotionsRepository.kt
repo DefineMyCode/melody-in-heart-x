@@ -109,10 +109,10 @@ userTags = parseTags(userTags),
     override fun observeAll(): Flow<Map<Int, SongEmotion>> =
         melodyDao.observeAllSongEmotions().map { rows ->
             val result = rows.associate { it.songId to it.liteToDomain() }
-            // 清理已删除歌曲的缓存条目，避免无限增长
-            if (parsedCurveCache.size > result.size) {
-                parsedCurveCache.keys.retainAll(result.keys)
-            }
+            // 清理已删除歌曲的缓存条目，避免无限增长。
+            // m-11（评审）：原实现仅当缓存条数严格大于当前行数时才清理，
+            // 「删一首增一首」（总数不变）时旧 id 条目不清除。改为无条件保留当前结果集的 key。
+            parsedCurveCache.keys.retainAll(result.keys)
 
             result
         }
@@ -129,17 +129,16 @@ userTags = parseTags(userTags),
         melodyDao.emotionCorrectionCount()
     }
 
-    override suspend fun upsert(emotion: SongEmotion) = withContext(Dispatchers.IO) {
-        // 评审 2026-10-27 · M-23：合并规则下沉到 SQL，消除 TOCTOU。
+    override suspend fun upsert(emotion: SongEmotion): Unit = withContext(Dispatchers.IO) {
+        // 评审 2026-10-27 · M-23 + M-10：合并规则下沉到 SQL，消除 TOCTOU。
         //
-        // 原实现是「读旧行 → 内存里合并 userTags → 整行 upsert」，读与写之间有窗口：
-        // 用户恰在那一瞬间保存校准，扫描随后用**陈旧的** userTags 覆写回去 ——
-        // 用户亲手标的词条**静默消失**。
-        //
-        // 现在一条原子 UPDATE 完成合并（新值不带词条就保留行上已有的），
-        // 无论用户的校准落在读之前还是读之后都不会被覆盖。
+        // 原实现是「原子 UPDATE 未命中 → @Upsert 整行 REPLACE 插入」，
+        // 后者在并发窗口下后写者用陈旧的 userTags 覆写先写者（TOCTOU）。
+        // 现在改为两步：先 `INSERT OR IGNORE` 建行（不存在则插入），
+        // 再 `UPDATE ... SET ... WHERE songId` 更新。userTags 的 CASE 表达式
+        // 保证不吞校准。不使用 `ON CONFLICT DO UPDATE`——JVM 测试 SQLite 不支持。
         val entity = emotion.toEntity()
-        val updated = melodyDao.updateSongEmotionPreservingUserTags(
+        melodyDao.insertSongEmotionIfAbsent(
             songId = entity.songId,
             valence = entity.valence,
             arousal = entity.arousal,
@@ -155,12 +154,24 @@ userTags = parseTags(userTags),
             userTags = entity.userTags,
             userTagsEdited = entity.userTagsEdited,
             vocalScore = entity.vocalScore,
-
         )
-        if (updated == 0) {
-            // 该 songId 尚无行 → 直接插入（此时没有用户校准可继承）
-            melodyDao.upsertSongEmotion(entity)
-        }
+        melodyDao.updateSongEmotionPreservingUserTags(
+            songId = entity.songId,
+            valence = entity.valence,
+            arousal = entity.arousal,
+            curveJson = entity.curveJson,
+            peakSec = entity.peakSec,
+            windowsAnalyzed = entity.windowsAnalyzed,
+            durationSec = entity.durationSec,
+            modelVersion = entity.modelVersion,
+            analyzedAt = entity.analyzedAt,
+            embeddingB64 = entity.embeddingB64,
+            userValence = entity.userValence,
+            userArousal = entity.userArousal,
+            userTags = entity.userTags,
+            userTagsEdited = entity.userTagsEdited,
+            vocalScore = entity.vocalScore,
+        )
     }
 
         /**

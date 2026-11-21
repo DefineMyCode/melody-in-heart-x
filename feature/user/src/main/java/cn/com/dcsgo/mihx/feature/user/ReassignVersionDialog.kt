@@ -198,7 +198,7 @@ fun ReassignVersionDialog(
                         )
                     },
                     leadingIcon = {
-                        Icon(imageVector = Icons.Default.Search, contentDescription = null)
+                        Icon(imageVector = Icons.Default.Search, contentDescription = "搜索")
                     },
                     trailingIcon = {
                         if (searchQuery.isNotEmpty()) {

@@ -236,7 +236,7 @@ fun EmotionLibraryView(
                                 leadingIcon = {
                                     Icon(
                                         imageVector = Icons.Default.Info,
-                                        contentDescription = null,
+                                        contentDescription = "歌曲信息",
                                         modifier = Modifier.size(18.dp),
                                     )
                                 },
@@ -247,7 +247,7 @@ fun EmotionLibraryView(
                                 leadingIcon = {
                                     Icon(
                                         painter = painterResource(R.drawable.list_alt_add_24),
-                                        contentDescription = null,
+                                        contentDescription = "添加到歌单",
                                         modifier = Modifier.size(18.dp),
                                     )
                                 },

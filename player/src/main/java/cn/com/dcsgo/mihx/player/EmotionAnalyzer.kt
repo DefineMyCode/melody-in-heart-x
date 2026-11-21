@@ -96,8 +96,9 @@ class EmotionAnalyzer @Inject constructor(
             val songEmb = DoubleArray(1024) // 整曲 embedding 累加器(kNN 锚点用)
 
             // M-7（评审 2026-10-15）：进度逐窗上报。原实现在整个推理循环结束后只调一次，
-            // 进度条 0→100 一跳等于没有。回调在持锁的推理线程内执行，调用方必须保持轻量
-            // （仅写进度状态）；批扫 Worker 的现有回调满足此约定。
+            // 进度条 0→100 一跳等于没有。
+            // m-11（评审）：回调在持锁的推理线程内执行会拖慢推理——若回调阻塞，整把锁被占。
+            // 改为先在锁内收集进度值，出锁后批量上报，调用方回调不再受锁约束。
             val totalWindows = (pcmData.size - WINDOW_SAMPLES) / HOP_SAMPLES + 1
             var s = 0
             var windowDone = 0
@@ -106,6 +107,8 @@ class EmotionAnalyzer @Inject constructor(
             // 人声类是现成输入 —— 零模型变更、零 APK 体积、零新授权。
             var vocalScoreSum = 0.0
             var vocalFrames = 0
+            // m-11：锁内收集的进度值，出锁后逐一上报
+            val progressUpdates = ArrayList<Float>()
             // 解码在锁外(纯 CPU, 无共享状态); 推理全程持锁: 周期/手动是两个不同
             // unique 任务, WorkManager 可并发跑两个 Worker, TFLite Interpreter
             // 非线程安全, 并发 invoke 会 native 崩溃 — 与 close() 同一把 lock 串行化.
@@ -147,10 +150,13 @@ class EmotionAnalyzer @Inject constructor(
                     val valence = calibrateValence(headOut[0][0])
                     series.add(valence to arousal)
                     windowDone++
-                    onProgress((windowDone.toFloat() / totalWindows).coerceIn(0f, 1f))
+                    // m-11：锁内仅收集，不回调
+                    progressUpdates.add((windowDone.toFloat() / totalWindows).coerceIn(0f, 1f))
                     s += HOP_SAMPLES
                 }
             }
+            // m-11：出锁后上报进度，回调阻塞不再影响推理
+            progressUpdates.forEach { onProgress(it) }
 
             var peak = 0
             // 能量峰值 = A(能量)正向峰值所在窗口
@@ -224,9 +230,23 @@ class EmotionAnalyzer @Inject constructor(
             return null to EmotionFailureReason.NO_AUDIO_TRACK
         }
         extractor.selectTrack(track)
-        val mime = format!!.getString(MediaFormat.KEY_MIME)!!
-        val srcSr = format.getInteger(MediaFormat.KEY_SAMPLE_RATE)
-        val srcCh = format.getInteger(MediaFormat.KEY_CHANNEL_COUNT)
+        // m-10（评审）：format 与 mime 改用安全访问，区分失败原因——
+        // format 为 null 说明轨道选择异常（NO_AUDIO_TRACK），mime 为 null 说明格式不可用（DECODE_UNSUPPORTED_FORMAT），
+        // 不再用 !! 让 NPE 被外层 catch 吞掉后统一标为 DECODE_UNSUPPORTED_FORMAT
+        val trackFormat = format
+        if (trackFormat == null) {
+            AppLog.warning(TAG, "no audio format after selectTrack uri=$uri", null)
+            extractor.release()
+            return null to EmotionFailureReason.NO_AUDIO_TRACK
+        }
+        val mime = trackFormat.getString(MediaFormat.KEY_MIME)
+        if (mime == null) {
+            AppLog.warning(TAG, "no mime in audio format uri=$uri", null)
+            extractor.release()
+            return null to EmotionFailureReason.DECODE_UNSUPPORTED_FORMAT
+        }
+        val srcSr = trackFormat.getInteger(MediaFormat.KEY_SAMPLE_RATE)
+        val srcCh = trackFormat.getInteger(MediaFormat.KEY_CHANNEL_COUNT)
         val deadline = System.currentTimeMillis() + MAX_DECODE_MS
 
         // 超长/内存预算熔断前置（2026-09-04 超长；2026-10-21 高采样率/大文件）：解码前就能拿到
@@ -234,7 +254,7 @@ class EmotionAnalyzer @Inject constructor(
         // 预算 → 采样率过高/文件过大（192kHz 下 20 分钟上限形同虚设，内存预算先到）。
         // durationUs <= 0(未知)时不拦，交给解码中截断 + OOM 兜底。
         val durationUs = try {
-            format.getLong(MediaFormat.KEY_DURATION) // key = "durationUs"
+            trackFormat.getLong(MediaFormat.KEY_DURATION) // key = "durationUs"
         } catch (e: Exception) {
             0L
         }
@@ -258,7 +278,7 @@ class EmotionAnalyzer @Inject constructor(
         // FFmpeg 优先(与播放链路同款解码器): 厂商软解组件在部分 ROM 上 native 崩溃/死循环,
         // 见 FfmpegPcmDecoder KDoc. 危险 mime(仅厂商软解可用)失败后禁止回退 MediaCodec.
         if (FfmpegPcmDecoder.handles(mime)) {
-            val res = ffmpegDecoder.decode(extractor, format, deadline)
+            val res = ffmpegDecoder.decode(extractor, trackFormat, deadline)
             if (res != null) {
                 try {
                     return resampleTo16k(res.pcm, res.sampleRate) to null
@@ -297,7 +317,7 @@ class EmotionAnalyzer @Inject constructor(
             return null to EmotionFailureReason.DECODE_UNSUPPORTED_FORMAT
         }
         return try {
-            codec.configure(format, null, null, 0)
+            codec.configure(trackFormat, null, null, 0)
             codec.start()
             val pcm = ShortAccum(maxCapacity = maxSamplesForSrc(srcSr, memoryBudgetBytes).toInt())
             val info = MediaCodec.BufferInfo()
@@ -311,7 +331,14 @@ class EmotionAnalyzer @Inject constructor(
                 if (!eosIn) {
                     val inIdx = codec.dequeueInputBuffer(10000)
                     if (inIdx >= 0) {
-                        val sampleSize = extractor.readSampleData(codec.getInputBuffer(inIdx)!!, 0)
+                        // m-10（评审）：getInputBuffer 返回 null 说明 codec 内部状态异常，
+                        // 显式判空返回而非 !! 让 NPE 被外层 catch 吞掉后统一标为 DECODE_UNSUPPORTED_FORMAT
+                        val inBuffer = codec.getInputBuffer(inIdx)
+                        if (inBuffer == null) {
+                            AppLog.warning(TAG, "getInputBuffer null for inIdx=$inIdx", null)
+                            return null to EmotionFailureReason.DECODE_UNSUPPORTED_FORMAT
+                        }
+                        val sampleSize = extractor.readSampleData(inBuffer, 0)
                         if (sampleSize < 0) {
                             codec.queueInputBuffer(
                                 inIdx, 0, 0, 0, MediaCodec.BUFFER_FLAG_END_OF_STREAM
@@ -326,34 +353,47 @@ class EmotionAnalyzer @Inject constructor(
                     }
                 }
                 val outIdx = codec.dequeueOutputBuffer(info, 10000)
-                if (outIdx >= 0) {
-                    if (info.flags and MediaCodec.BUFFER_FLAG_END_OF_STREAM != 0) eosOut = true
-                    val bb = codec.getOutputBuffer(outIdx)!!
-                    bb.position(info.offset)
-                    bb.limit(info.offset + info.size)
-                    bb.order(ByteOrder.LITTLE_ENDIAN)
-                    val total = info.size / 2 / srcCh
-                    for (k in 0 until total) {
-                        if (srcCh == 1) {
-                            pcm.add(bb.short)
-                        } else {
-                            var sum = 0
-                            for (c in 0 until srcCh) sum += bb.short
-                            pcm.add((sum / srcCh).toShort())
-                        }
-                        // 解码中截断熔断：ShortAccum 触顶即静默丢弃，据 truncated 判定是
-                        // 「超长」还是「内存超限」（高采样率/大文件）——2026-10-21 区分原因
-                        if (pcm.truncated) {
-                            val reason = truncationReason(srcSr, memoryBudgetBytes)
-                            AppLog.warning(
-                                TAG,
-                                "decode truncated @${srcSr}Hz (${pcm.size} samples) -> ${reason.name}",
-                                null,
-                            )
-                            return null to reason
-                        }
+                when {
+                    // m-16（评审）：INFO_OUTPUT_FORMAT_CHANGED（-2）表示输出格式已变化，
+                    // 显式读取 codec.getOutputFormat() 更新，而非按"无输出"静默继续循环
+                    outIdx == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED -> {
+                        codec.getOutputFormat()
                     }
-                    codec.releaseOutputBuffer(outIdx, false)
+                    outIdx >= 0 -> {
+                        if (info.flags and MediaCodec.BUFFER_FLAG_END_OF_STREAM != 0) eosOut = true
+                        // m-10（评审）：同输入缓冲区，显式判空返回
+                        val bb = codec.getOutputBuffer(outIdx)
+                        if (bb == null) {
+                            AppLog.warning(TAG, "getOutputBuffer null for outIdx=$outIdx", null)
+                            codec.releaseOutputBuffer(outIdx, false)
+                            return null to EmotionFailureReason.DECODE_UNSUPPORTED_FORMAT
+                        }
+                        bb.position(info.offset)
+                        bb.limit(info.offset + info.size)
+                        bb.order(ByteOrder.LITTLE_ENDIAN)
+                        val total = info.size / 2 / srcCh
+                        for (k in 0 until total) {
+                            if (srcCh == 1) {
+                                pcm.add(bb.short)
+                            } else {
+                                var sum = 0
+                                for (c in 0 until srcCh) sum += bb.short
+                                pcm.add((sum / srcCh).toShort())
+                            }
+                            // 解码中截断熔断：ShortAccum 触顶即静默丢弃，据 truncated 判定是
+                            // 「超长」还是「内存超限」（高采样率/大文件）——2026-10-21 区分原因
+                            if (pcm.truncated) {
+                                val reason = truncationReason(srcSr, memoryBudgetBytes)
+                                AppLog.warning(
+                                    TAG,
+                                    "decode truncated @${srcSr}Hz (${pcm.size} samples) -> ${reason.name}",
+                                    null,
+                                )
+                                return null to reason
+                            }
+                        }
+                        codec.releaseOutputBuffer(outIdx, false)
+                    }
                 }
             }
             codec.stop()

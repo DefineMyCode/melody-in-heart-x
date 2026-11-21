@@ -97,6 +97,15 @@ class PlaybackStateStore(
                 // 显式清空（用户清队列/结束播放）走 clearPlaybackState()，语义不受影响。
                 var wroteSomething = false
                 store.edit { preferences ->
+                    // m-15（评审）：空会话分支（queue 空且非无限播放）原仅写 CURRENT_SONG_ID /
+                    // PLAY_POSITION_MS，未处理 IS_INFINITE_PLAY / INFINITE_PLAYED_IDS / IS_EXPLORE_PLAY，
+                    // 残留的旧标记会让 restore 误判（如 allowEmpty=true、探索播放状态错误）。
+                    // 按语义显式清理：非无限播放置 false、清空已播 ID 集合、非探索播放置 false。
+                    // INFINITE_PLAYED_IDS 用 encodeIds(emptySet()) 显式写入空集而非 remove——
+                    // remove 会让 restore 回退到 legacy 读取旧值，显式写入空集才能阻断回退。
+                    preferences[PlaybackStateKeys.IS_INFINITE_PLAY] = false
+                    preferences[PlaybackStateKeys.INFINITE_PLAYED_IDS] = serializer.encodeIds(emptySet())
+                    preferences[PlaybackStateKeys.IS_EXPLORE_PLAY] = false
                     val existingQueueJson = preferences[PlaybackStateKeys.PLAY_QUEUE_JSON]
                     when {
                             existingQueueJson != null && playbackSongId != null -> {
@@ -187,10 +196,13 @@ class PlaybackStateStore(
     }
 
     private suspend fun writeCurrentPlaybackSnapshot(songId: Int, positionMs: Long) {
-        val existingQueueJson = currentPreferences()[PlaybackStateKeys.PLAY_QUEUE_JSON]
-            ?: legacyPrefs?.getString(KEY_PLAY_QUEUE_JSON, null)
-            ?: serializer.encodeQueue(PlayQueue(songs = emptyList(), currentIndex = -1))
+        // m-14（评审）：原实现先 currentPreferences() 读队列 JSON，再 store.edit 写入，
+        // 两次挂起读取之间状态可能变化（其他写入者改了队列 JSON）。
+        // 修复：把读取合并进 store.edit 闭包，读取与写入在同一原子事务内完成。
         store.edit { preferences ->
+            val existingQueueJson = preferences[PlaybackStateKeys.PLAY_QUEUE_JSON]
+                ?: legacyPrefs?.getString(KEY_PLAY_QUEUE_JSON, null)
+                ?: serializer.encodeQueue(PlayQueue(songs = emptyList(), currentIndex = -1))
             preferences[PlaybackStateKeys.PLAY_QUEUE_JSON] = existingQueueJson
             preferences[PlaybackStateKeys.CURRENT_SONG_ID] = songId
             preferences[PlaybackStateKeys.PLAY_POSITION_MS] = positionMs.coerceAtLeast(0L)

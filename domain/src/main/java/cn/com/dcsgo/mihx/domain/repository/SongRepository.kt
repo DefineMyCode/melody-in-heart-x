@@ -32,6 +32,12 @@ interface SongRepository {
     /** 查询持久化的专辑目录 */
     suspend fun loadLibraryAlbums(): List<AlbumEntry>
 
+    /**
+     * 更新歌曲的标题覆盖值（多版本分组关联/移出）。
+     *
+     * **仅更新内存态，持久化异步完成，不可假设返回时已落盘**。
+     * 实现委托给 `MusicRepository` 内存态操作，持久化通过异步通道完成。
+     */
     fun updateSongTitleOverride(songId: Int, titleOverride: String?): Boolean
 
     /**

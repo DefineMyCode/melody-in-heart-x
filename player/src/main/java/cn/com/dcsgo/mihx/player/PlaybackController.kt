@@ -46,9 +46,35 @@ class PlaybackController(
     private val serviceClass: Class<*>,
     private val callbacks: PlaybackControllerCallbacks,
 ) : PlaybackControllerPort {
+    /**
+     * M-1（评审）：连接/释放生命周期的互斥锁。
+     *
+     * [connect]、[release]、[runWhenConnected] 与 future 回调可能在不同线程并发执行，
+     * 共享的 [controllerFuture]、[pendingActions]、[controller] 等字段必须串行化访问，
+     * 否则重复 connect 会覆盖 future 造成监听器泄漏、release 与回调竞态导致已释放控制器被复活。
+     */
+    private val stateLock = Any()
+
     private var controllerFuture: com.google.common.util.concurrent.ListenableFuture<MediaController>? = null
+
+    /**
+     * M-1：future 上的监听器引用，[release] 据此移除监听器，防止回调在释放后仍被派发。
+     */
+    private var futureListener: Runnable? = null
+
+    /**
+     * M-1：释放标志。future 回调据此拒绝在控制器已释放后继续执行，避免"复活"已释放的控制器。
+     */
+    @Volatile
+    private var released = false
+
+    @Volatile
     private var controller: MediaController? = null
+
+    @Volatile
     private var lastSyncedQueueFingerprint: ControllerQueueFingerprint? = null
+
+    @Volatile
     private var lastCurrentMediaItemIndex: Int = C.INDEX_UNSET
 
     /**
@@ -56,6 +82,7 @@ class PlaybackController(
      * 收到服务端 onTimelineChanged 回执后清 false。为 true 期间本地 timeline 镜像可能过期，
      * [syncQueue] 的增量路径必须等回执到达后才能决策，否则 remove/add 的索引会错位下发。
      */
+    @Volatile
     private var pendingQueueMutation = false
 
     private val pendingActions = ArrayDeque<(MediaController) -> Unit>()
@@ -69,7 +96,14 @@ class PlaybackController(
 
         override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
             if (!playWhenReady && reason == Player.PLAY_WHEN_READY_CHANGE_REASON_END_OF_MEDIA_ITEM) {
-                callbacks.onMediaItemEnded(null, false)
+                val current = controller ?: return
+                // M-4：职责划分——切歌结算仅由 onMediaItemTransition 承担。
+                // REPEAT_MODE_ALL / REPEAT_MODE_ONE 下媒体项结束后必然触发 onMediaItemTransition
+                // （AUTO/REPEAT），此处若也上报会导致同一次结束被重复结算。
+                // 仅当队列真正耗尽（REPEAT_MODE_OFF 且无后续媒体项、不会发生过渡）时才在此上报。
+                if (current.repeatMode == Player.REPEAT_MODE_OFF && !current.hasNextMediaItem()) {
+                    callbacks.onMediaItemEnded(null, false)
+                }
             }
         }
 
@@ -170,26 +204,44 @@ class PlaybackController(
             ComponentName(context, serviceClass)
         )
         val future = MediaController.Builder(context, sessionToken).buildAsync()
-        controllerFuture = future
-        future.addListener(
-            {
-                try {
-                    val connectedController = future.get()
+        // M-1：future 回调引用。注意不要命名为 listener——会遮蔽类级别的 Player.Listener
+        val futureCallback = Runnable {
+            try {
+                val connectedController = future.get()
+                // M-1：在锁内检查释放标志并完成控制器挂载，与 release() 串行化，
+                // 防止 release 清空状态后回调又把 controller 重新"复活"
+                synchronized(stateLock) {
+                    if (released) {
+                        // 控制器已释放：主动清理本 future，避免残留
+                        runCatching { MediaController.releaseFuture(future) }
+                        return@Runnable
+                    }
                     controller = connectedController
                     connectedController.addListener(listener)
                     drainPendingActions(connectedController)
-                    onConnected(connectedController.toPlaybackSnapshot())
-                    AppLog.info(TAG, "MediaController connected")
-                } catch (e: ExecutionException) {
-                    AppLog.error(TAG, "MediaController connection failed", e.cause ?: e)
-                    abortPendingActions("播放服务连接失败")
-                } catch (e: Exception) {
-                    AppLog.error(TAG, "MediaController connection failed", e)
-                    abortPendingActions("播放服务连接失败")
                 }
-            },
-            ContextCompat.getMainExecutor(context)
-        )
+                onConnected(connectedController.toPlaybackSnapshot())
+                AppLog.info(TAG, "MediaController connected")
+            } catch (e: ExecutionException) {
+                AppLog.error(TAG, "MediaController connection failed", e.cause ?: e)
+                abortPendingActions("播放服务连接失败")
+            } catch (e: Exception) {
+                AppLog.error(TAG, "MediaController connection failed", e)
+                abortPendingActions("播放服务连接失败")
+            }
+        }
+        synchronized(stateLock) {
+            // M-1：重复 connect() 守卫——若已有 future，先断开旧 controller、
+            // 释放旧 future，避免旧 future 的监听器泄漏、双控制器并存
+            controller?.removeListener(listener)
+            controller = null
+            controllerFuture?.let { oldFuture ->
+                runCatching { MediaController.releaseFuture(oldFuture) }
+            }
+            controllerFuture = future
+            futureListener = futureCallback
+        }
+        future.addListener(futureCallback, ContextCompat.getMainExecutor(context))
     }
 
     fun controllerOrNull(): MediaController? = controller
@@ -225,21 +277,33 @@ class PlaybackController(
     }
 
     fun runWhenConnected(action: (MediaController) -> Unit): Boolean {
-        controller?.let {
-            action(it)
+        // 快路径：控制器已就绪，直接执行（action 内部的字段写入经 @Volatile 保证可见性）
+        val currentController = controller
+        if (currentController != null) {
+            action(currentController)
             return true
         }
-        if (pendingActions.size >= MAX_PENDING_ACTIONS) {
-            // 队列已满说明控制器长时间未就绪：丢弃最早的动作，保证队列有界。
-            pendingActions.removeFirst()
-            AppLog.warning(
-                TAG,
-                "Pending action queue overflow (max=$MAX_PENDING_ACTIONS), dropped the oldest action",
-            )
-            callbacks.onControllerUnavailable(1, "播放服务尚未就绪")
+        // 慢路径：未连接，入队待 drainPendingActions 消费。加锁保护 pendingActions 的
+        // 读改写，与 drainPendingActions（主线程回调）和 release（任意线程）串行化
+        synchronized(stateLock) {
+            // double-check：等待锁期间控制器可能已就绪
+            val latestController = controller
+            if (latestController != null) {
+                action(latestController)
+                return true
+            }
+            if (pendingActions.size >= MAX_PENDING_ACTIONS) {
+                // 队列已满说明控制器长时间未就绪：丢弃最早的动作，保证队列有界。
+                pendingActions.removeFirst()
+                AppLog.warning(
+                    TAG,
+                    "Pending action queue overflow (max=$MAX_PENDING_ACTIONS), dropped the oldest action",
+                )
+                callbacks.onControllerUnavailable(1, "播放服务尚未就绪")
+            }
+            pendingActions.addLast(action)
+            return false
         }
-        pendingActions.addLast(action)
-        return false
     }
 
     override fun pause() {
@@ -256,6 +320,8 @@ class PlaybackController(
             pendingQueueMutation = true
             controller.stop()
             controller.clearMediaItems()
+            // m-8：清空队列后重置索引，避免后续 isMediaItemWrap 用旧索引误判回绕
+            lastCurrentMediaItemIndex = C.INDEX_UNSET
         }
     }
 
@@ -371,7 +437,9 @@ class PlaybackController(
 
     override fun playSingle(song: Song): Boolean {
         val mediaItem = SongMediaItemMapper.toMediaItem(song) ?: return false
-        runWhenConnected { controller ->
+        // M-2：透传 runWhenConnected 的执行结果。控制器未连接时动作仅入队未执行，
+        // 返回 false 让上层（PlaybackSessionCoordinator）不启动时长跟踪，避免错误计时
+        return runWhenConnected { controller ->
             lastSyncedQueueFingerprint = null
             pendingQueueMutation = true
             controller.repeatMode = Player.REPEAT_MODE_OFF
@@ -379,7 +447,6 @@ class PlaybackController(
             controller.prepare()
             controller.play()
         }
-        return true
     }
 
     override fun syncQueue(plan: ControllerQueuePlan) {
@@ -469,17 +536,32 @@ class PlaybackController(
     }
 
     override fun release() {
-        controller?.removeListener(listener)
-        controller = null
-        pendingActions.clear()
-        controllerFuture?.let { MediaController.releaseFuture(it) }
-        controllerFuture = null
+        synchronized(stateLock) {
+            released = true
+            controller?.removeListener(listener)
+            controller = null
+            pendingActions.clear()
+            // M-1：releaseFuture 取消 future，配合 released 标志阻断回调"复活"
+            controllerFuture?.let { future ->
+                runCatching { MediaController.releaseFuture(future) }
+            }
+            controllerFuture = null
+            futureListener = null
+            lastSyncedQueueFingerprint = null
+            lastCurrentMediaItemIndex = C.INDEX_UNSET
+            pendingQueueMutation = false
+        }
     }
 
     private fun drainPendingActions(controller: MediaController) {
-        while (pendingActions.isNotEmpty()) {
+        // M-1：在锁内取出动作、锁外执行——避免 action 内的 MediaController 调用阻塞持锁，
+        // 同时保证与 runWhenConnected 的 addLast / release 的 clear 串行化
+        while (true) {
+            val action = synchronized(stateLock) {
+                pendingActions.removeFirstOrNull()
+            } ?: return
             try {
-                pendingActions.removeFirst().invoke(controller)
+                action.invoke(controller)
             } catch (e: Exception) {
                 AppLog.error(TAG, "Pending MediaController action failed", e)
             }
@@ -493,8 +575,12 @@ class PlaybackController(
      * 产生用户早已放弃的播放/切歌行为，因此这里选择丢弃并显式告知上层。
      */
     private fun abortPendingActions(reason: String) {
-        val dropped = pendingActions.size
-        pendingActions.clear()
+        // M-1：在锁内清空 pendingActions，与 runWhenConnected / drainPendingActions 串行化
+        val dropped = synchronized(stateLock) {
+            val count = pendingActions.size
+            pendingActions.clear()
+            count
+        }
         if (dropped > 0) {
             AppLog.warning(TAG, "Dropped $dropped pending MediaController action(s): $reason")
         }

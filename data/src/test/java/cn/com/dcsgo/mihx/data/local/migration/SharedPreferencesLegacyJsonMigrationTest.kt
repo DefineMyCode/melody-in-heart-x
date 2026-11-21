@@ -446,6 +446,13 @@ class SharedPreferencesLegacyJsonMigrationTest {
 
         ): Int = 0
 
+        override suspend fun insertSongEmotionIfAbsent(
+            songId: Int, valence: Float, arousal: Float, curveJson: String, peakSec: Float,
+            windowsAnalyzed: Int, durationSec: Float, modelVersion: String, analyzedAt: Long,
+            embeddingB64: String?, userValence: Float?, userArousal: Float?,
+            userTags: String?, userTagsEdited: Boolean?, vocalScore: Float?,
+        ) = Unit
+
         override suspend fun deleteSongEmotion(songId: Int) {
             songEmotions.remove(songId)
         }
@@ -498,5 +505,39 @@ class SharedPreferencesLegacyJsonMigrationTest {
                 add(item)
             }
         }
+    }
+
+    /** m-10（评审）：迁移成功后清理不再使用的旧 SharedPreferences。 */
+    @Test
+    fun migrationDeletesObsoleteSharedPreferences() = runBlocking {
+        val prefs = fakePrefs(
+            prefsByName = mapOf(
+                LEGACY_PREFS_NAME to FakeSharedPreferences(
+                    mapOf(
+                        KEY_SONGS_JSON to """[{"id": 1, "title": "Song", "artist": "Artist"}]""",
+                        KEY_PLAYLISTS_JSON to """[]""",
+                    )
+                ),
+                PLAY_STATS_PREFS_NAME to FakeSharedPreferences(mapOf("play_count_1" to 1)),
+                QUICK_SKIP_PREFS_NAME to FakeSharedPreferences(
+                    mapOf(KEY_QUICK_SKIP_SONG_IDS_JSON to "[1]")
+                ),
+            )
+        )
+        val dao = FakeMelodyDao()
+        val deletedPrefs = mutableSetOf<String>()
+
+        SharedPreferencesLegacyJsonMigration(
+            dao = dao,
+            clockMs = { 1L },
+            sharedPreferencesProvider = prefs,
+            deleteSharedPreferences = { name ->
+                deletedPrefs += name
+                true
+            },
+        ).migrateIfNeeded()
+
+        check(PLAY_STATS_PREFS_NAME in deletedPrefs) { "迁移后应删除 play_stats_prefs" }
+        check(QUICK_SKIP_PREFS_NAME in deletedPrefs) { "迁移后应删除 quick_skip_songs_prefs" }
     }
 }

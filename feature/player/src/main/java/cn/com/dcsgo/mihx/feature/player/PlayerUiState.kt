@@ -105,7 +105,14 @@ data class PlayerUiState(
     val isSleepTimerActive: Boolean = false,
     /** 定时关闭结束时间戳（epoch 毫秒） */
     val sleepTimerEndAtMs: Long = 0L,
-    /** 定时关闭剩余毫秒（倒计时展示用） */
+    /**
+     * 定时关闭剩余毫秒（倒计时展示用）。
+     *
+     * 评审 m-9：本字段是**离散事件快照**——倒计时每秒 tick 只写
+     * `PlayerRuntime.sleepTimerRemainingMs` 窄流，不更新此字段。
+     * 因此 tick 期间本字段不反映实时剩余值（恒为最近一次离散事件的值），
+     * **实时剩余值见 `PlayerRuntime.sleepTimerRemainingMs` 窄流**。
+     */
     val sleepTimerRemainingMs: Long = 0L,
     /** 是否「播完最后一曲」再暂停 */
     val sleepTimerPlayLastSong: Boolean = false,

@@ -447,7 +447,7 @@ private fun ThemeVariantCard(
         if (selected) {
             Icon(
                 imageVector = Icons.Filled.Check,
-                contentDescription = null,
+                contentDescription = "已选中",
                 tint = MaterialTheme.colorScheme.primary,
                 modifier = Modifier
                     .padding(top = 4.dp)

@@ -27,6 +27,7 @@ import cn.com.dcsgo.mihx.domain.repository.AlbumArtRepository
 import cn.com.dcsgo.mihx.domain.repository.PlayStatsRepository
 import cn.com.dcsgo.mihx.domain.repository.PlayerSettingsRepository
 import cn.com.dcsgo.mihx.domain.repository.SongRepository
+import kotlin.random.Random
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.Flow
@@ -59,6 +60,7 @@ class PlayerRuntimeFactory @Inject constructor(
     private val timeSlotConfigRepository: cn.com.dcsgo.mihx.domain.repository.TimeSlotConfigRepository,
     private val songEmotionRepository: cn.com.dcsgo.mihx.domain.repository.SongEmotionRepository,
     private val wordPreferenceRepository: cn.com.dcsgo.mihx.domain.repository.WordPreferenceRepository,
+    private val random: Random,
 ) {
     internal fun create(scope: CoroutineScope): PlayerRuntime {
         return PlayerRuntime(
@@ -77,6 +79,7 @@ class PlayerRuntimeFactory @Inject constructor(
             timeSlotConfigRepository = timeSlotConfigRepository,
             songEmotionRepository = songEmotionRepository,
             wordPreferenceRepository = wordPreferenceRepository,
+            random = random,
         )
     }
 }
@@ -97,6 +100,7 @@ internal class PlayerRuntime(
     private val timeSlotConfigRepository: cn.com.dcsgo.mihx.domain.repository.TimeSlotConfigRepository,
     private val songEmotionRepository: cn.com.dcsgo.mihx.domain.repository.SongEmotionRepository,
     private val wordPreferenceRepository: cn.com.dcsgo.mihx.domain.repository.WordPreferenceRepository,
+    private val random: Random,
 ) {
     private val mediaControllerGraph: PlayerMediaControllerGraph by lazy {
         PlayerMediaControllerGraph(
@@ -120,6 +124,15 @@ internal class PlayerRuntime(
     private val playOrderBuilder get() = queueGraph.playOrderBuilder
     private val controllerStateSynchronizer = ControllerPlaybackStateSynchronizer()
 
+    /**
+     * 当前正在播放的歌曲 id（用于 detect 切歌、探索播放结算）。
+     *
+     * 评审 M-6：由 `controllerStateFacade.syncControllerPlaybackState`（经 onPlaybackSnapshot
+     * 回调，可能来自 Media3 binder 线程）写入，由 `mediaEventFacade.handleMediaItemEnded`
+     * （经 onMediaItemEnded 回调，同样可能来自 binder 线程）读取和清空，
+     * 跨线程可见性由 [Volatile] 保证。
+     */
+    @Volatile
     private var trackedSongId: Int? = null
 
     private val playDurationTracker = playbackDurationMonitorFactory.create()
@@ -664,6 +677,9 @@ internal class PlayerRuntime(
      * 关联播放：清空播放队列，仅保留当前歌曲，再把其关联的专辑歌曲 + 关联歌手的所有歌曲，
      * 去重后随机追加到队列。不改变无限随机播放状态。
      *
+     * 评审 m-11：shuffle 使用注入的 [Random] 实例而非 `Random.Default`，
+     * 使随机顺序可注入、可测试。
+     *
      * @return 实际追加的关联歌曲数量
      */
     fun playRelatedSongs(currentSong: Song): Int {
@@ -676,7 +692,7 @@ internal class PlayerRuntime(
                 sameAlbum || sharedArtist
             }
             .distinctBy { it.id }
-            .shuffled()
+            .shuffled(random)
 
         setPlayQueue(
             songs = listOf(currentSong) + related,
@@ -1045,6 +1061,9 @@ internal class PlayerRuntime(
 
     fun onCleared() {
         lifecycleFacade.onCleared()
+        // 评审 M-5：释放持久化图——关闭写入队列、排空已入队命令后取消内部 scope，
+        // 避免 ViewModel 每次重建泄漏一个 SupervisorJob + 调度器。
+        persistenceGraph.release()
     }
 
     private fun loadInitialData(afterInitialSnapshot: () -> Unit) {
@@ -1072,6 +1091,16 @@ internal class PlayerRuntime(
         persistenceGraph.savePlaybackStateAsync()
     }
 
+    /**
+     * 保存播放状态到持久层。
+     *
+     * 评审 m-10：方法实际通过 [PlayerPersistenceGraph.savePlaybackState] 将写入
+     * **排队**到 Channel，由后台消费者协程异步落盘——调用返回时不保证已完成写入。
+     * 名称保留 `savePlaybackState` 是为了与 [PlayerPersistenceGraph] 的接口命名一致，
+     * 但调用方不应假设同步完成。
+     *
+     * @param positionMs 播放位置（毫秒），默认取当前播放位置
+     */
     private fun savePlaybackState(positionMs: Long = playbackBridgeFacade.currentPlaybackPositionMs()) {
         persistenceGraph.savePlaybackState(positionMs)
     }

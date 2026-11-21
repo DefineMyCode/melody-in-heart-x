@@ -36,7 +36,7 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         // 应用仅中文界面，裁剪依赖库翻译资源，显著缩小 resources.arsc
-        resConfigs("zh", "en")
+        resConfigs("zh")
     }
 
     signingConfigs {

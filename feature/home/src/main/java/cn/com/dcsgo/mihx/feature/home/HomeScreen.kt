@@ -773,7 +773,7 @@ private fun SongInfoSection(
                     leadingIcon = {
                         Icon(
                             imageVector = Icons.Default.Info,
-                            contentDescription = null,
+                            contentDescription = "歌曲信息",
                             modifier = Modifier.size(18.dp),
                         )
                     },
@@ -784,7 +784,7 @@ private fun SongInfoSection(
                     leadingIcon = {
                         Icon(
                             painter = painterResource(id = R.drawable.list_alt_add_24),
-                            contentDescription = null,
+                            contentDescription = "添加到歌单",
                             modifier = Modifier.size(18.dp),
                         )
                     },
@@ -796,7 +796,7 @@ private fun SongInfoSection(
                     leadingIcon = {
                         Icon(
                             imageVector = Icons.Default.Delete,
-                            contentDescription = null,
+                            contentDescription = "删除",
                             modifier = Modifier.size(18.dp),
                             tint = MaterialTheme.colorScheme.error,
                         )

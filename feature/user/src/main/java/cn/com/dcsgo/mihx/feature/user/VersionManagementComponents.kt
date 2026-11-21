@@ -517,7 +517,7 @@ fun VersionItemRow(
                         leadingIcon = {
                             Icon(
                                 imageVector = Icons.Default.Info,
-                                contentDescription = null,
+                                contentDescription = "查看歌曲详情",
                                 modifier = Modifier.size(18.dp)
                             )
                         }
@@ -534,7 +534,7 @@ fun VersionItemRow(
                         leadingIcon = {
                             Icon(
                                 painter = painterResource(R.drawable.content_copy_24),
-                                contentDescription = null,
+                                contentDescription = "复制歌曲名",
                                 modifier = Modifier.size(18.dp)
                             )
                         }
@@ -550,7 +550,7 @@ fun VersionItemRow(
                         leadingIcon = {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.CallSplit,
-                                contentDescription = null,
+                                contentDescription = "移出当前分组",
                                 modifier = Modifier.size(18.dp)
                             )
                         }
@@ -566,7 +566,7 @@ fun VersionItemRow(
                         leadingIcon = {
                             Icon(
                                 painter = painterResource(R.drawable.swap_vert_24),
-                                contentDescription = null,
+                                contentDescription = "关联到其他歌曲",
                                 modifier = Modifier.size(18.dp)
                             )
                         }
@@ -589,7 +589,7 @@ fun VersionItemRow(
                         leadingIcon = {
                             Icon(
                                 imageVector = Icons.Default.Delete,
-                                contentDescription = null,
+                                contentDescription = "删除此版本",
                                 modifier = Modifier.size(18.dp),
                                 tint = MaterialTheme.colorScheme.error
                             )

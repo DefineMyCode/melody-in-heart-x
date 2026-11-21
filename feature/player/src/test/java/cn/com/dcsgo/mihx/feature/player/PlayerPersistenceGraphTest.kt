@@ -171,6 +171,41 @@ class PlayerPersistenceGraphTest {
         assertTrue(logs.any { it.startsWith("restore read: no snapshot to restore") })
     }
 
+    @Test
+    fun releaseStopsFurtherPersistCommands() = runBlocking {
+        val allSongs = songs(1, 2, 3)
+        state = state.copy(songs = allSongs, playQueue = PlayQueue().setQueue(allSongs, startIndex = 0))
+        createGraph()
+
+        // 首次保存：落盘 100ms
+        graph.savePlaybackState(positionMs = 100L)
+        val restoredBefore = store.restore(allSongs)
+        assertEquals(100L, restoredBefore?.positionMs)
+
+        // 评审 M-5：release 关闭通道、排空消费者、取消 scope
+        graph.release()
+
+        // release 后再保存：命令被丢弃，不落盘——通道已关闭
+        graph.savePlaybackState(positionMs = 200L)
+        val restoredAfter = store.restore(allSongs)
+        assertEquals(100L, restoredAfter?.positionMs)
+    }
+
+    @Test
+    fun releaseIsIdempotent() = runBlocking {
+        val allSongs = songs(1, 2, 3)
+        state = state.copy(songs = allSongs, playQueue = PlayQueue().setQueue(allSongs, startIndex = 0))
+        createGraph()
+
+        graph.savePlaybackState(positionMs = 50L)
+        graph.release()
+        // 重复调用不应抛异常或丢失已落盘数据
+        graph.release()
+
+        val restored = store.restore(allSongs)
+        assertEquals(50L, restored?.positionMs)
+    }
+
     private fun songs(vararg ids: Int): List<Song> = ids.map { id ->
         Song(
             id = id,

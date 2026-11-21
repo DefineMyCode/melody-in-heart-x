@@ -202,6 +202,53 @@ class PlaybackStateStoreTest {
         assertEquals(60_000L, restored?.positionMs)
     }
 
+    /**
+     * m-15（评审）回归测试：空会话分支（queue 空且非无限播放）必须显式清理
+     * IS_INFINITE_PLAY / INFINITE_PLAYED_IDS / IS_EXPLORE_PLAY，
+     * 否则残留的旧标记会让 restore 误判（如 allowEmpty=true、探索播放状态错误）。
+     */
+    @Test
+    fun emptySessionSaveClearsInfinitePlayAndExplorePlayFlags() = runStoreTest { store, _ ->
+        // 先写入带无限播放 + 探索播放 + 已播 ID 的快照
+        store.save(
+            queue = PlayQueue().setQueue(songs(1, 2), startIndex = 0),
+            positionMs = 100L,
+            isInfinitePlay = true,
+            infinitePlayedSongIds = setOf(1, 2),
+            isExplorePlay = true,
+        )
+
+        // 空会话保存（非无限播放、无 currentSongId）——应清理三个标记
+        store.save(PlayQueue(), positionMs = 200L)
+
+        val restored = store.restore(songs(1, 2))
+        // 空会话不写队列 JSON，已有快照被保留，但三个标记必须被清理
+        assertEquals("空会话保存后 IS_INFINITE_PLAY 应为 false", false, restored?.isInfinitePlay)
+        assertEquals("空会话保存后 INFINITE_PLAYED_IDS 应清空", emptySet<Int>(), restored?.infinitePlayedSongIds)
+        assertEquals("空会话保存后 IS_EXPLORE_PLAY 应为 false", false, restored?.isExplorePlay)
+    }
+
+    @Test
+    fun emptySessionSaveWithCurrentSongClearsInfinitePlayAndExplorePlayFlags() = runStoreTest { store, _ ->
+        store.save(
+            queue = PlayQueue().setQueue(songs(1, 2), startIndex = 0),
+            positionMs = 100L,
+            isInfinitePlay = true,
+            infinitePlayedSongIds = setOf(1),
+            isExplorePlay = true,
+        )
+
+        // 带 currentSongId 的空会话：保留队列，但同样清理三个标记
+        store.save(PlayQueue(), positionMs = 5_000L, currentSongId = 2)
+
+        val restored = store.restore(songs(1, 2))
+        assertEquals(listOf(1, 2), restored?.queue?.songs?.map { it.id })
+        assertEquals(2, restored?.queue?.currentSong?.id)
+        assertEquals("带 currentSongId 的空会话同样应清理 IS_INFINITE_PLAY", false, restored?.isInfinitePlay)
+        assertEquals("带 currentSongId 的空会话同样应清理 INFINITE_PLAYED_IDS", emptySet<Int>(), restored?.infinitePlayedSongIds)
+        assertEquals("带 currentSongId 的空会话同样应清理 IS_EXPLORE_PLAY", false, restored?.isExplorePlay)
+    }
+
     @Test
     fun restoreFallsBackToLegacyPrefsAndNextSaveClearsLegacyState() = runBlocking {
         val legacyPrefs = FakeSharedPreferences(

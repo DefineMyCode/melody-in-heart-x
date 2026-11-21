@@ -285,11 +285,13 @@ interface MelodyDao {
      * 调用读到同一基数、后写覆盖先写 → **丢一次计数**，而该计数驱动
      * 「累计 2 次自动加入秒切列表」的规则，丢计数会推迟自动加入。
      *
-     * 实现用「幂等建行 + 原子自增」两步（而不是 `INSERT ... ON CONFLICT DO UPDATE`）：
-     * 后者要 SQLite ≥ 3.24（UPSERT），而部分 JVM 测试环境的 SQLite 还不支持；
-     * 两步写法在任何 SQLite 版本上都能跑，且同样无 lost update ——
-     * `INSERT OR IGNORE` 保证行存在（已存在则忽略），`UPDATE ... SET count = count + 1`
-     * 是语句级原子。调用方必须**先 ensure 再 increment**。
+     * 实现用「幂等建行 + 原子自增」两步（`INSERT OR IGNORE` + `UPDATE ... SET count = count + 1`）：
+     * 两条语句各自原子（`INSERT OR IGNORE` 保证行存在，`UPDATE ... = count + 1` 是语句级原子），
+     * 任何 SQLite 版本上都能跑，无 lost update。调用方必须**先 ensure 再 increment**。
+     *
+     * 注：同 DAO 的 `incrementPlayCount` 等已直接使用 `INSERT ... ON CONFLICT DO UPDATE`
+     * （UPSERT，需 SQLite ≥ 3.24），且 [AtomicIncrementRoomTest] 以真实 Room 内存库验证通过，
+     * 说明测试环境支持 UPSERT。此处两步写法与直接 UPSERT 等价原子，保留作为另一种实现风格。
      */
     @Query(
         """
@@ -506,7 +508,8 @@ interface MelodyDao {
             "UNION ALL SELECT MAX(songId) AS id FROM playback_events " +
             "UNION ALL SELECT MAX(songId) AS id FROM quick_skip_songs " +
             "UNION ALL SELECT MAX(songId) AS id FROM quick_skip_short_play_counts " +
-            "UNION ALL SELECT MAX(songId) AS id FROM song_emotions" +
+            "UNION ALL SELECT MAX(songId) AS id FROM song_emotions " +
+            "UNION ALL SELECT MAX(songId) AS id FROM song_group_overrides" +
             ")",
     )
     suspend fun maxKnownSongId(): Int?
@@ -618,6 +621,48 @@ interface MelodyDao {
         vocalScore: Float?,
 
     ): Int
+
+    /**
+     * 插入情绪行（若已存在则忽略），**保留已有的用户校准**（评审 2026-10-27 · M-10）。
+     *
+     * 与 [updateSongEmotionPreservingUserTags] 配合两步完成原子 UPSERT：
+     * 先 `INSERT OR IGNORE` 建行（不存在则插入），再 `UPDATE ... SET ... WHERE songId` 更新。
+     * 合并规则由 [updateSongEmotionPreservingUserTags] 的 CASE 表达式保证：
+     * 新值带词条 → 用新值（用户主动标记）；新值不带词条 → 保留行上已有的词条（重扫不吞校准）。
+     *
+     * 不使用 `INSERT ... ON CONFLICT DO UPDATE`：JVM 测试环境的 SQLite 影子实现不支持该语法
+     * （实测 `near "ON": syntax error`），两步写法在任何 SQLite 版本上都能跑。
+     */
+    @Query(
+        """
+        INSERT OR IGNORE INTO song_emotions (
+            songId, valence, arousal, curveJson, peakSec, windowsAnalyzed, durationSec,
+            modelVersion, analyzedAt, embeddingB64, userValence, userArousal,
+            userTags, userTagsEdited, vocalScore
+        ) VALUES (
+            :songId, :valence, :arousal, :curveJson, :peakSec, :windowsAnalyzed, :durationSec,
+            :modelVersion, :analyzedAt, :embeddingB64, :userValence, :userArousal,
+            :userTags, :userTagsEdited, :vocalScore
+        )
+        """
+    )
+    suspend fun insertSongEmotionIfAbsent(
+        songId: Int,
+        valence: Float,
+        arousal: Float,
+        curveJson: String,
+        peakSec: Float,
+        windowsAnalyzed: Int,
+        durationSec: Float,
+        modelVersion: String,
+        analyzedAt: Long,
+        embeddingB64: String?,
+        userValence: Float?,
+        userArousal: Float?,
+        userTags: String?,
+        userTagsEdited: Boolean?,
+        vocalScore: Float?,
+    )
 
     /**
      * 用户校准写入：**只写词条**。

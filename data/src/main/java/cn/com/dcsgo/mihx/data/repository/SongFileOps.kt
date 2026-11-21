@@ -44,9 +44,9 @@ internal object SongFileOps {
                     0L
                 }
                 // 指纹存 Room SongEntity 的 size + lastModified 列; 两者都为 null(旧数据未记录)视为未变化,
-                // 避免 Quick 首跑就对全库重提取
+                // 避免 Quick 首跑就对全库重提取。编码分隔符与 RoomMusicLibraryDataSource 保持一致（'/'）
                 val stored = song.fileFingerprint
-                stored == null || stored != "$size:$mtime"
+                stored == null || stored != "$size/$mtime"
             } ?: true
         } catch (e: Exception) {
             AppLog.debug(TAG, "fingerprint: ${song.id} -> ${e.javaClass.simpleName}: ${e.message}")

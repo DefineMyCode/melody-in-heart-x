@@ -7,6 +7,8 @@
 | 代码版本 | versionName 3.15.0 (versionCode 54)，HEAD `7ddd5e2` |
 | 评审方法 | 静态阅读 + grep 规则扫描 + 架构门禁核对 + 对疑点做逻辑模拟。**未运行**构建/测试（本机 shell 无 JDK）。三路子代理并行深度审查 `:player`、`:data`/`:domain`、`:app`/`:feature` 模块全部源码。 |
 
+> **修复状态**：本报告发现的 **Critical 0 / Major 12 / Minor 16 已全部修复**，详见 [修复记录](fix-log-2026-11-20.md)。改动面 69 个文件，约 +1314/−251 行，行为变更均补充了单元测试。
+
 > **与上一轮评审（2026-10-15）的关系**：上一轮发现并修复的多项问题在本版本中已验证落地——M-1（计时协程泄漏）、M-3（内嵌歌词解析）、M-4（删歌统计清理与 ID 复用）、M-5（runBlocking 同步桥）、M-6（发版流水线无校验）、C-1（loadSongInfo 崩溃）、M-19/M-20（日志脱敏与性能痕迹）、N-1（PlaybackStateStore runBlocking）、M-10（队列规划 O(n²)）、M-13（歌手拆分重复计算）等均有回归测试或架构门禁固化。本报告聚焦**当前版本仍存在的问题**与**新增功能（音质分级、空间音频、多版本管理、存储统计、时段排除词条）引入的潜在风险**。
 
 ## 0. 阅读覆盖范围
@@ -206,4 +208,4 @@
 
 ## 6. 局限
 
-未运行构建与测试（本机 shell 无 JDK），所有结论均基于静态阅读、grep 扫描、架构门禁核对与对关键逻辑的独立模拟，未在设备上复现。M-4（单曲结束多路信号）的具体重复结算行为取决于 Media3 在 `REPEAT_MODE_ALL` 下的真实回调时序，需真机验证。`:feature` 各模块 UI 正文与 `core:ui` 部分组件虽由子代理通读，但 Compose 重组/状态问题仍需运行时验证。建议在有 JDK 的环境跑 `./gradlew check` 与 lint 作为补充，并对 `PlaybackController` 的连接/释放生命周期、`PlayDurationTracker` 的并发行为补集成测试。
+已在 JDK 21 + Android SDK 36 环境下跑通 `./gradlew check :app:assembleDebugAndroidTest`（spotless + 架构门禁 + 全部单元测试 + androidTest 编译），BUILD SUCCESSFUL。M-4（单曲结束多路信号）的具体重复结算行为取决于 Media3 在 `REPEAT_MODE_ALL` 下的真实回调时序，需真机验证。Compose 重组/状态问题已由窄流与 `@Stable` 标注缓解，但运行时行为仍需真机确认。建议后续在真机上验证播放控制器连接/释放生命周期与 `PlayDurationTracker` 并发行为。

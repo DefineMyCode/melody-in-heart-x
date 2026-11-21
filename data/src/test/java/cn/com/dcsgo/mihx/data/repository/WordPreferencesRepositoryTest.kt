@@ -278,6 +278,12 @@ class WordPreferencesRepositoryTest {
             userTags: String?, userTagsEdited: Boolean?, vocalScore: Float?,
 
         ): Int = 0
+        override suspend fun insertSongEmotionIfAbsent(
+            songId: Int, valence: Float, arousal: Float, curveJson: String, peakSec: Float,
+            windowsAnalyzed: Int, durationSec: Float, modelVersion: String, analyzedAt: Long,
+            embeddingB64: String?, userValence: Float?, userArousal: Float?,
+            userTags: String?, userTagsEdited: Boolean?, vocalScore: Float?,
+        ) = Unit
         override suspend fun updateSongEmotionCorrection(
             songId: Int, tags: String, edited: Boolean?
         ): Int = 0

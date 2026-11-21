@@ -74,6 +74,42 @@ class PlayDurationTrackerTest {
         }
         assertEquals(1, stats.rawIncrements[7])
     }
+
+    /**
+     * M-3（评审）回归测试：release() 必须取消 scope，终止所有后台协程。
+     *
+     * 旧实现 release() 只调 stopPlayback()（cancel trackingJob），scope 仍存活——
+     * 之后任何延迟调度的协程或新启动的 startPlayback 的协程都会泄漏。
+     * 修复后 scope.cancel() 使后续 launch 无法真正执行，activeTrackingLoops 保持 0。
+     */
+    @Test
+    fun releaseCancelsScopeAndNoNewTrackingLoopsStart() = runBlocking {
+        val tracker = PlayDurationTracker(FakePlayStatsRepository(), FakeQuickSkipRepository(), updateIntervalMs = 10)
+
+        tracker.startPlayback(songId = 1, durationMs = 60_000, initialPlayedMs = 0)
+        // 确认计时循环已启动
+        withTimeout(2_000) {
+            while (tracker.activeTrackingLoops.get() == 0) delay(10)
+        }
+        assertEquals(1, tracker.activeTrackingLoops.get())
+
+        tracker.release()
+
+        // release 后所有计时循环退出
+        withTimeout(2_000) {
+            while (tracker.activeTrackingLoops.get() > 0) delay(10)
+        }
+        assertEquals(0, tracker.activeTrackingLoops.get())
+
+        // scope 已取消：再次 startPlayback 不得启动新的计时循环
+        tracker.startPlayback(songId = 2, durationMs = 60_000, initialPlayedMs = 0)
+        delay(100)
+        assertEquals(
+            "release 后 scope 已取消，startPlayback 不应启动计时循环",
+            0,
+            tracker.activeTrackingLoops.get(),
+        )
+    }
 }
 
 /** 只统计调用、不落盘的假仓库（计时逻辑测试不依赖存储） */

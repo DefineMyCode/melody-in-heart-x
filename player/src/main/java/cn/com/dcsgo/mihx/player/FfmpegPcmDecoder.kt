@@ -2,6 +2,7 @@ package cn.com.dcsgo.mihx.player
 
 import android.media.MediaExtractor
 import android.media.MediaFormat
+import android.os.Looper
 import androidx.annotation.OptIn
 import androidx.media3.common.C
 import androidx.media3.common.Format
@@ -46,6 +47,10 @@ class FfmpegPcmDecoder @Inject constructor() {
     /**
      * FFmpeg 解码 extractor 当前选中音轨.
      *
+     * **必须仅在后台线程调用**：解码循环在无输出时执行 [Thread.sleep] 轮询，
+     * 阻塞当前线程直到产出或超时。m-9（评审）：在主线程调用会 ANR，因此加
+     * [require] 断言前置拦截，违反契约直接抛 [IllegalStateException]。
+     *
      * 直驱 media3 FFmpeg 扩展的 package-private 解码器与 Format.Builder,
      * 属 UnstableApi 面(经反射隔离在 [FfmpegLibraryProbe]);lint 的
      * UnsafeOptInUsageError 在此处显式 opt-in 收敛(评审 2026-09-03 持续建议:
@@ -54,9 +59,16 @@ class FfmpegPcmDecoder @Inject constructor() {
      * @param format 该音轨的 MediaFormat(调用方已 selectTrack)
      * @param deadline 墙钟截止, 超时放弃(与调用方看门狗同款)
      * @return null = 扩展不可用 / native 初始化失败 / 解码出错 / 超时, 调用方决定回退
+     * @throws IllegalStateException 在主线程调用时抛出（m-9 评审门禁）
      */
     @OptIn(UnstableApi::class)
     internal fun decode(extractor: MediaExtractor, format: MediaFormat, deadline: Long): Pcm16Mono? {
+        // m-9（评审）：decode 内部 Thread.sleep 轮询会阻塞调用线程，主线程调用必 ANR。
+        // 调用链（EmotionAnalyzer.analyze -> decodeToPcm16kMono -> decode）要求后台线程，
+        // 此处显式断言把契约从"文档约定"升级为"运行时强制"。
+        require(Looper.myLooper() != Looper.getMainLooper()) {
+            "FfmpegPcmDecoder.decode() 在主线程调用——内部 Thread.sleep 轮询会阻塞主线程导致 ANR"
+        }
         val mime = format.getString(MediaFormat.KEY_MIME) ?: return null
         val sampleMimeType = ffmpegMime(mime) ?: return null
         if (!FfmpegLibraryProbe.available) {

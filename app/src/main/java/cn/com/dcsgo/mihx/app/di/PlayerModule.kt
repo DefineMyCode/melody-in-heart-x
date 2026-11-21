@@ -35,12 +35,26 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
+import kotlin.random.Random
 
 @Module
 @InstallIn(SingletonComponent::class)
 object PlayerModule {
+    /**
+     * 评审 m-12：`WindowedControllerQueuePlanner` 是无状态对象，
+     * 标注 `@Singleton` 避免每次注入都创建新实例。
+     */
     @Provides
+    @Singleton
     fun provideControllerQueuePlanner(): ControllerQueuePlannerPort = WindowedControllerQueuePlanner()
+
+    /**
+     * 评审 m-11：注入 [Random] 实例供 `PlayerRuntime.playRelatedSongs` 使用，
+     * 使随机顺序可注入、可测试（不再直接依赖 `Random.Default`）。
+     */
+    @Provides
+    @Singleton
+    fun provideRandom(): Random = Random.Default
 
     @Provides
     fun providePlaybackDurationMonitorFactory(

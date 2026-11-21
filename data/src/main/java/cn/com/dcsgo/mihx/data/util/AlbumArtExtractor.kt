@@ -191,6 +191,7 @@ object AlbumArtExtractor {
         // 抢「写入权」：同一哈希只允许一个线程做解码/压缩/落盘。
         // 等不到（对方卡住/失败）就自己写 —— 并发写现在是安全的（原子 rename）。
         artWriteLock.lock()
+        var ownsHash = false
         try {
             val deadline = System.currentTimeMillis() + ART_WRITE_WAIT_MS
             while (!inFlightArtHashes.add(hash)) {
@@ -209,6 +210,9 @@ object AlbumArtExtractor {
                     return shareableUri(ctx, artFile)
                 }
             }
+            // 循环正常退出说明本线程成功 add(hash) 获得写入权；
+            // 超时 break 时未 add 成功，不算持有（避免误删真正持有者的 hash 标记）
+            ownsHash = true
         } finally {
             artWriteLock.unlock()
         }
@@ -257,12 +261,17 @@ object AlbumArtExtractor {
         } finally {
             // 失败时别留下半截 .tmp
             if (tmpFile.exists()) tmpFile.delete()
-            artWriteLock.lock()
-            try {
-                inFlightArtHashes.remove(hash)
-                artWriteDone.signalAll()
-            } finally {
-                artWriteLock.unlock()
+            // M-8（评审）：仅在本线程真正获得写入权时移除 hash 标记。
+            // 超时 break 的线程从未 add 成功，若无条件 remove 会删掉真正持有者的标记，
+            // 导致同哈希去重失效（另一个线程还在写，标记却没了）。
+            if (ownsHash) {
+                artWriteLock.lock()
+                try {
+                    inFlightArtHashes.remove(hash)
+                    artWriteDone.signalAll()
+                } finally {
+                    artWriteLock.unlock()
+                }
             }
         }
     }

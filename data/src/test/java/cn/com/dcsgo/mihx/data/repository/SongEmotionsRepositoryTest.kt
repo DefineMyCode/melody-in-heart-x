@@ -5,10 +5,15 @@ import androidx.test.core.app.ApplicationProvider
 import cn.com.dcsgo.mihx.core.model.EmotionGroup
 import cn.com.dcsgo.mihx.core.model.SongEmotion
 import cn.com.dcsgo.mihx.data.local.MelodyDatabase
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
@@ -341,4 +346,49 @@ class SongEmotionsRepositoryTest {
         val observed = repository.observeAll().first()
         assertEquals(0.0031f, observed.getValue(1).vocalScore!!, 1e-6f)
     }
+
+    // ───────────── M-10：原子 UPSERT 消除 TOCTOU ─────────────
+
+    /**
+     * M-10（评审）：原子 UPSERT 消除「UPDATE 未命中 → @Upsert 插入」的 TOCTOU 窗口。
+     * 并发下先写者不带词条、后写者带词条，词条不应丢失。
+     */
+    @Test
+    fun `concurrent upserts preserve user tags atomically`() = runBlocking {
+        repository.upsert(emotion(songId = 99, userTags = emptyList()))
+        repository.saveCorrection(99, listOf("燃"), edited = true)
+
+        coroutineScope {
+            async(Dispatchers.IO) { repository.upsert(emotion(songId = 99, userTags = emptyList())) }
+            async(Dispatchers.IO) { repository.upsert(emotion(songId = 99, userTags = listOf("治愈"))) }
+        }
+
+        // 无论执行顺序如何，用户词条不应为空（CASE 表达式保证不吞校准）
+        val row = repository.get(99)!!
+        check(row.userTags.isNotEmpty()) { "并发 UPSERT 不应丢失用户词条" }
+    }
+
+    // ───────────── m-11：observeAll 缓存清理 ─────────────
+
+    /**
+     * m-11（评审）：原实现仅当缓存条数 > 结果条数时才清理，
+     * 删一首增一首（总数不变）时旧 id 条目残留。改为无条件 retainAll 后，
+     * observeAll 结果只包含当前行，已删除歌曲不再出现。
+     */
+    @Test
+    fun `observeAll drops deleted song entries when count unchanged after delete and add`() =
+        runBlocking {
+            repository.upsert(emotion(songId = 1))
+            repository.upsert(emotion(songId = 2))
+            repository.observeAll().first() // 首次观察，缓存 1、2 的曲线
+
+            // 删 id=1，增 id=3（总数不变：2 → 2）
+            repository.delete(1)
+            repository.upsert(emotion(songId = 3))
+
+            val result = repository.observeAll().first()
+
+            assertEquals(setOf(2, 3), result.keys)
+            assertFalse("已删除的 id=1 不应出现在 observeAll 结果中", result.containsKey(1))
+        }
 }

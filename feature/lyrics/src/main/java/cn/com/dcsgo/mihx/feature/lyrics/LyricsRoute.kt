@@ -9,11 +9,20 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import cn.com.dcsgo.mihx.core.model.Lyrics
 import cn.com.dcsgo.mihx.core.model.Song
+import kotlinx.coroutines.flow.StateFlow
 
 @Stable
 data class LyricsRouteState(
     val currentSong: Song?,
-    val currentPositionMs: Long,
+    /**
+     * 播放位置（毫秒）**窄流**。
+     *
+     * 评审 2026-11-20 · M-11：原先这里放的是 `currentPositionMs: Long`（每 200ms
+     * 一个新值），调用方用 `collectAsStateWithLifecycle().value` 读取组合时快照，
+     * 让歌词分支在每次 position 发射时整体重组，无法将重组范围收缩到歌词高亮叶子节点。
+     * 现在传窄流，由**叶子节点**（LyricsView）自己订阅，重组范围收缩到歌词内容。
+     */
+    val currentPositionMs: StateFlow<Long>,
     val isPlaying: Boolean,
     val fontScale: Float = 1f,
 )

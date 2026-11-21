@@ -661,6 +661,10 @@ object ProductArchitectureVerification {
             fail("app benchmark build type must inherit release settings.")
         }
 
+        // m-14（评审 2026-11-20）：用户设置 DataStore（player_settings/mood_time_slot/
+        // emotion_failures）纳入备份，便于跨设备迁移用户偏好。仍须排除的：
+        // 曲库数据库（文件路径换机后无效）、瞬态状态（playback_state/playlist_resume）、
+        // 遗留 SharedPreferences、封面缓存。
         val requiredPrivacyExcludes = listOf(
             "music_player_prefs.xml",
             "play_stats_prefs.xml",
@@ -669,8 +673,8 @@ object ProductArchitectureVerification {
             "melody.db-journal",
             "melody.db-shm",
             "melody.db-wal",
-            "datastore/player_settings.preferences_pb",
             "datastore/playback_state.preferences_pb",
+            "datastore/playlist_resume.preferences_pb",
             "cache/album_art/",
         )
         val privacyRuleFiles = listOf(
@@ -724,6 +728,30 @@ object ProductArchitectureVerification {
         ) {
             fail("MelodyDatabase must register the Room migrations from version 1 to 2 and 2 to 3.")
         }
+
+        // ── 不变量：中文字面量数量棘轮（防膨胀）──
+        //
+        // 评审 2026-11-20 · M-12：应用仅中文界面，但硬编码中文字面量持续膨胀，
+        // 不利于未来国际化与维护。本规则以棘轮（ratchet）方式落地：
+        // 设定当前基线上限，新增中文字面量使总数超过基线即构建失败。
+        // 新增硬编码中文应外置到 strings.xml，或显式申请上调基线。
+        //
+        // 统计口径：src/main 下 Kotlin 文件中含中文的双引号字符串字面量数。
+        // 基线 1500（当前实测 1421，预留约 5% 增长空间）。
+        val chineseLiteralRegex = Regex("""["][^"\n]*[一-鿿][^"\n]*["]""")
+        val chineseLiteralCount = textFiles.sumOf { file ->
+            val relativePath = file.relativeTo(rootDir).path.replace(File.separatorChar, '/')
+            if (!relativePath.contains("/src/main/")) return@sumOf 0
+            if (!relativePath.endsWith(".kt")) return@sumOf 0
+            chineseLiteralRegex.findAll(file.readText()).count()
+        }
+        val MAX_CHINESE_LITERALS = 1500
+        if (chineseLiteralCount > MAX_CHINESE_LITERALS) {
+            fail(
+                "中文字面量数量 ($chineseLiteralCount) 超过棘轮基线 ($MAX_CHINESE_LITERALS)；" +
+                    "新增硬编码中文请外置到 strings.xml，或申请上调基线（评审 2026-11-20 · M-12）。"
+            )
+        }
     }
 
     /**
@@ -733,8 +761,9 @@ object ProductArchitectureVerification {
      */
     internal fun extractBracedBlock(text: String, name: String): String? {
         val opener = Regex("""\b$name\s*\{""").find(text) ?: return null
-        var depth = 0
-        var index = opener.range.last + 1 // 指向 '{'
+        var depth = 1 // 已匹配到的 { 计入深度，否则简单块 {...}（无嵌套花括号）时
+                        // 遇到 } 会 depth-- 到 -1，永不返回（评审 2026-11-20 修复）
+        var index = opener.range.last + 1 // 指向 '{' 之后的字符
         val start = index + 1
         while (index < text.length) {
             when (text[index]) {

@@ -176,7 +176,7 @@ internal fun FilePathCard(
                                 leadingIcon = {
                                     Icon(
                                         imageVector = Icons.AutoMirrored.Filled.CallSplit,
-                                        contentDescription = null,
+                                        contentDescription = "移出当前分组",
                                         modifier = Modifier.size(18.dp),
                                     )
                                 },
@@ -190,7 +190,7 @@ internal fun FilePathCard(
                                 leadingIcon = {
                                     Icon(
                                         painter = painterResource(R.drawable.swap_vert_24),
-                                        contentDescription = null,
+                                        contentDescription = "关联到其他歌曲",
                                         modifier = Modifier.size(18.dp),
                                     )
                                 },
@@ -210,7 +210,7 @@ internal fun FilePathCard(
                                 leadingIcon = {
                                     Icon(
                                         imageVector = Icons.Default.Delete,
-                                        contentDescription = null,
+                                        contentDescription = "删除此版本",
                                         modifier = Modifier.size(18.dp),
                                         tint = MaterialTheme.colorScheme.error,
                                     )

@@ -217,17 +217,19 @@ private fun ScaffoldContentColumn(
             content()
         }
         if (shouldShowMiniPlayer(shell, activeRoute, currentSong != null) && !miniPlayerHiddenBySheet) {
-            MusicPlayerBottomBar(
-                isPlaying = isPlaying,
-                currentSong = currentSong!!,
-                positionMs = positionMs,
-                durationMs = durationMs,
-                onPlayPauseClick = onPlayPauseClick,
-                onPreviousClick = onPreviousClick,
-                onNextClick = onNextClick,
-                onNavigateToHome = onNavigateToHome,
-                ownSystemInset = miniBarOwnsSystemInset,
-            )
+            currentSong?.let { song ->
+                MusicPlayerBottomBar(
+                    isPlaying = isPlaying,
+                    currentSong = song,
+                    positionMs = positionMs,
+                    durationMs = durationMs,
+                    onPlayPauseClick = onPlayPauseClick,
+                    onPreviousClick = onPreviousClick,
+                    onNextClick = onNextClick,
+                    onNavigateToHome = onNavigateToHome,
+                    ownSystemInset = miniBarOwnsSystemInset,
+                )
+            }
         } else if (
             shouldShowLuckyPlayEntry(shell, activeRoute, currentSong != null) &&
             !miniPlayerHiddenBySheet

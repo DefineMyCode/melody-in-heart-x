@@ -40,7 +40,13 @@ class PlayStatsRepository(
     suspend fun getCount(songId: Int): Int =
         readStat(songId).playCount
 
-    /** 将指定歌曲的播放次数 +1，返回新的次数 */
+    /**
+     * 将指定歌曲的播放次数 +1，返回自增后的**近似值**。
+     *
+     * m-4（评审）：自增 SQL 原子完成，但返回值是自增后**独立查询**的结果，
+     * 期间若有其他自增调用，返回值可能偏高（读到的是更晚的状态）。
+     * 不保证返回值精确等于本次自增后的值，仅可作为近似值使用。
+     */
     override suspend fun increment(songId: Int): Int {
         val now = System.currentTimeMillis()
         // SQL 原子自增（upsert + playCount=playCount+1），消除 read→write 两个独立事务间的 lost update

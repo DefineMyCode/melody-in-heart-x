@@ -222,12 +222,11 @@ fun AppNavHost(
 
 
         composable(AppRoutes.LYRICS) {
-            // 播放位置窄流：只在歌词页订阅，随位置推进只重组歌词内容
-            val positionMs by playerViewModel.positionMs.collectAsStateWithLifecycle()
+            // 播放位置窄流：在 LyricsView 叶子内部订阅，随位置推进只重组歌词内容
             LyricsRoute(
                 state = LyricsRouteState(
                     currentSong = uiState.currentSong,
-                    currentPositionMs = positionMs,
+                    currentPositionMs = playerViewModel.positionMs,
                     isPlaying = uiState.isPlaying,
                     fontScale = lyricFontScale,
                 ),

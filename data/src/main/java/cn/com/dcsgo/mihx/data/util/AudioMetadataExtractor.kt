@@ -405,21 +405,25 @@ object AudioMetadataExtractor {
                     }
                 }
             }
-            // 如果 DocumentId 解析失败，尝试从 URI path 直接解码
-            val decodedPath = uri.path?.let { java.net.URLDecoder.decode(it, "UTF-8") }
-            if (decodedPath != null && decodedPath.contains("/storage/")) {
-                // 从 /tree/.../... 中提取实际路径
-                val treePath = decodedPath.substringAfter("/tree/")
-                    .replace(":","/")
-                    .replace("%3A", "/")
-                    .replace("%2F", "/")
-                    .replace("%20", " ")
-                val fullPath = "/storage/emulated/0/$treePath"
-                if (File(fullPath).exists()) return fullPath
-            }
             uri.toString()
         } catch (e: Exception) {
             AppLog.warning(TAG, "SAF URI path resolution failed: ${e.message}")
+            // m-12（评审）：tree URI 的 getDocumentId 会抛异常，原实现 catch 后直接返回
+            // uri.toString()，导致 URL 解码回退分支永远不会执行（死代码）。
+            // 参考 SongPathResolver.fallbackFromUriPath 从 URI path 解码提取真实路径。
+            val decodedPath = uri.path?.let { raw ->
+                try { java.net.URLDecoder.decode(raw, "UTF-8") } catch (_: Exception) { raw }
+            }
+            if (decodedPath != null) {
+                val idx = decodedPath.indexOf("primary:")
+                if (idx >= 0) {
+                    val rel = decodedPath.substring(idx + "primary:".length).trimEnd('/')
+                    if (rel.isNotBlank()) {
+                        val fullPath = File(Environment.getExternalStorageDirectory(), rel).absolutePath
+                        if (File(fullPath).exists()) return fullPath
+                    }
+                }
+            }
             uri.toString()
         }
     }

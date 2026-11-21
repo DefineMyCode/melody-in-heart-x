@@ -166,7 +166,7 @@ internal fun StatsEntryRow(
         ) {
             Icon(
                 painter = painterResource(icon),
-                contentDescription = null,
+                contentDescription = title,
                 modifier = Modifier.size(19.dp),
                 tint = MaterialTheme.colorScheme.primary,
             )

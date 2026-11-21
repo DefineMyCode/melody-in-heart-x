@@ -258,7 +258,7 @@ class PlayerViewModel @Inject constructor(
     val songSortMode: StateFlow<SongSortMode> = runtime.songSortMode
         .stateIn(
             scope = viewModelScope,
-            started = SharingStarted.Eagerly,
+            started = SharingStarted.WhileSubscribed(5_000),
             initialValue = SongSortMode.IMPORT_ORDER,
         )
 
@@ -266,7 +266,7 @@ class PlayerViewModel @Inject constructor(
     val songSortAscending: StateFlow<Boolean> = runtime.songSortAscending
         .stateIn(
             scope = viewModelScope,
-            started = SharingStarted.Eagerly,
+            started = SharingStarted.WhileSubscribed(5_000),
             initialValue = true,
         )
 

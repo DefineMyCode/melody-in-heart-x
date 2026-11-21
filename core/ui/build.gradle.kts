@@ -34,5 +34,7 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.androidx.material.icons.extended)
     implementation(libs.coil.compose)
+    // 歌词叶子节点内部订阅播放位置窄流（评审 2026-11-20 · M-11），需要生命周期感知的 collect
+    implementation(libs.androidx.lifecycle.runtime.compose)
     testImplementation(libs.junit)
 }

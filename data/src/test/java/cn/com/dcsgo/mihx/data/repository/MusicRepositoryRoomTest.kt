@@ -22,6 +22,7 @@ import cn.com.dcsgo.mihx.data.local.entity.SongEntity
 import cn.com.dcsgo.mihx.data.local.entity.SongGroupOverrideEntity
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.runBlocking
@@ -512,6 +513,7 @@ class MusicRepositoryRoomTest {
             quickSkipSongs.maxOfOrNull { it.songId },
             quickSkipShortPlayCounts.maxOfOrNull { it.songId },
             songEmotions.maxOfOrNull { it.songId },
+            songGroupOverrides.maxOfOrNull { it.songId },
         ).filterNotNull().maxOrNull()
 
         override suspend fun songIdsMissingVocalScore(): List<Int> = emptyList()
@@ -540,6 +542,13 @@ class MusicRepositoryRoomTest {
             userTags: String?, userTagsEdited: Boolean?, vocalScore: Float?,
 
         ): Int = 0
+
+        override suspend fun insertSongEmotionIfAbsent(
+            songId: Int, valence: Float, arousal: Float, curveJson: String, peakSec: Float,
+            windowsAnalyzed: Int, durationSec: Float, modelVersion: String, analyzedAt: Long,
+            embeddingB64: String?, userValence: Float?, userArousal: Float?,
+            userTags: String?, userTagsEdited: Boolean?, vocalScore: Float?,
+        ) = Unit
 
         override suspend fun deleteSongEmotion(songId: Int) {
             songEmotions.removeAll { it.songId == songId }
@@ -594,6 +603,46 @@ class MusicRepositoryRoomTest {
             lrcUri = null,
             importedAt = 1L,
         )
+    }
+
+    /** M-7（评审）：updateSongTitleOverride 修改分组后必须通知 UI 刷新。 */
+    @Test
+    fun updateSongTitleOverrideNotifiesSongsChanged() = runBlocking {
+        val dao = FakeMelodyDao().apply {
+            songs += listOf(songEntity(1))
+        }
+        val repository = MusicRepository(melodyDao = dao)
+        repository.loadSongs()
+
+        var emitted = false
+        val job = launch { repository.songsChanged.collect { emitted = true } }
+        delay(50) // 让收集器就位
+
+        assertTrue(repository.updateSongTitleOverride(songId = 1, titleOverride = "Group"))
+        delay(50) // 等待通知传播
+        job.cancel()
+
+        check(emitted) { "updateSongTitleOverride 必须触发 songsChanged 通知" }
+    }
+
+    /** M-9（评审）：song_group_overrides 以 songId 为主键，必须纳入 maxKnownSongId 高水位。 */
+    @Test
+    fun maxKnownSongIdIncludesSongGroupOverrides() = runBlocking {
+        val dao = FakeMelodyDao().apply {
+            songs += listOf(songEntity(1), songEntity(2))
+            songGroupOverrides += SongGroupOverrideEntity(
+                songId = 5,
+                titleOverride = "Override",
+                updatedAt = 1L,
+            )
+        }
+        val repository = MusicRepository(melodyDao = dao)
+        repository.loadSongs()
+
+        // nextId 高水位须 ≥ max(song_group_overrides) + 1 = 6
+        check(repository.peekNextSongId() > 5) {
+            "nextId 高水位须包含 song_group_overrides 的最大 songId，实际=${repository.peekNextSongId()}"
+        }
     }
 }
 

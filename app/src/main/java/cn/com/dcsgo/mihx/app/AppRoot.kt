@@ -14,7 +14,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
@@ -172,10 +171,6 @@ fun AppRoot(
 
     BackHandler(enabled = showQueueSheet) {
         showQueueSheet = false
-    }
-
-    // 监听返回栈：从抽屉跳出去的那一页**离栈**了 → 回到播放抽屉。
-    if (uiState.isLoading) {
     }
 
     LaunchedEffect(uiState.errorMessage) {
@@ -406,8 +401,7 @@ fun AppRoot(
                     is PlayerSheetContent.Lyrics -> LyricsRoute(
                         state = LyricsRouteState(
                             currentSong = uiState.currentSong,
-                            currentPositionMs = playerViewModel.positionMs
-                                .collectAsStateWithLifecycle().value,
+                            currentPositionMs = playerViewModel.positionMs,
                             isPlaying = uiState.isPlaying,
                             fontScale = lyricFontScale,
                         ),
@@ -514,6 +508,11 @@ fun AppRoot(
 
             ToastHost(toastHost = toastHost)
             AutoDismissToasts(toastHost = toastHost, durationMs = 2000L)
+
+            // 启动加载阶段：覆盖一层启动画面，避免加载中露出未就绪的界面
+            if (uiState.isLoading) {
+                LoadingSplash()
+            }
         }
         }
         }

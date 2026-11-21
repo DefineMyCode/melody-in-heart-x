@@ -122,7 +122,7 @@ private fun SongEntity.toSong(titleOverride: String?): Song = Song(
     albumArtUri = albumArtCacheUri?.let(Uri::parse),
     lrcUri = lrcUri?.let(Uri::parse),
     titleOverride = titleOverride,
-    fileFingerprint = if (size != null || lastModified != null) "$size:$lastModified" else null,
+    fileFingerprint = if (size != null || lastModified != null) "$size/$lastModified" else null,
 )
 
 private fun Song.toEntity(importedAt: Long): SongEntity = SongEntity(
@@ -141,8 +141,8 @@ private fun Song.toEntity(importedAt: Long): SongEntity = SongEntity(
     uri = uri?.toString(),
     displayName = null,
     mimeType = null,
-    lastModified = fileFingerprint?.substringAfterLast(':')?.toLongOrNull(),
-    size = fileFingerprint?.substringBeforeLast(':')?.toLongOrNull(),
+    lastModified = fileFingerprint?.substringAfterLast('/')?.toLongOrNull(),
+    size = fileFingerprint?.substringBeforeLast('/')?.toLongOrNull(),
     sourceTreeUri = null,
     albumArtCacheUri = albumArtUri?.toString(),
     lrcUri = lrcUri?.toString(),

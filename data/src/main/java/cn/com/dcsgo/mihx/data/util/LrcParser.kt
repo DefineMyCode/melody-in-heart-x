@@ -338,7 +338,7 @@ object LrcParser {
         var offsetMs = 0L
 
         val lrcLines = content.split("\n")
-        val timeRegex = Regex("""\[(\d{2}):(\d{2})(?:\.(\d{2,3}))?]""")
+        val timeRegex = Regex("""\[(\d{2}):(\d{2})(?:\.(\d{1,3}))?]""")
 
         for (line in lrcLines) {
             val trimmedLine = line.trim()
@@ -373,6 +373,7 @@ object LrcParser {
                             val seconds = match.groupValues[2].toLongOrNull() ?: 0
                             val millisStr = match.groupValues[3]
                             val millis = when (millisStr.length) {
+                                1 -> (millisStr.toLongOrNull() ?: 0) * 100 // 一位数，视为十分之一秒
                                 2 -> (millisStr.toLongOrNull() ?: 0) * 10 // 两位数，视为厘秒
                                 3 -> millisStr.toLongOrNull() ?: 0 // 三位数，毫秒
                                 else -> 0

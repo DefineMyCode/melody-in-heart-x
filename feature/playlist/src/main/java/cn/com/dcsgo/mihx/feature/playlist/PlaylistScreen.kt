@@ -386,10 +386,7 @@ fun PlaylistScreen(
                     }
                     when (selectedLibraryTab) {
                         LibraryTab.PLAYLISTS -> PlaylistListView(
-                            playlists = playlists.filter { playlist ->
-                                librarySearchQuery.isBlank() ||
-                                    playlist.name.contains(librarySearchQuery, ignoreCase = true)
-                            },
+                            playlists = visiblePlaylists,
                             songs = songs,
                             onPlaylistClick = onPlaylistClick,
                             onDelete = { showDeleteConfirm = it },
@@ -703,7 +700,7 @@ private fun PlaylistDetailView(
                                             leadingIcon = {
                                                 Icon(
                                                     painter = painterResource(id = R.drawable.music_note_add_24),
-                                                    contentDescription = null,
+                                                    contentDescription = "加入播放队列",
                                                     modifier = Modifier.size(18.dp),
                                                 )
                                             },
@@ -714,7 +711,7 @@ private fun PlaylistDetailView(
                                             leadingIcon = {
                                                 Icon(
                                                     painter = painterResource(id = R.drawable.ic_next),
-                                                    contentDescription = null,
+                                                    contentDescription = "下一首播放",
                                                     modifier = Modifier.size(18.dp),
                                                 )
                                             },
@@ -725,7 +722,7 @@ private fun PlaylistDetailView(
                                             leadingIcon = {
                                                 Icon(
                                                     painter = painterResource(id = R.drawable.list_alt_add_24),
-                                                    contentDescription = null,
+                                                    contentDescription = "添加到歌单",
                                                     modifier = Modifier.size(18.dp),
                                                 )
                                             },
@@ -736,7 +733,7 @@ private fun PlaylistDetailView(
                                             leadingIcon = {
                                                 Icon(
                                                     imageVector = Icons.Default.Info,
-                                                    contentDescription = null,
+                                                    contentDescription = "查看歌曲详情",
                                                     modifier = Modifier.size(18.dp),
                                                 )
                                             },
@@ -748,7 +745,7 @@ private fun PlaylistDetailView(
                                             leadingIcon = {
                                                 Icon(
                                                     imageVector = Icons.Default.Close,
-                                                    contentDescription = null,
+                                                    contentDescription = "移除",
                                                     modifier = Modifier.size(18.dp),
                                                     tint = MaterialTheme.colorScheme.error,
                                                 )

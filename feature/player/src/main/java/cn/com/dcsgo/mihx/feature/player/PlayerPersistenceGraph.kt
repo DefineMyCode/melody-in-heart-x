@@ -9,8 +9,11 @@ import cn.com.dcsgo.mihx.domain.playback.PlaybackRestoreResult
 import cn.com.dcsgo.mihx.domain.playback.PlaybackStateStorageFactory
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.channels.consumeEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -46,17 +49,21 @@ internal class PlayerPersistenceGraph(
     private val persistCommands = Channel<suspend () -> Unit>(Channel.UNLIMITED)
     private val persistScope = CoroutineScope(SupervisorJob() + dispatchers.io)
 
-    init {
-        persistScope.launch {
-            for (command in persistCommands) {
-                try {
-                    command()
-                } catch (ce: CancellationException) {
-                    throw ce
-                } catch (t: Throwable) {
-                    // 单条写失败不应终止消费者，否则后续所有写入永久排队不执行
-                    log("persist command failed: ${t.message}")
-                }
+    /**
+     * 持久化写入消费者协程。
+     *
+     * [release] 关闭 [persistCommands] 后，本协程经 [consumeEach] 排空已入队命令、
+     * 正常退出；[release] 通过 [Job.join] 等待排空完成后再取消 [persistScope]。
+     */
+    private val persistConsumer: Job = persistScope.launch {
+        persistCommands.consumeEach { command ->
+            try {
+                command()
+            } catch (ce: CancellationException) {
+                throw ce
+            } catch (t: Throwable) {
+                // 单条写失败不应终止消费者，否则后续所有写入永久排队不执行
+                log("persist command failed: ${t.message}")
             }
         }
     }
@@ -90,10 +97,22 @@ internal class PlayerPersistenceGraph(
         savePlaybackState = { positionMs -> savePlaybackStateAsync(positionMs) },
     )
 
-    /** controller 连接尝试是否已成功结束（MediaController 可用，状态可查询） */
+    /**
+     * controller 连接尝试是否已成功结束（MediaController 可用，状态可查询）。
+     *
+     * 评审 M-6：由 [onControllerReady]（可能来自 Media3 binder 线程）写入，由
+     * [maybeApplyRestore]（Main 线程）读取，跨线程可见性由 [Volatile] 保证。
+     */
+    @Volatile
     private var controllerReady = false
 
-    /** IO 线程读出的快照恢复结果，等待 [controllerReady] 后统一决策应用 */
+    /**
+     * IO 线程读出的快照恢复结果，等待 [controllerReady] 后统一决策应用。
+     *
+     * 评审 M-6：由 [restorePlaybackState] 在 Main 线程写入，由 [maybeApplyRestore]
+     * （可能来自 binder 线程的 [onControllerReady] 路径）读取。
+     */
+    @Volatile
     private var pendingRestore: PlaybackRestoreResult? = null
 
     fun savePlaybackStateAsync(positionMs: Long = currentPlaybackPositionMs()) {
@@ -108,6 +127,24 @@ internal class PlayerPersistenceGraph(
     /** 排队清空快照（不阻塞调用线程）。与写入同一条 FIFO 队列，顺序得到保证。 */
     fun clearPlaybackState() {
         enqueuePersist { persistenceFacade.clearPlaybackState() }
+    }
+
+    /**
+     * 释放持久化图：关闭写入队列、排空已入队命令后取消 [persistScope]。
+     *
+     * 评审 M-5：原实现 [persistScope] 的消费者协程永远挂起在 channel 上、从不取消，
+     * ViewModel 每次重建都会泄漏一个 scope（SupervisorJob + 调度器资源）。
+     * 此处先关闭通道让消费者排空退出，再通过 [Job.join] 等待排空完成、取消 scope，
+     * 避免 cancel 中断正在落盘的写操作。
+     */
+    fun release() {
+        // 关闭通道：consumeEach 排空已入队命令后正常返回
+        persistCommands.close()
+        // 等待消费者排空完成，再取消 scope——避免 cancel 中断正在落盘的写操作
+        persistScope.launch {
+            persistConsumer.join()
+            persistScope.cancel()
+        }
     }
 
     /**

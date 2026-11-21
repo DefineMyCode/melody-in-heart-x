@@ -67,4 +67,23 @@ class LrcParserOffsetTest {
     fun `empty content returns null`() {
         assertNull(LrcParser.parseLrcContent("   "))
     }
+
+    @Test
+    fun `one digit millisecond is treated as tenths of a second`() {
+        // m-6（评审）：正则原要求毫秒为 2-3 位，[00:12.5]（1 位毫秒）整个时间戳匹配失败，
+        // 该行歌词被静默丢弃。修复后 1 位视为十分之一秒，按 *100 换算。
+        val lyrics = LrcParser.parseLrcContent("[00:12.5]第一句")!!
+        assertEquals(listOf(12_500L), lyrics.lines.map { it.timeMs })
+    }
+
+    @Test
+    fun `one digit millisecond with offset`() {
+        val lyrics = LrcParser.parseLrcContent(
+            """
+            [offset:100]
+            [00:01.5]短句
+            """.trimIndent(),
+        )!!
+        assertEquals(listOf(1_600L), lyrics.lines.map { it.timeMs })
+    }
 }

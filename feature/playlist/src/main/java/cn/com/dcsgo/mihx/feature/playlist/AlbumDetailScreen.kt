@@ -255,7 +255,7 @@ fun AlbumDetailScreen(
                                             leadingIcon = {
                                                 Icon(
                                                     painter = painterResource(R.drawable.list_alt_add_24),
-                                                    contentDescription = null,
+                                                    contentDescription = "添加到歌单",
                                                     modifier = Modifier.size(18.dp),
                                                 )
                                             },
@@ -266,7 +266,7 @@ fun AlbumDetailScreen(
                                             leadingIcon = {
                                                 Icon(
                                                     imageVector = Icons.Default.Info,
-                                                    contentDescription = null,
+                                                    contentDescription = "查看歌曲详情",
                                                     modifier = Modifier.size(18.dp),
                                                 )
                                             },

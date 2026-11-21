@@ -358,6 +358,11 @@ class BluetoothStateManager(private val context: Context) {
         bluetoothA2dp = null
         bluetoothHeadset = null
 
+        // m-13（评审）：清空回调引用，避免持有外部 ViewModel 的 lambda 形成引用环，
+        // 释放后 BluetoothStateManager 仍被回调持有导致泄漏
+        onBluetoothStateChanged = null
+        onAudioQualityChanged = null
+
         AppLog.debug(TAG, "BluetoothStateManager released")
     }
 }

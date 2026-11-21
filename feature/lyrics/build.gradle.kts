@@ -23,4 +23,6 @@ dependencies {
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.ui)
     implementation(libs.androidx.material3)
+    // LyricsRouteState 持有 StateFlow<Long> 窄流（评审 2026-11-20 · M-11）
+    implementation(libs.kotlinx.coroutines.core)
 }

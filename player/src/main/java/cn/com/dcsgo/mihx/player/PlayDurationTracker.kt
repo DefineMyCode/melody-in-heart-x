@@ -73,6 +73,12 @@ class PlayDurationTracker(
     // 是否正在运行计时任务
     private val isTracking = AtomicBoolean(false)
 
+    // M-3 复审（2026-11-21）：release() 的 scope 取消是异步的（等结算协程跑完再 cancel），
+    // 取消落地前若调用方再次 startPlayback，会在尚未取消的 scope 里启动新的计时循环。
+    // 用 released 标志锁死生命周期：release 之后不再接受新的播放会话。
+    @Volatile
+    private var released = false
+
     // M-1（评审 2026-10-15）修复：持有当前计时循环的 Job，停止/切歌时显式 cancel。
     // 旧实现只翻 isTracking 标志位：旧循环还在 delay() 中休眠时 startPlayback 先 stop
     // （标志位=false）再 start（compareAndSet(false,true) 放行新循环、标志位=true），
@@ -94,6 +100,9 @@ class PlayDurationTracker(
      *                        正常从头播放为 0
      */
     override fun startPlayback(songId: Int, durationMs: Long, initialPlayedMs: Long) {
+        // release 之后 tracker 生命周期已结束，不再启动新的计时循环
+        if (released) return
+
         // 停止当前播放的歌曲计时
         stopPlayback()
 
@@ -304,6 +313,7 @@ class PlayDurationTracker(
      * 清理资源
      */
     override fun release() {
+        released = true
         stopPlayback()
         // M-3 复审（2026-11-21）：stopPlayback 只是把 settlePlayback 提交到 scope，
         // 立即 scope.cancel() 会把尚未执行的结算一并取消，退出时丢掉最后一段播放统计。

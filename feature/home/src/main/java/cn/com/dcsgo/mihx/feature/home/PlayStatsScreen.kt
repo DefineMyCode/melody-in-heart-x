@@ -14,40 +14,46 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Sort
+import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.ExperimentalComposeUiApi
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FabPosition
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
 import cn.com.dcsgo.mihx.core.model.Song
+import cn.com.dcsgo.mihx.ui.components.locateHighlightFlash
+import cn.com.dcsgo.mihx.ui.components.rememberLocateHighlightState
+import coil.compose.AsyncImage
+import kotlinx.coroutines.launch
 
 /**
  * 播放统计页面
@@ -93,7 +99,39 @@ fun PlayStatsScreen(
         filteredSongs.sortedWith(comparator)
     }
 
+    // 定位当前播放：只针对「排序 + 搜索过滤」后的可见列表。
+    // 当前歌曲被搜索词过滤掉时按钮不显示，避免滚到不存在的位置。
+    val listState = rememberLazyListState()
+    val locateHighlight = rememberLocateHighlightState()
+    val coroutineScope = rememberCoroutineScope()
+    val currentSongIndex = sortedSongs.indexOfFirst { it.id == currentSong?.id }
+
     Scaffold(
+        floatingActionButtonPosition = FabPosition.End,
+        floatingActionButton = {
+            if (currentSongIndex >= 0) {
+                SmallFloatingActionButton(
+                    onClick = {
+                        // 点击瞬间排序/搜索可能已变化，重新取一次下标。
+                        val index = sortedSongs.indexOfFirst { it.id == currentSong?.id }
+                        if (index >= 0) {
+                            locateHighlight.trigger(currentSong?.id)
+                            coroutineScope.launch {
+                                listState.animateScrollToItem(index)
+                            }
+                        }
+                    },
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    contentColor = MaterialTheme.colorScheme.primary,
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.MyLocation,
+                        contentDescription = "定位到当前播放",
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            }
+        },
         topBar = {
             TopAppBar(
                 title = { Text(title) },
@@ -173,13 +211,16 @@ fun PlayStatsScreen(
 
             // 歌曲列表
             LazyColumn(
+                state = listState,
                 modifier = Modifier
                     .fillMaxSize(),
-                contentPadding = PaddingValues(vertical = 8.dp)
+                // 底部留白避开定位 FAB（规格同其他列表）。
+                contentPadding = PaddingValues(top = 8.dp, bottom = 72.dp)
             ) {
 
             itemsIndexed(sortedSongs, key = { _, song -> song.id }) { index, song ->
                 PlayStatsItem(
+                    modifier = Modifier.locateHighlightFlash(song.id, locateHighlight),
                     rank = index + 1,
                     song = song,
                     playCount = playCounts[song.id] ?: 0,
@@ -195,6 +236,7 @@ fun PlayStatsScreen(
 
 @Composable
 private fun PlayStatsItem(
+    modifier: Modifier = Modifier,
     rank: Int,
     song: Song,
     playCount: Int,
@@ -203,7 +245,7 @@ private fun PlayStatsItem(
     onClick: () -> Unit,
 ) {
     Row(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
             .padding(horizontal = 16.dp, vertical = 10.dp),
